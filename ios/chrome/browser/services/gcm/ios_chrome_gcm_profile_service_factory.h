@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SERVICES_GCM_IOS_CHROME_GCM_PROFILE_SERVICE_FACTORY_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -32,6 +33,13 @@ class IOSChromeGCMProfileServiceFactory
       ios::ChromeBrowserState* browser_state);
 
   static IOSChromeGCMProfileServiceFactory* GetInstance();
+
+  // Returns a string like "com.chrome.ios" that should be used as the GCM
+  // category when an app_id is sent as a subtype instead of as a category. This
+  // string must never change during the lifetime of a Chrome install, since
+  // e.g. to unregister an Instance ID token the same category must be passed to
+  // GCM as was originally passed when registering it.
+  static std::string GetProductCategoryForSubtypes();
 
  private:
   friend struct base::DefaultSingletonTraits<IOSChromeGCMProfileServiceFactory>;

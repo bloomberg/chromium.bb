@@ -98,6 +98,7 @@ class GCMClient {
     ChromePlatform platform;
     ChromeChannel channel;
     std::string version;
+    std::string product_category_for_subtypes;
   };
 
   // Detailed information of the Send Error event.

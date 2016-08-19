@@ -31,6 +31,12 @@ class GCMRequestTestBase : public testing::Test {
   // It can be overridden by the test class to add additional logic.
   virtual void CompleteFetch();
 
+  // Verifies that the Fetcher's upload_data exactly matches the given
+  // properties. The map will be cleared as a side-effect. Wrap calls to this
+  // with ASSERT_NO_FATAL_FAILURE.
+  void VerifyFetcherUploadData(
+      std::map<std::string, std::string>* expected_pairs);
+
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_.get();
   }

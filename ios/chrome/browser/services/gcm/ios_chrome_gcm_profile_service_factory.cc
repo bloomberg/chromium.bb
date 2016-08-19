@@ -32,6 +32,15 @@ IOSChromeGCMProfileServiceFactory::GetInstance() {
   return base::Singleton<IOSChromeGCMProfileServiceFactory>::get();
 }
 
+// static
+std::string IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "com.chrome.ios";
+#else
+  return "org.chromium.ios";
+#endif
+}
+
 IOSChromeGCMProfileServiceFactory::IOSChromeGCMProfileServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "GCMProfileService",
@@ -57,6 +66,7 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
   return base::MakeUnique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetRequestContext(), ::GetChannel(),
+      GetProductCategoryForSubtypes(),
       base::WrapUnique(new ProfileIdentityProvider(
           ios::SigninManagerFactory::GetForBrowserState(browser_state),
           OAuth2TokenServiceFactory::GetForBrowserState(browser_state),

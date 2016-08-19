@@ -64,15 +64,22 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
   struct GCM_EXPORT RequestInfo {
     RequestInfo(uint64_t android_id,
                 uint64_t security_token,
-                const std::string& app_id);
+                const std::string& category,
+                const std::string& subtype);
     ~RequestInfo();
 
     // Android ID of the device.
     uint64_t android_id;
     // Security token of the device.
     uint64_t security_token;
-    // Application ID.
-    std::string app_id;
+
+    // Application ID used in Chrome to refer to registration/token's owner.
+    const std::string& app_id() { return subtype.empty() ? category : subtype; }
+
+    // GCM category field derived from the |app_id|.
+    std::string category;
+    // GCM subtype field derived from the |app_id|.
+    std::string subtype;
   };
 
   // Encapsulates the custom logic that is needed to build and process the

@@ -76,6 +76,26 @@ void GCMRequestTestBase::CompleteFetch() {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
+void GCMRequestTestBase::VerifyFetcherUploadData(
+    std::map<std::string, std::string>* expected_pairs) {
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+
+  // Verify data was formatted properly.
+  std::string upload_data = fetcher->upload_data();
+  base::StringTokenizer data_tokenizer(upload_data, "&=");
+  while (data_tokenizer.GetNext()) {
+    auto iter = expected_pairs->find(data_tokenizer.token());
+    ASSERT_TRUE(iter != expected_pairs->end()) << data_tokenizer.token();
+    ASSERT_TRUE(data_tokenizer.GetNext()) << data_tokenizer.token();
+    ASSERT_EQ(iter->second, data_tokenizer.token());
+    // Ensure that none of the keys appears twice.
+    expected_pairs->erase(iter);
+  }
+
+  ASSERT_EQ(0UL, expected_pairs->size());
+}
+
 void GCMRequestTestBase::FastForwardToTriggerNextRetry() {
   // Here we compute the maximum delay time by skipping the jitter fluctuation
   // that only affects in the negative way.

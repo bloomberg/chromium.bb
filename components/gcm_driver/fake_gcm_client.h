@@ -113,6 +113,7 @@ class FakeGCMClient : public GCMClient {
                            const std::string& message_id);
 
   Delegate* delegate_;
+  std::string product_category_for_subtypes_;
   bool started_;
   StartMode start_mode_;
   StartModeOverridding start_mode_overridding_;

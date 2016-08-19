@@ -61,6 +61,7 @@ static_library("gcm_driver") {
 
   deps = [
     "//base",
+    "//components/crx_file",
     "//components/gcm_driver/common",
     "//components/gcm_driver/crypto",
     "//components/keyed_service/core",
@@ -100,7 +101,10 @@ static_library("gcm_driver") {
       "gcm_stats_recorder_impl.cc",
       "gcm_stats_recorder_impl.h",
     ]
-    deps -= [ "//google_apis/gcm" ]
+    deps -= [
+      "//components/crx_file",
+      "//google_apis/gcm",
+    ]
     deps += [ "android:jni_headers" ]
   }
 }

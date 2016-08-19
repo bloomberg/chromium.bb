@@ -63,11 +63,15 @@ std::string GetVersion() {
   return version_info::GetVersionNumber();
 }
 
-GCMClient::ChromeBuildInfo GetChromeBuildInfo(version_info::Channel channel) {
+GCMClient::ChromeBuildInfo GetChromeBuildInfo(
+    version_info::Channel channel,
+    const std::string& product_category_for_subtypes) {
   GCMClient::ChromeBuildInfo chrome_build_info;
   chrome_build_info.platform = GetPlatform();
   chrome_build_info.channel = GetChannel(channel);
   chrome_build_info.version = GetVersion();
+  chrome_build_info.product_category_for_subtypes =
+      product_category_for_subtypes;
   return chrome_build_info;
 }
 
@@ -92,11 +96,13 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     version_info::Channel channel,
+    const std::string& product_category_for_subtypes,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
   return std::unique_ptr<GCMDriver>(new GCMDriverDesktop(
-      std::move(gcm_client_factory), GetChromeBuildInfo(channel),
+      std::move(gcm_client_factory),
+      GetChromeBuildInfo(channel, product_category_for_subtypes),
       GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
       store_path, request_context, ui_task_runner, io_task_runner,
       blocking_task_runner));

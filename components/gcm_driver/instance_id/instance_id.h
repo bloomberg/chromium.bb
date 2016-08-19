@@ -60,12 +60,12 @@ class InstanceID {
 
   static const int kInstanceIDByteLength = 8;
 
-  // Creator.
+  // Creator. Should only be used by InstanceIDDriver::GetInstanceID.
   // |app_id|: identifies the application that uses the Instance ID.
   // |handler|: provides the GCM functionality needed to support Instance ID.
   //            Must outlive this class. On Android, this can be null instead.
-  static std::unique_ptr<InstanceID> Create(const std::string& app_id,
-                                            gcm::GCMDriver* gcm_driver);
+  static std::unique_ptr<InstanceID> CreateInternal(const std::string& app_id,
+                                                    gcm::GCMDriver* gcm_driver);
 
   virtual ~InstanceID();
 

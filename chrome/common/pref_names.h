@@ -417,6 +417,8 @@ extern const char kNotificationsVibrateEnabled[];
 extern const char kPushMessagingAppIdentifierMap[];
 extern const char kBackgroundBudgetMap[];
 
+extern const char kGCMProductCategoryForSubtypes[];
+
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockPairing[];

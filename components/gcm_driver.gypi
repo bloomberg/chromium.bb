@@ -30,9 +30,10 @@
         'gcm_driver_crypto',
         'os_crypt',
         '../base/base.gyp:base',
+        '../components/components.gyp:crx_file',
+        '../components/sync.gyp:sync',
         '../google_apis/gcm/gcm.gyp:gcm',
         '../net/net.gyp:net',
-        '../components/sync.gyp:sync',
         '../url/url.gyp:url_lib',
       ],
       'include_dirs': [
@@ -99,6 +100,7 @@
             'gcm_driver_jni_headers',
           ],
           'dependencies!': [
+            '../components/components.gyp:crx_file',
             '../google_apis/gcm/gcm.gyp:gcm',
           ],
           'sources!': [

@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -54,6 +55,7 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
   return base::WrapUnique(new gcm::GCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
+      gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

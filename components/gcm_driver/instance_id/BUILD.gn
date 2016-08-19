@@ -70,6 +70,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//google_apis/gcm",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

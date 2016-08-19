@@ -45,8 +45,9 @@ bool InstanceIDAndroid::RegisterJni(JNIEnv* env) {
 }
 
 // static
-std::unique_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
-                                               gcm::GCMDriver* gcm_driver) {
+std::unique_ptr<InstanceID> InstanceID::CreateInternal(
+    const std::string& app_id,
+    gcm::GCMDriver* gcm_driver) {
   return base::WrapUnique(new InstanceIDAndroid(app_id, gcm_driver));
 }
 

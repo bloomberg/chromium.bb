@@ -19,7 +19,6 @@ namespace {
 const char kGMSVersionKey[] = "gmsv";
 const char kInstanceIDKey[] = "appid";
 const char kSenderKey[] = "sender";
-const char kSubtypeKey[] = "X-subtype";
 const char kScopeKey[] = "scope";
 const char kExtraScopeKey[] = "X-scope";
 
@@ -52,9 +51,6 @@ void InstanceIDDeleteTokenRequestHandler::BuildRequestBody(std::string* body){
   BuildFormEncoding(kScopeKey, scope_, body);
   BuildFormEncoding(kExtraScopeKey, scope_, body);
   BuildFormEncoding(kGMSVersionKey, base::IntToString(gcm_version_), body);
-  // TODO(jianli): To work around server bug. To be removed when the server fix
-  // is deployed.
-  BuildFormEncoding(kSubtypeKey, authorized_entity_, body);
 }
 
 UnregistrationRequest::Status

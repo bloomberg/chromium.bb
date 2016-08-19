@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
@@ -19,7 +18,9 @@
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #endif
 
@@ -72,6 +73,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
   return new GCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
       chrome::GetChannel(),
+      gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

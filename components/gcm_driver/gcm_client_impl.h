@@ -283,12 +283,15 @@ class GCMClientImpl
   // Fires OnMessageReceived event on the delegate of this class, based on the
   // details in |data_message_stanza| and |message_data|.
   void HandleIncomingDataMessage(
+      const std::string& app_id,
+      bool was_subtype,
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 
-  // Fires OnMessageSendError event on the delegate of this calss, based on the
+  // Fires OnMessageSendError event on the delegate of this class, based on the
   // details in |data_message_stanza| and |message_data|.
   void HandleIncomingSendError(
+      const std::string& app_id,
       const mcs_proto::DataMessageStanza& data_message_stanza,
       MessageData& message_data);
 

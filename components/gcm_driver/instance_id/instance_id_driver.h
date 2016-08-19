@@ -30,7 +30,7 @@ class InstanceIDDriver {
   virtual ~InstanceIDDriver();
 
   // Returns the InstanceID that provides the Instance ID service for the given
-  // application. The lifetime of InstanceID will be managed by this class.
+  // application. The lifetime of the InstanceID will be managed by this class.
   InstanceID* GetInstanceID(const std::string& app_id);
 
   // Removes the InstanceID when it is not longer needed, i.e. the app is being

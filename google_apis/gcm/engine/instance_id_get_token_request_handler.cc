@@ -15,7 +15,6 @@ namespace {
 
 // Request constants.
 const char kAuthorizedEntityKey[] = "sender";
-const char kSubtypeKey[] = "X-subtype";
 const char kGMSVersionKey[] = "gmsv";
 const char kInstanceIDKey[] = "appid";
 const char kScopeKey[] = "scope";
@@ -51,9 +50,6 @@ void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body){
   BuildFormEncoding(kGMSVersionKey, base::IntToString(gcm_version_), body);
   BuildFormEncoding(kInstanceIDKey, instance_id_, body);
   BuildFormEncoding(kAuthorizedEntityKey, authorized_entity_, body);
-  // TODO(jianli): To work around server bug. To be removed when the server fix
-  // is deployed.
-  BuildFormEncoding(kSubtypeKey, authorized_entity_, body);
 }
 
 void InstanceIDGetTokenRequestHandler::ReportUMAs(

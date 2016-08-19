@@ -56,6 +56,7 @@ class GCMProfileService : public KeyedService {
       base::FilePath path,
       net::URLRequestContextGetter* request_context,
       version_info::Channel channel,
+      const std::string& product_category_for_subtypes,
       std::unique_ptr<ProfileIdentityProvider> identity_provider,
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,

@@ -80,6 +80,8 @@ void FakeGCMClient::Initialize(
         url_request_context_getter,
     std::unique_ptr<Encryptor> encryptor,
     Delegate* delegate) {
+  product_category_for_subtypes_ =
+      chrome_build_info.product_category_for_subtypes;
   delegate_ = delegate;
 }
 

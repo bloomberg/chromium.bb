@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -211,6 +212,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     return base::WrapUnique(new gcm::GCMProfileService(
         profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
         chrome::GetChannel(),
+        gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
         std::unique_ptr<ProfileIdentityProvider>(new ProfileIdentityProvider(
             SigninManagerFactory::GetForProfile(profile),
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),

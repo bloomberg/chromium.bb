@@ -151,6 +151,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #endif
@@ -379,6 +380,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
+  gcm::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
@@ -548,20 +550,23 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
-  gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
   signin::RegisterProfilePrefs(registry);
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  default_apps::RegisterProfilePrefs(registry);
-#endif
-
 #if defined(OS_ANDROID)
   NotificationPlatformBridgeAndroid::RegisterProfilePrefs(registry);
   ntp_snippets::OfflinePageSuggestionsProvider::RegisterProfilePrefs(registry);
+#else
+  browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
+  gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
+  gcm::RegisterProfilePrefs(registry);
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  default_apps::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -597,10 +602,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(USE_ASH)
   ash::launcher::RegisterChromeLauncherUserPrefs(registry);
-#endif
-
-#if !defined(OS_ANDROID)
-  browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
 #endif
 
   // Preferences registered only for migration (clearing or moving to a new key)

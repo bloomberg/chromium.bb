@@ -31,6 +31,7 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
     version_info::Channel channel,
+    const std::string& product_category_for_subtypes,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);

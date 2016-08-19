@@ -105,7 +105,8 @@ struct InstanceIDTokenInfo : public RegistrationInfo {
   std::string scope;
 
   // Allows including a small number of string key/value pairs that will be
-  // associated with the token and may be used in processing the request.
+  // associated with the token and may be used in processing the request. These
+  // are not serialized/deserialized.
   std::map<std::string, std::string> options;
 };
 

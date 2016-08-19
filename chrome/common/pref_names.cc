@@ -1230,6 +1230,11 @@ const char kPushMessagingAppIdentifierMap[] =
 // Maps from origin to background budget information.
 const char kBackgroundBudgetMap[] = "push_messaging.background_budget_map";
 
+// A string like "com.chrome.macosx" that should be used as the GCM category
+// when an app_id is sent as a subtype instead of as a category.
+const char kGCMProductCategoryForSubtypes[] =
+    "gcm.product_category_for_subtypes";
+
 // Whether a user is allowed to use Easy Unlock.
 const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 

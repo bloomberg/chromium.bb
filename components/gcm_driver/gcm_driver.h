@@ -43,10 +43,6 @@ class InstanceIDHandler {
   InstanceIDHandler();
   virtual ~InstanceIDHandler();
 
-  // Delete all tokens assoicated with |app_id|.
-  void DeleteAllTokensForApp(const std::string& app_id,
-                             const DeleteTokenCallback& callback);
-
   // Token service.
   virtual void GetToken(const std::string& app_id,
                         const std::string& authorized_entity,
@@ -57,6 +53,8 @@ class InstanceIDHandler {
                            const std::string& authorized_entity,
                            const std::string& scope,
                            const DeleteTokenCallback& callback) = 0;
+  void DeleteAllTokensForApp(const std::string& app_id,
+                             const DeleteTokenCallback& callback);
 
   // Persistence support.
   virtual void AddInstanceIDData(const std::string& app_id,

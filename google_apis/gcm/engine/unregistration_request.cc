@@ -29,7 +29,8 @@ namespace {
 const char kRequestContentType[] = "application/x-www-form-urlencoded";
 
 // Request constants.
-const char kAppIdKey[] = "app";
+const char kCategoryKey[] = "app";
+const char kSubtypeKey[] = "X-subtype";
 const char kDeleteKey[] = "delete";
 const char kDeleteValue[] = "true";
 const char kDeviceIdKey[] = "device";
@@ -39,10 +40,15 @@ const char kLoginHeader[] = "AidLogin";
 
 UnregistrationRequest::RequestInfo::RequestInfo(uint64_t android_id,
                                                 uint64_t security_token,
-                                                const std::string& app_id)
-    : android_id(android_id), security_token(security_token), app_id(app_id) {
+                                                const std::string& category,
+                                                const std::string& subtype)
+    : android_id(android_id),
+      security_token(security_token),
+      category(category),
+      subtype(subtype) {
   DCHECK(android_id != 0UL);
   DCHECK(security_token != 0UL);
+  DCHECK(!category.empty());
 }
 
 UnregistrationRequest::RequestInfo::~RequestInfo() {}
@@ -96,8 +102,9 @@ void UnregistrationRequest::Start() {
   DVLOG(1) << "Unregistration request: " << body;
   url_fetcher_->SetUploadData(kRequestContentType, body);
 
-  DVLOG(1) << "Performing unregistration for: " << request_info_.app_id;
-  recorder_->RecordUnregistrationSent(request_info_.app_id, source_to_record_);
+  DVLOG(1) << "Performing unregistration for: " << request_info_.app_id();
+  recorder_->RecordUnregistrationSent(request_info_.app_id(),
+                                      source_to_record_);
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
 }
@@ -109,12 +116,14 @@ void UnregistrationRequest::BuildRequestHeaders(std::string* extra_headers) {
       std::string(kLoginHeader) + " " +
           base::Uint64ToString(request_info_.android_id) + ":" +
           base::Uint64ToString(request_info_.security_token));
-  headers.SetHeader(kAppIdKey, request_info_.app_id);
   *extra_headers = headers.ToString();
 }
 
 void UnregistrationRequest::BuildRequestBody(std::string* body) {
-  BuildFormEncoding(kAppIdKey, request_info_.app_id, body);
+  BuildFormEncoding(kCategoryKey, request_info_.category, body);
+  if (!request_info_.subtype.empty())
+    BuildFormEncoding(kSubtypeKey, request_info_.subtype, body);
+
   BuildFormEncoding(kDeviceIdKey,
                     base::Uint64ToString(request_info_.android_id),
                     body);
@@ -152,15 +161,12 @@ void UnregistrationRequest::RetryWithBackoff() {
   url_fetcher_.reset();
   backoff_entry_.InformOfRequest(false);
 
-  DVLOG(1) << "Delaying GCM unregistration of app: "
-           << request_info_.app_id << ", for "
-           << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+  DVLOG(1) << "Delaying GCM unregistration of app: " << request_info_.app_id()
+           << ", for " << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
            << " milliseconds.";
   recorder_->RecordUnregistrationRetryDelayed(
-      request_info_.app_id,
-      source_to_record_,
-      backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
-      retries_left_ + 1);
+      request_info_.app_id(), source_to_record_,
+      backoff_entry_.GetTimeUntilRelease().InMilliseconds(), retries_left_ + 1);
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -179,8 +185,8 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
       backoff_entry_.failure_count(),
       base::TimeTicks::Now() - request_start_time_);
 
-  recorder_->RecordUnregistrationResponse(
-      request_info_.app_id, source_to_record_, status);
+  recorder_->RecordUnregistrationResponse(request_info_.app_id(),
+                                          source_to_record_, status);
 
   if (status == URL_FETCHING_FAILED ||
       status == HTTP_NOT_OK ||
@@ -195,8 +201,8 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     }
 
     status = REACHED_MAX_RETRIES;
-    recorder_->RecordUnregistrationResponse(
-        request_info_.app_id, source_to_record_, status);
+    recorder_->RecordUnregistrationResponse(request_info_.app_id(),
+                                            source_to_record_, status);
 
     // Only REACHED_MAX_RETRIES is reported because the function will skip
     // reporting count and time when status is not SUCCESS.

@@ -141,6 +141,7 @@ GCMProfileService::GCMProfileService(
     base::FilePath path,
     net::URLRequestContextGetter* request_context,
     version_info::Channel channel,
+    const std::string& product_category_for_subtypes,
     std::unique_ptr<ProfileIdentityProvider> identity_provider,
     std::unique_ptr<GCMClientFactory> gcm_client_factory,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
@@ -148,10 +149,11 @@ GCMProfileService::GCMProfileService(
     scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : profile_identity_provider_(std::move(identity_provider)),
       request_context_(request_context) {
-  driver_ = CreateGCMDriverDesktop(std::move(gcm_client_factory), prefs,
-                                   path.Append(gcm_driver::kGCMStoreDirname),
-                                   request_context_, channel, ui_task_runner,
-                                   io_task_runner, blocking_task_runner);
+  driver_ = CreateGCMDriverDesktop(
+      std::move(gcm_client_factory), prefs,
+      path.Append(gcm_driver::kGCMStoreDirname), request_context_, channel,
+      product_category_for_subtypes, ui_task_runner, io_task_runner,
+      blocking_task_runner);
 
   identity_observer_.reset(new IdentityObserver(
       profile_identity_provider_.get(), request_context_, driver_.get()));

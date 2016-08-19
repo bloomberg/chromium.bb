@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "components/crx_file/id_util.h"
 #include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -86,6 +87,7 @@ const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
 const char kMessageTypeKey[] = "message_type";
 const char kMessageTypeSendErrorKey[] = "send_error";
 const char kSendErrorMessageIdKey[] = "google.message_id";
+const char kSubtypeKey[] = "subtype";
 const char kSendMessageFromValue[] = "gcm@chrome.com";
 const int64_t kDefaultUserSerialNumber = 0LL;
 const int kDestroyGCMStoreDelayMS = 5 * 60 * 1000;  // 5 minutes.
@@ -214,6 +216,11 @@ bool DeserializeInstanceIDData(const std::string& serialized_data,
   *instance_id = serialized_data.substr(0, pos);
   *extra_data = serialized_data.substr(pos + 1);
   return !instance_id->empty() && !extra_data->empty();
+}
+
+bool InstanceIDUsesSubtypeForAppId(const std::string& app_id) {
+  // Always use subtypes with Instance ID, except for Chrome Apps/Extensions.
+  return !crx_file::id_util::IdIsValid(app_id);
 }
 
 void RecordOutgoingMessageToUMA(const gcm::OutgoingMessage& message) {
@@ -850,6 +857,12 @@ void GCMClientImpl::Register(
     const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK_EQ(state_, READY);
 
+  // Registrations should never pass as an app_id the special category used
+  // internally when registering with a subtype. See security note in
+  // GCMClientImpl::HandleIncomingMessage.
+  CHECK_NE(registration_info->app_id,
+           chrome_build_info_.product_category_for_subtypes);
+
   // Find and use the cached registration ID.
   RegistrationInfoMap::const_iterator registrations_iter =
       registrations_.find(registration_info);
@@ -916,10 +929,15 @@ void GCMClientImpl::Register(
                        instance_id_token_info->scope;
   }
 
-  RegistrationRequest::RequestInfo request_info(
-      device_checkin_info_.android_id,
-      device_checkin_info_.secret,
-      registration_info->app_id);
+  bool use_subtype = instance_id_token_info &&
+                     InstanceIDUsesSubtypeForAppId(registration_info->app_id);
+  std::string category = use_subtype
+                             ? chrome_build_info_.product_category_for_subtypes
+                             : registration_info->app_id;
+  std::string subtype = use_subtype ? registration_info->app_id : std::string();
+  RegistrationRequest::RequestInfo request_info(device_checkin_info_.android_id,
+                                                device_checkin_info_.secret,
+                                                category, subtype);
 
   std::unique_ptr<RegistrationRequest> registration_request(
       new RegistrationRequest(
@@ -1002,6 +1020,7 @@ void GCMClientImpl::Unregister(
       NOTREACHED();
       return;
     }
+
     request_handler.reset(new InstanceIDDeleteTokenRequestHandler(
         instance_id_iter->second.first,
         instance_id_token_info->authorized_entity,
@@ -1057,10 +1076,15 @@ void GCMClientImpl::Unregister(
                   weak_ptr_factory_.GetWeakPtr()));
   }
 
+  bool use_subtype = instance_id_token_info &&
+                     InstanceIDUsesSubtypeForAppId(registration_info->app_id);
+  std::string category = use_subtype
+                             ? chrome_build_info_.product_category_for_subtypes
+                             : registration_info->app_id;
+  std::string subtype = use_subtype ? registration_info->app_id : std::string();
   UnregistrationRequest::RequestInfo request_info(
-      device_checkin_info_.android_id,
-      device_checkin_info_.secret,
-      registration_info->app_id);
+      device_checkin_info_.android_id, device_checkin_info_.secret, category,
+      subtype);
 
   std::unique_ptr<UnregistrationRequest> unregistration_request(
       new UnregistrationRequest(
@@ -1260,49 +1284,77 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
           message.GetProtobuf());
   DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
 
-  // Copying all the data from the stanza to a MessageData object. When present,
-  // keys like kMessageTypeKey or kSendErrorMessageIdKey will be filtered out
-  // later.
+  // Copy all the data from the stanza to a MessageData object. When present,
+  // keys like kSubtypeKey, kMessageTypeKey or kSendErrorMessageIdKey will be
+  // filtered out later.
   MessageData message_data;
   for (int i = 0; i < data_message_stanza.app_data_size(); ++i) {
     std::string key = data_message_stanza.app_data(i).key();
     message_data[key] = data_message_stanza.app_data(i).value();
   }
 
+  std::string subtype;
+  auto subtype_iter = message_data.find(kSubtypeKey);
+  if (subtype_iter != message_data.end()) {
+    subtype = subtype_iter->second;
+    message_data.erase(subtype_iter);
+  }
+
+  // SECURITY NOTE: Subtypes received from GCM *cannot* be trusted for
+  // registrations without a subtype (as the sender can pass any subtype they
+  // want). They can however be trusted for registrations that are known to have
+  // a subtype (as GCM overwrites anything passed by the sender).
+  //
+  // So a given Chrome profile always passes a fixed string called
+  // |product_category_for_subtypes| (of the form "com.chrome.macosx") as the
+  // category when registering with a subtype, and incoming subtypes are only
+  // trusted for that category.
+  //
+  // TODO(johnme): Remove this check if GCM starts sending the subtype in a
+  // field that's guaranteed to be trusted (b/18198485).
+  //
+  // (On Android, all registrations made by Chrome on behalf of third-party
+  // apps/extensions/websites have always had a subtype, so such a check is not
+  // necessary - or possible, since category is fixed to the true package name).
+  bool subtype_is_trusted = data_message_stanza.category() ==
+                            chrome_build_info_.product_category_for_subtypes;
+  bool use_subtype = subtype_is_trusted && !subtype.empty();
+  std::string app_id = use_subtype ? subtype : data_message_stanza.category();
+
   MessageType message_type = DATA_MESSAGE;
-  MessageData::iterator iter = message_data.find(kMessageTypeKey);
-  if (iter != message_data.end()) {
-    message_type = DecodeMessageType(iter->second);
-    message_data.erase(iter);
+  MessageData::iterator type_iter = message_data.find(kMessageTypeKey);
+  if (type_iter != message_data.end()) {
+    message_type = DecodeMessageType(type_iter->second);
+    message_data.erase(type_iter);
   }
 
   switch (message_type) {
     case DATA_MESSAGE:
-      HandleIncomingDataMessage(data_message_stanza, message_data);
+      HandleIncomingDataMessage(app_id, use_subtype, data_message_stanza,
+                                message_data);
       break;
     case DELETED_MESSAGES:
-      recorder_.RecordDataMessageReceived(data_message_stanza.category(),
-                                          data_message_stanza.from(),
-                                          data_message_stanza.ByteSize(),
-                                          true,
+      recorder_.RecordDataMessageReceived(app_id, data_message_stanza.from(),
+                                          data_message_stanza.ByteSize(), true,
                                           GCMStatsRecorder::DELETED_MESSAGES);
-      delegate_->OnMessagesDeleted(data_message_stanza.category());
+      delegate_->OnMessagesDeleted(app_id);
       break;
     case SEND_ERROR:
-      HandleIncomingSendError(data_message_stanza, message_data);
+      HandleIncomingSendError(app_id, data_message_stanza, message_data);
       break;
     case UNKNOWN:
     default:  // Treat default the same as UNKNOWN.
       DVLOG(1) << "Unknown message_type received. Message ignored. "
-               << "App ID: " << data_message_stanza.category() << ".";
+               << "App ID: " << app_id << ".";
       break;
   }
 }
 
 void GCMClientImpl::HandleIncomingDataMessage(
+    const std::string& app_id,
+    bool was_subtype,
     const mcs_proto::DataMessageStanza& data_message_stanza,
     MessageData& message_data) {
-  std::string app_id = data_message_stanza.category();
   std::string sender = data_message_stanza.from();
 
   // Drop the message when the app is not registered for the sender of the
@@ -1323,7 +1375,10 @@ void GCMClientImpl::HandleIncomingDataMessage(
         std::find(cached_gcm_registration->sender_ids.begin(),
                   cached_gcm_registration->sender_ids.end(),
                   sender) != cached_gcm_registration->sender_ids.end()) {
-      registered = true;
+      if (was_subtype)
+        DLOG(ERROR) << "GCM message for non-IID " << app_id << " used subtype";
+      else
+        registered = true;
     }
   }
 
@@ -1336,8 +1391,14 @@ void GCMClientImpl::HandleIncomingDataMessage(
     instance_id_token->scope = kGCMScope;
     auto instance_id_token_iter = registrations_.find(
         make_linked_ptr<RegistrationInfo>(instance_id_token.release()));
-    if (instance_id_token_iter != registrations_.end())
-      registered = true;
+    if (instance_id_token_iter != registrations_.end()) {
+      if (was_subtype != InstanceIDUsesSubtypeForAppId(app_id)) {
+        DLOG(ERROR) << "GCM message for " << app_id
+                    << " incorrectly had was_subtype = " << was_subtype;
+      } else {
+        registered = true;
+      }
+    }
   }
 
   recorder_.RecordDataMessageReceived(app_id, sender,
@@ -1357,6 +1418,7 @@ void GCMClientImpl::HandleIncomingDataMessage(
 }
 
 void GCMClientImpl::HandleIncomingSendError(
+    const std::string& app_id,
     const mcs_proto::DataMessageStanza& data_message_stanza,
     MessageData& message_data) {
   SendErrorDetails send_error_details;
@@ -1370,12 +1432,9 @@ void GCMClientImpl::HandleIncomingSendError(
     send_error_details.additional_data.erase(iter);
   }
 
-  recorder_.RecordIncomingSendError(
-      data_message_stanza.category(),
-      data_message_stanza.to(),
-      data_message_stanza.id());
-  delegate_->OnMessageSendError(data_message_stanza.category(),
-                                send_error_details);
+  recorder_.RecordIncomingSendError(app_id, data_message_stanza.to(),
+                                    data_message_stanza.id());
+  delegate_->OnMessageSendError(app_id, send_error_details);
 }
 
 bool GCMClientImpl::HasStandaloneRegisteredApp() const {

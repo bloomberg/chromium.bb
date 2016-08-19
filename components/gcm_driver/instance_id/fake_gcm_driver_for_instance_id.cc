@@ -57,9 +57,9 @@ void FakeGCMDriverForInstanceID::GetToken(
     const std::string& scope,
     const std::map<std::string, std::string>& options,
     const GetTokenCallback& callback) {
-  std::string token;
   std::string key = app_id + authorized_entity + scope;
   auto iter = tokens_.find(key);
+  std::string token;
   if (iter != tokens_.end()) {
     token = iter->second;
   } else {

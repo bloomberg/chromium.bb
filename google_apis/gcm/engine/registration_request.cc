@@ -33,7 +33,8 @@ const char kRegistrationRequestContentType[] =
     "application/x-www-form-urlencoded";
 
 // Request constants.
-const char kAppIdKey[] = "app";
+const char kCategoryKey[] = "app";
+const char kSubtypeKey[] = "X-subtype";
 const char kDeviceIdKey[] = "device";
 const char kLoginHeader[] = "AidLogin";
 
@@ -75,10 +76,15 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
 
 RegistrationRequest::RequestInfo::RequestInfo(uint64_t android_id,
                                               uint64_t security_token,
-                                              const std::string& app_id)
-    : android_id(android_id), security_token(security_token), app_id(app_id) {
+                                              const std::string& category,
+                                              const std::string& subtype)
+    : android_id(android_id),
+      security_token(security_token),
+      category(category),
+      subtype(subtype) {
   DCHECK(android_id != 0UL);
   DCHECK(security_token != 0UL);
+  DCHECK(!category.empty());
 }
 
 RegistrationRequest::RequestInfo::~RequestInfo() {}
@@ -129,10 +135,10 @@ void RegistrationRequest::Start() {
   std::string body;
   BuildRequestBody(&body);
 
-  DVLOG(1) << "Performing registration for: " << request_info_.app_id;
+  DVLOG(1) << "Performing registration for: " << request_info_.app_id();
   DVLOG(1) << "Registration request: " << body;
   url_fetcher_->SetUploadData(kRegistrationRequestContentType, body);
-  recorder_->RecordRegistrationSent(request_info_.app_id, source_to_record_);
+  recorder_->RecordRegistrationSent(request_info_.app_id(), source_to_record_);
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
 }
@@ -148,7 +154,10 @@ void RegistrationRequest::BuildRequestHeaders(std::string* extra_headers) {
 }
 
 void RegistrationRequest::BuildRequestBody(std::string* body) {
-  BuildFormEncoding(kAppIdKey, request_info_.app_id, body);
+  BuildFormEncoding(kCategoryKey, request_info_.category, body);
+  if (!request_info_.subtype.empty())
+    BuildFormEncoding(kSubtypeKey, request_info_.subtype, body);
+
   BuildFormEncoding(kDeviceIdKey,
                     base::Uint64ToString(request_info_.android_id),
                     body);
@@ -163,15 +172,12 @@ void RegistrationRequest::RetryWithBackoff() {
   url_fetcher_.reset();
   backoff_entry_.InformOfRequest(false);
 
-  DVLOG(1) << "Delaying GCM registration of app: "
-           << request_info_.app_id << ", for "
-           << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
+  DVLOG(1) << "Delaying GCM registration of app: " << request_info_.app_id()
+           << ", for " << backoff_entry_.GetTimeUntilRelease().InMilliseconds()
            << " milliseconds.";
   recorder_->RecordRegistrationRetryDelayed(
-      request_info_.app_id,
-      source_to_record_,
-      backoff_entry_.GetTimeUntilRelease().InMilliseconds(),
-      retries_left_ + 1);
+      request_info_.app_id(), source_to_record_,
+      backoff_entry_.GetTimeUntilRelease().InMilliseconds(), retries_left_ + 1);
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -223,10 +229,8 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string token;
   Status status = ParseResponse(source, &token);
-  recorder_->RecordRegistrationResponse(
-      request_info_.app_id,
-      source_to_record_,
-      status);
+  recorder_->RecordRegistrationResponse(request_info_.app_id(),
+                                        source_to_record_, status);
 
   DCHECK(custom_request_handler_.get());
   custom_request_handler_->ReportUMAs(
@@ -241,10 +245,8 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
     }
 
     status = REACHED_MAX_RETRIES;
-    recorder_->RecordRegistrationResponse(
-        request_info_.app_id,
-        source_to_record_,
-        status);
+    recorder_->RecordRegistrationResponse(request_info_.app_id(),
+                                          source_to_record_, status);
 
     // Only REACHED_MAX_RETRIES is reported because the function will skip
     // reporting count and time when status is not SUCCESS.
