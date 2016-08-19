@@ -182,7 +182,7 @@ iron-icon {
       url(../images/files/ui/quick_view/2x/filetype_generic.png) 2x)
     center
     no-repeat;
-  height: 162px;
+  height: 88px;
 }
 
 [generic-thumbnail='audio'] {
@@ -207,5 +207,5 @@ iron-icon {
       url(../images/files/ui/quick_view/2x/filetype_video.png) 2x)
     center
     no-repeat;
-  height: 134px;
+  height: 72px;
 }
