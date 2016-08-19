@@ -58,8 +58,9 @@ class MockUpdateClient : public UpdateClient {
                      bool(const std::string& id, CrxUpdateItem* update_item));
   MOCK_CONST_METHOD1(IsUpdating, bool(const std::string& id));
   MOCK_METHOD0(Stop, void());
-  MOCK_METHOD3(SendUninstallPing,
-               void(const std::string& id, const Version& version, int reason));
+  MOCK_METHOD3(
+      SendUninstallPing,
+      void(const std::string& id, const base::Version& version, int reason));
 
  private:
   ~MockUpdateClient() override {}
