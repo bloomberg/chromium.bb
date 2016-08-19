@@ -36,6 +36,7 @@ public:
 
     void addKeyframe(const CompositorTransformKeyframe&);
     void setTimingFunction(const TimingFunction&);
+    void setScaledDuration(double);
 
     // CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

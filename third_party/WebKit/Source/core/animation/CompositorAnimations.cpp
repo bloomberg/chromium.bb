@@ -63,16 +63,6 @@ namespace blink {
 
 namespace {
 
-void getKeyframeValuesForProperty(const KeyframeEffectModelBase* effect, PropertyHandle property, double scale, PropertySpecificKeyframeVector& values)
-{
-    DCHECK(values.isEmpty());
-
-    for (const auto& keyframe : effect->getPropertySpecificKeyframes(property)) {
-        double offset = keyframe->offset() * scale;
-        values.append(keyframe->cloneWithOffset(offset));
-    }
-}
-
 bool considerAnimationAsIncompatible(const Animation& animation, const Animation& animationToAdd)
 {
     if (&animation == &animationToAdd)
@@ -486,7 +476,6 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
     PropertyHandleSet properties = effect.properties();
     DCHECK(!properties.isEmpty());
     for (const auto& property : properties) {
-        PropertySpecificKeyframeVector values;
         // If the animation duration is infinite, it doesn't make sense to scale
         // the keyframe offset, so use a scale of 1.0. This is connected to
         // the known issue of how the Web Animations spec handles infinite
@@ -494,7 +483,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
         double scale = compositorTiming.scaledDuration;
         if (!std::isfinite(scale))
             scale = 1.0;
-        getKeyframeValuesForProperty(&effect, property, scale, values);
+        const PropertySpecificKeyframeVector& values = effect.getPropertySpecificKeyframes(property);
 
         CompositorTargetProperty::Type targetProperty;
         std::unique_ptr<CompositorAnimationCurve> curve;
@@ -505,6 +494,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             std::unique_ptr<CompositorFloatAnimationCurve> floatCurve = CompositorFloatAnimationCurve::create();
             addKeyframesToCurve(*floatCurve, values);
             floatCurve->setTimingFunction(*timing.timingFunction);
+            floatCurve->setScaledDuration(scale);
             curve = std::move(floatCurve);
             break;
         }
@@ -514,6 +504,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             std::unique_ptr<CompositorFilterAnimationCurve> filterCurve = CompositorFilterAnimationCurve::create();
             addKeyframesToCurve(*filterCurve, values);
             filterCurve->setTimingFunction(*timing.timingFunction);
+            filterCurve->setScaledDuration(scale);
             curve = std::move(filterCurve);
             break;
         }
@@ -525,6 +516,7 @@ void CompositorAnimations::getAnimationOnCompositor(const Timing& timing, int gr
             std::unique_ptr<CompositorTransformAnimationCurve> transformCurve = CompositorTransformAnimationCurve::create();
             addKeyframesToCurve(*transformCurve, values);
             transformCurve->setTimingFunction(*timing.timingFunction);
+            transformCurve->setScaledDuration(scale);
             curve = std::move(transformCurve);
             break;
         }

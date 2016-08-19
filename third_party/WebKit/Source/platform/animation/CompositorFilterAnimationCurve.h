@@ -35,6 +35,7 @@ public:
 
     void addKeyframe(const CompositorFilterKeyframe&);
     void setTimingFunction(const TimingFunction&);
+    void setScaledDuration(double);
 
     // blink::CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

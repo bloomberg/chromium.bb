@@ -54,6 +54,11 @@ void CompositorFloatAnimationCurve::setTimingFunction(const TimingFunction& timi
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
+void CompositorFloatAnimationCurve::setScaledDuration(double scaledDuration)
+{
+    m_curve->set_scaled_duration(scaledDuration);
+}
+
 float CompositorFloatAnimationCurve::getValue(double time) const
 {
     return m_curve->GetValue(base::TimeDelta::FromSecondsD(time));

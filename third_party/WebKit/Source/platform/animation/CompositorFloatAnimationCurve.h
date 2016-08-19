@@ -38,6 +38,7 @@ public:
 
     void addKeyframe(const CompositorFloatKeyframe&);
     void setTimingFunction(const TimingFunction&);
+    void setScaledDuration(double);
     float getValue(double time) const;
 
     // CompositorAnimationCurve implementation.

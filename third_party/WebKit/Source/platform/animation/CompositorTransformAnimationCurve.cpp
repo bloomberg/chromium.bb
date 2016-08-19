@@ -30,6 +30,11 @@ void CompositorTransformAnimationCurve::setTimingFunction(const TimingFunction& 
     m_curve->SetTimingFunction(timingFunction.cloneToCC());
 }
 
+void CompositorTransformAnimationCurve::setScaledDuration(double scaledDuration)
+{
+    m_curve->set_scaled_duration(scaledDuration);
+}
+
 std::unique_ptr<cc::AnimationCurve> CompositorTransformAnimationCurve::cloneToAnimationCurve() const
 {
     return m_curve->Clone();

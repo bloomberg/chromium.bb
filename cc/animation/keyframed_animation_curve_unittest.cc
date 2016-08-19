@@ -98,7 +98,7 @@ TEST(KeyframedAnimationCurveTest, ThreeColorKeyFrame) {
                     curve->GetValue(base::TimeDelta::FromSecondsD(3.f)));
 }
 
-// Tests that a colro animation with multiple keys at a given time works sanely.
+// Tests that a color animation with multiple keys at a given time works sanely.
 TEST(KeyframedAnimationCurveTest, RepeatedColorKeyFrame) {
   SkColor color_a = SkColorSetARGB(255, 64, 0, 0);
   SkColor color_b = SkColorSetARGB(255, 192, 0, 0);
@@ -896,6 +896,48 @@ TEST(KeyframedAnimationCurveTest, CurveTimingOvershootMultipeKeyframes) {
             0.f);  // c(.25) < 0
   EXPECT_GE(curve->GetValue(base::TimeDelta::FromSecondsD(3.f)),
             9.f);  // c(.75) > 1
+}
+
+// Tests that a float animation with multiple keys works with scaled duration.
+TEST(KeyframedAnimationCurveTest, ScaledDuration) {
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.f, nullptr));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.f), 1.f, nullptr));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(2.f), 3.f, nullptr));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(3.f), 6.f, nullptr));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(4.f), 9.f, nullptr));
+  curve->SetTimingFunction(
+      CubicBezierTimingFunction::Create(0.5f, 0.f, 0.5f, 1.f));
+
+  const double scale = 1000.0;
+  curve->set_scaled_duration(scale);
+
+  EXPECT_DOUBLE_EQ(scale * 4, curve->Duration().InSecondsF());
+
+  EXPECT_FLOAT_EQ(0.f,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(scale * -1.f)));
+  EXPECT_FLOAT_EQ(0.f,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(scale * 0.f)));
+  EXPECT_NEAR(0.42f,
+              curve->GetValue(base::TimeDelta::FromSecondsD(scale * 1.f)),
+              0.005f);
+  EXPECT_NEAR(1.f,
+              curve->GetValue(base::TimeDelta::FromSecondsD(scale * 1.455f)),
+              0.005f);
+  EXPECT_FLOAT_EQ(3.f,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(scale * 2.f)));
+  EXPECT_NEAR(8.72f,
+              curve->GetValue(base::TimeDelta::FromSecondsD(scale * 3.5f)),
+              0.01f);
+  EXPECT_FLOAT_EQ(9.f,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(scale * 4.f)));
+  EXPECT_FLOAT_EQ(9.f,
+                  curve->GetValue(base::TimeDelta::FromSecondsD(scale * 5.f)));
 }
 
 }  // namespace

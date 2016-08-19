@@ -685,7 +685,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(duration, keyframes[1]->time());
+    EXPECT_EQ(duration, keyframes[1]->time() * duration);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationLinear)
@@ -754,7 +754,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(2UL, keyframes.size());
 
-    EXPECT_EQ(1.75, keyframes[1]->time());
+    EXPECT_EQ(1.75, keyframes[1]->time() * m_timing.iterationDuration);
     EXPECT_EQ(5.0f, keyframes[1]->value());
 }
 
@@ -788,19 +788,19 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     CompositorFloatAnimationCurve::Keyframes keyframes = keyframedFloatCurve->keyframesForTesting();
     ASSERT_EQ(4UL, keyframes.size());
 
-    EXPECT_EQ(0, keyframes[0]->time());
+    EXPECT_EQ(0, keyframes[0]->time() * m_timing.iterationDuration);
     EXPECT_EQ(2.0f, keyframes[0]->value());
     ExpectKeyframeTimingFunctionCubic(*keyframes[0], CubicBezierTimingFunction::EaseType::EASE);
 
-    EXPECT_EQ(0.5, keyframes[1]->time());
+    EXPECT_EQ(0.5, keyframes[1]->time() * m_timing.iterationDuration);
     EXPECT_EQ(-1.0f, keyframes[1]->value());
     EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[1]->getTimingFunctionForTesting()->getType());
 
-    EXPECT_EQ(1.0, keyframes[2]->time());
+    EXPECT_EQ(1.0, keyframes[2]->time() * m_timing.iterationDuration);
     EXPECT_EQ(20.0f, keyframes[2]->value());
     ExpectKeyframeTimingFunctionCubic(*keyframes[2], CubicBezierTimingFunction::EaseType::CUSTOM);
 
-    EXPECT_EQ(2.0, keyframes[3]->time());
+    EXPECT_EQ(2.0, keyframes[3]->time() * m_timing.iterationDuration);
     EXPECT_EQ(5.0f, keyframes[3]->value());
     EXPECT_EQ(TimingFunction::Type::LINEAR, keyframes[3]->getTimingFunctionForTesting()->getType());
 }

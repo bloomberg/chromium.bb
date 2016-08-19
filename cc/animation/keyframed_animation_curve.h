@@ -126,6 +126,10 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
   }
+  double scaled_duration() const { return scaled_duration_; }
+  void set_scaled_duration(double scaled_duration) {
+    scaled_duration_ = scaled_duration;
+  }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
@@ -141,6 +145,7 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   // same time.
   std::vector<std::unique_ptr<ColorKeyframe>> keyframes_;
   std::unique_ptr<TimingFunction> timing_function_;
+  double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedColorAnimationCurve);
 };
@@ -160,6 +165,10 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   TimingFunction* timing_function_for_testing() const {
     return timing_function_.get();
   }
+  double scaled_duration() const { return scaled_duration_; }
+  void set_scaled_duration(double scaled_duration) {
+    scaled_duration_ = scaled_duration;
+  }
 
   // AnimationCurve implementation
   base::TimeDelta Duration() const override;
@@ -178,6 +187,7 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   // same time.
   Keyframes keyframes_;
   std::unique_ptr<TimingFunction> timing_function_;
+  double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedFloatAnimationCurve);
 };
@@ -193,6 +203,10 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   void AddKeyframe(std::unique_ptr<TransformKeyframe> keyframe);
   void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
+  }
+  double scaled_duration() const { return scaled_duration_; }
+  void set_scaled_duration(double scaled_duration) {
+    scaled_duration_ = scaled_duration;
   }
 
   // AnimationCurve implementation
@@ -218,6 +232,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   // same time.
   std::vector<std::unique_ptr<TransformKeyframe>> keyframes_;
   std::unique_ptr<TimingFunction> timing_function_;
+  double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedTransformAnimationCurve);
 };
@@ -233,6 +248,10 @@ class CC_EXPORT KeyframedFilterAnimationCurve
   void AddKeyframe(std::unique_ptr<FilterKeyframe> keyframe);
   void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
     timing_function_ = std::move(timing_function);
+  }
+  double scaled_duration() const { return scaled_duration_; }
+  void set_scaled_duration(double scaled_duration) {
+    scaled_duration_ = scaled_duration;
   }
 
   // AnimationCurve implementation
@@ -250,6 +269,7 @@ class CC_EXPORT KeyframedFilterAnimationCurve
   // same time.
   std::vector<std::unique_ptr<FilterKeyframe>> keyframes_;
   std::unique_ptr<TimingFunction> timing_function_;
+  double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedFilterAnimationCurve);
 };
