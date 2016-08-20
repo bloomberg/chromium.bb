@@ -41,6 +41,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -451,6 +452,15 @@ void MaybeInitializeTaskScheduler() {
 
   base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
       params_vector, base::Bind(WorkerPoolIndexForTraits));
+
+  // TODO(gab): Remove this when http://crbug.com/622400 concludes.
+  const auto sequenced_worker_pool_param =
+      variation_params.find("RedirectSequencedWorkerPools");
+  if (sequenced_worker_pool_param != variation_params.end() &&
+      sequenced_worker_pool_param->second == "true") {
+    base::SequencedWorkerPool::
+        RedirectSequencedWorkerPoolsToTaskSchedulerForProcess();
+  }
 }
 
 // Returns the new local state object, guaranteed non-NULL.
@@ -1345,13 +1355,20 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupMetricsAndFieldTrials();
 
-  MaybeInitializeTaskScheduler();
-
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();
 
   device::GeolocationProvider::SetGeolocationDelegate(
       new ChromeGeolocationDelegate());
+
+  // This needs to be the last thing in PreCreateThreads() because the
+  // TaskScheduler needs to be created before any other threads are (by
+  // contract) but it creates threads itself so instantiating it earlier is also
+  // incorrect. It also has to be after SetupMetricsAndFieldTrials() to allow it
+  // to use field trials. Note: it could also be the first thing in
+  // CreateThreads() but being in chrome/ is convenient for now as the
+  // initialization uses variations parameters extensively.
+  MaybeInitializeTaskScheduler();
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
