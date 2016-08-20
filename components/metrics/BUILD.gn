@@ -240,12 +240,6 @@ if (!is_ios) {
   }
 }
 
-static_library("call_stacks") {
-  deps = [
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-  ]
-}
-
 # GYP version: components/metrics.gypi:metrics_test_support
 static_library("test_support") {
   testonly = true
@@ -312,7 +306,6 @@ source_set("unit_tests") {
     ":test_support",
     ":ui",
     "//base/test:test_support",
-    "//components/metrics/public/cpp:call_stack_unit_tests",
     "//components/prefs:test_support",
     "//components/variations",
     "//net:test_support",
@@ -328,11 +321,5 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [ "leak_detector:unit_tests" ]
-  }
-
-  # iOS is not supported by the profiler and the ios-simulator bot chokes on
-  # this test.
-  if (is_ios) {
-    deps -= [ "//components/metrics/public/cpp:call_stack_unit_tests" ]
   }
 }
