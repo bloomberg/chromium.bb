@@ -12,28 +12,25 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model_delegate.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
-    MediaRouterAction* action)
+MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
     : browser_(browser),
-      menu_model_(this),
-      action_(action) {
+      menu_model_(this) {
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_ABOUT,
                                   IDS_MEDIA_ROUTER_ABOUT);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -41,9 +38,8 @@ MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser,
                                   IDS_MEDIA_ROUTER_LEARN_MORE);
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_HELP,
                                   IDS_MEDIA_ROUTER_HELP);
-  menu_model_.AddCheckItemWithStringId(
-      IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION,
-      IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION);
+  menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION,
+                                  IDS_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   menu_model_.AddItemWithStringId(IDC_MEDIA_ROUTER_MANAGE_DEVICES,
@@ -67,10 +63,6 @@ bool MediaRouterContextualMenu::IsCommandIdChecked(int command_id) const {
         prefs::kMediaRouterEnableCloudServices);
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  if (command_id == IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION) {
-    return browser_->profile()->GetPrefs()->GetBoolean(
-        prefs::kMediaRouterAlwaysShowActionIcon);
-  }
   return false;
 }
 
@@ -101,25 +93,22 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       "https://support.google.com/chromecast/answer/2998338";
 
 #if defined(GOOGLE_CHROME_BUILD)
+  PrefService* pref_service;
 #endif  // defined(GOOGLE_CHROME_BUILD)
   switch (command_id) {
     case IDC_MEDIA_ROUTER_ABOUT:
       chrome::ShowSingletonTab(browser_, GURL(kAboutPageUrl));
       break;
-    case IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION:
-      DCHECK(action_);
-      action_->ToggleVisibilityPreference();
-      break;
 #if defined(GOOGLE_CHROME_BUILD)
-    case IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE: {
-      PrefService* pref_service = browser_->profile()->GetPrefs();
+    case IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE:
+      pref_service = browser_->profile()->GetPrefs();
       pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices,
           !pref_service->GetBoolean(prefs::kMediaRouterEnableCloudServices));
 
       // If this has been set before, this is a no-op.
-      pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
+      pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet,
+                               true);
       break;
-    }
 #endif  // defined(GOOGLE_CHROME_BUILD)
     case IDC_MEDIA_ROUTER_HELP:
       chrome::ShowSingletonTab(browser_, GURL(kCastHelpCenterPageUrl));
@@ -134,6 +123,9 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUICastURL));
       break;
 #endif
+    case IDC_MEDIA_ROUTER_REMOVE_TOOLBAR_ACTION:
+      RemoveMediaRouterComponentAction();
+      break;
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
       ReportIssue();
       break;
@@ -157,4 +149,9 @@ void MediaRouterContextualMenu::ReportIssue() {
                            media_router->media_route_provider_extension_id() +
                            "/feedback.html");
   chrome::ShowSingletonTab(browser_, GURL(feedback_url));
+}
+
+void MediaRouterContextualMenu::RemoveMediaRouterComponentAction() {
+  ToolbarActionsModel::Get(browser_->profile())->component_migration_helper()
+      ->OnActionRemoved(ComponentToolbarActionsFactory::kMediaRouterActionId);
 }

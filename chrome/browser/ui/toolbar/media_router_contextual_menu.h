@@ -10,12 +10,11 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class MediaRouterAction;
 
 // The class for the contextual menu for the Media Router action.
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
  public:
-  MediaRouterContextualMenu(Browser* browser, MediaRouterAction* action);
+  explicit MediaRouterContextualMenu(Browser* browser);
   ~MediaRouterContextualMenu() override;
 
   ui::MenuModel* menu_model() { return &menu_model_; }
@@ -33,10 +32,10 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   void ExecuteCommand(int command_id, int event_flags) override;
 
   void ReportIssue();
+  void RemoveMediaRouterComponentAction();
 
   Browser* browser_;
   ui::SimpleMenuModel menu_model_;
-  MediaRouterAction* action_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };

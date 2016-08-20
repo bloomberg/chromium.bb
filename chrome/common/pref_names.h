@@ -824,7 +824,6 @@ extern const char kMediaRouterCloudServicesPrefSet[];
 extern const char kMediaRouterEnableCloudServices[];
 #endif  // defined(GOOGLE_CHROME_BUILD)
 extern const char kMediaRouterFirstRunFlowAcknowledged[];
-extern const char kMediaRouterAlwaysShowActionIcon[];
 #endif
 
 extern const char kOriginTrialPublicKey[];

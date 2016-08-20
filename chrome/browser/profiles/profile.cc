@@ -167,10 +167,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kMediaRouterFirstRunFlowAcknowledged,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kMediaRouterAlwaysShowActionIcon,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 
 #if defined(OS_CHROMEOS)

@@ -15,8 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
@@ -54,9 +52,10 @@ constexpr const int kWidth = 340;
 // will look like.
 class MediaRouterDialogDelegate : public WebDialogDelegate {
  public:
-  explicit MediaRouterDialogDelegate(
+  MediaRouterDialogDelegate(base::WeakPtr<MediaRouterAction> action,
       const base::WeakPtr<MediaRouterDialogControllerImpl>& controller)
-      : controller_(controller) {}
+      : action_(action),
+        controller_(controller) {}
   ~MediaRouterDialogDelegate() override {}
 
   // WebDialogDelegate implementation.
@@ -78,13 +77,7 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
     // MediaRouterUI adds its own message handlers.
   }
 
-  void GetDialogSize(gfx::Size* size) const override {
-    DCHECK(size);
-    // GetDialogSize() is called when the browser window resizes. We may want to
-    // update the maximum height of the dialog and scale the WebUI to the new
-    // height. |size| is not set because the dialog is auto-resizeable.
-    controller_->UpdateMaxDialogSize();
-  }
+  void GetDialogSize(gfx::Size* size) const override;
 
   std::string GetDialogArgs() const override {
     return std::string();
@@ -93,6 +86,8 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   void OnDialogClosed(const std::string& json_retval) override {
     // We don't delete |this| here because this class is owned
     // by ConstrainedWebDialogDelegate.
+    if (action_)
+      action_->OnPopupHidden();
   }
 
   void OnCloseContents(WebContents* source, bool* out_close_dialog) override {
@@ -105,10 +100,19 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   }
 
  private:
+  base::WeakPtr<MediaRouterAction> action_;
   base::WeakPtr<MediaRouterDialogControllerImpl> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogDelegate);
 };
+
+void MediaRouterDialogDelegate::GetDialogSize(gfx::Size* size) const {
+  DCHECK(size);
+  // GetDialogSize() is called when the browser window resizes. We may want to
+  // update the maximum height of the dialog and scale the WebUI to the new
+  // height. |size| is not set because the dialog is auto-resizeable.
+  controller_->UpdateMaxDialogSize();
+}
 
 }  // namespace
 
@@ -156,10 +160,7 @@ MediaRouterDialogControllerImpl::MediaRouterDialogControllerImpl(
     WebContents* web_contents)
     : MediaRouterDialogController(web_contents),
       media_router_dialog_pending_(false),
-      tab_strip_model_observer_(this),
       weak_ptr_factory_(this) {
-  tab_strip_model_observer_.Add(
-      chrome::FindBrowserWithWebContents(initiator())->tab_strip_model());
 }
 
 MediaRouterDialogControllerImpl::~MediaRouterDialogControllerImpl() {
@@ -172,7 +173,12 @@ WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
 
 void MediaRouterDialogControllerImpl::SetMediaRouterAction(
     const base::WeakPtr<MediaRouterAction>& action) {
-  action_ = action;
+  if (!action_)
+    action_ = action;
+}
+
+bool MediaRouterDialogControllerImpl::IsShowingMediaRouterDialog() const {
+  return GetMediaRouterDialog() != nullptr;
 }
 
 void MediaRouterDialogControllerImpl::UpdateMaxDialogSize() {
@@ -202,25 +208,6 @@ void MediaRouterDialogControllerImpl::UpdateMaxDialogSize() {
   }
 }
 
-bool MediaRouterDialogControllerImpl::IsShowingMediaRouterDialog() const {
-  return GetMediaRouterDialog() != nullptr;
-}
-
-bool MediaRouterDialogControllerImpl::ShowMediaRouterDialog() {
-  if (!action_)
-    ShowMediaRouterAction();
-  return MediaRouterDialogController::ShowMediaRouterDialog();
-}
-
-void MediaRouterDialogControllerImpl::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  if (IsShowingMediaRouterDialog() && !action_)
-    ShowMediaRouterAction();
-}
-
 void MediaRouterDialogControllerImpl::CloseMediaRouterDialog() {
   WebContents* media_router_dialog = GetMediaRouterDialog();
   if (!media_router_dialog)
@@ -248,7 +235,7 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   // |web_dialog_delegate|'s owner is |constrained_delegate|.
   // |constrained_delegate| is owned by the parent |views::View|.
   WebDialogDelegate* web_dialog_delegate =
-      new MediaRouterDialogDelegate(weak_ptr_factory_.GetWeakPtr());
+      new MediaRouterDialogDelegate(action_, weak_ptr_factory_.GetWeakPtr());
 
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
@@ -279,15 +266,14 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 
   dialog_observer_.reset(new DialogWebContentsObserver(
       media_router_dialog, this));
+
+  if (action_)
+    action_->OnPopupShown();
 }
 
 void MediaRouterDialogControllerImpl::Reset() {
   MediaRouterDialogController::Reset();
   dialog_observer_.reset();
-  if (action_) {
-    action_->OnDialogHidden();
-    action_->MaybeRemoveAction();
-  }
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(
@@ -309,9 +295,6 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
   media_router_dialog_pending_ = false;
 
   PopulateDialog(media_router_dialog);
-
-  if (action_)
-    action_->OnDialogShown();
 }
 
 void MediaRouterDialogControllerImpl::PopulateDialog(
@@ -339,21 +322,6 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
   } else {
     media_router_ui->InitWithPresentationSessionRequest(
         initiator(), delegate, std::move(create_connection_request));
-  }
-}
-
-void MediaRouterDialogControllerImpl::ShowMediaRouterAction() {
-  Profile* profile =
-      Profile::FromBrowserContext(initiator()->GetBrowserContext());
-  if (!profile)
-    return;
-
-  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile);
-  if (model &&
-      !model->HasComponentAction(
-          ComponentToolbarActionsFactory::kMediaRouterActionId)) {
-    model->AddComponentAction(
-        ComponentToolbarActionsFactory::kMediaRouterActionId);
   }
 }
 

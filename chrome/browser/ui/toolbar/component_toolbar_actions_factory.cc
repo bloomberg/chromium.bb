@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
-#include "chrome/common/pref_names.h"
 #include "extensions/common/feature_switch.h"
 
 #if defined(ENABLE_MEDIA_ROUTER)
@@ -45,10 +44,6 @@ ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
 std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
     Profile* profile) {
   std::set<std::string> component_ids;
-#if defined(ENABLE_MEDIA_ROUTER)
-  if (profile->GetPrefs()->GetBoolean(prefs::kMediaRouterAlwaysShowActionIcon))
-    component_ids.insert(kMediaRouterActionId);
-#endif  // defined(ENABLE_MEDIA_ROUTER)
   return component_ids;
 }
 
@@ -98,3 +93,4 @@ void ComponentToolbarActionsFactory::HandleComponentMigrations(
     helper->OnFeatureDisabled(kMediaRouterActionId);
   }
 }
+

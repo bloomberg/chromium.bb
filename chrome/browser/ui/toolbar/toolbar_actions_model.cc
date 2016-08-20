@@ -327,10 +327,11 @@ void ToolbarActionsModel::AddExtension(const extensions::Extension* extension) {
   if (!ShouldAddExtension(extension))
     return;
 
-  AddItem(ToolbarItem(extension->id(), EXTENSION_ACTION));
+  AddItem(ToolbarItem(extension->id(), EXTENSION_ACTION),
+          extensions::Manifest::IsComponentLocation(extension->location()));
 }
 
-void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
+void ToolbarActionsModel::AddItem(const ToolbarItem& item, bool is_component) {
   // We only use AddItem() once the system is initialized.
   DCHECK(actions_initialized_);
 
@@ -341,7 +342,7 @@ void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
   // extensions go at their previous position.
   size_t new_index = 0;
   if (is_new_extension) {
-    new_index = visible_icon_count();
+    new_index = is_component ? 0 : visible_icon_count();
     // For the last-known position, we use the index of the extension that is
     // just before this extension, plus one. (Note that this isn't the same
     // as new_index + 1, because last_known_positions_ can include disabled
@@ -631,7 +632,7 @@ void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
   DCHECK(use_redesign_);
   ToolbarItem component_item(action_id, COMPONENT_ACTION);
   DCHECK(!HasItem(component_item));
-  AddItem(component_item);
+  AddItem(component_item, true);
 }
 
 void ToolbarActionsModel::RemoveComponentAction(const std::string& action_id) {

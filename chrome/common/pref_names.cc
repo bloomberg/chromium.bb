@@ -2247,9 +2247,7 @@ const char kMediaRouterEnableCloudServices[] =
 // user.
 const char kMediaRouterFirstRunFlowAcknowledged[] =
     "media_router.firstrunflow.acknowledged";
-const char kMediaRouterAlwaysShowActionIcon[] =
-    "media_router.action.always_show";
-#endif  // defined(ENABLE_MEDIA_ROUTER)
+#endif
 
 // The base64-encoded representation of the public key to use to validate origin
 // trial token signatures.

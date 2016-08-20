@@ -17,13 +17,8 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -46,19 +41,17 @@ MediaRouterAction::MediaRouterAction(Browser* browser,
       media_router::MediaRoutesObserver(GetMediaRouter(browser)),
       current_icon_(gfx::VectorIconId::MEDIA_ROUTER_IDLE),
       has_local_display_route_(false),
-      has_dialog_(false),
       delegate_(nullptr),
       browser_(browser),
       toolbar_actions_bar_(toolbar_actions_bar),
       platform_delegate_(MediaRouterActionPlatformDelegate::Create(browser)),
-      contextual_menu_(browser, this),
+      contextual_menu_(browser),
       tab_strip_model_observer_(this),
-      toolbar_actions_bar_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(browser_);
   DCHECK(toolbar_actions_bar_);
   tab_strip_model_observer_.Add(browser_->tab_strip_model());
-  toolbar_actions_bar_observer_.Add(toolbar_actions_bar_);
+
   RegisterObserver();
 }
 
@@ -73,13 +66,13 @@ std::string MediaRouterAction::GetId() const {
 void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {
   delegate_ = delegate;
 
-  // Updates the current dialog state if |delegate_| is non-null and has
+  // Updates the current popup state if |delegate_| is non-null and has
   // WebContents ready.
   // In cases such as opening a new browser window, SetDelegate() will be
-  // called before the WebContents is set. In those cases, we update the dialog
+  // called before the WebContents is set. In those cases, we update the popup
   // state when ActiveTabChanged() is called.
   if (delegate_ && delegate_->GetCurrentWebContents())
-    UpdateDialogState();
+    UpdatePopupState();
 }
 
 gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
@@ -120,6 +113,7 @@ bool MediaRouterAction::HasPopup(
 
 void MediaRouterAction::HidePopup() {
   GetMediaRouterDialogController()->HideMediaRouterDialog();
+  OnPopupHidden();
 }
 
 gfx::NativeView MediaRouterAction::GetPopupNativeView() {
@@ -149,8 +143,8 @@ bool MediaRouterAction::ExecuteAction(bool by_user) {
 }
 
 void MediaRouterAction::UpdateState() {
-  DCHECK(delegate_);
-  delegate_->UpdateState();
+  if (delegate_)
+    delegate_->UpdateState();
 }
 
 bool MediaRouterAction::DisabledClickOpensMenu() const {
@@ -172,70 +166,48 @@ void MediaRouterAction::OnRoutesUpdated(
                      return route.is_local() && route.for_display();
                    }) != routes.end();
   MaybeUpdateIcon();
-  MaybeRemoveAction();
 }
 
 void MediaRouterAction::ActiveTabChanged(content::WebContents* old_contents,
                                          content::WebContents* new_contents,
                                          int index,
                                          int reason) {
-  UpdateDialogState();
-  MaybeRemoveAction();
+  UpdatePopupState();
 }
 
-void MediaRouterAction::OnToolbarActionsBarAnimationEnded() {
-  // Depress the action if the dialog is shown, release it otherwise.
-  DCHECK(delegate_);
-  if (GetMediaRouterDialogController()->IsShowingMediaRouterDialog())
-    OnDialogShown();
-}
-
-void MediaRouterAction::OnDialogHidden() {
-  if (has_dialog_) {
-    has_dialog_ = false;
-    DCHECK(delegate_);
+void MediaRouterAction::OnPopupHidden() {
+  if (delegate_)
     delegate_->OnPopupClosed();
-  }
 }
 
-void MediaRouterAction::OnDialogShown() {
-  if (!has_dialog_) {
-    has_dialog_ = true;
-    DCHECK(delegate_);
-    // We depress the action regardless of whether ExecuteAction() was user
-    // initiated.
+void MediaRouterAction::OnPopupShown() {
+  // We depress the action regardless of whether ExecuteAction() was user
+  // initiated.
+  if (delegate_)
     delegate_->OnPopupShown(true);
-  }
 }
 
-void MediaRouterAction::ToggleVisibilityPreference() {
-  browser_->profile()->GetPrefs()->SetBoolean(
-      prefs::kMediaRouterAlwaysShowActionIcon, !ShouldAlwaysShowIcon());
-  MaybeRemoveAction();
-}
-
-void MediaRouterAction::UpdateDialogState() {
+void MediaRouterAction::UpdatePopupState() {
   MediaRouterDialogControllerImpl* controller =
       GetMediaRouterDialogController();
 
   if (!controller)
     return;
 
-  // |controller| keeps track of |this| if |this| was created with the browser
-  // window or ephemerally by activating the Cast functionality. If |this| was
-  // created in overflow mode, it will be destroyed when the overflow menu is
-  // closed. If SetMediaRouterAction() was previously called, this is a no-op.
+  // When each browser window is created, its toolbar creates a
+  // MediaRouterAction that is only destroyed when the browser window is torn
+  // down. |controller| will keep track of that instance. If |this| was created
+  // in overflow mode, it will be destroyed when the overflow menu is closed.
+  // If SetMediaRouterAction() was previously called, this is a no-op.
   if (!toolbar_actions_bar_->in_overflow_mode())
     controller->SetMediaRouterAction(weak_ptr_factory_.GetWeakPtr());
 
   // Update the button in case the pressed state is out of sync with dialog
-  // visibility. If we just added the ephemeral icon to the toolbar and need to
-  // depress it, we do that in |OnToolbarActionsBarAnimationEnded|.
-  DCHECK(delegate_);
-  if (ShouldAlwaysShowIcon() && controller->IsShowingMediaRouterDialog())
-    OnDialogShown();
-  else if (!controller->IsShowingMediaRouterDialog())
-    OnDialogHidden();
+  // visibility.
+  if (controller->IsShowingMediaRouterDialog())
+    OnPopupShown();
+  else
+    OnPopupHidden();
 }
 
 MediaRouterDialogControllerImpl*
@@ -260,23 +232,9 @@ void MediaRouterAction::MaybeUpdateIcon() {
 
     // Tell the associated view to update its icon to reflect the change made
     // above.
-    UpdateState();
+    if (delegate_)
+      delegate_->UpdateState();
   }
-}
-
-void MediaRouterAction::MaybeRemoveAction() {
-  if (!ShouldAlwaysShowIcon() &&
-      !GetMediaRouterDialogController()->IsShowingMediaRouterDialog() &&
-      !has_local_display_route_) {
-    // Warning: |this| can be deleted here.
-    ToolbarActionsModel::Get(browser_->profile())
-        ->RemoveComponentAction(GetId());
-  }
-}
-
-bool MediaRouterAction::ShouldAlwaysShowIcon() {
-  PrefService* pref_service = browser_->profile()->GetPrefs();
-  return pref_service->GetBoolean(prefs::kMediaRouterAlwaysShowActionIcon);
 }
 
 gfx::VectorIconId MediaRouterAction::GetCurrentIcon() const {
@@ -290,8 +248,4 @@ gfx::VectorIconId MediaRouterAction::GetCurrentIcon() const {
 
   return has_local_display_route_ ? gfx::VectorIconId::MEDIA_ROUTER_ACTIVE
                                   : gfx::VectorIconId::MEDIA_ROUTER_IDLE;
-}
-
-base::WeakPtr<MediaRouterAction> MediaRouterAction::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }

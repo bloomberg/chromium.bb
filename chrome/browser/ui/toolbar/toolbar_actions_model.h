@@ -258,11 +258,12 @@ class ToolbarActionsModel
   bool HasItem(const ToolbarItem& item) const;
 
   // Adds |item| to the toolbar.  If the item has an existing preference for
-  // toolbar position, that will be used to determine its location. Otherwise
-  // it will be placed at the end of the visible items. If the toolbar is in
-  // highlighting mode, the item will not be visible until highlighting mode is
-  // exited.
-  void AddItem(const ToolbarItem& item);
+  // toolbar position, that will be used to determine its location.  If
+  // |is_component| is true, the item will be given a default postion of 0,
+  // otherwise the default is at the end of the visible items. If the toolbar is
+  // in highlighting mode, the item will not be visible until highlighting mode
+  // is exited.
+  void AddItem(const ToolbarItem& item, bool is_component);
 
   // Removes |item| from the toolbar.  If the toolbar is in highlighting mode,
   // the item is also removed from the highlighted list (if present).
