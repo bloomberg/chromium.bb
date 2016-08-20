@@ -261,7 +261,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
 
   'src/third_party/cld_3/src':
-    Var('chromium_git') + '/external/github.com/google/cld_3.git' + '@' + '4c0a39d15a1fcfe8ad3f5d95bae8ad8967bd3816',
+    Var('chromium_git') + '/external/github.com/google/cld_3.git' + '@' + '9a8b357fc8d7c2c1f3902babb8dd7992a1fdd94e',
 
   'src/third_party/libwebm/source':
    Var('chromium_git') + '/webm/libwebm.git' + '@' + '9a235e0bc94319c5f7184bd69cbe5468a74a025c',
