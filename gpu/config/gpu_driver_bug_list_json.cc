@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.83",
+  "version": "8.84",
   "entries": [
     {
       "id": 1,
@@ -1909,6 +1909,23 @@ LONG_STRING_CONST(
       },
       "features": [
         "get_frag_data_info_bug"
+      ]
+    },
+    {
+      "id": 178,
+      "description": "GL_KHR_blend_equation_advanced is incorrectly implemented on Intel BayTrail on KitKat",
+      "cr_bugs": [639470],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0"
+        }
+      },
+      "gl_vendor": "Intel.*",
+      "gl_renderer": "Intel(R) HD Graphics for BayTrail",
+      "features": [
+        "disable_blend_equation_advanced"
       ]
     }
   ]
