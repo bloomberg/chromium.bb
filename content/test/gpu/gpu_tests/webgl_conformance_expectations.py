@@ -682,9 +682,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
 
-    # AMD Radeon 6450
+    # AMD Radeon 6450 and/or R7 240
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
-        ['linux', ('amd', 0x6779)], bug=479260)
+        ['linux', 'amd'], bug=479260)
     self.Flaky('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Flaky('conformance/glsl/misc/shader-struct-scope.html',
@@ -698,7 +698,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/more/functions/uniformf.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        ['linux', ('amd', 0x6779)], bug=479952)
+        ['linux', 'amd'], bug=479952)
     self.Flaky('conformance/textures/misc/texture-mips.html',
         ['linux', ('amd', 0x6779)], bug=479981)
     self.Flaky('conformance/textures/misc/texture-size-cube-maps.html',
