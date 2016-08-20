@@ -61,11 +61,9 @@ FloatSize FloatSize::narrowPrecision(double width, double height)
     return FloatSize(narrowPrecisionToFloat(width), narrowPrecisionToFloat(height));
 }
 
-#ifndef NDEBUG
 String FloatSize::toString() const
 {
-    return String::format("%fx%f", width(), height());
+    return String::format("%lgx%lg", width(), height());
 }
-#endif
 
 } // namespace blink

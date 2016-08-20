@@ -26,6 +26,7 @@
 
 #include "platform/geometry/FloatBoxTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -112,6 +113,12 @@ TEST(FloatBoxTest, EmptyBoxTest)
     EXPECT_TRUE(box.isEmpty());
     box.expandTo(FloatPoint3D(0, 1, 0));
     EXPECT_FALSE(box.isEmpty());
+}
+
+TEST(FloatBoxTest, ToString)
+{
+    FloatBox box(2, 3, 5, 7, 11, 13);
+    EXPECT_EQ(String("2,3,5 7x11x13"), box.toString());
 }
 
 } // namespace blink

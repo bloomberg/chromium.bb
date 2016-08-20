@@ -30,6 +30,7 @@
 #ifndef FloatBox_h
 #define FloatBox_h
 
+#include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "wtf/Allocator.h"
 #include <algorithm>
@@ -38,7 +39,7 @@
 
 namespace blink {
 
-class FloatBox {
+class PLATFORM_EXPORT FloatBox {
     DISALLOW_NEW();
 public:
     FloatBox()
@@ -159,6 +160,9 @@ public:
     float width() const { return m_width; }
     float height() const { return m_height; }
     float depth() const { return m_depth; }
+
+    String toString() const;
+
 private:
     float m_x;
     float m_y;

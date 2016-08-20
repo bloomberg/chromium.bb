@@ -91,9 +91,7 @@ public:
         return LayoutPoint(m_y, m_x);
     }
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     LayoutUnit m_x, m_y;
@@ -243,6 +241,10 @@ inline LayoutPoint flooredLayoutPoint(const FloatSize& s)
 {
     return flooredLayoutPoint(FloatPoint(s));
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const LayoutPoint&, std::ostream*);
 
 } // namespace blink
 

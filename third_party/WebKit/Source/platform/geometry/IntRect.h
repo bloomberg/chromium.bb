@@ -179,11 +179,7 @@ public:
 
     operator gfx::Rect() const;
 
-#ifndef NDEBUG
-    // Prints the rect to the screen.
-    void show() const;
     String toString() const;
-#endif
 
 private:
     IntPoint m_location;

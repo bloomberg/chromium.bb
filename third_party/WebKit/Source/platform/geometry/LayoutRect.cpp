@@ -142,21 +142,6 @@ void LayoutRect::scale(float xAxisScale, float yAxisScale)
     m_size.scale(xAxisScale, yAxisScale);
 }
 
-#ifndef NDEBUG
-void LayoutRect::show(bool showRawValue) const
-{
-    if (showRawValue)
-        printf("Rect (in raw layout units): [x=%d y=%d maxX=%d maxY=%d]\n", x().rawValue(), y().rawValue(), maxX().rawValue(), maxY().rawValue());
-    else
-        printf("Rect (in pixels): [x=%lf y=%lf maxX=%lf maxY=%lf]\n", x().toDouble(), y().toDouble(), maxX().toDouble(), maxY().toDouble());
-}
-
-String LayoutRect::toString() const
-{
-    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
-}
-#endif
-
 LayoutRect unionRect(const Vector<LayoutRect>& rects)
 {
     LayoutRect result;
@@ -194,6 +179,13 @@ LayoutRect enclosingLayoutRect(const FloatRect& rect)
     LayoutPoint location = flooredLayoutPoint(rect.minXMinYCorner());
     LayoutPoint maxPoint = ceiledLayoutPoint(rect.maxXMaxYCorner());
     return LayoutRect(location, maxPoint - location);
+}
+
+String LayoutRect::toString() const
+{
+    return String::format("%s %s",
+        location().toString().ascii().data(),
+        size().toString().ascii().data());
 }
 
 } // namespace blink

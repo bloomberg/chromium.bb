@@ -8,11 +8,11 @@
 
 namespace blink {
 
-#ifndef NDEBUG
 String LayoutPoint::toString() const
 {
-    return String::format("%f,%f", x().toDouble(), y().toDouble());
+    return String::format("%s,%s",
+        x().toString().ascii().data(),
+        y().toString().ascii().data());
 }
-#endif
 
 } // namespace blink

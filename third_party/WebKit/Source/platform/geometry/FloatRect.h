@@ -189,14 +189,10 @@ public:
     operator gfx::RectF() const;
 
 #if ENABLE(ASSERT)
-    // Prints the rect to the screen.
-    void show() const;
     bool mayNotHaveExactIntRectRepresentation() const;
 #endif
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     FloatPoint m_location;

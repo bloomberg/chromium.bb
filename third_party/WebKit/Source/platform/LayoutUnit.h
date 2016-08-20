@@ -31,10 +31,12 @@
 #ifndef LayoutUnit_h
 #define LayoutUnit_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/SaturatedArithmetic.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 #include <limits.h>
 #include <limits>
@@ -55,7 +57,7 @@ const int intMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
 const int intMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
-class LayoutUnit;
+class PLATFORM_EXPORT LayoutUnit;
 inline bool operator<(const LayoutUnit&, const LayoutUnit&);
 
 class LayoutUnit {
@@ -211,6 +213,8 @@ public:
     {
         return clampTo<LayoutUnit>(value, LayoutUnit::min(), LayoutUnit::max());
     }
+
+    String toString() const;
 
 private:
     static bool isInBounds(int value)
@@ -808,7 +812,7 @@ inline LayoutUnit clampToLayoutUnit(LayoutUnit value, LayoutUnit min, LayoutUnit
 
 inline std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value)
 {
-    return stream << value.toDouble();
+    return stream << value.toString();
 }
 
 } // namespace blink

@@ -22,6 +22,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 
 #include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 #include <math.h>
 
 namespace blink {
@@ -49,6 +50,11 @@ float FloatPoint3D::angleBetween(const FloatPoint3D& y) const
         return acos(clampTo(cosAngle, -1.0, 1.0));
     }
     return 0;
+}
+
+String FloatPoint3D::toString() const
+{
+    return String::format("%lg,%lg,%lg", x(), y(), z());
 }
 
 } // namespace blink

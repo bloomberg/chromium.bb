@@ -114,11 +114,9 @@ bool findIntersection(const FloatPoint& p1, const FloatPoint& p2, const FloatPoi
     return true;
 }
 
-#ifndef NDEBUG
 String FloatPoint::toString() const
 {
-    return String::format("%f,%f", x(), y());
+    return String::format("%lg,%lg", x(), y());
 }
-#endif
 
 } // namespace blink

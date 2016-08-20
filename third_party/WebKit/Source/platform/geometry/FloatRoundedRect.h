@@ -86,10 +86,7 @@ public:
 
         void includeLogicalEdges(const Radii& edges, bool isHorizontal, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
 
-#ifndef NDEBUG
-        // Prints debugging information.
-        void show() const;
-#endif
+        String toString() const;
 
     private:
         FloatSize m_topLeft;
@@ -152,11 +149,6 @@ public:
     void adjustRadii();
     bool isRenderable() const;
 
-#ifndef NDEBUG
-    // Prints debugging information.
-    void show() const;
-#endif
-
     // Constrains the radii to be no more than the size of rect(); radii outside of this range are not
     // defined.
     // In addition, the radii of the corners are floored to the nearest integer.
@@ -165,6 +157,8 @@ public:
     void constrainRadii();
 
     operator SkRRect() const;
+
+    String toString() const;
 
 private:
     FloatRect m_rect;

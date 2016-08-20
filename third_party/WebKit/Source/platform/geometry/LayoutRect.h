@@ -201,11 +201,7 @@ public:
         return infiniteIntRect;
     }
 
-#ifndef NDEBUG
-    // Prints the rect to the screen.
-    void show(bool showRawValue = false) const;
     String toString() const;
-#endif
 
 private:
     LayoutPoint m_location;

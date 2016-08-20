@@ -197,18 +197,6 @@ FloatRect unionRect(const Vector<FloatRect>& rects)
     return result;
 }
 
-#ifndef NDEBUG
-void FloatRect::show() const
-{
-    LayoutRect(*this).show();
-}
-
-String FloatRect::toString() const
-{
-    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
-}
-#endif
-
 IntRect enclosingIntRect(const FloatRect& rect)
 {
     IntPoint location = flooredIntPoint(rect.minXMinYCorner());
@@ -242,6 +230,13 @@ FloatRect mapRect(const FloatRect& r, const FloatRect& srcRect, const FloatRect&
     return FloatRect(destRect.x() + (r.x() - srcRect.x()) * widthScale,
         destRect.y() + (r.y() - srcRect.y()) * heightScale,
         r.width() * widthScale, r.height() * heightScale);
+}
+
+String FloatRect::toString() const
+{
+    return String::format("%s %s",
+        location().toString().ascii().data(),
+        size().toString().ascii().data());
 }
 
 } // namespace blink

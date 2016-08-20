@@ -135,9 +135,7 @@ public:
 
     operator SkSize() const { return SkSize::Make(m_width, m_height); }
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     float m_width, m_height;

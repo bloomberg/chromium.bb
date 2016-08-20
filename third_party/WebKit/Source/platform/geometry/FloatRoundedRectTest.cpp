@@ -30,6 +30,7 @@
 #include "platform/geometry/FloatRoundedRect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -171,6 +172,13 @@ TEST(FloatRoundedRectTest, radiusCenterRect)
     FloatRoundedRect::Radii radiiWithTooLargeCorner(FloatSize(55, 55), FloatSize(), FloatSize(), FloatSize());
     FloatRoundedRect r2(FloatRect(0, 0, 100, 50), radiiWithTooLargeCorner);
     EXPECT_TRUE(r2.radiusCenterRect().isEmpty());
+}
+
+TEST(FloatRoundedRectTest, ToString)
+{
+    FloatSize cornerRect(1, 2);
+    FloatRoundedRect roundedRect(FloatRect(3, 5, 7, 11), FloatRoundedRect::Radii(cornerRect, cornerRect, cornerRect, cornerRect));
+    EXPECT_EQ(String("3,5 7x11 radii:(tl:1x2; tr:1x2; bl:1x2; br:1x2)"), roundedRect.toString());
 }
 
 } // namespace blink

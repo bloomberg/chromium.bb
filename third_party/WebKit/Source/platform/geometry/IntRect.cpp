@@ -187,17 +187,11 @@ IntRect unionRectEvenIfEmpty(const Vector<IntRect>& rects)
     return result;
 }
 
-#ifndef NDEBUG
-    // Prints the rect to the screen.
-void IntRect::show() const
-{
-    LayoutRect(*this).show();
-}
-
 String IntRect::toString() const
 {
-    return String::format("%s %s", location().toString().ascii().data(), size().toString().ascii().data());
+    return String::format("%s %s",
+        location().toString().ascii().data(),
+        size().toString().ascii().data());
 }
-#endif
 
 } // namespace blink

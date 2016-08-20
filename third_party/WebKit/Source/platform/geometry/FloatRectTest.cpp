@@ -112,18 +112,25 @@ TEST(FloatRectTest, SquaredDistanceToTest)
     EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, r1.squaredDistanceTo(p24), 50000.f);
 }
 
-#ifndef NDEBUG
 TEST(FloatRectTest, ToString)
 {
     FloatRect emptyRect = FloatRect();
-    EXPECT_EQ(String("0.000000,0.000000 0.000000x0.000000"), emptyRect.toString());
+    EXPECT_EQ("0,0 0x0", emptyRect.toString());
 
     FloatRect rect(1, 2, 3, 4);
-    EXPECT_EQ(String("1.000000,2.000000 3.000000x4.000000"), rect.toString());
+    EXPECT_EQ("1,2 3x4", rect.toString());
 
     FloatRect granularRect(1.6f, 2.7f, 3.8f, 4.9f);
-    EXPECT_EQ(String("1.600000,2.700000 3.800000x4.900000"), granularRect.toString());
+    EXPECT_EQ("1.6,2.7 3.8x4.9", granularRect.toString());
+
+    FloatRect minMaxRect(std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), std::numeric_limits<float>::min(), std::numeric_limits<float>::max());
+    EXPECT_EQ("1.17549e-38,3.40282e+38 1.17549e-38x3.40282e+38", minMaxRect.toString());
+
+    FloatRect infiniteRect(-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+    EXPECT_EQ("-inf,-inf infxinf", infiniteRect.toString());
+
+    FloatRect nanRect(0, 0, std::numeric_limits<float>::signaling_NaN(), std::numeric_limits<float>::signaling_NaN());
+    EXPECT_EQ("0,0 nanxnan", nanRect.toString());
 }
-#endif
 
 } // namespace blink

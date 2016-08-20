@@ -8,11 +8,9 @@
 
 namespace blink {
 
-#ifndef NDEBUG
 String IntPoint::toString() const
 {
     return String::format("%d,%d", x(), y());
 }
-#endif
 
 } // namespace blink

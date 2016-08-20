@@ -132,6 +132,8 @@ public:
 
     operator SkPoint3() const { return SkPoint3::Make(m_x, m_y, m_z); }
 
+    String toString() const;
+
 private:
     float m_x;
     float m_y;

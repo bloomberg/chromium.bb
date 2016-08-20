@@ -133,9 +133,7 @@ public:
 
     operator gfx::Size() const;
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     int m_width, m_height;
@@ -179,6 +177,10 @@ inline bool operator!=(const IntSize& a, const IntSize& b)
 {
     return a.width() != b.width() || a.height() != b.height();
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const IntSize&, std::ostream*);
 
 } // namespace blink
 

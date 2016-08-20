@@ -16,7 +16,12 @@ class FloatPoint3D;
 class FloatQuad;
 class FloatRect;
 class FloatSize;
+class IntPoint;
+class IntRect;
+class IntSize;
+class LayoutPoint;
 class LayoutRect;
+class LayoutSize;
 
 // GTest print support for geometry classes.
 //
@@ -37,8 +42,12 @@ void PrintTo(const FloatRect&, std::ostream*);
 void PrintTo(const FloatRoundedRect&, std::ostream*);
 void PrintTo(const FloatRoundedRect::Radii&, std::ostream*);
 void PrintTo(const FloatSize&, std::ostream*);
+void PrintTo(const IntPoint&, std::ostream*);
 void PrintTo(const IntRect&, std::ostream*);
+void PrintTo(const IntSize&, std::ostream*);
+void PrintTo(const LayoutPoint&, std::ostream*);
 void PrintTo(const LayoutRect&, std::ostream*);
+void PrintTo(const LayoutSize&, std::ostream*);
 
 } // namespace blink
 

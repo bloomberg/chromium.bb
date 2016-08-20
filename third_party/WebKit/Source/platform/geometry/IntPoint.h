@@ -101,9 +101,7 @@ public:
 #endif
 #endif
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     int m_x, m_y;
@@ -165,6 +163,10 @@ inline int IntPoint::distanceSquaredToPoint(const IntPoint& point) const
 {
     return ((*this) - point).diagonalLengthSquared();
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const IntPoint&, std::ostream*);
 
 } // namespace blink
 

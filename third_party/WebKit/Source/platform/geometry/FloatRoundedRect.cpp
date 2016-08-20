@@ -30,12 +30,8 @@
 #include "platform/geometry/FloatRoundedRect.h"
 
 #include "platform/geometry/FloatQuad.h"
-
+#include "wtf/text/WTFString.h"
 #include <algorithm>
-
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
 
 namespace blink {
 
@@ -139,15 +135,6 @@ void FloatRoundedRect::Radii::expand(float topWidth, float bottomWidth, float le
         m_bottomRight.setHeight(m_bottomRight.height() + bottomWidth);
     }
 }
-
-#ifndef NDEBUG
-void FloatRoundedRect::Radii::show() const
-{
-    fprintf(stderr, "topLeft=[%f,%f], topRight=[%f,%f], bottomLeft=[%f,%f], bottomRight=[%f,%f]\n",
-        topLeft().width(), topLeft().height(), topRight().width(), topRight().height(),
-        bottomLeft().width(), bottomLeft().height(), bottomRight().width(), bottomRight().height());
-}
-#endif
 
 static inline float cornerRectIntercept(float y, const FloatRect& cornerRect)
 {
@@ -349,14 +336,20 @@ void FloatRoundedRect::adjustRadii()
     m_radii.scale(widthRatio < heightRatio ? widthRatio : heightRatio);
 }
 
-#ifndef NDEBUG
-void FloatRoundedRect::show() const
+String FloatRoundedRect::Radii::toString() const
 {
-    fprintf(stderr, "FloatRoundedRect:\n rect: ");
-    m_rect.show();
-    fprintf(stderr, " radii: ");
-    m_radii.show();
+    return String::format("tl:%s; tr:%s; bl:%s; br:%s",
+        topLeft().toString().ascii().data(),
+        topRight().toString().ascii().data(),
+        bottomLeft().toString().ascii().data(),
+        bottomRight().toString().ascii().data());
 }
-#endif
+
+String FloatRoundedRect::toString() const
+{
+    return String::format("%s radii:(%s)",
+        rect().toString().ascii().data(),
+        getRadii().toString().ascii().data());
+}
 
 } // namespace blink

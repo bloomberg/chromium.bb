@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/geometry/LayoutSize.h"
+#include "platform/geometry/FloatBox.h"
 
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-String LayoutSize::toString() const
+String FloatBox::toString() const
 {
-    return String::format("%sx%s",
-        width().toString().ascii().data(),
-        height().toString().ascii().data());
+    return String::format("%lg,%lg,%lg %lgx%lgx%lg", x(), y(), z(), width(), height(), depth());
 }
 
 } // namespace blink

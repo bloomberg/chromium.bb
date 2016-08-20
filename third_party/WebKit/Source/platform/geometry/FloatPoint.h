@@ -158,9 +158,7 @@ public:
 
     operator SkPoint() const { return SkPoint::Make(m_x, m_y); }
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     float m_x, m_y;

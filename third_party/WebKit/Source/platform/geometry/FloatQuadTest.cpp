@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/geometry/IntRect.h"
+#include "platform/geometry/FloatQuad.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-TEST(IntRectTest, ToString)
+TEST(FloatQuadTest, ToString)
 {
-    IntRect emptyRect = IntRect();
-    EXPECT_EQ(String("0,0 0x0"), emptyRect.toString());
-
-    IntRect rect(1, 2, 3, 4);
-    EXPECT_EQ(String("1,2 3x4"), rect.toString());
+    FloatQuad quad(
+        FloatPoint(2, 3),
+        FloatPoint(5, 7),
+        FloatPoint(11, 13),
+        FloatPoint(17, 19));
+    EXPECT_EQ(String("2,3; 5,7; 11,13; 17,19"), quad.toString());
 }
 
 } // namespace blink
