@@ -283,15 +283,20 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   NetworkChangeNotifier::NetworkHandle FindAlternateNetwork(
       NetworkChangeNotifier::NetworkHandle old_network);
 
-  // Method that initiates migration of active sessions
-  // currently bound to |network| to an alternate network, if one
-  // exists. Idle sessions bound to |network| are closed. If there is
-  // no alternate network to migrate active sessions onto, active
-  // sessions are closed if |force_close| is true, and continue using
-  // |network| otherwise. Sessions not bound to |network| are left unchanged.
-  void MaybeMigrateOrCloseSessions(NetworkChangeNotifier::NetworkHandle network,
-                                   bool force_close,
-                                   const BoundNetLog& bound_net_log);
+  // Method that initiates migration of active sessions to |new_network|.
+  // If |new_network| is a valid network, sessions that can migrate are
+  // migrated to |new_network|, and sessions not bound to |new_network|
+  // are left unchanged. Sessions with non-migratable streams are closed
+  // if |close_if_cannot_migrate| is true, and continue using their current
+  // network otherwise.
+  //
+  // If |new_network| is NetworkChangeNotifier::kInvalidNetworkHandle,
+  // there is no new network to migrate sessions onto, and all sessions are
+  // closed.
+  void MaybeMigrateOrCloseSessions(
+      NetworkChangeNotifier::NetworkHandle new_network,
+      bool close_if_cannot_migrate,
+      const BoundNetLog& bound_net_log);
 
   // Method that initiates migration of |session| if |session| is
   // active and if there is an alternate network than the one to which

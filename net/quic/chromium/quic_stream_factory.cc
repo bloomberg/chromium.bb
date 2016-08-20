@@ -1457,24 +1457,26 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   status_ = OPEN;
 }
 
-void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {}
-
-void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
+void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                     "OnNetworkDisconnected");
-  MaybeMigrateOrCloseSessions(network, /*force_close=*/true,
+                                                     "OnNetworkMadeDefault");
+  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
+  MaybeMigrateOrCloseSessions(network, /*close_if_cannot_migrate=*/false,
                               scoped_event_log.net_log());
   set_require_confirmation(true);
 }
 
-// This method is expected to only be called when migrating from Cellular to
-// WiFi on Android.
-void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {
-  ScopedConnectionMigrationEventLog scoped_event_log(
-      net_log_, "OnNetworkSoonToDisconnect");
-  MaybeMigrateOrCloseSessions(network, /*force_close=*/false,
+void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
+  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
+                                                     "OnNetworkDisconnected");
+  NetworkHandle new_network = FindAlternateNetwork(network);
+  MaybeMigrateOrCloseSessions(new_network, /*close_if_cannot_migrate=*/true,
                               scoped_event_log.net_log());
 }
+
+// This method is expected to only be called when migrating from Cellular to
+// WiFi on Android, and should always be preceded by OnNetworkMadeDefault().
+void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {}
 
 NetworkHandle QuicStreamFactory::FindAlternateNetwork(
     NetworkHandle old_network) {
@@ -1489,26 +1491,34 @@ NetworkHandle QuicStreamFactory::FindAlternateNetwork(
 }
 
 void QuicStreamFactory::MaybeMigrateOrCloseSessions(
-    NetworkHandle network,
-    bool force_close,
+    NetworkHandle new_network,
+    bool close_if_cannot_migrate,
     const BoundNetLog& bound_net_log) {
-  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
-  NetworkHandle new_network = FindAlternateNetwork(network);
-
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
     ++it;
 
-    if (session->GetDefaultSocket()->GetBoundNetwork() != network) {
-      // If session is not bound to |network|, move on.
+    // Migration attempted, but no new network was found. Close session.
+    if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
       HistogramAndLogMigrationFailure(
-          bound_net_log, MIGRATION_STATUS_ALREADY_MIGRATED,
-          session->connection_id(), "Not bound to network");
+          bound_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+          session->connection_id(), "No alternate network found");
+      session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                   QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
       continue;
     }
+
+    // If session is already bound to |new_network|, move on.
+    if (session->GetDefaultSocket()->GetBoundNetwork() == new_network) {
+      HistogramAndLogMigrationFailure(
+          bound_net_log, MIGRATION_STATUS_ALREADY_MIGRATED,
+          session->connection_id(), "Already bound to new network");
+      continue;
+    }
+
+    // Close idle sessions.
     if (session->GetNumActiveStreams() == 0) {
-      // Close idle sessions.
       HistogramAndLogMigrationFailure(
           bound_net_log, MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
           session->connection_id(), "No active sessions");
@@ -1516,42 +1526,28 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
           ERR_NETWORK_CHANGED, QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
       continue;
     }
+
     // If session has active streams, mark it as going away.
     OnSessionGoingAway(session);
 
-    if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-      // No new network was found.
-      // TODO (jri): Add histogram for this failure case.
-      bound_net_log.AddEvent(
-          NetLog::TYPE_QUIC_CONNECTION_MIGRATION_FAILURE,
-          base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
-                     session->connection_id(), "No new network"));
-      if (force_close) {
-        session->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                     QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
-      }
-      continue;
-    }
+    // Do not migrate sessions where connection migration is disabled.
     if (session->config()->DisableConnectionMigration()) {
-      // Do not migrate sessions where connection migration is disabled by
-      // config.
       HistogramAndLogMigrationFailure(bound_net_log, MIGRATION_STATUS_DISABLED,
                                       session->connection_id(),
                                       "Migration disabled");
-      if (force_close) {
-        // Close sessions where connection migration is disabled.
+      if (close_if_cannot_migrate) {
         session->CloseSessionOnError(ERR_NETWORK_CHANGED,
                                      QUIC_IP_ADDRESS_CHANGED);
       }
       continue;
     }
+
+    // Do not migrate sessions with non-migratable streams.
     if (session->HasNonMigratableStreams()) {
-      // Do not migrate sessions with non-migratable streams.
       HistogramAndLogMigrationFailure(
           bound_net_log, MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
           session->connection_id(), "Non-migratable stream");
-      if (force_close) {
-        // Close sessions with non-migratable streams.
+      if (close_if_cannot_migrate) {
         session->CloseSessionOnError(
             ERR_NETWORK_CHANGED,
             QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
