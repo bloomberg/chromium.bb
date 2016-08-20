@@ -77,6 +77,8 @@ class CleanCommand(command.CliCommand):
     group.add_argument(
         '--chroot', default=False, action='store_true',
         help='Delete build chroot (affects all boards).')
+    group.add_argument(
+        '--board', action='append', help='Delete board(s) build root(s).')
 
   def __init__(self, options):
     """Initializes cros clean."""
@@ -88,6 +90,7 @@ class CleanCommand(command.CliCommand):
     # If no option is set, default to "--safe"
     if not (self.options.safe or
             self.options.clobber or
+            self.options.board or
             self.options.chroot or
             self.options.cache or
             self.options.deploy or
@@ -130,6 +133,11 @@ class CleanCommand(command.CliCommand):
         logging.notice('would have cleaned: %s', chroot_dir)
       else:
         cros_build_lib.RunCommand(['cros_sdk', '--delete'])
+
+    if self.options.board:
+      for b in self.options.board:
+        logging.debug('Clean up the %s build root.', b)
+        Clean(os.path.join(chroot_dir, 'build', b))
 
     if self.options.cache:
       logging.debug('Clean the common cache')
