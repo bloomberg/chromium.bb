@@ -214,9 +214,10 @@ void SMILTimeContainer::resume()
 
     m_paused = false;
 
-    if (isStarted())
-        synchronizeToDocumentTimeline();
+    if (!isStarted())
+        return;
 
+    synchronizeToDocumentTimeline();
     scheduleWakeUp(0, SynchronizeAnimations);
 }
 
