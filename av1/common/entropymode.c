@@ -789,9 +789,14 @@ static const aom_prob default_switchable_interp_prob
 
 #if CONFIG_MISC_FIXES
 // FIXME(someone) need real defaults here
-static const struct segmentation_probs default_seg_probs = {
-  { 128, 128, 128, 128, 128, 128, 128 }, { 128, 128, 128 },
+static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
+  128, 128, 128, 128, 128, 128, 128
 };
+// clang-format off
+static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
+  128, 128, 128
+};
+// clang-format on
 #endif
 
 const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
@@ -839,8 +844,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
 #endif  // CONFIG_MOTION_VAR
 #if CONFIG_MISC_FIXES
-  av1_copy(fc->seg.tree_probs, default_seg_probs.tree_probs);
-  av1_copy(fc->seg.pred_probs, default_seg_probs.pred_probs);
+  av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
+  av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
 #endif
   av1_copy(fc->intra_ext_tx_prob, default_intra_ext_tx_prob);
   av1_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
@@ -853,6 +858,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
                      fc->inter_ext_tx_cdf, EXT_TX_SIZES);
   av1_tree_to_cdf_1D(av1_partition_tree, fc->partition_prob, fc->partition_cdf,
                      PARTITION_CONTEXTS);
+#if CONFIG_MISC_FIXES
+  av1_tree_to_cdf(av1_segment_tree, fc->seg.tree_probs, fc->seg.tree_cdf);
+#endif
 #endif
 }
 

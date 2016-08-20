@@ -304,6 +304,9 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
     memcpy(segp->tree_probs, no_pred_tree, sizeof(no_pred_tree));
 #endif
   }
+#if CONFIG_DAALA_EC
+  av1_tree_to_cdf(av1_segment_tree, segp->tree_probs, segp->tree_cdf);
+#endif
 }
 
 void av1_reset_segment_features(AV1_COMMON *cm) {

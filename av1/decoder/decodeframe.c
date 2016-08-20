@@ -755,9 +755,13 @@ static void setup_segmentation(AV1_COMMON *const cm,
   }
   if (seg->update_map) {
 #if !CONFIG_MISC_FIXES
-    for (i = 0; i < SEG_TREE_PROBS; i++)
+    for (i = 0; i < SEG_TREE_PROBS; i++) {
       segp->tree_probs[i] =
           aom_rb_read_bit(rb) ? aom_rb_read_literal(rb, 8) : MAX_PROB;
+    }
+#if CONFIG_DAALA_EC
+    av1_tree_to_cdf(av1_segment_tree, segp->tree_probs, segp->tree_cdf);
+#endif
 #endif
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
       seg->temporal_update = 0;
@@ -2007,6 +2011,10 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     }
     for (k = 0; k < MAX_SEGMENTS - 1; k++)
       av1_diff_update_prob(&r, &cm->fc->seg.tree_probs[k]);
+#if CONFIG_DAALA_EC
+    av1_tree_to_cdf(av1_segment_tree, cm->fc->seg.tree_probs,
+                    cm->fc->seg.tree_cdf);
+#endif
   }
 
   for (j = 0; j < INTRA_MODES; j++)
