@@ -136,6 +136,10 @@ class MultiBrowserSharedState(story_module.SharedState):
 
     if self._platform is None:
       self._platform = possible_browser.platform
+      # TODO(nedn): Remove the if condition once
+      # https://codereview.chromium.org/2265593003/ is rolled to Chromium tree.
+      if hasattr(self._platform.network_controller, 'InitializeIfNeeded'):
+        self._platform.network_controller.InitializeIfNeeded()
     else:
       assert self._platform is possible_browser.platform
     self._possible_browsers[browser_type] = (possible_browser, options)
