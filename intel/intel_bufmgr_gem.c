@@ -149,6 +149,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	unsigned int bo_reuse : 1;
 	unsigned int no_exec : 1;
 	unsigned int has_vebox : 1;
+	unsigned int has_exec_async : 1;
 	bool fenced_relocs;
 
 	struct {
@@ -194,6 +195,8 @@ struct _drm_intel_bo_gem {
 	uint32_t tiling_mode;
 	uint32_t swizzle_mode;
 	unsigned long stride;
+
+	unsigned long kflags;
 
 	time_t free_time;
 
@@ -575,12 +578,11 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	bufmgr_gem->exec2_objects[index].relocation_count = bo_gem->reloc_count;
 	bufmgr_gem->exec2_objects[index].relocs_ptr = (uintptr_t)bo_gem->relocs;
 	bufmgr_gem->exec2_objects[index].alignment = bo->align;
-	bufmgr_gem->exec2_objects[index].offset = bo_gem->is_softpin ?
-		bo->offset64 : 0;
-	bufmgr_gem->exec_bos[index] = bo;
-	bufmgr_gem->exec2_objects[index].flags = flags;
+	bufmgr_gem->exec2_objects[index].offset = bo->offset64;
+	bufmgr_gem->exec2_objects[index].flags = flags | bo_gem->kflags;
 	bufmgr_gem->exec2_objects[index].rsvd1 = 0;
 	bufmgr_gem->exec2_objects[index].rsvd2 = 0;
+	bufmgr_gem->exec_bos[index] = bo;
 	bufmgr_gem->exec_count++;
 }
 
@@ -1368,6 +1370,7 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	for (i = 0; i < bo_gem->softpin_target_count; i++)
 		drm_intel_gem_bo_unreference_locked_timed(bo_gem->softpin_target[i],
 								  time);
+	bo_gem->kflags = 0;
 	bo_gem->reloc_count = 0;
 	bo_gem->used_as_reloc_target = false;
 	bo_gem->softpin_target_count = 0;
@@ -2766,6 +2769,40 @@ drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
 }
 
 /**
+ * Disables implicit synchronisation before executing the bo
+ *
+ * This will cause rendering corruption unless you correctly manage explicit
+ * fences for all rendering involving this buffer - including use by others.
+ * Disabling the implicit serialisation is only required if that serialisation
+ * is too coarse (for example, you have split the buffer into many
+ * non-overlapping regions and are sharing the whole buffer between concurrent
+ * independent command streams).
+ *
+ * Note the kernel must advertise support via I915_PARAM_HAS_EXEC_ASYNC,
+ * which can be checked using drm_intel_bufmgr_can_disable_implicit_sync,
+ * or subsequent execbufs involving the bo will generate EINVAL.
+ */
+void
+drm_intel_gem_bo_disable_implicit_sync(drm_intel_bo *bo)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+
+	bo_gem->kflags |= EXEC_OBJECT_ASYNC;
+}
+
+/**
+ * Query whether the kernel supports disabling of its implicit synchronisation
+ * before execbuf. See drm_intel_gem_bo_disable_implicit_sync()
+ */
+int
+drm_intel_bufmgr_gem_can_disable_implicit_sync(drm_intel_bufmgr *bufmgr)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
+
+	return bufmgr_gem->has_exec_async;
+}
+
+/**
  * Enable use of fenced reloc type.
  *
  * New code should enable this to avoid unnecessary fence register
@@ -3634,6 +3671,10 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.param = I915_PARAM_HAS_RELAXED_FENCING;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	bufmgr_gem->has_relaxed_fencing = ret == 0;
+
+	gp.param = I915_PARAM_HAS_EXEC_ASYNC;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	bufmgr_gem->has_exec_async = ret == 0;
 
 	bufmgr_gem->bufmgr.bo_alloc_userptr = check_bo_alloc_userptr;
 
