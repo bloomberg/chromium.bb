@@ -183,20 +183,7 @@ void SMILTimeContainer::start()
     // setElapsed() before the document began.
     // In this case pass on 'seekToTime=true' to updateAnimations() to issue a seek.
     SMILTime earliestFireTime = updateAnimations(SMILTime(m_presentationTime), m_presentationTime ? true : false);
-
-    if (isPaused()) {
-        // If updateAnimations() caused new syncbase instances to be generated,
-        // we don't want to cancel those. Excepting that, no frame should've
-        // been scheduled at this point.
-        DCHECK(m_frameSchedulingState == Idle || m_frameSchedulingState == SynchronizeAnimations);
-        return;
-    }
-    // If synchronizations are pending, those will in turn schedule additional
-    // frames.
-    if (hasPendingSynchronization())
-        return;
-    DCHECK(isTimelineRunning());
-    if (!earliestFireTime.isFinite())
+    if (!canScheduleFrame(earliestFireTime))
         return;
     // If the timeline is running, and there are pending animation updates,
     // always perform the first update after the timeline was started using
@@ -417,23 +404,25 @@ void SMILTimeContainer::serviceAnimations()
     updateAnimationsAndScheduleFrameIfNeeded(elapsed());
 }
 
+bool SMILTimeContainer::canScheduleFrame(SMILTime earliestFireTime) const
+{
+    // If there's synchronization pending (most likely due to syncbases), then
+    // let that complete first before attempting to schedule a frame.
+    if (hasPendingSynchronization())
+        return false;
+    if (!isTimelineRunning())
+        return false;
+    return earliestFireTime.isFinite();
+}
+
 void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime)
 {
     if (!document().isActive())
         return;
 
     SMILTime earliestFireTime = updateAnimations(elapsed, seekToTime);
-    // If updateAnimations() ended up triggering a synchronization (most likely
-    // via syncbases), then give that priority.
-    if (hasPendingSynchronization())
+    if (!canScheduleFrame(earliestFireTime))
         return;
-
-    if (!isTimelineRunning())
-        return;
-
-    if (!earliestFireTime.isFinite())
-        return;
-
     SMILTime delay = earliestFireTime - elapsed;
     scheduleAnimationFrame(delay.value());
 }

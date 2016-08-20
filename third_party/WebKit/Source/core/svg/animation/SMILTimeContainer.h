@@ -105,6 +105,7 @@ private:
     void animationPolicyTimerFired(TimerBase*);
     ImageAnimationPolicy animationPolicy() const;
     bool handleAnimationPolicy(AnimationPolicyOnceAction);
+    bool canScheduleFrame(SMILTime earliestFireTime) const;
     void updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime = false);
     SMILTime updateAnimations(SMILTime elapsed, bool seekToTime = false);
     void serviceOnNextFrame();
