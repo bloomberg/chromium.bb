@@ -106,14 +106,19 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     // FIXME: For now we don't have notification on media buffered range change from media player
     // and miss paint invalidation on buffered range change. crbug.com/484288.
     Optional<DisplayItemCacheSkipper> cacheSkipper;
-    if (style.appearance() == MediaSliderPart)
+    if (style.appearance() == MediaSliderPart
+        // We may paint a delayed-invalidation object before it's actually invalidated. Note this would be handled for
+        // us by LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we may use the scrolling contents
+        // layer as DisplayItemClient below.
+        || m_layoutBox.fullPaintInvalidationReason() == PaintInvalidationDelayedFull) {
         cacheSkipper.emplace(paintInfo.context);
+    }
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground))
+    const DisplayItemClient& displayItemClient = paintingOverflowContents ? static_cast<const DisplayItemClient&>(*m_layoutBox.layer()->compositedLayerMapping()->scrollingContentsLayer()) : m_layoutBox;
+    if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, displayItemClient, DisplayItem::BoxDecorationBackground))
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBox, DisplayItem::BoxDecorationBackground, boundsForDrawingRecorder(paintInfo, paintOffset));
-
+    DrawingRecorder recorder(paintInfo.context, displayItemClient, DisplayItem::BoxDecorationBackground, FloatRect(boundsForDrawingRecorder(paintInfo, paintOffset)));
     BoxDecorationData boxDecorationData(m_layoutBox);
     GraphicsContextStateSaver stateSaver(paintInfo.context, false);
 

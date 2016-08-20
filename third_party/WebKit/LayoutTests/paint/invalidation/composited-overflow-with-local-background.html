@@ -1,9 +1,10 @@
+<!DOCTYPE html>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 function repaintTest() {
-    document.getElementById('scroller').style.background = 'green local';
+    scroller.style.background = 'green local';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 <style>
 #scroller {

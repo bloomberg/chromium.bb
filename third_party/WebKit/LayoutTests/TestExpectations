@@ -795,6 +795,9 @@ crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
 crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout ]
 
+crbug.com/638611 fast/repaint/overflow-scroll-local-background-text-color-change.html [ NeedsRebaseline ]
+crbug.com/638611 paint/invalidation/composited-overflow-with-local-background.html [ NeedsRebaseline ]
+
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]

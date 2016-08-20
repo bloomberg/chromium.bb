@@ -439,6 +439,8 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
             // rather than updating the entire rect.
             const LayoutRect& scrollingContentsRect = toLayoutBox(this)->layoutOverflowRect();
             layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(scrollingContentsRect, invalidationReason, object);
+            layer()->setNeedsRepaint();
+            invalidateDisplayItemClient(*layer()->compositedLayerMapping()->scrollingContentsLayer(), invalidationReason);
         }
         layer()->compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
     } else {
