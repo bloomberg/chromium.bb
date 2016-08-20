@@ -221,6 +221,12 @@ int drm_intel_gem_context_get_id(drm_intel_context *ctx,
 void drm_intel_gem_context_destroy(drm_intel_context *ctx);
 int drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 				  int used, unsigned int flags);
+int drm_intel_gem_bo_fence_exec(drm_intel_bo *bo,
+				drm_intel_context *ctx,
+				int used,
+				int in_fence,
+				int *out_fence,
+				unsigned int flags);
 
 int drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd);
 drm_intel_bo *drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr,

@@ -2376,6 +2376,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 static int
 do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	 drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
+	 int in_fence, int *out_fence,
 	 unsigned int flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
@@ -2430,12 +2431,20 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	else
 		i915_execbuffer2_set_context_id(execbuf, ctx->ctx_id);
 	execbuf.rsvd2 = 0;
+	if (in_fence != -1) {
+		execbuf.rsvd2 = in_fence;
+		execbuf.flags |= I915_EXEC_FENCE_IN;
+	}
+	if (out_fence != NULL) {
+		*out_fence = -1;
+		execbuf.flags |= I915_EXEC_FENCE_OUT;
+	}
 
 	if (bufmgr_gem->no_exec)
 		goto skip_execution;
 
 	ret = drmIoctl(bufmgr_gem->fd,
-		       DRM_IOCTL_I915_GEM_EXECBUFFER2,
+		       DRM_IOCTL_I915_GEM_EXECBUFFER2_WR,
 		       &execbuf);
 	if (ret != 0) {
 		ret = -errno;
@@ -2450,6 +2459,9 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 		}
 	}
 	drm_intel_update_buffer_offsets2(bufmgr_gem);
+
+	if (ret == 0 && out_fence != NULL)
+		*out_fence = execbuf.rsvd2 >> 32;
 
 skip_execution:
 	if (bufmgr_gem->bufmgr.debug)
@@ -2476,7 +2488,7 @@ drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
 		       int DR4)
 {
 	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
-			I915_EXEC_RENDER);
+			-1, NULL, I915_EXEC_RENDER);
 }
 
 static int
@@ -2485,14 +2497,25 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 			unsigned int flags)
 {
 	return do_exec2(bo, used, NULL, cliprects, num_cliprects, DR4,
-			flags);
+			-1, NULL, flags);
 }
 
 int
 drm_intel_gem_bo_context_exec(drm_intel_bo *bo, drm_intel_context *ctx,
 			      int used, unsigned int flags)
 {
-	return do_exec2(bo, used, ctx, NULL, 0, 0, flags);
+	return do_exec2(bo, used, ctx, NULL, 0, 0, -1, NULL, flags);
+}
+
+int
+drm_intel_gem_bo_fence_exec(drm_intel_bo *bo,
+			    drm_intel_context *ctx,
+			    int used,
+			    int in_fence,
+			    int *out_fence,
+			    unsigned int flags)
+{
+	return do_exec2(bo, used, ctx, NULL, 0, 0, in_fence, out_fence, flags);
 }
 
 static int
