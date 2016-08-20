@@ -29,6 +29,10 @@ struct DownloadUIItem {
   // The URL of the captured page.
   GURL url;
 
+  // The Title of the captured page, if any. It can be empty string either
+  // because the page is not yet fully loaded, or because it doesn't have any.
+  base::string16 title;
+
   // The file path to the archive with a local copy of the page.
   base::FilePath target_path;
 

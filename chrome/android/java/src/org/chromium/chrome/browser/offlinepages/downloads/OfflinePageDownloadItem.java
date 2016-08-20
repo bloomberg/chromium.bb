@@ -7,15 +7,18 @@ package org.chromium.chrome.browser.offlinepages.downloads;
 /** Class representing offline page or save page request to downloads UI. */
 public class OfflinePageDownloadItem {
     private final String mUrl;
+    private final String mTitle;
     private final String mGuid;
     private final String mTargetPath;
     private final long mStartTimeMs;
     private final long mTotalBytes;
 
     public OfflinePageDownloadItem(
-            String guid, String url, String targetPath, long startTimeMs, long totalBytes) {
+            String guid, String url, String title, String targetPath,
+            long startTimeMs, long totalBytes) {
         mGuid = guid;
         mUrl = url;
+        mTitle = title;
         mTargetPath = targetPath;
         mStartTimeMs = startTimeMs;
         mTotalBytes = totalBytes;
@@ -29,6 +32,11 @@ public class OfflinePageDownloadItem {
     /** @return URL related to the item. */
     public String getUrl() {
         return mUrl;
+    }
+
+    /** @return Title of the page. */
+    public String getTitle() {
+        return mTitle;
     }
 
     /** @return Path to the offline item on the disk. */

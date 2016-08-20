@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -42,6 +43,7 @@ static const base::FilePath kTestFilePath =
     base::FilePath(FILE_PATH_LITERAL("foo/bar.mhtml"));
 static const int kFileSize = 1000;
 static const base::Time kTestCreationTime = base::Time::Now();
+static const base::string16 kTestTitle = base::ASCIIToUTF16("test title");
 }  // namespace
 
 // Mock OfflinePageModel for testing the SavePage calls.
@@ -58,6 +60,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
                          kTestFilePath,
                          kFileSize,
                          kTestCreationTime);
+    page.title = kTestTitle;
     pages[kTestOfflineId1] = page;
   }
 
@@ -198,6 +201,7 @@ TEST_F(DownloadUIAdapterTest, InitialItemConversion) {
   EXPECT_EQ(kTestFilePath, item->target_path);
   EXPECT_EQ(kTestCreationTime, item->start_time);
   EXPECT_EQ(kFileSize, item->total_bytes);
+  EXPECT_EQ(kTestTitle, item->title);
 }
 
 TEST_F(DownloadUIAdapterTest, ItemDeletedAdded) {

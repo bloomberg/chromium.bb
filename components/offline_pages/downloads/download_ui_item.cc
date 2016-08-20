@@ -13,6 +13,7 @@ DownloadUIItem::DownloadUIItem()
 DownloadUIItem::DownloadUIItem(const OfflinePageItem& page)
     : guid(page.client_id.id),
       url(page.url),
+      title(page.title),
       target_path(page.file_path),
       start_time(page.creation_time),
       total_bytes(page.file_size) {}

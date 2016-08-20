@@ -1558,6 +1558,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             final OfflinePageDownloadBridge bridge =
                     new OfflinePageDownloadBridge(currentTab.getProfile());
             bridge.startDownload(currentTab);
+            bridge.destroy();
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();

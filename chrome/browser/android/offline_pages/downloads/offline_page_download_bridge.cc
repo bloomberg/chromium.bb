@@ -26,6 +26,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -43,6 +44,7 @@ void ToJavaOfflinePageDownloadItemList(
     Java_OfflinePageDownloadBridge_createDownloadItemAndAddToList(
         env, j_result_obj, ConvertUTF8ToJavaString(env, item->guid),
         ConvertUTF8ToJavaString(env, item->url.spec()),
+        ConvertUTF16ToJavaString(env, item->title),
         ConvertUTF8ToJavaString(env, item->target_path.value()),
         item->start_time.ToJavaTime(), item->total_bytes);
   }
@@ -54,6 +56,7 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
   return Java_OfflinePageDownloadBridge_createDownloadItem(
       env, ConvertUTF8ToJavaString(env, item.guid),
       ConvertUTF8ToJavaString(env, item.url.spec()),
+      ConvertUTF16ToJavaString(env, item.title),
       ConvertUTF8ToJavaString(env, item.target_path.value()),
       item.start_time.ToJavaTime(), item.total_bytes);
 }
