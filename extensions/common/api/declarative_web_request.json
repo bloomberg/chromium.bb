@@ -7,6 +7,122 @@
     "namespace": "declarativeWebRequest",
     "description": "<em><strong>Note:</strong> this API is currently on hold, without concrete plans to move to stable.</em> Use the <code>chrome.declarativeWebRequest</code> API to intercept, block, or modify requests in-flight. It is significantly faster than the <a href='webRequest'><code>chrome.webRequest</code> API</a> because you can register rules that are evaluated in the browser rather than the JavaScript engine with reduces roundtrip latencies and allows higher efficiency.",
     "types": [
+      // TODO(devlin): The declarativeWebRequest API uses these enums as a form
+      // of RTTI, but it's a rather verbose implementation. We should see if we
+      // can do better.
+      {
+        "id": "RequestMatcherInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RequestMatcher"]
+      },
+      {
+        "id": "CancelRequestInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.CancelRequest"]
+      },
+      {
+        "id": "RedirectRequestInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RedirectRequest"]
+      },
+      {
+        "id": "RedirectToTransparentImageInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RedirectToTransparentImage"]
+      },
+      {
+        "id": "RedirectToEmptyDocumentInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RedirectToEmptyDocument"]
+      },
+      {
+        "id": "RedirectByRegExInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RedirectByRegEx"]
+      },
+      {
+        "id": "SetRequestHeaderInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.SetRequestHeader"]
+      },
+      {
+        "id": "RemoveRequestHeaderInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RemoveRequestHeader"]
+      },
+      {
+        "id": "AddResponseHeaderInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.AddResponseHeader"]
+      },
+      {
+        "id": "RemoveResponseHeaderInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RemoveResponseHeader"]
+      },
+      {
+        "id": "IgnoreRulesInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.IgnoreRules"]
+      },
+      {
+        "id": "SendMessageToExtensionInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.SendMessageToExtension"]
+      },
+      {
+        "id": "AddRequestCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.AddRequestCookie"]
+      },
+      {
+        "id": "AddResponseCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.AddResponseCookie"]
+      },
+      {
+        "id": "EditRequestCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.EditRequestCookie"]
+      },
+      {
+        "id": "EditResponseCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.EditResponseCookie"]
+      },
+      {
+        "id": "RemoveRequestCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RemoveRequestCookie"]
+      },
+      {
+        "id": "RemoveResponseCookieInstanceType",
+        "type": "string",
+        "nodoc": true,
+        "enum": ["declarativeWebRequest.RemoveResponseCookie"]
+      },
+      {
+        "id": "Stage",
+        "type": "string",
+        "enum": ["onBeforeRequest", "onBeforeSendHeaders", "onHeadersReceived", "onAuthRequired"]
+      },
       {
         "id": "HeaderFilter",
         "type": "object",
@@ -79,7 +195,7 @@
             "type": "array",
             "optional": true,
             "description": "Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.",
-            "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "other"] }
+            "items": { "$ref": "webRequest.ResourceType" }
           },
           "contentType": {
             "type": "array",
@@ -124,15 +240,12 @@
           },
           "stages": {
             "type": "array",
-            "items": {
-              "type": "string",
-              "enum": ["onBeforeRequest", "onBeforeSendHeaders", "onHeadersReceived", "onAuthRequired"]
-            },
+            "items": { "$ref": "Stage" },
             "optional": true,
             "description": "Contains a list of strings describing stages. Allowed values are 'onBeforeRequest', 'onBeforeSendHeaders', 'onHeadersReceived', 'onAuthRequired'. If this attribute is present, then it limits the applicable stages to those listed. Note that the whole condition is only applicable in stages compatible with all attributes."
           },
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"],
+            "$ref": "RequestMatcherInstanceType",
             "nodoc": true
           }
         }
@@ -143,7 +256,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.CancelRequest"],
+            "$ref": "CancelRequestInstanceType",
             "nodoc": true
           }
         }
@@ -154,7 +267,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RedirectRequest"],
+            "$ref": "RedirectRequestInstanceType",
             "nodoc": true
           },
           "redirectUrl": { "type": "string", "description": "Destination to where the request is redirected."}
@@ -166,7 +279,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RedirectToTransparentImage"],
+            "$ref": "RedirectToTransparentImageInstanceType",
             "nodoc": true
           }
         }
@@ -177,7 +290,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RedirectToEmptyDocument"],
+            "$ref": "RedirectToEmptyDocumentInstanceType",
             "nodoc": true
           }
         }
@@ -188,7 +301,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RedirectByRegEx"],
+            "$ref": "RedirectByRegExInstanceType",
             "nodoc": true
           },
           "from": {
@@ -207,7 +320,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.SetRequestHeader"],
+            "$ref": "SetRequestHeaderInstanceType",
             "nodoc": true
           },
           "name": {
@@ -226,7 +339,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RemoveRequestHeader"],
+            "$ref": "RemoveRequestHeaderInstanceType",
             "nodoc": true
           },
           "name": {
@@ -241,7 +354,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.AddResponseHeader"],
+            "$ref": "AddResponseHeaderInstanceType",
             "nodoc": true
           },
           "name": {
@@ -260,7 +373,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RemoveResponseHeader"],
+            "$ref": "RemoveResponseHeaderInstanceType",
             "nodoc": true
           },
           "name": {
@@ -280,7 +393,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.IgnoreRules"],
+            "$ref": "IgnoreRulesInstanceType",
             "nodoc": true
           },
           "lowerPriorityThan": {
@@ -301,7 +414,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.SendMessageToExtension"],
+            "$ref": "SendMessageToExtensionInstanceType",
             "nodoc": true
           },
           "message": {
@@ -444,7 +557,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.AddRequestCookie"],
+            "$ref": "AddRequestCookieInstanceType",
             "nodoc": true
           },
           "cookie": {
@@ -459,7 +572,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.AddResponseCookie"],
+            "$ref": "AddResponseCookieInstanceType",
             "nodoc": true
           },
           "cookie": {
@@ -474,7 +587,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.EditRequestCookie"],
+            "$ref": "EditRequestCookieInstanceType",
             "nodoc": true
           },
           "filter": {
@@ -493,7 +606,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.EditResponseCookie"],
+            "$ref": "EditResponseCookieInstanceType",
             "nodoc": true
           },
           "filter": {
@@ -512,7 +625,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RemoveRequestCookie"],
+            "$ref": "RemoveRequestCookieInstanceType",
             "nodoc": true
           },
           "filter": {
@@ -527,7 +640,7 @@
         "type": "object",
         "properties": {
           "instanceType": {
-            "type": "string", "enum": ["declarativeWebRequest.RemoveResponseCookie"],
+            "$ref": "RemoveResponseCookieInstanceType",
             "nodoc": true
           },
           "filter": {
@@ -577,8 +690,7 @@
             "name": "details",
             "properties": {
               "message": {"type": "string", "description": "The message sent by the calling script."},
-              "stage": {"type": "string",
-                        "enum": ["onBeforeRequest", "onBeforeSendHeaders", "onHeadersReceived", "onAuthRequired"],
+              "stage": {"$ref": "Stage",
                         "description": "The stage of the network request during which the event was triggered."},
               "requestId": {"type": "string", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
               "url": {"type": "string"},
@@ -586,7 +698,8 @@
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
-              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
+              "type": {"$ref": "webRequest.ResourceType",
+                       "description": "How the requested resource will be used."},
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."}
             }
           }

@@ -67,6 +67,10 @@
     'non_compiled_schema_files': [
       'web_request_internal.json',
     ],
+    'non_compiled_bundle_schema_files': [
+      'declarative_web_request.json',
+      'web_view_request.json',
+    ],
     'conditions': [
       ['chromeos==1', {
         'schema_files': [
