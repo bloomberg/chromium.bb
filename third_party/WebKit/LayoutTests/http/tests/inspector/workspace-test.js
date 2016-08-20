@@ -133,7 +133,7 @@ InspectorTest._defaultWorkspaceEventHandler = function(event)
         return;
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
         return;
-    InspectorTest.addResult("Workspace event: " + event.type + ": " + uiSourceCode.url() + ".");
+    InspectorTest.addResult(`Workspace event: ${event.type.toString()}: ${uiSourceCode.url()}.`);
 }
 
 InspectorTest.uiSourceCodeURL = function(uiSourceCode)

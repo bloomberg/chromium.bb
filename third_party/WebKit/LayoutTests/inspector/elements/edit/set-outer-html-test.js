@@ -41,7 +41,7 @@ InspectorTest.recordEvent = function(eventName, event)
         if (currentNode.getAttribute("id") === "output")
             return;
     }
-    InspectorTest.events.push("Event " + eventName + ": " + node.nodeName());
+    InspectorTest.events.push("Event " + eventName.toString() + ": " + node.nodeName());
 }
 
 InspectorTest.patchOuterHTML = function(pattern, replacement, next)

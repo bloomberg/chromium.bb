@@ -27,7 +27,7 @@ function test()
 
             function didShowScriptSourceAgain()
             {
-                var listeners = WebInspector.breakpointManager._listeners.get("breakpoint-added");
+                var listeners = WebInspector.breakpointManager._listeners.get(WebInspector.BreakpointManager.Events.BreakpointAdded);
                 // There should be 3 breakpoint-added event listeners:
                 //  - BreakpointsSidebarPane
                 //  - 2 shown tabs

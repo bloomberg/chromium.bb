@@ -17,7 +17,7 @@ function test()
 
     function onWorkingCopyCommitted(event)
     {
-        WebInspector.workspace.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
+        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
         var uiSourceCode = event.data.uiSourceCode;
         InspectorTest.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
         uiSourceCode.requestContent().then(printContent(onContent))
