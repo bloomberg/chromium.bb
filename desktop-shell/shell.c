@@ -4588,6 +4588,8 @@ handle_output_destroy(struct wl_listener *listener, void *data)
 
 	shell_for_each_layer(shell, shell_output_destroy_move_layer, output);
 
+	wl_list_remove(&output_listener->panel_surface_listener.link);
+	wl_list_remove(&output_listener->background_surface_listener.link);
 	wl_list_remove(&output_listener->destroy_listener.link);
 	wl_list_remove(&output_listener->link);
 	free(output_listener);
