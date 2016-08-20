@@ -495,7 +495,12 @@ void ContextState::RestoreState(const ContextState* prev_state) {
   RestoreIndexedUniformBufferBindings(prev_state);
   RestoreGlobalState(prev_state);
 
-  if (prev_state && framebuffer_srgb_ != prev_state->framebuffer_srgb_) {
+  if (!prev_state) {
+    if (feature_info_->feature_flags().desktop_srgb_support) {
+      framebuffer_srgb_ = false;
+      glDisable(GL_FRAMEBUFFER_SRGB);
+    }
+  } else if (framebuffer_srgb_ != prev_state->framebuffer_srgb_) {
     // FRAMEBUFFER_SRGB will be restored lazily at render time.
     framebuffer_srgb_ = prev_state->framebuffer_srgb_;
   }
