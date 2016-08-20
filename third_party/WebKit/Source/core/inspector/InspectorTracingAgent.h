@@ -25,8 +25,10 @@ public:
     public:
         virtual ~Client() { }
 
-        virtual void enableTracing(const String& categoryFilter) { }
-        virtual void disableTracing() { }
+        virtual void enableTracing(const String& categoryFilter) = 0;
+        virtual void disableTracing() = 0;
+        virtual void showReloadingBlanket() = 0;
+        virtual void hideReloadingBlanket() = 0;
     };
 
     static InspectorTracingAgent* create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
@@ -40,19 +42,25 @@ public:
     void restore() override;
     void disable(ErrorString*) override;
 
+    // InspectorInstrumentation methods
+    void frameStartedLoading(LocalFrame*);
+    void frameStoppedLoading(LocalFrame*);
+
     // Protocol method implementations.
     void start(const Maybe<String>& categories, const Maybe<String>& options, const Maybe<double>& bufferUsageReportingInterval, const Maybe<String>& transferMode, const Maybe<protocol::Tracing::TraceConfig>&, std::unique_ptr<StartCallback>) override;
     void end(std::unique_ptr<EndCallback>) override;
 
     // Methods for other agents to use.
     void setLayerTreeId(int);
+    void rootLayerCleared();
 
 private:
     InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectedFrames*);
 
     void emitMetadataEvents();
-    void resetSessionId();
-    String sessionId();
+    void innerDisable();
+    String sessionId() const;
+    bool isStarted() const;
 
     int m_layerTreeId;
     Client* m_client;

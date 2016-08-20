@@ -4275,6 +4275,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
         m_layerTreeView->clearViewportLayers();
+        if (WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl())
+            devTools->rootLayerCleared();
     }
 }
 

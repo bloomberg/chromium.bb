@@ -95,6 +95,7 @@ public:
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);
     void layerTreeViewChanged(WebLayerTreeView*);
+    void rootLayerCleared();
 
     // WebDevToolsAgent implementation.
     void attach(const WebString& hostId, int sessionId) override;
@@ -112,6 +113,8 @@ private:
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;
     void disableTracing() override;
+    void showReloadingBlanket() override;
+    void hideReloadingBlanket() override;
 
     // InspectorEmulationAgent::Client implementation.
     void setCPUThrottlingRate(double) override;

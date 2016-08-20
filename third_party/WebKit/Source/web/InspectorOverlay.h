@@ -86,6 +86,8 @@ public:
     bool handleInputEvent(const WebInputEvent&);
     void pageLayoutInvalidated(bool resized);
     void setShowViewportSizeOnResize(bool);
+    void showReloadingBlanket();
+    void hideReloadingBlanket();
     void setPausedInDebuggerMessage(const String&);
 
     // Does not yet include paint.
@@ -159,6 +161,7 @@ private:
     bool m_omitTooltip;
     Timer<InspectorOverlay> m_timer;
     bool m_suspended;
+    bool m_showReloadingBlanket;
     bool m_inLayout;
     bool m_needsUpdate;
     v8_inspector::V8InspectorSession* m_v8Session;

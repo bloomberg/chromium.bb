@@ -521,6 +521,12 @@ void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
         m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
+void WebDevToolsAgentImpl::rootLayerCleared()
+{
+    if (m_tracingAgent)
+        m_tracingAgent->rootLayerCleared();
+}
+
 void WebDevToolsAgentImpl::layerTreeViewChanged(WebLayerTreeView* layerTreeView)
 {
     m_layerTreeId = layerTreeView ? layerTreeView->layerTreeId() : 0;
@@ -538,6 +544,18 @@ void WebDevToolsAgentImpl::disableTracing()
 {
     if (m_client)
         m_client->disableTracing();
+}
+
+void WebDevToolsAgentImpl::showReloadingBlanket()
+{
+    if (m_overlay)
+        m_overlay->showReloadingBlanket();
+}
+
+void WebDevToolsAgentImpl::hideReloadingBlanket()
+{
+    if (m_overlay)
+        m_overlay->hideReloadingBlanket();
 }
 
 void WebDevToolsAgentImpl::setCPUThrottlingRate(double rate)

@@ -232,10 +232,10 @@ class XMLHttpRequest;
     [DOM]
     void frameDocumentUpdated([Keep] LocalFrame*);
 
-    [Page]
+    [Page, Tracing]
     void frameStartedLoading([Keep] LocalFrame*);
 
-    [Page]
+    [Page, Tracing]
     void frameStoppedLoading([Keep] LocalFrame*);
 
     [Page, Network]

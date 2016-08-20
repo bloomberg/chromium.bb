@@ -178,6 +178,7 @@ InspectorOverlay::InspectorOverlay(WebViewImpl* webViewImpl)
     , m_omitTooltip(false)
     , m_timer(this, &InspectorOverlay::onTimer)
     , m_suspended(false)
+    , m_showReloadingBlanket(false)
     , m_inLayout(false)
     , m_needsUpdate(false)
     , m_inspectMode(InspectorDOMAgent::NotSearching)
@@ -293,6 +294,23 @@ void InspectorOverlay::setPausedInDebuggerMessage(const String& message)
     scheduleUpdate();
 }
 
+void InspectorOverlay::showReloadingBlanket()
+{
+    m_showReloadingBlanket = true;
+    scheduleUpdate();
+}
+
+void InspectorOverlay::hideReloadingBlanket()
+{
+    if (!m_showReloadingBlanket)
+        return;
+    m_showReloadingBlanket = false;
+    if (m_suspended)
+        clearInternal();
+    else
+        scheduleUpdate();
+}
+
 void InspectorOverlay::hideHighlight()
 {
     m_highlightNode.clear();
@@ -353,6 +371,8 @@ void InspectorOverlay::highlightQuad(std::unique_ptr<FloatQuad> quad, const Insp
 
 bool InspectorOverlay::isEmpty()
 {
+    if (m_showReloadingBlanket)
+        return false;
     if (m_suspended)
         return true;
     bool hasVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad  || (m_resizeTimerActive && m_drawViewSize) || !m_pausedInDebuggerMessage.isNull();
@@ -387,6 +407,10 @@ void InspectorOverlay::rebuildOverlayPage()
 
     reset(viewportSize, visibleRectInDocument.location());
 
+    if (m_showReloadingBlanket) {
+        evaluateInOverlay("showReloadingBlanket", "");
+        return;
+    }
     drawNodeHighlight();
     drawQuadHighlight();
     drawPausedInDebuggerMessage();
