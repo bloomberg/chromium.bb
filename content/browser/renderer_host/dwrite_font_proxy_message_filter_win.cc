@@ -41,6 +41,7 @@ enum DirectWriteFontLoaderType {
   FILE_SYSTEM_FONT_DIR = 0,
   FILE_OUTSIDE_SANDBOX = 1,
   OTHER_LOADER = 2,
+  FONT_WITH_MISSING_REQUIRED_STYLES = 3,
 
   FONT_LOADER_TYPE_MAX_VALUE
 };
@@ -131,6 +132,61 @@ const base::Feature kForceCustomFonts {
   "ForceDirectWriteCustomFonts", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+struct RequiredFontStyle {
+  const wchar_t* family_name;
+  DWRITE_FONT_WEIGHT required_weight;
+  DWRITE_FONT_STRETCH required_stretch;
+  DWRITE_FONT_STYLE required_style;
+};
+
+const RequiredFontStyle kRequiredStyles[] = {
+    {L"open sans", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+     DWRITE_FONT_STYLE_NORMAL},
+    {L"helvetica", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+     DWRITE_FONT_STYLE_NORMAL},
+};
+
+// As a workaround for crbug.com/635932, refuse to load some common fonts that
+// do not contain certain styles. We found that sometimes these fonts are
+// installed only in specialized styles ('Open Sans' might only be available in
+// the condensed light variant, or Helvetica might only be available in bold).
+// That results in a poor user experience because websites that use those fonts
+// usually expect them to be rendered in the regular variant.
+bool CheckRequiredStylesPresent(IDWriteFontCollection* collection,
+                                const base::string16& family_name,
+                                uint32_t family_index) {
+  for (const auto& font_style : kRequiredStyles) {
+    if (base::EqualsCaseInsensitiveASCII(family_name, font_style.family_name)) {
+      mswr::ComPtr<IDWriteFontFamily> family;
+      if (FAILED(collection->GetFontFamily(family_index, &family))) {
+        DCHECK(false);
+        return true;
+      }
+      mswr::ComPtr<IDWriteFont> font;
+      if (FAILED(family->GetFirstMatchingFont(
+          font_style.required_weight, font_style.required_stretch,
+          font_style.required_style, &font))) {
+        DCHECK(false);
+        return true;
+      }
+
+      // GetFirstMatchingFont doesn't require strict style matching, so check
+      // the actual font that we got.
+      if (font->GetWeight() != font_style.required_weight ||
+          font->GetStretch() != font_style.required_stretch ||
+          font->GetStyle() != font_style.required_style) {
+        // Not really a loader type, but good to have telemetry on how often
+        // fonts like these are encountered, and the data can be compared with
+        // the other loader types.
+        LogLoaderType(FONT_WITH_MISSING_REQUIRED_STYLES);
+        return false;
+      }
+      break;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 DWriteFontProxyMessageFilter::DWriteFontProxyMessageFilter()
@@ -178,8 +234,10 @@ void DWriteFontProxyMessageFilter::OnFindFamily(
     UINT32 index = UINT32_MAX;
     HRESULT hr =
         collection_->FindFamilyName(family_name.data(), &index, &exists);
-    if (SUCCEEDED(hr) && exists)
+    if (SUCCEEDED(hr) && exists &&
+        CheckRequiredStylesPresent(collection_.Get(), family_name, index)) {
       *family_index = index;
+    }
   }
 }
 
