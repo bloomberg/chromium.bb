@@ -20,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -341,7 +342,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             WarmupManager.getInstance().transferViewHierarchyTo(contentParent);
             contentParent.removeView(placeHolderView);
         } else {
-            setContentView(R.layout.main);
+            // Allow disk access for the setContentView call.
+            // On certain android configurations setContentView results in disk writes outside of
+            // our control.  So, we have to disable StrictMode to work. See crbug.com/639352.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
+            StrictMode.allowThreadDiskWrites();
+            try {
+                setContentView(R.layout.main);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
             if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
                 ViewStub toolbarContainerStub =
                         ((ViewStub) findViewById(R.id.control_container_stub));
