@@ -16,12 +16,28 @@ from telemetry.util import rgba_color
 data_path = os.path.join(
     path_util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
+
+class SoftwareRasterSharedPageState(gpu_test_base.GpuSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(SoftwareRasterSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--disable-gpu-rasterization'])
+
+
+class GPURasterSharedPageState(gpu_test_base.GpuSharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(GPURasterSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--force-gpu-rasterization'])
+
+
 class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
-    options.AppendExtraBrowserArgs(['--force-gpu-rasterization',
-                                    '--test-type=gpu'])
+    options.AppendExtraBrowserArgs(['--test-type=gpu'])
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
@@ -56,14 +72,31 @@ class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
     for _ in range(0, repetitions):
       CheckScreenshot()
 
+
 class ScreenshotSyncPage(gpu_test_base.PageBase):
-  def __init__(self, story_set, base_dir, url, name, expectations):
+  def __init__(self, story_set, base_dir,
+               shared_page_state_class,
+               url, name, expectations):
     super(ScreenshotSyncPage, self).__init__(
       url=url,
       page_set=story_set,
       base_dir=base_dir,
       name=name,
+      shared_page_state_class=shared_page_state_class,
       expectations=expectations)
+
+
+class ScreenshotSyncStorySet(story_set_module.StorySet):
+  """Test cases for screenshots being in sync with content updates."""
+  def __init__(self, base_dir=None, serving_dirs=None):
+    super(ScreenshotSyncStorySet, self).__init__(
+      base_dir=base_dir, serving_dirs=serving_dirs)
+
+  @property
+  def allow_mixed_story_states(self):
+    # Return True here in order to be able to run the same tests with
+    # both software and GPU rasterization.
+    return True
 
 
 class ScreenshotSyncProcess(gpu_test_base.TestBase):
@@ -79,13 +112,25 @@ class ScreenshotSyncProcess(gpu_test_base.TestBase):
     return screenshot_sync_expectations.ScreenshotSyncExpectations()
 
   def CreateStorySet(self, options):
-    ps = story_set_module.StorySet(base_dir=data_path, serving_dirs=[''])
+    ps = ScreenshotSyncStorySet(base_dir=data_path, serving_dirs=[''])
     ps.AddStory(ScreenshotSyncPage(ps, ps.base_dir,
+                                   SoftwareRasterSharedPageState,
                                    'file://screenshot_sync_canvas.html',
-                                   'ScreenshotSync.WithCanvas',
+                                   'ScreenshotSync.SWRasterWithCanvas',
                                    self.GetExpectations()))
     ps.AddStory(ScreenshotSyncPage(ps, ps.base_dir,
+                                   SoftwareRasterSharedPageState,
                                    'file://screenshot_sync_divs.html',
-                                   'ScreenshotSync.WithDivs',
+                                   'ScreenshotSync.SWRasterWithDivs',
+                                   self.GetExpectations()))
+    ps.AddStory(ScreenshotSyncPage(ps, ps.base_dir,
+                                   GPURasterSharedPageState,
+                                   'file://screenshot_sync_canvas.html',
+                                   'ScreenshotSync.GPURasterWithCanvas',
+                                   self.GetExpectations()))
+    ps.AddStory(ScreenshotSyncPage(ps, ps.base_dir,
+                                   GPURasterSharedPageState,
+                                   'file://screenshot_sync_divs.html',
+                                   'ScreenshotSync.GPURasterWithDivs',
                                    self.GetExpectations()))
     return ps
