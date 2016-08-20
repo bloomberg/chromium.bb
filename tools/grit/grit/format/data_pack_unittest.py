@@ -13,7 +13,6 @@ if __name__ == '__main__':
 
 import unittest
 
-from grit import exception
 from grit.format import data_pack
 
 
@@ -32,39 +31,6 @@ class FormatDataPackUnittest(unittest.TestCase):
     input = {1: '', 4: 'this is id 4', 6: 'this is id 6', 10: ''}
     output = data_pack.WriteDataPackToString(input, data_pack.UTF8)
     self.failUnless(output == expected)
-
-  def testIncludeWithReservedHeader(self):
-    from grit import util
-    from grit.node import misc, include, empty
-    root = misc.GritNode()
-    root.StartParsing(u'grit', None)
-    root.HandleAttribute(u'latest_public_release', u'0')
-    root.HandleAttribute(u'current_release', u'1')
-    root.HandleAttribute(u'base_dir', ur'..\resource')
-    release = misc.ReleaseNode()
-    release.StartParsing(u'release', root)
-    release.HandleAttribute(u'seq', u'1')
-    root.AddChild(release)
-    includes = empty.IncludesNode()
-    includes.StartParsing(u'includes', release)
-    release.AddChild(includes)
-    include_node = include.IncludeNode()
-    include_node.StartParsing(u'include', includes)
-    include_node.HandleAttribute(u'name', u'test')
-    include_node.HandleAttribute(u'type', u'BINDATA')
-    include_node.HandleAttribute(u'file', u'doesntmatter')
-    includes.AddChild(include_node)
-    include_node.EndParsing()
-    root.EndParsing()
-
-    ReadFile_copy = util.ReadFile
-    try:
-      util.ReadFile = lambda a, b: include.IncludeNode.RESERVED_HEADER
-      with self.assertRaises(exception.ReservedHeaderCollision):
-        data_pack.Format(root)
-
-    finally:
-      util.ReadFile = ReadFile_copy
 
   def testRePackUnittest(self):
     expected_with_whitelist = {

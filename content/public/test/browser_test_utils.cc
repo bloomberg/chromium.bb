@@ -58,6 +58,8 @@
 #include "content/test/accessibility_browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
+#include "net/filter/filter.h"
+#include "net/filter/gzip_header.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -374,6 +376,37 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
 
   base::Closure on_will_start_request_closure_;
 };
+
+bool HasGzipHeader(const base::RefCountedMemory& maybe_gzipped) {
+  net::GZipHeader header;
+  net::GZipHeader::Status header_status = net::GZipHeader::INCOMPLETE_HEADER;
+  const char* header_end = nullptr;
+  while (header_status == net::GZipHeader::INCOMPLETE_HEADER) {
+    header_status = header.ReadMore(maybe_gzipped.front_as<char>(),
+                                    maybe_gzipped.size(),
+                                    &header_end);
+  }
+  return header_status == net::GZipHeader::COMPLETE_HEADER;
+}
+
+void AppendGzippedResource(const base::RefCountedMemory& encoded,
+                           std::string* to_append) {
+  std::unique_ptr<net::Filter> filter = net::Filter::GZipFactory();
+  memcpy(filter->stream_buffer()->data(), encoded.front_as<char>(),
+         encoded.size());
+  filter->FlushStreamBuffer(encoded.size());
+
+  const int kBufferSize = 4096;
+  char dest_buffer[kBufferSize];
+
+  net::Filter::FilterStatus status;
+  do {
+    int read_size = kBufferSize;
+    status = filter->ReadData(dest_buffer, &read_size);
+    ASSERT_NE(status, net::Filter::FILTER_ERROR);
+    to_append->append(dest_buffer, read_size);
+  } while (status != net::Filter::FILTER_DONE);
+}
 
 }  // namespace
 
@@ -844,9 +877,14 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   for (std::vector<int>::iterator iter = ids.begin();
        iter != ids.end();
        ++iter) {
-    scoped_refptr<base::RefCountedMemory> resource =
+    scoped_refptr<base::RefCountedMemory> bytes =
         ResourceBundle::GetSharedInstance().LoadDataResourceBytes(*iter);
-    script.append(resource->front_as<char>(), resource->size());
+
+    if (HasGzipHeader(*bytes))
+      AppendGzippedResource(*bytes, &script);
+    else
+      script.append(bytes->front_as<char>(), bytes->size());
+
     script.append("\n");
   }
   if (!ExecuteScript(web_contents, script))

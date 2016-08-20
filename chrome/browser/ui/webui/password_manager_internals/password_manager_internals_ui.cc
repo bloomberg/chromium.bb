@@ -39,6 +39,7 @@ content::WebUIDataSource* CreatePasswordManagerInternalsHTMLSource() {
       IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_CSS);
   source->SetDefaultResource(
       IDR_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_HTML);
+  source->DisableI18nAndUseGzipForAllPaths();
   return source;
 }
 

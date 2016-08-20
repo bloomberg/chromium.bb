@@ -38,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/filter/filter.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_util.h"
@@ -125,6 +126,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
+  std::unique_ptr<net::Filter> SetupFilter() const override;
 
   // Used to notify that the requested data's |mime_type| is ready.
   void MimeTypeAvailable(const std::string& mime_type);
@@ -183,6 +185,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   void set_access_control_allow_origin(const std::string& value) {
     access_control_allow_origin_ = value;
+  }
+
+  void set_is_gzipped(bool is_gzipped) {
+    is_gzipped_ = is_gzipped;
   }
 
   // Returns true when job was generated from an incognito profile.
@@ -246,6 +252,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   // True when job is generated from an incognito profile.
   const bool is_incognito_;
+
+  // True when gzip encoding should be used. NOTE: this requires the original
+  // resources in resources.pak use compress="gzip".
+  bool is_gzipped_;
 
   // The backend is owned by net::URLRequestContext and always outlives us.
   URLDataManagerBackend* backend_;
@@ -355,6 +365,13 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
                              access_control_allow_origin_);
     info->headers->AddHeader("Vary: Origin");
   }
+
+  if (is_gzipped_)
+    info->headers->AddHeader("Content-Encoding: gzip");
+}
+
+std::unique_ptr<net::Filter> URLRequestChromeJob::SetupFilter() const {
+  return is_gzipped_ ? net::Filter::GZipFactory() : nullptr;
 }
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
@@ -635,6 +652,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
       source->source()->ShouldDenyXFrameOptions());
   job->set_send_content_type_header(
       source->source()->ShouldServeMimeTypeAsContentTypeHeader());
+  job->set_is_gzipped(source->source()->IsGzipped(path));
 
   std::string origin = GetOriginHeaderValue(request);
   if (!origin.empty()) {

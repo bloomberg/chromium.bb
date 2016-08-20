@@ -351,6 +351,7 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
   source->AddResourcePath("appcache_internals.js", IDR_APPCACHE_INTERNALS_JS);
   source->AddResourcePath("appcache_internals.css", IDR_APPCACHE_INTERNALS_CSS);
   source->SetDefaultResource(IDR_APPCACHE_INTERNALS_HTML);
+  source->DisableI18nAndUseGzipForAllPaths();
 
   WebUIDataSource::Add(browser_context(), source);
 

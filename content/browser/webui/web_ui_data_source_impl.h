@@ -44,6 +44,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
+  void DisableI18nAndUseGzipForAllPaths() override;
 
  protected:
   ~WebUIDataSourceImpl() override;
@@ -96,6 +97,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   bool deny_xframe_options_;
   bool add_load_time_data_defaults_;
   bool replace_existing_source_;
+  bool use_gzip_for_all_paths_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };

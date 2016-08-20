@@ -50,6 +50,7 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("translate_internals.js",
                           IDR_TRANSLATE_INTERNALS_TRANSLATE_INTERNALS_JS);
+  source->DisableI18nAndUseGzipForAllPaths();
 
   base::DictionaryValue langs;
   GetLanguages(&langs);

@@ -85,6 +85,10 @@ class WebUIDataSource {
   virtual void OverrideContentSecurityPolicyChildSrc(
       const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
+
+  // Tells the loading code that resources are gzipped on disk. TODO(dbeam):
+  // write a streaming $i18n{} replacer and remove the "DisableI18n" part.
+  virtual void DisableI18nAndUseGzipForAllPaths() = 0;
 };
 
 }  // namespace content

@@ -147,6 +147,9 @@ class CONTENT_EXPORT URLDataSource {
   virtual void WillServiceRequest(
       const net::URLRequest* request,
       std::string* path) const {}
+
+  // Whether |path| is gzipped (and should be transmitted gzipped).
+  virtual bool IsGzipped(const std::string& path) const;
 };
 
 }  // namespace content

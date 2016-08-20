@@ -76,4 +76,8 @@ std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
   return std::string();
 }
 
+bool URLDataSource::IsGzipped(const std::string& path) const {
+  return false;
+}
+
 }  // namespace content

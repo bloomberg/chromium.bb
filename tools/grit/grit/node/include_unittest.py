@@ -78,8 +78,7 @@ class IncludeNodeUnittest(unittest.TestCase):
     inc, = root.GetChildrenOfType(include.IncludeNode)
     throwaway, compressed = inc.GetDataPackPair(lang='en', encoding=1)
 
-    # compressed[1:] ensures we skip the special inserted first byte.
-    decompressed_data = zlib.decompress(compressed[1:], 16 + zlib.MAX_WBITS)
+    decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
     self.assertEqual(util.ReadFile(util.PathFromRoot('grit/testdata')
                                    + "/test_text.txt", util.BINARY),
                      decompressed_data)

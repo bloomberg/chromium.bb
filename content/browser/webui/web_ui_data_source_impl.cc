@@ -74,6 +74,11 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
+  bool IsGzipped(const std::string& path) const override {
+    if (!parent_->json_path_.empty() && path == parent_->json_path_)
+      return false;
+    return parent_->use_gzip_for_all_paths_;
+  }
 
  private:
   WebUIDataSourceImpl* parent_;
@@ -88,7 +93,8 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       frame_src_set_(false),
       deny_xframe_options_(true),
       add_load_time_data_defaults_(true),
-      replace_existing_source_(true) {}
+      replace_existing_source_(true),
+      use_gzip_for_all_paths_(false) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
@@ -179,6 +185,10 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
+void WebUIDataSourceImpl::DisableI18nAndUseGzipForAllPaths() {
+  use_gzip_for_all_paths_ = true;
+}
+
 std::string WebUIDataSourceImpl::GetSource() const {
   return source_name_;
 }
@@ -240,8 +250,9 @@ void WebUIDataSourceImpl::StartDataRequest(
       GetContentClient()->GetDataResourceBytes(resource_id));
 
   // TODO(dschuyler): improve filtering of which resource to run template
-  // expansion upon.
-  if (GetMimeType(path) == "text/html") {
+  // expansion upon. TODO(dbeam): make a streaming filter that works on gzipped
+  // content.
+  if (GetMimeType(path) == "text/html" && !source()->IsGzipped(path)) {
     std::string replaced = ui::ReplaceTemplateExpressions(
         base::StringPiece(response->front_as<char>(), response->size()),
         replacements_);

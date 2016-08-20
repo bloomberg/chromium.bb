@@ -20,6 +20,7 @@ content::WebUIDataSource* CreatePopularSitesInternalsHTMLSource() {
   source->AddResourcePath("popular_sites_internals.css",
                           IDR_POPULAR_SITES_INTERNALS_CSS);
   source->SetDefaultResource(IDR_POPULAR_SITES_INTERNALS_HTML);
+  source->DisableI18nAndUseGzipForAllPaths();
   return source;
 }
 
