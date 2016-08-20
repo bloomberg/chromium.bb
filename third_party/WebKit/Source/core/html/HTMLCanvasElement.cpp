@@ -52,6 +52,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintTiming.h"
@@ -1220,11 +1221,11 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(const Element& elem
     return false;
 }
 
-std::pair<Element*, String> HTMLCanvasElement::getControlAndIdIfHitRegionExists(const LayoutPoint& location)
+HitTestCanvasResult* HTMLCanvasElement::getControlAndIdIfHitRegionExists(const LayoutPoint& location)
 {
     if (m_context && m_context->is2d())
         return m_context->getControlAndIdIfHitRegionExists(location);
-    return std::make_pair(nullptr, String());
+    return HitTestCanvasResult::create(String(), nullptr);
 }
 
 String HTMLCanvasElement::getIdFromControl(const Element* element)

@@ -57,6 +57,7 @@ class CanvasContextCreationAttributes;
 class CanvasRenderingContext;
 class CanvasRenderingContextFactory;
 class GraphicsContext;
+class HitTestCanvasResult;
 class HTMLCanvasElement;
 class Image;
 class ImageBitmapOptions;
@@ -200,7 +201,7 @@ public:
 
     // For Canvas HitRegions
     bool isSupportedInteractiveCanvasFallback(const Element&);
-    std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint&);
+    HitTestCanvasResult* getControlAndIdIfHitRegionExists(const LayoutPoint&);
     String getIdFromControl(const Element*);
 
     // For OffscreenCanvas that controls this html canvas element

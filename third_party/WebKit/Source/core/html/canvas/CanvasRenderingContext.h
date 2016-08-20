@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -107,7 +108,7 @@ public:
     virtual unsigned hitRegionsCount() const { return 0; }
     virtual void setFont(const String&) { }
     virtual void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) { }
-    virtual std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) { NOTREACHED(); return std::make_pair(nullptr, String()); }
+    virtual HitTestCanvasResult* getControlAndIdIfHitRegionExists(const LayoutPoint& location) { NOTREACHED(); return HitTestCanvasResult::create(String(), nullptr); }
     virtual String getIdFromControl(const Element* element) { return String(); }
     virtual bool isAccelerationOptimalForCanvasContent() const { return true; }
     virtual void resetUsageTracking() { };

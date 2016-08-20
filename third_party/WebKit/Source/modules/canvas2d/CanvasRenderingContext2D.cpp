@@ -46,6 +46,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/TextMetrics.h"
 #include "core/html/canvas/CanvasFontCache.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTheme.h"
 #include "modules/canvas2d/CanvasStyle.h"
@@ -589,10 +590,10 @@ bool CanvasRenderingContext2D::parseColorOrCurrentColor(Color& color, const Stri
     return ::blink::parseColorOrCurrentColor(color, colorString, canvas());
 }
 
-std::pair<Element*, String> CanvasRenderingContext2D::getControlAndIdIfHitRegionExists(const LayoutPoint& location)
+HitTestCanvasResult* CanvasRenderingContext2D::getControlAndIdIfHitRegionExists(const LayoutPoint& location)
 {
     if (hitRegionsCount() <= 0)
-        return std::make_pair(nullptr, String());
+        return HitTestCanvasResult::create(String(), nullptr);
 
     LayoutBox* box = canvas()->layoutBox();
     FloatPoint localPos = box->absoluteToLocal(FloatPoint(location), UseTransforms);
@@ -604,10 +605,10 @@ std::pair<Element*, String> CanvasRenderingContext2D::getControlAndIdIfHitRegion
     if (hitRegion) {
         Element* control = hitRegion->control();
         if (control && canvas()->isSupportedInteractiveCanvasFallback(*control))
-            return std::make_pair(hitRegion->control(), hitRegion->id());
-        return std::make_pair(nullptr, hitRegion->id());
+            return HitTestCanvasResult::create(hitRegion->id(), hitRegion->control());
+        return HitTestCanvasResult::create(hitRegion->id(), nullptr);
     }
-    return std::make_pair(nullptr, String());
+    return HitTestCanvasResult::create(String(), nullptr);
 }
 
 String CanvasRenderingContext2D::getIdFromControl(const Element* element)

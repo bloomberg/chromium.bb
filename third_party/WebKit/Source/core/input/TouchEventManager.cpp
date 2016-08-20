@@ -13,6 +13,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/TouchActionUtil.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
@@ -250,10 +251,10 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
                     if (!node)
                         continue;
                     if (isHTMLCanvasElement(node)) {
-                        std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
-                        if (regionInfo.first)
-                            node = regionInfo.first;
-                        touchInfo.region = regionInfo.second;
+                        HitTestCanvasResult* hitTestCanvasResult = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
+                        if (hitTestCanvasResult->getControl())
+                            node = hitTestCanvasResult->getControl();
+                        touchInfo.region = hitTestCanvasResult->getId();
                     }
                     // Touch events should not go to text nodes.
                     if (node->isTextNode())

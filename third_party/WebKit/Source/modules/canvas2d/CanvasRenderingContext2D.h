@@ -55,6 +55,7 @@ class FontMetrics;
 class HitRegion;
 class HitRegionOptions;
 class HitRegionManager;
+class HitTestCanvasResult;
 class Path2D;
 class SVGMatrixTearOff;
 class TextMetrics;
@@ -134,7 +135,7 @@ public:
     void willProcessTask() override { }
 
     void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle) override;
-    std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint& location) override;
+    HitTestCanvasResult* getControlAndIdIfHitRegionExists(const LayoutPoint& location) override;
     String getIdFromControl(const Element*) override;
 
     // SVGResourceClient implementation

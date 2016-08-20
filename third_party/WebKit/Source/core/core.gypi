@@ -581,6 +581,7 @@
             'layout/GeneratedChildren.h',
             'layout/HitTestCache.cpp',
             'layout/HitTestCache.h',
+            'layout/HitTestCanvasResult.cpp',
             'layout/HitTestLocation.cpp',
             'layout/HitTestLocation.h',
             'layout/HitTestResult.cpp',

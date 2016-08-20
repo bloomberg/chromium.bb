@@ -12,6 +12,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input/TouchActionUtil.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/PlatformTouchEvent.h"
@@ -424,10 +425,10 @@ void PointerEventManager::dispatchTouchPointerEvents(
             if (node) {
                 touchInfo.targetFrame = node->document().frame();
                 if (isHTMLCanvasElement(node)) {
-                    std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(hitTestTesult.pointInInnerNodeFrame());
-                    if (regionInfo.first)
-                        node = regionInfo.first;
-                    touchInfo.region = regionInfo.second;
+                    HitTestCanvasResult* hitTestCanvasResult = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(hitTestTesult.pointInInnerNodeFrame());
+                    if (hitTestCanvasResult->getControl())
+                        node = hitTestCanvasResult->getControl();
+                    touchInfo.region = hitTestCanvasResult->getId();
                 }
                 // TODO(crbug.com/612456): We need to investigate whether pointer
                 // events should go to text nodes or not. If so we need to

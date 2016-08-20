@@ -181,6 +181,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstanceCounters.h"
 #include "core/inspector/MainThreadDebugger.h"
+#include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
@@ -3182,10 +3183,11 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
 
     if (isHTMLCanvasElement(result.innerNode())) {
         PlatformMouseEvent eventWithRegion = event;
-        std::pair<Element*, String> regionInfo = toHTMLCanvasElement(result.innerNode())->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
-        if (regionInfo.first)
-            result.setInnerNode(regionInfo.first);
-        eventWithRegion.setRegion(regionInfo.second);
+        HitTestCanvasResult* hitTestCanvasResult = toHTMLCanvasElement(result.innerNode())->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
+        if (hitTestCanvasResult->getControl()) {
+            result.setInnerNode(hitTestCanvasResult->getControl());
+        }
+        eventWithRegion.setRegion(hitTestCanvasResult->getId());
         return MouseEventWithHitTestResults(eventWithRegion, result);
     }
 
