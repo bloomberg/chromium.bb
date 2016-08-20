@@ -331,6 +331,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateSurfaceContentsScale(EffectNode* node);
 
+  void OnOpacityAnimated(float opacity, int id, LayerTreeImpl* layer_tree_impl);
+
   void UpdateEffects(int id);
 
   void UpdateEffectChanged(EffectNode* node, EffectNode* parent_node);

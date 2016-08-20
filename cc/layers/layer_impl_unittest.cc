@@ -183,7 +183,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnFilterAnimated(arbitrary_filters));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
       root->OnFilterAnimated(FilterOperations()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->OnOpacityAnimated(arbitrary_number));
+  EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
+      host_impl.active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
+          arbitrary_number, root->effect_tree_index(),
+          host_impl.active_tree()));
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
       root->OnTransformAnimated(arbitrary_transform));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
@@ -320,7 +323,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->OnOpacityAnimated(arbitrary_number));
+      host_impl.active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
+          arbitrary_number, layer->effect_tree_index(),
+          host_impl.active_tree()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->OnTransformAnimated(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size);

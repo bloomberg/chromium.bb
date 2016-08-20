@@ -913,6 +913,20 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
           transform_tree.ToScreen(transform_node->id), layer_scale_factor);
 }
 
+void EffectTree::OnOpacityAnimated(float opacity,
+                                   int id,
+                                   LayerTreeImpl* layer_tree_impl) {
+  EffectNode* node = Node(id);
+  if (node->opacity == opacity)
+    return;
+  node->opacity = opacity;
+  node->effect_changed = true;
+  property_trees()->changed = true;
+  property_trees()->effect_tree.set_needs_update(true);
+  layer_tree_impl->set_needs_update_draw_properties();
+  layer_tree_impl->AddToOpacityAnimationsMap(node->owner_id, opacity);
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);

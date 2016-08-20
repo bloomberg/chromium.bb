@@ -27,7 +27,7 @@ void CompositorMutableState::setOpacity(double opacity)
 {
     if (!m_mainLayer)
         return;
-    m_mainLayer->OnOpacityAnimated(opacity);
+    m_mainLayer->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(opacity, m_mainLayer->effect_tree_index(), m_mainLayer->layer_tree_impl());
     m_mutation->setOpacity(opacity);
 }
 

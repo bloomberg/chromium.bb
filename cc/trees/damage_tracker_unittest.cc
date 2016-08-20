@@ -380,7 +380,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   EmulateDrawingOneFrame(root);
   ClearDamageForAllSurfaces(root);
   child->SetUpdateRect(gfx::Rect(10, 11, 12, 13));
-  child->OnOpacityAnimated(0.5f);
+  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.5f, child->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
 
   ASSERT_EQ(2u, root->render_surface()->layer_list().size());
@@ -521,7 +522,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
   ClearDamageForAllSurfaces(root);
-  child->OnOpacityAnimated(0.5f);
+  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.5f, child->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
 
   // The expected damage should cover the entire root surface (500x500), but we
@@ -980,7 +982,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   // CASE 1: Damage to a descendant surface should propagate properly to
   //         ancestor surface.
   ClearDamageForAllSurfaces(root);
-  grand_child1->OnOpacityAnimated(0.5f);
+  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.5f, grand_child1->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
   child_damage_rect =
           child1->render_surface()->damage_tracker()->current_damage_rect();
@@ -996,8 +999,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   // - child2 damage in root surface space:
   //   gfx::Rect(11, 11, 18, 18);
   ClearDamageForAllSurfaces(root);
-  grand_child1->OnOpacityAnimated(0.7f);
-  child2->OnOpacityAnimated(0.7f);
+  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.7f, grand_child1->effect_tree_index(), root->layer_tree_impl());
+  root->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.7f, child2->effect_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
   child_damage_rect =
           child1->render_surface()->damage_tracker()->current_damage_rect();

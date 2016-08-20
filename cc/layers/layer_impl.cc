@@ -608,7 +608,6 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
   UpdatePropertyTreeOpacity(opacity);
-  SetNeedsPushProperties();
   layer_tree_impl()->set_needs_update_draw_properties();
   layer_tree_impl()->AddToOpacityAnimationsMap(id(), opacity);
 }

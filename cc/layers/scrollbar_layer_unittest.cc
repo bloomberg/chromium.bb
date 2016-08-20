@@ -572,7 +572,8 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   // This tests that activation does not change the opacity of scrollbar layer.
   LayerImpl* scrollbar_layer_impl =
       layer_tree_impl->LayerById(scrollbar_layer->id());
-  scrollbar_layer_impl->OnOpacityAnimated(0.25f);
+  layer_tree_impl->property_trees()->effect_tree.OnOpacityAnimated(
+      0.25f, scrollbar_layer_impl->effect_tree_index(), layer_tree_impl);
   host_impl->CreatePendingTree();
   layer_impl_tree_root = layer_tree_host_->CommitAndCreatePendingTree();
   layer_tree_impl = layer_impl_tree_root->layer_tree_impl();

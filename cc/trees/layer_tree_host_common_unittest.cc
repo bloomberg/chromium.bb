@@ -1490,8 +1490,10 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_TRUE(node->is_drawn);
 
   // When root is transparent, the layer should not be drawn.
-  root->OnOpacityAnimated(0.f);
-  render_surface1->OnOpacityAnimated(1.f);
+  effect_tree.OnOpacityAnimated(0.f, root->effect_tree_index(),
+                                root->layer_tree_impl());
+  effect_tree.OnOpacityAnimated(1.f, render_surface1->effect_tree_index(),
+                                root->layer_tree_impl());
   render_surface1->set_visible_layer_rect(gfx::Rect());
   {
     LayerImplList render_surface_layer_list;

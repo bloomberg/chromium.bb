@@ -915,7 +915,9 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);
 
-  pending_child_layer->OnOpacityAnimated(0.0);
+  host_impl()->pending_tree()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.0f, pending_child_layer->effect_tree_index(),
+      host_impl()->pending_tree());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   host_impl()->pending_tree()->UpdateDrawProperties(update_lcd_text);

@@ -943,11 +943,13 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     gfx::Transform transform;
     FilterOperations filters;
+    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     switch (static_cast<Animations>(index_)) {
       case OPACITY:
         index_++;
         impl->active_tree()->ResetAllChangeTracking();
-        impl->active_tree()->root_layer_for_testing()->OnOpacityAnimated(0.5f);
+        impl->active_tree()->property_trees()->effect_tree.OnOpacityAnimated(
+            0.5f, root->effect_tree_index(), impl->active_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case TRANSFORM:
@@ -963,34 +965,26 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         transform.Translate(10, 10);
-        impl->active_tree()->root_layer_for_testing()->OnTransformAnimated(
-            transform);
+        root->OnTransformAnimated(transform);
         PostSetNeedsCommitToMainThread();
         break;
       case FILTER:
         index_++;
-        EXPECT_TRUE(impl->active_tree()
-                        ->root_layer_for_testing()
-                        ->LayerPropertyChanged());
+        EXPECT_TRUE(root->LayerPropertyChanged());
         EXPECT_TRUE(impl->active_tree()
                         ->LayerById(child_->id())
                         ->LayerPropertyChanged());
         impl->active_tree()->ResetAllChangeTracking();
-        EXPECT_FALSE(impl->active_tree()
-                         ->root_layer_for_testing()
-                         ->LayerPropertyChanged());
+        EXPECT_FALSE(root->LayerPropertyChanged());
         EXPECT_FALSE(impl->active_tree()
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-        impl->active_tree()->root_layer_for_testing()->OnFilterAnimated(
-            filters);
+        root->OnFilterAnimated(filters);
         PostSetNeedsCommitToMainThread();
         break;
       case END:
-        EXPECT_TRUE(impl->active_tree()
-                        ->root_layer_for_testing()
-                        ->LayerPropertyChanged());
+        EXPECT_TRUE(root->LayerPropertyChanged());
         EndTest();
         break;
     }
@@ -1056,11 +1050,12 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EffectTree& effect_tree = impl->sync_tree()->property_trees()->effect_tree;
-    EffectNode* node = effect_tree.Node(
-        impl->sync_tree()->root_layer_for_testing()->effect_tree_index());
+    LayerImpl* root = impl->sync_tree()->root_layer_for_testing();
+    EffectNode* node = effect_tree.Node(root->effect_tree_index());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
+        effect_tree.OnOpacityAnimated(0.75f, root->effect_tree_index(),
+                                      impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -1069,7 +1064,8 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_EQ(node->opacity, 0.75f);
-        impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
+        effect_tree.OnOpacityAnimated(0.75f, root->effect_tree_index(),
+                                      impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1078,8 +1074,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 4:
         EXPECT_EQ(node->opacity, 0.25f);
-        impl->sync_tree()->root_layer_for_testing()->OnFilterAnimated(
-            brightness_filter_);
+        root->OnFilterAnimated(brightness_filter_);
         PostSetNeedsCommitToMainThread();
         break;
       case 5:
@@ -1088,8 +1083,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 6:
         EXPECT_EQ(node->filters, brightness_filter_);
-        impl->sync_tree()->root_layer_for_testing()->OnFilterAnimated(
-            brightness_filter_);
+        root->OnFilterAnimated(brightness_filter_);
         PostSetNeedsCommitToMainThread();
         break;
       case 7:

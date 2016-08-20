@@ -3918,7 +3918,8 @@ void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
 
   LayerImpl* layer = tree->LayerByElementId(element_id);
   if (layer)
-    layer->OnOpacityAnimated(opacity);
+    tree->property_trees()->effect_tree.OnOpacityAnimated(
+        opacity, layer->effect_tree_index(), tree);
 }
 
 void LayerTreeHostImpl::SetTreeLayerTransformMutated(
