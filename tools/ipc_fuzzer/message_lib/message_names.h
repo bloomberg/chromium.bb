@@ -20,7 +20,7 @@ class MessageNames {
   ~MessageNames();
   static MessageNames* GetInstance();
 
-  void Add(uint32_t type, const std::string& name) {
+  void Add(uint32_t type, const char* name) {
     name_map_[type] = name;
     type_map_[name] = type;
   }

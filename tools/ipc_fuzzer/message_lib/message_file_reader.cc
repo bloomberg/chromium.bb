@@ -166,7 +166,7 @@ bool Reader::ReadNameTable() {
       LOG(ERROR) << "Invalid string table offset: " << offset;
       return false;
     }
-    name_map_.Add(entry->type, std::string(string_table_.data() + offset));
+    name_map_.Add(entry->type, string_table_.data() + offset);
   }
   return true;
 }
