@@ -791,10 +791,10 @@
                 "description": "Profile.",
                 "properties": [
                     { "name": "nodes", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "The list of profile nodes. First item is the root node." },
-                    { "name": "startTime", "type": "number", "description": "Profiling start time in seconds." },
-                    { "name": "endTime", "type": "number", "description": "Profiling end time in seconds." },
+                    { "name": "startTime", "type": "number", "description": "Profiling start timestamp in microseconds." },
+                    { "name": "endTime", "type": "number", "description": "Profiling end timestamp in microseconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." },
-                    { "name": "timestamps", "optional": true, "type": "array", "items": { "type": "number" }, "description": "Timestamps of the samples in microseconds." }
+                    { "name": "timestampDeltas", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Deltas between adjacent sample timestamps in microseconds. The first delta is relative to the profile startTime." }
                 ]
             },
             {

@@ -60,9 +60,8 @@ function test()
                     "children": []
                 }
             ].concat(buildTree(2, nodesCount)),
-            "idleTime": 0.002,
             "startTime": 0,
-            "endTime": nodesCount * 0.01 + 0.003
+            "endTime": nodesCount * 10e3 + 3e3
         }
     };
     var view = new WebInspector.CPUProfileView(profileAndExpectations);

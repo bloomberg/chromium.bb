@@ -260,8 +260,8 @@ function test()
     ];
 
     var cpuProfile = {
-        startTime: 420,
-        endTime: 430,
+        startTime: 420e3,
+        endTime: 430e3,
         nodes: [
             {
                 callFrame: { functionName: "(root)" },
@@ -282,8 +282,8 @@ function test()
                 id: 4
             }
         ],
-        timestamps: [421000, 422000, 423000, 424000, 425000, 426000, 427000, 428000, 429000],
-        samples: [2, 2, 3, 3, 3, 4, 4, 2, 2 ]
+        timestampDeltas: new Array(9).fill(1000),
+        samples: [2, 2, 3, 3, 3, 4, 4, 2, 2]
     };
 
     var timelineController = InspectorTest.timelineController();
@@ -291,7 +291,7 @@ function test()
     timelineController.traceEventsCollected(rawTraceEvents);
     timelineController._allSourcesFinished();
     var events = InspectorTest.timelineModel().inspectedTargetEvents();
-    events.forEach(e => InspectorTest.addResult(e.name + ": " + e.startTime + " " + (e.selfTime || 0).toFixed(2) + "/" + (e.duration || 0).toFixed(2)));
+    events.forEach(e => InspectorTest.addResult(`${e.name}: ${e.startTime} ${(e.selfTime || 0).toFixed(2)}/${(e.duration || 0).toFixed(2)}`));
     InspectorTest.completeTest();
 }
 

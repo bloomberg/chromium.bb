@@ -929,16 +929,12 @@ function test()
           }
     };
     var profile = profileAndExpectations._profile;
-    var startTime = profile.startTime * 1000;
-    var endTime = profile.endTime * 1000;
-    profile.startTime /= 1000;
-    profile.endTime /= 1000;
-    var samplingInterval = (endTime - startTime) / (profile.samples.length - 1);
-    profile.timestamps = [];
-    for (var i = 0; i < profile.samples.length; ++i)
-        profile.timestamps.push(startTime + i * samplingInterval);
-    profileAndExpectations.target = function() {};
-    profileAndExpectations.weakTarget = function() { return new WeakReference(null);};
+    profile.startTime *= 1000;
+    profile.endTime *= 1000;
+    var samplingInterval = (profile.endTime - profile.startTime) / (profile.samples.length - 1);
+    profile.timestampDeltas = Array.from(new Array(profile.samples.length), (x, i) => i ? samplingInterval : 0);
+    profileAndExpectations.target = () => {};
+    profileAndExpectations.weakTarget = () => new WeakReference(null);
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
     cpuProfileView._changeView();

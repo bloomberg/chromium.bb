@@ -84,12 +84,16 @@ std::unique_ptr<protocol::Array<int>> buildInspectorObjectForSamples(v8::CpuProf
     return array;
 }
 
-std::unique_ptr<protocol::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
+std::unique_ptr<protocol::Array<int>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
 {
-    std::unique_ptr<protocol::Array<double>> array = protocol::Array<double>::create();
+    std::unique_ptr<protocol::Array<int>> array = protocol::Array<int>::create();
     int count = v8profile->GetSamplesCount();
-    for (int i = 0; i < count; i++)
-        array->addItem(v8profile->GetSampleTimestamp(i));
+    uint64_t lastTime = v8profile->GetStartTime();
+    for (int i = 0; i < count; i++) {
+        uint64_t ts = v8profile->GetSampleTimestamp(i);
+        array->addItem(static_cast<int>(ts - lastTime));
+        lastTime = ts;
+    }
     return array;
 }
 
@@ -108,10 +112,10 @@ std::unique_ptr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* is
 
     std::unique_ptr<protocol::Profiler::CPUProfile> profile = protocol::Profiler::CPUProfile::create()
         .setNodes(std::move(nodes))
-        .setStartTime(static_cast<double>(v8profile->GetStartTime()) / 1000000)
-        .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000).build();
+        .setStartTime(static_cast<double>(v8profile->GetStartTime()))
+        .setEndTime(static_cast<double>(v8profile->GetEndTime())).build();
     profile->setSamples(buildInspectorObjectForSamples(v8profile));
-    profile->setTimestamps(buildInspectorObjectForTimestamps(v8profile));
+    profile->setTimestampDeltas(buildInspectorObjectForTimestamps(v8profile));
     return profile;
 }
 
