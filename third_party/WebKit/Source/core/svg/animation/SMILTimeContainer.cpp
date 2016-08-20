@@ -32,6 +32,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGSVGElement.h"
+#include "core/svg/animation/SMILTime.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include <algorithm>
 
@@ -133,7 +134,7 @@ void SMILTimeContainer::notifyIntervalsChanged()
     scheduleWakeUp(0, SynchronizeAnimations);
 }
 
-SMILTime SMILTimeContainer::elapsed() const
+double SMILTimeContainer::elapsed() const
 {
     if (!isStarted())
         return 0;
@@ -182,14 +183,14 @@ void SMILTimeContainer::start()
     // If the "presentation time" is non-zero, the timeline was modified via
     // setElapsed() before the document began.
     // In this case pass on 'seekToTime=true' to updateAnimations() to issue a seek.
-    SMILTime earliestFireTime = updateAnimations(SMILTime(m_presentationTime), m_presentationTime ? true : false);
+    SMILTime earliestFireTime = updateAnimations(m_presentationTime, m_presentationTime ? true : false);
     if (!canScheduleFrame(earliestFireTime))
         return;
     // If the timeline is running, and there are pending animation updates,
     // always perform the first update after the timeline was started using
     // the wake-up mechanism.
-    SMILTime delay = earliestFireTime - m_presentationTime;
-    scheduleWakeUp(std::max(initialFrameDelay, delay.value()), SynchronizeAnimations);
+    double delayTime = earliestFireTime.value() - m_presentationTime;
+    scheduleWakeUp(std::max(initialFrameDelay, delayTime), SynchronizeAnimations);
 }
 
 void SMILTimeContainer::pause()
@@ -199,7 +200,7 @@ void SMILTimeContainer::pause()
     DCHECK(!isPaused());
 
     if (isStarted()) {
-        m_presentationTime = elapsed().value();
+        m_presentationTime = elapsed();
         cancelAnimationFrame();
     }
     // Update the flag after sampling elapsed().
@@ -221,9 +222,9 @@ void SMILTimeContainer::resume()
     scheduleWakeUp(0, SynchronizeAnimations);
 }
 
-void SMILTimeContainer::setElapsed(SMILTime time)
+void SMILTimeContainer::setElapsed(double elapsed)
 {
-    m_presentationTime = time.value();
+    m_presentationTime = elapsed;
 
     // If the document hasn't finished loading, |m_presentationTime| will be
     // used as the start time to seek to once it's possible.
@@ -253,7 +254,7 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
-    updateAnimationsAndScheduleFrameIfNeeded(time, true);
+    updateAnimationsAndScheduleFrameIfNeeded(elapsed, true);
 }
 
 void SMILTimeContainer::scheduleAnimationFrame(double delayTime)
@@ -362,7 +363,7 @@ void SMILTimeContainer::updateDocumentOrderIndexes()
 }
 
 struct PriorityCompare {
-    PriorityCompare(SMILTime elapsed) : m_elapsed(elapsed) {}
+    PriorityCompare(double elapsed) : m_elapsed(elapsed) {}
     bool operator()(const Member<SVGSMILElement>& a, const Member<SVGSMILElement>& b)
     {
         // FIXME: This should also consider possible timing relations between the elements.
@@ -375,7 +376,7 @@ struct PriorityCompare {
             return a->documentOrderIndex() < b->documentOrderIndex();
         return aBegin < bBegin;
     }
-    SMILTime m_elapsed;
+    double m_elapsed;
 };
 
 SVGSVGElement& SMILTimeContainer::ownerSVGElement() const
@@ -416,7 +417,7 @@ bool SMILTimeContainer::canScheduleFrame(SMILTime earliestFireTime) const
     return earliestFireTime.isFinite();
 }
 
-void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime)
+void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(double elapsed, bool seekToTime)
 {
     if (!document().isActive())
         return;
@@ -424,11 +425,11 @@ void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapse
     SMILTime earliestFireTime = updateAnimations(elapsed, seekToTime);
     if (!canScheduleFrame(earliestFireTime))
         return;
-    SMILTime delay = earliestFireTime - elapsed;
-    scheduleAnimationFrame(delay.value());
+    double delayTime = earliestFireTime.value() - elapsed;
+    scheduleAnimationFrame(delayTime);
 }
 
-SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
+SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
 {
     ASSERT(document().isActive());
     SMILTime earliestFireTime = SMILTime::unresolved();
@@ -532,7 +533,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
 void SMILTimeContainer::advanceFrameForTesting()
 {
-    setElapsed(elapsed().value() + initialFrameDelay);
+    setElapsed(elapsed() + initialFrameDelay);
 }
 
 DEFINE_TRACE(SMILTimeContainer)

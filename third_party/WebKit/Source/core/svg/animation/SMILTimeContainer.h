@@ -27,7 +27,6 @@
 #define SMILTimeContainer_h
 
 #include "core/dom/QualifiedName.h"
-#include "core/svg/animation/SMILTime.h"
 #include "platform/Timer.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/heap/Handle.h"
@@ -39,6 +38,7 @@
 namespace blink {
 
 class Document;
+class SMILTime;
 class SVGElement;
 class SVGSMILElement;
 class SVGSVGElement;
@@ -52,7 +52,7 @@ public:
     void unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
     void notifyIntervalsChanged();
 
-    SMILTime elapsed() const;
+    double elapsed() const;
 
     bool isPaused() const;
     bool isStarted() const;
@@ -60,7 +60,7 @@ public:
     void start();
     void pause();
     void resume();
-    void setElapsed(SMILTime);
+    void setElapsed(double);
 
     void serviceAnimations();
     bool hasAnimations() const;
@@ -106,8 +106,8 @@ private:
     ImageAnimationPolicy animationPolicy() const;
     bool handleAnimationPolicy(AnimationPolicyOnceAction);
     bool canScheduleFrame(SMILTime earliestFireTime) const;
-    void updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime = false);
-    SMILTime updateAnimations(SMILTime elapsed, bool seekToTime = false);
+    void updateAnimationsAndScheduleFrameIfNeeded(double elapsed, bool seekToTime = false);
+    SMILTime updateAnimations(double elapsed, bool seekToTime);
     void serviceOnNextFrame();
     void scheduleWakeUp(double delayTime, FrameSchedulingState);
     bool hasPendingSynchronization() const;
