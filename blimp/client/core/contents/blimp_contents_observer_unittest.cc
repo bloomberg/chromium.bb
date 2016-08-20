@@ -30,7 +30,7 @@ class BlimpContentsObserverTest : public BlimpContentsObserver {
 };
 
 TEST(BlimpContentsObserverUnittests, ObserverDies) {
-  BlimpContentsImpl contents(kDummyTabId);
+  BlimpContentsImpl contents(kDummyTabId, nullptr);
 
   std::unique_ptr<BlimpContentsObserver> observer =
       base::MakeUnique<BlimpContentsObserverTest>(&contents);
@@ -45,7 +45,7 @@ TEST(BlimpContentsObserverUnittests, ContentsDies) {
   std::unique_ptr<BlimpContentsObserverTest> observer;
 
   std::unique_ptr<BlimpContentsImpl> contents =
-      base::MakeUnique<BlimpContentsImpl>(kDummyTabId);
+      base::MakeUnique<BlimpContentsImpl>(kDummyTabId, nullptr);
   observer.reset(new BlimpContentsObserverTest(contents.get()));
   EXPECT_CALL(*observer, OnContentsDestroyed()).Times(1);
   EXPECT_EQ(observer->blimp_contents(), contents.get());

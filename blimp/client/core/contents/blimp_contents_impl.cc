@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
 #if defined(OS_ANDROID)
@@ -22,8 +23,11 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 #endif  // OS_ANDROID
 }
 
-BlimpContentsImpl::BlimpContentsImpl(int id)
-    : navigation_controller_(this, nullptr), id_(id) {}
+BlimpContentsImpl::BlimpContentsImpl(int id,
+                                     TabControlFeature* tab_control_feature)
+    : navigation_controller_(this, nullptr),
+      id_(id),
+      tab_control_feature_(tab_control_feature) {}
 
 BlimpContentsImpl::~BlimpContentsImpl() {
   FOR_EACH_OBSERVER(BlimpContentsObserver, observers_, BlimpContentsDying());
@@ -68,6 +72,11 @@ bool BlimpContentsImpl::HasObserver(BlimpContentsObserver* observer) {
 void BlimpContentsImpl::OnNavigationStateChanged() {
   FOR_EACH_OBSERVER(BlimpContentsObserver, observers_,
                     OnNavigationStateChanged());
+}
+
+void BlimpContentsImpl::SetSizeAndScale(const gfx::Size& size,
+                                        float device_pixel_ratio) {
+  tab_control_feature_->SetSizeAndScale(size, device_pixel_ratio);
 }
 
 }  // namespace client

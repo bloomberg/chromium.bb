@@ -10,6 +10,7 @@
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 #include "blimp/client/public/contents/blimp_contents.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -25,11 +26,12 @@ class BlimpContentsImplAndroid;
 
 class BlimpContentsObserver;
 class BlimpNavigationController;
+class TabControlFeature;
 
 class BlimpContentsImpl : public BlimpContents,
                           public BlimpNavigationControllerDelegate {
  public:
-  explicit BlimpContentsImpl(int id);
+  explicit BlimpContentsImpl(int id, TabControlFeature* tab_control_feature);
   ~BlimpContentsImpl() override;
 
 #if defined(OS_ANDROID)
@@ -48,6 +50,10 @@ class BlimpContentsImpl : public BlimpContents,
   // BlimpNavigationControllerDelegate implementation.
   void OnNavigationStateChanged() override;
 
+  // Pushes the size and scale information to the engine, which will affect the
+  // web content display area for all tabs.
+  void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
+
   int id() { return id_; }
 
  private:
@@ -60,6 +66,12 @@ class BlimpContentsImpl : public BlimpContents,
   // The id is assigned during contents creation. It is used by
   // BlimpContentsManager to control the life time of the its observer.
   int id_;
+
+  // The tab control feature through which the BlimpContentsImpl is able to
+  // set size and scale.
+  // TODO(mlliu): in the long term, we want to put size and scale in a different
+  // feature instead of tab control feature. crbug.com/639154.
+  TabControlFeature* tab_control_feature_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpContentsImpl);
 };

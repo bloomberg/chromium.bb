@@ -8,6 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
 #include "blimp/client/test/test_blimp_client_context_delegate.h"
@@ -43,7 +45,8 @@ class BlimpClientContextImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BlimpClientContextImplTest);
 };
 
-TEST_F(BlimpClientContextImplTest, CreatedBlimpContentsGetsHelpersAttached) {
+TEST_F(BlimpClientContextImplTest,
+       CreatedBlimpContentsGetsHelpersAttachedAndHasTabControlFeature) {
   BlimpClientContextImpl blimp_client_context(io_thread_.task_runner(),
                                               io_thread_.task_runner());
   TestBlimpClientContextDelegate delegate;

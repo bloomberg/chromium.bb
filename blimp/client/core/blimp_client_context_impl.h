@@ -25,6 +25,7 @@ namespace blimp {
 namespace client {
 
 class BlimpContentsManager;
+class TabControlFeature;
 
 // BlimpClientContextImpl is the implementation of the main context-class for
 // the blimp client.
@@ -49,6 +50,8 @@ class BlimpClientContextImpl : public BlimpClientContext,
   void OnConnected() override;
   void OnDisconnected(int result) override;
 
+  TabControlFeature* GetTabControlFeature() const;
+
  protected:
   // Returns the URL to use for connections to the assigner. Used to construct
   // the AssignmentSource.
@@ -63,6 +66,8 @@ class BlimpClientContextImpl : public BlimpClientContext,
   virtual void ConnectWithAssignment(AssignmentRequestResult result,
                                      const Assignment& assignment);
 
+  void RegisterFeatures();
+
   // Provides functionality from the embedder.
   BlimpClientContextDelegate* delegate_ = nullptr;
 
@@ -75,6 +80,8 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // The AssignmentSource is used when the user of BlimpClientContextImpl calls
   // Connect() to get a valid assignment and later connect to the engine.
   std::unique_ptr<AssignmentSource> assignment_source_;
+
+  std::unique_ptr<TabControlFeature> tab_control_feature_;
 
   std::unique_ptr<BlimpContentsManager> blimp_contents_manager_;
 

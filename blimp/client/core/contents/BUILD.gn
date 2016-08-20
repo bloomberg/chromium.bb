@@ -26,10 +26,12 @@ source_set("contents") {
 
   public_deps = [
     "//base",
+    "//blimp/client:feature",
     "//blimp/client/public:public_headers",
     "//blimp/net",
     "//net:net",
     "//ui/base/ime:text_input_types",
+    "//ui/gfx/geometry:geometry",
     "//url",
   ]
 
@@ -95,11 +97,14 @@ source_set("unit_tests") {
     ":contents",
     ":test_support",
     "//base",
+    "//blimp/client:feature",
     "//blimp/client/public:public_headers",
     "//blimp/common",
     "//blimp/net:test_support",
     "//net:test_support",
     "//testing/gtest",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry:geometry",
     "//url",
   ]
 }

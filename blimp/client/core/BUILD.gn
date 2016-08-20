@@ -72,6 +72,7 @@ source_set("unit_tests") {
 
   deps = [
     ":context",
+    "//blimp/client:feature",
     "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
     "//blimp/client/core/session:unit_tests",

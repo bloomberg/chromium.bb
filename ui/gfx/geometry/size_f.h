@@ -75,8 +75,8 @@ inline SizeF ScaleSize(const SizeF& p, float scale) {
 }
 
 // This is declared here for use in gtest-based unit tests but is defined in
-// the gfx_test_support target. Depend on that to use this in your unit test.
-// This should not be used in production code - call ToString() instead.
+// the //ui/gfx:test_support target. Depend on that to use this in your unit
+// test. This should not be used in production code - call ToString() instead.
 void PrintTo(const SizeF& size, ::std::ostream* os);
 
 }  // namespace gfx

@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/blimp_contents_manager.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 
@@ -48,7 +49,9 @@ BlimpClientContextImpl::BlimpClientContextImpl(
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
       file_thread_task_runner_(file_thread_task_runner),
-      blimp_contents_manager_(new BlimpContentsManager),
+      tab_control_feature_(new TabControlFeature),
+      blimp_contents_manager_(new BlimpContentsManager(
+          tab_control_feature_.get())),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
       base::MakeUnique<CrossThreadNetworkEventObserver>(
@@ -58,6 +61,8 @@ BlimpClientContextImpl::BlimpClientContextImpl(
   // registered.
   thread_pipe_manager_ = base::MakeUnique<ThreadPipeManager>(
       io_thread_task_runner_, net_components_->GetBrowserConnectionHandler());
+
+  RegisterFeatures();
 
   // Initialize must only be posted after the calls features have been
   // registered.
@@ -113,6 +118,10 @@ void BlimpClientContextImpl::OnConnected() {}
 
 void BlimpClientContextImpl::OnDisconnected(int result) {}
 
+TabControlFeature* BlimpClientContextImpl::GetTabControlFeature() const {
+  return tab_control_feature_.get();
+}
+
 GURL BlimpClientContextImpl::GetAssignerURL() {
   return GURL(kDefaultAssignerUrl);
 }
@@ -135,6 +144,13 @@ void BlimpClientContextImpl::ConnectWithAssignment(
       FROM_HERE,
       base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
                  base::Unretained(net_components_.get()), assignment));
+}
+
+void BlimpClientContextImpl::RegisterFeatures() {
+  // Register features' message senders and receivers.
+  tab_control_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
+                                            tab_control_feature_.get()));
 }
 
 }  // namespace client

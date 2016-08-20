@@ -5,8 +5,8 @@
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 
 #include "base/message_loop/message_loop.h"
-#include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/fake_navigation_feature.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,9 +31,19 @@ class MockBlimpContentsObserver : public BlimpContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(MockBlimpContentsObserver);
 };
 
+class MockTabControlFeature : public TabControlFeature {
+ public:
+  MockTabControlFeature() {}
+  ~MockTabControlFeature() override = default;
+  MOCK_METHOD2(SetSizeAndScale, void(const gfx::Size&, float));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTabControlFeature);
+};
+
 TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
-  BlimpContentsImpl blimp_contents(kDummyTabId);
+  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
@@ -59,6 +69,21 @@ TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   loop.RunUntilIdle();
 
   EXPECT_EQ(kOtherExampleURL, navigation_controller.GetURL().spec());
+}
+
+TEST(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
+  int width = 10;
+  int height = 15;
+  float dp_to_px = 1.23f;
+
+  MockTabControlFeature tab_control_feature;
+  base::MessageLoop loop;
+  BlimpContentsImpl blimp_contents(kDummyTabId, &tab_control_feature);
+
+  EXPECT_CALL(tab_control_feature,
+              SetSizeAndScale(gfx::Size(width, height), dp_to_px)).Times(1);
+
+  blimp_contents.SetSizeAndScale(gfx::Size(width, height), dp_to_px);
 }
 
 }  // namespace

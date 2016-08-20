@@ -30,10 +30,10 @@ class TabControlFeature : public BlimpMessageProcessor {
 
   // Pushes the current size and scale information to the engine, which will
   // affect the web content display area for all tabs.
-  void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
+  virtual void SetSizeAndScale(const gfx::Size& size, float device_pixel_ratio);
 
-  void CreateTab(int tab_id);
-  void CloseTab(int tab_id);
+  virtual void CreateTab(int tab_id);
+  virtual void CloseTab(int tab_id);
 
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,

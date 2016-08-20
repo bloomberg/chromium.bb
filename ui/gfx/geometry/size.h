@@ -80,8 +80,8 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 }
 
 // This is declared here for use in gtest-based unit tests but is defined in
-// the gfx_test_support target. Depend on that to use this in your unit test.
-// This should not be used in production code - call ToString() instead.
+// the //ui/gfx:test_support target. Depend on that to use this in your unit
+// test. This should not be used in production code - call ToString() instead.
 void PrintTo(const Size& size, ::std::ostream* os);
 
 // Helper methods to scale a gfx::Size to a new gfx::Size.

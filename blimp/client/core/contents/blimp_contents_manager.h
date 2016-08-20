@@ -10,14 +10,17 @@
 namespace blimp {
 namespace client {
 
+class TabControlFeature;
+
 // BlimpContentsManager does the real work of creating BlimpContentsImpl, and
 // then passes the ownership to the caller. It also owns the observers to
 // monitor the life time of the contents it creates.
 class BlimpContentsManager {
  public:
-  BlimpContentsManager();
+  explicit BlimpContentsManager(TabControlFeature* tab_control_feature);
   ~BlimpContentsManager();
 
+  // Builds a BlimpContentsImpl and notifies the engine.
   std::unique_ptr<BlimpContentsImpl> CreateBlimpContents();
 
   // The caller can query the contents through its id.
@@ -30,8 +33,14 @@ class BlimpContentsManager {
   // When creating the BlimpContentsImpl, an id is created for the content.
   int CreateBlimpContentsId();
 
-  // When a BlimpContentsImpl is destroyed, its observer is able to retrieve the
-  // id, and use this to destroy the observer entry from the observer_map_.
+  // When a BlimpContentsImpl is destroyed, its observer will pass the contents
+  // pointer to the manager. The contents pointer is used to retrieve its id,
+  // which in turn is used to destroy the observer entry from the observer_map_
+  // and close the tab.
+  void OnContentsDestroyed(BlimpContents* contents);
+
+  // Destroy the observer entry from the observer_map_ when a BlimpContentsImpl
+  // is destroyed.
   void EraseObserverFromMap(int id);
   base::WeakPtr<BlimpContentsManager> GetWeakPtr();
 
@@ -39,6 +48,8 @@ class BlimpContentsManager {
   // contents it creates, with the content id being the key to help manage the
   // lifetime of the observers.
   std::map<int, std::unique_ptr<BlimpContentsDeletionObserver>> observer_map_;
+
+  TabControlFeature* tab_control_feature_ = nullptr;
 
   base::WeakPtrFactory<BlimpContentsManager> weak_ptr_factory_;
 

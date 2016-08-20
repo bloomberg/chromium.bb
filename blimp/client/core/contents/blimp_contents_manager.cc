@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
 
 namespace {
@@ -40,26 +41,32 @@ BlimpContentsManager::BlimpContentsDeletionObserver::
 void BlimpContentsManager::BlimpContentsDeletionObserver::
     OnContentsDestroyed() {
   BlimpContents* contents = blimp_contents();
-  int id = static_cast<BlimpContentsImpl*>(contents)->id();
-  DCHECK(base::ThreadTaskRunnerHandle::Get());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&BlimpContentsManager::EraseObserverFromMap,
-                            blimp_contents_manager_->GetWeakPtr(), id));
+  blimp_contents_manager_->OnContentsDestroyed(contents);
 }
 
-BlimpContentsManager::BlimpContentsManager() : weak_ptr_factory_(this) {}
+BlimpContentsManager::BlimpContentsManager(
+    TabControlFeature* tab_control_feature)
+    : tab_control_feature_(tab_control_feature),
+      weak_ptr_factory_(this) {}
 
 BlimpContentsManager::~BlimpContentsManager() {}
 
 std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
   int id = CreateBlimpContentsId();
+
   std::unique_ptr<BlimpContentsImpl> new_contents =
-      base::MakeUnique<BlimpContentsImpl>(id);
+      base::MakeUnique<BlimpContentsImpl>(id, tab_control_feature_);
+
+  // Create an observer entry for the contents.
   std::unique_ptr<BlimpContentsDeletionObserver> observer =
       base::MakeUnique<BlimpContentsDeletionObserver>(this, new_contents.get());
   observer_map_.insert(
       std::pair<int, std::unique_ptr<BlimpContentsDeletionObserver>>(
           id, std::move(observer)));
+
+  // Notifies the engine that we've created a new BlimpContents.
+  tab_control_feature_->CreateTab(id);
+
   return new_contents;
 }
 
@@ -85,6 +92,19 @@ int BlimpContentsManager::CreateBlimpContentsId() {
 
 void BlimpContentsManager::EraseObserverFromMap(int id) {
   observer_map_.erase(id);
+}
+
+void BlimpContentsManager::OnContentsDestroyed(BlimpContents* contents) {
+  int id = static_cast<BlimpContentsImpl*>(contents)->id();
+
+  // Notify the engine that we've destroyed the BlimpContents.
+  tab_control_feature_->CloseTab(id);
+
+  // Destroy the observer entry from the observer_map_.
+  DCHECK(base::ThreadTaskRunnerHandle::Get());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BlimpContentsManager::EraseObserverFromMap,
+                            this->GetWeakPtr(), id));
 }
 
 base::WeakPtr<BlimpContentsManager> BlimpContentsManager::GetWeakPtr() {
