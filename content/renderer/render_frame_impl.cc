@@ -5537,12 +5537,16 @@ void RenderFrameImpl::NavigateInternal(
 
         // If this is marked as a same document load but we haven't committed
         // anything, treat it as a new load.  The browser shouldn't let this
-        // happen.
-        // TODO(creis): Add a similar check if the DSN doesn't match, and add a
-        // NOTREACHED when we're confident this won't happen.
-        if (history_load_type == blink::WebHistorySameDocumentLoad &&
-            current_history_item_.isNull()) {
-          history_load_type = blink::WebHistoryDifferentDocumentLoad;
+        // happen. Also treat it as a new load, if the DSN in
+        // |current_history_item_| and the item navigated to mismatch.
+        if (history_load_type == blink::WebHistorySameDocumentLoad) {
+           if (current_history_item_.isNull()) {
+             history_load_type = blink::WebHistoryDifferentDocumentLoad;
+           } else if (current_history_item_.documentSequenceNumber() !=
+                      item_for_history_navigation.documentSequenceNumber()) {
+             history_load_type = blink::WebHistoryDifferentDocumentLoad;
+             NOTREACHED();
+           }
         }
 
         // If this navigation is to a history item for a new child frame, we may
