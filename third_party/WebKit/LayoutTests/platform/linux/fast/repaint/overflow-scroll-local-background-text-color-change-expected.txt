@@ -30,13 +30,13 @@
               "children": [
                 {
                   "name": "Scrolling Contents Layer",
-                  "bounds": [185, 550],
+                  "bounds": [185, 552],
                   "contentsOpaque": true,
                   "drawsContent": true,
                   "paintInvalidations": [
                     {
                       "object": "LayoutBlockFlow DIV id='scroller'",
-                      "rect": [0, 0, 185, 550],
+                      "rect": [0, 0, 185, 552],
                       "reason": "style change"
                     }
                   ]
