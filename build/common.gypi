@@ -217,6 +217,9 @@
         #   2: revision 2
         'mips_dsp_rev%': 0,
 
+        # MIPS SIMD Arch compilation flag.
+        'mips_msa%': 1,
+
         'conditions': [
           ['branding == "Chrome"', {
             'branding_path_component%': 'google_chrome',
@@ -340,6 +343,7 @@
       'target_subarch%': '<(target_subarch)',
       'mips_arch_variant%': '<(mips_arch_variant)',
       'mips_dsp_rev%': '<(mips_dsp_rev)',
+      'mips_msa%': '<(mips_msa)',
       'toolkit_views%': '<(toolkit_views)',
       'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
@@ -1120,6 +1124,7 @@
     'target_subarch%': '<(target_subarch)',
     'mips_arch_variant%': '<(mips_arch_variant)',
     'mips_dsp_rev%': '<(mips_dsp_rev)',
+    'mips_msa%': '<(mips_msa)',
     'host_arch%': '<(host_arch)',
     'toolkit_views%': '<(toolkit_views)',
     'ui_compositor_image_transport%': '<(ui_compositor_image_transport)',
@@ -4119,6 +4124,9 @@
                       ['clang==0 and OS=="android"', {
                         'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
                       }],
+                      ['mips_msa==1', {
+                        'cflags': ['-mmsa', '-mfp64', '-msched-weight', '-mload-store-pairs'],
+                      }],
                     ],
                     'cflags': [ '-mfp64', '-mno-odd-spreg' ],
                     'ldflags': [ '-mfp64', '-mno-odd-spreg' ],
@@ -4224,6 +4232,9 @@
                       }, { # clang==0
                         'cflags': ['-mips64r6', '-Wa,-mips64r6'],
                         'ldflags': ['-mips64r6'],
+                      }],
+                      ['mips_msa==1', {
+                        'cflags': ['-mmsa', '-mfp64', '-msched-weight', '-mload-store-pairs'],
                       }],
                     ],
                   }],

@@ -22,6 +22,9 @@ if (current_cpu == "mipsel" || v8_current_cpu == "mipsel") {
     #   2: revision 2
     mips_dsp_rev = 0
 
+    # MIPS SIMD Arch compilation flag.
+    mips_use_msa = true
+
     # MIPS floating-point ABI. Possible values are:
     #   "hard": sets the GCC -mhard-float option.
     #   "soft": sets the GCC -msoft-float option.
@@ -40,6 +43,9 @@ if (current_cpu == "mipsel" || v8_current_cpu == "mipsel") {
   if (current_os == "android" || target_os == "android") {
     declare_args() {
       mips_arch_variant = "r6"
+
+      # MIPS SIMD Arch compilation flag.
+      mips_use_msa = true
     }
   } else {
     declare_args() {
