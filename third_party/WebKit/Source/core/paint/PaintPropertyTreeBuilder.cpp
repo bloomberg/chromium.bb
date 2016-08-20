@@ -21,6 +21,10 @@ namespace blink {
 
 void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
 {
+    Settings* settings = rootFrame.frame().settings();
+    if (settings && settings->rootLayerScrolls())
+        return;
+
     if (!rootFrame.rootTransform() || rootFrame.rootTransform()->parent()) {
         rootFrame.setRootTransform(TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D()));
         rootFrame.setRootClip(ClipPaintPropertyNode::create(nullptr, rootFrame.rootTransform(), FloatRoundedRect(LayoutRect::infiniteIntRect())));
@@ -37,9 +41,26 @@ void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPro
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)
 {
-    // TODO(pdr): Creating paint properties for FrameView here will not be
-    // needed once settings()->rootLayerScrolls() is enabled.
-    // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
+    Settings* settings = frameView.frame().settings();
+    if (settings && settings->rootLayerScrolls()) {
+        LayoutView* layoutView = frameView.layoutView();
+        if (!layoutView)
+            return;
+
+        TransformationMatrix frameTranslate;
+        frameTranslate.translate(
+            frameView.x() + layoutView->location().x() + context.current.paintOffset.x(),
+            frameView.y() + layoutView->location().y() + context.current.paintOffset.y());
+        context.current.transform = layoutView->getMutableForPainting().ensureObjectPaintProperties().createOrUpdatePaintOffsetTranslation(
+            context.current.transform, frameTranslate, FloatPoint3D());
+        context.current.paintOffset = LayoutPoint();
+        context.current.renderingContextID = 0;
+        context.current.shouldFlattenInheritedTransform = true;
+        context.absolutePosition = context.current;
+        context.containerForAbsolutePosition = nullptr; // This will get set in updateOutOfFlowContext().
+        context.fixedPosition = context.current;
+        return;
+    }
 
     TransformationMatrix frameTranslate;
     frameTranslate.translate(frameView.x() + context.current.paintOffset.x(), frameView.y() + context.current.paintOffset.y());
@@ -97,6 +118,9 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(const LayoutObject& 
             return;
         }
     }
+
+    if (object.isLayoutView())
+        return;
 
     if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties())
         properties->clearPaintOffsetTranslation();
@@ -169,6 +193,14 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
 
 void PaintPropertyTreeBuilder::updateEffect(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
+    if (object.isLayoutView() && !context.currentEffect) {
+        const LayoutView& layoutView = toLayoutView(object);
+        DCHECK(layoutView.frameView()->frame().settings()->rootLayerScrolls());
+        DCHECK(layoutView.frameView()->frame().isMainFrame());
+        context.currentEffect = layoutView.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateEffect(nullptr, 1.0);
+        return;
+    }
+
     if (!object.styleRef().hasOpacity()) {
         if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties())
             properties->clearEffect();
@@ -197,7 +229,7 @@ void PaintPropertyTreeBuilder::updateCssClip(const LayoutObject& object, PaintPr
         properties->clearCssClip();
 }
 
-void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& object, const PaintPropertyTreeBuilderContext& context)
+void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     // Avoid adding an ObjectPaintProperties for non-boxes to save memory, since we don't need them at the moment.
     if (!object.isBox() && !object.hasLayer())
@@ -207,7 +239,17 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
         wrapUnique(new ObjectPaintProperties::LocalBorderBoxProperties);
     borderBoxContext->paintOffset = context.current.paintOffset;
     borderBoxContext->propertyTreeState = PropertyTreeState(context.current.transform, context.current.clip, context.currentEffect);
+
+    if (!context.current.clip) {
+        DCHECK(object.isLayoutView());
+        DCHECK(toLayoutView(object).frameView()->frame().isMainFrame());
+        DCHECK(toLayoutView(object).frameView()->frame().settings()->rootLayerScrolls());
+        borderBoxContext->propertyTreeState.clip = ClipPaintPropertyNode::create(nullptr, context.current.transform, FloatRoundedRect(LayoutRect::infiniteIntRect()));
+        context.current.clip = borderBoxContext->propertyTreeState.clip.get();
+    }
+
     object.getMutableForPainting().ensureObjectPaintProperties().setLocalBorderBoxProperties(std::move(borderBoxContext));
+
 }
 
 // TODO(trchen): Remove this once we bake the paint offset into frameRect.
@@ -320,8 +362,12 @@ void PaintPropertyTreeBuilder::updateScrollTranslation(const LayoutObject& objec
         PaintLayer* layer = toLayoutBoxModelObject(object).layer();
         DCHECK(layer);
         DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
-
-        if (!scrollOffset.isZero() || layer->scrollsOverflow()) {
+        bool forceScrollingForLayoutView = false;
+        if (object.isLayoutView()) {
+            Settings* settings = object.document().settings();
+            forceScrollingForLayoutView = (settings && settings->rootLayerScrolls());
+        }
+        if (forceScrollingForLayoutView || !scrollOffset.isZero() || layer->scrollsOverflow()) {
             TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
             context.current.transform = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScrollTranslation(
                 context.current.transform, matrix, FloatPoint3D(), context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
@@ -341,9 +387,15 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(const LayoutObject& object
         context.containerForAbsolutePosition = &object;
     }
 
-    // TODO(pdr): Remove the !object.isLayoutView() condition when removing FrameView
-    // paint properties for rootLayerScrolls.
-    if (!object.isLayoutView() && object.canContainFixedPositionObjects()) {
+    if (object.isLayoutView()) {
+        Settings* settings = object.document().settings();
+        if (settings && settings->rootLayerScrolls()) {
+            context.fixedPosition = context.current;
+            const TransformPaintPropertyNode* transform = object.objectPaintProperties()->paintOffsetTranslation();
+            DCHECK(transform);
+            context.fixedPosition.transform = transform;
+        }
+    } else if (object.canContainFixedPositionObjects()) {
         context.fixedPosition = context.current;
     } else if (object.getMutableForPainting().objectPaintProperties() && object.objectPaintProperties()->cssClip()) {
         // CSS clip applies to all descendants, even if this object is not a containing block

@@ -81,7 +81,7 @@ private:
     static void updateTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateEffect(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateCssClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
-    static void updateLocalBorderBoxContext(const LayoutObject&, const PaintPropertyTreeBuilderContext&);
+    static void updateLocalBorderBoxContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateScrollbarPaintOffset(const LayoutObject&, const PaintPropertyTreeBuilderContext&);
     static void updateOverflowClip(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updatePerspective(const LayoutObject&, PaintPropertyTreeBuilderContext&);
