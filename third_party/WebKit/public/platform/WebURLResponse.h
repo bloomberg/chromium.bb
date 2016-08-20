@@ -231,6 +231,10 @@ public:
     BLINK_PLATFORM_EXPORT bool wasFetchedViaServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);
 
+    // Flag whether this request was loaded using a foreign fetch service worker.
+    BLINK_PLATFORM_EXPORT bool wasFetchedViaForeignFetch() const;
+    BLINK_PLATFORM_EXPORT void setWasFetchedViaForeignFetch(bool);
+
     // Flag whether the fallback request with skip service worker flag was
     // required.
     BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;

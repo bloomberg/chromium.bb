@@ -655,6 +655,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     }
 
     if (response.wasFetchedViaServiceWorker()) {
+        if (response.wasFetchedViaForeignFetch())
+            UseCounter::count(m_document, UseCounter::ForeignFetchInterception);
         if (response.wasFallbackRequiredByServiceWorker()) {
             // At this point we must have m_fallbackRequestForServiceWorker.
             // (For SharedWorker the request won't be CORS or CORS-with-preflight,

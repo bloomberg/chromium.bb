@@ -41,6 +41,7 @@ void ServiceWorkerResponseInfo::GetExtraResponseInfo(
     ResourceResponseInfo* response_info) const {
   response_info->was_fetched_via_service_worker =
       was_fetched_via_service_worker_;
+  response_info->was_fetched_via_foreign_fetch = was_fetched_via_foreign_fetch_;
   response_info->was_fallback_required_by_service_worker =
       was_fallback_required_;
   response_info->original_url_via_service_worker =
@@ -68,6 +69,7 @@ void ServiceWorkerResponseInfo::OnPrepareToRestart(
 
 void ServiceWorkerResponseInfo::OnStartCompleted(
     bool was_fetched_via_service_worker,
+    bool was_fetched_via_foreign_fetch,
     bool was_fallback_required,
     const GURL& original_url_via_service_worker,
     blink::WebServiceWorkerResponseType response_type_via_service_worker,
@@ -77,6 +79,7 @@ void ServiceWorkerResponseInfo::OnStartCompleted(
     const std::string& response_cache_storage_cache_name,
     const ServiceWorkerHeaderList& cors_exposed_header_names) {
   was_fetched_via_service_worker_ = was_fetched_via_service_worker;
+  was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch;
   was_fallback_required_ = was_fallback_required;
   original_url_via_service_worker_ = original_url_via_service_worker;
   response_type_via_service_worker_ = response_type_via_service_worker;
@@ -93,6 +96,7 @@ void ServiceWorkerResponseInfo::OnStartCompleted(
 
 void ServiceWorkerResponseInfo::ResetData() {
   was_fetched_via_service_worker_ = false;
+  was_fetched_via_foreign_fetch_ = false;
   was_fallback_required_ = false;
   original_url_via_service_worker_ = GURL();
   response_type_via_service_worker_ =

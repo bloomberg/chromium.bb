@@ -414,6 +414,16 @@ void WebURLResponse::setWasFetchedViaServiceWorker(bool value)
     m_resourceResponse->setWasFetchedViaServiceWorker(value);
 }
 
+bool WebURLResponse::wasFetchedViaForeignFetch() const
+{
+    return m_resourceResponse->wasFetchedViaForeignFetch();
+}
+
+void WebURLResponse::setWasFetchedViaForeignFetch(bool value)
+{
+    m_resourceResponse->setWasFetchedViaForeignFetch(value);
+}
+
 bool WebURLResponse::wasFallbackRequiredByServiceWorker() const
 {
     return m_resourceResponse->wasFallbackRequiredByServiceWorker();

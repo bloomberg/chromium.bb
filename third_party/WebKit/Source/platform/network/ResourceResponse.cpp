@@ -98,6 +98,7 @@ ResourceResponse::ResourceResponse()
     , m_wasAlternateProtocolAvailable(false)
     , m_wasFetchedViaProxy(false)
     , m_wasFetchedViaServiceWorker(false)
+    , m_wasFetchedViaForeignFetch(false)
     , m_wasFallbackRequiredByServiceWorker(false)
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
@@ -136,6 +137,7 @@ ResourceResponse::ResourceResponse(const KURL& url, const AtomicString& mimeType
     , m_wasAlternateProtocolAvailable(false)
     , m_wasFetchedViaProxy(false)
     , m_wasFetchedViaServiceWorker(false)
+    , m_wasFetchedViaForeignFetch(false)
     , m_wasFallbackRequiredByServiceWorker(false)
     , m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault)
     , m_responseTime(0)
@@ -178,6 +180,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
     m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
     m_wasFetchedViaServiceWorker = data->m_wasFetchedViaServiceWorker;
+    m_wasFetchedViaForeignFetch = data->m_wasFetchedViaForeignFetch;
     m_wasFallbackRequiredByServiceWorker = data->m_wasFallbackRequiredByServiceWorker;
     m_serviceWorkerResponseType = data->m_serviceWorkerResponseType;
     m_originalURLViaServiceWorker = data->m_originalURLViaServiceWorker;
@@ -229,6 +232,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;
     data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
     data->m_wasFetchedViaServiceWorker = m_wasFetchedViaServiceWorker;
+    data->m_wasFetchedViaForeignFetch = m_wasFetchedViaForeignFetch;
     data->m_wasFallbackRequiredByServiceWorker = m_wasFallbackRequiredByServiceWorker;
     data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
     data->m_originalURLViaServiceWorker = m_originalURLViaServiceWorker.copy();

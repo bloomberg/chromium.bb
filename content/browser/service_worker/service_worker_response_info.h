@@ -33,6 +33,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
                           base::TimeTicks service_worker_ready_time);
   void OnStartCompleted(
       bool was_fetched_via_service_worker,
+      bool was_fetched_via_foreign_fetch,
       bool was_fallback_required,
       const GURL& original_url_via_service_worker,
       blink::WebServiceWorkerResponseType response_type_via_service_worker,
@@ -70,6 +71,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   ServiceWorkerResponseInfo();
 
   bool was_fetched_via_service_worker_ = false;
+  bool was_fetched_via_foreign_fetch_ = false;
   bool was_fallback_required_ = false;
   GURL original_url_via_service_worker_;
   blink::WebServiceWorkerResponseType response_type_via_service_worker_ =

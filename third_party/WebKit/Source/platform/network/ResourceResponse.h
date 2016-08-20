@@ -241,6 +241,9 @@ public:
     bool wasFetchedViaServiceWorker() const { return m_wasFetchedViaServiceWorker; }
     void setWasFetchedViaServiceWorker(bool value) { m_wasFetchedViaServiceWorker = value; }
 
+    bool wasFetchedViaForeignFetch() const { return m_wasFetchedViaForeignFetch; }
+    void setWasFetchedViaForeignFetch(bool value) { m_wasFetchedViaForeignFetch = value; }
+
     bool wasFallbackRequiredByServiceWorker() const { return m_wasFallbackRequiredByServiceWorker; }
     void setWasFallbackRequiredByServiceWorker(bool value) { m_wasFallbackRequiredByServiceWorker = value; }
 
@@ -378,6 +381,9 @@ private:
     // Was the resource fetched over a ServiceWorker.
     bool m_wasFetchedViaServiceWorker;
 
+    // Was the resource fetched using a foreign fetch service worker.
+    bool m_wasFetchedViaForeignFetch;
+
     // Was the fallback request with skip service worker flag required.
     bool m_wasFallbackRequiredByServiceWorker;
 
@@ -454,6 +460,7 @@ public:
     bool m_wasAlternateProtocolAvailable;
     bool m_wasFetchedViaProxy;
     bool m_wasFetchedViaServiceWorker;
+    bool m_wasFetchedViaForeignFetch;
     bool m_wasFallbackRequiredByServiceWorker;
     WebServiceWorkerResponseType m_serviceWorkerResponseType;
     KURL m_originalURLViaServiceWorker;

@@ -978,6 +978,7 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
     ServiceWorkerResponseInfo::ForRequest(request_, true)
         ->OnStartCompleted(
             false /* was_fetched_via_service_worker */,
+            false /* was_fetched_via_foreign_fetch */,
             false /* was_fallback_required */,
             GURL() /* original_url_via_service_worker */,
             blink::WebServiceWorkerResponseTypeDefault,
@@ -990,9 +991,10 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
   }
   ServiceWorkerResponseInfo::ForRequest(request_, true)
       ->OnStartCompleted(
-          true /* was_fetched_via_service_worker */, fall_back_required_,
-          response_url_, service_worker_response_type_, worker_start_time_,
-          worker_ready_time_, response_is_in_cache_storage_,
+          true /* was_fetched_via_service_worker */,
+          fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH,
+          fall_back_required_, response_url_, service_worker_response_type_,
+          worker_start_time_, worker_ready_time_, response_is_in_cache_storage_,
           response_cache_storage_cache_name_, cors_exposed_header_names_);
 }
 

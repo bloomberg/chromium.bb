@@ -961,6 +961,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setDownloadFilePath(info.download_file_path.AsUTF16Unsafe());
   response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
+  response->setWasFetchedViaForeignFetch(info.was_fetched_via_foreign_fetch);
   response->setWasFallbackRequiredByServiceWorker(
       info.was_fallback_required_by_service_worker);
   response->setServiceWorkerResponseType(info.response_type_via_service_worker);
