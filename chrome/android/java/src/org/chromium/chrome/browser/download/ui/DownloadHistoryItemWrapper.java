@@ -30,7 +30,7 @@ import java.util.Locale;
 abstract class DownloadHistoryItemWrapper implements TimedItem {
     private static final String TAG = "download_ui";
 
-    private Long mStableId = null;
+    private Long mStableId;
 
     @Override
     public long getStableId() {
@@ -39,7 +39,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             mStableId = (long) getId().hashCode();
             mStableId = (mStableId << 32) + (getTimestamp() & 0x0FFFFFFFF);
         }
-        return mStableId.longValue();
+        return mStableId;
     }
 
     /** @return Item that is being wrapped. */
