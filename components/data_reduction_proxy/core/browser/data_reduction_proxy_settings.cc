@@ -366,4 +366,8 @@ void DataReductionProxySettings::GetContentLengths(
       days, original_content_length, received_content_length, last_update_time);
 }
 
+bool DataReductionProxySettings::IsDataSaverEnabled() const {
+  return IsDataReductionProxyEnabled();
+}
+
 }  // namespace data_reduction_proxy
