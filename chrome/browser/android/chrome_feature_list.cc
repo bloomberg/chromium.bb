@@ -50,7 +50,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSystemDownloadManager,
     &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
-    &offline_pages::kBackgroundLoaderForDownloadsFeature,
     &offline_pages::kOfflinePagesCTFeature,  // See crbug.com/620421.
     &offline_pages::kOfflinePagesSharingFeature,
     &password_manager::features::kViewPasswords,
