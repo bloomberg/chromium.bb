@@ -88,7 +88,8 @@ class FrameAndStyleLock {
 
 @end
 
-@interface BrowserWindowFullscreenTransition () {
+@interface BrowserWindowFullscreenTransition ()
+    <CAAnimationDelegate, CALayerDelegate> {
   // Flag to keep track of whether we are entering or exiting fullscreen.
   BOOL isEnteringFullscreen_;
 
@@ -164,7 +165,8 @@ class FrameAndStyleLock {
 // Sets |primaryWindow_|'s frame to the expected frame.
 - (void)changePrimaryWindowToFinalFrame;
 
-// Override of CAAnimation delegate method.
+// Overrides of CAAnimation delegate methods.
+- (void)animationDidStart:(CAAnimation*)theAnimation;
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished;
 
 // Returns the layer of the root view of |window|.
@@ -480,6 +482,10 @@ class FrameAndStyleLock {
   changingPrimaryWindowSize_ = YES;
   [primaryWindow_ setFrame:finalFrame_ display:NO];
   changingPrimaryWindowSize_ = NO;
+}
+
+- (void)animationDidStart:(CAAnimation*)theAnimation {
+  // CAAnimationDelegate method added on OSX 10.12.
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {

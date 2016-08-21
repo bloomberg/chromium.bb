@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -68,7 +69,7 @@ class AppNotificationBridge : public content::NotificationObserver {
 // An InfoBubbleWindow instance cannot be the delegate for its own animation
 // because CAAnimations retain their delegates, and since the InfoBubbleWindow
 // retains its animations a retain loop would be formed.
-@interface InfoBubbleWindowCloser : NSObject {
+@interface InfoBubbleWindowCloser : NSObject <CAAnimationDelegate> {
  @private
   InfoBubbleWindow* window_;  // Weak. Window to close.
 }
@@ -82,6 +83,10 @@ class AppNotificationBridge : public content::NotificationObserver {
     window_ = window;
   }
   return self;
+}
+
+- (void)animationDidStart:(CAAnimation*)theAnimation {
+  // CAAnimationDelegate method added on OSX 10.12.
 }
 
 // Callback for the alpha animation. Closes window_ if appropriate.

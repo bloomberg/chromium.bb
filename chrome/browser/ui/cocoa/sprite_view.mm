@@ -8,9 +8,13 @@
 #import <QuartzCore/CATransaction.h>
 
 #include "base/logging.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "ui/base/cocoa/animation_utils.h"
 
 static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
+
+@interface SpriteView (Private) <CALayerDelegate>
+@end
 
 @implementation SpriteView
 

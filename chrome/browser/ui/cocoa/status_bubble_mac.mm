@@ -64,14 +64,15 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 }  // namespace
 
-@interface StatusBubbleAnimationDelegate : NSObject {
+@interface StatusBubbleAnimationDelegate : NSObject <CAAnimationDelegate> {
  @private
   base::mac::ScopedBlock<void (^)(void)> completionHandler_;
 }
 
 - (id)initWithCompletionHandler:(void (^)(void))completionHandler;
 
-// CAAnimation delegate method
+// CAAnimation delegate methods
+- (void)animationDidStart:(CAAnimation*)animation;
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished;
 @end
 
@@ -85,6 +86,9 @@ const CGFloat kExpansionDurationSeconds = 0.125;
   return self;
 }
 
+- (void)animationDidStart:(CAAnimation*)theAnimation {
+  // CAAnimationDelegate method added on OSX 10.12.
+}
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
   completionHandler_.get()();
 }

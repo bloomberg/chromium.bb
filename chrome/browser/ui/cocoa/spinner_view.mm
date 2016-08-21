@@ -31,7 +31,7 @@ NSString* const kSpinnerAnimationName  = @"SpinnerAnimationName";
 NSString* const kRotationAnimationName = @"RotationAnimationName";
 }
 
-@interface SpinnerView () {
+@interface SpinnerView () <CALayerDelegate> {
   base::scoped_nsobject<CAAnimationGroup> spinnerAnimation_;
   base::scoped_nsobject<CABasicAnimation> rotationAnimation_;
   CAShapeLayer* shapeLayer_;  // Weak.

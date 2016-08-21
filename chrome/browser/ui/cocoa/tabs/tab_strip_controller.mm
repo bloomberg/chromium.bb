@@ -293,7 +293,7 @@ private:
 // to let it know that |controller_| is ready to be removed from the model.
 // Since we only maintain weak references, the tab strip must call -invalidate:
 // to prevent the use of dangling pointers.
-@interface TabCloseAnimationDelegate : NSObject {
+@interface TabCloseAnimationDelegate : NSObject <CAAnimationDelegate> {
  @private
   TabStripController* strip_;  // weak; owns us indirectly
   TabController* controller_;  // weak
@@ -309,7 +309,8 @@ private:
 // prevent attempts to call into the released object.
 - (void)invalidate;
 
-// CAAnimation delegate method
+// CAAnimation delegate methods
+- (void)animationDidStart:(CAAnimation*)animation;
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished;
 
 @end
@@ -331,6 +332,9 @@ private:
   controller_ = nil;
 }
 
+- (void)animationDidStart:(CAAnimation*)theAnimation {
+  // CAAnimationDelegate method added on OSX 10.12.
+}
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
   [strip_ animationDidStop:animation
              forController:controller_
@@ -1406,7 +1410,7 @@ private:
 - (void)animationDidStop:(CAAnimation*)animation
            forController:(TabController*)controller
                 finished:(BOOL)finished{
-  [[animation delegate] invalidate];
+  [(TabCloseAnimationDelegate *)[animation delegate] invalidate];
   [closingControllers_ removeObject:controller];
   [self removeTab:controller];
 }

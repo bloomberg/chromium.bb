@@ -5,7 +5,11 @@
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 
 #include "base/logging.h"
+#import "base/mac/sdk_forward_declarations.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
+
+@interface AnimatableImage (Private) <CAAnimationDelegate>
+@end
 
 @implementation AnimatableImage
 
@@ -119,6 +123,9 @@
   [layer addAnimation:positionAnimation forKey:@"position"];
   [layer addAnimation:opacityAnimation forKey:@"opacity"];
   [CATransaction commit];
+}
+
+- (void)animationDidStart:(CAAnimation*)animation {
 }
 
 // CAAnimation delegate method called when the animation is complete.

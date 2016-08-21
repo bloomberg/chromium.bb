@@ -25,6 +25,21 @@
 // OSX SDK being compiled against.
 // ----------------------------------------------------------------------------
 
+#if !defined(MAC_OS_X_VERSION_10_12) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
+
+// The protocol was formalized by the 10.12 SDK, but it was informally used
+// before.
+@protocol CAAnimationDelegate
+- (void)animationDidStart:(CAAnimation*)animation;
+- (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished;
+@end
+
+@protocol CALayerDelegate
+@end
+
+#endif  // MAC_OS_X_VERSION_10_12
+
 #if !defined(MAC_OS_X_VERSION_10_11) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
 
@@ -50,7 +65,7 @@ enum {
 };
 typedef NSUInteger NSSpringLoadingHighlight;
 
-#endif // MAC_OS_X_VERSION_10_11
+#endif  // MAC_OS_X_VERSION_10_11
 
 // ----------------------------------------------------------------------------
 // Define NSStrings only available in newer versions of the OSX SDK to force

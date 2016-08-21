@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -169,7 +170,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 // Private Interface ///////////////////////////////////////////////////////////
 
-@interface ConfirmQuitPanelController (Private)
+@interface ConfirmQuitPanelController (Private) <CAAnimationDelegate>
 - (void)animateFadeOut;
 - (NSEvent*)pumpEventQueueForKeyUp:(NSApplication*)app untilDate:(NSDate*)date;
 - (void)hideAllWindowsForApplication:(NSApplication*)app
@@ -353,6 +354,10 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   [dictionary setObject:animation forKey:@"alphaValue"];
   [window setAnimations:dictionary];
   [[window animator] setAlphaValue:0.0];
+}
+
+- (void)animationDidStart:(CAAnimation*)theAnimation {
+  // CAAnimationDelegate method added on OSX 10.12.
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
