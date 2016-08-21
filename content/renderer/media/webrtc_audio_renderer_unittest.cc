@@ -116,6 +116,7 @@ class WebRtcAudioRendererTest : public testing::Test,
     if (device_id != kInvalidOutputDeviceId) {
       mock_sink_ = fake_sink;
       EXPECT_CALL(*mock_sink_.get(), Start());
+      EXPECT_CALL(*mock_sink_.get(), Play());
     }
 
     MockCreateAudioRendererSink(source_type, render_frame_id, session_id,
