@@ -57,6 +57,7 @@ class GCMStatsRecorderAndroid {
 
   // Records that a data message has been received for |app_id|.
   void RecordDataMessageReceived(const std::string& app_id,
+                                 const std::string& from,
                                  int message_byte_size);
 
   // Records a message decryption failure caused by |result| for |app_id|.

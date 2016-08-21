@@ -14,6 +14,7 @@ namespace gcm {
 namespace {
 
 const char kTestAppId[] = "test_app_id";
+const char kTestSenderId[] = "test_sender_id";
 
 class GCMStatsRecorderAndroidTest : public ::testing::Test,
                                     public GCMStatsRecorderAndroid::Delegate {
@@ -53,7 +54,8 @@ TEST_F(GCMStatsRecorderAndroidTest, RecordsAndCallsDelegate) {
   recorder.RecordUnregistrationResponse(kTestAppId, true /* success */);
   EXPECT_EQ(4u, activity_recorded_calls());
 
-  recorder.RecordDataMessageReceived(kTestAppId, 42 /* message_byte_size */);
+  recorder.RecordDataMessageReceived(kTestAppId, kTestSenderId,
+                                     42 /* message_byte_size */);
   EXPECT_EQ(5u, activity_recorded_calls());
 
   recorder.RecordDecryptionFailure(

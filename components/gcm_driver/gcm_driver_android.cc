@@ -106,7 +106,8 @@ void GCMDriverAndroid::OnMessageReceived(
     message_byte_size += message.raw_data.size();
   }
 
-  recorder_.RecordDataMessageReceived(app_id, message_byte_size);
+  recorder_.RecordDataMessageReceived(app_id, message.sender_id,
+                                      message_byte_size);
 
   DispatchMessage(app_id, message);
 }

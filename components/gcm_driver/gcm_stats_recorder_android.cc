@@ -104,12 +104,14 @@ void GCMStatsRecorderAndroid::RecordRegistration(const std::string& app_id,
 
 void GCMStatsRecorderAndroid::RecordDataMessageReceived(
     const std::string& app_id,
+    const std::string& from,
     int message_byte_size) {
   if (!is_recording_)
     return;
 
   ReceivingActivity activity;
   activity.app_id = app_id;
+  activity.from = from;
   activity.message_byte_size = message_byte_size;
   activity.event = "Data msg received";
 
