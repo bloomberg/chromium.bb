@@ -197,7 +197,7 @@ Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& reques
     case Resource::ImportResource:
         resource = RawResource::fetchImport(request, fetcher());
         break;
-    case Resource::LinkPreload:
+    case Resource::Raw:
         resource = RawResource::fetch(request, fetcher());
         break;
     default:

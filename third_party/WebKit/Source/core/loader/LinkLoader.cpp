@@ -187,7 +187,7 @@ bool LinkLoader::getResourceTypeFromAsAttribute(const String& as, Resource::Type
     } else if (as == "track") {
         type = Resource::TextTrack;
     } else {
-        type = Resource::LinkPreload;
+        type = Resource::Raw;
         if (!as.isEmpty())
             return false;
     }
@@ -214,7 +214,6 @@ void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
     case Resource::Media:
     case Resource::TextTrack:
     case Resource::Raw:
-    case Resource::LinkPreload:
         m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource));
         break;
     default:
@@ -240,7 +239,6 @@ static bool isSupportedType(Resource::Type resourceType, const String& mimeType)
     case Resource::TextTrack:
         return MIMETypeRegistry::isSupportedTextTrackMIMEType(mimeType);
     case Resource::Raw:
-    case Resource::LinkPreload:
         return true;
     default:
         ASSERT_NOT_REACHED();
@@ -295,8 +293,6 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
     linkRequest.setForPreload(true, monotonicallyIncreasingTime());
     linkRequest.setLinkPreload(true);
-    if (resourceType == Resource::LinkPreload)
-        linkRequest.setDefer(FetchRequest::LazyLoad);
     return document.loader()->startPreload(resourceType, linkRequest);
 }
 

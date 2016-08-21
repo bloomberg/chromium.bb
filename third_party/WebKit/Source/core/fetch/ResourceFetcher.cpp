@@ -82,7 +82,6 @@ enum SriResourceIntegrityMismatchEvent {
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)          \
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, ImportResource) \
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)   \
-        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPreload)    \
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, MainResource)   \
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
         DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Media)          \
@@ -120,7 +119,6 @@ static ResourceLoadPriority typeToPriority(Resource::Type type)
         // Also late-body scripts discovered by the preload scanner (set explicitly in loadPriority)
         return ResourceLoadPriorityMedium;
     case Resource::Image:
-    case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::Media:
     case Resource::SVGDocument:
@@ -159,8 +157,7 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(Resource::Type type, c
         else if (request.forPreload() && m_imageFetched)
             priority = ResourceLoadPriorityMedium;
     } else if (FetchRequest::LazyLoad == request.defer()) {
-        // A deferred load of type Raw is a link rel=preload, which should be Low instead of VeryLow.
-        priority = type == Resource::Raw ? ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
+        priority = ResourceLoadPriorityVeryLow;
     }
 
     // A manually set priority acts as a floor. This is used to ensure that synchronous requests
@@ -200,8 +197,6 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
         return WebURLRequest::RequestContextImport;
     case Resource::LinkPrefetch:
         return WebURLRequest::RequestContextPrefetch;
-    case Resource::LinkPreload:
-        return WebURLRequest::RequestContextSubresource;
     case Resource::TextTrack:
         return WebURLRequest::RequestContextTrack;
     case Resource::SVGDocument:

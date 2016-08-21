@@ -517,7 +517,6 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(Resource::Typ
     case Resource::Font:
     case Resource::Raw:
     case Resource::LinkPrefetch:
-    case Resource::LinkPreload:
     case Resource::TextTrack:
     case Resource::ImportResource:
     case Resource::Media:

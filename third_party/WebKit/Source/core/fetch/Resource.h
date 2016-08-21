@@ -70,7 +70,6 @@ public:
         SVGDocument,
         XSLStyleSheet,
         LinkPrefetch,
-        LinkPreload,
         TextTrack,
         ImportResource,
         Media, // Audio or video file requested by a HTML5 media element

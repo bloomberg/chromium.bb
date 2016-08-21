@@ -107,7 +107,7 @@ TEST(LinkLoaderTest, Preload)
         {"http://example.test/cat.vtt", "track", "", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true},
         {"http://example.test/cat.woff", "font", "", "", ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextFont, true, true},
         // TODO(yoav): subresource should be *very* low priority (rather than low).
-        {"http://example.test/cat.empty", "", "", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true},
+        {"http://example.test/cat.empty", "", "", "", ResourceLoadPriorityHigh, WebURLRequest::RequestContextSubresource, true, true},
         {"http://example.test/cat.blob", "blabla", "", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false},
         {"bla://example.test/cat.gif", "image", "", "", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextImage, false, false},
         // MIME type tests
@@ -126,7 +126,7 @@ TEST(LinkLoaderTest, Preload)
         {"http://example.test/cat.vtt", "track", "text/subtitlething", "", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextTrack, false, false},
         {"http://example.test/cat.woff", "font", "font/woff2", "", ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextFont, true, true},
         {"http://example.test/cat.woff", "font", "font/woff84", "", ResourceLoadPriorityUnresolved, WebURLRequest::RequestContextFont, false, false},
-        {"http://example.test/cat.empty", "", "foo/bar", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, true, true},
+        {"http://example.test/cat.empty", "", "foo/bar", "", ResourceLoadPriorityHigh, WebURLRequest::RequestContextSubresource, true, true},
         {"http://example.test/cat.blob", "blabla", "foo/bar", "", ResourceLoadPriorityLow, WebURLRequest::RequestContextSubresource, false, false},
         // Media tests
         {"http://example.test/cat.gif", "image", "image/gif", "(max-width: 600px)", ResourceLoadPriorityLow, WebURLRequest::RequestContextImage, true, true},
