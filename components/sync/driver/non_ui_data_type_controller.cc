@@ -115,37 +115,14 @@ void NonUIDataTypeController::Stop() {
   DisconnectSharedChangeProcessor();
 
   // If we haven't finished starting, we need to abort the start.
-  switch (state()) {
-    case MODEL_STARTING:
-      state_ = STOPPING;
-      AbortModelLoad();
-      return;  // The datatype was never activated, we're done.
-    case ASSOCIATING:
-      state_ = STOPPING;
-      StopModels();
-      // We continue on to deactivate the datatype and stop the local service.
-      break;
-    case MODEL_LOADED:
-    case DISABLED:
-      // If DTC is loaded or disabled, we never attempted or succeeded
-      // associating and never activated the datatype. We would have already
-      // stopped the local service in StartDone(..).
-      state_ = NOT_RUNNING;
-      StopModels();
-      return;
-    default:
-      // Datatype was fully started. Need to deactivate and stop the local
-      // service.
-      DCHECK_EQ(state(), RUNNING);
-      state_ = STOPPING;
-      StopModels();
-      break;
-  }
+  bool service_started = state() == ASSOCIATING || state() == RUNNING;
+  state_ = service_started ? STOPPING : NOT_RUNNING;
+  StopModels();
 
-  // Stop the local service and release our references to it and the
-  // shared change processor (posts a task to the datatype's thread).
-  StopServiceAndClearProcessor();
+  if (service_started)
+    StopSyncableService();
 
+  shared_change_processor_ = nullptr;
   state_ = NOT_RUNNING;
 }
 
@@ -193,7 +170,8 @@ void NonUIDataTypeController::StartDone(
   // ensure we clean up the local service and shared change processor properly.
   if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING) {
     DisconnectSharedChangeProcessor();
-    StopServiceAndClearProcessor();
+    StopSyncableService();
+    shared_change_processor_ = nullptr;
   }
 
   // It's possible to have StartDone called first from the UI thread
@@ -223,11 +201,6 @@ void NonUIDataTypeController::RecordStartFailure(ConfigureResult result) {
                             MAX_CONFIGURE_RESULT);
   SYNC_DATA_TYPE_HISTOGRAM(type());
 #undef PER_DATA_TYPE_MACRO
-}
-
-void NonUIDataTypeController::AbortModelLoad() {
-  state_ = NOT_RUNNING;
-  StopModels();
 }
 
 void NonUIDataTypeController::DisableImpl(const syncer::SyncError& error) {
@@ -267,13 +240,12 @@ void NonUIDataTypeController::DisconnectSharedChangeProcessor() {
   }
 }
 
-void NonUIDataTypeController::StopServiceAndClearProcessor() {
+void NonUIDataTypeController::StopSyncableService() {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   if (shared_change_processor_.get()) {
     PostTaskOnBackendThread(FROM_HERE,
                             base::Bind(&SharedChangeProcessor::StopLocalService,
                                        shared_change_processor_));
-    shared_change_processor_ = nullptr;
   }
 }
 

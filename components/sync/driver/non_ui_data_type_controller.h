@@ -99,12 +99,8 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // |shared_change_processor_| must be non-NULL).
   void DisconnectSharedChangeProcessor();
 
-  // Posts StopLocalService() to the processor on the model type thread and then
-  // clears our reference to the processor.
-  void StopServiceAndClearProcessor();
-
-  // Abort model loading and trigger the model load callback.
-  void AbortModelLoad();
+  // Posts StopLocalService() to the processor on the model type thread.
+  void StopSyncableService();
 
   // Disable this type with the sync service. Should only be invoked in case of
   // an unrecoverable error.
