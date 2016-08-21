@@ -128,6 +128,12 @@ fun:*DrawingDisplayItem*ApproximateOpCount*
 # WebKit
 # The entries below have not been categorized
 
+# blink::BoxClipper::BoxClipper
+fun:*blink*BoxClipper*LayoutBox*PaintInfo*LayoutPoint*ContentsClipBehavior*
+
+# blink::DrawingDisplayItem::DrawingDisplayItem
+fun: *blink*DrawingDisplayItem*DisplayItemClient*
+
 fun:*ContainerNode*isChildTypeAllowed*
 fun:*ContainerNode*checkAcceptChild*
 fun:*ContainerNode*notifyNodeInserted*
@@ -139,7 +145,7 @@ fun:*Element*attributeChanged*
 fun:*Element*didAddAttribute*
 fun:*LayoutTreeBuilderForElement*shouldCreateLayoutObject*
 fun:*LayoutTreeBuilderForElement*createLayoutObject*
-fun:*Node*isPreudoElement*
+fun:*Node*isPseudoElement*
 fun:*Node*isFirstLetterPseudoElement*
 fun:*Node*wrap*
 fun:*EventTarget*hasEventListeners*
@@ -152,8 +158,8 @@ fun:*LayoutBlockFlow*layoutBlockFlow*
 fun:*LayoutBlockFlow*rebuildFloatsFromIntruding*
 fun:*LayoutBlockFlow*styleDidChange*
 fun:*LayoutBlockFlow*layoutInlineChildren*
-fun:*LayoutBox*contentBoxRect,*
-fun:*LayoutBox*contentWidth,*
+fun:*LayoutBox*contentBoxRect*
+fun:*LayoutBox*contentWidth*
 fun:*LayoutBox*contentHeight*
 fun:*LayoutBox*clientLeft*
 fun:*LayoutBox*clientTop*
@@ -204,13 +210,11 @@ fun:*PageAnimator*scheduleVisualUpdate*
 fun:*BlockPainter*paint*
 fun:*BlockPainter*paintObject*
 fun:*BlockPainter*intersectsPaintRect*
-fun:*BoxClipper*BoxClipper*
 fun:*ObjectPaintInvalidator*computePaintInvalidationReason*
 fun:*ObjectPaintInvalidator*invalidateSelectionIfNeeded*
 fun:*ObjectPaintInvalidator*invalidatePaintIfNeededWithComputedReason*
 fun:*ContiguousContainer*clear*
 fun:*GraphicsLayer*setNeedsDisplayInRect*
-fun:*DrawingDisplayItem*DrawingDisplayItem*
 fun:*PaintArtifact*appendToWebDisplayItemList*
 fun:*visualRectForDisplayItem*
 fun:*PaintController*commitNewDisplayItems*
