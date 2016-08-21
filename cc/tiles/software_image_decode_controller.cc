@@ -60,7 +60,25 @@ class AutoRemoveKeyFromTaskMap {
   std::unordered_map<SoftwareImageDecodeController::ImageKey,
                      scoped_refptr<TileTask>,
                      SoftwareImageDecodeController::ImageKeyHash>* task_map_;
-  SoftwareImageDecodeController::ImageKey key_;
+  const SoftwareImageDecodeController::ImageKey& key_;
+};
+
+class AutoDrawWithImageFinished {
+ public:
+  AutoDrawWithImageFinished(SoftwareImageDecodeController* controller,
+                            const DrawImage& draw_image,
+                            const DecodedDrawImage& decoded_draw_image)
+      : controller_(controller),
+        draw_image_(draw_image),
+        decoded_draw_image_(decoded_draw_image) {}
+  ~AutoDrawWithImageFinished() {
+    controller_->DrawWithImageFinished(draw_image_, decoded_draw_image_);
+  }
+
+ private:
+  SoftwareImageDecodeController* controller_;
+  const DrawImage& draw_image_;
+  const DecodedDrawImage& decoded_draw_image_;
 };
 
 class ImageDecodeTaskImpl : public TileTask {
@@ -550,10 +568,10 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
 
   auto decoded_draw_image = GetDecodedImageForDrawInternal(
       original_size_key, original_size_draw_image);
-  if (!decoded_draw_image.image()) {
-    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+  AutoDrawWithImageFinished auto_finish_draw(this, original_size_draw_image,
+                                             decoded_draw_image);
+  if (!decoded_draw_image.image())
     return nullptr;
-  }
 
   SkImageInfo subrect_info = CreateImageInfo(
       key.target_size().width(), key.target_size().height(), format_);
@@ -577,8 +595,6 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
     // We have a decoded image, and we're reading into already allocated memory.
     // This should never fail.
     DCHECK(result);
-    // Release the original image, since we don't need it anymore.
-    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
   }
   return base::WrapUnique(
       new DecodedImage(subrect_info, std::move(subrect_pixels),
@@ -605,10 +621,10 @@ SoftwareImageDecodeController::GetScaledImageDecode(
 
   auto decoded_draw_image = GetDecodedImageForDrawInternal(
       original_size_key, original_size_draw_image);
-  if (!decoded_draw_image.image()) {
-    DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
+  AutoDrawWithImageFinished auto_finish_draw(this, original_size_draw_image,
+                                             decoded_draw_image);
+  if (!decoded_draw_image.image())
     return nullptr;
-  }
 
   SkPixmap decoded_pixmap;
   bool result = decoded_draw_image.image()->peekPixels(&decoded_pixmap);
@@ -642,11 +658,6 @@ SoftwareImageDecodeController::GetScaledImageDecode(
         decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
     DCHECK(result) << key.ToString();
   }
-
-  // Release the original sized decode. Any other intermediate result to release
-  // would be the subrect memory. However, that's in a scoped_ptr and will be
-  // deleted automatically when we return.
-  DrawWithImageFinished(original_size_draw_image, decoded_draw_image);
 
   return base::WrapUnique(
       new DecodedImage(scaled_info, std::move(scaled_pixels),
