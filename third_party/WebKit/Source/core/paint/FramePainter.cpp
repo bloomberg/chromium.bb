@@ -104,7 +104,10 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
         return;
     }
 
-    frameView().checkDoesNotNeedLayout();
+    // TODO(crbug.com/590856): It's still broken when we choose not to crash when the check fails.
+    if (!frameView().checkDoesNotNeedLayout())
+        return;
+
     // TODO(wangxianzhu): The following check should be stricter, but currently this is blocked
     // by the svg root issue (crbug.com/442939).
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
