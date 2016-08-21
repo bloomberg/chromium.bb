@@ -21,9 +21,6 @@ namespace views {
 
 namespace {
 
-// Inset between clickable region border and button contents (text).
-const int kHorizontalPadding = 16;
-
 // Minimum size to reserve for the button contents.
 const int kMinWidth = 48;
 
@@ -217,12 +214,12 @@ void MdTextButton::SetEnabledTextColors(SkColor color) {
 
 void MdTextButton::SetText(const base::string16& text) {
   LabelButton::SetText(text);
-  UpdatePaddingForFont();
+  UpdatePadding();
 }
 
 void MdTextButton::AdjustFontSize(int size_delta) {
   LabelButton::AdjustFontSize(size_delta);
-  UpdatePaddingForFont();
+  UpdatePadding();
 }
 
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
@@ -253,31 +250,40 @@ MdTextButton::MdTextButton(ButtonListener* listener)
 
 MdTextButton::~MdTextButton() {}
 
-void MdTextButton::UpdatePaddingForFont() {
+void MdTextButton::UpdatePadding() {
   // Don't use font-based padding when there's no text visible.
   if (GetText().empty()) {
     SetBorder(Border::NullBorder());
     return;
   }
 
-  // Top and bottom padding depend on the font. Example: if font cap height is
-  // 9dp, use 8dp bottom padding and 7dp top padding to total 24dp.
-  const gfx::FontList& font = label()->font_list();
-  int text_height = font.GetCapHeight();
-  int even_text_height = text_height - (text_height % 2);
-  const int top_padding = even_text_height - (text_height - even_text_height);
-  const int bottom_padding = even_text_height;
-  DCHECK_EQ(3 * even_text_height, top_padding + text_height + bottom_padding);
+  // Text buttons default to 28dp in height on all platforms when the base font
+  // is in use, but should grow or shrink if the font size is adjusted up or
+  // down. When the system font size has been adjusted, the base font will be
+  // larger than normal such that 28dp might not be enough, so also enforce a
+  // minimum height of twice the font size.
+  // Example 1:
+  // * Normal button on ChromeOS, 12pt Roboto. Button height of 28dp.
+  // * Button on ChromeOS that has been adjusted to 14pt Roboto. Button height
+  // of 28 + 2 * 2 = 32dp.
+  // * Linux user sets base system font size to 17dp. For a normal button, the
+  // |size_delta| will be zero, so to adjust upwards we double 17 to get 34.
+  int size_delta =
+      label()->font_list().GetFontSize() - GetMdFontList().GetFontSize();
+  const int kBaseHeight = 28;
+  int target_height = std::max(kBaseHeight + size_delta * 2,
+                               label()->font_list().GetFontSize() * 2);
 
-  const int inbuilt_top_padding = font.GetBaseline() - font.GetCapHeight();
-  const int inbuilt_bottom_padding =
-      font.GetHeight() - label()->font_list().GetBaseline();
+  int label_height = label()->GetPreferredSize().height();
+  int top_padding = (target_height - label_height) / 2;
+  int bottom_padding = (target_height - label_height + 1) / 2;
+  DCHECK_EQ(target_height, label_height + top_padding + bottom_padding);
 
   // TODO(estade): can we get rid of the platform style border hoopla if
   // we apply the MD treatment to all buttons, even GTK buttons?
-  SetBorder(Border::CreateEmptyBorder(
-      top_padding - inbuilt_top_padding, kHorizontalPadding,
-      bottom_padding - inbuilt_bottom_padding, kHorizontalPadding));
+  const int kHorizontalPadding = 16;
+  SetBorder(Border::CreateEmptyBorder(top_padding, kHorizontalPadding,
+                                      bottom_padding, kHorizontalPadding));
 }
 
 void MdTextButton::UpdateColors() {

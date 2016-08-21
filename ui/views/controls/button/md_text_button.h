@@ -65,7 +65,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   MdTextButton(ButtonListener* listener);
   ~MdTextButton() override;
 
-  void UpdatePaddingForFont();
+  void UpdatePadding();
   void UpdateColors();
 
   // The MD-style focus ring. This is not done via a FocusPainter
