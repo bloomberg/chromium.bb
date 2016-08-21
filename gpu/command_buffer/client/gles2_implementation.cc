@@ -5711,7 +5711,7 @@ GLuint GLES2Implementation::CreateAndConsumeTextureCHROMIUM(
                               "GenMailboxCHROMIUM.";
   GLuint client_id;
   GetIdHandler(id_namespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndConsumeTextureCHROMIUMImmediate(target,
+  helper_->CreateAndConsumeTextureINTERNALImmediate(target,
       client_id, data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::Flush();

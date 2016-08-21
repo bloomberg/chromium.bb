@@ -3731,7 +3731,7 @@ TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
 
 TEST_F(GLES2ImplementationTest, CreateAndConsumeTextureCHROMIUM) {
   struct Cmds {
-    cmds::CreateAndConsumeTextureCHROMIUMImmediate cmd;
+    cmds::CreateAndConsumeTextureINTERNALImmediate cmd;
     GLbyte data[64];
   };
 

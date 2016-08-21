@@ -1521,35 +1521,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenMailboxCHROMIUM(
 }
 
 error::Error
-GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate& c = *static_cast<
-      const gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate*>(cmd_data);
-  GLenum target = static_cast<GLenum>(c.target);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize(1, sizeof(GLbyte), 64, &data_size)) {
-    return error::kOutOfBounds;
-  }
-  if (data_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  const GLbyte* mailbox =
-      GetImmediateDataAs<const GLbyte*>(c, data_size, immediate_data_size);
-  if (mailbox == NULL) {
-    return error::kOutOfBounds;
-  }
-  uint32_t client_id = c.client_id;
-  error::Error error =
-      DoCreateAndConsumeTextureCHROMIUM(target, mailbox, client_id);
-  if (error != error::kNoError) {
-    return error;
-  }
-
-  return error::kNoError;
-}
-
-error::Error
 GLES2DecoderPassthroughImpl::HandleBindUniformLocationCHROMIUMBucket(
     uint32_t immediate_data_size,
     const void* cmd_data) {

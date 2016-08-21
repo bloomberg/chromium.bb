@@ -2604,6 +2604,19 @@ void ConsumeTextureCHROMIUMImmediate(GLenum target, const GLbyte* mailbox) {
   }
 }
 
+void CreateAndConsumeTextureINTERNALImmediate(GLenum target,
+                                              GLuint texture,
+                                              const GLbyte* mailbox) {
+  const uint32_t size =
+      gles2::cmds::CreateAndConsumeTextureINTERNALImmediate::ComputeSize();
+  gles2::cmds::CreateAndConsumeTextureINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
+  if (c) {
+    c->Init(target, texture, mailbox);
+  }
+}
+
 void BindUniformLocationCHROMIUMBucket(GLuint program,
                                        GLint location,
                                        uint32_t name_bucket_id) {

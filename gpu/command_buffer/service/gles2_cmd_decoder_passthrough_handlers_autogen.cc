@@ -4165,6 +4165,32 @@ error::Error GLES2DecoderPassthroughImpl::HandleConsumeTextureCHROMIUMImmediate(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  const gles2::cmds::CreateAndConsumeTextureINTERNALImmediate& c = *static_cast<
+      const gles2::cmds::CreateAndConsumeTextureINTERNALImmediate*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  uint32_t data_size;
+  if (!GLES2Util::ComputeDataSize(1, sizeof(GLbyte), 64, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLbyte* mailbox =
+      GetImmediateDataAs<const GLbyte*>(c, data_size, immediate_data_size);
+  error::Error error =
+      DoCreateAndConsumeTextureINTERNAL(target, texture, mailbox);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleBindTexImage2DCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {

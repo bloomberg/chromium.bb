@@ -12872,6 +12872,55 @@ static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, header) == 0,
 static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, target) == 4,
               "offset of ConsumeTextureCHROMIUMImmediate target should be 4");
 
+struct CreateAndConsumeTextureINTERNALImmediate {
+  typedef CreateAndConsumeTextureINTERNALImmediate ValueType;
+  static const CommandId kCmdId = kCreateAndConsumeTextureINTERNALImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLenum _target, GLuint _texture, const GLbyte* _mailbox) {
+    SetHeader();
+    target = _target;
+    texture = _texture;
+    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLuint _texture,
+            const GLbyte* _mailbox) {
+    static_cast<ValueType*>(cmd)->Init(_target, _texture, _mailbox);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t texture;
+};
+
+static_assert(sizeof(CreateAndConsumeTextureINTERNALImmediate) == 12,
+              "size of CreateAndConsumeTextureINTERNALImmediate should be 12");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, header) == 0,
+    "offset of CreateAndConsumeTextureINTERNALImmediate header should be 0");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, target) == 4,
+    "offset of CreateAndConsumeTextureINTERNALImmediate target should be 4");
+static_assert(
+    offsetof(CreateAndConsumeTextureINTERNALImmediate, texture) == 8,
+    "offset of CreateAndConsumeTextureINTERNALImmediate texture should be 8");
+
 struct BindUniformLocationCHROMIUMBucket {
   typedef BindUniformLocationCHROMIUMBucket ValueType;
   static const CommandId kCmdId = kBindUniformLocationCHROMIUMBucket;

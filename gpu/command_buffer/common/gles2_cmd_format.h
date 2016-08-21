@@ -321,59 +321,6 @@ struct GenMailboxCHROMIUM {
   CommandHeader header;
 };
 
-struct CreateAndConsumeTextureCHROMIUMImmediate {
-  typedef CreateAndConsumeTextureCHROMIUMImmediate ValueType;
-  static const CommandId kCmdId = kCreateAndConsumeTextureCHROMIUMImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 64);  // NOLINT
-  }
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize());  // NOLINT
-  }
-
-  void SetHeader(uint32_t size_in_bytes) {
-    header.SetCmdByTotalSize<ValueType>(size_in_bytes);
-  }
-
-  void Init(GLenum _target, uint32_t _client_id, const GLbyte* _mailbox) {
-    SetHeader(ComputeSize());
-    target = _target;
-    client_id = _client_id;
-    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            uint32_t _client_id,
-            const GLbyte* _mailbox) {
-    static_cast<ValueType*>(cmd)->Init(_target, _client_id, _mailbox);
-    const uint32_t size = ComputeSize();
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  uint32_t client_id;
-};
-
-static_assert(sizeof(CreateAndConsumeTextureCHROMIUMImmediate) == 12,
-              "size of CreateAndConsumeTextureCHROMIUMImmediate should be 12");
-static_assert(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, header) == 0,
-              "offset of CreateAndConsumeTextureCHROMIUMImmediate.header "
-              "should be 0");
-static_assert(offsetof(CreateAndConsumeTextureCHROMIUMImmediate, target) == 4,
-              "offset of CreateAndConsumeTextureCHROMIUMImmediate.target "
-              "should be 4");
-static_assert(
-    offsetof(CreateAndConsumeTextureCHROMIUMImmediate, client_id) == 8,
-    "offset of CreateAndConsumeTextureCHROMIUMImmediate.client_id should be 8");
-
-
 #pragma pack(pop)
 
 }  // namespace cmd

@@ -1770,10 +1770,10 @@ error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureCHROMIUM(
+error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLenum target,
-    const GLbyte* mailbox,
-    GLuint texture) {
+    GLuint texture,
+    const GLbyte* mailbox) {
   return error::kNoError;
 }
 

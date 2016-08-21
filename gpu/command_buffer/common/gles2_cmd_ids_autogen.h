@@ -278,7 +278,7 @@
   OP(ProduceTextureCHROMIUMImmediate)                      /* 519 */ \
   OP(ProduceTextureDirectCHROMIUMImmediate)                /* 520 */ \
   OP(ConsumeTextureCHROMIUMImmediate)                      /* 521 */ \
-  OP(CreateAndConsumeTextureCHROMIUMImmediate)             /* 522 */ \
+  OP(CreateAndConsumeTextureINTERNALImmediate)             /* 522 */ \
   OP(BindUniformLocationCHROMIUMBucket)                    /* 523 */ \
   OP(BindTexImage2DCHROMIUM)                               /* 524 */ \
   OP(ReleaseTexImage2DCHROMIUM)                            /* 525 */ \

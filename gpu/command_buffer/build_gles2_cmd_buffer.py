@@ -2351,6 +2351,8 @@ _PEPPER_INTERFACES = [
 #               command.
 # impl_decl:    Whether or not to generate the GLES2Implementation declaration
 #               for this command.
+# internal:     If true, this is an internal command only, not exposed to the
+#               client.
 # needs_size:   If True a data_size field is added to the command.
 # count:        The number of units per element. For PUTn or PUT types.
 # use_count_func: If True the actual data count needs to be computed; the count
@@ -2583,14 +2585,17 @@ _FUNCTION_INFO = {
     'extension_flag': 'chromium_framebuffer_mixed_samples',
   },
   'CreateAndConsumeTextureCHROMIUM': {
-    'decoder_func': 'DoCreateAndConsumeTextureCHROMIUM',
-    'impl_func': False,
-    'type': 'HandWritten',
-    'data_transfer_methods': ['immediate'],
-    'unit_test': False,
-    'client_test': False,
+    'gen_cmd': False,
     'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,
+    'trace_level': 2,
+  },
+  'CreateAndConsumeTextureINTERNAL': {
+    'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
+    'unit_test': False,
     'trace_level': 2,
   },
   'ClearStencil': {
@@ -9651,12 +9656,16 @@ class Function(object):
             not self.IsUnsafe())
 
   def InPepperInterface(self, interface):
+    if self.GetInfo('internal'):
+      return False
     ext = self.GetInfo('pepper_interface')
     if not interface.GetName():
       return self.IsCoreGLFunction()
     return ext == interface.GetName()
 
   def InAnyPepperExtension(self):
+    if self.GetInfo('internal'):
+      return False
     return self.IsCoreGLFunction() or self.GetInfo('pepper_interface')
 
   def GetErrorReturnString(self):
@@ -10937,6 +10946,8 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
     comment = "// This file contains Chromium-specific GLES2 declarations.\n\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2Header(f)
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
@@ -10946,6 +10957,8 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
     comment = "// These functions emulate GLES2 over command buffers.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2CLibImplementation(f)
       f.write("""
 namespace gles2 {
@@ -10953,6 +10966,8 @@ namespace gles2 {
 extern const NameToFunc g_gles2_function_table[] = {
 """)
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         f.write(
             '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
             (func.name, func.name))
@@ -10969,6 +10984,8 @@ extern const NameToFunc g_gles2_function_table[] = {
                "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2InterfaceHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10977,6 +10994,8 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_interface_stub.h.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2InterfaceStub(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10985,6 +11004,8 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_interface_stub.cc.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2InterfaceStubImpl(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10995,6 +11016,8 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2ImplementationHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -11005,6 +11028,8 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2Implementation(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -11013,6 +11038,8 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_trace_implementation.h\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2TraceImplementationHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -11021,6 +11048,8 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_trace_implementation.cc\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2TraceImplementation(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -11031,6 +11060,8 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
+        if func.GetInfo('internal'):
+          continue
         func.WriteGLES2ImplementationUnitTest(f)
     self.generated_cpp_filenames.append(filename)
 

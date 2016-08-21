@@ -3091,8 +3091,8 @@ TEST_P(GLES2DecoderTest, ProduceAndConsumeDirectTextureCHROMIUM) {
 
   // Consume the texture into a new client ID.
   GLuint new_texture_id = kNewClientId;
-  CreateAndConsumeTextureCHROMIUMImmediate& consume_cmd =
-      *GetImmediateAs<CreateAndConsumeTextureCHROMIUMImmediate>();
+  CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureINTERNALImmediate>();
   consume_cmd.Init(GL_TEXTURE_2D, new_texture_id, mailbox.name);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
@@ -3162,8 +3162,8 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidMailbox) {
       .Times(1)
       .RetiresOnSaturation();
 
-  CreateAndConsumeTextureCHROMIUMImmediate& consume_cmd =
-      *GetImmediateAs<CreateAndConsumeTextureCHROMIUMImmediate>();
+  CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureINTERNALImmediate>();
   consume_cmd.Init(GL_TEXTURE_2D, new_texture_id, mailbox.name);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
@@ -3211,8 +3211,8 @@ TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidTarget) {
 
   // Attempt to consume the mailbox with a different target.
   GLuint new_texture_id = kNewClientId;
-  CreateAndConsumeTextureCHROMIUMImmediate& consume_cmd =
-      *GetImmediateAs<CreateAndConsumeTextureCHROMIUMImmediate>();
+  CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureINTERNALImmediate>();
   consume_cmd.Init(GL_TEXTURE_CUBE_MAP, new_texture_id, mailbox.name);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));

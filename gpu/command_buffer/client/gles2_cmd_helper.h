@@ -27,19 +27,6 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
   #include "gpu/command_buffer/client/gles2_cmd_helper_autogen.h"
 
   // Helpers that could not be auto-generated.
-  // TODO(gman): Auto generate these.
-  void CreateAndConsumeTextureCHROMIUMImmediate(GLenum target,
-                                                uint32_t client_id,
-                                                const GLbyte* _mailbox) {
-    const uint32_t size =
-        gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate::ComputeSize();
-    gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate* c =
-        GetImmediateCmdSpaceTotalSize<
-            gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate>(size);
-    if (c) {
-      c->Init(target, client_id, _mailbox);
-    }
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2CmdHelper);

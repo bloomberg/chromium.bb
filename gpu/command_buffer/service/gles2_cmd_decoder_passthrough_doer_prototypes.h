@@ -726,9 +726,9 @@ error::Error DoProduceTextureDirectCHROMIUM(GLuint texture,
                                             GLenum target,
                                             const GLbyte* mailbox);
 error::Error DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox);
-error::Error DoCreateAndConsumeTextureCHROMIUM(GLenum target,
-                                               const GLbyte* mailbox,
-                                               GLuint texture);
+error::Error DoCreateAndConsumeTextureINTERNAL(GLenum target,
+                                               GLuint texture,
+                                               const GLbyte* mailbox);
 error::Error DoBindUniformLocationCHROMIUM(GLuint program,
                                            GLint location,
                                            const char* name);

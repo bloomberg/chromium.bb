@@ -1063,8 +1063,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void EnsureTextureForClientId(GLenum target, GLuint client_id);
   void DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* key);
-  void DoCreateAndConsumeTextureCHROMIUM(GLenum target, const GLbyte* key,
-    GLuint client_id);
+  void DoCreateAndConsumeTextureINTERNAL(GLenum target,
+                                         GLuint client_id,
+                                         const GLbyte* key);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
   void DoBindTexImage2DCHROMIUM(
@@ -15904,42 +15905,10 @@ void GLES2DecoderImpl::EnsureTextureForClientId(
   }
 }
 
-// If CreateAndConsumeTexture fails we still need to ensure that the client_id
-// provided is associated with a service_id/TextureRef for consistency, even if
-// the resulting texture is incomplete.
-error::Error GLES2DecoderImpl::HandleCreateAndConsumeTextureCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate& c =
-      *static_cast<
-          const gles2::cmds::CreateAndConsumeTextureCHROMIUMImmediate*>(
-          cmd_data);
-  GLenum target = static_cast<GLenum>(c.target);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize(1, sizeof(GLbyte), 64, &data_size)) {
-    return error::kOutOfBounds;
-  }
-  if (data_size > immediate_data_size) {
-    return error::kOutOfBounds;
-  }
-  const GLbyte* mailbox =
-      GetImmediateDataAs<const GLbyte*>(c, data_size, immediate_data_size);
-  if (!validators_->texture_bind_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(
-        "glCreateAndConsumeTextureCHROMIUM", target, "target");
-    return error::kNoError;
-  }
-  if (mailbox == NULL) {
-    return error::kOutOfBounds;
-  }
-  uint32_t client_id = c.client_id;
-  DoCreateAndConsumeTextureCHROMIUM(target, mailbox, client_id);
-  return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
-    const GLbyte* data, GLuint client_id) {
-  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM",
+void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(GLenum target,
+                                                         GLuint client_id,
+                                                         const GLbyte* data) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL",
       "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(data[0]));
   const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
