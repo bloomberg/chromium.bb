@@ -403,6 +403,7 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
     dispatcher->available_capacity_ = state->available_capacity;
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
     dispatcher->InitializeNoLock();
+    dispatcher->UpdateSignalsStateNoLock();
   }
 
   return dispatcher;

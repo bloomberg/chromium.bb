@@ -18,6 +18,8 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -29,6 +31,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -1291,6 +1294,64 @@ TEST_F(MultiprocessMessagePipeTest, BootstrapMessagePipeAsync) {
 
     // Ensure that we can read and write on the new pipe.
     VerifyEcho(pipe.get().value(), "goodbye");
+  END_CHILD()
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
+                                  MultiprocessMessagePipeTest, parent) {
+  // This test verifies that peer closure is detectable through various
+  // mechanisms when it races with handle transfer.
+  MojoHandle handles[4];
+  EXPECT_EQ("o_O", ReadMessageWithHandles(parent, handles, 4));
+
+  // Wait on handle 0 using MojoWait.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(handles[0], MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  base::MessageLoop message_loop;
+
+  // Wait on handle 1 using a Watcher.
+  {
+    base::RunLoop run_loop;
+    Watcher watcher;
+    watcher.Start(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                  base::Bind([] (base::RunLoop* loop, MojoResult result) {
+                    EXPECT_EQ(MOJO_RESULT_OK, result);
+                    loop->Quit();
+                  }, &run_loop));
+    run_loop.Run();
+  }
+
+  // Wait on handle 2 by polling with MojoReadMessage.
+  MojoResult result;
+  do {
+    result = MojoReadMessage(handles[2], nullptr, nullptr, nullptr, nullptr,
+                             MOJO_READ_MESSAGE_FLAG_NONE);
+  } while (result == MOJO_RESULT_SHOULD_WAIT);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+
+  // Wait on handle 3 by polling with MojoWriteMessage.
+  do {
+    result = MojoWriteMessage(handles[3], nullptr, 0, nullptr, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE);
+  } while (result == MOJO_RESULT_OK);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
+
+  for (size_t i = 0; i < 4; ++i)
+    CloseHandle(handles[i]);
+}
+
+TEST_F(MultiprocessMessagePipeTest, MessagePipeStatusChangeInTransit) {
+  MojoHandle local_handles[4];
+  MojoHandle sent_handles[4];
+  for (size_t i = 0; i < 4; ++i)
+    CreateMessagePipe(&local_handles[i], &sent_handles[i]);
+
+  RUN_CHILD_ON_PIPE(MessagePipeStatusChangeInTransitClient, child)
+    // Send 4 handles and let their transfer race with their peers' closure.
+    WriteMessageWithHandles(child, "o_O", sent_handles, 4);
+    for (size_t i = 0; i < 4; ++i)
+      CloseHandle(local_handles[i]);
   END_CHILD()
 }
 
