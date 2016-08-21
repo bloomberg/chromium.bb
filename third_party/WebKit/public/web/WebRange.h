@@ -32,12 +32,15 @@
 #define WebRange_h
 
 #include "public/platform/WebCommon.h"
+#if BLINK_IMPLEMENTATION
+#include "core/editing/EphemeralRange.h"
+#endif
 
 namespace blink {
 
+class LocalFrame;
 class Range;
 class WebString;
-class LocalFrame;
 
 class WebRange final {
 public:
@@ -50,9 +53,9 @@ public:
     bool isNull() const { return m_start == -1 && m_end == -1; }
 
 #if BLINK_IMPLEMENTATION
-    WebRange(Range*);
+    WebRange(const EphemeralRange&);
 
-    Range* createRange(LocalFrame*) const;
+    EphemeralRange createEphemeralRange(LocalFrame*) const;
 #endif
 
 private:

@@ -982,7 +982,7 @@ bool WebLocalFrameImpl::hasMarkedText() const
 
 WebRange WebLocalFrameImpl::markedRange() const
 {
-    return frame()->inputMethodController().compositionRange();
+    return frame()->inputMethodController().compositionEphemeralRange();
 }
 
 bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rectInViewport) const
@@ -1109,7 +1109,7 @@ bool WebLocalFrameImpl::hasSelection() const
 
 WebRange WebLocalFrameImpl::selectionRange() const
 {
-    return createRange(frame()->selection().selection().toNormalizedEphemeralRange());
+    return frame()->selection().selection().toNormalizedEphemeralRange();
 }
 
 WebString WebLocalFrameImpl::selectionAsText() const
@@ -1165,10 +1165,7 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 
     DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
 
-    // TODO(dglazkov): Use EphemeralRange here.
-    // See http://crbug.com/636216 for more details.
-    if (Range* range = webRange.createRange(frame()))
-        frame()->selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
+    frame()->selection().setSelectedRange(webRange.createEphemeralRange(frame()), VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 }
 
 WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange)
@@ -1179,12 +1176,7 @@ WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange)
 
     DocumentLifecycle::DisallowTransitionScope(frame()->document()->lifecycle());
 
-    // TODO(dglazkov): Use EphemeralRange here.
-    // See http://crbug.com/636216 for more details.
-    if (Range* range = webRange.createRange(frame()))
-        return range->text();
-
-    return WebString();
+    return plainText(webRange.createEphemeralRange(frame()), TextIteratorEmitsObjectReplacementCharacter);
 }
 
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
