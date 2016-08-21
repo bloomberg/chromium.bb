@@ -91,6 +91,7 @@ fun:*antifilldot8*
 # Unclear what could be done here
 fun:*SkCanvas*drawRect*
 fun:*SkPictureGpuAnalyzer*analyzePicture*
+fun:*SkScalerContext*MakeRec*
 
 # V8
 
@@ -137,6 +138,15 @@ fun:*blink*DrawingDisplayItem*DisplayItemClient*
 # cc::DisplayItemList::Inputs::~Inputs
 fun:*cc*DisplayItemList*Inputs*
 
+# StyleAttributeMutationScope::StyleAttributeMutationScope
+fun:*StyleAttributeMutationScope*AbstractPropertySetCSSStyleDeclaration*
+
+# StyleAttributeMutationScope::~StyleAttributeMutationScope
+fun:*StyleAttributeMutationScopeD2Ev*
+
+fun:*AbstractPropertySetCSSStyleDeclaration*contextStyleSheet*
+fun:*AbstractPropertySetCSSStyleDeclaration*setPropertyInternal*
+fun:*ComputeFloatOffsetAdapter*collectIfNeeded*
 fun:*ContainerNode*isChildTypeAllowed*
 fun:*ContainerNode*checkAcceptChild*
 fun:*ContainerNode*notifyNodeInserted*
@@ -146,18 +156,22 @@ fun:*SharedStyleFinder*canShareStyleWithElement*
 fun:*ElementRuleCollector*collectMatchingRules*
 fun:*Element*attributeChanged*
 fun:*Element*didAddAttribute*
+fun:*HTMLElement*offsetHeightForBinding*
 fun:*LayoutTreeBuilderForElement*shouldCreateLayoutObject*
 fun:*LayoutTreeBuilderForElement*createLayoutObject*
-fun:*Node*isPseudoElement*
-fun:*Node*isFirstLetterPseudoElement*
-fun:*Node*wrap*
 fun:*EventTarget*hasEventListeners*
 fun:*HTMLCollection*invalidateCacheForAttribute*
+fun:*InlineBox*destroy*
+fun:*InlineBox*moveInLogicalDirection*
+fun:*InlineFlowBox*setConstructed*
 fun:*LayoutBlock*createsNewFormattingContext*
 fun:*LayoutBlock*computeChildPreferredLogicalWidth*
 fun:*LayoutBlock*computePreferredLogicalWidths*
 fun:*LayoutBlock*computeOverflow*
 fun:*LayoutBlock*logicalLeftOffsetForContent*
+fun:*LayoutBlock*marginAfterForChild*
+fun:*LayoutBlock*marginBeforeForChild*
+fun:*LayoutBlock*marginStartForChild*
 fun:*LayoutBlock*updateLogicalWidthAndColumnWidth*
 fun:*LayoutBlockFlow*computeInlinePreferredLogicalWidths*
 fun:*LayoutBlockFlow*determineLogicalLeftPositionForChild*
@@ -193,14 +207,22 @@ fun:*LayoutBox*layoutOverflowRectForPropagation*
 fun:*LayoutBox*logicalLayoutOverflowRectForPropagation*
 fun:*LayoutBox*maxPreferredLogicalWidth*
 fun:*LayoutBox*noOverflowRect*
+fun:*LayoutBox*pixelSnappedOffsetHeight*
 fun:*LayoutBox*scrollsOverflow*
+fun:*LayoutBox*shrinkToAvoidFloats*
 fun:*LayoutBox*updateLogicalHeight*
 fun:*LayoutBox*visualOverflowRectForPropagation*
 fun:*LayoutBoxModelObject*borderAndPaddingHeight*
 fun:*LayoutBoxModelObject*borderAndPaddingWidth*
+fun:*LayoutBoxModelObject*borderAndPaddingBefore*
+fun:*LayoutBoxModelObject*borderAndPaddingAfter*
 fun:*LayoutBoxModelObject*borderAndPaddingLogicalHeight*
 fun:*LayoutBoxModelObject*borderAndPaddingLogicalWidth*
 fun:*LayoutBoxModelObject*borderAndPaddingLogicalLeft*
+fun:*LayoutBoxModelObject*marginHeight*
+fun:*LayoutBoxModelObject*marginWidth*
+fun:*LayoutBoxModelObject*marginLogicalHeight*
+fun:*LayoutBoxModelObject*marginLogicalWidth*
 fun:*LayoutBoxModelObject*styleDidChange*
 fun:*LayoutBoxModelObject*invalidateTreeIfNeeded*
 fun:*LayoutFlexibleBox*adjustChildSizeForMinAndMax*
@@ -215,18 +237,27 @@ fun:*LayoutFlexibleBox*flowAwareMarginStartForChild*
 fun:*LayoutFlexibleBox*flowAwarePaddingAfter*
 fun:*LayoutFlexibleBox*layoutAndPlaceChildren*
 fun:*LayoutFlexibleBox*marginBoxAscentForChild*
+fun:*LayoutGrid*maxContentForChild*
+fun:*LayoutGrid*minContentForChild*
 fun:*LayoutGrid*updateAutoMarginsInColumnAxisIfNeeded*
 fun:*LayoutGrid*updateAutoMarginsInRowAxisIfNeeded*
-fun:*LayoutObject*slowFirstChild*
-fun:*LayoutObject*canHaveChildren*
 fun:*LayoutObject*addChild*
 fun:*LayoutObject*backgroundIsKnownToBeObscured*
-fun:*LayoutObject*invalidatePaintOfSubtreesIfNeeded*
+fun:*LayoutObject*canHaveChildren*
 fun:*LayoutObject*invalidatePaintIfNeeded*
+fun:*LayoutObject*invalidatePaintOfPreviousPaintInvalidationRect*
+fun:*LayoutObject*invalidatePaintOfSubtreesIfNeeded*
+fun:*LayoutObject*insertedIntoTree*
 fun:*LayoutObject*layoutIfNeeded*
+fun:*LayoutObject*removeShapeImageClient*
 fun:*LayoutObject*setStyle*
+fun:*LayoutObject*slowFirstChild*
 fun:*LayoutObjectChildList*insertChildNode*
-fun:*supportsCachedOffsets*
+fun:*Node*isAfterPseudoElement*
+fun:*Node*isBeforePseudoElement*
+fun:*Node*isFirstLetterPseudoElement*
+fun:*Node*isPseudoElement*
+fun:*Node*wrap*
 fun:*PaintInvalidationState*computePaintInvalidationRectInBacking*
 fun:*FrameTree*parent*
 fun:*FrameTree*traverseNext*
@@ -237,6 +268,7 @@ fun:*BlockPainter*intersectsPaintRect*
 fun:*ObjectPaintInvalidator*computePaintInvalidationReason*
 fun:*ObjectPaintInvalidator*invalidateSelectionIfNeeded*
 fun:*ObjectPaintInvalidator*invalidatePaintIfNeededWithComputedReason*
+fun:*StyleResolver*matchAllRules*
 fun:*ContiguousContainer*clear*
 fun:*GraphicsLayer*setNeedsDisplayInRect*
 fun:*PaintArtifact*appendToWebDisplayItemList*
@@ -245,7 +277,10 @@ fun:*PaintController*commitNewDisplayItems*
 fun:*AdjustAndMarkTrait**mark*
 fun:*TraceTrait**trace*
 fun:*ChromeClientImpl*scheduleAnimation*
-fun:*traceImpl*
-fun:*shouldBeConsideredAsReplaced*
-fun:*borderPaddingWidthForBoxSizing*
 fun:*blink*PODIntervalTree*searchForOverlapsFrom*
+fun:*borderPaddingWidthForBoxSizing*
+fun:*hasAspectRatio*
+fun:*nextBreakablePosition*
+fun:*shouldBeConsideredAsReplaced*
+fun:*supportsCachedOffsets*
+fun:*traceImpl*
