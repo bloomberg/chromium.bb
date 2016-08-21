@@ -23,19 +23,23 @@ android_aar_prebuilt("gvr_controller_java") {
 }
 
 source_set("libgvr") {
-  data_deps = [
-    ":libgvr_copy",
-  ]
-  libs = [ "${root_out_dir}/libgvr.so" ]
+  if (gvr_arch != "mipsel") {
+    data_deps = [
+      ":libgvr_copy",
+    ]
+    libs = [ "${root_out_dir}/libgvr.so" ]
+  }
 }
 
-copy("libgvr_copy") {
-  sources = [
-    "src/ndk-beta/lib/android_${gvr_arch}/libgvr.so",
-  ]
-  outputs = [
-    "${root_out_dir}/libgvr.so",
-  ]
+if (gvr_arch != "mipsel") {
+  copy("libgvr_copy") {
+    sources = [
+      "src/ndk-beta/lib/android_${gvr_arch}/libgvr.so",
+    ]
+    outputs = [
+      "${root_out_dir}/libgvr.so",
+    ]
+  }
 }
 
 config("libgvr_config") {
