@@ -78,14 +78,21 @@ public class CurrencyStringFormatter {
             // The spec does not limit the currencies to official ISO 4217 currency code list, which
             // is used by java.util.Currency. For example, "BTX" (bitcoin) is not an official ISO
             // 4217 currency code, but is allowed by the spec.
-            currencySymbol = currencyCode;
+            currencySymbol = "";
             defaultFractionDigits = 0;
         }
 
-        // If the currency symobl is the same as the currency code, do not display it as part of the
-        // amount. The UI already shows the currency code, so there's no need to show duplicate
-        // information.
-        mCurrencySymbol = currencySymbol.equals(currencyCode) ? "" : currencySymbol;
+        // If the prefix of the currency symbol matches the prefix of the currency code, remove the
+        // matching prefix from the symbol. The UI already shows the currency code, so there's no
+        // need to show duplicate information.
+        String symbol = "";
+        for (int i = 0; i < currencySymbol.length(); i++) {
+            if (i >= currencyCode.length() || currencySymbol.charAt(i) != currencyCode.charAt(i)) {
+                symbol = currencySymbol.substring(i);
+                break;
+            }
+        }
+        mCurrencySymbol = symbol;
 
         mDefaultFractionDigits = defaultFractionDigits;
 
