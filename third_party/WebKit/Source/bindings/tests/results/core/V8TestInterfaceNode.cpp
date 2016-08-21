@@ -165,7 +165,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCa
 static void reflectStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    Element* impl = V8Element::toImpl(holder);
+    TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::reflectstringattributeAttr), info.GetIsolate());
 }
 
@@ -177,7 +177,7 @@ static void reflectStringAttributeAttributeGetterCallback(const v8::FunctionCall
 static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    Element* impl = V8Element::toImpl(holder);
+    TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
@@ -206,7 +206,7 @@ static void reflectUrlStringAttributeAttributeGetterCallback(const v8::FunctionC
 static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    Element* impl = V8Element::toImpl(holder);
+    TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;

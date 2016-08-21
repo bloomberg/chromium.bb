@@ -9,11 +9,6 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_reflect and not attribute.is_url
-          and attribute.idl_type == 'DOMString' and is_node
-          and not attribute.is_implemented_in_private_script %}
-    {% set cpp_class, v8_class = 'Element', 'V8Element' %}
-    {% endif %}
     {# holder #}
     {% if not attribute.is_static %}
     {% if attribute.is_lenient_this %}
@@ -52,10 +47,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
             return;
         }
     }
-    {% endif %}
-    {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
-    if (!impl->document())
-        return;
     {% endif %}
     {# Local variables #}
     {% if attribute.is_call_with_execution_context %}
@@ -243,10 +234,6 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_reflect and attribute.idl_type == 'DOMString'
-          and is_node and not attribute.is_implemented_in_private_script %}
-    {% set cpp_class, v8_class = 'Element', 'V8Element' %}
-    {% endif %}
     {% if attribute.has_setter_exception_state or
           ((not attribute.is_replaceable and
             not attribute.constructor_type and
@@ -286,10 +273,6 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
             not attribute.is_replaceable and
             not attribute.constructor_type %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-    {% endif %}
-    {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
-    if (!impl->document())
-        return;
     {% endif %}
     {# Security checks #}
     {% if not attribute.is_replaceable and
