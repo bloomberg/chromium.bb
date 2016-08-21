@@ -74,6 +74,26 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy, double sz,
     return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrixReadOnly::flipX()
+{
+    DOMMatrix* flipX = DOMMatrix::create(this);
+    flipX->setM11(-this->m11());
+    flipX->setM12(-this->m12());
+    flipX->setM13(-this->m13());
+    flipX->setM14(-this->m14());
+    return flipX;
+}
+
+DOMMatrix* DOMMatrixReadOnly::flipY()
+{
+    DOMMatrix* flipY = DOMMatrix::create(this);
+    flipY->setM21(-this->m21());
+    flipY->setM22(-this->m22());
+    flipY->setM23(-this->m23());
+    flipY->setM24(-this->m24());
+    return flipY;
+}
+
 DOMFloat32Array* DOMMatrixReadOnly::toFloat32Array() const
 {
     float array[] = {

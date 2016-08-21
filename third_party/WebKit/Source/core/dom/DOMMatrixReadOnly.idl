@@ -57,6 +57,8 @@
                               optional unrestricted double originY = 0,
                               optional unrestricted double originZ = 0);
     DOMMatrix multiply(DOMMatrix other);
+    DOMMatrix flipX();
+    DOMMatrix flipY();
 
     Float32Array toFloat32Array();
     Float64Array toFloat64Array();

@@ -1041,6 +1041,8 @@ interface DOMMatrixReadOnly
     getter m43
     getter m44
     method constructor
+    method flipX
+    method flipY
     method multiply
     method scale
     method scale3d

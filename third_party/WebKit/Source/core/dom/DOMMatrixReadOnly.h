@@ -55,6 +55,8 @@ public:
     DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
     DOMMatrix* scaleNonUniform(double sx, double sy = 1, double sz = 1,
         double ox = 0, double oy = 0, double oz = 0);
+    DOMMatrix* flipX();
+    DOMMatrix* flipY();
 
     DOMFloat32Array* toFloat32Array() const;
     DOMFloat64Array* toFloat64Array() const;
