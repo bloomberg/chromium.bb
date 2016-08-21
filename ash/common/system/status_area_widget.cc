@@ -17,6 +17,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/i18n/time_formatting.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
@@ -197,6 +198,12 @@ void StatusAreaWidget::SchedulePaint() {
   palette_tray_->SchedulePaint();
 #endif
   overview_button_tray_->SchedulePaint();
+}
+
+const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
+  return MaterialDesignController::IsShelfMaterial()
+             ? ui::NativeThemeDarkAura::instance()
+             : Widget::GetNativeTheme();
 }
 
 void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {

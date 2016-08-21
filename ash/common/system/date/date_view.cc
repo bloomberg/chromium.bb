@@ -71,13 +71,6 @@ base::string16 FormatDayOfWeek(const base::Time& time) {
                         static_cast<size_t>(date_string.length()));
 }
 
-views::Label* CreateLabel() {
-  views::Label* label = new views::Label;
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  return label;
-}
-
 }  // namespace
 
 BaseDateTimeView::~BaseDateTimeView() {
@@ -145,7 +138,8 @@ void BaseDateTimeView::OnLocaleChanged() {
 
 DateView::DateView() : action_(TrayDate::NONE) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  date_label_ = CreateLabel();
+  date_label_ = new views::Label();
+  date_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
@@ -315,12 +309,13 @@ void TimeView::SetBorderFromLayout(TrayDate::ClockLayout clock_layout) {
 }
 
 void TimeView::SetupLabels() {
-  horizontal_label_.reset(CreateLabel());
+  horizontal_label_.reset(new views::Label());
   SetupLabel(horizontal_label_.get());
-  vertical_label_hours_.reset(CreateLabel());
+  vertical_label_hours_.reset(new views::Label());
   SetupLabel(vertical_label_hours_.get());
-  vertical_label_minutes_.reset(CreateLabel());
+  vertical_label_minutes_.reset(new views::Label());
   SetupLabel(vertical_label_minutes_.get());
+  // TODO(estade): this should use the NativeTheme's secondary text color.
   vertical_label_minutes_->SetEnabledColor(kVerticalClockMinuteColor);
   // Pull the minutes up closer to the hours by using a negative top border.
   vertical_label_minutes_->SetBorder(views::Border::CreateEmptyBorder(

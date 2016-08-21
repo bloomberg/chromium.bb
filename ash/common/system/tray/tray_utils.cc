@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/tray_utils.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
@@ -16,14 +17,22 @@
 namespace ash {
 
 void SetupLabelForTray(views::Label* label) {
-  label->SetFontList(
-      gfx::FontList().Derive(1, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetEnabledColor(SK_ColorWHITE);
-  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  label->SetShadows(gfx::ShadowValues(
-      1,
-      gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
+  if (MaterialDesignController::IsShelfMaterial()) {
+    // The text is drawn on an transparent bg, so we must disable subpixel
+    // rendering.
+    label->SetSubpixelRenderingEnabled(false);
+    label->SetFontList(gfx::FontList().Derive(2, gfx::Font::NORMAL,
+                                              gfx::Font::Weight::MEDIUM));
+  } else {
+    label->SetFontList(
+        gfx::FontList().Derive(1, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+    label->SetShadows(gfx::ShadowValues(
+        1,
+        gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+  }
 }
 
 void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment) {

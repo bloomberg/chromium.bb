@@ -18,8 +18,11 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return NativeThemeAura::GetSystemColor(color_id);
 
+  static const SkColor kPrimaryTextColor = SK_ColorWHITE;
+  static const SkColor kDisabledTextColor = SkColorSetA(SK_ColorWHITE, 0x61);
+  static const SkColor kDefaultDarkBackground = SkColorSetRGB(0x3C, 0x3C, 0x3E);
+
   static const SkColor kButtonEnabledColor = SK_ColorWHITE;
-  static const SkColor kLinkEnabledColor = gfx::kGoogleBlue300;
 
   static const SkColor kTextfieldDefaultColor = SK_ColorWHITE;
   static const SkColor kTextfieldDefaultBackground =
@@ -38,12 +41,20 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonEnabledColor:
       return kButtonEnabledColor;
     case kColorId_CallToActionColor:
-      return kLinkEnabledColor;
+      return gfx::kGoogleBlue300;
+
+    // Label
+    case kColorId_LabelEnabledColor:
+      return kPrimaryTextColor;
+    case kColorId_LabelDisabledColor:
+      return kDisabledTextColor;
+    case kColorId_LabelBackgroundColor:
+      return kDefaultDarkBackground;
 
     // Link
     case kColorId_LinkEnabled:
     case kColorId_LinkPressed:
-      return kLinkEnabledColor;
+      return gfx::kGoogleBlue300;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
@@ -114,9 +125,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_FocusedMenuButtonBorderColor:
     case kColorId_HoverMenuButtonBorderColor:
-    case kColorId_LabelEnabledColor:
-    case kColorId_LabelDisabledColor:
-    case kColorId_LabelBackgroundColor:
     case kColorId_LinkDisabled:
     case kColorId_TextfieldReadOnlyColor:
     case kColorId_TextfieldReadOnlyBackground:
