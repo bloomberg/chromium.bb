@@ -434,7 +434,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return (SKIP in full_expectations.get_expectations(test) and
                 SKIP not in generic_expectations.get_expectations(test))
 
-    def _run_in_parallel_and_update_scm(self, commands):
+    def _run_in_parallel(self, commands, update_scm=True):
         if not commands:
             return {}
 
@@ -445,13 +445,16 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 _log.error(line)
 
         files_to_add, files_to_delete, lines_to_remove = self._serial_commands(command_results)
-        if files_to_delete:
-            self._tool.scm().delete_list(files_to_delete)
-        if files_to_add:
-            self._tool.scm().add_list(files_to_add)
+        # TODO(qyearsley): Consider removing this if possible,
+        # or making it work and produce reasonable results for rebaseline-cl.
+        if update_scm:
+            if files_to_delete:
+                self._tool.scm().delete_list(files_to_delete)
+            if files_to_add:
+                self._tool.scm().add_list(files_to_add)
         return lines_to_remove
 
-    def _rebaseline(self, options, test_prefix_list):
+    def _rebaseline(self, options, test_prefix_list, update_scm=True):
         """Downloads new baselines in parallel, then updates expectations files
         and optimizes baselines.
 
@@ -469,6 +472,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 "some/other.html" but only from builder-1.
                 TODO(qyearsley): Replace test_prefix_list everywhere with some
                 sort of class that contains the same data.
+            update_scm: If True, commands like `git add` and `git rm` will be run.
         """
         for test, builds_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s", test)
@@ -479,8 +483,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             test_prefix_list, options)
         lines_to_remove = {}
 
-        self._run_in_parallel_and_update_scm(copy_baseline_commands)
-        lines_to_remove = self._run_in_parallel_and_update_scm(rebaseline_commands)
+        self._run_in_parallel(copy_baseline_commands, update_scm=update_scm)
+        lines_to_remove = self._run_in_parallel(rebaseline_commands, update_scm=update_scm)
 
         for test in extra_lines_to_remove:
             if test in lines_to_remove:
@@ -495,7 +499,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             # TODO(wkorman): Consider changing temporary branch to base off of HEAD rather than
             # origin/master to ensure we run baseline optimization processes with the same code as
             # auto-rebaseline itself.
-            self._run_in_parallel_and_update_scm(self._optimize_baselines(test_prefix_list, options.verbose))
+            self._run_in_parallel(self._optimize_baselines(test_prefix_list, options.verbose), update_scm=update_scm)
 
     def _suffixes_for_actual_failures(self, test, build, existing_suffixes):
         """Gets the baseline suffixes for actual mismatch failures in some results.
