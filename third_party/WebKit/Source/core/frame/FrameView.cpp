@@ -833,8 +833,13 @@ void FrameView::performPreLayoutTasks()
         m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
     }
 
-    if (!m_scrollAnchor.hasScroller())
-        m_scrollAnchor.setScroller(m_viewportScrollableArea ? m_viewportScrollableArea : this);
+    if (!m_scrollAnchor.hasScroller()) {
+        ScrollableArea* scroller = m_viewportScrollableArea;
+        if (!scroller)
+            scroller = this;
+
+        m_scrollAnchor.setScroller(scroller);
+    }
 
     if (shouldPerformScrollAnchoring())
         m_scrollAnchor.save();
@@ -4147,6 +4152,11 @@ ScrollableArea* FrameView::layoutViewportScrollableArea()
 
     LayoutViewItem layoutViewItem = this->layoutViewItem();
     return layoutViewItem.isNull() ? nullptr : layoutViewItem.getScrollableArea();
+}
+
+RootFrameViewport* FrameView::getRootFrameViewport()
+{
+    return m_viewportScrollableArea.get();
 }
 
 LayoutObject* FrameView::viewportLayoutObject() const

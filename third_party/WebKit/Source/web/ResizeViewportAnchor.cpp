@@ -6,6 +6,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
 #include "core/page/Page.h"
 #include "platform/geometry/DoubleRect.h"
@@ -34,7 +35,6 @@ void ResizeViewportAnchor::endScope()
     if (!frameView)
         return;
 
-    VisualViewport& visualViewport = m_page->frameHost().visualViewport();
     DoublePoint visualViewportInDocument =
         frameView->getScrollableArea()->scrollPositionDouble() - m_drift;
 
@@ -45,41 +45,9 @@ void ResizeViewportAnchor::endScope()
     // which needs the two threads to match exactly pixel-for-pixel. We can
     // replace this with RFV::setScrollPosition once Blink is sub-pixel scroll
     // offset aware. crbug.com/414283.
+    DCHECK(frameView->getRootFrameViewport());
+    frameView->getRootFrameViewport()->restoreToAnchor(visualViewportInDocument);
 
-    ScrollableArea* rootViewport = frameView->getScrollableArea();
-    ScrollableArea* layoutViewport =
-        frameView->layoutViewportScrollableArea();
-
-    // Clamp the scroll offset of each viewport now so that we force any invalid
-    // offsets to become valid so we can compute the correct deltas.
-    visualViewport.clampToBoundaries();
-    layoutViewport->setScrollPosition(
-        layoutViewport->scrollPositionDouble(), ProgrammaticScroll);
-
-    DoubleSize delta = visualViewportInDocument
-        - rootViewport->scrollPositionDouble();
-
-    visualViewport.move(toFloatSize(delta));
-
-    delta = visualViewportInDocument
-        - rootViewport->scrollPositionDouble();
-
-    // Since the main thread FrameView has integer scroll offsets, scroll it to
-    // the next pixel and then we'll scroll the visual viewport again to
-    // compensate for the sub-pixel offset. We need this "overscroll" to ensure
-    // the pixel of which we want to be partially in appears fully inside the
-    // FrameView since the VisualViewport is bounded by the FrameView.
-    IntSize layoutDelta = IntSize(
-        delta.width() < 0 ? floor(delta.width()) : ceil(delta.width()),
-        delta.height() < 0 ? floor(delta.height()) : ceil(delta.height()));
-
-    layoutViewport->setScrollPosition(
-        layoutViewport->scrollPosition() + layoutDelta,
-        ProgrammaticScroll);
-
-    delta = visualViewportInDocument
-        - rootViewport->scrollPositionDouble();
-    visualViewport.move(toFloatSize(delta));
     m_drift = DoubleSize();
 }
 

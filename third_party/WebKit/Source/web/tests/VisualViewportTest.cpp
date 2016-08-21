@@ -1861,4 +1861,41 @@ TEST_P(ParameterizedVisualViewportTest, ResizeWithScrollAnchoring)
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(wasScrollAnchoringEnabled);
 }
 
+// Ensure that resize anchoring as happens when top controls hide/show affects
+// the scrollable area that's currently set as the root scroller.
+TEST_P(ParameterizedVisualViewportTest, ResizeAnchoringWithRootScroller)
+{
+    bool wasRootScrollerEnabled =
+        RuntimeEnabledFeatures::setRootScrollerEnabled();
+    RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
+
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+
+    registerMockedHttpURLLoad("root-scroller-div.html");
+    navigateTo(m_baseURL + "root-scroller-div.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    Element* scroller = frame()->document()->getElementById("rootScroller");
+    NonThrowableExceptionState nonThrow;
+    frame()->document()->setRootScroller(scroller, nonThrow);
+
+    webViewImpl()->setPageScaleFactor(3.f);
+    frameView.getScrollableArea()->setScrollPosition(
+        DoublePoint(0, 400), ProgrammaticScroll);
+
+    VisualViewport& visualViewport =
+        webViewImpl()->page()->frameHost().visualViewport();
+    visualViewport.setScrollPosition(DoublePoint(0, 400), ProgrammaticScroll);
+
+    webViewImpl()->resize(IntSize(800, 500));
+
+    EXPECT_POINT_EQ(
+        DoublePoint(),
+        frameView.layoutViewportScrollableArea()->scrollPositionDouble());
+
+    RuntimeEnabledFeatures::setSetRootScrollerEnabled(wasRootScrollerEnabled);
+}
+
 } // namespace

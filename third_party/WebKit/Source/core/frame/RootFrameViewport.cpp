@@ -23,6 +23,39 @@ void RootFrameViewport::setLayoutViewport(ScrollableArea& newLayoutViewport)
     m_layoutViewport = &newLayoutViewport;
 }
 
+void RootFrameViewport::restoreToAnchor(const DoublePoint& targetPosition)
+{
+    // Clamp the scroll offset of each viewport now so that we force any invalid
+    // offsets to become valid so we can compute the correct deltas.
+    visualViewport().setScrollPosition(
+        visualViewport().scrollPositionDouble(), ProgrammaticScroll);
+    layoutViewport().setScrollPosition(
+        layoutViewport().scrollPositionDouble(), ProgrammaticScroll);
+
+    DoubleSize delta = targetPosition - scrollPositionDouble();
+
+    visualViewport().setScrollPosition(
+        visualViewport().scrollPositionDouble() + delta, ProgrammaticScroll);
+
+    delta = targetPosition - scrollPositionDouble();
+
+    // Since the main thread FrameView has integer scroll offsets, scroll it to
+    // the next pixel and then we'll scroll the visual viewport again to
+    // compensate for the sub-pixel offset. We need this "overscroll" to ensure
+    // the pixel of which we want to be partially in appears fully inside the
+    // FrameView since the VisualViewport is bounded by the FrameView.
+    IntSize layoutDelta = IntSize(
+        delta.width() < 0 ? floor(delta.width()) : ceil(delta.width()),
+        delta.height() < 0 ? floor(delta.height()) : ceil(delta.height()));
+
+    layoutViewport().setScrollPosition(
+        layoutViewport().scrollPosition() + layoutDelta, ProgrammaticScroll);
+
+    delta = targetPosition - scrollPositionDouble();
+    visualViewport().setScrollPosition(
+        visualViewport().scrollPositionDouble() + delta, ProgrammaticScroll);
+}
+
 LayoutBox* RootFrameViewport::layoutBox() const
 {
     return layoutViewport().layoutBox();

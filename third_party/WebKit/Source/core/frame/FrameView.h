@@ -574,6 +574,12 @@ public:
     // deltas from CC). For typical scrolling cases, use getScrollableArea().
     ScrollableArea* layoutViewportScrollableArea();
 
+    // If this is the main frame, this will return the RootFrameViewport used
+    // to scroll the main frame. Otherwise returns nullptr. Unless you need a
+    // unique method on RootFrameViewport, you should probably use
+    // getScrollableArea.
+    RootFrameViewport* getRootFrameViewport();
+
     int viewportWidth() const;
 
     LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
@@ -893,7 +899,7 @@ private:
     // Exists only on root frame.
     // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
     // main frame.
-    Member<ScrollableArea> m_viewportScrollableArea;
+    Member<RootFrameViewport> m_viewportScrollableArea;
 
     // This frame's bounds in the root frame's content coordinates, clipped
     // recursively through every ancestor view.

@@ -33,6 +33,8 @@ public:
 
     void setLayoutViewport(ScrollableArea&);
 
+    void restoreToAnchor(const DoublePoint&);
+
     // ScrollableArea Implementation
     bool isRootFrameViewport() const override { return true; }
     void setScrollPosition(const DoublePoint&, ScrollType, ScrollBehavior = ScrollBehaviorInstant) override;
