@@ -614,30 +614,33 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
 
     UpdateBlacklistedFeatures(features);
   }
+
+  std::set<std::string> disabled_ext_set;
+
+  // Merge disabled extensions from the command line with gpu driver bug list.
+  if (command_line) {
+    const std::vector<std::string>& disabled_command_line_exts =
+        base::SplitString(
+            command_line->GetSwitchValueASCII(switches::kDisableGLExtensions),
+            ", ;", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    disabled_ext_set.insert(disabled_command_line_exts.begin(),
+                            disabled_command_line_exts.end());
+  }
+
   if (gpu_driver_bug_list_) {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         gpu::GpuControlList::kOsAny, os_version, gpu_info_);
 
-    std::set<std::string> disabled_ext_set;
-
-    // Merge disabled extensions from the command line with gpu driver bug list.
-    if (command_line) {
-      const std::vector<std::string>& disabled_command_line_exts =
-          base::SplitString(
-              command_line->GetSwitchValueASCII(switches::kDisableGLExtensions),
-              ", ;", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-      disabled_ext_set.insert(disabled_command_line_exts.begin(),
-                              disabled_command_line_exts.end());
-    }
     const std::vector<std::string>& disabled_driver_bug_exts =
         gpu_driver_bug_list_->GetDisabledExtensions();
     disabled_ext_set.insert(disabled_driver_bug_exts.begin(),
                             disabled_driver_bug_exts.end());
-    disabled_extensions_ =
-        base::JoinString(std::vector<std::string>(disabled_ext_set.begin(),
-                                                  disabled_ext_set.end()),
-                         " ");
   }
+  disabled_extensions_ =
+      base::JoinString(std::vector<std::string>(disabled_ext_set.begin(),
+                                                disabled_ext_set.end()),
+                       " ");
+
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &gpu_driver_bugs_, *base::CommandLine::ForCurrentProcess());
 
