@@ -3102,12 +3102,19 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   if (scroll_node) {
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
-      // Skip the outer viewport scroll layer so that we try to scroll the
-      // viewport only once. i.e. The inner viewport layer represents the
-      // viewport.
-      if (!scroll_node->scrollable ||
-          scroll_node->is_outer_viewport_scroll_layer)
+      if (scroll_node->is_outer_viewport_scroll_layer) {
+        // Don't chain scrolls past the outer viewport scroll layer. Once we
+        // reach that, we should scroll the viewport, which is represented by
+        // the inner viewport scroll layer.
+        ScrollNode* inner_viewport_scroll_node =
+            scroll_tree.Node(InnerViewportScrollLayer()->scroll_tree_index());
+        current_scroll_chain.push_front(inner_viewport_scroll_node);
+        break;
+      }
+
+      if (!scroll_node->scrollable)
         continue;
+
       current_scroll_chain.push_front(scroll_node);
     }
   }
