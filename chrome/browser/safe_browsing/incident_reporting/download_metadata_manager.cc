@@ -381,7 +381,7 @@ void DownloadMetadataManager::SetRequest(content::DownloadItem* item,
       GetDownloadManagerForBrowserContext(item->GetBrowserContext());
   DCHECK_EQ(contexts_.count(download_manager), 1U);
   contexts_[download_manager]->SetRequest(
-      item, base::WrapUnique(new ClientDownloadRequest(*request)));
+      item, base::MakeUnique<ClientDownloadRequest>(*request));
 }
 
 void DownloadMetadataManager::GetDownloadDetails(
@@ -493,11 +493,10 @@ void DownloadMetadataManager::ManagerContext::GetDownloadDetails(
   if (state_ != LOAD_COMPLETE) {
     get_details_callbacks_.push_back(callback);
   } else {
-    callback.Run(
-        download_metadata_
-            ? base::WrapUnique(new ClientIncidentReport_DownloadDetails(
-                  download_metadata_->download()))
-            : nullptr);
+    callback.Run(download_metadata_
+                     ? base::MakeUnique<ClientIncidentReport_DownloadDetails>(
+                           download_metadata_->download())
+                     : nullptr);
   }
 }
 
@@ -604,11 +603,10 @@ void DownloadMetadataManager::ManagerContext::ClearPendingItems() {
 void DownloadMetadataManager::ManagerContext::RunCallbacks() {
   while (!get_details_callbacks_.empty()) {
     const auto& callback = get_details_callbacks_.front();
-    callback.Run(
-        download_metadata_
-            ? base::WrapUnique(new ClientIncidentReport_DownloadDetails(
-                  download_metadata_->download()))
-            : nullptr);
+    callback.Run(download_metadata_
+                     ? base::MakeUnique<ClientIncidentReport_DownloadDetails>(
+                           download_metadata_->download())
+                     : nullptr);
     get_details_callbacks_.pop_front();
   }
 }

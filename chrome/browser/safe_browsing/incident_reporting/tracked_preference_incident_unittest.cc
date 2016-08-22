@@ -25,8 +25,8 @@ std::unique_ptr<Incident> MakeIncident(bool changed, bool is_personal) {
       changed
           ? ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CHANGED
           : ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState_CLEARED);
-  return base::WrapUnique(
-      new TrackedPreferenceIncident(std::move(incident), is_personal));
+  return base::MakeUnique<TrackedPreferenceIncident>(std::move(incident),
+                                                     is_personal);
 }
 
 }  // namespace

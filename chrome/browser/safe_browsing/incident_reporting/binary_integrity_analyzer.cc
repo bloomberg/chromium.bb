@@ -45,7 +45,7 @@ void ClearBinaryIntegrityForFile(IncidentReceiver* incident_receiver,
       incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
   incident->set_file_basename(basename);
   incident_receiver->ClearIncidentForProcess(
-      base::WrapUnique(new BinaryIntegrityIncident(std::move(incident))));
+      base::MakeUnique<BinaryIntegrityIncident>(std::move(incident)));
 }
 
 void RegisterBinaryIntegrityAnalysis() {

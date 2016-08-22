@@ -304,8 +304,8 @@ class IncidentReportingServiceTest : public testing::Test {
     incident->set_path(kTestTrackedPrefPath);
     if (value)
       incident->set_atomic_value(value);
-    return base::WrapUnique(new safe_browsing::TrackedPreferenceIncident(
-        std::move(incident), false /* is_personal */));
+    return base::MakeUnique<safe_browsing::TrackedPreferenceIncident>(
+        std::move(incident), false /* is_personal */);
   }
 
   // Adds a test incident to the service.
@@ -566,10 +566,10 @@ class IncidentReportingServiceTest : public testing::Test {
       on_start_upload_callback_.Run();
       on_start_upload_callback_ = base::Closure();
     }
-    return base::WrapUnique(new FakeUploader(
+    return base::MakeUnique<FakeUploader>(
         base::Bind(&IncidentReportingServiceTest::OnUploaderDestroyed,
                    base::Unretained(this)),
-        callback, upload_result_));
+        callback, upload_result_);
   }
 
   void OnDownloadFinderDestroyed() { download_finder_destroyed_ = true; }

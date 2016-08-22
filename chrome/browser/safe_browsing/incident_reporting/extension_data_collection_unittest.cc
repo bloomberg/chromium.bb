@@ -159,7 +159,7 @@ class ExtensionDataCollectionTest : public testing::Test {
         std::string(),                    // supervised_user_id
         TestingProfile::TestingFactories());
 
-    return base::WrapUnique(new ExtensionTestingProfile(profile));
+    return base::MakeUnique<ExtensionTestingProfile>(profile);
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;

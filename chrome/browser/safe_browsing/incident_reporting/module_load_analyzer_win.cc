@@ -80,8 +80,9 @@ void ReportIncidentsForSuspiciousModules(
     }
 
     // Send the incident to the reporting service.
-    incident_receiver->AddIncidentForProcess(base::WrapUnique(
-        new SuspiciousModuleIncident(std::move(suspicious_module))));
+    incident_receiver->AddIncidentForProcess(
+        base::MakeUnique<SuspiciousModuleIncident>(
+            std::move(suspicious_module)));
   }
 }
 

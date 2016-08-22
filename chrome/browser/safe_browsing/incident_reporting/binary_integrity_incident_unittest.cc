@@ -40,7 +40,7 @@ std::unique_ptr<Incident> MakeIncident(const char* file_basename) {
     element->set_certificate(certificates[i], arraysize(certificates[i]));
   }
 
-  return base::WrapUnique(new BinaryIntegrityIncident(std::move(incident)));
+  return base::MakeUnique<BinaryIntegrityIncident>(std::move(incident));
 }
 
 }  // namespace

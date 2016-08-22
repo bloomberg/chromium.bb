@@ -178,8 +178,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       rappor::LOW_FREQUENCY_SAFEBROWSING_RAPPOR_TYPE;
   reporting_info.deprecated_rappor_report_type =
       rappor::SAFEBROWSING_RAPPOR_TYPE;
-  set_metrics_helper(base::WrapUnique(new ChromeMetricsHelper(
-      web_contents, request_url(), reporting_info, GetSamplingEventName())));
+  set_metrics_helper(base::MakeUnique<ChromeMetricsHelper>(
+      web_contents, request_url(), reporting_info, GetSamplingEventName()));
   metrics_helper()->RecordUserDecision(
       security_interstitials::MetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(

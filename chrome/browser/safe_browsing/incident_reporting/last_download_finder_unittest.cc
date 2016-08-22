@@ -71,8 +71,8 @@ std::unique_ptr<KeyedService> BuildHistoryService(
 
   std::unique_ptr<history::HistoryService> history_service(
       new history::HistoryService(
-          base::WrapUnique(new ChromeHistoryClient(
-              BookmarkModelFactory::GetForBrowserContext(profile))),
+          base::MakeUnique<ChromeHistoryClient>(
+              BookmarkModelFactory::GetForBrowserContext(profile)),
           std::unique_ptr<history::VisitDelegate>()));
   if (history_service->Init(
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {

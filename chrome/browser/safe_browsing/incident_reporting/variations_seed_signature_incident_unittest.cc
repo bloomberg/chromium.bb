@@ -29,8 +29,7 @@ std::unique_ptr<Incident> MakeIncident(bool alternate) {
         "MEUCID+QmAfajh/kk4zZyv0IUisZ84sIddnjiW9yAXjFJIMFAiEAtVUHhFA/4M6Bff2Gaz"
         "L7tXVLhURxUQcpiMg9eMLWO0U=");
   }
-  return base::WrapUnique(
-      new VariationsSeedSignatureIncident(std::move(incident)));
+  return base::MakeUnique<VariationsSeedSignatureIncident>(std::move(incident));
 }
 
 }  // namespace

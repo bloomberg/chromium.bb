@@ -105,8 +105,8 @@ void VerifyBlacklistLoadState(
       }
 
       // Send the report.
-      incident_receiver->AddIncidentForProcess(base::WrapUnique(
-          new BlacklistLoadIncident(std::move(blacklist_load))));
+      incident_receiver->AddIncidentForProcess(
+          base::MakeUnique<BlacklistLoadIncident>(std::move(blacklist_load)));
     }
   }
 }

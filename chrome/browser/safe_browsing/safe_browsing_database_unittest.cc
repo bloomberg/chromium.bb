@@ -85,7 +85,7 @@ std::unique_ptr<SBChunkData> BuildChunk(
     raw_data->add_add_numbers(add_chunk_numbers[i]);
   }
 
-  return base::WrapUnique(new SBChunkData(std::move(raw_data)));
+  return base::MakeUnique<SBChunkData>(std::move(raw_data));
 }
 
 // Create add chunk with a single prefix.

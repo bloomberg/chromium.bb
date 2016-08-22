@@ -181,8 +181,8 @@ void ResourceRequestDetector::ReportIncidentOnUIThread(
       incident_data->set_origin(host_url.GetOrigin().spec());
 
     incident_receiver_->AddIncidentForProfile(
-        profile, base::WrapUnique(
-                     new ResourceRequestIncident(std::move(incident_data))));
+        profile,
+        base::MakeUnique<ResourceRequestIncident>(std::move(incident_data)));
   }
 }
 

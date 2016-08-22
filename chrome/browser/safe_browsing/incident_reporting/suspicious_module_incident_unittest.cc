@@ -19,7 +19,7 @@ std::unique_ptr<Incident> MakeIncident(const char* path) {
   std::unique_ptr<ClientIncidentReport_IncidentData_SuspiciousModuleIncident>
       incident(new ClientIncidentReport_IncidentData_SuspiciousModuleIncident);
   incident->set_path(path);
-  return base::WrapUnique(new SuspiciousModuleIncident(std::move(incident)));
+  return base::MakeUnique<SuspiciousModuleIncident>(std::move(incident));
 }
 
 }  // namespace

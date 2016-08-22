@@ -289,7 +289,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list,
       bool enable_module_whitelist) override {
-    return base::WrapUnique(new SafeBrowsingDatabaseNew(
+    return base::MakeUnique<SafeBrowsingDatabaseNew>(
         db_task_runner, CreateStore(true, db_task_runner),  // browse_store
         CreateStore(enable_download_protection, db_task_runner),
         CreateStore(enable_client_side_whitelist, db_task_runner),
@@ -298,7 +298,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
         CreateStore(enable_ip_blacklist, db_task_runner),
         CreateStore(enable_unwanted_software_list, db_task_runner),
         CreateStore(enable_module_whitelist, db_task_runner),
-        CreateStore(true, db_task_runner)));  // resource_blacklist_store
+        CreateStore(true, db_task_runner));  // resource_blacklist_store
   }
 
   SafeBrowsingDatabaseFactoryImpl() {}

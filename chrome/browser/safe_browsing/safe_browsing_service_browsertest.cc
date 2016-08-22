@@ -116,7 +116,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleNeverCompletingRequests(
   if (!base::StartsWith(request.relative_url, kNeverCompletesPath,
                           base::CompareCase::SENSITIVE))
     return nullptr;
-  return base::WrapUnique(new NeverCompletingHttpResponse());
+  return base::MakeUnique<NeverCompletingHttpResponse>();
 }
 
 void InvokeFullHashCallback(

@@ -36,7 +36,7 @@ void VerifyBinaryIntegrityHelper(IncidentReceiver* incident_receiver,
       incident(new ClientIncidentReport_IncidentData_BinaryIntegrityIncident());
   if (!evaluator.PerformEvaluation(incident.get())) {
     incident_receiver->AddIncidentForProcess(
-        base::WrapUnique(new BinaryIntegrityIncident(std::move(incident))));
+        base::MakeUnique<BinaryIntegrityIncident>(std::move(incident)));
   } else {
     // Clear past incidents involving this bundle if the signature is
     // now valid.

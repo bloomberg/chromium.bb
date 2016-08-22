@@ -70,8 +70,8 @@ class DelayedCallbackRunnerTest : public testing::Test {
   // on behalf of the given callback name.
   std::unique_ptr<CallbackArgument> MakeCallbackArgument(
       const std::string& name) {
-    return base::WrapUnique(new CallbackArgument(base::Bind(
-        &DelayedCallbackRunnerTest::OnDelete, base::Unretained(this), name)));
+    return base::MakeUnique<CallbackArgument>(base::Bind(
+        &DelayedCallbackRunnerTest::OnDelete, base::Unretained(this), name));
   }
 
   // Returns a closure that calls |OnRun| when run and |OnDelete| when deleted

@@ -398,8 +398,7 @@ IncidentReportingService::~IncidentReportingService() {
 
 std::unique_ptr<IncidentReceiver>
 IncidentReportingService::GetIncidentReceiver() {
-  return base::WrapUnique(
-      new Receiver(receiver_weak_ptr_factory_.GetWeakPtr()));
+  return base::MakeUnique<Receiver>(receiver_weak_ptr_factory_.GetWeakPtr());
 }
 
 std::unique_ptr<TrackedPreferenceValidationDelegate>

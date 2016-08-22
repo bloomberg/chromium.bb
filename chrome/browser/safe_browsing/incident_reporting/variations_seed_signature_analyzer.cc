@@ -37,8 +37,8 @@ void VerifyVariationsSeedSignatureOnUIThread(
             new ClientIncidentReport_IncidentData_VariationsSeedSignatureIncident());
     variations_seed_signature->set_variations_seed_signature(invalid_signature);
     incident_receiver->AddIncidentForProcess(
-        base::WrapUnique(new VariationsSeedSignatureIncident(
-            std::move(variations_seed_signature))));
+        base::MakeUnique<VariationsSeedSignatureIncident>(
+            std::move(variations_seed_signature)));
   }
 }
 

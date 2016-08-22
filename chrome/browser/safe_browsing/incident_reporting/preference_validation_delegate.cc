@@ -67,8 +67,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, base::WrapUnique(new TrackedPreferenceIncident(
-                      std::move(incident), is_personal)));
+        profile_, base::MakeUnique<TrackedPreferenceIncident>(
+                      std::move(incident), is_personal));
   }
 }
 
@@ -91,8 +91,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     }
     incident->set_value_state(proto_value_state);
     incident_receiver_->AddIncidentForProfile(
-        profile_, base::WrapUnique(new TrackedPreferenceIncident(
-                      std::move(incident), is_personal)));
+        profile_, base::MakeUnique<TrackedPreferenceIncident>(
+                      std::move(incident), is_personal));
   }
 }
 
