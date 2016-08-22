@@ -179,7 +179,10 @@ Widget* PluginDocument::pluginWidget()
 {
     if (m_pluginNode && m_pluginNode->layoutObject()) {
         CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
-        return toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
+        Widget* widget = toLayoutEmbeddedObject(m_pluginNode->layoutObject())->widget();
+        if (!widget || !widget->isPluginContainer())
+            return nullptr;
+        return widget;
     }
     return 0;
 }
