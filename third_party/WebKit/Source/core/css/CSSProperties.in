@@ -138,7 +138,7 @@ background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all
 background-color interpolable, custom_all
-background-image interpolable, custom_all
+background-image interpolable, custom_all, typedom_types=[Image], keywords=[auto]
 background-origin custom_all
 background-position-x interpolable, custom_all
 background-position-y interpolable, custom_all
@@ -155,7 +155,7 @@ border-collapse inherited
 border-image-outset interpolable, custom_all
 border-image-repeat custom_all
 border-image-slice interpolable, custom_all
-border-image-source interpolable, custom_value
+border-image-source interpolable, custom_value, typedom_types=[Image], keywords=[none]
 border-image-width interpolable, custom_all
 border-left-color interpolable, custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
@@ -185,7 +185,7 @@ color-interpolation-filters inherited, svg, type_name=EColorInterpolation
 color-rendering inherited, svg
 column-fill type_name=ColumnFill
 contain runtime_flag=CSSContainment, converter=convertFlags<Containment>
-content custom_all
+content custom_all, typedom_types=[Image], supports_multiple
 counter-increment custom_all
 counter-reset custom_all
 cursor inherited, custom_all
@@ -231,7 +231,7 @@ left typedom_types=[Length], keywords=[auto], supports_percentage, interpolable,
 letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color interpolable, svg, converter=convertColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
-list-style-image interpolable, inherited, custom_value
+list-style-image interpolable, inherited, custom_value, typedom_types=[Image]
 list-style-position inherited
 list-style-type inherited
 margin-bottom interpolable, initial=initialMargin, converter=convertQuirkyLength
@@ -288,7 +288,7 @@ scroll-snap-destination runtime_flag=CSSScrollSnapPoints, converter=convertPosit
 scroll-snap-coordinate runtime_flag=CSSScrollSnapPoints, converter=convertSnapCoordinates
 shape-image-threshold interpolable, type_name=float
 shape-margin interpolable, converter=convertLength
-shape-outside interpolable, converter=convertShapeValue
+shape-outside interpolable, converter=convertShapeValue, typedom_types=[Image]
 shape-rendering inherited, svg
 size custom_all
 snap-height runtime_flag=CSSSnapSize, inherited, custom_all

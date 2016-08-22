@@ -22,6 +22,8 @@ class CSSOMTypesWriter(css_properties.CSSProperties):
                 if singleType == 'Length':
                     types.append('SimpleLength')
                     types.append('CalcLength')
+                elif singleType == 'Image':
+                    types.append('URLImage')
                 else:
                     types.append(singleType)
             property['typedom_types'] = types
