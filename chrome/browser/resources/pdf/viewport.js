@@ -77,8 +77,8 @@ Viewport.SCROLL_INCREMENT = 40;
  * ascending order. This should match the list in
  * components/ui/zoom/page_zoom_constants.h
  */
-Viewport.ZOOM_FACTORS = [0.25, 0.333, 0.5, 0.666, 0.75, 0.9, 1,
-                         1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
+Viewport.ZOOM_FACTORS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 0.8, 0.9,
+                         1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
 
 /**
  * The minimum and maximum range to be used to clip zoom factor.
