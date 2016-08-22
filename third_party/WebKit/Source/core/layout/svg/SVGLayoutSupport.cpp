@@ -368,23 +368,21 @@ bool SVGLayoutSupport::hasFilterResource(const LayoutObject& object)
     return resources && resources->filter();
 }
 
-bool SVGLayoutSupport::pointInClippingArea(const LayoutObject* object, const FloatPoint& point)
+bool SVGLayoutSupport::pointInClippingArea(const LayoutObject& object, const FloatPoint& point)
 {
-    ASSERT(object);
-
     // We just take clippers into account to determine if a point is on the node. The Specification may
     // change later and we also need to check maskers.
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object);
     if (!resources)
         return true;
 
     if (LayoutSVGResourceClipper* clipper = resources->clipper())
-        return clipper->hitTestClipContent(object->objectBoundingBox(), point);
+        return clipper->hitTestClipContent(object.objectBoundingBox(), point);
 
     return true;
 }
 
-bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(const LayoutObject* object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
+bool SVGLayoutSupport::transformToUserSpaceAndCheckClipping(const LayoutObject& object, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint)
 {
     if (!localTransform.isInvertible())
         return false;

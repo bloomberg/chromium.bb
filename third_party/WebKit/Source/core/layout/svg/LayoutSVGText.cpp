@@ -296,7 +296,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& po
             || (hitRules.canHitStroke && (style()->svgStyle().hasStroke() || !hitRules.requireStroke))
             || (hitRules.canHitFill && (style()->svgStyle().hasFill() || !hitRules.requireFill))) {
             FloatPoint localPoint;
-            if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
+            if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(*this, localToSVGParentTransform(), pointInParent, localPoint))
                 return false;
 
             HitTestLocation hitTestLocation(localPoint);

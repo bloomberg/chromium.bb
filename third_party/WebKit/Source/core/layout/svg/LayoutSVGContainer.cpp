@@ -177,7 +177,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result, const FloatPoin
         return false;
 
     FloatPoint localPoint;
-    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(this, localToSVGParentTransform(), pointInParent, localPoint))
+    if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(*this, localToSVGParentTransform(), pointInParent, localPoint))
         return false;
 
     for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {

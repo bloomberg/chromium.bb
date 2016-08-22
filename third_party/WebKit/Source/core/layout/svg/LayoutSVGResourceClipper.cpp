@@ -233,7 +233,7 @@ void LayoutSVGResourceClipper::calculateLocalClipBounds()
 bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundingBox, const FloatPoint& nodeAtPoint)
 {
     FloatPoint point = nodeAtPoint;
-    if (!SVGLayoutSupport::pointInClippingArea(this, point))
+    if (!SVGLayoutSupport::pointInClippingArea(*this, point))
         return false;
 
     if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {

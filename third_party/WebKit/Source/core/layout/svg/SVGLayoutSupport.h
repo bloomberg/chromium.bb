@@ -65,12 +65,12 @@ public:
     static bool hasFilterResource(const LayoutObject&);
 
     // Determines whether the passed point lies in a clipping area
-    static bool pointInClippingArea(const LayoutObject*, const FloatPoint&);
+    static bool pointInClippingArea(const LayoutObject&, const FloatPoint&);
 
     // Transform |pointInParent| to |object|'s user-space and check if it is
     // within the clipping area. Returns false if the transform is singular or
     // the point is outside the clipping area.
-    static bool transformToUserSpaceAndCheckClipping(const LayoutObject*, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
+    static bool transformToUserSpaceAndCheckClipping(const LayoutObject&, const AffineTransform& localTransform, const FloatPoint& pointInParent, FloatPoint& localPoint);
 
     static void computeContainerBoundingBoxes(const LayoutObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
