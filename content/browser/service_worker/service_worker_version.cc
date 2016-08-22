@@ -306,11 +306,12 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       script_url_(script_url),
       scope_(registration->pattern()),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
+      site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       context_(context),
       script_cache_map_(this, context),
       ping_controller_(new PingController(this)),
       should_exclude_from_uma_(
-          ServiceWorkerMetrics::ShouldExcludeURLFromHistogram(scope_)),
+          ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)),
       weak_factory_(this) {
   DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
@@ -409,6 +410,19 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
     main_script_http_info_->headers->GetLastModifiedValue(
         &info.script_last_modified);
   return info;
+}
+
+void ServiceWorkerVersion::set_fetch_handler_existence(
+    FetchHandlerExistence existence) {
+  DCHECK_EQ(fetch_handler_existence_, FetchHandlerExistence::UNKNOWN);
+  DCHECK_NE(existence, FetchHandlerExistence::UNKNOWN);
+  fetch_handler_existence_ = existence;
+  if (site_for_uma_ != ServiceWorkerMetrics::Site::OTHER)
+    return;
+  if (existence == FetchHandlerExistence::EXISTS)
+    site_for_uma_ = ServiceWorkerMetrics::Site::WITH_FETCH_HANDLER;
+  else
+    site_for_uma_ = ServiceWorkerMetrics::Site::WITHOUT_FETCH_HANDLER;
 }
 
 void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,

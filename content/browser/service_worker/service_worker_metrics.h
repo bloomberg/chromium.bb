@@ -115,7 +115,8 @@ class ServiceWorkerMetrics {
 
   // Used for UMA. Append only.
   enum class Site {
-    OTHER,  // Obsolete
+    OTHER,  // Obsolete for UMA. Use WITH_FETCH_HANDLER or
+            // WITHOUT_FETCH_HANDLER.
     NEW_TAB_PAGE,
     WITH_FETCH_HANDLER,
     WITHOUT_FETCH_HANDLER,
@@ -136,6 +137,9 @@ class ServiceWorkerMetrics {
   // Converts an event type to a string. Used for tracing.
   static const char* EventTypeToString(EventType event_type);
 
+  // If the |url| is not a special site, returns Site::OTHER.
+  static Site SiteFromURL(const GURL& url);
+
   // Returns true when the event is for a navigation hint.
   static bool IsNavigationHintEvent(EventType event_type);
 
@@ -143,7 +147,6 @@ class ServiceWorkerMetrics {
   // makes the results largely skewed. Some metrics don't follow this policy
   // and hence don't call this function.
   static bool ShouldExcludeSiteFromHistogram(Site site);
-  static bool ShouldExcludeURLFromHistogram(const GURL& url);
 
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
@@ -161,8 +164,8 @@ class ServiceWorkerMetrics {
   static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
 
   // Counts the number of page loads controlled by a Service Worker.
-  static void CountControlledPageLoad(const GURL& url,
-                                      bool has_fetch_handler,
+  static void CountControlledPageLoad(Site site,
+                                      const GURL& url,
                                       bool is_main_frame_load);
 
   // Records the result of trying to start a worker. |is_installed| indicates

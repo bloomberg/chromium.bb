@@ -144,21 +144,6 @@ void RecordURLMetricOnUI(const GURL& url) {
       "ServiceWorker.ControlledPageUrl", url);
 }
 
-ServiceWorkerMetrics::Site SiteFromURL(const GURL& gurl) {
-  // UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
-  // URL, but not available in content layer.
-  static const char google_like_scope_prefix[] = "https://www.google.";
-  static const char ntp_scope_path[] = "/_/chrome/";
-  if (base::StartsWith(gurl.spec(), google_like_scope_prefix,
-                       base::CompareCase::INSENSITIVE_ASCII) &&
-      base::StartsWith(gurl.path(), ntp_scope_path,
-                       base::CompareCase::SENSITIVE)) {
-    return ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
-  }
-
-  return ServiceWorkerMetrics::Site::OTHER;
-}
-
 enum EventHandledRatioType {
   EVENT_HANDLED_NONE,
   EVENT_HANDLED_SOME,
@@ -213,6 +198,21 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
   return "error";
 }
 
+ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
+  // UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
+  // URL, but not available in content layer.
+  static const char google_like_scope_prefix[] = "https://www.google.";
+  static const char ntp_scope_path[] = "/_/chrome/";
+  if (base::StartsWith(url.spec(), google_like_scope_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      base::StartsWith(url.path(), ntp_scope_path,
+                       base::CompareCase::SENSITIVE)) {
+    return ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
+  }
+
+  return ServiceWorkerMetrics::Site::OTHER;
+}
+
 bool ServiceWorkerMetrics::IsNavigationHintEvent(EventType event_type) {
   return event_type == EventType::NAVIGATION_HINT_LINK_MOUSE_DOWN ||
          event_type == EventType::NAVIGATION_HINT_LINK_TAP_UNCONFIRMED ||
@@ -221,10 +221,6 @@ bool ServiceWorkerMetrics::IsNavigationHintEvent(EventType event_type) {
 
 bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
   return site == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
-}
-
-bool ServiceWorkerMetrics::ShouldExcludeURLFromHistogram(const GURL& url) {
-  return ShouldExcludeSiteFromHistogram(SiteFromURL(url));
 }
 
 void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
@@ -278,14 +274,10 @@ void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
                             result, NUM_DELETE_AND_START_OVER_RESULT_TYPES);
 }
 
-void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url,
-                                                   bool has_fetch_handler,
+void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
+                                                   const GURL& url,
                                                    bool is_main_frame_load) {
-  Site site = SiteFromURL(url);
-  if (site == Site::OTHER) {
-    site = (has_fetch_handler) ? Site::WITH_FETCH_HANDLER
-                               : Site::WITHOUT_FETCH_HANDLER;
-  }
+  DCHECK_NE(site, Site::OTHER);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", static_cast<int>(site),
                             static_cast<int>(Site::NUM_TYPES));
   if (is_main_frame_load) {

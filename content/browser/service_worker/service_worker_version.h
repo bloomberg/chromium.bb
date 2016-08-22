@@ -148,11 +148,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FetchHandlerExistence fetch_handler_existence() const {
     return fetch_handler_existence_;
   }
-  void set_fetch_handler_existence(FetchHandlerExistence existence) {
-    DCHECK_EQ(fetch_handler_existence_, FetchHandlerExistence::UNKNOWN);
-    DCHECK_NE(existence, FetchHandlerExistence::UNKNOWN);
-    fetch_handler_existence_ = existence;
-  }
+  // This also updates |site_for_uma_| when it was Site::OTHER.
+  void set_fetch_handler_existence(FetchHandlerExistence existence);
+
+  bool should_exclude_from_uma() const { return should_exclude_from_uma_; }
 
   const std::vector<GURL>& foreign_fetch_scopes() const {
     return foreign_fetch_scopes_;
@@ -167,6 +166,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void set_foreign_fetch_origins(const std::vector<url::Origin>& origins) {
     foreign_fetch_origins_ = origins;
   }
+
+  ServiceWorkerMetrics::Site site_for_uma() const { return site_for_uma_; }
 
   // This sets the new status and also run status change callbacks
   // if there're any (see RegisterStatusChangeCallback).
@@ -679,6 +680,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;
   FetchHandlerExistence fetch_handler_existence_;
+  ServiceWorkerMetrics::Site site_for_uma_;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;

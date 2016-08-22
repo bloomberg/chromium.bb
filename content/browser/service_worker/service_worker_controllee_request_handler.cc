@@ -287,9 +287,7 @@ void ServiceWorkerControlleeRequestHandler::
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
 
   ServiceWorkerMetrics::CountControlledPageLoad(
-      stripped_url_, active_version->fetch_handler_existence() ==
-                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
-      is_main_frame_load_);
+      active_version->site_for_uma(), stripped_url_, is_main_frame_load_);
 
   bool is_forwarded =
       MaybeForwardToServiceWorker(job_.get(), active_version.get());
@@ -321,9 +319,7 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
   DCHECK_NE(version->fetch_handler_existence(),
             ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
   ServiceWorkerMetrics::CountControlledPageLoad(
-      stripped_url_, version->fetch_handler_existence() ==
-                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
-      is_main_frame_load_);
+      version->site_for_uma(), stripped_url_, is_main_frame_load_);
 
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);
