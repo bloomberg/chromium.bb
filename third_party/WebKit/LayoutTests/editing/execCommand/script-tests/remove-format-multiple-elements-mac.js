@@ -65,10 +65,10 @@ testRemoveFormat('<b><u>hello</u> world</b> <a href="http://webkit.org/"><em>Web
 testRemoveFormat('<sub><tt>hello world WebKit</tt></sub>', selectSecondWord, '<sub><tt>hello </tt></sub>world<sub><tt> WebKit</tt></sub>');
 testRemoveFormat('<q><ins><var>hello wor</var>ld</ins> WebKit</q>', selectSecondWord, '<q><ins><var>hello </var></ins></q>world<q> WebKit</q>');    
 testRemoveFormat('<b>hello <dfn>world <kbd>WebKit</kbd></dfn></b>', selectLastWord, '<b>hello <dfn>world </dfn></b>WebKit');
-testRemoveFormat('<b>hello <dfn>world <kbd>WebKit</kbd></dfn></b>', selectSecondWord, '<b>hello </b>world<b><dfn> <kbd>WebKit</kbd></dfn></b>');
+testRemoveFormat('<b>hello <dfn>world <kbd>WebKit</kbd></dfn></b>', selectSecondWord, '<b>hello </b>world <b><dfn><kbd>WebKit</kbd></dfn></b>');
 testRemoveFormat('<code>hello <strong>world WebKit</storng></code>', selectFirstTwoWords, 'hello world<code><strong> WebKit</strong></code>');
 testRemoveFormat('<acronym><tt><mark><samp>hello</samp></mark> world <sub>WebKit</sub></tt></acronym>',
-    selectFirstTwoWords, '<mark>hello</mark> world<acronym><tt> <sub>WebKit</sub></tt></acronym>');
+    selectFirstTwoWords, '<mark>hello</mark> world <acronym><tt><sub>WebKit</sub></tt></acronym>');
 testRemoveFormat('<b><div>hello world</div></b><div>WebKit</div>', selectLastTwoWords, '<div><b>hello </b>world</div><div>WebKit</div>');
 testRemoveFormat('<q><b><div>hello world</div></b>WebKit</q>', selectLastTwoWords, '<div><q><b>hello </b></q>world</div>WebKit');
 testRemoveFormat('<q><b><div>hello world</div></b>WebKit</q>', selectSecondWord, '<div><q><b>hello </b></q>world</div><q>WebKit</q>');

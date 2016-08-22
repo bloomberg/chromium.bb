@@ -1,0 +1,17 @@
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script>
+test(() => assert_selection(
+  '<div id="copy" style="width: 10em;">^Copy this area <a href="http://foo/">AVeryLongWordThatWillWrap|</a></div><div contenteditable id="editor"></div>',
+  selection => {
+    var editor = selection.document.getElementById('editor');
+
+    selection.document.execCommand('copy');
+    selection.collapse(editor);
+    selection.document.execCommand('paste');
+  },
+  '<div id="copy" style="width: 10em;">Copy this area <a href="http://foo/">AVeryLongWordThatWillWrap</a></div><div contenteditable id="editor">Copy this area\u00A0<a href="http://foo/">AVeryLongWordThatWillWrap|</a></div>'),
+  'Restore the collapsed space');
+</script>

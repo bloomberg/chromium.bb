@@ -1,6 +1,6 @@
 This test ensures WebKit lets user place caret around bidirectional text properly.
 
-Current offset:
+Current offset: 
 abcאבג
 0 1 2 3 5 4 6
 נת12
