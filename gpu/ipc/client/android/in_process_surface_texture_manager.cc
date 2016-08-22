@@ -30,7 +30,7 @@ void InProcessSurfaceTextureManager::RegisterSurfaceTexture(
   DCHECK(surface_textures_.find(surface_texture_id) == surface_textures_.end());
   surface_textures_.add(
       surface_texture_id,
-      base::WrapUnique(new gl::ScopedJavaSurface(surface_texture)));
+      base::MakeUnique<gl::ScopedJavaSurface>(surface_texture));
 }
 
 void InProcessSurfaceTextureManager::UnregisterSurfaceTexture(
