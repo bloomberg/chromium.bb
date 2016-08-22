@@ -192,7 +192,6 @@ private:
     };
 
     void terminateInternal(TerminationMode);
-    void forciblyTerminateExecution();
 
     // Returns true if termination or shutdown sequence has started. This is
     // thread safe.

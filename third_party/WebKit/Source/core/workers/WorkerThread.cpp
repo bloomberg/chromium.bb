@@ -102,7 +102,7 @@ private:
             return;
         }
 
-        m_workerThread->forciblyTerminateExecution();
+        m_workerThread->isolate()->TerminateExecution();
         DCHECK_EQ(WorkerThread::ExitCode::NotTerminated, m_workerThread->m_exitCode);
         m_workerThread->m_exitCode = WorkerThread::ExitCode::AsyncForciblyTerminated;
     }
@@ -382,7 +382,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
             if (mode == TerminationMode::Forcible && m_exitCode == ExitCode::NotTerminated) {
                 DCHECK(m_scheduledForceTerminationTask);
                 m_scheduledForceTerminationTask.reset();
-                forciblyTerminateExecution();
+                isolate()->TerminateExecution();
                 DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
                 m_exitCode = ExitCode::SyncForciblyTerminated;
             }
@@ -419,7 +419,7 @@ void WorkerThread::terminateInternal(TerminationMode mode)
 
             if (shouldScheduleToTerminateExecution) {
                 if (mode == TerminationMode::Forcible) {
-                    forciblyTerminateExecution();
+                    isolate()->TerminateExecution();
                     DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
                     m_exitCode = ExitCode::SyncForciblyTerminated;
                 } else {
@@ -439,13 +439,6 @@ void WorkerThread::terminateInternal(TerminationMode mode)
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::prepareForShutdownOnWorkerThread, crossThreadUnretained(this)));
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, crossThreadBind(&WorkerThread::performShutdownOnWorkerThread, crossThreadUnretained(this)));
-}
-
-void WorkerThread::forciblyTerminateExecution()
-{
-    DCHECK(m_globalScope);
-    m_globalScope->scriptController()->willScheduleExecutionTermination();
-    isolate()->TerminateExecution();
 }
 
 bool WorkerThread::isInShutdown()

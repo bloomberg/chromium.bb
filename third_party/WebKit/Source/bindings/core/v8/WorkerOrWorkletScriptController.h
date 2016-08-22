@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
 
@@ -57,23 +56,15 @@ public:
     void dispose();
 
     bool isExecutionForbidden() const;
-    bool isExecutionTerminating() const;
 
     // Returns true if the evaluation completed with no uncaught exception.
     bool evaluate(const ScriptSourceCode&, ErrorEvent** = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
 
-    // Prevents future JavaScript execution. See
-    // willScheduleExecutionTermination, isExecutionForbidden.
+    // Prevents future JavaScript execution.
     void forbidExecution();
 
     // Used by WorkerThread:
     bool initializeContextIfNeeded();
-    // Async request to terminate future JavaScript execution on the worker
-    // thread. JavaScript evaluation exits with a non-continuable exception and
-    // WorkerOrWorkletScriptController calls forbidExecution to prevent further
-    // JavaScript execution. Use forbidExecution()/isExecutionForbidden() to
-    // guard against reentry into JavaScript.
-    void willScheduleExecutionTermination();
 
     // Used by WorkerGlobalScope:
     void rethrowExceptionFromImportedScript(ErrorEvent*, ExceptionState&);
@@ -110,8 +101,6 @@ private:
     RefPtr<DOMWrapperWorld> m_world;
     String m_disableEvalPending;
     bool m_executionForbidden;
-    bool m_executionScheduledToTerminate;
-    mutable Mutex m_scheduledTerminationMutex;
 
     RefPtr<RejectedPromises> m_rejectedPromises;
 
