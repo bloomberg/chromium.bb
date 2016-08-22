@@ -89,15 +89,6 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
       native_event.hwnd, native_event.message, native_event.wParam,
       native_event.lParam, ui::EventTimeStampToSeconds(time_stamp));
 }
-
-blink::WebGestureEvent MakeWebGestureEventFromNativeEvent(
-    const base::NativeEvent& native_event,
-    const base::TimeTicks& time_stamp) {
-  // TODO: Create gestures from native event.
-  NOTIMPLEMENTED();
-  return blink::WebGestureEvent();
-}
-
 #endif  // defined(OS_WIN)
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
@@ -350,16 +341,7 @@ blink::WebGestureEvent MakeWebGestureEvent(
     const GestureEvent& event,
     const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
         screen_location_callback) {
-  blink::WebGestureEvent gesture_event;
-#if defined(OS_WIN)
-  if (event.HasNativeEvent())
-    gesture_event = MakeWebGestureEventFromNativeEvent(event.native_event(),
-                                                       event.time_stamp());
-  else
-    gesture_event = MakeWebGestureEventFromUIEvent(event);
-#else
-  gesture_event = MakeWebGestureEventFromUIEvent(event);
-#endif
+  blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUIEvent(event);
 
   gesture_event.x = event.x();
   gesture_event.y = event.y();
@@ -376,15 +358,7 @@ blink::WebGestureEvent MakeWebGestureEvent(
     const ScrollEvent& event,
     const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
         screen_location_callback) {
-  blink::WebGestureEvent gesture_event;
-
-#if defined(OS_WIN)
-  gesture_event = MakeWebGestureEventFromNativeEvent(event.native_event(),
-                                                     event.time_stamp());
-#else
-  gesture_event = MakeWebGestureEventFromUiEvent(event);
-#endif
-
+  blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUiEvent(event);
   gesture_event.x = event.x();
   gesture_event.y = event.y();
 
