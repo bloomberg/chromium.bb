@@ -16,6 +16,7 @@ import android.widget.ViewSwitcher;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
@@ -148,6 +149,11 @@ public class BookmarkManager implements BookmarkDelegate {
         int maxSize = Math.min(activityManager.getMemoryClass() / 4 * 1024 * 1024,
                 FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
+
+        RecordUserAction.record("MobileBookmarkManagerOpen");
+        if (!isDialogUi) {
+            RecordUserAction.record("MobileBookmarkManagerPageOpen");
+        }
     }
 
     /**

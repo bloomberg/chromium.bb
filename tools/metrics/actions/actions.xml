@@ -8834,6 +8834,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerOpen">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    Action indictating the bookmark manager is created, either by menu or NTP
+    button, or by navigation.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerPageOpen">
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    Action indictating the bookmark manager is created as a Native Page. The
+    porpuse of this action is to tell how many users on phones are able to get
+    access to bookmark manager inside of a tab.
+  </description>
+</action>
+
 <action name="MobileBreakpadUploadAttempt" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9104,7 +9121,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuAllBookmarks">
-  <owner>aurimas@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
   <description>User pressed 'Bookmarks' in the app menu.</description>
 </action>
 
@@ -9298,8 +9315,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNTPBookmark">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    Action indicating the user has opened a bookmark from the bookmark manager.
+  </description>
 </action>
 
 <action name="MobileNTPForeignSession">
@@ -9325,8 +9344,11 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNTPSwitchToBookmarks">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    Action indicating the user has clicked the boomkark button on NTP to swith
+    to the bookmark manager.
+  </description>
 </action>
 
 <action name="MobileNTPSwitchToDownloadManager">
