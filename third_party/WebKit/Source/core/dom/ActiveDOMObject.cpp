@@ -38,17 +38,12 @@ ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
 #endif
 {
     DCHECK(!executionContext || executionContext->isContextThread());
-    // TODO(hajimehoshi): Now the leak detector can't treat vaious threads other
-    // than the main thread and worker threads. After fixing the leak detector,
-    // let's count objects on other threads as many as possible.
-    if (isMainThread())
-        InstanceCounters::incrementCounter(InstanceCounters::ActiveDOMObjectCounter);
+    InstanceCounters::incrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 }
 
 ActiveDOMObject::~ActiveDOMObject()
 {
-    if (isMainThread())
-        InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
+    InstanceCounters::decrementCounter(InstanceCounters::ActiveDOMObjectCounter);
 
 #if DCHECK_IS_ON()
     DCHECK(m_suspendIfNeededCalled);

@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/Atomics.h"
 
 #if ENABLE(ASSERT)
 #endif
@@ -60,14 +61,12 @@ public:
 
     static inline void incrementCounter(CounterType type)
     {
-        ASSERT(isMainThread());
-        ++s_counters[type];
+        atomicIncrement(&s_counters[type]);
     }
 
     static inline void decrementCounter(CounterType type)
     {
-        ASSERT(isMainThread());
-        --s_counters[type];
+        atomicDecrement(&s_counters[type]);
     }
 
     CORE_EXPORT static int counterValue(CounterType);
