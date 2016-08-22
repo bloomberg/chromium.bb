@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var target = InspectorTest.mainTarget;
+    target.schemaAgent().getDomains(gotDomains);
+
+    function gotDomains(error, domains)
+    {
+        if (error) {
+            InspectorTest.addResult("error getting domains: " + error);
+            InspectorTest.completeTest();
+            return;
+        }
+        var domainNames = domains.map(domain => domain.name).sort();
+        var agentNames = Object.keys(target._agentsMap).sort();
+        for (var domain of domainNames) {
+            if (agentNames.indexOf(domain) === -1)
+                InspectorTest.addResult("agent " + domain + " is missing from target");
+        }
+        for (var agent of agentNames) {
+            if (domainNames.indexOf(agent) === -1)
+                InspectorTest.addResult("domain " + agent + " is missing from schema.getDomains");
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that generated agent prototypes match with domains returned by schema.getDomains.</p>
+</body>
+</html>

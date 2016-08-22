@@ -1,0 +1,5 @@
+Tests that generated agent prototypes match with domains returned by schema.getDomains.
+
+domain SystemInfo is missing from schema.getDomains
+domain Tethering is missing from schema.getDomains
+

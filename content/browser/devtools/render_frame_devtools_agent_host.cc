@@ -23,6 +23,7 @@
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
+#include "content/browser/devtools/protocol/schema_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 #include "content/browser/devtools/protocol/storage_handler.h"
@@ -376,6 +377,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       io_handler_(new devtools::io::IOHandler(GetIOContext())),
       network_handler_(new devtools::network::NetworkHandler()),
       page_handler_(nullptr),
+      schema_handler_(new devtools::schema::SchemaHandler()),
       security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
@@ -397,6 +399,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetInspectorHandler(inspector_handler_.get());
   dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
+  dispatcher->SetSchemaHandler(schema_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());

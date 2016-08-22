@@ -48,6 +48,7 @@ namespace inspector { class InspectorHandler; }
 namespace io { class IOHandler; }
 namespace network { class NetworkHandler; }
 namespace page { class PageHandler; }
+namespace schema { class SchemaHandler; }
 namespace security { class SecurityHandler; }
 namespace service_worker { class ServiceWorkerHandler; }
 namespace storage { class StorageHandler; }
@@ -171,6 +172,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<devtools::io::IOHandler> io_handler_;
   std::unique_ptr<devtools::network::NetworkHandler> network_handler_;
   std::unique_ptr<devtools::page::PageHandler> page_handler_;
+  std::unique_ptr<devtools::schema::SchemaHandler> schema_handler_;
   std::unique_ptr<devtools::security::SecurityHandler> security_handler_;
   std::unique_ptr<devtools::service_worker::ServiceWorkerHandler>
       service_worker_handler_;

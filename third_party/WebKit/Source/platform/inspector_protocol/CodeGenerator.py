@@ -345,9 +345,11 @@ def read_protocol_file(file_name, json_api):
     json_string = input_file.read()
     input_file.close()
     parsed_json = json.loads(json_string)
+    version = parsed_json["version"]["major"] + "." + parsed_json["version"]["minor"]
     domains = []
     for domain in parsed_json["domains"]:
         domains.append(domain["domain"])
+        domain["version"] = version
     json_api["domains"] += parsed_json["domains"]
     return domains
 

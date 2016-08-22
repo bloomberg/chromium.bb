@@ -631,6 +631,8 @@
       'browser/devtools/protocol/network_handler.h',
       'browser/devtools/protocol/page_handler.cc',
       'browser/devtools/protocol/page_handler.h',
+      'browser/devtools/protocol/schema_handler.cc',
+      'browser/devtools/protocol/schema_handler.h',
       'browser/devtools/protocol/security_handler.cc',
       'browser/devtools/protocol/security_handler.h',
       'browser/devtools/protocol/service_worker_handler.cc',

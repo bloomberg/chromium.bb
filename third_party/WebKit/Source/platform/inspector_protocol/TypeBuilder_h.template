@@ -277,6 +277,7 @@ public:
     using DispatcherClass = Dispatcher;
     static const char domainName[];
     static const char commandPrefix[];
+    static const char version[];
 };
 
 } // namespace {{domain.domain}}

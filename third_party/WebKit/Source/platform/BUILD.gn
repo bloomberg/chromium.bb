@@ -240,8 +240,11 @@ action("inspector_protocol_sources") {
     "$blink_platform_output_dir/v8_inspector/protocol/Profiler.h",
     "$blink_platform_output_dir/v8_inspector/protocol/Runtime.cpp",
     "$blink_platform_output_dir/v8_inspector/protocol/Runtime.h",
-    "$blink_platform_output_dir/v8_inspector/public/protocol/Runtime.h",
+    "$blink_platform_output_dir/v8_inspector/protocol/Schema.cpp",
+    "$blink_platform_output_dir/v8_inspector/protocol/Schema.h",
     "$blink_platform_output_dir/v8_inspector/public/protocol/Debugger.h",
+    "$blink_platform_output_dir/v8_inspector/public/protocol/Runtime.h",
+    "$blink_platform_output_dir/v8_inspector/public/protocol/Schema.h",
   ]
 
   args = [

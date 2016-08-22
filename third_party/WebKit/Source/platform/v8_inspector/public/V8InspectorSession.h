@@ -8,6 +8,7 @@
 #include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/public/protocol/Debugger.h"
 #include "platform/v8_inspector/public/protocol/Runtime.h"
+#include "platform/v8_inspector/public/protocol/Schema.h"
 
 #include <v8.h>
 
@@ -29,6 +30,7 @@ public:
     static bool canDispatchMethod(const String16& method);
     virtual void dispatchProtocolMessage(const String16& message) = 0;
     virtual String16 stateJSON() = 0;
+    virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Schema::API::Domain>> supportedDomains() = 0;
 
     // Debugger actions.
     virtual void schedulePauseOnNextStatement(const String16& breakReason, const String16& breakDetails) = 0;

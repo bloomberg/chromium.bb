@@ -1,6 +1,34 @@
 {
     "version": { "major": "1", "minor": "1" },
-    "domains": [{
+    "domains": [
+    {
+        "domain": "Schema",
+        "description": "Provides information about the protocol schema.",
+        "experimental": true,
+        "types": [
+            {
+                "id": "Domain",
+                "type": "object",
+                "description": "Description of the protocol domain.",
+                "exported": true,
+                "properties": [
+                    { "name": "name", "type": "string", "description": "Domain name." },
+                    { "name": "version", "type": "string", "description": "Domain version." }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "getDomains",
+                "description": "Returns supported domains.",
+                "handlers": ["browser", "renderer"],
+                "returns": [
+                    { "name": "domains", "type": "array", "items": { "$ref": "Domain" }, "description": "List of supported domains." }
+                ]
+            }
+        ]
+    },
+    {
         "domain": "Runtime",
         "description": "Runtime domain exposes JavaScript runtime by means of remote evaluation and mirror objects. Evaluation results are returned as mirror object that expose object type, string representation and unique identifier that can be used for further object reference. Original objects are maintained in memory unless they are either explicitly released or are released along with the other objects in their object group.",
         "types": [

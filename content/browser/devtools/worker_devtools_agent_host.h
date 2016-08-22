@@ -11,6 +11,8 @@
 
 namespace content {
 
+namespace devtools { namespace schema { class SchemaHandler; }}
+
 class BrowserContext;
 class DevToolsProtocolHandler;
 class SharedWorkerInstance;
@@ -65,6 +67,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
+  std::unique_ptr<devtools::schema::SchemaHandler> schema_handler_;
   std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;
   DevToolsMessageChunkProcessor chunk_processor_;
   WorkerState state_;

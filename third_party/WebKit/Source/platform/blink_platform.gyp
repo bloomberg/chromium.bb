@@ -213,6 +213,7 @@
       '<(blink_platform_output_dir)/v8_inspector/protocol/HeapProfiler.cpp',
       '<(blink_platform_output_dir)/v8_inspector/protocol/Profiler.cpp',
       '<(blink_platform_output_dir)/v8_inspector/protocol/Runtime.cpp',
+      '<(blink_platform_output_dir)/v8_inspector/protocol/Schema.cpp',
 
       # Additional .cpp files from the v8_inspector.
       '<(blink_platform_output_dir)/v8_inspector/DebuggerScript.h',
