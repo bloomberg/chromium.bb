@@ -3063,10 +3063,6 @@ def GetConfig():
            'signer_tests':False,
            'paygen':False,
            'vm_tests':[],
-      },
-
-      'veyron_rialto-release': {
-        'paygen_skip_testing': True,
       }
   }
 

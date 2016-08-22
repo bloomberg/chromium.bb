@@ -26530,7 +26530,6 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "paygen_skip_testing": true,
         "vm_tests": [],
         "vm_tests_override": null
     },
