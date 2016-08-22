@@ -185,14 +185,14 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
       syncer::THEMES,
       MakeActivationContext(
           MakeInitialDataTypeState(THEMES),
-          base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
   EXPECT_EQ(ModelTypeSet(syncer::THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectType(
       syncer::SESSIONS,
       MakeActivationContext(
           MakeInitialDataTypeState(SESSIONS),
-          base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
   EXPECT_EQ(ModelTypeSet(syncer::THEMES, syncer::SESSIONS),
             registry()->GetEnabledTypes());
 
@@ -221,7 +221,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
       syncer::THEMES,
       MakeActivationContext(
           MakeInitialDataTypeState(THEMES),
-          base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
   current_types.Put(syncer::THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -235,7 +235,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
       syncer::SESSIONS,
       MakeActivationContext(
           MakeInitialDataTypeState(SESSIONS),
-          base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
   current_types.Put(syncer::SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 

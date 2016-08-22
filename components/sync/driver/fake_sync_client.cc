@@ -23,7 +23,7 @@ void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
 FakeSyncClient::FakeSyncClient()
     : model_type_service_(nullptr),
       factory_(nullptr),
-      sync_service_(base::WrapUnique(new FakeSyncService())) {
+      sync_service_(base::MakeUnique<FakeSyncService>()) {
   // Register sync preferences and set them to "Sync everything" state.
   sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
   sync_driver::SyncPrefs sync_prefs(GetPrefService());
@@ -32,8 +32,7 @@ FakeSyncClient::FakeSyncClient()
 }
 
 FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
-    : factory_(factory),
-      sync_service_(base::WrapUnique(new FakeSyncService())) {
+    : factory_(factory), sync_service_(base::MakeUnique<FakeSyncService>()) {
   sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
 }
 

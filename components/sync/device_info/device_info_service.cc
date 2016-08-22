@@ -74,7 +74,7 @@ DeviceInfoService::~DeviceInfoService() {}
 
 std::unique_ptr<MetadataChangeList>
 DeviceInfoService::CreateMetadataChangeList() {
-  return base::WrapUnique(new SimpleMetadataChangeList());
+  return base::MakeUnique<SimpleMetadataChangeList>();
 }
 
 SyncError DeviceInfoService::MergeSyncData(
@@ -117,7 +117,7 @@ SyncError DeviceInfoService::MergeSyncData(
       // Remote data wins conflicts.
       local_guids_to_put.erase(specifics.cache_guid());
       has_changes = true;
-      StoreSpecifics(base::WrapUnique(new DeviceInfoSpecifics(specifics)),
+      StoreSpecifics(base::MakeUnique<DeviceInfoSpecifics>(specifics),
                      batch.get());
     }
   }
@@ -154,7 +154,7 @@ SyncError DeviceInfoService::ApplySyncChanges(
       const DeviceInfoSpecifics& specifics =
           change.data().specifics.device_info();
       DCHECK(guid == specifics.cache_guid());
-      StoreSpecifics(base::WrapUnique(new DeviceInfoSpecifics(specifics)),
+      StoreSpecifics(base::MakeUnique<DeviceInfoSpecifics>(specifics),
                      batch.get());
       has_changes = true;
     }
@@ -212,7 +212,7 @@ void DeviceInfoService::OnChangeProcessorSet() {
   // must not be any metadata on disk.
   if (has_metadata_loaded_) {
     change_processor()->OnMetadataLoaded(SyncError(),
-                                         base::WrapUnique(new MetadataBatch()));
+                                         base::MakeUnique<MetadataBatch>());
     ReconcileLocalAndStored();
   }
 }
@@ -275,10 +275,10 @@ std::unique_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
 // Static.
 std::unique_ptr<DeviceInfo> DeviceInfoService::CopyToModel(
     const DeviceInfoSpecifics& specifics) {
-  return base::WrapUnique(new DeviceInfo(
+  return base::MakeUnique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
-      specifics.device_type(), specifics.signin_scoped_device_id()));
+      specifics.device_type(), specifics.signin_scoped_device_id());
 }
 
 // Static.
@@ -342,8 +342,8 @@ void DeviceInfoService::OnReadAllData(Result result,
   }
 
   for (const Record& r : *record_list.get()) {
-    std::unique_ptr<DeviceInfoSpecifics> specifics(
-        base::WrapUnique(new DeviceInfoSpecifics()));
+    std::unique_ptr<DeviceInfoSpecifics> specifics =
+        base::MakeUnique<DeviceInfoSpecifics>();
     if (specifics->ParseFromString(r.value)) {
       all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {

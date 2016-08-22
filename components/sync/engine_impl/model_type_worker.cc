@@ -424,7 +424,7 @@ WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
   std::unique_ptr<WorkerEntityTracker> entity =
-      base::WrapUnique(new WorkerEntityTracker(data.id, data.client_tag_hash));
+      base::MakeUnique<WorkerEntityTracker>(data.id, data.client_tag_hash);
   WorkerEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;

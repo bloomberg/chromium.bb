@@ -363,7 +363,7 @@ TEST_F(DeviceInfoServiceTest, EmptyDataReconciliationSlowLoad) {
 }
 
 TEST_F(DeviceInfoServiceTest, LocalProviderSubscription) {
-  set_local_device(base::WrapUnique(new LocalDeviceInfoProviderMock()));
+  set_local_device(base::MakeUnique<LocalDeviceInfoProviderMock>());
   InitializeAndPumpAndStart();
 
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());

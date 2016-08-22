@@ -64,7 +64,7 @@ NudgeTracker::NudgeTracker()
   for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
        it.Inc()) {
     type_trackers_.insert(
-        std::make_pair(it.Get(), base::WrapUnique(new DataTypeTracker())));
+        std::make_pair(it.Get(), base::MakeUnique<DataTypeTracker>()));
   }
 }
 

@@ -67,7 +67,7 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
     std::unique_ptr<SharedModelTypeProcessor> processor =
         base::WrapUnique(new SharedModelTypeProcessor(syncer::THEMES, this));
     processor->OnMetadataLoaded(syncer::SyncError(),
-                                base::WrapUnique(new MetadataBatch()));
+                                base::MakeUnique<MetadataBatch>());
     return processor;
   }
 

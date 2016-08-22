@@ -172,9 +172,10 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   if (!start_error_.IsSet()) {
     activation_context = base::WrapUnique(new ActivationContext);
     activation_context->data_type_state = data_type_state_;
-    activation_context->type_processor = base::WrapUnique(
-        new ModelTypeProcessorProxy(weak_ptr_factory_.GetWeakPtr(),
-                                    base::ThreadTaskRunnerHandle::Get()));
+    activation_context->type_processor =
+        base::MakeUnique<ModelTypeProcessorProxy>(
+            weak_ptr_factory_.GetWeakPtr(),
+            base::ThreadTaskRunnerHandle::Get());
   }
 
   start_callback_.Run(start_error_, std::move(activation_context));

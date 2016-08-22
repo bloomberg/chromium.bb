@@ -23,9 +23,9 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
   DCHECK(user_share);
-  return base::WrapUnique(new GenericChangeProcessor(
+  return base::MakeUnique<GenericChangeProcessor>(
       type, error_handler, local_service, merge_result, user_share, sync_client,
-      local_service->GetAttachmentStoreForSync()));
+      local_service->GetAttachmentStoreForSync());
 }
 
 }  // namespace sync_driver

@@ -202,9 +202,9 @@ class AttachmentServiceImplTest : public testing::Test,
 
   void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    InitializeAttachmentService(
-        base::WrapUnique(new MockAttachmentUploader()),
-        base::WrapUnique(new MockAttachmentDownloader()), this);
+    InitializeAttachmentService(base::MakeUnique<MockAttachmentUploader>(),
+                                base::MakeUnique<MockAttachmentDownloader>(),
+                                this);
   }
 
   void TearDown() override {
@@ -480,8 +480,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
-  InitializeAttachmentService(base::WrapUnique(new MockAttachmentUploader()),
-                              base::WrapUnique(new MockAttachmentDownloader()),
+  InitializeAttachmentService(base::MakeUnique<MockAttachmentUploader>(),
+                              base::MakeUnique<MockAttachmentDownloader>(),
                               NULL);  // No delegate.
 
   AttachmentIdList attachment_ids;
@@ -551,7 +551,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
   InitializeAttachmentService(base::WrapUnique<MockAttachmentUploader>(NULL),
-                              base::WrapUnique(new MockAttachmentDownloader()),
+                              base::MakeUnique<MockAttachmentDownloader>(),
                               this);
 
   AttachmentIdList attachment_ids;

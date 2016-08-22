@@ -50,9 +50,8 @@ class MockModelTypeService : public FakeModelTypeService {
   std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
       syncer::ModelType type,
       ModelTypeService* service) {
-    return base::WrapUnique(new MockModelTypeChangeProcessor(
-        base::Bind(&MockModelTypeService::OnProcessorDisableSync,
-                   base::Unretained(this))));
+    return base::MakeUnique<MockModelTypeChangeProcessor>(base::Bind(
+        &MockModelTypeService::OnProcessorDisableSync, base::Unretained(this)));
   }
 
   void OnChangeProcessorSet() override { on_processor_set_called_ = true; }

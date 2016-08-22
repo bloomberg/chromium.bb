@@ -349,7 +349,7 @@ void ModelTypeWorkerTest::NewForeignEncryptionKey() {
   // Update the worker with the latest cryptographer.
   if (worker_) {
     worker_->UpdateCryptographer(
-        base::WrapUnique(new Cryptographer(*cryptographer_)));
+        base::MakeUnique<Cryptographer>(*cryptographer_));
   }
 }
 
@@ -365,7 +365,7 @@ void ModelTypeWorkerTest::UpdateLocalCryptographer() {
   // Update the worker with the latest cryptographer.
   if (worker_) {
     worker_->UpdateCryptographer(
-        base::WrapUnique(new Cryptographer(*cryptographer_)));
+        base::MakeUnique<Cryptographer>(*cryptographer_));
   }
 }
 

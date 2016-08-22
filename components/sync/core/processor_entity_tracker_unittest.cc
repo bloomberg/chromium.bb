@@ -70,7 +70,7 @@ UpdateResponseData GenerateTombstone(const ProcessorEntityTracker& entity,
                                      const std::string& name,
                                      const base::Time& mtime,
                                      int64_t version) {
-  std::unique_ptr<EntityData> data = base::WrapUnique(new EntityData());
+  std::unique_ptr<EntityData> data = base::MakeUnique<EntityData>();
   data->client_tag_hash = hash;
   data->non_unique_name = name;
   data->id = id;

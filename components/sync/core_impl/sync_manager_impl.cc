@@ -912,8 +912,8 @@ UserShare* SyncManagerImpl::GetUserShare() {
 std::unique_ptr<syncer_v2::ModelTypeConnector>
 SyncManagerImpl::GetModelTypeConnectorProxy() {
   DCHECK(initialized_);
-  return base::WrapUnique(new syncer_v2::ModelTypeConnectorProxy(
-      base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr()));
+  return base::MakeUnique<syncer_v2::ModelTypeConnectorProxy>(
+      base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr());
 }
 
 const std::string SyncManagerImpl::cache_guid() {

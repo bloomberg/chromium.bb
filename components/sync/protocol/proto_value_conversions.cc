@@ -54,7 +54,7 @@ namespace {
 // Basic Type -> Value functions.
 
 std::unique_ptr<base::StringValue> MakeInt64Value(int64_t x) {
-  return base::WrapUnique(new base::StringValue(base::Int64ToString(x)));
+  return base::MakeUnique<base::StringValue>(base::Int64ToString(x));
 }
 
 // TODO(akalin): Perhaps make JSONWriter support BinaryValue and use
@@ -66,7 +66,7 @@ std::string Base64EncodeString(const std::string& bytes) {
 }
 
 std::unique_ptr<base::StringValue> MakeStringValue(const std::string& str) {
-  return base::WrapUnique(new base::StringValue(str));
+  return base::MakeUnique<base::StringValue>(str);
 }
 
 // T is the field type, F is either RepeatedField or RepeatedPtrField,
@@ -627,12 +627,12 @@ std::unique_ptr<base::DictionaryValue> PriorityPreferenceSpecificsToValue(
 std::unique_ptr<base::DictionaryValue>
 SyncedNotificationAppInfoSpecificsToValue(
     const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {
-  return base::WrapUnique(new base::DictionaryValue());
+  return base::MakeUnique<base::DictionaryValue>();
 }
 
 std::unique_ptr<base::DictionaryValue> SyncedNotificationSpecificsToValue(
     const sync_pb::SyncedNotificationSpecifics& proto) {
-  return base::WrapUnique(new base::DictionaryValue());
+  return base::MakeUnique<base::DictionaryValue>();
 }
 
 std::unique_ptr<base::DictionaryValue> SearchEngineSpecificsToValue(

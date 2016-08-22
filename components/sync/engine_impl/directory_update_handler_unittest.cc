@@ -484,15 +484,15 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
-        base::WrapUnique(new DirectoryUpdateHandler(
-            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_))));
+        base::MakeUnique<DirectoryUpdateHandler>(
+            directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_)));
     update_handler_map_.insert(std::make_pair(
         PASSWORDS,
-        base::WrapUnique(new DirectoryUpdateHandler(
-            directory(), PASSWORDS, password_worker_, &passwords_emitter_))));
+        base::MakeUnique<DirectoryUpdateHandler>(
+            directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
     update_handler_map_.insert(std::make_pair(
-        ARTICLES, base::WrapUnique(new DirectoryUpdateHandler(
-                      directory(), ARTICLES, ui_worker_, &articles_emitter_))));
+        ARTICLES, base::MakeUnique<DirectoryUpdateHandler>(
+                      directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
   void TearDown() override { dir_maker_.TearDown(); }

@@ -63,7 +63,7 @@ class MockSyncBackend {
       std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
     enabled_types_.Put(type);
     activation_context->type_processor->ConnectSync(
-        base::WrapUnique(new NullCommitQueue()));
+        base::MakeUnique<NullCommitQueue>());
   }
 
   void Disconnect(syncer::ModelType type) {
@@ -163,8 +163,7 @@ class UIModelTypeControllerTest : public testing::Test,
       syncer::ModelType type,
       syncer_v2::ModelTypeService* service) {
     std::unique_ptr<syncer_v2::SharedModelTypeProcessor> processor =
-        base::WrapUnique(
-            new syncer_v2::SharedModelTypeProcessor(type, service));
+        base::MakeUnique<syncer_v2::SharedModelTypeProcessor>(type, service);
     type_processor_ = processor.get();
     return std::move(processor);
   }
@@ -179,8 +178,7 @@ class UIModelTypeControllerTest : public testing::Test,
         &UIModelTypeControllerTest::LoadModelsDone, base::Unretained(this)));
     if (!type_processor_->IsAllowingChanges()) {
       type_processor_->OnMetadataLoaded(
-          syncer::SyncError(),
-          base::WrapUnique(new syncer_v2::MetadataBatch()));
+          syncer::SyncError(), base::MakeUnique<syncer_v2::MetadataBatch>());
     }
 
     if (auto_run_tasks_) {

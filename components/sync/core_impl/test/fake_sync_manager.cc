@@ -201,7 +201,7 @@ UserShare* FakeSyncManager::GetUserShare() {
 
 std::unique_ptr<syncer_v2::ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
-  return base::WrapUnique(new syncer_v2::FakeModelTypeConnector());
+  return base::MakeUnique<syncer_v2::FakeModelTypeConnector>();
 }
 
 const std::string FakeSyncManager::cache_guid() {

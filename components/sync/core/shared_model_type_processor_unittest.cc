@@ -76,7 +76,7 @@ EntitySpecifics GenerateSpecifics(const std::string& name,
 
 std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
                                                const std::string& value) {
-  std::unique_ptr<EntityData> entity_data = base::WrapUnique(new EntityData());
+  std::unique_ptr<EntityData> entity_data = base::MakeUnique<EntityData>();
   entity_data->client_tag_hash = TagHashFromKey(key);
   entity_data->specifics = GenerateSpecifics(key, value);
   entity_data->non_unique_name = key;

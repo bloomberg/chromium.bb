@@ -272,7 +272,7 @@ void ModelTypeStoreImpl::ReadAllMetadataDone(
 std::unique_ptr<ModelTypeStore::WriteBatch>
 ModelTypeStoreImpl::CreateWriteBatch() {
   DCHECK(CalledOnValidThread());
-  return base::WrapUnique(new WriteBatchImpl());
+  return base::MakeUnique<WriteBatchImpl>();
 }
 
 void ModelTypeStoreImpl::CommitWriteBatch(

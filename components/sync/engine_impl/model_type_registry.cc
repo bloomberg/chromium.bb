@@ -303,7 +303,7 @@ void ModelTypeRegistry::OnEncryptionStateChanged() {
        it != model_type_workers_.end(); ++it) {
     if (encrypted_types_.Has((*it)->GetModelType())) {
       (*it)->UpdateCryptographer(
-          base::WrapUnique(new Cryptographer(*cryptographer_)));
+          base::MakeUnique<Cryptographer>(*cryptographer_));
     }
   }
 }

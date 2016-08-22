@@ -14,7 +14,7 @@ namespace sync_driver {
 
 FakeSyncService::FakeSyncService()
     : error_(GoogleServiceAuthError::NONE),
-      user_share_(base::WrapUnique(new syncer::UserShare())) {}
+      user_share_(base::MakeUnique<syncer::UserShare>()) {}
 
 FakeSyncService::~FakeSyncService() {}
 
