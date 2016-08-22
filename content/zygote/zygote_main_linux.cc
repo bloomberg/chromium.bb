@@ -18,12 +18,14 @@
 #include <unistd.h>
 
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
@@ -76,6 +78,11 @@ namespace content {
 
 namespace {
 
+base::LazyInstance<std::set<std::string>>::Leaky g_timezones =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_timezones_lock =
+    LAZY_INSTANCE_INITIALIZER;
+
 void CloseFds(const std::vector<int>& fds) {
   for (const auto& it : fds) {
     PCHECK(0 == IGNORE_EINTR(close(it)));
@@ -109,7 +116,8 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
 
   base::Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   base::PickleIterator iter(reply);
-  std::string result, timezone;
+  std::string result;
+  std::string timezone;
   if (!iter.ReadString(&result) ||
       !iter.ReadString(&timezone) ||
       result.size() != sizeof(struct tm)) {
@@ -124,7 +132,9 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
     timezone_out[copy_len] = 0;
     output->tm_zone = timezone_out;
   } else {
-    output->tm_zone = NULL;
+    base::AutoLock lock(g_timezones_lock.Get());
+    auto ret_pair = g_timezones.Get().insert(timezone);
+    output->tm_zone = ret_pair.first->c_str();
   }
 }
 

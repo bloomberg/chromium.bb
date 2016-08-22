@@ -512,6 +512,10 @@ test("content_browsertests") {
     libs = [ "oleacc.lib" ]
   }
 
+  if (is_linux) {
+    sources += [ "../zygote/zygote_browsertest.cc" ]
+  }
+
   if (is_android) {
     sources += rebase_path(
             content_tests_gypi_values.content_browsertests_android_sources,
