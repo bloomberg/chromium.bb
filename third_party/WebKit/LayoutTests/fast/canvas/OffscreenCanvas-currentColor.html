@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<title>Test that the fill and stroke style attributes yield opaque black when set to 'currentcolor' on an OffscreenCanvasRenderingContext2D.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Test that the fill and stroke style attribute yield opaque black when set to 'currentcolor' on an OffscreenCanvasRenderingContext2D");
+test(function() {
+    var aCanvas = new OffscreenCanvas(50, 50);
+    var ctx = aCanvas.getContext('2d');
+    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'currentcolor'
+    assert_equals(ctx.fillStyle, '#000000');
 
-// Tests onstructor of OffscreenCanvas and length/width change
-var aCanvas = new OffscreenCanvas(50, 50);
-var ctx = aCanvas.getContext('2d');
-ctx.fillStyle = 'red';
-ctx.fillStyle = 'currentcolor'
-shouldBe("ctx.fillStyle", "'#000000'");
-
-ctx.strokeStyle = 'red';
-ctx.strokeStyle = 'currentcolor'
-shouldBe("ctx.strokeStyle", "'#000000'");
-
+    ctx.strokeStyle = 'red';
+    ctx.strokeStyle = 'currentcolor'
+    assert_equals(ctx.strokeStyle, '#000000');
+});
 </script>
