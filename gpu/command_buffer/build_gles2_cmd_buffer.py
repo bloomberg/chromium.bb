@@ -2344,7 +2344,7 @@ _PEPPER_INTERFACES = [
 #               The default is 'immediate' if the command has one pointer
 #               argument, otherwise 'shm'. One command is generated for each
 #               transfer method. Affects only commands which are not of type
-#               'HandWritten', 'GETn' or 'GLcharN'.
+#               'GETn' or 'GLcharN'.
 #               Note: the command arguments that affect this are the final args,
 #               taking cmd_args override into consideration.
 # impl_func:    Whether or not to generate the GLES2Implementation part of this
@@ -4382,19 +4382,22 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'GenSyncTokenCHROMIUM': {
-    'type': 'Custom',
+    'type': 'Manual',
+    'gen_cmd': False,
     'impl_func': False,
     'extension': "CHROMIUM_sync_point",
     'chromium': True,
   },
   'GenUnverifiedSyncTokenCHROMIUM': {
-    'type': 'Custom',
+    'type': 'Manual',
+    'gen_cmd': False,
     'impl_func': False,
     'extension': "CHROMIUM_sync_point",
     'chromium': True,
   },
   'VerifySyncTokensCHROMIUM' : {
-    'type': 'Custom',
+    'type': 'Manual',
+    'gen_cmd': False,
     'impl_func': False,
     'extension': "CHROMIUM_sync_point",
     'chromium': True,
@@ -5786,70 +5789,6 @@ class CustomHandler(TypeHandler):
                "cmd, total_size);\n")
     f.write("  }\n")
     f.write("\n")
-
-
-class HandWrittenHandler(CustomHandler):
-  """Handler for comands where everything must be written by hand."""
-
-  def InitFunction(self, func):
-    """Add or adjust anything type specific for this function."""
-    CustomHandler.InitFunction(self, func)
-    func.can_auto_generate = False
-
-  def NeedsDataTransferFunction(self, func):
-    """Overriden from TypeHandler."""
-    # If specified explicitly, force the data transfer method.
-    if func.GetInfo('data_transfer_methods'):
-      return True
-    return False
-
-  def WriteStruct(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteDocs(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteServiceUnitTest(self, func, f, *extras):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateServiceUnitTest(self, func, f, *extras):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteBucketServiceUnitTest(self, func, f, *extras):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteBucketServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateCmdHelper(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteCmdHelper(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteFormatTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateFormatTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
 
 
 class ManualHandler(CustomHandler):
@@ -9533,7 +9472,6 @@ class Function(object):
     'GETn': GETnHandler(),
     'GLchar': GLcharHandler(),
     'GLcharN': GLcharNHandler(),
-    'HandWritten': HandWrittenHandler(),
     'Is': IsHandler(),
     'Manual': ManualHandler(),
     'PUT': PUTHandler(),

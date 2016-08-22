@@ -14546,24 +14546,6 @@ error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleGenSyncTokenCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleGenUnverifiedSyncTokenCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleVerifySyncTokensCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  return error::kUnknownCommand;
-}
-
 error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {

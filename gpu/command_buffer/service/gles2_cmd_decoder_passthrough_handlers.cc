@@ -1591,37 +1591,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleInsertFenceSyncCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleGenSyncTokenCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::GenSyncTokenCHROMIUMImmediate& c =
-      *static_cast<const gles2::cmds::GenSyncTokenCHROMIUMImmediate*>(cmd_data);
-  (void)c;
-  return error::kUnknownCommand;
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::HandleGenUnverifiedSyncTokenCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::GenUnverifiedSyncTokenCHROMIUMImmediate& c =
-      *static_cast<const gles2::cmds::GenUnverifiedSyncTokenCHROMIUMImmediate*>(
-          cmd_data);
-  (void)c;
-  return error::kUnknownCommand;
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::HandleVerifySyncTokensCHROMIUMImmediate(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::VerifySyncTokensCHROMIUMImmediate& c =
-      *static_cast<const gles2::cmds::VerifySyncTokensCHROMIUMImmediate*>(
-          cmd_data);
-  (void)c;
-  return error::kUnknownCommand;
-}
-
 error::Error GLES2DecoderPassthroughImpl::HandleWaitSyncTokenCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
