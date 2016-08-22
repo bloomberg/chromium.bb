@@ -2079,6 +2079,8 @@
             'paint/BoxPainter.h',
             'paint/BoxReflectionUtils.cpp',
             'paint/BoxReflectionUtils.h',
+            'paint/ClipPathClipper.cpp',
+            'paint/ClipPathClipper.h',
             'paint/DetailsMarkerPainter.cpp',
             'paint/DetailsMarkerPainter.h',
             'paint/EllipsisBoxPainter.cpp',
