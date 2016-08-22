@@ -17,6 +17,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/events/blink/did_overscroll_params.h"
@@ -52,8 +53,13 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_task_runner_(target_task_runner),
-      current_overscroll_params_(NULL) {
+      current_overscroll_params_(NULL),
+      renderer_scheduler_(NULL) {
   DCHECK(target_task_runner_.get());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+  renderer_scheduler_ =
+      render_thread_impl ? render_thread_impl->GetRendererScheduler() : nullptr;
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {
@@ -73,8 +79,8 @@ void InputEventFilter::SetIsFlingingInMainThreadEventQueue(int routing_id,
 void InputEventFilter::RegisterRoutingID(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
-  route_queues_[routing_id] =
-      new MainThreadEventQueue(routing_id, this, main_task_runner_);
+  route_queues_[routing_id] = new MainThreadEventQueue(
+      routing_id, this, main_task_runner_, renderer_scheduler_);
 }
 
 void InputEventFilter::UnregisterRoutingID(int routing_id) {

@@ -13,6 +13,7 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/web_input_event_queue.h"
 #include "content/public/common/content_features.h"
+#include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/latency_info.h"
@@ -101,7 +102,8 @@ class CONTENT_EXPORT MainThreadEventQueue
   MainThreadEventQueue(
       int routing_id,
       MainThreadEventQueueClient* client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      blink::scheduler::RendererScheduler* renderer_scheduler);
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
@@ -138,6 +140,7 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   base::Lock event_queue_lock_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  blink::scheduler::RendererScheduler* renderer_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };

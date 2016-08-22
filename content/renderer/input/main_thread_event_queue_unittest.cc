@@ -13,7 +13,9 @@
 #include "build/build_config.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/renderer/input/main_thread_event_queue.h"
+#include "content/renderer/render_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/test/mock_renderer_scheduler.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -41,9 +43,10 @@ class MainThreadEventQueueTest : public testing::Test,
  public:
   MainThreadEventQueueTest()
       : main_task_runner_(new base::TestSimpleTaskRunner()),
-        queue_(
-            new MainThreadEventQueue(kTestRoutingID, this, main_task_runner_)) {
-  }
+        queue_(new MainThreadEventQueue(kTestRoutingID,
+                                        this,
+                                        main_task_runner_,
+                                        &renderer_scheduler_)) {}
 
   void HandleEventOnMainThread(int routing_id,
                                const blink::WebInputEvent* event,
@@ -84,6 +87,7 @@ class MainThreadEventQueueTest : public testing::Test,
 
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
+  blink::scheduler::MockRendererScheduler renderer_scheduler_;
   scoped_refptr<MainThreadEventQueue> queue_;
   std::vector<ui::ScopedWebInputEvent> handled_events_;
   std::vector<uint32_t> additional_acked_events_;
@@ -192,6 +196,9 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
   kEvents[2].MovePoint(0, 30, 30);
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
+
+  EXPECT_CALL(renderer_scheduler_, DidHandleInputEventOnMainThread(testing::_))
+      .Times(2);
   // Ensure that coalescing takes place.
   HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
   HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED);

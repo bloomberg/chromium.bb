@@ -323,6 +323,7 @@
       "platform/scheduler/renderer/render_widget_scheduling_state.h",
       "platform/scheduler/renderer/renderer_scheduler.h",
       "platform/scheduler/test/fake_renderer_scheduler.h",
+      "platform/scheduler/test/mock_renderer_scheduler.h",
       "platform/scheduler/test/renderer_scheduler_test_support.h",
       "platform/scheduler/utility/webthread_impl_for_utility_thread.h",
       "web/WebAXEnums.h",

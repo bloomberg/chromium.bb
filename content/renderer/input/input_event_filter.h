@@ -125,6 +125,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
   std::unique_ptr<ui::DidOverscrollParams>* current_overscroll_params_;
+  blink::scheduler::RendererScheduler* renderer_scheduler_;
 };
 
 }  // namespace content

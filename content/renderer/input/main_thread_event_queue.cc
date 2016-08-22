@@ -6,7 +6,6 @@
 
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
-#include "content/renderer/render_thread_impl.h"
 
 namespace content {
 
@@ -39,14 +38,16 @@ void EventWithDispatchType::CoalesceWith(const EventWithDispatchType& other) {
 MainThreadEventQueue::MainThreadEventQueue(
     int routing_id,
     MainThreadEventQueueClient* client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    blink::scheduler::RendererScheduler* renderer_scheduler)
     : routing_id_(routing_id),
       client_(client),
       is_flinging_(false),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
-      main_task_runner_(main_task_runner) {}
+      main_task_runner_(main_task_runner),
+      renderer_scheduler_(renderer_scheduler) {}
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
@@ -134,13 +135,12 @@ void MainThreadEventQueue::PopEventOnMainThread() {
 void MainThreadEventQueue::EventHandled(blink::WebInputEvent::Type type,
                                         InputEventAckState ack_result) {
   if (in_flight_event_) {
-    RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     // Send acks for blocking touch events.
     for (const auto id : in_flight_event_->eventsToAck()) {
       client_->SendInputEventAck(routing_id_, type, ack_result, id);
-      if (render_thread_impl) {
-        render_thread_impl->GetRendererScheduler()
-            ->DidHandleInputEventOnMainThread(in_flight_event_->event());
+      if (renderer_scheduler_) {
+        renderer_scheduler_->DidHandleInputEventOnMainThread(
+            in_flight_event_->event());
       }
     }
   }
