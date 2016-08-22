@@ -21,6 +21,7 @@ REPLACEMENTS = {
   'flac': 'third_party/flac/BUILD.gn',
   'harfbuzz-ng': 'third_party/harfbuzz-ng/BUILD.gn',
   'libevent': 'base/third_party/libevent/BUILD.gn',
+  'libjpeg': 'build/secondary/third_party/libjpeg_turbo/BUILD.gn',
   'libpng': 'third_party/libpng/BUILD.gn',
   'libvpx': 'third_party/libvpx/BUILD.gn',
   'libwebp': 'third_party/libwebp/BUILD.gn',
