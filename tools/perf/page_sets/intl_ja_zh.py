@@ -1,13 +1,14 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+from page_sets import page_cycler_story
 from telemetry.page import cache_temperature as cache_temperature_module
-from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
 
 
-class IntlJaZhPage(page_module.Page):
+class IntlJaZhPage(page_cycler_story.PageCyclerStory):
 
   def __init__(self, url, page_set, cache_temperature=None):
     super(IntlJaZhPage, self).__init__(
