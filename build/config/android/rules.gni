@@ -2239,7 +2239,6 @@ if (enable_java_templates) {
   #     libraries depend on other shared_library targets, those dependencies will
   #     also be included in the apk (e.g. for is_component_build).
   #   apk_under_test: The apk being tested.
-  #   isolate_file: Isolate file containing the list of test data dependencies.
   #
   # Example
   #   instrumentation_test_apk("foo_test_apk") {
@@ -2272,10 +2271,6 @@ if (enable_java_templates) {
                                "public_deps",
                              ])
       output = _device_isolate_path
-    }
-
-    if (defined(invoker.isolate_file)) {
-      assert(invoker.isolate_file != "")
     }
 
     test_runner_script(_test_runner_target_name) {
@@ -2351,17 +2346,6 @@ if (enable_java_templates) {
       ]
       if (defined(invoker.apk_under_test)) {
         public_deps += [ invoker.apk_under_test ]
-      }
-      if (defined(invoker.isolate_file)) {
-        isolate_values = exec_script("//build/gypi_to_gn.py",
-                                     [
-                                       rebase_path(invoker.isolate_file),
-                                       "--replace",
-                                       "<(DEPTH)=/",
-                                     ],
-                                     "scope",
-                                     [ invoker.isolate_file ])
-        data = isolate_values.files
       }
     }
 
