@@ -19,16 +19,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
-import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
+import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -70,9 +69,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
 
+    private BackendProvider mBackendProvider;
+    private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
-    private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
-    private OfflinePageDownloadBridge mOfflinePageBridge;
     private int mFilenameViewTextColor;
 
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
@@ -81,11 +80,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         setHasStableIds(true);
     }
 
-    @Override
-    public void initialize(DownloadManagerUi manager) {
-        if (manager != null) manager.addObserver(this);
-        mSelectionDelegate = getSelectionDelegate(manager);
-        initializeDownloadBridge();
+    public void initialize(BackendProvider provider) {
+        mBackendProvider = provider;
+
+        // Get all regular and (if necessary) off the record downloads.
+        DownloadDelegate downloadManager = getDownloadDelegate();
+        downloadManager.addDownloadHistoryAdapter(this);
+        downloadManager.getAllDownloads(false);
+        if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
+
         initializeOfflinePageBridge();
     }
 
@@ -103,8 +106,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private void onAllOfflinePagesRetrieved(List<OfflinePageDownloadItem> result) {
         mOfflinePageItems.clear();
         for (OfflinePageDownloadItem item : result) {
-            mOfflinePageItems.add(
-                    new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
+            mOfflinePageItems.add(createOfflinePageItemWrapper(item));
         }
 
         // TODO(ianwen): Implement a loading screen to prevent filter-changing wonkiness.
@@ -135,7 +137,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public ViewHolder createViewHolder(ViewGroup parent) {
         View v = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
-        ((DownloadItemView) v).setSelectionDelegate(mSelectionDelegate);
+        ((DownloadItemView) v).setSelectionDelegate(getSelectionDelegate());
         return new ItemViewHolder(v);
     }
 
@@ -219,19 +221,21 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     }
 
     @Override
-    public void onManagerDestroyed(DownloadManagerUi manager) {
-        getDownloadManagerService().removeDownloadHistoryAdapter(this);
-
-        if (mOfflinePageBridge != null) {
-            mOfflinePageBridge.destroy();
-            mOfflinePageBridge = null;
-        }
+    public void onManagerDestroyed() {
+        getDownloadDelegate().removeDownloadHistoryAdapter(this);
+        getOfflinePageBridge().removeObserver(mOfflinePageObserver);
     }
 
-    /** Returns the SelectionDelegate to use for each ViewHolder. */
-    protected SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate(
-            DownloadManagerUi manager) {
-        return manager == null ? null : manager.getSelectionDelegate();
+    private DownloadDelegate getDownloadDelegate() {
+        return mBackendProvider.getDownloadDelegate();
+    }
+
+    private OfflinePageDelegate getOfflinePageBridge() {
+        return mBackendProvider.getOfflinePageBridge();
+    }
+
+    private SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
+        return mBackendProvider.getSelectionDelegate();
     }
 
     /** Filters the list of downloads to show only files of a specific type. */
@@ -259,27 +263,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         loadItems(mFilteredItems);
     }
 
-    protected void initializeDownloadBridge() {
-        // Get all regular and (if necessary) off the record downloads.
-        getDownloadManagerService().addDownloadHistoryAdapter(this);
-        getDownloadManagerService().getAllDownloads(false);
-        if (mShowOffTheRecord) getDownloadManagerService().getAllDownloads(true);
-    }
-
-    protected void initializeOfflinePageBridge() {
-        mOfflinePageBridge = new OfflinePageDownloadBridge(
-                Profile.getLastUsedProfile().getOriginalProfile());
-
-        mOfflinePageBridge.addObserver(new OfflinePageDownloadBridge.Observer() {
+    private void initializeOfflinePageBridge() {
+        mOfflinePageObserver = new OfflinePageDownloadBridge.Observer() {
             @Override
             public void onItemsLoaded() {
-                onAllOfflinePagesRetrieved(mOfflinePageBridge.getAllItems());
+                onAllOfflinePagesRetrieved(getOfflinePageBridge().getAllItems());
             }
 
             @Override
             public void onItemAdded(OfflinePageDownloadItem item) {
-                mOfflinePageItems.add(
-                        new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
+                mOfflinePageItems.add(createOfflinePageItemWrapper(item));
                 updateFilter();
             }
 
@@ -292,8 +285,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             public void onItemUpdated(OfflinePageDownloadItem item) {
                 int index = findItemIndex(mOfflinePageItems, item.getGuid());
                 if (index != INVALID_INDEX) {
-                    mOfflinePageItems.set(index,
-                            new OfflinePageItemWrapper(item, mOfflinePageBridge, mParentComponent));
+                    mOfflinePageItems.set(index, createOfflinePageItemWrapper(item));
                     updateFilter();
                 }
             }
@@ -304,7 +296,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                     filter(mFilter);
                 }
             }
-        });
+        };
+        getOfflinePageBridge().addObserver(mOfflinePageObserver);
     }
 
     private List<DownloadItemWrapper> getDownloadItemList(boolean isOffTheRecord) {
@@ -365,16 +358,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         int index = findItemIndex(list, guid);
         if (index != INVALID_INDEX) {
             T wrapper = list.remove(index);
-            if (mSelectionDelegate != null && mSelectionDelegate.isItemSelected(wrapper)) {
-                mSelectionDelegate.toggleSelectionForItem(wrapper);
+            if (getSelectionDelegate().isItemSelected(wrapper)) {
+                getSelectionDelegate().toggleSelectionForItem(wrapper);
             }
             return true;
         }
         return false;
     }
 
-    private static DownloadManagerService getDownloadManagerService() {
-        return DownloadManagerService.getDownloadManagerService(
-                ContextUtils.getApplicationContext());
+    private OfflinePageItemWrapper createOfflinePageItemWrapper(OfflinePageDownloadItem item) {
+        return new OfflinePageItemWrapper(item, getOfflinePageBridge(), mParentComponent);
     }
 }

@@ -82,12 +82,10 @@ class FilterAdapter extends BaseAdapter
         mManagerUi.onFilterChanged(position);
     }
 
-    @Override
     public void initialize(DownloadManagerUi manager) {
         mManagerUi = manager;
         mSelectedBackgroundColor = ApiCompatibilityUtils
                 .getColor(mManagerUi.getActivity().getResources(), R.color.default_primary_color);
-        manager.addObserver(this);
     }
 
     @Override
@@ -99,7 +97,7 @@ class FilterAdapter extends BaseAdapter
     }
 
     @Override
-    public void onManagerDestroyed(DownloadManagerUi manager) {
+    public void onManagerDestroyed() {
         mManagerUi = null;
     }
 }

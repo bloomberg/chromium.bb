@@ -23,12 +23,14 @@ import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.net.ConnectionType;
@@ -59,7 +61,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
         DownloadController.DownloadNotificationService,
         NetworkChangeNotifierAutoDetect.Observer,
         DownloadManagerDelegate.DownloadQueryCallback,
-        DownloadServiceDelegate {
+        DownloadServiceDelegate,
+        BackendProvider.DownloadDelegate {
     // Download status.
     public static final int DOWNLOAD_STATUS_IN_PROGRESS = 0;
     public static final int DOWNLOAD_STATUS_COMPLETE = 1;
@@ -121,7 +124,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
             new ArrayList<String>();
     private final List<DownloadUmaStatsEntry> mUmaEntries = new ArrayList<DownloadUmaStatsEntry>();
-    private final List<DownloadHistoryAdapter> mHistoryAdapters = new ArrayList<>();
+    private final ObserverList<DownloadHistoryAdapter> mHistoryAdapters = new ObserverList<>();
 
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
@@ -1489,23 +1492,25 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /** Adds a new DownloadHistoryAdapter to the list. */
+    @Override
     public void addDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
-        mHistoryAdapters.add(adapter);
+        mHistoryAdapters.addObserver(adapter);
     }
 
     /** Removes a DownloadHistoryAdapter from the list. */
+    @Override
     public void removeDownloadHistoryAdapter(DownloadHistoryAdapter adapter) {
-        mHistoryAdapters.remove(adapter);
+        mHistoryAdapters.removeObserver(adapter);
     }
 
     /**
-     * Begins sending back information about all entries in the user's DownloadHistory, with each
-     * individual DownloadItem's data passed back via
-     * {@link #onDownloadInfoAdded(String, String, String, String, long, long)}.
+     * Begins sending back information about all entries in the user's DownloadHistory via
+     * {@link #onAllDownloadsRetrieved}.  If the DownloadHistory is not initialized yet, the
+     * callback will be delayed.
      *
-     * This call will be delayed if the native side has not yet been initialized.
      * @param isOffTheRecord Whether or not to get downloads for the off the record profile.
      */
+    @Override
     public void getAllDownloads(boolean isOffTheRecord) {
         nativeGetAllDownloads(getNativeDownloadManagerService(), isOffTheRecord);
     }

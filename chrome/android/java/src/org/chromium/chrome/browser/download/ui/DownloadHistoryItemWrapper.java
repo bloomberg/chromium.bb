@@ -18,7 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.ui.widget.Toast;
@@ -237,11 +237,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** Wraps a {@link OfflinePageDownloadItem}. */
     static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
         private final OfflinePageDownloadItem mItem;
-        private final OfflinePageDownloadBridge mBridge;
+        private final OfflinePageDelegate mBridge;
         private final ComponentName mComponent;
         private File mFile;
 
-        OfflinePageItemWrapper(OfflinePageDownloadItem item, OfflinePageDownloadBridge bridge,
+        OfflinePageItemWrapper(OfflinePageDownloadItem item, OfflinePageDelegate bridge,
                 ComponentName component) {
             mItem = item;
             mBridge = bridge;
@@ -276,8 +276,13 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public String getDisplayFileName() {
-            File path = new File(getFilePath());
-            return path.getName();
+            String title = mItem.getTitle();
+            if (TextUtils.isEmpty(title)) {
+                File path = new File(getFilePath());
+                return path.getName();
+            } else {
+                return title;
+            }
         }
 
         @Override

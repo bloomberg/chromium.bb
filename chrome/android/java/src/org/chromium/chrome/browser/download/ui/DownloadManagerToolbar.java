@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
+import android.support.v4.widget.DrawerLayout;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -27,11 +30,13 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
     }
 
     @Override
-    public void initialize(DownloadManagerUi manager) {
-        manager.addObserver(this);
+    public void initialize(SelectionDelegate<DownloadHistoryItemWrapper> delegate, int titleResId,
+            @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId) {
         if (DeviceFormFactor.isTablet(getContext())) {
             getMenu().findItem(R.id.close_menu_id).setVisible(false);
         }
+
+        super.initialize(delegate, titleResId, drawerLayout, normalGroupResId, selectedGroupResId);
     }
 
     @Override
@@ -47,8 +52,7 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
     }
 
     @Override
-    public void onManagerDestroyed(DownloadManagerUi manager) {
-    }
+    public void onManagerDestroyed() { }
 
     private void updateTitle() {
         if (mFilter == DownloadFilter.FILTER_ALL) {

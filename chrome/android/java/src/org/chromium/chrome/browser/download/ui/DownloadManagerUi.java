@@ -24,12 +24,15 @@ import android.widget.ListView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -44,18 +47,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Displays and manages the UI for the download manager.
  */
 
-public class DownloadManagerUi implements OnMenuItemClickListener {
+public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvider {
 
     /**
      * Interface to observe the changes in the download manager ui. This should be implemented by
      * the ui components that is shown, in order to let them get proper notifications.
      */
     public interface DownloadUiObserver {
-        /**
-         * Initializes the {@link DownloadUiObserver}.
-         */
-        public void initialize(DownloadManagerUi manager);
-
         /**
          * Called when the filter has been changed by the user.
          */
@@ -64,7 +62,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         /**
          * Called when the download manager is not shown anymore.
          */
-        public void onManagerDestroyed(DownloadManagerUi manager);
+        public void onManagerDestroyed();
     }
 
     private static final String TAG = "download_ui";
@@ -84,6 +82,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final RecyclerView mRecyclerView;
 
     private BasicNativePage mNativePage;
+    private OfflinePageDownloadBridge mOfflinePageBridge;
     private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
     private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
 
@@ -91,12 +90,16 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;
         mIsOffTheRecord = isOffTheRecord;
+        mOfflinePageBridge = new OfflinePageDownloadBridge(
+                Profile.getLastUsedProfile().getOriginalProfile());
+
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
         mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
 
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
         mHistoryAdapter.initialize(this);
+        addObserver(mHistoryAdapter);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
@@ -104,9 +107,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
+        addObserver(mFilterAdapter);
 
         mToolbar = (DownloadManagerToolbar) mMainView.findViewById(R.id.action_bar);
-        mToolbar.initialize(this);
         mToolbar.setOnMenuItemClickListener(this);
         DrawerLayout drawerLayout = null;
         if (!DeviceFormFactor.isLargeTablet(activity)) {
@@ -114,6 +117,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         }
         mToolbar.initialize(mSelectionDelegate, 0, drawerLayout, R.id.normal_menu_group,
                 R.id.selection_mode_menu_group);
+        addObserver(mToolbar);
 
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
         mFilterView.setAdapter(mFilterAdapter);
@@ -148,8 +152,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
      */
     public void onDestroyed() {
         for (DownloadUiObserver observer : mObservers) {
-            observer.onManagerDestroyed(this);
+            observer.onManagerDestroyed();
             removeObserver(observer);
+        }
+
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.destroy();
+            mOfflinePageBridge = null;
         }
 
         mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
@@ -182,9 +191,18 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         return mMainView;
     }
 
-    /**
-     * @return The SelectionDelegate responsible for tracking selected download items.
-     */
+    @Override
+    public DownloadDelegate getDownloadDelegate() {
+        return DownloadManagerService.getDownloadManagerService(
+                ContextUtils.getApplicationContext());
+    }
+
+    @Override
+    public OfflinePageDownloadBridge getOfflinePageBridge() {
+        return mOfflinePageBridge;
+    }
+
+    @Override
     public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
         return mSelectionDelegate;
     }

@@ -239,7 +239,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
      * Gets the item at the given position. For date headers, {@link TimedItem} will be null; for
      * normal items, {@link Date} will be null.
      */
-    private Pair<Date, TimedItem> getItemAt(int position) {
+    public Pair<Date, TimedItem> getItemAt(int position) {
         Pair<ItemGroup, Integer> pair = getGroupAt(position);
         ItemGroup group = pair.first;
         return new Pair<>(group.mDate, group.getItemAt(pair.second));

@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
+import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -29,7 +30,7 @@ import java.util.Map;
  * displayed in the downloads UI.
  */
 @JNINamespace("offline_pages::android")
-public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
+public class OfflinePageDownloadBridge implements DownloadServiceDelegate, OfflinePageDelegate {
     /**
      * Base observer class for notifications on changes to the offline page related download items.
      */
@@ -77,6 +78,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
     }
 
     /** Destroys the native portion of the bridge. */
+    @Override
     public void destroy() {
         if (mNativeOfflinePageDownloadBridge != 0) {
             nativeDestroy(mNativeOfflinePageDownloadBridge);
@@ -90,6 +92,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
      * Add an observer of offline download items changes.
      * @param observer The observer to be added.
      */
+    @Override
     public void addObserver(Observer observer) {
         mObservers.addObserver(observer);
         if (mIsLoaded) {
@@ -101,11 +104,13 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
      * Remove an observer of offline download items changes.
      * @param observer The observer to be removed.
      */
+    @Override
     public void removeObserver(Observer observer) {
         mObservers.removeObserver(observer);
     }
 
     /** @return all of the download items related to offline pages. */
+    @Override
     public List<OfflinePageDownloadItem> getAllItems() {
         List<OfflinePageDownloadItem> items = new ArrayList<>();
         nativeGetAllItems(mNativeOfflinePageDownloadBridge, items);
@@ -140,6 +145,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
      * Actual cancel and/or deletion happens asynchronously, Observer is notified when it's done.
      * @param guid a GUID of the item to delete.
      */
+    @Override
     public void deleteItem(String guid) {
         nativeDeleteItemByGuid(mNativeOfflinePageDownloadBridge, guid);
     }
@@ -165,6 +171,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate {
      * @param guid          GUID of the item to open.
      * @param componentName If specified, targets a specific Activity to open the offline page in.
      */
+    @Override
     public void openItem(String guid, @Nullable ComponentName componentName) {
         String url = nativeGetOfflineUrlByGuid(mNativeOfflinePageDownloadBridge, guid);
         if (url == null) return;
