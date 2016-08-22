@@ -27,18 +27,11 @@
 #ifndef WTF_Assertions_h
 #define WTF_Assertions_h
 
-/*
-   No namespaces because this file has to be includable from C and Objective-C.
-
-   Note, this file uses many GCC extensions, but it should be compatible with
-   C, Objective C, C++, and Objective C++.
-
-   For non-debug builds, everything is disabled by default, except for the
-   RELEASE_ASSERT family of macros.
-
-   Defining any of the symbols explicitly prevents this from having any effect.
-
-*/
+// This file uses some GCC extensions, but it should be compatible with C++ and
+// Objective C++.
+//
+// For non-debug builds, everything is disabled by default, except for the
+// RELEASE_ASSERT family of macros.
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -63,10 +56,6 @@
 #endif /* defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON) */
 #endif
 
-#ifndef ASSERT_MSG_DISABLED
-#define ASSERT_MSG_DISABLED !ENABLE(ASSERT)
-#endif
-
 #ifndef LOG_DISABLED
 #define LOG_DISABLED !ENABLE(ASSERT)
 #endif
@@ -77,14 +66,13 @@
 #define WTF_ATTRIBUTE_PRINTF(formatStringArgument, extraArguments)
 #endif
 
-/* These helper functions are always declared, but not necessarily always defined if the corresponding function is disabled. */
+// These helper functions are always declared, but not necessarily always
+// defined if the corresponding function is disabled.
 
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
+// WTFLogAlways() is deprecated. crbug.com/638849
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
-
-WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);
 WTF_EXPORT void WTFReportBacktrace(int framesToShow = 31);
-WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
 namespace WTF {
 
@@ -138,7 +126,8 @@ private:
 
 } // namespace WTF
 
-/* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
+// IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest
+// possible way with no attempt at logging.
 #ifndef IMMEDIATE_CRASH
 #if COMPILER(GCC) || COMPILER(CLANG)
 #define IMMEDIATE_CRASH() __builtin_trap()
@@ -147,7 +136,8 @@ private:
 #endif
 #endif
 
-/* OOM_CRASH() - Specialization of IMMEDIATE_CRASH which will raise a custom exception on Windows to signal this is OOM and not a normal assert. */
+// OOM_CRASH() - Specialization of IMMEDIATE_CRASH which will raise a custom
+// exception on Windows to signal this is OOM and not a normal assert.
 #ifndef OOM_CRASH
 #if OS(WIN)
 #define OOM_CRASH() do { \
@@ -159,14 +149,15 @@ private:
 #endif
 #endif
 
-/* CRASH() - Raises a fatal error resulting in program termination and triggering either the debugger or the crash reporter.
-
-   Use CRASH() in response to known, unrecoverable errors like out-of-memory.
-   Macro is enabled in both debug and release mode.
-   To test for unknown errors and verify assumptions, use ASSERT instead, to avoid impacting performance in release builds.
-
-   Signals are ignored by the crash reporter on OS X so we must do better.
-*/
+// CRASH() - Raises a fatal error resulting in program termination and
+// triggering either the debugger or the crash reporter.
+//
+// Use CRASH() in response to known, unrecoverable errors like out-of-memory.
+// Macro is enabled in both debug and release mode.
+// To test for unknown errors and verify assumptions, use ASSERT instead, to
+// avoid impacting performance in release builds.
+//
+// Signals are ignored by the crash reporter on OS X so we must do better.
 #ifndef CRASH
 #if COMPILER(MSVC)
 #define CRASH() (__debugbreak(), IMMEDIATE_CRASH())
@@ -190,7 +181,8 @@ private:
 //    - NOTREACHED() for ASSERT_NOT_REACHED()
 //    - DCHECK() and ALLOW_UNUSED_LOCAL() for ASSERT_UNUSED().
 #if OS(WIN)
-/* FIXME: Change to use something other than ASSERT to avoid this conflict with the underlying platform */
+// FIXME: Change to use something other than ASSERT to avoid this conflict with
+// the underlying platform.
 #undef ASSERT
 #endif
 
@@ -263,13 +255,11 @@ private:
 #define SECURITY_CHECK(condition) CHECK(condition)
 #endif
 
-/* RELEASE_ASSERT
-
-   Use in places where failure of an assertion indicates a definite security
-   vulnerability from which execution must not continue even in a release build.
-   Please sure to file bugs for these failures using the security template:
-      http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
-*/
+// RELEASE_ASSERT
+// Use in places where failure of an assertion indicates a definite security
+// vulnerability from which execution must not continue even in a release build.
+// Please sure to file bugs for these failures using the security template:
+//    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
 // RELEASE_ASSERT is deprecated.  We should use CHECK() instead.
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
@@ -279,10 +269,10 @@ private:
 // TODO(tkent): Move this to base/logging.h?
 #define RELEASE_NOTREACHED() LOG(FATAL)
 
-/* DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES */
-
-// Allow equality comparisons of Objects by reference or pointer, interchangeably.
-// This can be only used on types whose equality makes no other sense than pointer equality.
+// DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES
+// Allow equality comparisons of Objects by reference or pointer,
+// interchangeably.  This can be only used on types whose equality makes no
+// other sense than pointer equality.
 #define DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(thisType) \
     inline bool operator==(const thisType& a, const thisType& b) { return &a == &b; } \
     inline bool operator==(const thisType& a, const thisType* b) { return &a == b; } \
@@ -291,8 +281,9 @@ private:
     inline bool operator!=(const thisType& a, const thisType* b) { return !(a == b); } \
     inline bool operator!=(const thisType* a, const thisType& b) { return !(a == b); }
 
-/* DEFINE_TYPE_CASTS */
-
+// DEFINE_TYPE_CASTS
+// Provide static_cast<> wrappers with ASSERT_WITH_SECURITY_IMPLICATION for bad
+// casts.
 #define DEFINE_TYPE_CASTS(thisType, argumentType, argumentName, pointerPredicate, referencePredicate) \
 inline thisType* to##thisType(argumentType* argumentName) \
 { \
@@ -317,4 +308,4 @@ inline const thisType& to##thisType(const argumentType& argumentName) \
 void to##thisType(const thisType*); \
 void to##thisType(const thisType&)
 
-#endif /* WTF_Assertions_h */
+#endif // WTF_Assertions_h

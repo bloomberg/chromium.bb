@@ -69,6 +69,10 @@
 #include <android/log.h>
 #endif
 
+// TODO(tkent): These function should be in anonymous namespace.
+void WTFGetBacktrace(void** stack, int* size);
+void WTFPrintBacktrace(void** stack, int size);
+
 WTF_ATTRIBUTE_PRINTF(1, 0)
 static void vprintf_stderr_common(const char* format, va_list args)
 {
