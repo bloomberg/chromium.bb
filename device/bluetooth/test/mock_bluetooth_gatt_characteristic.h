@@ -49,10 +49,22 @@ class MockBluetoothGattCharacteristic
   MOCK_METHOD1(UpdateValue, bool(const std::vector<uint8_t>&));
   MOCK_METHOD2(StartNotifySession,
                void(const NotifySessionCallback&, const ErrorCallback&));
+  MOCK_METHOD2(StopNotifySession,
+               void(BluetoothGattNotifySession*, const base::Closure&));
   MOCK_METHOD2(ReadRemoteCharacteristic,
                void(const ValueCallback&, const ErrorCallback&));
   MOCK_METHOD3(WriteRemoteCharacteristic,
                void(const std::vector<uint8_t>&,
+                    const base::Closure&,
+                    const ErrorCallback&));
+
+ protected:
+  MOCK_METHOD3(SubscribeToNotifications,
+               void(BluetoothRemoteGattDescriptor*,
+                    const base::Closure&,
+                    const ErrorCallback&));
+  MOCK_METHOD3(UnsubscribeFromNotifications,
+               void(BluetoothRemoteGattDescriptor*,
                     const base::Closure&,
                     const ErrorCallback&));
 

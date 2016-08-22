@@ -652,10 +652,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, CharacteristicValueChanged) {
 
   BluetoothGattNotifySession* session0 =
       new testing::NiceMock<MockBluetoothGattNotifySession>(
-          kTestCharacteristicId0);
+          chrc0_->GetWeakPtr());
   BluetoothGattNotifySession* session1 =
       new testing::NiceMock<MockBluetoothGattNotifySession>(
-          kTestCharacteristicId2);
+          chrc2_->GetWeakPtr());
 
   EXPECT_CALL(*chrc0_, StartNotifySession(_, _))
       .Times(1)
@@ -1282,10 +1282,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
 
   BluetoothGattNotifySession* session0 =
       new testing::NiceMock<MockBluetoothGattNotifySession>(
-          kTestCharacteristicId0);
+          chrc0_->GetWeakPtr());
   MockBluetoothGattNotifySession* session1 =
       new testing::NiceMock<MockBluetoothGattNotifySession>(
-          kTestCharacteristicId1);
+          chrc1_->GetWeakPtr());
 
   EXPECT_CALL(*session1, Stop(_))
       .Times(1)

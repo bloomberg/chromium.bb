@@ -14,9 +14,9 @@
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_gatt_notify_session_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_descriptor_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_service_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
@@ -81,6 +81,44 @@ BluetoothRemoteGattCharacteristicBlueZ::
     pending_start_notify_calls_.pop();
     callbacks.second.Run(device::BluetoothRemoteGattService::GATT_ERROR_FAILED);
   }
+}
+
+void BluetoothRemoteGattCharacteristicBlueZ::StopNotifySession(
+    device::BluetoothGattNotifySession* session,
+    const base::Closure& callback) {
+  VLOG(1) << __func__;
+
+  if (num_notify_sessions_ > 1) {
+    DCHECK(!notify_call_pending_);
+    --num_notify_sessions_;
+    callback.Run();
+    return;
+  }
+
+  // Notifications may have stopped outside our control. If the characteristic
+  // is no longer notifying, return success.
+  if (!IsNotifying()) {
+    num_notify_sessions_ = 0;
+    callback.Run();
+    return;
+  }
+
+  if (notify_call_pending_ || num_notify_sessions_ == 0) {
+    callback.Run();
+    return;
+  }
+
+  DCHECK(num_notify_sessions_ == 1);
+  notify_call_pending_ = true;
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattCharacteristicClient()
+      ->StopNotify(
+          object_path(),
+          base::Bind(
+              &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess,
+              weak_ptr_factory_.GetWeakPtr(), callback),
+          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 device::BluetoothUUID BluetoothRemoteGattCharacteristicBlueZ::GetUUID() const {
@@ -206,9 +244,8 @@ void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
       DCHECK(service_->GetAdapter());
       DCHECK(service_->GetDevice());
       std::unique_ptr<device::BluetoothGattNotifySession> session(
-          new BluetoothGattNotifySessionBlueZ(
-              service_->GetAdapter(), service_->GetDevice()->GetAddress(),
-              service_->GetIdentifier(), GetIdentifier(), object_path()));
+          new device::BluetoothGattNotifySession(
+              weak_ptr_factory_.GetWeakPtr()));
       callback.Run(std::move(session));
       return;
     }
@@ -264,41 +301,20 @@ void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
                               weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattCharacteristicBlueZ::RemoveNotifySession(
-    const base::Closure& callback) {
-  VLOG(1) << __func__;
+void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
+    device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  // TODO(http://crbug.com/636275): Implement this method
+  NOTIMPLEMENTED();
+}
 
-  if (num_notify_sessions_ > 1) {
-    DCHECK(!notify_call_pending_);
-    --num_notify_sessions_;
-    callback.Run();
-    return;
-  }
-
-  // Notifications may have stopped outside our control. If the characteristic
-  // is no longer notifying, return success.
-  if (!IsNotifying()) {
-    num_notify_sessions_ = 0;
-    callback.Run();
-    return;
-  }
-
-  if (notify_call_pending_ || num_notify_sessions_ == 0) {
-    callback.Run();
-    return;
-  }
-
-  DCHECK(num_notify_sessions_ == 1);
-  notify_call_pending_ = true;
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattCharacteristicClient()
-      ->StopNotify(
-          object_path(),
-          base::Bind(
-              &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess,
-              weak_ptr_factory_.GetWeakPtr(), callback),
-          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+void BluetoothRemoteGattCharacteristicBlueZ::UnsubscribeFromNotifications(
+    device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  // TODO(http://crbug.com/636275): Implement this method
+  NOTIMPLEMENTED();
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
@@ -394,9 +410,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
   DCHECK(service_);
   DCHECK(service_->GetDevice());
   std::unique_ptr<device::BluetoothGattNotifySession> session(
-      new BluetoothGattNotifySessionBlueZ(
-          service_->GetAdapter(), service_->GetDevice()->GetAddress(),
-          service_->GetIdentifier(), GetIdentifier(), object_path()));
+      new device::BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr()));
   callback.Run(std::move(session));
 
   ProcessStartNotifyQueue();
