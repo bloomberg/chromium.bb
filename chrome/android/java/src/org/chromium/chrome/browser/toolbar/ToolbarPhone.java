@@ -1750,6 +1750,11 @@ public class ToolbarPhone extends ToolbarLayout
     public void onUrlFocusChange(final boolean hasFocus) {
         super.onUrlFocusChange(hasFocus);
 
+        if (mTabSwitcherState != STATIC_TAB) {
+            mLocationBar.setUrlBarFocus(false);
+            return;
+        }
+
         // https://crbug.com/623885: The mToolbarButtonsContainer has its translationY modified
         // during scroll so when the user scrolls on the NTP, it appears to scroll too. However
         // during the URL focus and defocus animations it should not be touched. Unfortunately
