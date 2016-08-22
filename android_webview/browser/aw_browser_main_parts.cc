@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_terminator.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_dev_tools_discovery_provider.h"
 #include "android_webview/browser/aw_result_codes.h"
@@ -20,7 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
-#include "components/crash/content/browser/crash_micro_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -82,6 +83,8 @@ AwBrowserMainParts::AwBrowserMainParts(AwContentBrowserClient* browser_client)
 }
 
 AwBrowserMainParts::~AwBrowserMainParts() {
+  breakpad::CrashDumpObserver::GetInstance()->UnregisterClient(
+      aw_browser_terminator_.get());
 }
 
 void AwBrowserMainParts::PreEarlyInitialization() {
@@ -119,7 +122,9 @@ int AwBrowserMainParts::PreCreateThreads() {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
     // Create the renderers crash manager on the UI thread.
-    breakpad::CrashMicroDumpManager::GetInstance();
+    aw_browser_terminator_ = base::MakeUnique<AwBrowserTerminator>();
+    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+        aw_browser_terminator_.get());
   }
 
   return content::RESULT_CODE_NORMAL_EXIT;

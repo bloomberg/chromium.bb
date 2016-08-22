@@ -460,8 +460,6 @@
                 'crash/content/browser/crash_dump_manager_android.h',
                 'crash/content/browser/crash_handler_host_linux.cc',
                 'crash/content/browser/crash_handler_host_linux.h',
-                'crash/content/browser/crash_micro_dump_manager_android.cc',
-                'crash/content/browser/crash_micro_dump_manager_android.h',
               ],
               'include_dirs': [
                 '../breakpad/src',

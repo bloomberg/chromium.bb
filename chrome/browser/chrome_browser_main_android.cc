@@ -8,11 +8,13 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/descriptors_android.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -40,15 +42,18 @@ ChromeBrowserMainPartsAndroid::ChromeBrowserMainPartsAndroid(
 }
 
 ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
+  breakpad::CrashDumpObserver::GetInstance()->UnregisterClient(
+      crash_dump_manager_.get());
 }
 
 int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   TRACE_EVENT0("startup", "ChromeBrowserMainPartsAndroid::PreCreateThreads")
 
-  // The CrashDumpManager must be initialized before any child process is
-  // created (as they need to access it during creation). Such processes
-  // are created on the PROCESS_LAUNCHER thread, and so the manager is
-  // initialized before that thread is created.
+// The CrashDumpManager must be initialized before any child
+// process is created (as they need to access it during
+// creation). Such processes are created on the PROCESS_LAUNCHER
+// thread, and so the manager is initialized before that thread is
+// created.
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(jcivelli): we should not initialize the crash-reporter when it was not
   // enabled. Right now if it is disabled we still generate the minidumps but we
@@ -66,7 +71,10 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
   if (breakpad_enabled) {
     base::FilePath crash_dump_dir;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
-    crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
+    crash_dump_manager_ = base::MakeUnique<breakpad::CrashDumpManager>(
+        crash_dump_dir, kAndroidMinidumpDescriptor);
+    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+        crash_dump_manager_.get());
   }
 
   ui::SetLocalePaksStoredInApk(false);

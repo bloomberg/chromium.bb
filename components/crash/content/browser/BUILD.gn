@@ -10,8 +10,8 @@ source_set("browser") {
   sources = [
     "crash_dump_manager_android.cc",
     "crash_dump_manager_android.h",
-    "crash_micro_dump_manager_android.cc",
-    "crash_micro_dump_manager_android.h",
+    "crash_dump_observer_android.cc",
+    "crash_dump_observer_android.h",
   ]
 
   deps = [
