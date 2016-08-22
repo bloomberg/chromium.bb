@@ -646,20 +646,7 @@ ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase()
 {
     if (!drawingBuffer())
         return nullptr;
-    WebExternalTextureMailbox mailbox;
-    drawingBuffer()->prepareMailbox(&mailbox, 0);
-    ImageBitmap* imageBitmap;
-    // If the mailbox is invalid, return an transparent black ImageBitmap.
-    // The only situation this could happen is when two or more calls to transferToImageBitmap are made back-to-back.
-    if (mailbox.textureSize.width == 0 && mailbox.textureSize.height == 0) {
-        sk_sp<SkSurface>surface = SkSurface::MakeRasterN32Premul(drawingBuffer()->size().width(), drawingBuffer()->size().height());
-        imageBitmap = ImageBitmap::create(StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot())));
-    } else {
-        imageBitmap = ImageBitmap::create(mailbox);
-    }
-    // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
-    // transferFromImageBitmap, and try to use them in DrawingBuffer.
-    return imageBitmap;
+    return ImageBitmap::create(drawingBuffer()->transferToStaticBitmapImage());
 }
 
 namespace {

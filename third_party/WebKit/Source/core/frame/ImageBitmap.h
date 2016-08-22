@@ -20,7 +20,6 @@
 #include <memory>
 
 namespace blink {
-
 class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
@@ -45,7 +44,6 @@ public:
     static ImageBitmap* create(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>);
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, Optional<IntRect>, const ImageBitmapOptions& = ImageBitmapOptions());
-    static ImageBitmap* create(WebExternalTextureMailbox&);
     // This function is called by structured-cloning an ImageBitmap.
     // isImageBitmapPremultiplied indicates whether the original ImageBitmap is premultiplied or not.
     // isImageBitmapOriginClean indicates whether the original ImageBitmap is origin clean or not.
@@ -96,7 +94,6 @@ private:
     ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, Optional<IntRect>, const ImageBitmapOptions&);
-    ImageBitmap(WebExternalTextureMailbox&);
     ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean);
 
     RefPtr<StaticBitmapImage> m_image;

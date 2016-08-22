@@ -54,6 +54,7 @@
 #include "WebURLError.h"
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
+#include "cc/resources/shared_bitmap.h"
 
 class GrContext;
 
@@ -446,6 +447,8 @@ public:
     // backed by the process-wide shared main thread context. Returns null if
     // the context cannot be created or initialized.
     virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return nullptr; }
+
+    virtual std::unique_ptr<cc::SharedBitmap> allocateSharedBitmap(const WebSize& size) { return nullptr; }
 
     // Returns true if the platform is capable of producing an offscreen context suitable for accelerating 2d canvas.
     // This will return false if the platform cannot promise that contexts will be preserved across operations like

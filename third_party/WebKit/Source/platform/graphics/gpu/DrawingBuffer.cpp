@@ -30,11 +30,13 @@
 
 #include "platform/graphics/gpu/DrawingBuffer.h"
 
+#include "cc/resources/shared_bitmap.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -43,6 +45,9 @@
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/typed_arrays/ArrayBufferContents.h"
@@ -232,13 +237,32 @@ bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved()
 
 void DrawingBuffer::freeRecycledMailboxes()
 {
-    if (m_recycledMailboxQueue.isEmpty())
-        return;
-    while (!m_recycledMailboxQueue.isEmpty())
-        deleteMailbox(m_recycledMailboxQueue.takeLast());
+    while (!m_recycledMailboxQueue.isEmpty()) {
+        RefPtr<RecycledMailbox> recycled = m_recycledMailboxQueue.takeLast();
+        deleteMailbox(recycled->mailbox, recycled->syncToken);
+    }
 }
 
-bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
+std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap()
+{
+    for (auto it = m_recycledBitmapQueue.begin(); it != m_recycledBitmapQueue.end(); ++it) {
+        if (it->size != m_size) {
+            m_recycledBitmapQueue.remove(it);
+            --it; // Removed this position so iterate on it again.
+        }
+    }
+    if (!m_recycledBitmapQueue.isEmpty()) {
+        RecycledBitmap recycled = m_recycledBitmapQueue.takeLast();
+        DCHECK(recycled.size == m_size);
+        return std::move(recycled.bitmap);
+    }
+
+    return Platform::current()->allocateSharedBitmap(m_size);
+}
+
+bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox,
+    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
+    bool useSharedMemory)
 {
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
@@ -261,16 +285,29 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     if (m_antiAliasingMode != None)
         commit();
 
-    if (bitmap) {
-        bitmap->setSize(size());
-
-        unsigned char* pixels = bitmap->pixels();
-        if (!pixels)
+    if (useSharedMemory) {
+        std::unique_ptr<cc::SharedBitmap> bitmap = createOrRecycleBitmap();
+        if (!bitmap)
             return false;
+        unsigned char* pixels = bitmap->pixels();
+        DCHECK(pixels);
 
         bool needPremultiply = m_wantAlphaChannel && !m_premultipliedAlpha;
         WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
         readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
+
+        *outMailbox = cc::TextureMailbox(bitmap.get(), m_size);
+
+        // This holds a ref on the DrawingBuffer that will keep it alive until the
+        // mailbox is released (and while the release callback is running). It also
+        // owns the SharedBitmap.
+        auto func = WTF::bind(&DrawingBuffer::softwareMailboxReleased,
+            RefPtr<DrawingBuffer>(this),
+            WTF::passed(std::move(bitmap)),
+            m_size);
+        *outReleaseCallback = cc::SingleReleaseCallback::Create(
+            convertToBaseCallback(std::move(func)));
+        return true;
     }
 
     // We must restore the texture binding since creating new textures,
@@ -278,14 +315,14 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     ScopedTextureUnit0BindingRestorer restorer(m_gl, m_activeTextureUnit, m_texture2DBinding);
 
     // First try to recycle an old buffer.
-    RefPtr<MailboxInfo> frontColorBufferMailbox = recycledMailbox();
+    RefPtr<MailboxInfo> mailboxInfo = takeRecycledMailbox();
 
     // No buffer available to recycle, create a new one.
-    if (!frontColorBufferMailbox)
-        frontColorBufferMailbox = createNewMailbox(createTextureAndAllocateMemory(m_size));
+    if (!mailboxInfo)
+        mailboxInfo = createNewMailbox(createTextureAndAllocateMemory(m_size));
 
     if (m_preserveDrawingBuffer == Discard) {
-        std::swap(frontColorBufferMailbox->textureInfo, m_colorBuffer);
+        std::swap(mailboxInfo->textureInfo, m_colorBuffer);
         attachColorBufferToReadFramebuffer();
 
         if (m_discardFramebufferSupported) {
@@ -295,54 +332,131 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
             m_gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
-        m_gl->CopySubTextureCHROMIUM(m_colorBuffer.textureId, frontColorBufferMailbox->textureInfo.textureId,
+        m_gl->CopySubTextureCHROMIUM(m_colorBuffer.textureId, mailboxInfo->textureInfo.textureId,
             0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
     }
 
     restoreFramebufferBindings();
     m_contentsChanged = false;
 
-    m_gl->ProduceTextureDirectCHROMIUM(frontColorBufferMailbox->textureInfo.textureId, frontColorBufferMailbox->textureInfo.parameters.target, frontColorBufferMailbox->mailbox.name);
+    m_gl->ProduceTextureDirectCHROMIUM(mailboxInfo->textureInfo.textureId, mailboxInfo->textureInfo.parameters.target, mailboxInfo->mailbox.name);
     const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
 #if OS(MACOSX)
     m_gl->DescheduleUntilFinishedCHROMIUM();
 #endif
     m_gl->Flush();
-    m_gl->GenSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
-    frontColorBufferMailbox->mailbox.validSyncToken = true;
-    frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
-    frontColorBufferMailbox->mailbox.textureTarget = frontColorBufferMailbox->textureInfo.parameters.target;
-    frontColorBufferMailbox->mailbox.textureSize = WebSize(m_size.width(), m_size.height());
-    setBufferClearNeeded(true);
+    gpu::SyncToken syncToken;
+    m_gl->GenSyncTokenCHROMIUM(fenceSync, syncToken.GetData());
 
-    // set m_parentDrawingBuffer to make sure 'this' stays alive as long as it has live mailboxes
-    ASSERT(!frontColorBufferMailbox->m_parentDrawingBuffer);
-    frontColorBufferMailbox->m_parentDrawingBuffer = this;
-    *outMailbox = frontColorBufferMailbox->mailbox;
-    m_frontColorBuffer = { frontColorBufferMailbox->textureInfo, frontColorBufferMailbox->mailbox };
+    bool isOverlayCandidate = mailboxInfo->textureInfo.imageId != 0;
+    bool secureOutputOnly = false;
+    *outMailbox = cc::TextureMailbox(
+        mailboxInfo->mailbox, syncToken,
+        mailboxInfo->textureInfo.parameters.target,
+        gfx::Size(m_size.width(), m_size.height()),
+        isOverlayCandidate,
+        secureOutputOnly);
+
+    // This holds a ref on the DrawingBuffer that will keep it alive until the
+    // mailbox is released (and while the release callback is running).
+    auto func = WTF::bind(&DrawingBuffer::gpuMailboxReleased,
+        RefPtr<DrawingBuffer>(this),
+        mailboxInfo->mailbox);
+    *outReleaseCallback = cc::SingleReleaseCallback::Create(
+        convertToBaseCallback(std::move(func)));
+
+    m_frontColorBuffer = { mailboxInfo->mailbox, syncToken, mailboxInfo->textureInfo };
+    setBufferClearNeeded(true);
     return true;
 }
 
-void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
+void DrawingBuffer::gpuMailboxReleased(const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken,
+    bool lostResource)
 {
     if (m_destructionInProgress || m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR || lostResource || m_isHidden) {
-        mailboxReleasedWithoutRecycling(mailbox);
+        deleteMailbox(mailbox, syncToken);
         return;
     }
 
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
         RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
-        if (nameEquals(mailboxInfo->mailbox, mailbox)) {
-            memcpy(mailboxInfo->mailbox.syncToken, mailbox.syncToken,
-                sizeof(mailboxInfo->mailbox.syncToken));
-            mailboxInfo->mailbox.validSyncToken = mailbox.validSyncToken;
-            ASSERT(mailboxInfo->m_parentDrawingBuffer.get() == this);
-            mailboxInfo->m_parentDrawingBuffer.clear();
-            m_recycledMailboxQueue.prepend(mailboxInfo->mailbox);
+        if (mailboxInfo->mailbox == mailbox) {
+            m_recycledMailboxQueue.prepend(adoptRef(new RecycledMailbox(mailbox, syncToken)));
             return;
         }
     }
     ASSERT_NOT_REACHED();
+}
+
+void DrawingBuffer::softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap> bitmap, const IntSize& size, const gpu::SyncToken& syncToken, bool lostResource)
+{
+    DCHECK(!syncToken.HasData()); // No sync tokens for software resources.
+    if (m_destructionInProgress || lostResource || m_isHidden || size != m_size)
+        return; // Just delete the bitmap.
+
+    RecycledBitmap recycled = { std::move(bitmap), m_size };
+    m_recycledBitmapQueue.append(std::move(recycled));
+}
+
+PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
+{
+    // This can be null if the context is lost before the first call to grContext().
+    GrContext* grContext = m_contextProvider->grContext();
+
+    cc::TextureMailbox textureMailbox;
+    std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+    bool useSharedMemory = false;
+    bool success = false;
+    if (grContext)
+        success = PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory);
+    if (!success) {
+        // If we can't get a mailbox, return an transparent black ImageBitmap.
+        // The only situation this could happen is when two or more calls to transferToImageBitmap are made back-to-back, or when the context gets lost.
+        sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
+        return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
+    }
+
+    DCHECK_EQ(m_size.width(), textureMailbox.size_in_pixels().width());
+    DCHECK_EQ(m_size.height(), textureMailbox.size_in_pixels().height());
+
+    // Make our own textureId that is a reference on the same texture backing being used as the front
+    // buffer (which was returned from PrepareTextureMailbox()).
+    // We do not need to wait on the sync token in |textureMailbox| since the mailbox was produced on
+    // the same |m_gl| context that we are using here. Similarly, the |releaseCallback| will run on
+    // the same context so we don't need to send a sync token for this consume action back to it.
+    // TODO(danakj): Instead of using PrepareTextureMailbox(), we could just use the actual texture id and
+    // avoid needing to produce/consume a mailbox.
+    GLuint textureId = m_gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, textureMailbox.name());
+    // Return the mailbox but report that the resource is lost to prevent trying to use
+    // the backing for future frames. We keep it alive with our own reference to the
+    // backing via our |textureId|.
+    releaseCallback->Run(gpu::SyncToken(), true /* lostResource */);
+
+    // Store that texture id as the backing for an SkImage.
+    GrGLTextureInfo textureInfo;
+    textureInfo.fTarget = GL_TEXTURE_2D;
+    textureInfo.fID = textureId;
+    GrBackendTextureDesc backendTexture;
+    backendTexture.fOrigin = kBottomLeft_GrSurfaceOrigin;
+    backendTexture.fWidth = m_size.width();
+    backendTexture.fHeight = m_size.height();
+    backendTexture.fConfig = kSkia8888_GrPixelConfig;
+    backendTexture.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(textureInfo);
+    sk_sp<SkImage> skImage = SkImage::MakeFromAdoptedTexture(grContext, backendTexture);
+
+    // Hold a ref on the GrContext for the texture backing the |skImage|.
+    sk_sp<GrContext> grContextRef = sk_ref_sp(grContext);
+    // We reuse the same mailbox name from above since our texture id was consumed from it.
+    const auto& skImageMailbox = textureMailbox.mailbox();
+    // Use the sync token generated after producing the mailbox. Waiting for this before trying to use
+    // the mailbox with some other context will ensure it is valid. We wouldn't need to wait for the
+    // consume done in this function because the texture id it generated would only be valid for the
+    // DrawingBuffer's context anyways.
+    const auto& skImageSyncToken = textureMailbox.sync_token();
+
+    // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
+    // transferFromImageBitmap, and try to use them in DrawingBuffer.
+    return AcceleratedStaticBitmapImage::create(fromSkSp(skImage), grContextRef, skImageMailbox, skImageSyncToken);
 }
 
 DrawingBuffer::TextureParameters DrawingBuffer::chromiumImageTextureParameters()
@@ -394,18 +508,10 @@ DrawingBuffer::TextureParameters DrawingBuffer::defaultTextureParameters()
     return parameters;
 }
 
-void DrawingBuffer::mailboxReleasedWithoutRecycling(const WebExternalTextureMailbox& mailbox)
-{
-    ASSERT(m_textureMailboxes.size());
-    // Ensure not to call the destructor until deleteMailbox() is completed.
-    RefPtr<DrawingBuffer> self = this;
-    deleteMailbox(mailbox);
-}
-
-PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
+PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::takeRecycledMailbox()
 {
     if (m_recycledMailboxQueue.isEmpty())
-        return PassRefPtr<MailboxInfo>();
+        return nullptr;
 
     // Creation of image backed mailboxes is very expensive, so be less
     // aggressive about pruning them.
@@ -413,26 +519,24 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
     if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
         cacheLimit = 4;
 
-    WebExternalTextureMailbox mailbox;
+    RefPtr<RecycledMailbox> recycled;
     while (m_recycledMailboxQueue.size() > cacheLimit) {
-        mailbox = m_recycledMailboxQueue.takeLast();
-        deleteMailbox(mailbox);
+        recycled = m_recycledMailboxQueue.takeLast();
+        deleteMailbox(recycled->mailbox, recycled->syncToken);
     }
-    mailbox = m_recycledMailboxQueue.takeLast();
+    recycled = m_recycledMailboxQueue.takeLast();
+
+    if (recycled->syncToken.HasData())
+        m_gl->WaitSyncTokenCHROMIUM(recycled->syncToken.GetData());
 
     RefPtr<MailboxInfo> mailboxInfo;
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-        if (nameEquals(m_textureMailboxes[i]->mailbox, mailbox)) {
+        if (m_textureMailboxes[i]->mailbox == recycled->mailbox) {
             mailboxInfo = m_textureMailboxes[i];
             break;
         }
     }
     ASSERT(mailboxInfo);
-
-    if (mailboxInfo->mailbox.validSyncToken) {
-        m_gl->WaitSyncTokenCHROMIUM(mailboxInfo->mailbox.syncToken);
-        mailboxInfo->mailbox.validSyncToken = false;
-    }
 
     if (mailboxInfo->size != m_size) {
         resizeTextureMemory(&mailboxInfo->textureInfo, m_size);
@@ -444,7 +548,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
 
 PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(const TextureInfo& info)
 {
-    RefPtr<MailboxInfo> returnMailbox = adoptRef(new MailboxInfo());
+    RefPtr<MailboxInfo> returnMailbox = adoptRef(new MailboxInfo);
     m_gl->GenMailboxCHROMIUM(returnMailbox->mailbox.name);
     returnMailbox->textureInfo = info;
     returnMailbox->size = m_size;
@@ -452,15 +556,13 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(const Tex
     return returnMailbox.release();
 }
 
-void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::deleteMailbox(const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
 {
+    if (syncToken.HasData())
+        m_gl->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-        if (nameEquals(m_textureMailboxes[i]->mailbox, mailbox)) {
-            if (mailbox.validSyncToken)
-                m_gl->WaitSyncTokenCHROMIUM(mailbox.syncToken);
-
+        if (m_textureMailboxes[i]->mailbox == mailbox) {
             deleteChromiumImageForTexture(&m_textureMailboxes[i]->textureInfo);
-
             m_gl->DeleteTextures(1, &m_textureMailboxes[i]->textureInfo.textureId);
             m_textureMailboxes.remove(i);
             return;
@@ -537,13 +639,15 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint
         return false;
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
-    WebExternalTextureMailbox mailbox;
     GLint textureId = 0;
     GLenum target = 0;
+    gpu::Mailbox mailbox;
+    gpu::SyncToken produceSyncToken;
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
         textureId = m_frontColorBuffer.texInfo.textureId;
-        mailbox = m_frontColorBuffer.mailbox;
         target = m_frontColorBuffer.texInfo.parameters.target;
+        mailbox = m_frontColorBuffer.mailbox;
+        produceSyncToken = m_frontColorBuffer.produceSyncToken;
     } else {
         textureId = m_colorBuffer.textureId;
         target = m_colorBuffer.parameters.target;
@@ -551,12 +655,11 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint
         m_gl->ProduceTextureDirectCHROMIUM(textureId, target, mailbox.name);
         const GLuint64 fenceSync = m_gl->InsertFenceSyncCHROMIUM();
         m_gl->Flush();
-        m_gl->GenSyncTokenCHROMIUM(fenceSync, mailbox.syncToken);
-        mailbox.validSyncToken = true;
+        m_gl->GenSyncTokenCHROMIUM(fenceSync, produceSyncToken.GetData());
     }
 
-    if (mailbox.validSyncToken)
-        gl->WaitSyncTokenCHROMIUM(mailbox.syncToken);
+    DCHECK(produceSyncToken.HasData());
+    gl->WaitSyncTokenCHROMIUM(produceSyncToken.GetConstData());
     GLuint sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);
 
     GLboolean unpackPremultiplyAlphaNeeded = GL_FALSE;
@@ -573,9 +676,9 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint
     const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
 
     gl->Flush();
-    GLbyte syncToken[GL_SYNC_TOKEN_SIZE_CHROMIUM] = { 0 };
-    gl->GenSyncTokenCHROMIUM(fenceSync, syncToken);
-    m_gl->WaitSyncTokenCHROMIUM(syncToken);
+    gpu::SyncToken syncToken;
+    gl->GenSyncTokenCHROMIUM(fenceSync, syncToken.GetData());
+    m_gl->WaitSyncTokenCHROMIUM(syncToken.GetData());
 
     return true;
 }
@@ -614,9 +717,7 @@ void DrawingBuffer::beginDestruction()
     m_destructionInProgress = true;
 
     clearPlatformLayer();
-
-    while (!m_recycledMailboxQueue.isEmpty())
-        deleteMailbox(m_recycledMailboxQueue.takeLast());
+    freeRecycledMailboxes();
 
     if (m_multisampleFBO)
         m_gl->DeleteFramebuffers(1, &m_multisampleFBO);

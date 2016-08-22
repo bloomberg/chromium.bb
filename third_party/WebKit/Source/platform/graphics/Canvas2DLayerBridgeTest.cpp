@@ -24,7 +24,8 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
-#include "SkSurface.h"
+#include "cc/resources/single_release_callback.h"
+#include "cc/resources/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/CrossThreadFunctional.h"
@@ -44,9 +45,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
+
 #include <memory>
 
 using testing::AnyNumber;
@@ -90,23 +93,6 @@ public:
 
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
-};
-
-class NullWebExternalBitmap : public WebExternalBitmap {
-public:
-    WebSize size() override
-    {
-        return WebSize();
-    }
-
-    void setSize(WebSize) override
-    {
-    }
-
-    uint8_t* pixels() override
-    {
-        return nullptr;
-    }
 };
 
 } // anonymous namespace
@@ -196,47 +182,56 @@ protected:
         bridge->flush();
     }
 
-    void prepareMailboxWithBitmapTest()
+    void prepareMailboxSoftwareTest()
     {
         FakeGLES2Interface gl;
         std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider = wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
-        bridge->m_lastImageId = 1;
 
-        NullWebExternalBitmap bitmap;
-        bridge->prepareMailbox(0, &bitmap);
-        EXPECT_EQ(0u, bridge->m_lastImageId);
+        cc::TextureMailbox textureMailbox;
+        std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+        bool useSharedMemory = true;
+        EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
     }
 
     void prepareMailboxAndLoseResourceTest()
     {
-        bool lostResource = true;
-
         // Prepare a mailbox, then report the resource as lost.
         // This test passes by not crashing and not triggering assertions.
         {
             FakeGLES2Interface gl;
             std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider = wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
             Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
-            WebExternalTextureMailbox mailbox;
-            bridge->prepareMailbox(&mailbox, 0);
-            bridge->mailboxReleased(mailbox, lostResource);
+
+            cc::TextureMailbox textureMailbox;
+            std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+            bool useSharedMemory = false;
+            EXPECT_TRUE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
+
+            bool lostResource = true;
+            releaseCallback->Run(gpu::SyncToken(), lostResource);
         }
 
         // Retry with mailbox released while bridge destruction is in progress.
         {
             FakeGLES2Interface gl;
             std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider = wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
-            WebExternalTextureMailbox mailbox;
-            Canvas2DLayerBridge* rawBridge;
+
+            cc::TextureMailbox textureMailbox;
+            std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+            bool useSharedMemory = false;
+
             {
                 Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
-                bridge->prepareMailbox(&mailbox, 0);
-                rawBridge = bridge.get();
-            } // bridge goes out of scope, but object is kept alive by self references.
+                bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory);
+                // |bridge| goes out of scope and would normally be destroyed, but object is kept alive by self references.
+            }
+
             // Before fixing crbug.com/411864, the following line you cause a memory use after free
             // that sometimes causes a crash in normal builds and crashes consistently with ASAN.
-            rawBridge->mailboxReleased(mailbox, lostResource); // This should self-destruct the bridge.
+            // This should cause the bridge to be destroyed.
+            bool lostResource = true;
+            releaseCallback->Run(gpu::SyncToken(), lostResource);
         }
     }
 
@@ -276,9 +271,9 @@ TEST_F(Canvas2DLayerBridgeTest, NoDrawOnContextLost)
     noDrawOnContextLostTest();
 }
 
-TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWithBitmap)
+TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxSoftware)
 {
-    prepareMailboxWithBitmapTest();
+    prepareMailboxSoftwareTest();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxAndLoseResource)
@@ -1008,8 +1003,10 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
 
     // Test prepareMailbox while hibernating
-    WebExternalTextureMailbox mailbox;
-    EXPECT_FALSE(bridge->prepareMailbox(&mailbox, 0));
+    cc::TextureMailbox textureMailbox;
+    std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+    bool useSharedMemory = false;
+    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
@@ -1055,8 +1052,10 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Test prepareMailbox while background rendering
-    WebExternalTextureMailbox mailbox;
-    EXPECT_FALSE(bridge->prepareMailbox(&mailbox, 0));
+    cc::TextureMailbox textureMailbox;
+    std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+    bool useSharedMemory = false;
+    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope

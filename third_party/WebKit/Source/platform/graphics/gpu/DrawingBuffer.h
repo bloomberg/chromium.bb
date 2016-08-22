@@ -31,18 +31,23 @@
 #ifndef DrawingBuffer_h
 #define DrawingBuffer_h
 
+#include "cc/layers/texture_layer_client.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
-#include "public/platform/WebExternalTextureLayerClient.h"
-#include "public/platform/WebExternalTextureMailbox.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 #include <memory>
+
+namespace cc {
+class SharedBitmap;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -55,9 +60,9 @@ class ArrayBufferContents;
 }
 
 namespace blink {
-
 class Extensions3DUtil;
 class ImageBuffer;
+class StaticBitmapImage;
 class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3DProvider;
@@ -65,7 +70,7 @@ class WebLayer;
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a WebLayer for compositing.
-class PLATFORM_EXPORT DrawingBuffer : public RefCounted<DrawingBuffer>, public WebExternalTextureLayerClient  {
+class PLATFORM_EXPORT DrawingBuffer : public NON_EXPORTED_BASE(cc::TextureLayerClient), public RefCounted<DrawingBuffer> {
     WTF_MAKE_NONCOPYABLE(DrawingBuffer);
 public:
     enum PreserveDrawingBuffer {
@@ -201,9 +206,20 @@ public:
     gpu::gles2::GLES2Interface* contextGL();
     WebGraphicsContext3DProvider* contextProvider();
 
-    // WebExternalTextureLayerClient implementation.
-    bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) override;
-    void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
+    // cc::TextureLayerClient implementation.
+    bool PrepareTextureMailbox(
+        cc::TextureMailbox* outMailbox,
+        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
+        bool useSharedMemory) override;
+
+    // Callbacks for mailboxes given to the compositor from PrepareTextureMailbox.
+    void gpuMailboxReleased(const gpu::Mailbox&, const gpu::SyncToken&, bool lostResource);
+    void softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap>, const IntSize&, const gpu::SyncToken&, bool lostResource);
+
+    // Returns a StaticBitmapImage backed by a texture containing the/ current contents of
+    // the front buffer. This is done without any pixel copies. The texture in the ImageBitmap
+    // is from the active ContextProvider on the DrawingBuffer.
+    PassRefPtr<StaticBitmapImage> transferToStaticBitmapImage();
 
     // Destroys the TEXTURE_2D binding for the owned context
     bool copyToPlatformTexture(gpu::gles2::GLES2Interface*, GLuint texture, GLenum internalFormat,
@@ -264,18 +280,13 @@ private:
     };
 
     struct MailboxInfo : public RefCounted<MailboxInfo> {
-        WTF_MAKE_NONCOPYABLE(MailboxInfo);
-
-    public:
-        MailboxInfo() {}
-
-        WebExternalTextureMailbox mailbox;
+        MailboxInfo() = default;
+        gpu::Mailbox mailbox;
         TextureInfo textureInfo;
         IntSize size;
-        // This keeps the parent drawing buffer alive as long as the compositor is
-        // referring to one of the mailboxes DrawingBuffer produced. The parent drawing buffer is
-        // cleared when the compositor returns the mailbox. See mailboxReleased().
-        RefPtr<DrawingBuffer> m_parentDrawingBuffer;
+
+    private:
+        WTF_MAKE_NONCOPYABLE(MailboxInfo);
     };
 
     // The texture parameters to use for a texture that will be backed by a
@@ -284,8 +295,6 @@ private:
 
     // The texture parameters to use for a default texture.
     TextureParameters defaultTextureParameters();
-
-    void mailboxReleasedWithoutRecycling(const WebExternalTextureMailbox&);
 
     // Creates and binds a texture with the given parameters. Returns 0 on
     // failure, or the newly created texture id on success. The caller takes
@@ -302,10 +311,12 @@ private:
 
     void clearPlatformLayer();
 
-    PassRefPtr<MailboxInfo> recycledMailbox();
+    PassRefPtr<MailboxInfo> takeRecycledMailbox();
     PassRefPtr<MailboxInfo> createNewMailbox(const TextureInfo&);
-    void deleteMailbox(const WebExternalTextureMailbox&);
+    void deleteMailbox(const gpu::Mailbox&, const gpu::SyncToken&);
     void freeRecycledMailboxes();
+
+    std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
@@ -380,8 +391,9 @@ private:
     bool m_hasImplicitStencilBuffer = false;
     bool m_storageTextureSupported = false;
     struct FrontBufferInfo {
+        gpu::Mailbox mailbox;
+        gpu::SyncToken produceSyncToken;
         TextureInfo texInfo;
-        WebExternalTextureMailbox mailbox;
     };
     FrontBufferInfo m_frontColorBuffer;
 
@@ -437,8 +449,27 @@ private:
 
     // All of the mailboxes that this DrawingBuffer has ever created.
     Vector<RefPtr<MailboxInfo>> m_textureMailboxes;
+    struct RecycledMailbox : RefCounted<RecycledMailbox> {
+        RecycledMailbox(const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
+            : mailbox(mailbox)
+            , syncToken(syncToken)
+        {
+        }
+
+        gpu::Mailbox mailbox;
+        gpu::SyncToken syncToken;
+
+    private:
+        WTF_MAKE_NONCOPYABLE(RecycledMailbox);
+    };
     // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
-    Deque<WebExternalTextureMailbox> m_recycledMailboxQueue;
+    Deque<RefPtr<RecycledMailbox>> m_recycledMailboxQueue;
+    struct RecycledBitmap {
+        std::unique_ptr<cc::SharedBitmap> bitmap;
+        IntSize size;
+    };
+    // Shared memory bitmaps that were released by the compositor and can be used again by this DrawingBuffer.
+    Deque<RecycledBitmap> m_recycledBitmapQueue;
 
     // If the width and height of the Canvas's backing store don't
     // match those that we were given in the most recent call to

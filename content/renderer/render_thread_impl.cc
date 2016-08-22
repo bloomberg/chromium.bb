@@ -37,7 +37,6 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
-#include "cc/blink/web_external_bitmap_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/output/copy_output_request.h"
@@ -315,12 +314,6 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
-}
-
-std::unique_ptr<cc::SharedBitmap> AllocateSharedBitmapFunction(
-    const gfx::Size& size) {
-  return ChildThreadImpl::current()->shared_bitmap_manager()->
-      AllocateSharedBitmap(size);
 }
 
 void NotifyTimezoneChangeOnThisThread() {
@@ -1244,8 +1237,6 @@ void RenderThreadImpl::InitializeWebKit(
       GetContentClient()
           ->renderer()
           ->AllowTimerSuspensionWhenProcessBackgrounded());
-
-  cc_blink::SetSharedBitmapAllocationFunction(AllocateSharedBitmapFunction);
 
   SkGraphics::SetResourceCacheSingleAllocationByteLimit(
       kImageCacheSingleAllocationByteLimit);

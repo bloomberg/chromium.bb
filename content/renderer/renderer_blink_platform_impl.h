@@ -189,6 +189,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::Platform::GraphicsInfo* gl_info) override;
   blink::WebGraphicsContext3DProvider*
   createSharedOffscreenGraphicsContext3DProvider() override;
+  std::unique_ptr<cc::SharedBitmap> allocateSharedBitmap(
+      const blink::WebSize& size) override;
   blink::WebCompositorSupport* compositorSupport() override;
   blink::WebString convertIDNToUnicode(const blink::WebString& host) override;
   blink::InterfaceProvider* interfaceProvider() override;

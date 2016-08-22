@@ -605,6 +605,35 @@ TEST(DequeTest, MoveShouldNotMakeCopy)
     EXPECT_EQ(0, counter);
 }
 
+TEST(DequeTest, RemoveWhileIterating)
+{
+    Deque<int> deque;
+    for (int i = 0; i < 10; ++i)
+        deque.append(i);
+
+    // All numbers present.
+    {
+        int i = 0;
+        for (int v : deque)
+            EXPECT_EQ(i++, v);
+    }
+
+    // Remove the even numbers while iterating.
+    for (auto it = deque.begin(); it != deque.end(); ++it) {
+        if (*it % 2 == 0) {
+            deque.remove(it);
+            --it;
+        }
+    }
+
+    // Only odd numbers left.
+    {
+        int i = 1;
+        for (int v : deque)
+            EXPECT_EQ(i + 2, v);
+    }
+}
+
 } // anonymous namespace
 
 } // namespace WTF

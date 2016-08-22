@@ -71,8 +71,6 @@
       "platform/WebEncryptedMediaTypes.h",
       "platform/WebExternalBitmap.h",
       "platform/WebExternalTextureLayer.h",
-      "platform/WebExternalTextureLayerClient.h",
-      "platform/WebExternalTextureMailbox.h",
       "platform/WebFallbackThemeEngine.h",
       "platform/WebFederatedCredential.h",
       "platform/WebFileError.h",

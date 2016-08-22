@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/child/blob_storage/webblobregistry_impl.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/database_util.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
@@ -1127,6 +1128,15 @@ RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
   if (!provider)
     return nullptr;
   return new WebGraphicsContext3DProviderImpl(std::move(provider));
+}
+
+//------------------------------------------------------------------------------
+
+std::unique_ptr<cc::SharedBitmap>
+RendererBlinkPlatformImpl::allocateSharedBitmap(const blink::WebSize& size) {
+  return ChildThreadImpl::current()
+      ->shared_bitmap_manager()
+      ->AllocateSharedBitmap(gfx::Size(size.width, size.height));
 }
 
 //------------------------------------------------------------------------------

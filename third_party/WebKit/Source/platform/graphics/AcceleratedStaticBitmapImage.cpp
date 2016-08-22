@@ -5,6 +5,7 @@
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "public/platform/Platform.h"
@@ -13,138 +14,123 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "wtf/PtrUtil.h"
+
 #include <memory>
+#include <utility>
 
 namespace blink {
-
-PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(WebExternalTextureMailbox& mailbox)
-{
-    return adoptRef(new AcceleratedStaticBitmapImage(mailbox));
-}
 
 PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(PassRefPtr<SkImage> image)
 {
     return adoptRef(new AcceleratedStaticBitmapImage(image));
 }
 
-AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(WebExternalTextureMailbox& mailbox)
-    : StaticBitmapImage()
-    , m_mailbox(mailbox)
+PassRefPtr<AcceleratedStaticBitmapImage> AcceleratedStaticBitmapImage::create(PassRefPtr<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
 {
+    return adoptRef(new AcceleratedStaticBitmapImage(image, std::move(grContext), mailbox, syncToken));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(PassRefPtr<SkImage> image)
-    : StaticBitmapImage(image)
+    : StaticBitmapImage(std::move(image))
+    , m_imageIsForSharedMainThreadContext(true)
 {
 }
 
-IntSize AcceleratedStaticBitmapImage::size() const
+AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(PassRefPtr<SkImage> image, sk_sp<GrContext> grContext, const gpu::Mailbox& mailbox, const gpu::SyncToken& syncToken)
+    : StaticBitmapImage(std::move(image))
+    , m_imageIsForSharedMainThreadContext(false) // TODO(danakj): Could be true though, caller would know.
+    , m_grContext(std::move(grContext))
+    , m_hasMailbox(true)
+    , m_mailbox(mailbox)
+    , m_syncToken(syncToken)
 {
-    if (m_image)
-        return IntSize(m_image->width(), m_image->height());
-    return IntSize(m_mailbox.textureSize.width, m_mailbox.textureSize.height);
+    DCHECK(m_grContext);
 }
 
-void AcceleratedStaticBitmapImage::copyToTexture(WebGraphicsContext3DProvider* provider, GLuint destinationTexture, GLenum internalFormat, GLenum destType, bool flipY)
-{
-    GLuint textureId = switchStorageToSkImageForWebGL(provider);
-    gpu::gles2::GLES2Interface* gl = provider->contextGL();
-    if (!gl)
-        return;
-    gl->CopyTextureCHROMIUM(textureId, destinationTexture, internalFormat, destType, flipY, false, false);
-    const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
-    gl->Flush();
-    GLbyte syncToken[24];
-    gl->GenSyncTokenCHROMIUM(fenceSync, syncToken);
-    // Get a new mailbox because we cannot retain a texture in the WebGL context.
-    switchStorageToMailbox(provider);
-}
+AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() = default;
 
-bool AcceleratedStaticBitmapImage::switchStorageToMailbox(WebGraphicsContext3DProvider* provider)
+void AcceleratedStaticBitmapImage::copyToTexture(WebGraphicsContext3DProvider* destProvider, GLuint destTextureId, GLenum internalFormat, GLenum destType, bool flipY)
 {
-    m_mailbox.textureSize = WebSize(m_image->width(), m_image->height());
-    GrContext* grContext = provider->grContext();
-    if (!grContext)
-        return false;
-    grContext->flush();
-    m_mailbox.textureTarget = GL_TEXTURE_2D;
-    gpu::gles2::GLES2Interface* gl = provider->contextGL();
-    if (!gl)
-        return false;
-    GLuint textureID = skia::GrBackendObjectToGrGLTextureInfo(m_image->getTextureHandle(true))->fID;
-    gl->BindTexture(GL_TEXTURE_2D, textureID);
+    // |destProvider| may not be the same context as the one used for |m_image| so we use a mailbox to
+    // generate a texture id for |destProvider| to access.
+    ensureMailbox();
 
-    gl->GenMailboxCHROMIUM(m_mailbox.name);
-    gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
-    const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
-    gl->Flush();
-    gl->GenSyncTokenCHROMIUM(fenceSync, m_mailbox.syncToken);
-    m_mailbox.validSyncToken = true;
-    gl->BindTexture(GL_TEXTURE_2D, 0);
-    grContext->resetContext(kTextureBinding_GrGLBackendState);
-    m_image = nullptr;
-    return true;
-}
-
-// This function is called only in the case that m_image is texture backed.
-GLuint AcceleratedStaticBitmapImage::switchStorageToSkImageForWebGL(WebGraphicsContext3DProvider* contextProvider)
-{
-    DCHECK(!m_image || m_image->isTextureBacked());
-    GLuint textureId = 0;
-    if (m_image) {
-        // SkImage is texture-backed on the shared context
-        if (!hasMailbox()) {
-            std::unique_ptr<WebGraphicsContext3DProvider> sharedProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-            if (!switchStorageToMailbox(sharedProvider.get()))
-                return 0;
-            textureId = switchStorageToSkImage(contextProvider);
-            return textureId;
-        }
-    }
-    DCHECK(hasMailbox());
-    textureId = switchStorageToSkImage(contextProvider);
-    return textureId;
-}
-
-GLuint AcceleratedStaticBitmapImage::switchStorageToSkImage(WebGraphicsContext3DProvider* provider)
-{
-    if (!provider)
-        return 0;
-    GrContext* grContext = provider->grContext();
-    if (!grContext)
-        return 0;
-    gpu::gles2::GLES2Interface* gl = provider->contextGL();
-    if (!gl)
-        return 0;
-    gl->WaitSyncTokenCHROMIUM(m_mailbox.syncToken);
-    GLuint textureId = gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
-    GrGLTextureInfo textureInfo;
-    textureInfo.fTarget = GL_TEXTURE_2D;
-    textureInfo.fID = textureId;
-    GrBackendTextureDesc backendTexture;
-    backendTexture.fOrigin = kBottomLeft_GrSurfaceOrigin;
-    backendTexture.fWidth = m_mailbox.textureSize.width;
-    backendTexture.fHeight = m_mailbox.textureSize.height;
-    backendTexture.fConfig = kSkia8888_GrPixelConfig;
-    backendTexture.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(textureInfo);
-    sk_sp<SkImage> skImage = SkImage::MakeFromAdoptedTexture(grContext, backendTexture);
-    m_image = fromSkSp(skImage);
-    return textureId;
+    // Get a texture id that |destProvider| knows about and copy from it.
+    gpu::gles2::GLES2Interface* destGL = destProvider->contextGL();
+    destGL->WaitSyncTokenCHROMIUM(m_syncToken.GetData());
+    GLuint sourceTextureId = destGL->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
+    destGL->CopyTextureCHROMIUM(sourceTextureId, destTextureId, internalFormat, destType, flipY, false, false);
+    // This drops the |destGL| context's reference on our |m_mailbox|, but it's still held alive by our SkImage.
+    destGL->DeleteTextures(1, &sourceTextureId);
 }
 
 PassRefPtr<SkImage> AcceleratedStaticBitmapImage::imageForCurrentFrame()
 {
-    if (m_image)
+    // This must return an SkImage that can be used with the shared main thread context. If |m_image| satisfies that, we are done.
+    if (m_imageIsForSharedMainThreadContext)
         return m_image;
-    if (!hasMailbox())
-        return nullptr;
-    // Has mailbox, consume mailbox, prepare a new mailbox if contextProvider is not null (3D).
-    DCHECK(isMainThread());
+
     // TODO(xidachen): make this work on a worker thread.
-    std::unique_ptr<WebGraphicsContext3DProvider> sharedProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-    if (!switchStorageToSkImage(sharedProvider.get()))
-        return nullptr;
+    DCHECK(isMainThread());
+
+    // If the SkImage came from any other context than the shared main thread one, we expect to be given a mailbox at construction. We
+    // use the mailbox to generate a texture id for the shared main thread context to use.
+    DCHECK(m_hasMailbox);
+
+    auto sharedMainThreadContextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    gpu::gles2::GLES2Interface* sharedGL = sharedMainThreadContextProvider->contextGL();
+    GrContext* sharedGrContext = sharedMainThreadContextProvider->grContext();
+    if (!sharedGrContext)
+        return nullptr; // Can happen if the context is lost, the SkImage won't be any good now anyway.
+
+    sharedGL->WaitSyncTokenCHROMIUM(m_syncToken.GetData());
+    GLuint sharedContextTextureId = sharedGL->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
+
+    GrGLTextureInfo textureInfo;
+    textureInfo.fTarget = GL_TEXTURE_2D;
+    textureInfo.fID = sharedContextTextureId;
+    GrBackendTextureDesc backendTexture;
+    backendTexture.fOrigin = kBottomLeft_GrSurfaceOrigin;
+    backendTexture.fWidth = size().width();
+    backendTexture.fHeight = size().height();
+    backendTexture.fConfig = kSkia8888_GrPixelConfig;
+    backendTexture.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(textureInfo);
+
+    m_image = fromSkSp(SkImage::MakeFromAdoptedTexture(sharedGrContext, backendTexture));
+    m_imageIsForSharedMainThreadContext = true;
+    // Can drop the ref on the GrContext since m_image is now backed by a texture from the shared main thread context.
+    m_grContext = nullptr;
     return m_image;
+}
+
+void AcceleratedStaticBitmapImage::ensureMailbox()
+{
+    if (m_hasMailbox)
+        return;
+
+    // If we weren't given a mailbox at creation, then we were given a SkImage that is assumed to be from the shared main thread context.
+    DCHECK(m_imageIsForSharedMainThreadContext);
+    auto sharedMainThreadContextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+
+    gpu::gles2::GLES2Interface* sharedGL = sharedMainThreadContextProvider->contextGL();
+    GrContext* sharedGrContext = sharedMainThreadContextProvider->grContext();
+    if (!sharedGrContext)
+        return; // Can happen if the context is lost, the SkImage won't be any good now anyway.
+
+    GLuint imageTextureId = skia::GrBackendObjectToGrGLTextureInfo(m_image->getTextureHandle(true))->fID;
+    sharedGL->BindTexture(GL_TEXTURE_2D, imageTextureId);
+
+    sharedGL->GenMailboxCHROMIUM(m_mailbox.name);
+    sharedGL->ProduceTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
+    const GLuint64 fenceSync = sharedGL->InsertFenceSyncCHROMIUM();
+    sharedGL->Flush();
+    sharedGL->GenSyncTokenCHROMIUM(fenceSync, m_syncToken.GetData());
+
+    sharedGL->BindTexture(GL_TEXTURE_2D, 0);
+    // We changed bound textures in this function, so reset the GrContext.
+    sharedGrContext->resetContext(kTextureBinding_GrGLBackendState);
+
+    m_hasMailbox = true;
 }
 
 } // namespace blink

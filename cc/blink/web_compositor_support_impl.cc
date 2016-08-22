@@ -20,7 +20,6 @@ using blink::WebContentLayer;
 using blink::WebContentLayerClient;
 using blink::WebDisplayItemList;
 using blink::WebExternalTextureLayer;
-using blink::WebExternalTextureLayerClient;
 using blink::WebImageLayer;
 using blink::WebLayer;
 using blink::WebScrollbar;
@@ -50,7 +49,7 @@ WebContentLayer* WebCompositorSupportImpl::createContentLayer(
 }
 
 WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
-    WebExternalTextureLayerClient* client) {
+    cc::TextureLayerClient* client) {
   return new WebExternalTextureLayerImpl(client);
 }
 

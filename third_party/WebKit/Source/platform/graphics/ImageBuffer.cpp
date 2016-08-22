@@ -33,6 +33,8 @@
 #include "platform/graphics/ImageBuffer.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
@@ -49,7 +51,6 @@
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "platform/image-encoders/WEBPImageEncoder.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -239,20 +240,20 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint t
         return false;
     gpu::gles2::GLES2Interface* sharedGL = provider->contextGL();
 
-    std::unique_ptr<WebExternalTextureMailbox> mailbox = wrapUnique(new WebExternalTextureMailbox);
-    mailbox->textureSize = WebSize(textureImage->width(), textureImage->height());
+    gpu::Mailbox mailbox;
+    IntSize textureSize(textureImage->width(), textureImage->height());
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first
-    sharedGL->GenMailboxCHROMIUM(mailbox->name);
-    sharedGL->ProduceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox->name);
+    sharedGL->GenMailboxCHROMIUM(mailbox.name);
+    sharedGL->ProduceTextureDirectCHROMIUM(textureInfo->fID, textureInfo->fTarget, mailbox.name);
     const GLuint64 sharedFenceSync = sharedGL->InsertFenceSyncCHROMIUM();
     sharedGL->Flush();
 
-    sharedGL->GenSyncTokenCHROMIUM(sharedFenceSync, mailbox->syncToken);
-    mailbox->validSyncToken = true;
-    gl->WaitSyncTokenCHROMIUM(mailbox->syncToken);
+    gpu::SyncToken produceSyncToken;
+    sharedGL->GenSyncTokenCHROMIUM(sharedFenceSync, produceSyncToken.GetData());
+    gl->WaitSyncTokenCHROMIUM(produceSyncToken.GetConstData());
 
-    GLuint sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox->name);
+    GLuint sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(textureInfo->fTarget, mailbox.name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
@@ -264,12 +265,12 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl, GLuint t
 
     gl->Flush();
 
-    GLbyte syncToken[24];
-    gl->GenSyncTokenCHROMIUM(contextFenceSync, syncToken);
-    sharedGL->WaitSyncTokenCHROMIUM(syncToken);
+    gpu::SyncToken copySyncToken;
+    gl->GenSyncTokenCHROMIUM(contextFenceSync, copySyncToken.GetData());
+    sharedGL->WaitSyncTokenCHROMIUM(copySyncToken.GetConstData());
     // This disassociates the texture from the mailbox to avoid leaking the
     // mapping between the two.
-    sharedGL->ProduceTextureDirectCHROMIUM(0, textureInfo->fTarget, mailbox->name);
+    sharedGL->ProduceTextureDirectCHROMIUM(0, textureInfo->fTarget, mailbox.name);
 
     // Undo grContext texture binding changes introduced in this function
     provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
