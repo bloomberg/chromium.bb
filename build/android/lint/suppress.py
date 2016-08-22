@@ -12,6 +12,7 @@
 import collections
 import optparse
 import os
+import re
 import sys
 from xml.dom import minidom
 
@@ -20,7 +21,7 @@ sys.path.append(_BUILD_ANDROID_DIR)
 
 from pylib.constants import host_paths
 
-
+_TMP_DIR_RE = re.compile(r'^/tmp/.*/(SRC_ROOT[0-9]+|PRODUCT_DIR)/')
 _THIS_FILE = os.path.abspath(__file__)
 _CONFIG_PATH = os.path.join(os.path.dirname(_THIS_FILE), 'suppressions.xml')
 _DOC = (
@@ -75,9 +76,11 @@ def _ParseAndMergeResultFile(result_path, issues_dict):
     issue_id = issue.attributes['id'].value
     severity = issue.attributes['severity'].value
     path = issue.getElementsByTagName('location')[0].attributes['file'].value
+    # Strip temporary file path and use regex instead of path.
+    regexp = re.sub(_TMP_DIR_RE, '', path)
     if issue_id not in issues_dict:
       issues_dict[issue_id] = _Issue(severity, set(), set())
-    issues_dict[issue_id].paths.add(path)
+    issues_dict[issue_id].regexps.add(regexp)
 
 
 def _WriteConfigFile(config_path, issues_dict):
