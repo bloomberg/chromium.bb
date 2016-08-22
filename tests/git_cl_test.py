@@ -251,6 +251,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'BranchExists', lambda _: True)
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
     self.mock(git_cl, 'ask_for_data', self._mocked_call)
+    self.mock(git_cl, 'write_json', lambda path, contents:
+        self._mocked_call('write_json', path, contents))
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
     self.mock(git_cl.rietveld, 'Rietveld', RietveldMock)
     self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
@@ -1758,6 +1760,22 @@ class TestGitCl(TestCase):
          ''),
     ]
     self.assertEqual(0, git_cl.main(['issue', '0']))
+
+  def test_cmd_issue_json(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', '--int', 'branch.feature.rietveldissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
+        ((['git', 'config', 'rietveld.server'],),
+         'https://codereview.chromium.org'),
+        ((['git', 'config', 'branch.feature.rietveldserver'],), ''),
+        (('write_json', 'output.json',
+          {'issue': 123, 'issue_url': 'https://codereview.chromium.org/123'}),
+         ''),
+    ]
+    self.assertEqual(0, git_cl.main(['issue', '--json', 'output.json']))
 
   def test_git_cl_try_default(self):
     self.mock(git_cl.Changelist, 'GetChange',

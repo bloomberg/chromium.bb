@@ -3446,6 +3446,11 @@ def colorize_CMDstatus_doc():
   CMDstatus.__doc__ = '\n'.join(colorize_line(l) for l in lines)
 
 
+def write_json(path, contents):
+  with open(path, 'w') as f:
+    json.dump(contents, f)
+
+
 @subcommand.usage('[issue_number]')
 def CMDissue(parser, args):
   """Sets or displays the current code review issue number.
@@ -3456,6 +3461,7 @@ def CMDissue(parser, args):
                     help='Lookup the branch(es) for the specified issues. If '
                          'no issues are specified, all branches with mapped '
                          'issues will be listed.')
+  parser.add_option('--json', help='Path to JSON output file.')
   _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
   _process_codereview_select_options(parser, options)
@@ -3471,11 +3477,15 @@ def CMDissue(parser, args):
       issue_branch_map.setdefault(cl.GetIssue(), []).append(branch)
     if not args:
       args = sorted(issue_branch_map.iterkeys())
+    result = {}
     for issue in args:
       if not issue:
         continue
+      result[int(issue)] = issue_branch_map.get(int(issue))
       print('Branch for issue number %s: %s' % (
           issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',))))
+    if options.json:
+      write_json(options.json, result)
   else:
     cl = Changelist(codereview=options.forced_codereview)
     if len(args) > 0:
@@ -3486,6 +3496,11 @@ def CMDissue(parser, args):
                      'Maybe you want to run git cl status?')
       cl.SetIssue(issue)
     print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
+    if options.json:
+      write_json(options.json, {
+        'issue': cl.GetIssue(),
+        'issue_url': cl.GetIssueURL(),
+      })
   return 0
 
 
