@@ -97,3 +97,16 @@ then need to change A?
 
 In practice, this comes up pretty rarely. Suggestions for better workflows are
 welcome.
+
+## Bash auto complition
+
+1. Ensure that your base git commands are autocompleted
+[doc](https://git-scm.com/book/en/v1/Git-Basics-Tips-and-Tricks).
+2. Add this to your .bashrc:
+    
+        # The next line enables bash completion for git cl.
+        if [ -f "$HOME/bin/depot_tools/git_cl_completion.sh" ]; then
+          . "$HOME/bin/depot_tools/git_cl_completion.sh"
+        fi
+        
+3. Profit.
