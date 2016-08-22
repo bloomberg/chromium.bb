@@ -135,7 +135,7 @@ static int getHeightForLineCount(const LayoutBlockFlow* blockFlow, int lineCount
     if (blockFlow->childrenInline()) {
         for (RootInlineBox* box = blockFlow->firstRootBox(); box; box = box->nextRootBox()) {
             if (++count == lineCount)
-                return box->lineBottom() + (includeBottom ? (blockFlow->borderBottom() + blockFlow->paddingBottom()) : LayoutUnit());
+                return (box->lineBottom() + (includeBottom ? (blockFlow->borderBottom() + blockFlow->paddingBottom()) : LayoutUnit())).toInt();
         }
         return -1;
     }
@@ -145,13 +145,13 @@ static int getHeightForLineCount(const LayoutBlockFlow* blockFlow, int lineCount
         if (obj->isLayoutBlockFlow() && shouldCheckLines(toLayoutBlockFlow(obj))) {
             int result = getHeightForLineCount(toLayoutBlockFlow(obj), lineCount, false, count);
             if (result != -1)
-                return result + obj->location().y() + (includeBottom ? (blockFlow->borderBottom() + blockFlow->paddingBottom()) : LayoutUnit());
+                return (result + obj->location().y() + (includeBottom ? (blockFlow->borderBottom() + blockFlow->paddingBottom()) : LayoutUnit())).toInt();
         } else if (!obj->isFloatingOrOutOfFlowPositioned()) {
             normalFlowChildWithoutLines = obj;
         }
     }
     if (normalFlowChildWithoutLines && lineCount == 0)
-        return normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->size().height();
+        return (normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->size().height()).toInt();
 
     return -1;
 }
@@ -1026,7 +1026,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
             continue;
 
         LayoutUnit blockRightEdge = destBlock.logicalRightOffsetForLine(lastVisibleLine->y(), DoNotIndentText);
-        if (!lastVisibleLine->lineCanAccommodateEllipsis(leftToRight, blockRightEdge, lastVisibleLine->x() + lastVisibleLine->logicalWidth(), totalWidth))
+        if (!lastVisibleLine->lineCanAccommodateEllipsis(leftToRight, blockRightEdge.toInt(), (lastVisibleLine->x() + lastVisibleLine->logicalWidth()).toInt(), totalWidth))
             continue;
 
         // Let the truncation code kick in.

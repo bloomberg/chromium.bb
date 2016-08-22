@@ -332,8 +332,8 @@ void ImageDocument::restoreImageSize(ScaleType type)
 
     DCHECK(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), 1.0f);
-    m_imageElement->setWidth(imageSize.width());
-    m_imageElement->setHeight(imageSize.height());
+    m_imageElement->setWidth(imageSize.width().toInt());
+    m_imageElement->setHeight(imageSize.height().toInt());
 
     if (imageFitsInWindow())
         m_imageElement->removeInlineStyleProperty(CSSPropertyCursor);

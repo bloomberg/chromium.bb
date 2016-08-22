@@ -2030,7 +2030,7 @@ int LayoutBlockFlow::firstLineBoxBaseline() const
     if (!childrenInline())
         return LayoutBlock::firstLineBoxBaseline();
     if (firstLineBox())
-        return firstLineBox()->logicalTop() + style(true)->getFontMetrics().ascent(firstRootBox()->baselineType());
+        return (firstLineBox()->logicalTop() + style(true)->getFontMetrics().ascent(firstRootBox()->baselineType())).toInt();
     return -1;
 }
 
@@ -2047,20 +2047,20 @@ int LayoutBlockFlow::inlineBlockBaseline(LineDirectionMode lineDirection) const
 
     if ((!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) || style()->containsSize()) {
         // We are not calling baselinePosition here because the caller should add the margin-top/margin-right, not us.
-        return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
+        return (lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft()).toInt();
     }
     if (isWritingModeRoot() && !isRubyRun())
         return -1;
     if (!childrenInline())
         return LayoutBlock::inlineBlockBaseline(lineDirection);
     if (lastLineBox())
-        return lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->getFontMetrics().ascent(lastRootBox()->baselineType());
+        return (lastLineBox()->logicalTop() + style(lastLineBox() == firstLineBox())->getFontMetrics().ascent(lastRootBox()->baselineType())).toInt();
     if (!hasLineIfEmpty())
         return -1;
     const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
-    return fontMetrics.ascent()
+    return (fontMetrics.ascent()
         + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
-        + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
+        + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight())).toInt();
 }
 
 void LayoutBlockFlow::removeFloatingObjectsFromDescendants()

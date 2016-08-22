@@ -134,8 +134,8 @@ HeapVector<Member<Element>> elementsFromRect(LayoutRect rect, Document& document
 
     LayoutPoint center = rect.center();
     unsigned leftPadding, rightPadding, topPadding, bottomPadding;
-    leftPadding = rightPadding = rect.width() / 2;
-    topPadding = bottomPadding = rect.height() / 2;
+    leftPadding = rightPadding = (rect.width() / 2).toUnsigned();
+    topPadding = bottomPadding = (rect.height() / 2).toUnsigned();
     HitTestResult result(request, center, topPadding, rightPadding, bottomPadding, leftPadding);
     document.frame()->contentLayoutItem().hitTest(result);
     return document.elementsFromHitTestResult(result);

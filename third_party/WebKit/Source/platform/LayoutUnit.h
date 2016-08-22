@@ -107,8 +107,12 @@ public:
     }
     unsigned toUnsigned() const { REPORT_OVERFLOW(m_value >= 0); return toInt(); }
 
-    operator int() const { return toInt(); }
-    operator unsigned() const { return toUnsigned(); }
+    // Conversion to int or unsigned is lossy. 'explicit' on these operators won't work because
+    // there are also other implicit conversion paths (e.g. operator bool then to int which would
+    // generate wrong result). Use toInt() and toUnsigned() instead.
+    operator int() const = delete;
+    operator unsigned() const = delete;
+
     operator double() const { return toDouble(); }
     operator float() const { return toFloat(); }
     operator bool() const { return m_value; }

@@ -21,12 +21,6 @@ namespace {
 static const float viewportAnchorRelativeEpsilon = 0.1f;
 static const int viewportToNodeMaxRelativeArea = 2;
 
-template <typename RectType>
-int area(const RectType& rect)
-{
-    return rect.width() * rect.height();
-}
-
 Node* findNonEmptyAnchorNode(const IntPoint& point, const IntRect& viewRect, EventHandler& eventHandler)
 {
     Node* node = eventHandler.hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active).innerNode();
@@ -34,8 +28,8 @@ Node* findNonEmptyAnchorNode(const IntPoint& point, const IntRect& viewRect, Eve
     // If the node bounding box is sufficiently large, make a single attempt to
     // find a smaller node; the larger the node bounds, the greater the
     // variability under resize.
-    const int maxNodeArea = area(viewRect) * viewportToNodeMaxRelativeArea;
-    if (node && area(node->boundingBox()) > maxNodeArea) {
+    const int maxNodeArea = viewRect.width() * viewRect.height() * viewportToNodeMaxRelativeArea;
+    if (node && node->boundingBox().width() * node->boundingBox().height() > maxNodeArea) {
         IntSize pointOffset = viewRect.size();
         pointOffset.scale(viewportAnchorRelativeEpsilon);
         node = eventHandler.hitTestResultAtPoint(point + pointOffset, HitTestRequest::ReadOnly | HitTestRequest::Active).innerNode();

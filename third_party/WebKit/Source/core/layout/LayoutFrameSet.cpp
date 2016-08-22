@@ -375,8 +375,8 @@ void LayoutFrameSet::layout()
     }
 
     LayoutUnit borderThickness(frameSet()->border());
-    layOutAxis(m_rows, frameSet()->rowLengths(), size().height() - (rows - 1) * borderThickness);
-    layOutAxis(m_cols, frameSet()->colLengths(), size().width() - (cols - 1) * borderThickness);
+    layOutAxis(m_rows, frameSet()->rowLengths(), (size().height() - (rows - 1) * borderThickness).toInt());
+    layOutAxis(m_cols, frameSet()->colLengths(), (size().width() - (cols - 1) * borderThickness).toInt());
 
     positionFrames();
 

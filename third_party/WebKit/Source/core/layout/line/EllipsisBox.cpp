@@ -39,7 +39,7 @@ IntRect EllipsisBox::selectionRect() const
 {
     const ComputedStyle& style = getLineLayoutItem().styleRef(isFirstLineStyle());
     const Font& font = style.font();
-    return enclosingIntRect(font.selectionRectForText(constructTextRun(font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTop()), root().selectionHeight()));
+    return enclosingIntRect(font.selectionRectForText(constructTextRun(font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft().toInt(), (logicalTop() + root().selectionTop()).toInt()), root().selectionHeight().toInt()));
 }
 
 bool EllipsisBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)

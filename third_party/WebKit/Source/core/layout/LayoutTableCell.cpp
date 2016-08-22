@@ -388,7 +388,7 @@ int LayoutTableCell::cellBaselinePosition() const
     int firstLineBaseline = firstLineBoxBaseline();
     if (firstLineBaseline != -1)
         return firstLineBaseline;
-    return borderBefore() + paddingBefore() + contentLogicalHeight();
+    return (borderBefore() + paddingBefore() + contentLogicalHeight()).toInt();
 }
 
 void LayoutTableCell::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
@@ -1011,8 +1011,8 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool ve
         totalHeight -= scrollbarHeight;
         LayoutUnit newBeforePadding = (totalHeight - heightWithoutIntrinsicPadding) / 2;
         LayoutUnit newAfterPadding = totalHeight - heightWithoutIntrinsicPadding - newBeforePadding;
-        setIntrinsicPaddingBefore(newBeforePadding);
-        setIntrinsicPaddingAfter(newAfterPadding);
+        setIntrinsicPaddingBefore(newBeforePadding.toInt());
+        setIntrinsicPaddingAfter(newAfterPadding.toInt());
     } else {
         setIntrinsicPaddingAfter(intrinsicPaddingAfter() - scrollbarHeight);
     }

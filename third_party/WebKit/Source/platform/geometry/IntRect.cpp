@@ -42,8 +42,8 @@ IntRect::IntRect(const FloatRect& r)
 }
 
 IntRect::IntRect(const LayoutRect& r)
-    : m_location(r.x(), r.y())
-    , m_size(r.width(), r.height())
+    : m_location(r.x().toInt(), r.y().toInt())
+    , m_size(r.width().toInt(), r.height().toInt())
 {
 }
 

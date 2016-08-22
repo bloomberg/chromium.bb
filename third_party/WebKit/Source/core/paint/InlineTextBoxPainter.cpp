@@ -286,8 +286,8 @@ void InlineTextBoxPainter::paintSingleCompositionBackgroundRun(GraphicsContext& 
     if (sPos >= ePos)
         return;
 
-    int deltaY = m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
-    int selHeight = m_inlineTextBox.root().selectionHeight();
+    int deltaY = (m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop()).toInt();
+    int selHeight = m_inlineTextBox.root().selectionHeight().toInt();
     FloatPoint localOrigin(boxOrigin.x().toFloat(), boxOrigin.y().toFloat() - deltaY);
     context.drawHighlightForText(font, m_inlineTextBox.constructTextRun(style), localOrigin, selHeight, backgroundColor, sPos, ePos);
 }
@@ -400,8 +400,8 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
             endPosition = std::min<int>(endPosition, m_inlineTextBox.truncation());
 
         // Calculate start & width
-        int deltaY = m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop();
-        int selHeight = m_inlineTextBox.root().selectionHeight();
+        int deltaY = (m_inlineTextBox.getLineLayoutItem().style()->isFlippedLinesWritingMode() ? m_inlineTextBox.root().selectionBottom() - m_inlineTextBox.logicalBottom() : m_inlineTextBox.logicalTop() - m_inlineTextBox.root().selectionTop()).toInt();
+        int selHeight = m_inlineTextBox.root().selectionHeight().toInt();
         LayoutPoint startPoint(boxOrigin.x(), boxOrigin.y() - deltaY);
         TextRun run = m_inlineTextBox.constructTextRun(style);
 
@@ -419,11 +419,11 @@ void InlineTextBoxPainter::paintDocumentMarker(GraphicsContext& context, const L
     // we pin to two pixels under the baseline.
     int lineThickness = misspellingLineThickness;
     int baseline = m_inlineTextBox.getLineLayoutItem().style(m_inlineTextBox.isFirstLineStyle())->getFontMetrics().ascent();
-    int descent = m_inlineTextBox.logicalHeight() - baseline;
+    int descent = (m_inlineTextBox.logicalHeight() - baseline).toInt();
     int underlineOffset;
     if (descent <= (lineThickness + 2)) {
         // Place the underline at the very bottom of the text in small/medium fonts.
-        underlineOffset = m_inlineTextBox.logicalHeight() - lineThickness;
+        underlineOffset = (m_inlineTextBox.logicalHeight() - lineThickness).toInt();
     } else {
         // In larger fonts, though, place the underline up near the baseline to prevent a big gap.
         underlineOffset = baseline + 2;
@@ -466,7 +466,7 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
         ASSERT(combinedText);
         // We can't use the height of m_inlineTextBox because LayoutTextCombine's inlineTextBox is horizontal within vertical flow
         combinedText->transformToInlineCoordinates(context, boxRect, true);
-        context.drawHighlightForText(font, textRun, FloatPoint(boxRect.location()), boxRect.height(), c, sPos, ePos);
+        context.drawHighlightForText(font, textRun, FloatPoint(boxRect.location()), boxRect.height().toInt(), c, sPos, ePos);
         return;
     }
 
@@ -487,8 +487,10 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
     // and so will end up positioned at (0, 0), even though we paint their
     // selection highlight with character width. For RTL then, we have to
     // explicitly shift the selection rect over to paint in the right location.
-    if (!m_inlineTextBox.isLeftToRightDirection() && m_inlineTextBox.isLineBreak())
-        selectionRect.move(-selectionRect.width(), 0);
+    if (!m_inlineTextBox.isLeftToRightDirection() && m_inlineTextBox.isLineBreak()) {
+        // TODO(crbug.com/638981): Is the conversion to int intentional?
+        selectionRect.move(-selectionRect.width().toInt(), 0);
+    }
 
     context.fillRect(FloatRect(selectionRect), c);
 }
@@ -529,8 +531,8 @@ static int computeUnderlineOffset(const TextUnderlinePosition underlinePosition,
         // Position underline relative to the under edge of the lowest element's content box.
         const LayoutUnit offset = inlineTextBox->root().maxLogicalTop() - inlineTextBox->logicalTop();
         if (offset > 0)
-            return inlineTextBox->logicalHeight() + gap + offset;
-        return inlineTextBox->logicalHeight() + gap;
+            return (inlineTextBox->logicalHeight() + gap + offset).toInt();
+        return (inlineTextBox->logicalHeight() + gap).toInt();
     }
     }
 
@@ -868,7 +870,7 @@ void InlineTextBoxPainter::paintTextMatchMarkerBackground(const PaintInfo& paint
 
     LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
     context.clip(FloatRect(boxRect));
-    context.drawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.height(), color, sPos, ePos);
+    context.drawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.height().toInt(), color, sPos, ePos);
 }
 
 

@@ -994,7 +994,7 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
 
     bool overflowClipRectOffsetChanged = oldScrollingLayerOffset != m_scrollingLayer->offsetFromLayoutObject();
 
-    IntSize scrollSize(layoutBox->scrollWidth(), layoutBox->scrollHeight());
+    IntSize scrollSize(layoutBox->scrollWidth().toInt(), layoutBox->scrollHeight().toInt());
     if (scrollSize != m_scrollingContentsLayer->size() || overflowClipRectOffsetChanged)
         m_scrollingContentsLayer->setNeedsDisplay();
 

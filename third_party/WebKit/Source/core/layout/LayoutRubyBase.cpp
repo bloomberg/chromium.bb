@@ -134,7 +134,7 @@ ETextAlign LayoutRubyBase::textAlignmentForLine(bool /* endsWithSoftBreak */) co
 
 void LayoutRubyBase::adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const
 {
-    int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth();
+    int maxPreferredLogicalWidth = this->maxPreferredLogicalWidth().toInt();
     if (maxPreferredLogicalWidth >= logicalWidth)
         return;
 

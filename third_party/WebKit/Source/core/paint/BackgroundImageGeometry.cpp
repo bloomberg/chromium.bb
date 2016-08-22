@@ -20,7 +20,7 @@ namespace {
 // Return the amount of space to leave between image tiles for the background-repeat: space property.
 inline LayoutUnit getSpaceBetweenImageTiles(LayoutUnit areaSize, LayoutUnit tileSize)
 {
-    int numberOfTiles = areaSize / tileSize;
+    int numberOfTiles = (areaSize / tileSize).toInt();
     LayoutUnit space(-1);
 
     if (numberOfTiles > 1) {
@@ -161,7 +161,7 @@ LayoutSize applySubPixelHeuristicToImageSize(const LayoutSize& size, const Layou
 void BackgroundImageGeometry::setNoRepeatX(LayoutUnit xOffset)
 {
     int roundedOffset = roundToInt(xOffset);
-    m_destRect.move(std::max(roundedOffset, 0), LayoutUnit());
+    m_destRect.move(std::max(roundedOffset, 0), 0);
     setPhaseX(LayoutUnit(-std::min(roundedOffset, 0)));
     m_destRect.setWidth(m_tileSize.width() + std::min(roundedOffset, 0));
     setSpaceSize(LayoutSize(LayoutUnit(), spaceSize().height()));
@@ -170,7 +170,7 @@ void BackgroundImageGeometry::setNoRepeatX(LayoutUnit xOffset)
 void BackgroundImageGeometry::setNoRepeatY(LayoutUnit yOffset)
 {
     int roundedOffset = roundToInt(yOffset);
-    m_destRect.move(LayoutUnit(), std::max(roundedOffset, 0));
+    m_destRect.move(0, std::max(roundedOffset, 0));
     setPhaseY(LayoutUnit(-std::min(roundedOffset, 0)));
     m_destRect.setHeight(m_tileSize.height() + std::min(roundedOffset, 0));
     setSpaceSize(LayoutSize(spaceSize().width(), LayoutUnit()));
@@ -231,7 +231,7 @@ void BackgroundImageGeometry::setRepeatY(
 void BackgroundImageGeometry::setSpaceX(LayoutUnit space, LayoutUnit availableWidth, LayoutUnit extraOffset)
 {
     LayoutUnit computedXPosition = roundedMinimumValueForLength(Length(), availableWidth);
-    setSpaceSize(LayoutSize(space.round(), spaceSize().height()));
+    setSpaceSize(LayoutSize(space.round(), spaceSize().height().toInt()));
     LayoutUnit actualWidth = tileSize().width() + space;
     setPhaseX(actualWidth ? LayoutUnit(roundf(actualWidth - fmodf((computedXPosition + extraOffset), actualWidth))) : LayoutUnit());
 }
@@ -239,7 +239,7 @@ void BackgroundImageGeometry::setSpaceX(LayoutUnit space, LayoutUnit availableWi
 void BackgroundImageGeometry::setSpaceY(LayoutUnit space, LayoutUnit availableHeight, LayoutUnit extraOffset)
 {
     LayoutUnit computedYPosition = roundedMinimumValueForLength(Length(), availableHeight);
-    setSpaceSize(LayoutSize(spaceSize().width(), space.round()));
+    setSpaceSize(LayoutSize(spaceSize().width().toInt(), space.round()));
     LayoutUnit actualHeight = tileSize().height() + space;
     setPhaseY(actualHeight ? LayoutUnit(roundf(actualHeight - fmodf((computedYPosition + extraOffset), actualHeight))) : LayoutUnit());
 }

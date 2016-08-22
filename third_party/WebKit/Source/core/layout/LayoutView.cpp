@@ -834,7 +834,7 @@ LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const
 IntSize LayoutView::layoutSize(IncludeScrollbarsInRect scrollbarInclusion) const
 {
     if (shouldUsePrintingLayout())
-        return IntSize(size().width(), pageLogicalHeight());
+        return IntSize(size().width().toInt(), pageLogicalHeight().toInt());
 
     if (!m_frameView)
         return IntSize();

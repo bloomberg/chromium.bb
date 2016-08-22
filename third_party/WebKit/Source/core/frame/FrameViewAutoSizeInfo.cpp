@@ -71,13 +71,13 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
         if (layoutViewItem.isNull())
             return;
 
-        int width = layoutViewItem.minPreferredLogicalWidth();
+        int width = layoutViewItem.minPreferredLogicalWidth().toInt();
 
         LayoutBox* documentLayoutBox = documentElement->layoutBox();
         if (!documentLayoutBox)
             return;
 
-        int height = documentLayoutBox->scrollHeight();
+        int height = documentLayoutBox->scrollHeight().toInt();
         IntSize newSize(width, height);
 
         // Check to see if a scrollbar is needed for a given dimension and

@@ -312,7 +312,7 @@ bool InlineBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidt
     if (!getLineLayoutItem().isAtomicInlineLevel())
         return true;
 
-    IntRect boxRect(left(), 0, m_logicalWidth, 10);
+    IntRect boxRect(left().toInt(), 0, m_logicalWidth.toInt(), 10);
     IntRect ellipsisRect(ltr ? blockEdge - ellipsisWidth : blockEdge, 0, ellipsisWidth, 10);
     return !(boxRect.intersects(ellipsisRect));
 }

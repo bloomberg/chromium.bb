@@ -211,9 +211,9 @@ public:
         else
             setY(left);
     }
-    int pixelSnappedLogicalLeft() const { return logicalLeft(); }
+    int pixelSnappedLogicalLeft() const { return logicalLeft().toInt(); }
     int pixelSnappedLogicalRight() const { return logicalRight().ceil(); }
-    int pixelSnappedLogicalTop() const { return logicalTop(); }
+    int pixelSnappedLogicalTop() const { return logicalTop().toInt(); }
     int pixelSnappedLogicalBottom() const { return logicalBottom().ceil(); }
 
     // The logicalTop[ position is the top edge of the line box in a horizontal line and the left edge in a vertical line.

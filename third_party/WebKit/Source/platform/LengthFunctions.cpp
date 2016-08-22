@@ -31,7 +31,7 @@ namespace blink {
 
 int intValueForLength(const Length& length, int maximumValue)
 {
-    return static_cast<int>(valueForLength(length, LayoutUnit(maximumValue)));
+    return valueForLength(length, LayoutUnit(maximumValue)).toInt();
 }
 
 float floatValueForLength(const Length& length, float maximumValue)

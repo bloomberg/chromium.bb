@@ -396,8 +396,8 @@ void FrameView::invalidateRect(const IntRect& rect)
         return;
 
     IntRect paintInvalidationRect = rect;
-    paintInvalidationRect.move(layoutItem.borderLeft() + layoutItem.paddingLeft(),
-        layoutItem.borderTop() + layoutItem.paddingTop());
+    paintInvalidationRect.move((layoutItem.borderLeft() + layoutItem.paddingLeft()).toInt(),
+        (layoutItem.borderTop() + layoutItem.paddingTop()).toInt());
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     layoutItem.invalidatePaintRectangle(LayoutRect(paintInvalidationRect));
@@ -2955,7 +2955,8 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             LayoutUnit clippedLogicalLeft;
             if (!layoutView->style()->isLeftToRightDirection())
                 clippedLogicalLeft = LayoutUnit(docLogicalRight - pageLogicalWidth);
-            LayoutRect overflow(clippedLogicalLeft, docLogicalTop, pageLogicalWidth, docLogicalHeight);
+            // TODO(crbug.com/638981): Are the conversions to int intentional?
+            LayoutRect overflow(clippedLogicalLeft.toInt(), docLogicalTop.toInt(), pageLogicalWidth, docLogicalHeight.toInt());
 
             if (!horizontalWritingMode)
                 overflow = overflow.transposedRect();
@@ -3019,8 +3020,8 @@ IntRect FrameView::convertToContainingWidget(const IntRect& localRect) const
 
         IntRect rect(localRect);
         // Add borders and padding??
-        rect.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
-            layoutObject->borderTop() + layoutObject->paddingTop());
+        rect.move((layoutObject->borderLeft() + layoutObject->paddingLeft()).toInt(),
+            (layoutObject->borderTop() + layoutObject->paddingTop()).toInt());
         return parentView->convertFromLayoutObject(*layoutObject, rect);
     }
 
@@ -3037,8 +3038,8 @@ IntRect FrameView::convertFromContainingWidget(const IntRect& parentRect) const
 
         IntRect rect = parentView->convertToLayoutObject(*layoutObject, parentRect);
         // Subtract borders and padding
-        rect.move(-layoutObject->borderLeft() - layoutObject->paddingLeft(),
-            -layoutObject->borderTop() - layoutObject->paddingTop());
+        rect.move((-layoutObject->borderLeft() - layoutObject->paddingLeft()).toInt(),
+            (-layoutObject->borderTop() - layoutObject->paddingTop().toInt()));
         return rect;
     }
 
@@ -3056,8 +3057,8 @@ IntPoint FrameView::convertToContainingWidget(const IntPoint& localPoint) const
         IntPoint point(localPoint);
 
         // Add borders and padding
-        point.move(layoutObject->borderLeft() + layoutObject->paddingLeft(),
-            layoutObject->borderTop() + layoutObject->paddingTop());
+        point.move((layoutObject->borderLeft() + layoutObject->paddingLeft()).toInt(),
+            (layoutObject->borderTop() + layoutObject->paddingTop()).toInt());
         return parentView->convertFromLayoutObject(*layoutObject, point);
     }
 
@@ -3074,8 +3075,8 @@ IntPoint FrameView::convertFromContainingWidget(const IntPoint& parentPoint) con
 
         IntPoint point = parentView->convertToLayoutObject(*layoutObject, parentPoint);
         // Subtract borders and padding
-        point.move(-layoutObject->borderLeft() - layoutObject->paddingLeft(),
-            -layoutObject->borderTop() - layoutObject->paddingTop());
+        point.move((-layoutObject->borderLeft() - layoutObject->paddingLeft()).toInt(),
+            (-layoutObject->borderTop() - layoutObject->paddingTop()).toInt());
         return point;
     }
 

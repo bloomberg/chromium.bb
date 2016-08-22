@@ -1159,7 +1159,7 @@ static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate
         LayoutUnit y = intersectionRect.y() + intersectionRect.height() / 2;
         if (!candidate.visibleNode->document().page()->mainFrame()->isLocalFrame())
             return;
-        HitTestResult result = candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(IntPoint(x, y), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
+        HitTestResult result = candidate.visibleNode->document().page()->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(IntPoint(x.toInt(), y.toInt()), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping);
         if (candidate.visibleNode->contains(result.innerNode())) {
             closest = candidate;
             return;

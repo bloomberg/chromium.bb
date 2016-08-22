@@ -278,7 +278,7 @@ FloatRoundedRect getBackgroundRoundedRect(const LayoutObject& obj, const LayoutR
 {
     FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
     if (box && (box->nextLineBox() || box->prevLineBox())) {
-        FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth, inlineBoxHeight),
+        FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth.toInt(), inlineBoxHeight.toInt()),
             includeLogicalLeftEdge, includeLogicalRightEdge);
         border.setRadii(segmentBorder.getRadii());
     }

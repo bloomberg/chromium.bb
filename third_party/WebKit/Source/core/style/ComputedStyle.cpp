@@ -1493,7 +1493,7 @@ int ComputedStyle::computedLineHeight() const
         return getFontMetrics().lineSpacing();
 
     if (lh.hasPercent())
-        return minimumValueForLength(lh, LayoutUnit(computedFontSize()));
+        return minimumValueForLength(lh, LayoutUnit(computedFontSize())).toInt();
 
     return std::min(lh.value(), LayoutUnit::max().toFloat());
 }
@@ -1956,22 +1956,22 @@ void ComputedStyle::getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLef
 {
     bool horizontal = isHorizontalWritingMode();
 
-    edges[BSTop] = BorderEdge(LayoutUnit(borderTopWidth()),
+    edges[BSTop] = BorderEdge(borderTopWidth(),
         visitedDependentColor(CSSPropertyBorderTopColor),
         borderTopStyle(),
         horizontal || includeLogicalLeftEdge);
 
-    edges[BSRight] = BorderEdge(LayoutUnit(borderRightWidth()),
+    edges[BSRight] = BorderEdge(borderRightWidth(),
         visitedDependentColor(CSSPropertyBorderRightColor),
         borderRightStyle(),
         !horizontal || includeLogicalRightEdge);
 
-    edges[BSBottom] = BorderEdge(LayoutUnit(borderBottomWidth()),
+    edges[BSBottom] = BorderEdge(borderBottomWidth(),
         visitedDependentColor(CSSPropertyBorderBottomColor),
         borderBottomStyle(),
         horizontal || includeLogicalRightEdge);
 
-    edges[BSLeft] = BorderEdge(LayoutUnit(borderLeftWidth()),
+    edges[BSLeft] = BorderEdge(borderLeftWidth(),
         visitedDependentColor(CSSPropertyBorderLeftColor),
         borderLeftStyle(),
         !horizontal || includeLogicalLeftEdge);

@@ -418,7 +418,7 @@ int HTMLImageElement::width()
 
         // if the image is available, use its width
         if (imageLoader().image())
-            return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1.0f).width();
+            return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1.0f).width().toInt();
     }
 
     LayoutBox* box = layoutBox();
@@ -439,7 +439,7 @@ int HTMLImageElement::height()
 
         // if the image is available, use its height
         if (imageLoader().image())
-            return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1.0f).height();
+            return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1.0f).height().toInt();
     }
 
     LayoutBox* box = layoutBox();
@@ -451,7 +451,7 @@ int HTMLImageElement::naturalWidth() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).width();
+    return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).width().toInt();
 }
 
 int HTMLImageElement::naturalHeight() const
@@ -459,7 +459,7 @@ int HTMLImageElement::naturalHeight() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).height();
+    return imageLoader().image()->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).height().toInt();
 }
 
 const String& HTMLImageElement::currentSrc() const
@@ -830,7 +830,7 @@ IntSize HTMLImageElement::bitmapSourceSize() const
         return IntSize();
     LayoutSize lSize = image->imageSize(LayoutObject::shouldRespectImageOrientation(layoutObject()), 1.0f);
     DCHECK(lSize.fraction().isZero());
-    return IntSize(lSize.width(), lSize.height());
+    return IntSize(lSize.width().toInt(), lSize.height().toInt());
 }
 
 } // namespace blink

@@ -20,9 +20,9 @@ namespace blink {
 void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
-    ASSERT(!m_layoutView.needsLayout());
+    DCHECK(!m_layoutView.needsLayout());
     // LayoutViews should never be called to paint with an offset not on device pixels.
-    ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
+    DCHECK(LayoutPoint(IntPoint(paintOffset.x().toInt(), paintOffset.y().toInt())) == paintOffset);
 
     const FrameView* frameView = m_layoutView.frameView();
     if (frameView->shouldThrottleRendering())

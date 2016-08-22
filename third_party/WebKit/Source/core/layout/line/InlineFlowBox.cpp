@@ -1116,12 +1116,12 @@ LayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, LayoutUnit blockLeftEdge, L
     InlineBox* box = ltr ? firstChild() : lastChild();
 
     // NOTE: these will cross after foundBox = true.
-    int visibleLeftEdge = blockLeftEdge;
-    int visibleRightEdge = blockRightEdge;
+    int visibleLeftEdge = blockLeftEdge.toInt();
+    int visibleRightEdge = blockRightEdge.toInt();
 
     while (box) {
         int currResult = box->placeEllipsisBox(ltr, LayoutUnit(visibleLeftEdge), LayoutUnit(visibleRightEdge),
-            ellipsisWidth, truncatedWidth, foundBox);
+            ellipsisWidth, truncatedWidth, foundBox).toInt();
         if (currResult != -1 && result == -1)
             result = LayoutUnit(currResult);
 
@@ -1178,10 +1178,10 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
             TextEmphasisPosition emphasisMarkPosition;
             if (style.getTextEmphasisMark() != TextEmphasisMarkNone && toInlineTextBox(curr)->getEmphasisMarkPosition(style, emphasisMarkPosition) && emphasisMarkPosition == TextEmphasisPositionOver) {
                 if (!style.isFlippedLinesWritingMode()) {
-                    int topOfEmphasisMark = curr->logicalTop() - style.font().emphasisMarkHeight(style.textEmphasisMarkString());
+                    int topOfEmphasisMark = (curr->logicalTop() - style.font().emphasisMarkHeight(style.textEmphasisMarkString())).toInt();
                     result = std::max(result, allowedPosition - topOfEmphasisMark);
                 } else {
-                    int bottomOfEmphasisMark = curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString());
+                    int bottomOfEmphasisMark = (curr->logicalBottom() + style.font().emphasisMarkHeight(style.textEmphasisMarkString())).toInt();
                     result = std::max(result, bottomOfEmphasisMark - allowedPosition);
                 }
             }

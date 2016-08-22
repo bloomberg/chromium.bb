@@ -299,8 +299,8 @@ public:
     LayoutUnit paddingRight() const override;
 
     // Override paddingStart/End to return pixel values to match behavor of LayoutTableCell.
-    LayoutUnit paddingEnd() const override { return LayoutUnit(static_cast<int>(LayoutBlock::paddingEnd())); }
-    LayoutUnit paddingStart() const override { return LayoutUnit(static_cast<int>(LayoutBlock::paddingStart())); }
+    LayoutUnit paddingEnd() const override { return LayoutUnit(LayoutBlock::paddingEnd().toInt()); }
+    LayoutUnit paddingStart() const override { return LayoutUnit(LayoutBlock::paddingStart().toInt()); }
 
     LayoutUnit bordersPaddingAndSpacingInRowDirection() const
     {

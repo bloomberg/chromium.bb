@@ -199,14 +199,14 @@ int MouseRelatedEvent::layerX()
 {
     if (!m_hasCachedRelativePosition)
         computeRelativePosition();
-    return m_layerLocation.x();
+    return m_layerLocation.x().toInt();
 }
 
 int MouseRelatedEvent::layerY()
 {
     if (!m_hasCachedRelativePosition)
         computeRelativePosition();
-    return m_layerLocation.y();
+    return m_layerLocation.y().toInt();
 }
 
 int MouseRelatedEvent::offsetX()
@@ -229,26 +229,26 @@ int MouseRelatedEvent::offsetY()
 
 int MouseRelatedEvent::pageX() const
 {
-    return m_pageLocation.x();
+    return m_pageLocation.x().toInt();
 }
 
 int MouseRelatedEvent::pageY() const
 {
-    return m_pageLocation.y();
+    return m_pageLocation.y().toInt();
 }
 
 int MouseRelatedEvent::x() const
 {
     // FIXME: This is not correct.
     // See Microsoft documentation and <http://www.quirksmode.org/dom/w3c_events.html>.
-    return m_clientLocation.x();
+    return m_clientLocation.x().toInt();
 }
 
 int MouseRelatedEvent::y() const
 {
     // FIXME: This is not correct.
     // See Microsoft documentation and <http://www.quirksmode.org/dom/w3c_events.html>.
-    return m_clientLocation.y();
+    return m_clientLocation.y().toInt();
 }
 
 DEFINE_TRACE(MouseRelatedEvent)

@@ -1317,7 +1317,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLay
 
         LayoutRect rect;
         PaintLayer::mapRectInPaintInvalidationContainerToBacking(*searchRoot->layoutObject(), rect);
-        *layerOffset = IntSize(rect.x(), rect.y());
+        *layerOffset = IntSize(rect.x().toInt(), rect.y().toInt());
         return searchRoot;
     }
 
@@ -1335,7 +1335,7 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLay
             *layerType ="squashing";
             LayoutRect rect;
             PaintLayer::mapRectInPaintInvalidationContainerToBacking(*searchRoot->layoutObject(), rect);
-            *layerOffset = IntSize(rect.x(), rect.y());
+            *layerOffset = IntSize(rect.x().toInt(), rect.y().toInt());
             return searchRoot;
         }
     }

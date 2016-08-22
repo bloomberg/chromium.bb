@@ -262,9 +262,9 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
     if (useMockTheme()) {
         // The size and position of the drop-down button is different between
         // the mock theme and the regular aura theme.
-        int spacingTop = box.borderTop() + box.paddingTop();
-        int spacingBottom = box.borderBottom() + box.paddingBottom();
-        int spacingRight = box.borderRight() + box.paddingRight();
+        int spacingTop = (box.borderTop() + box.paddingTop()).toInt();
+        int spacingBottom = (box.borderBottom() + box.paddingBottom()).toInt();
+        int spacingRight = (box.borderRight() + box.paddingRight()).toInt();
         extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 10 - spacingRight;
         extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
     } else {

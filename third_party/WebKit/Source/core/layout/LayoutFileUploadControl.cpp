@@ -125,7 +125,7 @@ void LayoutFileUploadControl::computePreferredLogicalWidths()
         m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.maxWidth().value())));
     }
 
-    int toAdd = borderAndPaddingWidth();
+    int toAdd = borderAndPaddingWidth().toInt();
     m_minPreferredLogicalWidth += toAdd;
     m_maxPreferredLogicalWidth += toAdd;
 

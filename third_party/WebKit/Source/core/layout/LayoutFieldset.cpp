@@ -43,7 +43,7 @@ void LayoutFieldset::computePreferredLogicalWidths()
 {
     LayoutBlockFlow::computePreferredLogicalWidths();
     if (LayoutBox* legend = findInFlowLegend()) {
-        int legendMinWidth = legend->minPreferredLogicalWidth();
+        int legendMinWidth = legend->minPreferredLogicalWidth().toInt();
 
         Length legendMarginLeft = legend->style()->marginLeft();
         Length legendMarginRight = legend->style()->marginRight();

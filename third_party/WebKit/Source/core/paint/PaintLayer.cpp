@@ -1695,7 +1695,7 @@ PassRefPtr<HitTestingTransformState> PaintLayer::createLocalTransformState(Paint
         layoutObject()->getTransformFromContainer(containerLayoutObject, toLayoutSize(offset), containerTransform);
         transformState->applyTransform(containerTransform, HitTestingTransformState::AccumulateTransform);
     } else {
-        transformState->translate(offset.x(), offset.y(), HitTestingTransformState::AccumulateTransform);
+        transformState->translate(offset.x().toInt(), offset.y().toInt(), HitTestingTransformState::AccumulateTransform);
     }
 
     return transformState;

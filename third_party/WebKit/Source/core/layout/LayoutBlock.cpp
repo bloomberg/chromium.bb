@@ -1437,7 +1437,7 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine, LineDirectionMode direction, 
 
 int LayoutBlock::beforeMarginInLineDirection(LineDirectionMode direction) const
 {
-    return direction == HorizontalLine ? marginTop() : marginRight();
+    return (direction == HorizontalLine ? marginTop() : marginRight()).toInt();
 }
 
 int LayoutBlock::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
@@ -1477,7 +1477,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
     ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
 
     const FontMetrics& fontMetrics = style(firstLine)->getFontMetrics();
-    return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
+    return (fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2).toInt();
 }
 
 LayoutUnit LayoutBlock::minLineHeightForReplacedObject(bool isFirstLine, LayoutUnit replacedHeight) const
@@ -1503,7 +1503,7 @@ int LayoutBlock::firstLineBoxBaseline() const
         if (!curr->isFloatingOrOutOfFlowPositioned()) {
             int result = curr->firstLineBoxBaseline();
             if (result != -1)
-                return curr->logicalTop() + result; // Translate to our coordinate space.
+                return (curr->logicalTop() + result).toInt(); // Translate to our coordinate space.
         }
     }
     return -1;
@@ -1514,7 +1514,7 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
     ASSERT(!childrenInline());
     if ((!style()->isOverflowVisible() && !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) || style()->containsSize()) {
         // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
-        return lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft();
+        return (lineDirection == HorizontalLine ? size().height() + marginBottom() : size().width() + marginLeft()).toInt();
     }
 
     if (isWritingModeRoot() && !isRubyRun())
@@ -1526,14 +1526,14 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
             haveNormalFlowChild = true;
             int result = curr->inlineBlockBaseline(lineDirection);
             if (result != -1)
-                return curr->logicalTop() + result; // Translate to our coordinate space.
+                return (curr->logicalTop() + result).toInt(); // Translate to our coordinate space.
         }
     }
     if (!haveNormalFlowChild && hasLineIfEmpty()) {
         const FontMetrics& fontMetrics = firstLineStyle()->getFontMetrics();
-        return fontMetrics.ascent()
+        return (fontMetrics.ascent()
             + (lineHeight(true, lineDirection, PositionOfInteriorLineBoxes) - fontMetrics.height()) / 2
-            + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight());
+            + (lineDirection == HorizontalLine ? borderTop() + paddingTop() : borderRight() + paddingRight())).toInt();
     }
     return -1;
 }

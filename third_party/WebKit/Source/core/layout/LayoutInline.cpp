@@ -631,7 +631,7 @@ public:
     void operator()(const LayoutRect& rect)
     {
         IntRect intRect = enclosingIntRect(rect);
-        intRect.move(m_accumulatedOffset.x(), m_accumulatedOffset.y());
+        intRect.move(m_accumulatedOffset.x().toInt(), m_accumulatedOffset.y().toInt());
         m_rects.append(intRect);
     }
 private:
@@ -1232,7 +1232,7 @@ int LayoutInline::baselinePosition(FontBaseline baselineType, bool firstLine, Li
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     const FontMetrics& fontMetrics = style(firstLine)->getFontMetrics();
-    return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
+    return (fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2).toInt();
 }
 
 LayoutSize LayoutInline::offsetForInFlowPositionedInline(const LayoutBox& child) const

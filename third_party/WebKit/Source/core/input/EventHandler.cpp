@@ -473,7 +473,7 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
 
     // hitTestResultAtPoint is specifically used to hitTest into all frames, thus it always allows child frame content.
     HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
-    HitTestResult result(request, point, padding.height(), padding.width(), padding.height(), padding.width());
+    HitTestResult result(request, point, padding.height().toUnsigned(), padding.width().toUnsigned(), padding.height().toUnsigned(), padding.width().toUnsigned());
 
     // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't

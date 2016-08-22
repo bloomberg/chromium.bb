@@ -193,9 +193,9 @@ float LayoutFlexibleBox::countIntrinsicSizeForAlgorithmChange(LayoutUnit maxPref
 static int synthesizedBaselineFromContentBox(const LayoutBox& box, LineDirectionMode direction)
 {
     if (direction == HorizontalLine) {
-        return box.size().height() - box.borderBottom() - box.paddingBottom() - box.verticalScrollbarWidth();
+        return (box.size().height() - box.borderBottom() - box.paddingBottom() - box.verticalScrollbarWidth()).toInt();
     }
-    return box.size().width() - box.borderLeft() - box.paddingLeft() - box.horizontalScrollbarHeight();
+    return (box.size().width() - box.borderLeft() - box.paddingLeft() - box.horizontalScrollbarHeight()).toInt();
 }
 
 int LayoutFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode direction, LinePositionMode mode) const
@@ -243,19 +243,19 @@ int LayoutFlexibleBox::firstLineBoxBaseline() const
         return -1;
 
     if (!isColumnFlow() && hasOrthogonalFlow(*baselineChild))
-        return crossAxisExtentForChild(*baselineChild) + baselineChild->logicalTop();
+        return (crossAxisExtentForChild(*baselineChild) + baselineChild->logicalTop()).toInt();
     if (isColumnFlow() && !hasOrthogonalFlow(*baselineChild))
-        return mainAxisExtentForChild(*baselineChild) + baselineChild->logicalTop();
+        return (mainAxisExtentForChild(*baselineChild) + baselineChild->logicalTop()).toInt();
 
     int baseline = baselineChild->firstLineBoxBaseline();
     if (baseline == -1) {
         // FIXME: We should pass |direction| into firstLineBoxBaseline and stop bailing out if we're a writing mode root.
         // This would also fix some cases where the flexbox is orthogonal to its container.
         LineDirectionMode direction = isHorizontalWritingMode() ? HorizontalLine : VerticalLine;
-        return synthesizedBaselineFromContentBox(*baselineChild, direction) + baselineChild->logicalTop();
+        return (synthesizedBaselineFromContentBox(*baselineChild, direction) + baselineChild->logicalTop()).toInt();
     }
 
-    return baseline + baselineChild->logicalTop();
+    return (baseline + baselineChild->logicalTop()).toInt();
 }
 
 int LayoutFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
@@ -264,7 +264,7 @@ int LayoutFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
     if (baseline != -1)
         return baseline;
 
-    int marginAscent = direction == HorizontalLine ? marginTop() : marginRight();
+    int marginAscent = (direction == HorizontalLine ? marginTop() : marginRight()).toInt();
     return synthesizedBaselineFromContentBox(*this, direction) + marginAscent;
 }
 

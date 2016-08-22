@@ -110,7 +110,7 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool l
 {
     // Create an ellipsis box.
     EllipsisBox* ellipsisBox = new EllipsisBox(getLineLayoutItem(), ellipsisStr, this,
-        ellipsisWidth, logicalHeight().toFloat(), x(), y(), !prevRootBox(), isHorizontal());
+        ellipsisWidth, logicalHeight().toFloat(), x().toInt(), y().toInt(), !prevRootBox(), isHorizontal());
 
     if (!gEllipsisBoxMap)
         gEllipsisBoxMap = new EllipsisBoxMap();
@@ -231,7 +231,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     computeLogicalBoxHeights(this, maxPositionTop, maxPositionBottom, maxAscent, maxDescent, setMaxAscent, setMaxDescent, noQuirksMode, textBoxDataMap, baselineType(), verticalPositionCache);
 
     if (maxAscent + maxDescent < std::max(maxPositionTop, maxPositionBottom))
-        adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop, maxPositionBottom);
+        adjustMaxAscentAndDescent(maxAscent, maxDescent, maxPositionTop.toInt(), maxPositionBottom.toInt());
 
     if (getLineLayoutItem().styleRef().snapHeightUnit())
         snapHeight(maxAscent, maxDescent, getLineLayoutItem().styleRef());
@@ -585,7 +585,7 @@ void RootInlineBox::ascentAndDescentForBox(InlineBox* box, GlyphOverflowAndFallb
     // If leading is included for the box, then we compute that box.
     if (includeLeading && !setUsedFontWithLeading) {
         int ascentWithLeading = box->baselinePosition(baselineType());
-        int descentWithLeading = box->lineHeight() - ascentWithLeading;
+        int descentWithLeading = (box->lineHeight() - ascentWithLeading).toInt();
         setAscentAndDescent(ascent, descent, ascentWithLeading, descentWithLeading, ascentDescentSet);
 
         // Examine the font box for inline flows and text boxes to see if any part of it is above the baseline.
@@ -666,7 +666,7 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
 
     // Store the cached value.
     if (isLayoutInline && !firstLine)
-        verticalPositionCache.set(boxModel, baselineType(), verticalPosition);
+        verticalPositionCache.set(boxModel, baselineType(), verticalPosition.toInt());
 
     return verticalPosition;
 }

@@ -157,8 +157,8 @@ LineSegment RasterShape::getExcludedInterval(LayoutUnit logicalTop, LayoutUnit l
     if (intervals.isEmpty())
         return LineSegment();
 
-    int y1 = logicalTop;
-    int y2 = logicalTop + logicalHeight;
+    int y1 = logicalTop.toInt();
+    int y2 = (logicalTop + logicalHeight).toInt();
     ASSERT(y2 >= y1);
     if (y2 < intervals.bounds().y() || y1 >= intervals.bounds().maxY())
         return LineSegment();

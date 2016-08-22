@@ -84,7 +84,7 @@ void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPo
     const FloatPoint localOrigin(LayoutPoint(boxOrigin.x(), boxOrigin.y() - deltaY));
     FloatRect clipRect(localOrigin, FloatSize(LayoutSize(m_ellipsisBox.logicalWidth(), h)));
     context.clip(clipRect);
-    context.drawHighlightForText(font, constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
+    context.drawHighlightForText(font, constructTextRun(font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion), localOrigin, h.toInt(), c);
 }
 
 } // namespace blink

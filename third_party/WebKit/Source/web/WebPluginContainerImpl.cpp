@@ -171,8 +171,8 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
 
     IntRect dirtyRect = rect;
     dirtyRect.move(
-        layoutObject->borderLeft() + layoutObject->paddingLeft(),
-        layoutObject->borderTop() + layoutObject->paddingTop());
+        (layoutObject->borderLeft() + layoutObject->paddingLeft()).toInt(),
+        (layoutObject->borderTop() + layoutObject->paddingTop()).toInt());
 
     m_pendingInvalidationRect.unite(dirtyRect);
 
@@ -751,7 +751,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
     WebDragData dragData = dataTransfer->dataObject()->toWebDragData();
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(dataTransfer->sourceOperation());
     WebPoint dragScreenLocation(event->screenX(), event->screenY());
-    WebPoint dragLocation(event->absoluteLocation().x() - location().x(), event->absoluteLocation().y() - location().y());
+    WebPoint dragLocation((event->absoluteLocation().x() - location().x()).toInt(), (event->absoluteLocation().y() - location().y()).toInt());
 
     m_webPlugin->handleDragStatusUpdate(dragStatus, dragData, dragOperationMask, dragLocation, dragScreenLocation);
 }

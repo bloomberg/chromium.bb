@@ -511,7 +511,7 @@ static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
     // TODO(bokan): If view == nullptr, pointInRootFrame will really be pointInRootContent.
-    IntPoint pointInRootFrame = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
+    IntPoint pointInRootFrame = IntPoint(event.absoluteLocation().x().toInt(), event.absoluteLocation().y().toInt());
     if (view)
         pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);
     webEvent.globalX = event.screenX();

@@ -756,8 +756,8 @@ int LayoutBox::reflectionOffset() const
     if (!style()->boxReflect())
         return 0;
     if (style()->boxReflect()->direction() == ReflectionLeft || style()->boxReflect()->direction() == ReflectionRight)
-        return valueForLength(style()->boxReflect()->offset(), borderBoxRect().width());
-    return valueForLength(style()->boxReflect()->offset(), borderBoxRect().height());
+        return valueForLength(style()->boxReflect()->offset(), borderBoxRect().width()).toInt();
+    return valueForLength(style()->boxReflect()->offset(), borderBoxRect().height()).toInt();
 }
 
 LayoutRect LayoutBox::reflectedRect(const LayoutRect& r) const
@@ -1554,7 +1554,7 @@ ResourcePriority LayoutBox::computeResourcePriority() const
 
     int screenArea = 0;
     if (!screenRect.isEmpty() && isVisible)
-        screenArea = static_cast<uint32_t>(screenRect.width() * screenRect.height());
+        screenArea = (screenRect.width() * screenRect.height()).toInt();
     return ResourcePriority(isVisible ? ResourcePriority::Visible : ResourcePriority::NotVisible, screenArea);
 }
 

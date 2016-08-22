@@ -236,7 +236,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
     LayoutPoint startingPoint = LayoutPoint(logicalLeft(), selTop);
     LayoutRect r;
     if (sPos || ePos != static_cast<int>(m_len)) {
-        r = LayoutRect(enclosingIntRect(font.selectionRectForText(textRun, FloatPoint(startingPoint), selHeight, sPos, ePos)));
+        r = LayoutRect(enclosingIntRect(font.selectionRectForText(textRun, FloatPoint(startingPoint), selHeight.toInt(), sPos, ePos)));
     } else { // Avoid computing the font width when the entire line box is selected as an optimization.
         r = LayoutRect(enclosingIntRect(LayoutRect(startingPoint, LayoutSize(m_logicalWidth, selHeight))));
     }
@@ -341,7 +341,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         bool ltr = isLeftToRightDirection();
         if (ltr != flowIsLTR) {
             // Width in pixels of the visible portion of the box, excluding the ellipsis.
-            int visibleBoxWidth = visibleRightEdge - visibleLeftEdge - ellipsisWidth;
+            int visibleBoxWidth = (visibleRightEdge - visibleLeftEdge - ellipsisWidth).toInt();
             ellipsisX = flowIsLTR ? logicalLeft() + visibleBoxWidth : logicalRight() - visibleBoxWidth;
         }
 
@@ -507,7 +507,7 @@ LayoutUnit InlineTextBox::positionForOffset(int offset) const
     int from = !isLeftToRightDirection() ? offset - m_start : 0;
     int to = !isLeftToRightDirection() ? m_len : offset - m_start;
     // FIXME: Do we need to add rightBearing here?
-    return LayoutUnit(font.selectionRectForText(constructTextRun(styleToUse), IntPoint(logicalLeft(), 0), 0, from, to).maxX());
+    return LayoutUnit(font.selectionRectForText(constructTextRun(styleToUse), IntPoint(logicalLeft().toInt(), 0), 0, from, to).maxX());
 }
 
 bool InlineTextBox::containsCaretOffset(int offset) const

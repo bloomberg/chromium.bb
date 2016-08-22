@@ -1173,7 +1173,7 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
     // start and end aren't on the same line, so go from start to the end of its line
     return IntRect(startCaretRect.x(),
         startCaretRect.y(),
-        startCaretRect.width() + extraWidthToEndOfLine,
+        (startCaretRect.width() + extraWidthToEndOfLine).toInt(),
         startCaretRect.height());
 }
 

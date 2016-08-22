@@ -422,13 +422,13 @@ IntRect LayoutListMarker::getRelativeMarkerRect() const
         }
         break;
     case ListStyleCategory::Language:
-        relativeRect = IntRect(0, 0, getWidthOfTextWithSuffix(), style()->font().getFontMetrics().height());
+        relativeRect = IntRect(0, 0, getWidthOfTextWithSuffix().toInt(), style()->font().getFontMetrics().height());
         break;
     }
 
     if (!style()->isHorizontalWritingMode()) {
         relativeRect = relativeRect.transposedRect();
-        relativeRect.setX(size().width() - relativeRect.x() - relativeRect.width());
+        relativeRect.setX((size().width() - relativeRect.x() - relativeRect.width()).toInt());
     }
 
     return relativeRect;

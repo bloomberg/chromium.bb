@@ -155,13 +155,13 @@ public:
     {
         if (!includeLogicalLeftEdge())
             return 0;
-        return isHorizontal() ? boxModelObject().paddingLeft() : boxModelObject().paddingTop();
+        return (isHorizontal() ? boxModelObject().paddingLeft() : boxModelObject().paddingTop()).toInt();
     }
     int paddingLogicalRight() const
     {
         if (!includeLogicalRightEdge())
             return 0;
-        return isHorizontal() ? boxModelObject().paddingRight() : boxModelObject().paddingBottom();
+        return (isHorizontal() ? boxModelObject().paddingRight() : boxModelObject().paddingBottom()).toInt();
     }
 
     bool includeLogicalLeftEdge() const { return m_includeLogicalLeftEdge; }

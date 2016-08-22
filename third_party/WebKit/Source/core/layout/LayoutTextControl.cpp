@@ -83,7 +83,7 @@ void LayoutTextControl::adjustInnerEditorStyle(ComputedStyle& textBlockStyle) co
 
 int LayoutTextControl::textBlockLogicalHeight() const
 {
-    return logicalHeight() - borderAndPaddingLogicalHeight();
+    return (logicalHeight() - borderAndPaddingLogicalHeight()).toInt();
 }
 
 int LayoutTextControl::textBlockLogicalWidth() const
@@ -95,7 +95,7 @@ int LayoutTextControl::textBlockLogicalWidth() const
     if (innerEditor->layoutObject())
         unitWidth -= innerEditor->layoutBox()->paddingStart() + innerEditor->layoutBox()->paddingEnd();
 
-    return unitWidth;
+    return unitWidth.toInt();
 }
 
 void LayoutTextControl::updateFromElement()

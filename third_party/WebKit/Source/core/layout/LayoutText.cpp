@@ -626,7 +626,7 @@ PositionWithAffinity LayoutText::positionForPoint(const LayoutPoint& point)
 
             if (pointBlockDirection < bottom || (blocksAreFlipped && pointBlockDirection == bottom)) {
                 ShouldAffinityBeDownstream shouldAffinityBeDownstream;
-                if (lineDirectionPointFitsInBox(pointLineDirection, box, shouldAffinityBeDownstream))
+                if (lineDirectionPointFitsInBox(pointLineDirection.toInt(), box, shouldAffinityBeDownstream))
                     return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(box, box->offsetForPosition(pointLineDirection), shouldAffinityBeDownstream);
             }
         }
@@ -635,7 +635,7 @@ PositionWithAffinity LayoutText::positionForPoint(const LayoutPoint& point)
 
     if (lastBox) {
         ShouldAffinityBeDownstream shouldAffinityBeDownstream;
-        lineDirectionPointFitsInBox(pointLineDirection, lastBox, shouldAffinityBeDownstream);
+        lineDirectionPointFitsInBox(pointLineDirection.toInt(), lastBox, shouldAffinityBeDownstream);
         return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(lastBox, lastBox->offsetForPosition(pointLineDirection) + lastBox->start(), shouldAffinityBeDownstream);
     }
     return createPositionWithAffinity(0);
@@ -652,8 +652,8 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
 
     InlineTextBox* box = toInlineTextBox(inlineBox);
 
-    int height = box->root().selectionHeight();
-    int top = box->root().selectionTop();
+    int height = box->root().selectionHeight().toInt();
+    int top = box->root().selectionTop().toInt();
 
     // Go ahead and round left to snap it to the nearest pixel.
     LayoutUnit left = box->positionForOffset(caretOffset);
@@ -715,7 +715,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
         left = std::max(left, rootLeft);
     }
 
-    return LayoutRect(style()->isHorizontalWritingMode() ? IntRect(left, top, caretWidth(), height) : IntRect(top, left, height, caretWidth()));
+    return LayoutRect(style()->isHorizontalWritingMode() ? IntRect(left.toInt(), top, caretWidth().toInt(), height) : IntRect(top, left.toInt(), height, caretWidth().toInt()));
 }
 
 ALWAYS_INLINE float LayoutText::widthFromFont(const Font& f, int start, int len, float leadWidth, float textWidthSoFar, TextDirection textDirection, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBoundsAccumulation) const

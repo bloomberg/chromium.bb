@@ -585,10 +585,10 @@ void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width
         count = computedColumnCount;
         width = ((availableWidth - ((count - 1) * columnGap)) / count).clampNegativeToZero();
     } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
-        count = std::max(LayoutUnit(1), (availableWidth + columnGap) / (computedColumnWidth + columnGap));
+        count = std::max(LayoutUnit(1), (availableWidth + columnGap) / (computedColumnWidth + columnGap)).toUnsigned();
         width = ((availableWidth + columnGap) / count) - columnGap;
     } else {
-        count = std::max(std::min(LayoutUnit(computedColumnCount), (availableWidth + columnGap) / (computedColumnWidth + columnGap)), LayoutUnit(1));
+        count = std::max(std::min(LayoutUnit(computedColumnCount), (availableWidth + columnGap) / (computedColumnWidth + columnGap)), LayoutUnit(1)).toUnsigned();
         width = ((availableWidth + columnGap) / count) - columnGap;
     }
 }

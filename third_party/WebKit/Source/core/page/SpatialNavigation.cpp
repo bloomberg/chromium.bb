@@ -555,14 +555,14 @@ void distanceDataForNode(WebFocusType type, const FocusCandidate& current, Focus
     case WebFocusTypeRight:
         navigationAxisDistance = xAxis;
         if (!rectsIntersectOnOrthogonalAxis(type, currentRect, nodeRect))
-            orthogonalBias = currentRect.height() / 2;
+            orthogonalBias = (currentRect.height() / 2).toInt();
         weightedOrthogonalAxisDistance = (yAxis + orthogonalBias) * orthogonalWeightForLeftRight;
         break;
     case WebFocusTypeUp:
     case WebFocusTypeDown:
         navigationAxisDistance = yAxis;
         if (!rectsIntersectOnOrthogonalAxis(type, currentRect, nodeRect))
-            orthogonalBias = currentRect.width() / 2;
+            orthogonalBias = (currentRect.width() / 2).toInt();
         weightedOrthogonalAxisDistance = (xAxis + orthogonalBias) * orthogonalWeightForUpDown;
         break;
     default:

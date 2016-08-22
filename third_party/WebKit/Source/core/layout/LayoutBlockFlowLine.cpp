@@ -103,7 +103,7 @@ public:
                 if (r->m_lineLayoutItem.style()->whiteSpace() != PRE) {
                     InlineTextBox* textBox = toInlineTextBox(r->m_box);
                     RELEASE_ASSERT(m_totalOpportunities);
-                    int expansion = (availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / m_totalOpportunities;
+                    int expansion = ((availableLogicalWidth - totalLogicalWidth) * opportunitiesInRun / m_totalOpportunities).toInt();
                     textBox->setExpansion(expansion);
                     totalLogicalWidth += expansion;
                 }
@@ -781,7 +781,7 @@ void LayoutBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
 // Before restarting the layout loop with a new logicalHeight, remove all floats that were added and reset the resolver.
 inline const InlineIterator& LayoutBlockFlow::restartLayoutRunsAndFloatsInRange(LayoutUnit oldLogicalHeight, LayoutUnit newLogicalHeight,  FloatingObject* lastFloatFromPreviousLine, InlineBidiResolver& resolver,  const InlineIterator& oldEnd)
 {
-    removeFloatingObjectsBelow(lastFloatFromPreviousLine, oldLogicalHeight);
+    removeFloatingObjectsBelow(lastFloatFromPreviousLine, oldLogicalHeight.toInt());
     setLogicalHeight(newLogicalHeight);
     resolver.setPositionIgnoringNestedIsolates(oldEnd);
     return oldEnd;
@@ -1624,9 +1624,9 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit aft
     if (lastRootBox()) {
         LayoutUnit lowestAllowedPosition = std::max(lastRootBox()->lineBottom(), logicalHeight() + paddingAfter());
         if (!style()->isFlippedLinesWritingMode())
-            lastLineAnnotationsAdjustment = lastRootBox()->computeUnderAnnotationAdjustment(lowestAllowedPosition);
+            lastLineAnnotationsAdjustment = lastRootBox()->computeUnderAnnotationAdjustment(lowestAllowedPosition).toInt();
         else
-            lastLineAnnotationsAdjustment = lastRootBox()->computeOverAnnotationAdjustment(lowestAllowedPosition);
+            lastLineAnnotationsAdjustment = lastRootBox()->computeOverAnnotationAdjustment(lowestAllowedPosition).toInt();
     }
 
     // Now add in the bottom border/padding.
@@ -2003,7 +2003,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
 
             LayoutUnit width(indentText == IndentText ? firstLineEllipsisWidth : ellipsisWidth);
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
-            if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
+            if (curr->lineCanAccommodateEllipsis(ltr, blockEdge.toInt(), lineBoxEdge.toInt(), width.toInt())) {
                 LayoutUnit totalLogicalWidth = curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
                 LayoutUnit logicalLeft; // We are only interested in the delta from the base position.
                 LayoutUnit availableLogicalWidth = blockRightEdge - blockLeftEdge;

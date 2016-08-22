@@ -376,7 +376,7 @@ int LayoutTheme::baselinePosition(const LayoutObject* o) const
 
     if (m_platformTheme)
         return box->size().height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
-    return box->size().height() + box->marginTop();
+    return (box->size().height() + box->marginTop()).toInt();
 }
 
 bool LayoutTheme::isControlContainer(ControlPart appearance) const

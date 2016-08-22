@@ -1096,7 +1096,7 @@ void LayoutTableSection::layoutRows()
                 // We'll also do a basic increase of the row height to accommodate the cell if it's bigger, but this isn't quite right
                 // either. It's at least stable though and won't result in an infinite # of relayouts that may never stabilize.
                 LayoutUnit oldLogicalHeight = cell->logicalHeight();
-                rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
+                rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, (oldLogicalHeight - rHeight).toInt());
                 cell->setLogicalHeight(LayoutUnit(rHeight));
                 cell->computeOverflow(oldLogicalHeight, false);
             }
@@ -1157,7 +1157,7 @@ int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row, LayoutUnit lo
         // completely. No point in leaving a page completely blank.
         return 0;
     }
-    return paginationStrut;
+    return paginationStrut.toInt();
 }
 
 void LayoutTableSection::computeOverflowFromCells()
@@ -1372,7 +1372,7 @@ int LayoutTableSection::firstLineBoxBaseline() const
         const CellStruct& cs = firstRow.at(i);
         const LayoutTableCell* cell = cs.primaryCell();
         if (cell)
-            firstLineBaseline = std::max<int>(firstLineBaseline, cell->logicalTop() + cell->borderBefore() + cell->paddingBefore() + cell->contentLogicalHeight());
+            firstLineBaseline = std::max<int>(firstLineBaseline, (cell->logicalTop() + cell->borderBefore() + cell->paddingBefore() + cell->contentLogicalHeight()).toInt());
     }
 
     return firstLineBaseline;

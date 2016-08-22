@@ -274,7 +274,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     textBlockStyle->setOverflowWrap(NormalOverflowWrap);
     textBlockStyle->setTextOverflow(textShouldBeTruncated() ? TextOverflowEllipsis : TextOverflowClip);
 
-    int computedLineHeight = lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes);
+    int computedLineHeight = lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes).toInt();
     // Do not allow line-height to be smaller than our default.
     if (textBlockStyle->fontSize() >= computedLineHeight)
         textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());

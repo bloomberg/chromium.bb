@@ -480,7 +480,7 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
     if (columnLengthInColumnProgressionDirection + columnGap <= 0)
         return 0;
     // Column boundaries are in the middle of the column gap.
-    int index = (offsetInColumnProgressionDirection + columnGap / 2) / (columnLengthInColumnProgressionDirection + columnGap);
+    int index = ((offsetInColumnProgressionDirection + columnGap / 2) / (columnLengthInColumnProgressionDirection + columnGap)).toInt();
     if (index < 0)
         return 0;
     return std::min(unsigned(index), actualColumnCount() - 1);

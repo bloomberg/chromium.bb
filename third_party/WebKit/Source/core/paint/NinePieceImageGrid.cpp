@@ -19,12 +19,12 @@ static int computeEdgeWidth(const BorderImageLength& borderSlice, int borderSide
         return borderSlice.number() * borderSide;
     if (borderSlice.length().isAuto())
         return imageSide;
-    return valueForLength(borderSlice.length(), LayoutUnit(boxExtent));
+    return valueForLength(borderSlice.length(), LayoutUnit(boxExtent)).toInt();
 }
 
 static int computeEdgeSlice(const Length& slice, int maximum)
 {
-    return std::min<int>(maximum, valueForLength(slice, LayoutUnit(maximum)));
+    return std::min<int>(maximum, valueForLength(slice, LayoutUnit(maximum)).toInt());
 }
 
 NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage, IntSize imageSize, IntRect borderImageArea,

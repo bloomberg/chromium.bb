@@ -410,7 +410,7 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
         return 0;
     if (!(style->overflowY() == OverflowScroll || style->overflowY() == OverflowAuto || hasEditableStyle(*focusedElement)))
         return 0;
-    int height = std::min<int>(layoutBox.clientHeight(), frame.view()->visibleHeight());
+    int height = std::min<int>(layoutBox.clientHeight().toInt(), frame.view()->visibleHeight());
     return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));
 }
 

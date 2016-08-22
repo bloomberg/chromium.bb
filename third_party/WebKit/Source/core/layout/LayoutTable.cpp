@@ -659,9 +659,9 @@ void LayoutTable::addOverflowFromChildren()
     // Technically it's odd that we are incorporating the borders into layout overflow, which is only supposed to be about overflow from our
     // descendant objects, but since tables don't support overflow:auto, this works out fine.
     if (collapseBorders()) {
-        int rightBorderOverflow = size().width() + outerBorderRight() - borderRight();
+        int rightBorderOverflow = (size().width() + outerBorderRight() - borderRight()).toInt();
         int leftBorderOverflow = borderLeft() - outerBorderLeft();
-        int bottomBorderOverflow = size().height() + outerBorderBottom() - borderBottom();
+        int bottomBorderOverflow = (size().height() + outerBorderBottom() - borderBottom()).toInt();
         int topBorderOverflow = borderTop() - outerBorderTop();
         IntRect borderOverflowRect(leftBorderOverflow, topBorderOverflow, rightBorderOverflow - leftBorderOverflow, bottomBorderOverflow - topBorderOverflow);
         if (borderOverflowRect != pixelSnappedBorderBoxRect()) {
@@ -731,7 +731,7 @@ void LayoutTable::computePreferredLogicalWidths()
 
     computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
 
-    int bordersPaddingAndSpacing = bordersPaddingAndSpacingInRowDirection();
+    int bordersPaddingAndSpacing = bordersPaddingAndSpacingInRowDirection().toInt();
     m_minPreferredLogicalWidth += bordersPaddingAndSpacing;
     m_maxPreferredLogicalWidth += bordersPaddingAndSpacing;
 
@@ -1341,12 +1341,12 @@ int LayoutTable::firstLineBoxBaseline() const
 
     int baseline = topNonEmptySection->firstLineBoxBaseline();
     if (baseline >= 0)
-        return topNonEmptySection->logicalTop() + baseline;
+        return (topNonEmptySection->logicalTop() + baseline).toInt();
 
     // FF, Presto and IE use the top of the section as the baseline if its first row is empty of cells or content.
     // The baseline of an empty row isn't specified by CSS 2.1.
     if (topNonEmptySection->firstRow() && !topNonEmptySection->firstRow()->firstCell())
-        return topNonEmptySection->logicalTop();
+        return topNonEmptySection->logicalTop().toInt();
 
     return -1;
 }

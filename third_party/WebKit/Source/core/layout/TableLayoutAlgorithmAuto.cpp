@@ -69,9 +69,9 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
                     columnLayout.emptyCellsOnly = false;
 
                 if (cell->colSpan() == 1) {
-                    columnLayout.minLogicalWidth = std::max<int>(cell->minPreferredLogicalWidth(), columnLayout.minLogicalWidth);
+                    columnLayout.minLogicalWidth = std::max<int>(cell->minPreferredLogicalWidth().toInt(), columnLayout.minLogicalWidth);
                     if (cell->maxPreferredLogicalWidth() > columnLayout.maxLogicalWidth) {
-                        columnLayout.maxLogicalWidth = cell->maxPreferredLogicalWidth();
+                        columnLayout.maxLogicalWidth = cell->maxPreferredLogicalWidth().toInt();
                         maxContributor = cell;
                     }
 
@@ -91,7 +91,7 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
                     case Fixed:
                         // ignore width=0
                         if (cellLogicalWidth.isPositive() && !columnLayout.logicalWidth.hasPercent()) {
-                            int logicalWidth = cell->adjustBorderBoxLogicalWidthForBoxSizing(cellLogicalWidth.value());
+                            int logicalWidth = cell->adjustBorderBoxLogicalWidthForBoxSizing(cellLogicalWidth.value()).toInt();
                             if (columnLayout.logicalWidth.isFixed()) {
                                 // Nav/IE weirdness
                                 if ((logicalWidth > columnLayout.logicalWidth.value())
@@ -321,8 +321,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
 
         unsigned effCol = m_table->absoluteColumnToEffectiveColumn(cell->absoluteColumnIndex());
         size_t lastCol = effCol;
-        int cellMinLogicalWidth = cell->minPreferredLogicalWidth() + spacingInRowDirection;
-        int cellMaxLogicalWidth = cell->maxPreferredLogicalWidth() + spacingInRowDirection;
+        int cellMinLogicalWidth = (cell->minPreferredLogicalWidth() + spacingInRowDirection).toInt();
+        int cellMaxLogicalWidth = (cell->maxPreferredLogicalWidth() + spacingInRowDirection).toInt();
         float totalPercent = 0;
         int spanMinLogicalWidth = 0;
         int spanMaxLogicalWidth = 0;
@@ -519,7 +519,7 @@ void TableLayoutAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
 void TableLayoutAlgorithmAuto::layout()
 {
     // table layout based on the values collected in the layout structure.
-    int tableLogicalWidth = m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection();
+    int tableLogicalWidth = (m_table->logicalWidth() - m_table->bordersPaddingAndSpacingInRowDirection()).toInt();
     int available = tableLogicalWidth;
     size_t nEffCols = m_table->numEffectiveColumns();
 
@@ -580,7 +580,7 @@ void TableLayoutAlgorithmAuto::layout()
             Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
             if (logicalWidth.hasPercent()) {
                 int cellLogicalWidth = std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth,
-                    minimumValueForLength(logicalWidth, LayoutUnit(tableLogicalWidth)));
+                    minimumValueForLength(logicalWidth, LayoutUnit(tableLogicalWidth)).toInt());
                 available += m_layoutStruct[i].computedLogicalWidth - cellLogicalWidth;
                 m_layoutStruct[i].computedLogicalWidth = cellLogicalWidth;
             }
