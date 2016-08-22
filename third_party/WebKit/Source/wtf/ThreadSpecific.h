@@ -42,6 +42,7 @@
 #ifndef WTF_ThreadSpecific_h
 #define WTF_ThreadSpecific_h
 
+#include "wtf/AddressSanitizer.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
@@ -155,6 +156,7 @@ inline void ThreadSpecific<T>::set(T* ptr)
 {
     ASSERT(!get());
     pthread_setspecific(m_key, new Data(ptr, this));
+    __lsan_register_root_region(ptr, sizeof(Data));
 }
 
 #elif OS(WIN)
@@ -213,6 +215,7 @@ inline void ThreadSpecific<T>::set(T* ptr)
 {
     ASSERT(!get());
     Data* data = new Data(ptr, this);
+    __lsan_register_root_region(ptr, sizeof(Data));
     data->destructor = &ThreadSpecific<T>::destroy;
     TlsSetValue(tlsKeys()[m_index], data);
 }
@@ -224,7 +227,9 @@ inline void ThreadSpecific<T>::set(T* ptr)
 template<typename T>
 inline void ThreadSpecific<T>::destroy(void* ptr)
 {
-    if (isShutdown())
+    // Never call destructors on the main thread.
+    // This is fine because Blink no longer has a graceful shutdown sequence.
+    if (isMainThread())
         return;
 
     Data* data = static_cast<Data*>(ptr);
@@ -265,6 +270,7 @@ inline ThreadSpecific<T>::operator T*()
         ptr = static_cast<T*>(Partitions::fastZeroedMalloc(sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T)));
         set(ptr);
         new (NotNull, ptr) T;
+        __lsan_register_root_region(ptr, sizeof(T));
     }
     return ptr;
 }
