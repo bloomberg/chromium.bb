@@ -134,7 +134,7 @@
       <paper-submenu class="page-menu" id="advancedPage" actionable
           opened="{{advancedOpened_}}"
           hidden="[[!pageVisibility.advancedSettings]]">
-        <div class="menu-trigger">
+        <div class="menu-trigger" on-tap="ripple_">
           <span>$i18n{advancedPageTitle}</span>
           <iron-icon icon="[[arrowState_(advancedOpened_)]]"></iron-icon>
         </div>
