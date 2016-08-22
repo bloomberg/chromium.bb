@@ -106,7 +106,7 @@
         ['OS=="linux" or OS=="android"', {
           'defines': [
             '__Userspace_os_Linux',
-	    '_GNU_SOURCE'
+            '_GNU_SOURCE'
           ],
           'cflags!': [ '-Werror', '-Wall' ],
           'cflags': [ '-w' ],
@@ -130,16 +130,6 @@
         ['OS=="win"', {
           'defines': [
             '__Userspace_os_Windows',
-            # Manually setting WINVER and _WIN32_WINNT is needed because Chrome
-            # sets WINVER to a newer version of Windows. But compiling usrsctp
-            # this way would be incompatible with Windows XP.
-            'WINVER=0x0502',
-            '_WIN32_WINNT=0x0502',
-          ],
-          'defines!': [
-            # Remove Chrome's WINVER defines to avoid redefinition warnings.
-            'WINVER=0x0A00',
-            '_WIN32_WINNT=0x0A00',
           ],
           'cflags!': [ '/W3', '/WX' ],
           'cflags': [ '/w' ],
