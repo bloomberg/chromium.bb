@@ -148,10 +148,6 @@ bool Shelf::IsVisible() const {
   return shelf_view_->visible();
 }
 
-void Shelf::SchedulePaint() {
-  shelf_view_->SchedulePaintForAllButtons();
-}
-
 AppListButton* Shelf::GetAppListButton() const {
   return shelf_view_->GetAppListButton();
 }

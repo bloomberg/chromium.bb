@@ -98,8 +98,6 @@ class ASH_EXPORT Shelf {
   // TODO(jamescook): Migrate to ShelfWidget::IsShelfVisible().
   bool IsVisible() const;
 
-  void SchedulePaint();
-
   AppListButton* GetAppListButton() const;
 
   // Launch a 0-indexed shelf item in the shelf.

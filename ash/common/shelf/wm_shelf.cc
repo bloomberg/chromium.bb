@@ -105,12 +105,6 @@ bool WmShelf::IsDimmed() const {
   return shelf_layout_manager_->shelf_widget()->GetDimsShelf();
 }
 
-void WmShelf::SchedulePaint() {
-  // Can be called during shutdown if the overflow bubble is visible.
-  if (shelf_)
-    shelf_->SchedulePaint();
-}
-
 bool WmShelf::IsVisible() const {
   return shelf_->IsVisible();
 }

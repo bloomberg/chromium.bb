@@ -59,7 +59,9 @@ class OverflowBubble : public views::PointerWatcher,
   WmShelf* wm_shelf_;
   OverflowBubbleView* bubble_;  // Owned by views hierarchy.
   views::View* anchor_;         // Owned by ShelfView.
-  ShelfView* shelf_view_;       // Owned by |bubble_|.
+
+  // ShelfView containing the overflow items. Owned by |bubble_|.
+  ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubble);
 };

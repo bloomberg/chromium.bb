@@ -29,6 +29,9 @@ OverflowBubble::~OverflowBubble() {
 }
 
 void OverflowBubble::Show(views::View* anchor, ShelfView* shelf_view) {
+  DCHECK(anchor);
+  DCHECK(shelf_view);
+
   Hide();
 
   bubble_ = new OverflowBubbleView(wm_shelf_);
@@ -82,10 +85,11 @@ void OverflowBubble::OnPointerEventObserved(
 
 void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
-  bubble_ = NULL;
-  anchor_ = NULL;
-  wm_shelf_->SchedulePaint();
-  shelf_view_ = NULL;
+  // Update the overflow button in the parent ShelfView.
+  anchor_->SchedulePaint();
+  bubble_ = nullptr;
+  anchor_ = nullptr;
+  shelf_view_ = nullptr;
 }
 
 }  // namespace ash

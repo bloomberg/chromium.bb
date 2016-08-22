@@ -78,11 +78,6 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // require shelf dimming. http://crbug.com/614453
   bool IsDimmed() const;
 
-  // Schedules a repaint for all shelf buttons.
-  // TODO(jamescook): Eliminate when ShelfView moves to //ash/common.
-  // http://crbug.com/615155
-  void SchedulePaint();
-
   // Whether the shelf view is visible.
   // TODO(jamescook): Consolidate this with GetVisibilityState().
   bool IsVisible() const;
