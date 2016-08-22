@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+
+test(function() {
+  var bg = new CSSURLImageValue("http://localhost");
+  assert_equals(bg.state, "unloaded");
+}, "Can construct a new CSSURLImageValue object with url");
+
+</script>

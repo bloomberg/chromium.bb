@@ -660,6 +660,10 @@ interface CSSTranslation : CSSTransformComponent
     getter y
     getter z
     method constructor
+interface CSSURLImageValue : CSSImageValue
+    attribute @@toStringTag
+    getter url
+    method constructor
 interface CSSVariableReferenceValue
     attribute @@toStringTag
     getter fallback

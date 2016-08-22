@@ -32,6 +32,7 @@ public:
         SimpleLengthType,
         TokenStreamType,
         TransformType,
+        URLImageType,
     };
 
     virtual ~CSSStyleValue() { }
