@@ -4,6 +4,9 @@
 
 #include "blimp/client/core/session/assignment_source.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -54,14 +57,19 @@ const char kTCPTransportValue[] = "tcp";
 class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   SimpleURLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> io_loop_task_runner)
-      : io_loop_task_runner_(std::move(io_loop_task_runner)),
-        proxy_config_service_(net::ProxyService::CreateSystemProxyConfigService(
-            io_loop_task_runner_,
-            io_loop_task_runner_)) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
+      : io_task_runner_(io_task_runner), file_task_runner_(file_task_runner) {}
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override {
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+    if (!proxy_config_service_) {
+      proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
+          io_task_runner_, file_task_runner_);
+    }
+
     if (!url_request_context_) {
       net::URLRequestContextBuilder builder;
       builder.set_proxy_config_service(std::move(proxy_config_service_));
@@ -74,19 +82,19 @@ class SimpleURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return io_loop_task_runner_;
+    return io_task_runner_;
   }
 
  private:
-  ~SimpleURLRequestContextGetter() override {}
+  ~SimpleURLRequestContextGetter() override {
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
+  }
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_loop_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
 
-  // Temporary storage for the ProxyConfigService, which needs to be created on
-  // the main thread but cleared on the IO thread.  This will be built in the
-  // constructor and cleared on the IO thread.  Due to the usage of this class
-  // this is safe.
+  // Constructed lazily on the IO thread by GetURLRequestContext().
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleURLRequestContextGetter);
@@ -173,9 +181,10 @@ AssignmentSource::AssignmentSource(
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
     : assigner_endpoint_(assigner_endpoint),
-      file_task_runner_(std::move(file_task_runner)),
+      file_task_runner_(file_task_runner),
       url_request_context_(
-          new SimpleURLRequestContextGetter(network_task_runner)),
+          new SimpleURLRequestContextGetter(network_task_runner,
+                                            file_task_runner)),
       weak_factory_(this) {
   DCHECK(assigner_endpoint_.is_valid());
 }
