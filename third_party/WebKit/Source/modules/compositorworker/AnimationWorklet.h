@@ -5,8 +5,8 @@
 #ifndef AnimationWorklet_h
 #define AnimationWorklet_h
 
+#include "core/workers/Worklet.h"
 #include "modules/ModulesExport.h"
-#include "modules/worklet/Worklet.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

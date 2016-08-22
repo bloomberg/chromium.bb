@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/worklet/Worklet.h"
+#include "core/workers/Worklet.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
@@ -14,7 +14,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
-#include "modules/worklet/WorkletScriptLoader.h"
+#include "core/workers/WorkletScriptLoader.h"
 
 namespace blink {
 

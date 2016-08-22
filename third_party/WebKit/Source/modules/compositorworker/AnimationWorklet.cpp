@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "core/frame/LocalFrame.h"
-#include "modules/worklet/ThreadedWorkletGlobalScopeProxy.h"
+#include "core/workers/ThreadedWorkletGlobalScopeProxy.h"
 
 namespace blink {
 

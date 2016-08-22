@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/worklet/WorkletScriptLoader.h"
+#include "core/workers/WorkletScriptLoader.h"
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ResourceLoader.h"
-#include "modules/worklet/Worklet.h"
+#include "core/workers/Worklet.h"
 
 namespace blink {
 

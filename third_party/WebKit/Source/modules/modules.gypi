@@ -333,7 +333,6 @@
       'webusb/USBIsochronousOutTransferPacket.idl',
       'webusb/USBIsochronousOutTransferResult.idl',
       'webusb/USBOutTransferResult.idl',
-      'worklet/Worklet.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
@@ -1995,11 +1994,6 @@
       'webusb/USBIsochronousOutTransferPacket.h',
       'webusb/USBIsochronousOutTransferResult.h',
       'webusb/USBOutTransferResult.h',
-      'worklet/ThreadedWorkletGlobalScopeProxy.h',
-      'worklet/Worklet.cpp',
-      'worklet/Worklet.h',
-      'worklet/WorkletScriptLoader.cpp',
-      'worklet/WorkletScriptLoader.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

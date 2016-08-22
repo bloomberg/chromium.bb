@@ -7,9 +7,9 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/fetch/ScriptResource.h"
-#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ class ResourceFetcher;
 class WorkletGlobalScopeProxy;
 class WorkletScriptLoader;
 
-class MODULES_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Worklet);
     WTF_MAKE_NONCOPYABLE(Worklet);

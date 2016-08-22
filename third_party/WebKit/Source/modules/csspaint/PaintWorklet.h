@@ -5,9 +5,9 @@
 #ifndef PaintWorklet_h
 #define PaintWorklet_h
 
+#include "core/workers/Worklet.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
-#include "modules/worklet/Worklet.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
