@@ -287,8 +287,7 @@ TEST_F(ComponentUpdaterTest, RegisterComponent) {
 TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   class LoopHandler {
    public:
-    LoopHandler(int max_cnt)
-        : max_cnt_(max_cnt) {}
+    LoopHandler(int max_cnt) : max_cnt_(max_cnt) {}
 
     void OnInstall(
         const std::string& ids,

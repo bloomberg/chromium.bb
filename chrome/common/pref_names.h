@@ -829,6 +829,8 @@ extern const char kMediaRouterFirstRunFlowAcknowledged[];
 extern const char kOriginTrialPublicKey[];
 extern const char kOriginTrialDisabledFeatures[];
 
+extern const char kComponentUpdatesEnabled[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

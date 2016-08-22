@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -19,6 +20,13 @@ class URLRequestContextGetter;
 }
 
 namespace component_updater {
+
+// Registers preferences associated with the component updater configurator
+// for Chrome. The preferences must be registered with the local pref store
+// before they can be queried by the configurator instance.
+// This function is called before MakeChromeComponentUpdaterConfigurator.
+void RegisterPrefsForChromeComponentUpdaterConfigurator(
+    PrefRegistrySimple* registry);
 
 scoped_refptr<update_client::Configurator>
 MakeChromeComponentUpdaterConfigurator(

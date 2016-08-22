@@ -37,6 +37,10 @@ class URLRequestContextGetter;
 class URLRequest;
 }
 
+namespace policy {
+class ComponentUpdaterPolicyTest;
+}
+
 namespace update_client {
 class ComponentInstaller;
 class Configurator;
@@ -155,6 +159,7 @@ class OnDemandUpdater {
 
  private:
   friend class OnDemandTester;
+  friend class policy::ComponentUpdaterPolicyTest;
   friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsUI;
   friend class ::PluginObserver;

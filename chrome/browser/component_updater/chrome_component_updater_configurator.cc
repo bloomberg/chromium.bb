@@ -18,10 +18,12 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #if defined(OS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 #include "components/component_updater/configurator_impl.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -65,7 +67,6 @@ class ChromeConfigurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
 
   ConfiguratorImpl configurator_impl_;
-
   PrefService* pref_service_;  // This member is not owned by this class.
 
   ~ChromeConfigurator() override {}
@@ -164,7 +165,7 @@ bool ChromeConfigurator::EnabledDeltas() const {
 }
 
 bool ChromeConfigurator::EnabledComponentUpdates() const {
-  return configurator_impl_.EnabledComponentUpdates();
+  return pref_service_->GetBoolean(prefs::kComponentUpdatesEnabled);
 }
 
 bool ChromeConfigurator::EnabledBackgroundDownloader() const {
@@ -193,6 +194,12 @@ PrefService* ChromeConfigurator::GetPrefService() const {
 }
 
 }  // namespace
+
+void RegisterPrefsForChromeComponentUpdaterConfigurator(
+    PrefRegistrySimple* registry) {
+  // The component updates are enabled by default, if the preference is not set.
+  registry->RegisterBooleanPref(prefs::kComponentUpdatesEnabled, true);
+}
 
 scoped_refptr<update_client::Configurator>
 MakeChromeComponentUpdaterConfigurator(

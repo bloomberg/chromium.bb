@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"
@@ -17,15 +18,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+std::unique_ptr<TestingPrefServiceSimple> pref(new TestingPrefServiceSimple());
+
 namespace component_updater {
 
 class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
  public:
-  ChromeComponentUpdaterConfiguratorTest();
+  ChromeComponentUpdaterConfiguratorTest() {}
   ~ChromeComponentUpdaterConfiguratorTest() override{};
 
+  // Overrides from testing::Test.
+  void SetUp() override;
+
  protected:
-  PrefService* pref_service() { return pref_service_.get(); }
+  TestingPrefServiceSimple* pref_service() { return pref_service_.get(); }
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -33,8 +39,10 @@ class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeComponentUpdaterConfiguratorTest);
 };
 
-ChromeComponentUpdaterConfiguratorTest::ChromeComponentUpdaterConfiguratorTest()
-    : pref_service_(new TestingPrefServiceSimple()) {}
+void ChromeComponentUpdaterConfiguratorTest::SetUp() {
+  pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+  RegisterPrefsForChromeComponentUpdaterConfigurator(pref_service_->registry());
+}
 
 TEST_F(ChromeComponentUpdaterConfiguratorTest, TestDisablePings) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
@@ -145,6 +153,25 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestEnabledComponentUpdates) {
   base::CommandLine cmdline(*base::CommandLine::ForCurrentProcess());
   const auto config(MakeChromeComponentUpdaterConfigurator(&cmdline, nullptr,
                                                            pref_service()));
+  // Tests the default is set to |true| and the component updates are enabled.
+  EXPECT_TRUE(config->EnabledComponentUpdates());
+
+  // Tests the component updates are disabled.
+  pref_service()->SetManagedPref("component_updates.component_updates_enabled",
+                                 new base::FundamentalValue(false));
+  EXPECT_FALSE(config->EnabledComponentUpdates());
+
+  // Tests the component updates are enabled.
+  pref_service()->SetManagedPref("component_updates.component_updates_enabled",
+                                 new base::FundamentalValue(true));
+  EXPECT_TRUE(config->EnabledComponentUpdates());
+
+  // Sanity check setting the preference back to |false| and then removing it.
+  pref_service()->SetManagedPref("component_updates.component_updates_enabled",
+                                 new base::FundamentalValue(false));
+  EXPECT_FALSE(config->EnabledComponentUpdates());
+  pref_service()->RemoveManagedPref(
+      "component_updates.component_updates_enabled");
   EXPECT_TRUE(config->EnabledComponentUpdates());
 }
 

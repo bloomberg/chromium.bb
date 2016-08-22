@@ -75098,6 +75098,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="339" label="Restrict the UDP port range used by WebRTC"/>
   <int value="340" label="Enable SHA-1 certificates from local trust anchors"/>
   <int value="341" label="Set an external source of URL restrictions"/>
+  <int value="342" label="Enable component updates"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

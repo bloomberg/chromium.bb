@@ -4,12 +4,14 @@
 
 #include "chrome/browser/component_updater/component_updater_prefs.h"
 
+#include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 
 namespace component_updater {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
+  RegisterPrefsForChromeComponentUpdaterConfigurator(registry);
   RegisterPrefsForRecoveryComponent(registry);
   SupervisedUserWhitelistInstaller::RegisterPrefs(registry);
 }

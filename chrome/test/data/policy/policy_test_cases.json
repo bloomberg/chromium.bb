@@ -1969,6 +1969,16 @@
     ]
   },
 
+  "ComponentUpdatesEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "ComponentUpdatesEnabled": true },
+    "pref_mappings": [
+      { "pref": "component_updates.component_updates_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {
@@ -2811,7 +2821,7 @@
       { "pref": "cros.device.system_timezone_automatic_detection" }
     ]
   },
-  
+
   "WebRestrictionsAuthority": {
   },
 

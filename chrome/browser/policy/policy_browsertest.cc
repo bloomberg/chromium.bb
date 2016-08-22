@@ -95,6 +95,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -118,6 +119,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
@@ -3692,6 +3694,276 @@ IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
   EXPECT_TRUE(port_range.empty());
 }
 #endif  // defined(ENABLE_WEBRTC)
+
+// Tests the ComponentUpdater's EnabledComponentUpdates group policy by
+// calling the OnDemand interface. It uses the network interceptor to inspect
+// the presence of the updatedisabled="true" attribute in the update check
+// request. The update check request is expected to fail, since CUP fails.
+class ComponentUpdaterPolicyTest : public PolicyTest {
+ public:
+  ComponentUpdaterPolicyTest();
+  ~ComponentUpdaterPolicyTest() override;
+
+ protected:
+  using TestCaseAction = void (ComponentUpdaterPolicyTest::*)();
+  using TestCase = std::pair<TestCaseAction, TestCaseAction>;
+
+  // These test scenarios run as part of one test case by using the
+  // CallAsync helper, which calls OnDemand, then chains up to the next
+  // scenario when the OnDemandComplete callback fires.
+  void DefaultPolicy_GroupPolicySupported();
+  void FinishDefaultPolicy_GroupPolicySupported();
+
+  void DefaultPolicy_GroupPolicyNotSupported();
+  void FinishDefaultPolicy_GroupPolicyNotSupported();
+
+  void EnabledPolicy_GroupPolicySupported();
+  void FinishEnabledPolicy_GroupPolicySupported();
+
+  void EnabledPolicy_GroupPolicyNotSupported();
+  void FinishEnabledPolicy_GroupPolicyNotSupported();
+
+  void DisabledPolicy_GroupPolicySupported();
+  void FinishDisabled_PolicyGroupPolicySupported();
+
+  void DisabledPolicy_GroupPolicyNotSupported();
+  void FinishDisabledPolicy_GroupPolicyNotSupported();
+
+  void BeginTest();
+  void EndTest();
+
+  void UpdateComponent(const update_client::CrxComponent& crx_component);
+  void CallAsync(TestCaseAction action);
+  void VerifyExpectations(bool update_disabled);
+
+  void SetEnableComponentUpdates(bool enable_component_updates);
+
+  static update_client::CrxComponent MakeCrxComponent(
+      bool supports_group_policy_enable_component_updates);
+
+  TestCase cur_test_case_;
+
+  static const char component_id_[];
+
+  static const bool kUpdateDisabled = true;
+
+ private:
+  void OnDemandComplete(int error);
+
+  std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
+      interceptor_factory_;
+
+  // This member is owned by the |interceptor_factory_|.
+  update_client::URLRequestPostInterceptor* post_interceptor_ = nullptr;
+
+  // This member is owned by g_browser_process;
+  component_updater::ComponentUpdateService* cus_;
+
+  DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterPolicyTest);
+};
+
+const char ComponentUpdaterPolicyTest::component_id_[] =
+    "jebgalgnebhfojomionfpkfelancnnkf";
+
+ComponentUpdaterPolicyTest::ComponentUpdaterPolicyTest() {}
+
+ComponentUpdaterPolicyTest::~ComponentUpdaterPolicyTest() {}
+
+void ComponentUpdaterPolicyTest::SetEnableComponentUpdates(
+    bool enable_component_updates) {
+  PolicyMap policies;
+  policies.Set(
+      key::kComponentUpdatesEnabled, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_MACHINE, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+      base::WrapUnique(new base::FundamentalValue(enable_component_updates)),
+      nullptr);
+  UpdateProviderPolicy(policies);
+}
+
+update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
+    bool supports_group_policy_enable_component_updates) {
+  class MockInstaller : public update_client::CrxInstaller {
+   public:
+    MockInstaller() {}
+
+    MOCK_METHOD1(OnUpdateError, void(int error));
+    MOCK_METHOD2(Install,
+                 bool(const base::DictionaryValue& manifest,
+                      const base::FilePath& unpack_path));
+    MOCK_METHOD2(GetInstalledFile,
+                 bool(const std::string& file, base::FilePath* installed_file));
+    MOCK_METHOD0(Uninstall, bool());
+
+   private:
+    ~MockInstaller() override {}
+  };
+
+  // component id "jebgalgnebhfojomionfpkfelancnnkf".
+  static const uint8_t jebg_hash[] = {
+      0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec, 0x8e, 0xd5, 0xfa,
+      0x54, 0xb0, 0xd2, 0xdd, 0xa5, 0x6e, 0x05, 0x6b, 0xe8, 0x73, 0x47,
+      0xf6, 0xc4, 0x11, 0x9f, 0xbc, 0xb3, 0x09, 0xb3, 0x5b, 0x40};
+
+  // The component uses HTTPS only for network interception purposes.
+  update_client::CrxComponent crx_component;
+  crx_component.pk_hash.assign(std::begin(jebg_hash), std::end(jebg_hash));
+  crx_component.version = Version("0.9");
+  crx_component.installer = scoped_refptr<MockInstaller>(new MockInstaller());
+  crx_component.requires_network_encryption = true;
+  crx_component.supports_group_policy_enable_component_updates =
+      supports_group_policy_enable_component_updates;
+
+  return crx_component;
+}
+
+void ComponentUpdaterPolicyTest::UpdateComponent(
+    const update_client::CrxComponent& crx_component) {
+  post_interceptor_->Reset();
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      new update_client::PartialMatch("updatecheck"), 200));
+  EXPECT_TRUE(cus_->RegisterComponent(crx_component));
+  cus_->GetOnDemandUpdater().OnDemandUpdate(
+      component_id_, base::Bind(&ComponentUpdaterPolicyTest::OnDemandComplete,
+                                base::Unretained(this)));
+}
+
+void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(action, base::Unretained(this)));
+}
+
+void ComponentUpdaterPolicyTest::OnDemandComplete(int error) {
+  CallAsync(cur_test_case_.second);
+}
+
+void ComponentUpdaterPolicyTest::BeginTest() {
+  cus_ = g_browser_process->component_updater();
+
+  interceptor_factory_ =
+      base::MakeUnique<update_client::URLRequestPostInterceptorFactory>(
+          "https", "clients2.google.com",
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+  post_interceptor_ = interceptor_factory_->CreateInterceptor(
+      base::FilePath(FILE_PATH_LITERAL("service/update2")));
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicySupported,
+      &ComponentUpdaterPolicyTest::FinishDefaultPolicy_GroupPolicySupported);
+
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::EndTest() {
+  interceptor_factory_ = nullptr;
+  cus_ = nullptr;
+
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
+void ComponentUpdaterPolicyTest::VerifyExpectations(bool update_disabled) {
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
+      << post_interceptor_->GetRequestsAsString();
+  ASSERT_EQ(1, post_interceptor_->GetCount())
+      << post_interceptor_->GetRequestsAsString();
+  EXPECT_NE(std::string::npos,
+            post_interceptor_->GetRequests()[0].find(base::StringPrintf(
+                "<updatecheck%s/>",
+                update_disabled ? " updatedisabled=\"true\"" : "")));
+}
+
+void ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicySupported() {
+  UpdateComponent(MakeCrxComponent(true));
+}
+
+void ComponentUpdaterPolicyTest::FinishDefaultPolicy_GroupPolicySupported() {
+  // Default policy && policy support -> updates are enabled.
+  VerifyExpectations(!kUpdateDisabled);
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicyNotSupported,
+      &ComponentUpdaterPolicyTest::FinishDefaultPolicy_GroupPolicyNotSupported);
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicyNotSupported() {
+  UpdateComponent(MakeCrxComponent(false));
+}
+
+void ComponentUpdaterPolicyTest::FinishDefaultPolicy_GroupPolicyNotSupported() {
+  // Default policy && no policy support -> updates are enabled.
+  VerifyExpectations(!kUpdateDisabled);
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::EnabledPolicy_GroupPolicySupported,
+      &ComponentUpdaterPolicyTest::FinishEnabledPolicy_GroupPolicySupported);
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::EnabledPolicy_GroupPolicySupported() {
+  SetEnableComponentUpdates(true);
+  UpdateComponent(MakeCrxComponent(true));
+}
+
+void ComponentUpdaterPolicyTest::FinishEnabledPolicy_GroupPolicySupported() {
+  // Updates enabled policy && policy support -> updates are enabled.
+  VerifyExpectations(!kUpdateDisabled);
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::EnabledPolicy_GroupPolicyNotSupported,
+      &ComponentUpdaterPolicyTest::FinishEnabledPolicy_GroupPolicyNotSupported);
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::EnabledPolicy_GroupPolicyNotSupported() {
+  SetEnableComponentUpdates(true);
+  UpdateComponent(MakeCrxComponent(false));
+}
+
+void ComponentUpdaterPolicyTest::FinishEnabledPolicy_GroupPolicyNotSupported() {
+  // Updates enabled policy && no policy support -> updates are enabled.
+  VerifyExpectations(!kUpdateDisabled);
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::DisabledPolicy_GroupPolicySupported,
+      &ComponentUpdaterPolicyTest::FinishDisabled_PolicyGroupPolicySupported);
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::DisabledPolicy_GroupPolicySupported() {
+  SetEnableComponentUpdates(false);
+  UpdateComponent(MakeCrxComponent(true));
+}
+
+void ComponentUpdaterPolicyTest::FinishDisabled_PolicyGroupPolicySupported() {
+  // Updates enabled policy && policy support -> updates are disabled.
+  VerifyExpectations(kUpdateDisabled);
+
+  cur_test_case_ = std::make_pair(
+      &ComponentUpdaterPolicyTest::DisabledPolicy_GroupPolicyNotSupported,
+      &ComponentUpdaterPolicyTest::
+          FinishDisabledPolicy_GroupPolicyNotSupported);
+  CallAsync(cur_test_case_.first);
+}
+
+void ComponentUpdaterPolicyTest::DisabledPolicy_GroupPolicyNotSupported() {
+  SetEnableComponentUpdates(false);
+  UpdateComponent(MakeCrxComponent(false));
+}
+
+void ComponentUpdaterPolicyTest::
+    FinishDisabledPolicy_GroupPolicyNotSupported() {
+  // Updates enabled policy && no policy support -> updates are enabled.
+  VerifyExpectations(!kUpdateDisabled);
+
+  cur_test_case_ = TestCase();
+  CallAsync(&ComponentUpdaterPolicyTest::EndTest);
+}
+
+IN_PROC_BROWSER_TEST_F(ComponentUpdaterPolicyTest, EnabledComponentUpdates) {
+  BeginTest();
+  base::RunLoop().Run();
+}
 
 #if !defined(OS_CHROMEOS)
 // Similar to PolicyTest but sets the proper policy before the browser is

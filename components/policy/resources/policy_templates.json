@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 341
+#   For your editing convenience: highest ID currently used: 342
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8845,6 +8845,24 @@
         'per_profile': False,
       },
       'example_value': 'com.android.chrome.SupervisedUserProvider'
+    },
+    {
+      'name': 'ComponentUpdatesEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:54-', 'chrome_os:54-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 342,
+      'caption': '''Enables component updates in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      'tags': [],
+      'desc': '''Enables component updates for all components in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when not set or set to True.
+
+      If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behavior of the browser, or is critical for its security will not be disabled.
+      Examples of such components include the certificate revocation lists and safe browsing data. ''',
     },
   ],
   'messages': {
