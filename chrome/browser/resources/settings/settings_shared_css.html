@@ -343,7 +343,6 @@
       }
 
       .search-bubble {
-        pointer-events: none;
         position: absolute;
         z-index: 1;
       }
@@ -367,6 +366,14 @@
         position: absolute;
         top: -5px;
         width: 10px;
+      }
+
+      /* Turns the arrow direction downwards, when the bubble is placed above
+       * the anchor element */
+      .search-bubble-innards.above::after {
+        -webkit-transform: rotate(-135deg);
+        bottom: -5px;
+        top: auto;
       }
     </style>
   </template>

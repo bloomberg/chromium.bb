@@ -197,7 +197,21 @@ cr.define('settings', function() {
 
     // Dynamically position the bubble at the edge the associated control
     // element.
-    searchBubble.style.top = element.offsetTop + element.offsetHeight + 'px';
+    var updatePosition = function() {
+      if (innards.classList.contains('above')) {
+        searchBubble.style.top =
+            element.offsetTop - searchBubble.offsetHeight + 'px';
+      } else {
+        searchBubble.style.top =
+            element.offsetTop + element.offsetHeight + 'px';
+      }
+    };
+    updatePosition();
+
+    searchBubble.addEventListener('mouseover', function() {
+      innards.classList.toggle('above');
+      updatePosition();
+    });
   }
 
   /**
