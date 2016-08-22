@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="testContainer">
+    <div id="outer">
+        <div id="inner">
+            <div id="innermost"></div>
+        </div>
+    </div>
+</div>
+<script>
+
+var independent_properties = [
+    // Property name, Value 1, Value 2
+    ["pointerEvents", "auto", "all"],
+    ["visibility", "visible", "hidden"],
+];
+
+independent_properties.forEach(function(test_data)
+{
+    var propertyName = test_data[0];
+    var value1 = test_data[1];
+    var value2 = test_data[2];
+
+    test(function(t)
+    {
+        if (!window.internals)
+            assert_unreached('This test requires window.internals.');
+
+        // Create a nested div structure for the test.
+        var outer = document.createElement("div");
+        var inner = document.createElement("div");
+        var innermost = document.createElement("div");
+        testContainer.appendChild(outer);
+        outer.appendChild(inner);
+        inner.appendChild(innermost);
+
+        outer.offsetTop; // Force recalc.
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 0);
+
+        // Set the whole container to the first value.
+        testContainer.style[propertyName] = value1;
+
+        // All elements start as the first value.
+        assert_equals(getComputedStyle(outer)[propertyName], value1);
+        assert_equals(getComputedStyle(inner)[propertyName], value1);
+        assert_equals(getComputedStyle(innermost)[propertyName], value1);
+        outer.offsetTop; // Force recalc.
+
+        // Changing outer also changes inner and innermost.
+        outer.style[propertyName] = value2;
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Only outer should be recalced (3 without fast path)");
+
+        assert_equals(getComputedStyle(outer)[propertyName], value2);
+        assert_equals(getComputedStyle(inner)[propertyName], value2);
+        assert_equals(getComputedStyle(innermost)[propertyName], value2);
+        outer.offsetTop; // Force recalc.
+
+        // Changing inner to value1 changes all its children to that value.
+        inner.style[propertyName] = value1;
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1, "Only inner should be recalced (2 without fast path)");
+
+        assert_equals(getComputedStyle(outer)[propertyName], value2);
+        assert_equals(getComputedStyle(inner)[propertyName], value1);
+        assert_equals(getComputedStyle(innermost)[propertyName], value1);
+        outer.offsetTop; // Force recalc.
+
+        // Clear for next test.
+        outer.remove();
+    }, "Changing " + propertyName + ", an independent inherited property, propagates correctly with a single style recalc.");
+})
+</script>

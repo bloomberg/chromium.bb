@@ -47,6 +47,7 @@ enum StyleRecalcChange {
     NoChange,
     NoInherit,
     UpdatePseudoElements,
+    IndependentInherit,
     Inherit,
     Force,
     Reattach,

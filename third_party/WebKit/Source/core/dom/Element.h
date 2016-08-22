@@ -666,6 +666,12 @@ private:
     PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
     void setInlineStyleFromString(const AtomicString&);
 
+    // If the only inherited changes in the parent element are independent,
+    // these changes can be directly propagated to this element (the child).
+    // If these conditions are met, propagates the changes to the current style
+    // and returns the new style. Otherwise, returns null.
+    PassRefPtr<ComputedStyle> propagateInheritedProperties(StyleRecalcChange);
+
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
     // TODO(nainar): Make this const ComputedStyle&.
     StyleRecalcChange buildLayoutTree(ComputedStyle&);

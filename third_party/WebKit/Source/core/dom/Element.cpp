@@ -1728,12 +1728,13 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);
 
-    if (change >= Inherit || needsStyleRecalc()) {
+    if (change >= IndependentInherit || needsStyleRecalc()) {
         if (hasRareData()) {
             ElementRareData* data = elementRareData();
-            data->clearComputedStyle();
+            if (change != IndependentInherit)
+                data->clearComputedStyle();
 
-            if (change >= Inherit) {
+            if (change >= IndependentInherit) {
                 if (ElementAnimations* elementAnimations = data->elementAnimations())
                     elementAnimations->setAnimationStyleChange(false);
             }
@@ -1777,15 +1778,40 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
         reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
 }
 
+PassRefPtr<ComputedStyle> Element::propagateInheritedProperties(StyleRecalcChange change)
+{
+    if (change != IndependentInherit)
+        return nullptr;
+    if (needsStyleRecalc())
+        return nullptr;
+    if (hasAnimations())
+        return nullptr;
+    const ComputedStyle* parentStyle = parentComputedStyle();
+    DCHECK(parentStyle);
+    const ComputedStyle* style = computedStyle();
+    if (!style || style->animations() || style->transitions())
+        return nullptr;
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*style);
+    newStyle->propagateIndependentInheritedProperties(*parentStyle);
+    INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), independentInheritedStylesPropagated, 1);
+    return newStyle;
+}
+
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     DCHECK(document().inStyleRecalc());
     DCHECK(!parentOrShadowHostNode()->needsStyleRecalc());
-    DCHECK(change >= Inherit || needsStyleRecalc());
+    DCHECK(change >= IndependentInherit || needsStyleRecalc());
     DCHECK(parentComputedStyle());
 
     RefPtr<ComputedStyle> oldStyle = mutableComputedStyle();
-    RefPtr<ComputedStyle> newStyle = styleForLayoutObject();
+
+    // When propagating inherited changes, we don't need to do a full style recalc
+    // if the only changed properties are independent. In this case, we can simply
+    // set these directly on the ComputedStyle object.
+    RefPtr<ComputedStyle> newStyle = propagateInheritedProperties(change);
+    if (!newStyle)
+        newStyle = styleForLayoutObject();
     DCHECK(newStyle);
 
     StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
@@ -1825,7 +1851,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (change > Inherit || localChange > Inherit)
         return max(localChange, change);
 
-    if (localChange < Inherit) {
+    if (localChange < IndependentInherit) {
         if (oldStyle->hasChildDependentFlags()) {
             if (childNeedsStyleRecalc())
                 return Inherit;

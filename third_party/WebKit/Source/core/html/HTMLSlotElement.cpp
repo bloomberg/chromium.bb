@@ -277,7 +277,7 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLSlotElement::willRecalcStyle(StyleRecalcChange change)
 {
-    if (change < Inherit && getStyleChangeType() < SubtreeStyleChange)
+    if (change < IndependentInherit && getStyleChangeType() < SubtreeStyleChange)
         return;
 
     for (auto& node : m_distributedNodes)

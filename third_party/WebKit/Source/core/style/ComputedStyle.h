@@ -164,11 +164,27 @@ protected:
     struct InheritedData {
         bool operator==(const InheritedData& other) const
         {
+            return compareEqualIndependent(other)
+                && compareEqualNonIndependent(other);
+        }
+
+        bool operator!=(const InheritedData& other) const { return !(*this == other); }
+
+        inline bool compareEqualIndependent(const InheritedData& other) const
+        {
+            // These must match the properties tagged 'independent' in
+            // CSSProperties.in.
+            // TODO(sashab): Generate this function.
+            return (m_visibility == other.m_visibility)
+                && (m_pointerEvents == other.m_pointerEvents);
+        }
+
+        inline bool compareEqualNonIndependent(const InheritedData& other) const
+        {
             return (m_emptyCells == other.m_emptyCells)
                 && (m_captionSide == other.m_captionSide)
                 && (m_listStyleType == other.m_listStyleType)
                 && (m_listStylePosition == other.m_listStylePosition)
-                && (m_visibility == other.m_visibility)
                 && (m_textAlign == other.m_textAlign)
                 && (m_textTransform == other.m_textTransform)
                 && (m_textUnderline == other.m_textUnderline)
@@ -179,12 +195,9 @@ protected:
                 && (m_boxDirection == other.m_boxDirection)
                 && (m_rtlOrdering == other.m_rtlOrdering)
                 && (m_printColorAdjust == other.m_printColorAdjust)
-                && (m_pointerEvents == other.m_pointerEvents)
                 && (m_insideLink == other.m_insideLink)
                 && (m_writingMode == other.m_writingMode);
         }
-
-        bool operator!=(const InheritedData& other) const { return !(*this == other); }
 
         unsigned m_emptyCells : 1; // EEmptyCells
         unsigned m_captionSide : 2; // ECaptionSide
@@ -214,7 +227,8 @@ protected:
 
 // don't inherit
     struct NonInheritedData {
-        // Compare computed styles, differences in other flags should not cause an inequality.
+        // Compare computed styles, differences in inherited bits or other flags
+        // should not cause an inequality.
         bool operator==(const NonInheritedData& other) const
         {
             return m_effectiveDisplay == other.m_effectiveDisplay
@@ -242,6 +256,7 @@ protected:
                 // affectedByActive
                 // affectedByDrag
                 // isLink
+                // isInherited flags
         }
 
         bool operator!=(const NonInheritedData& other) const { return !(*this == other); }
@@ -286,8 +301,29 @@ protected:
         unsigned m_isLink : 1;
 
         mutable unsigned m_hasRemUnits : 1;
+
+
+        // For each independent inherited property, store a 1 if the stored
+        // value was inherited from its parent, or 0 if it is explicitly set on
+        // this element.
+        // Eventually, all properties will have a bit in here to store whether
+        // they were inherited from their parent or not.
+        // Although two ComputedStyles are equal if their nonInheritedData is
+        // equal regardless of the isInherited flags, this struct is stored next
+        // to the existing flags to take advantage of packing as much as possible.
+        // TODO(sashab): Move these flags closer to inheritedData so that it's
+        // clear which inherited properties have a flag stored and which don't.
+        // Keep this list of fields in sync with:
+        // - setBitDefaults()
+        // - The ComputedStyle setter, which must take an extra boolean parameter and set this
+        // - propagateIndependentInheritedProperties() in ComputedStyle.cpp
+        // - The compareEqual() methods in the corresponding class
+        // InheritedFlags
+        unsigned m_isPointerEventsInherited : 1;
+        unsigned m_isVisibilityInherited : 1;
+
         // If you add more style bits here, you will also need to update ComputedStyle::copyNonInheritedFromCached()
-        // 66 bits
+        // 68 bits
     } m_nonInheritedData;
 
 // !END SYNC!
@@ -339,6 +375,10 @@ protected:
         m_nonInheritedData.m_affectedByDrag = false;
         m_nonInheritedData.m_isLink = false;
         m_nonInheritedData.m_hasRemUnits = false;
+
+        // All independently inherited properties default to being inherited.
+        m_nonInheritedData.m_isPointerEventsInherited = true;
+        m_nonInheritedData.m_isVisibilityInherited = true;
     }
 
 private:
@@ -368,6 +408,10 @@ public:
 
     // Computes how the style change should be propagated down the tree.
     static StyleRecalcChange stylePropagationDiff(const ComputedStyle* oldStyle, const ComputedStyle* newStyle);
+
+    // Copies the values of any independent inherited properties from the parent
+    // that are not explicitly set in this style.
+    void propagateIndependentInheritedProperties(const ComputedStyle& parentStyle);
 
     ContentPosition resolvedJustifyContentPosition(const StyleContentAlignmentData& normalValueBehavior) const;
     ContentDistributionType resolvedJustifyContentDistribution(const StyleContentAlignmentData& normalValueBehavior) const;
@@ -1371,6 +1415,7 @@ public:
     static EPointerEvents initialPointerEvents() { return PE_AUTO; }
     EPointerEvents pointerEvents() const { return static_cast<EPointerEvents>(m_inheritedData.m_pointerEvents); }
     void setPointerEvents(EPointerEvents p) { m_inheritedData.m_pointerEvents = p; }
+    void setPointerEventsIsInherited(bool isInherited) { m_nonInheritedData.m_isPointerEventsInherited = isInherited; }
 
     // quotes
     static QuotesData* initialQuotes() { return 0; }
@@ -1448,6 +1493,7 @@ public:
     static EVisibility initialVisibility() { return EVisibility::Visible; }
     EVisibility visibility() const { return static_cast<EVisibility>(m_inheritedData.m_visibility); }
     void setVisibility(EVisibility v) { m_inheritedData.m_visibility = static_cast<unsigned>(v); }
+    void setVisibilityIsInherited(bool isInherited) { m_nonInheritedData.m_isVisibilityInherited = isInherited; }
 
     // white-space inherited
     static EWhiteSpace initialWhiteSpace() { return NORMAL; }
@@ -1690,6 +1736,8 @@ public:
 
     bool inheritedEqual(const ComputedStyle&) const;
     bool nonInheritedEqual(const ComputedStyle&) const;
+    inline bool independentInheritedEqual(const ComputedStyle&) const;
+    inline bool nonIndependentInheritedEqual(const ComputedStyle&) const;
     bool loadingCustomFontsEqual(const ComputedStyle&) const;
     bool inheritedDataShared(const ComputedStyle&) const;
 
