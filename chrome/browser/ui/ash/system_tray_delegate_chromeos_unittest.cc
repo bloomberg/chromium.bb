@@ -55,8 +55,9 @@ class SystemTrayDelegateChromeOSTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOSTest);
 };
 
+// This test is times out flakily: http://crbug.com/639938
 // Test that checking bluetooth status early on does not cause a crash.
-TEST_F(SystemTrayDelegateChromeOSTest, BluetoothStatus) {
+TEST_F(SystemTrayDelegateChromeOSTest, DISABLED_BluetoothStatus) {
   SystemTrayDelegateChromeOS delegate;
   EXPECT_FALSE(delegate.GetBluetoothAvailable());
   EXPECT_FALSE(delegate.GetBluetoothEnabled());
