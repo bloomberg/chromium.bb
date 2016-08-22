@@ -135,7 +135,7 @@ class ConnectTest : public test::ServiceTest,
     run_loop.Run();
   }
   std::unique_ptr<Service> CreateService() override {
-    return base::WrapUnique(new TestService(this));
+    return base::MakeUnique<TestService>(this);
   }
 
   // InterfaceFactory<test::mojom::ExposedInterface>:

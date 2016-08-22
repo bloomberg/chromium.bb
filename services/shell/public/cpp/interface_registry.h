@@ -89,8 +89,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
     return SetInterfaceBinderForName(
-        base::WrapUnique(
-            new internal::InterfaceFactoryBinder<Interface>(factory)),
+        base::MakeUnique<internal::InterfaceFactoryBinder<Interface>>(factory),
         Interface::Name_);
   }
 
@@ -103,8 +102,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner =
           nullptr) {
     return SetInterfaceBinderForName(
-        base::WrapUnique(
-            new internal::CallbackBinder<Interface>(callback, task_runner)),
+        base::MakeUnique<internal::CallbackBinder<Interface>>(callback,
+                                                              task_runner),
         Interface::Name_);
   }
   bool AddInterface(

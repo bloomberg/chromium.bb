@@ -56,7 +56,7 @@ WindowServerServiceTestBase::~WindowServerServiceTestBase() {}
 
 std::unique_ptr<shell::Service>
 WindowServerServiceTestBase::CreateService() {
-  return base::WrapUnique(new WindowServerServiceTestClient(this));
+  return base::MakeUnique<WindowServerServiceTestClient>(this);
 }
 
 }  // namespace ui

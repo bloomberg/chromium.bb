@@ -49,8 +49,8 @@ class ServiceContextRefImpl : public ServiceContextRef {
           base::Bind(&ServiceContextRefFactory::AddRef, factory_));
     }
 
-    return base::WrapUnique(
-        new ServiceContextRefImpl(factory_, service_task_runner_));
+    return base::MakeUnique<ServiceContextRefImpl>(factory_,
+                                                   service_task_runner_);
   }
 
   base::WeakPtr<ServiceContextRefFactory> factory_;
@@ -70,9 +70,8 @@ ServiceContextRefFactory::~ServiceContextRefFactory() {}
 
 std::unique_ptr<ServiceContextRef> ServiceContextRefFactory::CreateRef() {
   AddRef();
-  return base::WrapUnique(
-      new ServiceContextRefImpl(weak_factory_.GetWeakPtr(),
-                                 base::ThreadTaskRunnerHandle::Get()));
+  return base::MakeUnique<ServiceContextRefImpl>(
+      weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 }
 
 void ServiceContextRefFactory::AddRef() {

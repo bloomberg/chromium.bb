@@ -32,7 +32,7 @@ class ServiceImpl : public Service {
 std::unique_ptr<TestCatalogStore> BuildTestCatalogStore() {
   std::unique_ptr<base::ListValue> apps(new base::ListValue);
   apps->Append(BuildPermissiveSerializedAppInfo(kTestName, "test"));
-  return base::WrapUnique(new TestCatalogStore(std::move(apps)));
+  return base::MakeUnique<TestCatalogStore>(std::move(apps));
 }
 
 void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {

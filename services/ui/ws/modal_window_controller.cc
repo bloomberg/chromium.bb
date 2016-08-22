@@ -50,7 +50,7 @@ void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
   window->SetModal();
   system_modal_windows_.push_back(window);
   window_drawn_trackers_.insert(make_pair(
-      window, base::WrapUnique(new ServerWindowDrawnTracker(window, this))));
+      window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));
   window->AddObserver(this);
 
   event_dispatcher_->ReleaseCaptureBlockedByModalWindow(window);

@@ -61,9 +61,8 @@ void ServiceTest::SetUp() {
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
-  service_->set_context(base::WrapUnique(new ServiceContext(
-      service_.get(),
-      background_shell_->CreateServiceRequest(test_name_))));
+  service_->set_context(base::MakeUnique<ServiceContext>(
+      service_.get(), background_shell_->CreateServiceRequest(test_name_)));
   connector_ = service_->connector();
 
   run_loop.Run();

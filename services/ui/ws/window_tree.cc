@@ -394,7 +394,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
                                     const ui::Event& event) {
   if (event_ack_id_) {
     // This is currently waiting for an event ack. Add it to the queue.
-    event_queue_.push(base::WrapUnique(new TargetedEvent(target, event)));
+    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event));
     // TODO(sad): If the |event_queue_| grows too large, then this should notify
     // Display, so that it can stop sending events.
     return;
@@ -404,7 +404,7 @@ void WindowTree::DispatchInputEvent(ServerWindow* target,
   // and dispatch the latest event from the queue instead that still has a live
   // target.
   if (!event_queue_.empty()) {
-    event_queue_.push(base::WrapUnique(new TargetedEvent(target, event)));
+    event_queue_.push(base::MakeUnique<TargetedEvent>(target, event));
     return;
   }
 

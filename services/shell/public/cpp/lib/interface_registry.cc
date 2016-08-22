@@ -38,8 +38,7 @@ bool InterfaceRegistry::AddInterface(
     const base::Callback<void(mojo::ScopedMessagePipeHandle)>& callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   return SetInterfaceBinderForName(
-      base::WrapUnique(
-          new internal::GenericCallbackBinder(callback, task_runner)),
+      base::MakeUnique<internal::GenericCallbackBinder>(callback, task_runner),
       name);
 }
 

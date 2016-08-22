@@ -46,15 +46,15 @@ DisplayCompositor::DisplayCompositor(
   std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (surfaces_context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-    display_output_surface = base::WrapUnique(new DirectOutputSurfaceOzone(
+    display_output_surface = base::MakeUnique<DirectOutputSurfaceOzone>(
         surfaces_context_provider, widget, synthetic_begin_frame_source.get(),
-        GL_TEXTURE_2D, GL_RGB));
+        GL_TEXTURE_2D, GL_RGB);
 #else
     NOTREACHED();
 #endif
   } else {
-    display_output_surface = base::WrapUnique(new DirectOutputSurface(
-        surfaces_context_provider, synthetic_begin_frame_source.get()));
+    display_output_surface = base::MakeUnique<DirectOutputSurface>(
+        surfaces_context_provider, synthetic_begin_frame_source.get());
   }
 
   int max_frames_pending =

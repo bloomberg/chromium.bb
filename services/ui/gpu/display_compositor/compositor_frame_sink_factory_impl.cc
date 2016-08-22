@@ -38,8 +38,8 @@ void CompositorFrameSinkFactoryImpl::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkClientPtr client) {
   // TODO(fsamuel): Use nonce once patch lands:
   // https://codereview.chromium.org/1996783002/
-  sinks_[local_id] = base::WrapUnique(new CompositorFrameSinkImpl(
-      this, local_id, surfaces_state_, std::move(sink), std::move(client)));
+  sinks_[local_id] = base::MakeUnique<CompositorFrameSinkImpl>(
+      this, local_id, surfaces_state_, std::move(sink), std::move(client));
 }
 
 }  // namespace gpu
