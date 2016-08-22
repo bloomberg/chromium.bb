@@ -27,7 +27,9 @@ public class DownloadManagerDelegate {
             String path, long length, String originalUrl, String referer) {
         DownloadManager manager =
                 (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        return manager.addCompletedDownload(fileName, description, true, mimeType, path, length,
+        String newMimeType =
+                ChromeDownloadDelegate.remapGenericMimeType(mimeType, originalUrl, fileName);
+        return manager.addCompletedDownload(fileName, description, true, newMimeType, path, length,
                 false);
     }
 

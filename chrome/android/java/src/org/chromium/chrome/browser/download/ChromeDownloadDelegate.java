@@ -509,13 +509,14 @@ public class ChromeDownloadDelegate {
      * @param filename file name obtained from content disposition header
      * @return The MIME type that should be used for this data.
      */
-    private static String remapGenericMimeType(String mimeType, String url, String filename) {
+    static String remapGenericMimeType(String mimeType, String url, String filename) {
         // If we have one of "generic" MIME types, try to deduce
         // the right MIME type from the file extension (if any):
         if (mimeType == null || mimeType.isEmpty() || "text/plain".equals(mimeType)
                 || "application/octet-stream".equals(mimeType)
                 || "octet/stream".equals(mimeType)
-                || "application/force-download".equals(mimeType)) {
+                || "application/force-download".equals(mimeType)
+                || "application/unknown".equals(mimeType)) {
 
             if (!TextUtils.isEmpty(filename)) {
                 url = filename;
