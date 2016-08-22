@@ -128,8 +128,8 @@ void ExtensionOptionsGuest::DidInitialize(
 
 void ExtensionOptionsGuest::GuestViewDidStopLoading() {
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  DispatchEventToView(base::WrapUnique(new GuestViewEvent(
-      extension_options_internal::OnLoad::kEventName, std::move(args))));
+  DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+      extension_options_internal::OnLoad::kEventName, std::move(args)));
 }
 
 const char* ExtensionOptionsGuest::GetAPINamespace() const {
@@ -149,9 +149,9 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   // Convert the size from physical pixels to logical pixels.
   options.width = PhysicalPixelsToLogicalPixels(pref_size.width());
   options.height = PhysicalPixelsToLogicalPixels(pref_size.height());
-  DispatchEventToView(base::WrapUnique(new GuestViewEvent(
+  DispatchEventToView(base::MakeUnique<GuestViewEvent>(
       extension_options_internal::OnPreferredSizeChanged::kEventName,
-      options.ToValue())));
+      options.ToValue()));
 }
 
 bool ExtensionOptionsGuest::ShouldHandleFindRequestsForEmbedder() const {
@@ -181,9 +181,9 @@ WebContents* ExtensionOptionsGuest::OpenURLFromTab(
 }
 
 void ExtensionOptionsGuest::CloseContents(WebContents* source) {
-  DispatchEventToView(base::WrapUnique(
-      new GuestViewEvent(extension_options_internal::OnClose::kEventName,
-                         base::WrapUnique(new base::DictionaryValue()))));
+  DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+      extension_options_internal::OnClose::kEventName,
+      base::WrapUnique(new base::DictionaryValue())));
 }
 
 bool ExtensionOptionsGuest::HandleContextMenu(

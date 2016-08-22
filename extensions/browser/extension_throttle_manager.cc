@@ -61,8 +61,8 @@ ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
       extensions::kExtensionScheme) {
     return nullptr;
   }
-  return base::WrapUnique(
-      new extensions::ExtensionRequestLimitingThrottle(request, this));
+  return base::MakeUnique<extensions::ExtensionRequestLimitingThrottle>(request,
+                                                                        this);
 }
 
 scoped_refptr<ExtensionThrottleEntryInterface>

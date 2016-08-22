@@ -193,9 +193,9 @@ NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
   network_info.type = api::networking_config::NETWORK_TYPE_WIFI;
   const std::vector<uint8_t>& raw_ssid = network->raw_ssid();
   std::string hex_ssid = base::HexEncode(raw_ssid.data(), raw_ssid.size());
-  network_info.hex_ssid = base::WrapUnique(new std::string(hex_ssid));
-  network_info.ssid = base::WrapUnique(new std::string(network->name()));
-  network_info.guid = base::WrapUnique(new std::string(network->guid()));
+  network_info.hex_ssid = base::MakeUnique<std::string>(hex_ssid);
+  network_info.ssid = base::MakeUnique<std::string>(network->name());
+  network_info.guid = base::MakeUnique<std::string>(network->guid());
   if (bssid)
     network_info.bssid.reset(new std::string(*bssid));
   std::unique_ptr<base::ListValue> results =

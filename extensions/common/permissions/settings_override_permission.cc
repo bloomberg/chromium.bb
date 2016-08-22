@@ -62,7 +62,7 @@ bool SettingsOverrideAPIPermission::FromValue(
 }
 
 std::unique_ptr<base::Value> SettingsOverrideAPIPermission::ToValue() const {
-  return base::WrapUnique(new base::StringValue(setting_value_));
+  return base::MakeUnique<base::StringValue>(setting_value_);
 }
 
 APIPermission* SettingsOverrideAPIPermission::Clone() const {

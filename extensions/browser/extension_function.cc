@@ -334,7 +334,7 @@ bool ExtensionFunction::user_gesture() const {
 
 ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
   return ResponseValue(new ArgumentListResponseValue(
-      name(), "NoArguments", this, base::WrapUnique(new base::ListValue())));
+      name(), "NoArguments", this, base::MakeUnique<base::ListValue>()));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(

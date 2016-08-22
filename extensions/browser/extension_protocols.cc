@@ -587,8 +587,8 @@ net::HttpResponseHeaders* BuildHttpHeaders(
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 CreateExtensionProtocolHandler(bool is_incognito,
                                extensions::InfoMap* extension_info_map) {
-  return base::WrapUnique(
-      new ExtensionProtocolHandler(is_incognito, extension_info_map));
+  return base::MakeUnique<ExtensionProtocolHandler>(is_incognito,
+                                                    extension_info_map);
 }
 
 }  // namespace extensions

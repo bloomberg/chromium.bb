@@ -324,9 +324,9 @@ void CastChannelOpenFunction::AsyncWorkStart() {
 
   // Construct read delegates.
   std::unique_ptr<api::cast_channel::CastTransport::Delegate> delegate(
-      base::WrapUnique(new CastMessageHandler(
+      base::MakeUnique<CastMessageHandler>(
           base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr()), socket,
-          api_->GetLogger())));
+          api_->GetLogger()));
   if (socket->keep_alive()) {
     // Wrap read delegate in a KeepAliveDelegate for timeout handling.
     api::cast_channel::KeepAliveDelegate* keep_alive =
@@ -336,9 +336,8 @@ void CastChannelOpenFunction::AsyncWorkStart() {
     std::unique_ptr<base::Timer> injected_timer =
         api_->GetInjectedTimeoutTimerForTest();
     if (injected_timer) {
-      keep_alive->SetTimersForTest(
-          base::WrapUnique(new base::Timer(false, false)),
-          std::move(injected_timer));
+      keep_alive->SetTimersForTest(base::MakeUnique<base::Timer>(false, false),
+                                   std::move(injected_timer));
     }
     delegate.reset(keep_alive);
   }

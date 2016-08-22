@@ -271,7 +271,7 @@ ScriptInjectionManager::~ScriptInjectionManager() {
 
 void ScriptInjectionManager::OnRenderFrameCreated(
     content::RenderFrame* render_frame) {
-  rfo_helpers_.push_back(base::WrapUnique(new RFOHelper(render_frame, this)));
+  rfo_helpers_.push_back(base::MakeUnique<RFOHelper>(render_frame, this));
 }
 
 void ScriptInjectionManager::OnExtensionUnloaded(

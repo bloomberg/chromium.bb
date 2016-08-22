@@ -93,7 +93,7 @@ std::unique_ptr<EventListener> CreateEventListenerForURL(
 scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
   ExtensionBuilder builder;
   std::unique_ptr<base::DictionaryValue> manifest =
-      base::WrapUnique(new base::DictionaryValue());
+      base::MakeUnique<base::DictionaryValue>();
   manifest->SetString("name", "foo");
   manifest->SetString("version", "1.0.0");
   manifest->SetInteger("manifest_version", 2);

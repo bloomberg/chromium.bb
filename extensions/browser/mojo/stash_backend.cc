@@ -102,11 +102,11 @@ StashBackend::~StashBackend() {
 
 void StashBackend::AddToStash(mojo::Array<StashedObjectPtr> stashed_objects) {
   for (size_t i = 0; i < stashed_objects.size(); i++) {
-    stashed_objects_.push_back(base::WrapUnique(new StashEntry(
+    stashed_objects_.push_back(base::MakeUnique<StashEntry>(
         std::move(stashed_objects[i]),
         has_notified_ ? base::Closure()
                       : base::Bind(&StashBackend::OnHandleReady,
-                                   weak_factory_.GetWeakPtr()))));
+                                   weak_factory_.GetWeakPtr())));
   }
 }
 

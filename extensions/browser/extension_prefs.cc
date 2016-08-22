@@ -348,10 +348,9 @@ ExtensionPrefs* ExtensionPrefs::Create(
     ExtensionPrefValueMap* extension_pref_value_map,
     bool extensions_disabled,
     const std::vector<ExtensionPrefsObserver*>& early_observers) {
-  return ExtensionPrefs::Create(browser_context, prefs, root_dir,
-                                extension_pref_value_map, extensions_disabled,
-                                early_observers,
-                                base::WrapUnique(new TimeProvider()));
+  return ExtensionPrefs::Create(
+      browser_context, prefs, root_dir, extension_pref_value_map,
+      extensions_disabled, early_observers, base::MakeUnique<TimeProvider>());
 }
 
 // static
@@ -609,8 +608,8 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
-  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
-                                            explicit_hosts, scriptable_hosts));
+  return base::MakeUnique<PermissionSet>(apis, manifest_permissions,
+                                         explicit_hosts, scriptable_hosts);
 }
 
 // Set the API or Manifest permissions.

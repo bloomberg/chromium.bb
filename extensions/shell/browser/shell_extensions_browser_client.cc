@@ -190,7 +190,7 @@ void ShellExtensionsBrowserClient::RegisterMojoServices(
 std::unique_ptr<RuntimeAPIDelegate>
 ShellExtensionsBrowserClient::CreateRuntimeAPIDelegate(
     content::BrowserContext* context) const {
-  return base::WrapUnique(new ShellRuntimeAPIDelegate());
+  return base::MakeUnique<ShellRuntimeAPIDelegate>();
 }
 
 const ComponentExtensionResourceManager*

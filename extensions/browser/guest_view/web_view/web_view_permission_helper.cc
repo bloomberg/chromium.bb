@@ -337,20 +337,20 @@ int WebViewPermissionHelper::RequestPermission(
   args->SetInteger(webview::kRequestId, request_id);
   switch (permission_type) {
     case WEB_VIEW_PERMISSION_TYPE_NEW_WINDOW: {
-      web_view_guest_->DispatchEventToView(base::WrapUnique(
-          new GuestViewEvent(webview::kEventNewWindow, std::move(args))));
+      web_view_guest_->DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+          webview::kEventNewWindow, std::move(args)));
       break;
     }
     case WEB_VIEW_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
-      web_view_guest_->DispatchEventToView(base::WrapUnique(
-          new GuestViewEvent(webview::kEventDialog, std::move(args))));
+      web_view_guest_->DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+          webview::kEventDialog, std::move(args)));
       break;
     }
     default: {
       args->SetString(webview::kPermission,
                       PermissionTypeToString(permission_type));
-      web_view_guest_->DispatchEventToView(base::WrapUnique(new GuestViewEvent(
-          webview::kEventPermissionRequest, std::move(args))));
+      web_view_guest_->DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+          webview::kEventPermissionRequest, std::move(args)));
       break;
     }
   }

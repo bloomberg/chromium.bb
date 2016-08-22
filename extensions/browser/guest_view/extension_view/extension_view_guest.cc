@@ -128,8 +128,8 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
 
   std::unique_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url_.spec());
-  DispatchEventToView(base::WrapUnique(
-      new GuestViewEvent(extensionview::kEventLoadCommit, std::move(args))));
+  DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+      extensionview::kEventLoadCommit, std::move(args)));
 }
 
 void ExtensionViewGuest::DidNavigateMainFrame(

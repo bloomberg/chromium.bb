@@ -336,8 +336,8 @@ std::unique_ptr<base::SharedMemory> UserScriptLoader::Serialize(
                                             &readonly_handle))
     return std::unique_ptr<base::SharedMemory>();
 
-  return base::WrapUnique(new base::SharedMemory(readonly_handle,
-                                                 /*read_only=*/true));
+  return base::MakeUnique<base::SharedMemory>(readonly_handle,
+                                              /*read_only=*/true);
 }
 
 void UserScriptLoader::AddObserver(Observer* observer) {

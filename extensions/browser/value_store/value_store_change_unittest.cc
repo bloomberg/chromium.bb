@@ -20,7 +20,7 @@ namespace {
 
 TEST(ValueStoreChangeTest, NullOldValue) {
   ValueStoreChange change("key", nullptr,
-                          base::WrapUnique(new base::StringValue("value")));
+                          base::MakeUnique<base::StringValue>("value"));
 
   EXPECT_EQ("key", change.key());
   EXPECT_EQ(NULL, change.old_value());
@@ -31,8 +31,8 @@ TEST(ValueStoreChangeTest, NullOldValue) {
 }
 
 TEST(ValueStoreChangeTest, NullNewValue) {
-  ValueStoreChange change(
-      "key", base::WrapUnique(new base::StringValue("value")), nullptr);
+  ValueStoreChange change("key", base::MakeUnique<base::StringValue>("value"),
+                          nullptr);
 
   EXPECT_EQ("key", change.key());
   {
@@ -44,8 +44,8 @@ TEST(ValueStoreChangeTest, NullNewValue) {
 
 TEST(ValueStoreChangeTest, NonNullValues) {
   ValueStoreChange change("key",
-                          base::WrapUnique(new base::StringValue("old_value")),
-                          base::WrapUnique(new base::StringValue("new_value")));
+                          base::MakeUnique<base::StringValue>("old_value"),
+                          base::MakeUnique<base::StringValue>("new_value"));
 
   EXPECT_EQ("key", change.key());
   {

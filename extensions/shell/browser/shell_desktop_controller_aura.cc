@@ -185,8 +185,8 @@ ShellDesktopControllerAura::ShellDesktopControllerAura()
   display_configurator_->Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
 #elif defined(USE_X11)
-  display_configurator_->Init(
-      base::WrapUnique(new ui::NativeDisplayDelegateX11()), false);
+  display_configurator_->Init(base::MakeUnique<ui::NativeDisplayDelegateX11>(),
+                              false);
 #endif
   display_configurator_->ForceInitialConfigure(0);
   display_configurator_->AddObserver(this);

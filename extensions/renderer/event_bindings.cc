@@ -126,8 +126,7 @@ bool AddFilter(const std::string& event_name,
   FilteredEventListenerCounts::const_iterator counts = all_counts.find(key);
   if (counts == all_counts.end()) {
     counts =
-        all_counts
-            .insert(std::make_pair(key, base::WrapUnique(new ValueCounter())))
+        all_counts.insert(std::make_pair(key, base::MakeUnique<ValueCounter>()))
             .first;
   }
   return counts->second->Add(filter);
@@ -347,8 +346,8 @@ void EventBindings::MatchAgainstEventFilter(
 
 std::unique_ptr<EventMatcher> EventBindings::ParseEventMatcher(
     std::unique_ptr<base::DictionaryValue> filter) {
-  return base::WrapUnique(new EventMatcher(
-      std::move(filter), context()->GetRenderFrame()->GetRoutingID()));
+  return base::MakeUnique<EventMatcher>(
+      std::move(filter), context()->GetRenderFrame()->GetRoutingID());
 }
 
 void EventBindings::OnInvalidated() {

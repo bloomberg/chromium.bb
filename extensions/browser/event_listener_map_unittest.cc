@@ -69,9 +69,9 @@ class EventListenerMapTest : public testing::Test {
                                      const GURL& url) {
     EventFilteringInfo info;
     info.SetURL(url);
-    std::unique_ptr<Event> result(new Event(
-        events::FOR_TEST, event_name, base::WrapUnique(new ListValue()), NULL,
-        GURL(), EventRouter::USER_GESTURE_UNKNOWN, info));
+    std::unique_ptr<Event> result(
+        new Event(events::FOR_TEST, event_name, base::MakeUnique<ListValue>(),
+                  NULL, GURL(), EventRouter::USER_GESTURE_UNKNOWN, info));
     return result;
   }
 

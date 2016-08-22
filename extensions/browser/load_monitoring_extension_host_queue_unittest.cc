@@ -70,7 +70,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
   // Creates a new DeferredStartRenderHost. Ownership is held by this class,
   // not passed to caller.
   StubDeferredStartRenderHost* CreateHost() {
-    stubs_.push_back(base::WrapUnique(new StubDeferredStartRenderHost()));
+    stubs_.push_back(base::MakeUnique<StubDeferredStartRenderHost>());
     return stubs_.back().get();
   }
 

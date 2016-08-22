@@ -225,9 +225,9 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
     return false;
   receive_complete_ = callback;
   receive_buffer_ = new net::IOBuffer(buffer_size_);
-  io_handler_->Read(base::WrapUnique(new device::ReceiveBuffer(
+  io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
       receive_buffer_, buffer_size_,
-      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()))));
+      base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr())));
   receive_timeout_task_.reset();
   if (receive_timeout_ > 0) {
     receive_timeout_task_.reset(new TimeoutTask(
@@ -243,8 +243,8 @@ bool SerialConnection::Send(const std::vector<char>& data,
   if (!send_complete_.is_null())
     return false;
   send_complete_ = callback;
-  io_handler_->Write(base::WrapUnique(new device::SendBuffer(
-      data, base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()))));
+  io_handler_->Write(base::MakeUnique<device::SendBuffer>(
+      data, base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr())));
   send_timeout_task_.reset();
   if (send_timeout_ > 0) {
     send_timeout_task_.reset(new TimeoutTask(

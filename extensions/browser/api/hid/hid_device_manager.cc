@@ -130,8 +130,8 @@ void HidDeviceManager::GetApiDevices(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, base::Passed(&devices)));
   } else {
-    pending_enumerations_.push_back(base::WrapUnique(
-        new GetApiDevicesParams(extension, filters, callback)));
+    pending_enumerations_.push_back(
+        base::MakeUnique<GetApiDevicesParams>(extension, filters, callback));
   }
 }
 

@@ -38,8 +38,8 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 
 std::unique_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
-  return base::WrapUnique(
-      new ShellNetworkDelegate(browser_context_, extension_info_map_));
+  return base::MakeUnique<ShellNetworkDelegate>(browser_context_,
+                                                extension_info_map_);
 }
 
 }  // namespace extensions

@@ -42,7 +42,7 @@ std::unique_ptr<KeyedService> CreateStorageFrontendForTesting(
 
 std::unique_ptr<KeyedService> BuildEventRouter(
     content::BrowserContext* context) {
-  return base::WrapUnique(new extensions::EventRouter(context, nullptr));
+  return base::MakeUnique<extensions::EventRouter>(context, nullptr);
 }
 
 }  // namespace

@@ -20,7 +20,7 @@ namespace api {
 
 static std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::WrapUnique(new ApiResourceManager<ResumableUDPSocket>(context));
+  return base::MakeUnique<ApiResourceManager<ResumableUDPSocket>>(context);
 }
 
 class SocketsUdpUnitTest : public ApiUnitTest {
