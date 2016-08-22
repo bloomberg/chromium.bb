@@ -73,7 +73,7 @@ const std::string* FlashFontFileResource::AddFontTable(
     uint32_t table,
     const std::string& contents) {
   FontTableMap::const_iterator it =
-      font_tables_.set(table, base::WrapUnique(new std::string(contents)));
+      font_tables_.set(table, base::MakeUnique<std::string>(contents));
   return it->second;
 }
 

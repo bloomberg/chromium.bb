@@ -232,8 +232,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(0, &buffer_handle) ||
       !audio_buffer_manager_.SetBuffers(
           audio_buffer_count, audio_buffer_size,
-          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
-          true)) {
+          base::MakeUnique<base::SharedMemory>(buffer_handle, false), true)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;
   }
@@ -242,8 +241,7 @@ void AudioEncoderResource::OnPluginMsgInitializeReply(
   if (!params.TakeSharedMemoryHandleAtIndex(1, &buffer_handle) ||
       !bitstream_buffer_manager_.SetBuffers(
           bitstream_buffer_count, bitstream_buffer_size,
-          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
-          false)) {
+          base::MakeUnique<base::SharedMemory>(buffer_handle, false), false)) {
     RunCallback(&initialize_callback_, PP_ERROR_NOMEMORY);
     return;
   }

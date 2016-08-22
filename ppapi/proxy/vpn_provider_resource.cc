@@ -207,10 +207,10 @@ void VpnProviderResource::OnPluginMsgBindReply(
       NOTREACHED();
       return;
     }
-    send_packet_buffer_ = base::WrapUnique(new ppapi::VpnProviderSharedBuffer(
-        queue_size, max_packet_size, std::move(send_shm)));
-    recv_packet_buffer_ = base::WrapUnique(new ppapi::VpnProviderSharedBuffer(
-        queue_size, max_packet_size, std::move(receive_shm)));
+    send_packet_buffer_ = base::MakeUnique<ppapi::VpnProviderSharedBuffer>(
+        queue_size, max_packet_size, std::move(send_shm));
+    recv_packet_buffer_ = base::MakeUnique<ppapi::VpnProviderSharedBuffer>(
+        queue_size, max_packet_size, std::move(receive_shm));
 
     bound_ = (result == PP_OK);
   }

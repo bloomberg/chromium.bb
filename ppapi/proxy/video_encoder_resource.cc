@@ -351,8 +351,7 @@ void VideoEncoderResource::OnPluginMsgGetVideoFramesReply(
 
   if (!buffer_manager_.SetBuffers(
           frame_count, frame_length,
-          base::WrapUnique(new base::SharedMemory(buffer_handle, false)),
-          true)) {
+          base::MakeUnique<base::SharedMemory>(buffer_handle, false), true)) {
     NotifyError(PP_ERROR_FAILED);
     return;
   }
