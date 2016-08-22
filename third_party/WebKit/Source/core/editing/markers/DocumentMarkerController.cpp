@@ -104,14 +104,14 @@ void DocumentMarkerController::addMarker(const Position& start, const Position& 
     }
 }
 
-void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activeMatch)
+void DocumentMarkerController::addTextMatchMarker(const EphemeralRange& range, bool activeMatch)
 {
     // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
     // see http://crbug.com/590369 for more details.
-    range->startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
-    for (TextIterator markedText(range->startPosition(), range->endPosition()); !markedText.atEnd(); markedText.advance())
+    for (TextIterator markedText(range.startPosition(), range.endPosition()); !markedText.atEnd(); markedText.advance())
         addMarker(markedText.currentContainer(), DocumentMarker(markedText.startOffsetInCurrentContainer(), markedText.endOffsetInCurrentContainer(), activeMatch));
     // Don't invalidate tickmarks here. TextFinder invalidates tickmarks using a throttling algorithm. crbug.com/6819.
 }
@@ -713,19 +713,25 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
     }
 }
 
-bool DocumentMarkerController::setMarkersActive(Range* range, bool active)
+bool DocumentMarkerController::setMarkersActive(const EphemeralRange& range, bool active)
 {
     if (!possiblyHasMarkers(DocumentMarker::AllMarkers()))
         return false;
 
     DCHECK(!m_markers.isEmpty());
 
-    Node* startContainer = range->startContainer();
-    Node* endContainer = range->endContainer();
+    Node* const startContainer = range.startPosition().computeContainerNode();
+    DCHECK(startContainer);
+    Node* const endContainer = range.endPosition().computeContainerNode();
+    DCHECK(endContainer);
+
+    const unsigned containerStartOffset = range.startPosition().computeOffsetInContainerNode();
+    const unsigned containerEndOffset = range.endPosition().computeOffsetInContainerNode();
+
     bool markerFound = false;
-    for (Node& node : EphemeralRange(range).nodes()) {
-        int startOffset = node == startContainer ? range->startOffset() : 0;
-        int endOffset = node == endContainer ? range->endOffset() : INT_MAX;
+    for (Node& node : range.nodes()) {
+        int startOffset = node == startContainer ? containerStartOffset : 0;
+        int endOffset = node == endContainer ? containerEndOffset : INT_MAX;
         markerFound |= setMarkersActive(&node, startOffset, endOffset, active);
     }
     return markerFound;

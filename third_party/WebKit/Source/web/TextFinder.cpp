@@ -366,7 +366,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
                 identifier);
         }
 
-        ownerFrame().frame()->document()->markers().addTextMatchMarker(resultRange, foundActiveMatch);
+        ownerFrame().frame()->document()->markers().addTextMatchMarker(EphemeralRange(resultRange), foundActiveMatch);
 
         m_findMatchesCache.append(FindMatch(resultRange, m_lastMatchCount + matchCount));
 
@@ -662,7 +662,7 @@ bool TextFinder::setMarkerActive(Range* range, bool active)
 {
     if (!range || range->collapsed())
         return false;
-    return ownerFrame().frame()->document()->markers().setMarkersActive(range, active);
+    return ownerFrame().frame()->document()->markers().setMarkersActive(EphemeralRange(range), active);
 }
 
 void TextFinder::unmarkAllTextMatches()

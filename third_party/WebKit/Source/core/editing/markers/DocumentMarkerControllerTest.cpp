@@ -252,7 +252,7 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest)
     EphemeralRange ephemeralRange = EphemeralRange::rangeOfContents(*bElement);
     Position startBElement = toPositionInDOMTree(ephemeralRange.startPosition());
     Position endBElement = toPositionInDOMTree(ephemeralRange.endPosition());
-    Range* range = Range::create(document(), startBElement, endBElement);
+    const EphemeralRange range(startBElement, endBElement);
     // Try to make active a marker that doesn't exist.
     EXPECT_FALSE(markerController().setMarkersActive(range, true));
 

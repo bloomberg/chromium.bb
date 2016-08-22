@@ -61,7 +61,7 @@ public:
 
     void clear();
     void addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType, const String& description = emptyString(), uint32_t hash = 0);
-    void addTextMatchMarker(const Range*, bool activeMatch);
+    void addTextMatchMarker(const EphemeralRange&, bool activeMatch);
     void addCompositionMarker(const Position& start, const Position& end, Color underlineColor, bool thick, Color backgroundColor);
 
     void copyMarkers(Node* srcNode, unsigned startOffset, int length, Node* dstNode, int delta);
@@ -80,7 +80,7 @@ public:
     void repaintMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void shiftMarkers(Node*, unsigned startOffset, int delta);
     // Returns true if markers within a range are found.
-    bool setMarkersActive(Range*, bool);
+    bool setMarkersActive(const EphemeralRange&, bool);
     // Returns true if markers within a range defined by a node, |startOffset| and |endOffset| are found.
     bool setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool);
     bool hasMarkers(Node* node) const { return m_markers.contains(node); }

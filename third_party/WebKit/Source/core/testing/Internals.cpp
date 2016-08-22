@@ -902,7 +902,7 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive)
 {
     ASSERT(range);
     range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
-    range->ownerDocument().markers().addTextMatchMarker(range, isActive);
+    range->ownerDocument().markers().addTextMatchMarker(EphemeralRange(range), isActive);
 }
 
 void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active)
