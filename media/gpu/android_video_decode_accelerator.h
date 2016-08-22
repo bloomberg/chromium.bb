@@ -212,9 +212,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // software when autodetecting can sometimes hang mediaserver.
     bool allow_autodetection_ = false;
 
-    // Should we notify AVDAManager when codec configuration completes?
-    bool notify_completion_ = false;
-
    protected:
     friend class base::RefCountedThreadSafe<CodecConfig>;
     virtual ~CodecConfig();

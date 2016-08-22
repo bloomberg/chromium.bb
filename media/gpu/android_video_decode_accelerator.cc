@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
@@ -105,9 +106,13 @@ constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
 // from breaking the pipeline, if we're about to be reset anyway.
 constexpr base::TimeDelta ErrorPostingDelay = base::TimeDelta::FromSeconds(2);
 
-// Maximum number of concurrent, incomplete codec creations that we'll allow
-// before turning off autodection of codec type.
-enum { kMaxConcurrentCodecAutodetections = 4 };
+// Give tasks on the construction thread 800ms before considering them hung.
+// MediaCodec.configure() calls typically take 100-200ms on a N5, so 800ms is
+// expected to very rarely result in false positives. Also, false positives have
+// low impact because we resume using the thread if its apparently hung task
+// completes.
+constexpr base::TimeDelta kHungTaskDetectionTimeout =
+    base::TimeDelta::FromMilliseconds(800);
 
 // For RecordFormatChangedMetric.
 enum FormatChangedValue {
@@ -176,27 +181,64 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
 // Its responsibilities include:
 //  - Starting and stopping a shared "construction" thread for instantiating and
 //    releasing MediaCodecs.
-//  - Tracking the number of outstanding tasks running on the construction
-//    thread. (For detecting when one of those tasks has hung indefinitely.)
+//  - Detecting when a task has hung on the construction thread so AVDAs can
+//    stop using it.
 //  - Running a RepeatingTimer so that AVDAs can get a regular callback to
 //    DoIOTask().
 //  - Tracking the allocation of surfaces to AVDAs and delivering callbacks when
 //    surfaces are released.
 class AVDAManager {
  public:
-  // Make sure that the construction thread is started for |avda|.
+  class HangDetector : public base::MessageLoop::TaskObserver {
+   public:
+    HangDetector() {}
+
+    void WillProcessTask(const base::PendingTask& pending_task) override {
+      base::AutoLock l(lock_);
+      task_start_time_ = base::TimeTicks::Now();
+    }
+
+    void DidProcessTask(const base::PendingTask& pending_task) override {
+      base::AutoLock l(lock_);
+      task_start_time_ = base::TimeTicks();
+    }
+
+    bool IsThreadLikelyHung() {
+      base::AutoLock l(lock_);
+      if (task_start_time_.is_null())
+        return false;
+
+      return (base::TimeTicks::Now() - task_start_time_) >
+             kHungTaskDetectionTimeout;
+    }
+
+   private:
+    base::Lock lock_;
+    // Non-null when a task is currently running.
+    base::TimeTicks task_start_time_;
+
+    DISALLOW_COPY_AND_ASSIGN(HangDetector);
+  };
+
+  // Make sure the construction thread is started for |avda|.
   bool StartThread(AndroidVideoDecodeAccelerator* avda) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    // If we chose not to shut it down due to pending codec constructions, then
-    // the thread might already be started even if there are no avda instances.
-    // Plus, sometimes we just fail to start the thread.
     if (!construction_thread_.IsRunning()) {
       if (!construction_thread_.Start()) {
         LOG(ERROR) << "Failed to start construction thread.";
         return false;
       }
+      // Register |hang_detector_| to observe the thread's MessageLoop.
+      construction_thread_.task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&base::MessageLoop::AddTaskObserver,
+                     base::Unretained(construction_thread_.message_loop()),
+                     &hang_detector_));
     }
+
+    // Cancel any pending StopThreadTask()s because we need the thread now.
+    weak_this_factory_.InvalidateWeakPtrs();
 
     thread_avda_instances_.insert(avda);
     UMA_HISTOGRAM_ENUMERATION("Media.AVDA.NumAVDAInstances",
@@ -205,23 +247,25 @@ class AVDAManager {
     return true;
   }
 
-  // |avda| will no longer need the construction thread.  Stop the thread if
-  // this is the last instance.
   void StopThread(AndroidVideoDecodeAccelerator* avda) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     thread_avda_instances_.erase(avda);
-    if (!thread_avda_instances_.empty())
-      return;
-
-    // Don't stop the thread if there are outstanding requests, since they
-    // might be hung.  They also might simply be incomplete, and the thread
-    // will stay running until we try to shut it down again.
-    base::AutoLock auto_lock(autodetection_info_.lock_);
-    if (autodetection_info_.outstanding_)
-      return;
-
-    construction_thread_.Stop();
+    // Post a task to stop the thread through the thread's task runner and back
+    // to this thread. This ensures that all pending tasks are run first. If the
+    // thread is hung we don't post a task to avoid leaking an unbounded number
+    // of tasks on its queue. If the thread is not hung, but appears to be, it
+    // will stay alive until next time an AVDA tries to stop it. We're
+    // guaranteed to not run StopThreadTask() when the thread is hung because if
+    // an AVDA queues tasks after DoNothing(), the StopThreadTask() reply will
+    // be canceled by invalidating its weak pointer.
+    if (thread_avda_instances_.empty() &&
+        !hang_detector_.IsThreadLikelyHung()) {
+      construction_thread_.task_runner()->PostTaskAndReply(
+          FROM_HERE, base::Bind(&base::DoNothing),
+          base::Bind(&AVDAManager::StopThreadTask,
+                     weak_this_factory_.GetWeakPtr()));
+    }
   }
 
   // Request periodic callback of |avda|->DoIOTask(). Does nothing if the
@@ -264,33 +308,10 @@ class AVDAManager {
     return construction_thread_.task_runner();
   }
 
-  // Called on the main thread when the construction thread will be doing work
-  // that can potentially hang (e.g., autodetection).  There may be several
-  // calls to this before any call to DoneUsingConstructionThread.
-  // Note that this should only be called from the main thread, else it's a race
-  // with IsCodecAutodetectionProbablySafe.
-  void StartUsingConstructionThread() {
+  // Returns a hint about whether the construction thread has hung.
+  bool IsConstructionThreadLikelyHung() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    base::AutoLock auto_lock(autodetection_info_.lock_);
-    ++autodetection_info_.outstanding_;
-  }
-
-  // Called on any thread after the potentially dangerous construction thread
-  // work completes safely.  May be called on any thread, including the
-  // construction thread.
-  // This assumes that requests are ordered, so please don't mix sync and async
-  // codec construction here.
-  void DoneUsingConstructionThread() {
-    base::AutoLock auto_lock_l(autodetection_info_.lock_);
-    DCHECK_GT(autodetection_info_.outstanding_, 0);
-    --autodetection_info_.outstanding_;
-  }
-
-  // Return a hint about whether autodetecting the codec type is safe or not.
-  bool IsCodecAutodetectionProbablySafe() {
-    base::AutoLock auto_lock_l(autodetection_info_.lock_);
-
-    return autodetection_info_.outstanding_ < kMaxConcurrentCodecAutodetections;
+    return hang_detector_.IsThreadLikelyHung();
   }
 
   // |avda| would like to use |surface_id|.  If it is not busy, then mark it
@@ -354,7 +375,8 @@ class AVDAManager {
  private:
   friend struct base::DefaultLazyInstanceTraits<AVDAManager>;
 
-  AVDAManager() : construction_thread_("AVDAThread") {}
+  AVDAManager()
+      : construction_thread_("AVDAThread"), weak_this_factory_(this) {}
   ~AVDAManager() { NOTREACHED(); }
 
   void RunTimer() {
@@ -376,11 +398,13 @@ class AVDAManager {
     // takes too long for the combined timer.
   }
 
+  void StopThreadTask() { construction_thread_.Stop(); }
+
+  // All registered AVDA instances.
+  std::set<AndroidVideoDecodeAccelerator*> thread_avda_instances_;
+
   // All AVDA instances that would like us to poll DoIOTask.
   std::set<AndroidVideoDecodeAccelerator*> timer_avda_instances_;
-
-  // All AVDA instances that might like to use the construction thread.
-  std::set<AndroidVideoDecodeAccelerator*> thread_avda_instances_;
 
   struct OwnerRecord {
     AndroidVideoDecodeAccelerator* owner = nullptr;
@@ -398,18 +422,17 @@ class AVDAManager {
   // Repeating timer responsible for draining pending IO to the codecs.
   base::RepeatingTimer io_timer_;
 
-  // Data for determining if codec creation is hanging.
-  struct {
-    // Lock that protects other members of this struct.
-    base::Lock lock_;
-
-    // Number of currently pending work items of the construction thread.
-    int outstanding_ = 0;
-  } autodetection_info_;
-
+  // A thread for posting MediaCodec construction and releases to. It's created
+  // lazily when requested.
   base::Thread construction_thread_;
 
+  // For detecting when a task has hung on |construction_thread_|.
+  HangDetector hang_detector_;
+
   base::ThreadChecker thread_checker_;
+
+  // For canceling pending StopThreadTask()s.
+  base::WeakPtrFactory<AVDAManager> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDAManager);
 };
@@ -586,12 +609,8 @@ bool AndroidVideoDecodeAccelerator::InitializeStrategy() {
         new OnFrameAvailableHandler(this, surface_texture);
   }
 
-  // Start the thread for async configuration, even if we don't need it now.
-  // ResetCodecState might rebuild the codec later, for example.
-  if (!g_avda_manager.Get().StartThread(this)) {
-    LOG(ERROR) << "Failed to start AVDA thread";
+  if (!g_avda_manager.Get().StartThread(this))
     return false;
-  }
 
   // If we are encrypted, then we aren't able to create the codec yet.
   if (config_.is_encrypted) {
@@ -1100,7 +1119,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
   // releasing any outgoing codec, so that |codec_config_| still matches the
   // outgoing codec for ReleaseMediaCodec().
   codec_config_->allow_autodetection_ =
-      g_avda_manager.Get().IsCodecAutodetectionProbablySafe();
+      !g_avda_manager.Get().IsConstructionThreadLikelyHung();
 
   // If autodetection is disallowed, fall back to Chrome's software decoders
   // instead of using the software decoders provided by MediaCodec.
@@ -1110,12 +1129,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
     return;
   }
 
-  codec_config_->notify_completion_ = codec_config_->allow_autodetection_;
-  if (codec_config_->allow_autodetection_)
-    g_avda_manager.Get().StartUsingConstructionThread();
-
-  // If we're not trying autodetection, then use the main thread.  The original
-  // might be blocked.
+  // If we're not trying autodetection, then use the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       codec_config_->allow_autodetection_
           ? g_avda_manager.Get().ConstructionTaskRunner()
@@ -1133,13 +1147,8 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   state_ = WAITING_FOR_CODEC;
 
-  // Decide whether to allow autodetection or not.  Since we're on the main
-  // thread, and this request is unordered with respect to pending async config
-  // attempts, don't record it.  It may break book-keeping, and there's not
-  // much we can do anyway.
   codec_config_->allow_autodetection_ =
-      g_avda_manager.Get().IsCodecAutodetectionProbablySafe();
-  codec_config_->notify_completion_ = false;
+      !g_avda_manager.Get().IsConstructionThreadLikelyHung();
 
   ReleaseMediaCodec();
   std::unique_ptr<VideoCodecBridge> media_codec =
@@ -1167,11 +1176,6 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
       codec_config->initial_expected_coded_size_,
       codec_config->surface_.j_surface().obj(), media_crypto, true,
       require_software_codec));
-
-  // If we successfully completed after an autodetect, then let the other
-  // instances know that we didn't get stuck.
-  if (codec_config->notify_completion_)
-    g_avda_manager.Get().DoneUsingConstructionThread();
 
   return codec;
 }
@@ -1683,13 +1687,8 @@ void AndroidVideoDecodeAccelerator::ReleaseMediaCodec() {
   if (!codec_config_->allow_autodetection_) {
     media_codec_.reset();
   } else {
-    g_avda_manager.Get().StartUsingConstructionThread();
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        g_avda_manager.Get().ConstructionTaskRunner();
-    task_runner->DeleteSoon(FROM_HERE, media_codec_.release());
-    task_runner->PostTask(
-        FROM_HERE, base::Bind(&AVDAManager::DoneUsingConstructionThread,
-                              base::Unretained(g_avda_manager.Pointer())));
+    g_avda_manager.Get().ConstructionTaskRunner()->DeleteSoon(
+        FROM_HERE, media_codec_.release());
   }
 }
 
