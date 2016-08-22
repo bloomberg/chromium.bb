@@ -109,7 +109,7 @@ def GenerateBenchmarkOptions(benchmark_class):
   # Enable browser logging in the smoke test only. Hopefully, this will detect
   # all crashes and hence remove the need to enable logging in actual perf
   # benchmarks.
-  options.logging_verbosity = 'non-verbose'
+  options.browser_options.logging_verbosity = 'non-verbose'
   return options
 
 
