@@ -144,7 +144,9 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
 
     if (document()->cachedImage()) {
         RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
-        document()->cachedImage()->appendData(data, length);
+        // If decoding has already failed, there's no point in sending additional data to the ImageResource.
+        if (document()->cachedImage()->getStatus() != Resource::DecodeError)
+            document()->cachedImage()->appendData(data, length);
     }
 
     if (!isDetached())
