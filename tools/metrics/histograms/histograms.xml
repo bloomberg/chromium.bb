@@ -79213,6 +79213,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1507" label="SVGSMILCurrentTime"/>
   <int value="1508" label="HTMLBodyElementOnSelectionChangeAttribute"/>
   <int value="1509" label="ForeignFetchInterception"/>
+  <int value="1510" label="MapNameMatchingStrict"/>
+  <int value="1511" label="MapNameMatchingASCIICaseless"/>
+  <int value="1512" label="MapNameMatchingUnicodeLower"/>
+  <int value="1513" label="RadioNameMatchingStrict"/>
+  <int value="1514" label="RadioNameMatchingASCIICaseless"/>
+  <int value="1515" label="RadioNameMatchingCaseFolding"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

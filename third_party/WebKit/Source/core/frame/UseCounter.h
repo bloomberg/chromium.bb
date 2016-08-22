@@ -1281,6 +1281,12 @@ public:
         SVGSMILCurrentTime = 1507,
         HTMLBodyElementOnSelectionChangeAttribute = 1508,
         ForeignFetchInterception = 1509,
+        MapNameMatchingStrict = 1510,
+        MapNameMatchingASCIICaseless = 1511,
+        MapNameMatchingUnicodeLower = 1512,
+        RadioNameMatchingStrict = 1513,
+        RadioNameMatchingASCIICaseless = 1514,
+        RadioNameMatchingCaseFolding = 1515,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

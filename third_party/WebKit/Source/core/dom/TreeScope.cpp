@@ -196,9 +196,24 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
         return nullptr;
     size_t hashPos = url.find('#');
     String name = hashPos == kNotFound ? url : url.substring(hashPos + 1);
-    if (rootNode().document().isHTMLDocument())
-        return toHTMLMapElement(m_imageMapsByName->getElementByLowercasedMapName(AtomicString(name.lower()), this));
-    return toHTMLMapElement(m_imageMapsByName->getElementByMapName(AtomicString(name), this));
+    HTMLMapElement* map = toHTMLMapElement(rootNode().document().isHTMLDocument()
+        ? m_imageMapsByName->getElementByLowercasedMapName(AtomicString(name.lower()), this)
+        : m_imageMapsByName->getElementByMapName(AtomicString(name), this));
+    if (!map || !rootNode().document().isHTMLDocument())
+        return map;
+    const AtomicString& nameValue = map->fastGetAttribute(nameAttr);
+    if (nameValue.isNull())
+        return map;
+    String strippedName = nameValue;
+    if (strippedName.startsWith('#'))
+        strippedName = strippedName.substring(1);
+    if (strippedName == name)
+        UseCounter::count(rootNode().document(), UseCounter::MapNameMatchingStrict);
+    else if (equalIgnoringASCIICase(strippedName, name))
+        UseCounter::count(rootNode().document(), UseCounter::MapNameMatchingASCIICaseless);
+    else
+        UseCounter::count(rootNode().document(), UseCounter::MapNameMatchingUnicodeLower);
+    return map;
 }
 
 static bool pointWithScrollAndZoomIfPossible(const Document& document, IntPoint& point)
