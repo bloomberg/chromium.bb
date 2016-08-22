@@ -11,6 +11,9 @@ namespace usersPrivate {
     // Email for the user.
     DOMString email;
 
+    // Display name for the user.
+    DOMString name;
+
     // Whether this user is the device owner.
     boolean isOwner;
   };

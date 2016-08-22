@@ -82,8 +82,8 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
     }
   }
 
-  const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetUsers();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::UserList& users = user_manager->GetUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
        it < users.end(); ++it)
     email_list->AppendIfNotPresent(new base::StringValue((*it)->email()));
@@ -98,7 +98,8 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
   for (size_t i = 0; i < email_list->GetSize(); ++i) {
     api::users_private::User user;
     email_list->GetString(i, &user.email);
-
+    user.name =
+        user_manager->GetUserDisplayEmail(AccountId::FromUserEmail(user.email));
     user.is_owner = chromeos::ProfileHelper::IsOwnerProfile(profile) &&
                     user.email == profile->GetProfileUserName();
     user_list->Append(user.ToValue().release());

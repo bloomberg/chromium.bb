@@ -87,8 +87,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isEditingUsersDisabled_: function(
-      isOwner, isWhitelistManaged, allowGuest) {
+  isEditingUsersDisabled_: function(isOwner, isWhitelistManaged, allowGuest) {
     return !isOwner || isWhitelistManaged || allowGuest;
   }
 });

@@ -29,7 +29,7 @@
     <div class="user-list soft-border">
       <template is="dom-repeat" items="[[users]]">
         <div class="user layout horizontal justified">
-          <div class="layout vertical center-justified">[[item.email]]</div>
+          <div class="layout vertical center-justified">[[item.name]]</div>
           <div class="close-button"
               hidden$="[[shouldHideCloseButton_(disabled, item.isOwner)]]">
             <paper-icon-button icon="cr:clear" class="clear-icon"
