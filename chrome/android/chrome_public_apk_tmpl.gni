@@ -54,6 +54,10 @@ template("chrome_public_apk_tmpl") {
                            "//base/android/base_proguard_config.flags",
                            "//base/android/release_proguard_config.flags",
                          ]
+      if (enable_webvr) {
+        proguard_configs +=
+            [ "//third_party/gvr-android-sdk/proguard/base.flags" ]
+      }
     }
 
     if (!defined(use_chromium_linker)) {
