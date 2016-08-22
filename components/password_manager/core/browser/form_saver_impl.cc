@@ -134,8 +134,9 @@ void FormSaverImpl::UpdatePreferredLoginState() {
     if (form->preferred && !form->is_public_suffix_match &&
         form->username_value != preferred_username) {
       // This wasn't the selected login but it used to be preferred.
-      form->preferred = false;
-      store_->UpdateLogin(*form);
+      PasswordForm update(*form);
+      update.preferred = false;
+      store_->UpdateLogin(update);
     }
   }
 }
