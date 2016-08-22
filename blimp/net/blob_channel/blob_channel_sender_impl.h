@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/net/blimp_net_export.h"
@@ -51,6 +52,8 @@ class BLIMP_NET_EXPORT BlobChannelSenderImpl : public BlobChannelSender {
   // the set of IDs in |cache_|, for instance if an ID hasn't yet been
   // delivered, or has been evicted at the receiver.
   std::set<BlobId> receiver_cache_contents_;
+
+  base::WeakPtrFactory<BlobChannelSenderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobChannelSenderImpl);
 };

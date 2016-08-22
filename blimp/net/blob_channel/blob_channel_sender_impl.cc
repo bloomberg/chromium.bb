@@ -15,7 +15,9 @@ namespace blimp {
 
 BlobChannelSenderImpl::BlobChannelSenderImpl(std::unique_ptr<BlobCache> cache,
                                              std::unique_ptr<Delegate> delegate)
-    : cache_(std::move(cache)), delegate_(std::move(delegate)) {
+    : cache_(std::move(cache)),
+      delegate_(std::move(delegate)),
+      weak_factory_(this) {
   DCHECK(cache_);
   DCHECK(delegate_);
 }

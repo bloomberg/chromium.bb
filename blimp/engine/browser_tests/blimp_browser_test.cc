@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 
 namespace blimp {
 namespace {
@@ -33,11 +34,26 @@ const char kClientTokenFilePath[] = "blimp/test/data/test_client_token";
 const char kClientToken[] = "MyVoiceIsMyPassport";
 }  // namespace
 
-BlimpBrowserTest::BlimpBrowserTest() {
+
+BlimpBrowserTest::BlimpBrowserTest()
+    : completion_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED) {
   CreateTestServer(base::FilePath(FILE_PATH_LITERAL(kTestDataFilePath)));
 }
 
 BlimpBrowserTest::~BlimpBrowserTest() {}
+
+void BlimpBrowserTest::RunUntilCompletion() {
+  while (!completion_event_.IsSignaled()) {
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
+  }
+  completion_event_.Reset();
+}
+
+void BlimpBrowserTest::SignalCompletion() {
+  completion_event_.Signal();
+}
 
 void BlimpBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -52,14 +68,6 @@ engine::BlimpEngineSession* BlimpBrowserTest::GetEngineSession() {
       ->GetBlimpEngineSession();
 }
 
-void BlimpBrowserTest::OnGetEnginePort(uint16_t port) {
-  DCHECK_GT(port, 0);
-
-  // A test client is started after BlimpBrowserTest::SetUpOnMainThread().
-  engine_port_ = port;
-  QuitRunLoop();
-}
-
 client::Assignment BlimpBrowserTest::GetAssignment() {
   client::Assignment assignment;
   assignment.client_token = kClientToken;
@@ -67,17 +75,6 @@ client::Assignment BlimpBrowserTest::GetAssignment() {
       net::IPEndPoint(net::IPAddress::IPv4Localhost(), engine_port_);
   assignment.transport_protocol = client::Assignment::TransportProtocol::TCP;
   return assignment;
-}
-
-void BlimpBrowserTest::SetUpOnMainThread() {
-  GetEngineSession()->GetEnginePortForTesting(
-      base::Bind(&BlimpBrowserTest::OnGetEnginePort, base::Unretained(this)));
-  RunUntilQuit();
-}
-
-void BlimpBrowserTest::TearDownOnMainThread() {
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-      ->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -96,11 +93,20 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
       src_root.Append(kClientTokenFilePath).value());
 }
 
+void BlimpBrowserTest::SetUpOnMainThread() {
+  // Get the connection's port number across the IO/UI thread boundary.
+  GetEngineSession()->GetEnginePortForTesting(base::Bind(
+      &BlimpBrowserTest::OnGetEnginePortCompletion, base::Unretained(this)));
+
+  RunUntilCompletion();
+}
+
+void BlimpBrowserTest::TearDownOnMainThread() {
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
 void BlimpBrowserTest::RunTestOnMainThreadLoop() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // Pump startup related events.
-  base::RunLoop().RunUntilIdle();
 
   SetUpOnMainThread();
   RunTestOnMainThread();
@@ -113,17 +119,9 @@ void BlimpBrowserTest::RunTestOnMainThreadLoop() {
   }
 }
 
-void BlimpBrowserTest::RunUntilQuit() {
-  base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
-      base::MessageLoop::current());
-  EXPECT_FALSE(run_loop_);
-  run_loop_ = base::WrapUnique(new base::RunLoop());
-  run_loop_->Run();
-  run_loop_ = nullptr;
-}
-
-void BlimpBrowserTest::QuitRunLoop() {
-  run_loop_->Quit();
+void BlimpBrowserTest::OnGetEnginePortCompletion(uint16_t port) {
+  engine_port_ = port;
+  SignalCompletion();
 }
 
 }  // namespace blimp

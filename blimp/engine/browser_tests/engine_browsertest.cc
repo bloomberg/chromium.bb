@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
               OnTitleChanged(kDummyTabId, url.GetContent()));
   EXPECT_CALL(client_nav_feature_delegate_,
               OnTitleChanged(kDummyTabId, "hello"))
-      .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::QuitRunLoop));
+      .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
 
   // Skip assigner. Engine info is already available.
   client_session_->ConnectWithAssignment(client::ASSIGNMENT_REQUEST_RESULT_OK,
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
   client_session_->GetNavigationFeature()->NavigateToUrlText(kDummyTabId,
                                                              url.spec());
 
-  RunUntilQuit();
+  RunUntilCompletion();
 }
 
 }  // namespace

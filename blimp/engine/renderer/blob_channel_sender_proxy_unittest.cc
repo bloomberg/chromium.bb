@@ -28,8 +28,10 @@ const char kBlobPayload[] = "bar";
 class BlobChannelSenderProxyTest : public testing::Test {
  public:
   BlobChannelSenderProxyTest()
-      : mojo_service_impl_(
-            base::MakeUnique<BlobChannelService>(&mock_sender_)) {}
+      : sender_weak_factory_(&mock_sender_),
+        mojo_service_impl_(base::MakeUnique<BlobChannelService>(
+            sender_weak_factory_.GetWeakPtr(),
+            message_loop_.task_runner())) {}
 
   void SetUp() override {
     // Set up communication path from the Proxy to a sender mock:
@@ -46,9 +48,10 @@ class BlobChannelSenderProxyTest : public testing::Test {
 
   const std::string blob_id_ = CalculateBlobId(kBlobId);
   base::MessageLoop message_loop_;
-  std::unique_ptr<BlobChannelService> mojo_service_impl_;
-  MockBlobChannelSender mock_sender_;
   std::unique_ptr<BlobChannelSenderProxy> blob_channel_sender_proxy_;
+  MockBlobChannelSender mock_sender_;
+  base::WeakPtrFactory<BlobChannelSender> sender_weak_factory_;
+  std::unique_ptr<BlobChannelService> mojo_service_impl_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlobChannelSenderProxyTest);

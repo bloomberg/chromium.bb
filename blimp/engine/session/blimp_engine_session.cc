@@ -127,20 +127,25 @@ class EngineNetworkComponents : public ConnectionHandler,
                                 public ConnectionErrorObserver {
  public:
   // |net_log|: The log to use for network-related events.
-  // |quit_closure|: A closure which will terminate the engine when
-  //                 invoked.
-  EngineNetworkComponents(net::NetLog* net_log,
-                          const base::Closure& quit_closure);
+  explicit EngineNetworkComponents(net::NetLog* net_log);
   ~EngineNetworkComponents() override;
 
   // Sets up network components and starts listening for incoming connection.
   // This should be called after all features have been registered so that
   // received messages can be properly handled.
-  void Initialize(const std::string& client_token);
+  void Initialize(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+                  base::WeakPtr<BlobChannelSender> blob_channel_sender,
+                  const std::string& client_token);
 
   uint16_t GetPortForTesting() { return port_; }
 
-  BrowserConnectionHandler* GetBrowserConnectionHandler();
+  BrowserConnectionHandler* connection_handler() {
+    return &connection_handler_;
+  }
+
+  BlobChannelService* blob_channel_service() {
+    return blob_channel_service_.get();
+  }
 
  private:
   // ConnectionHandler implementation.
@@ -152,38 +157,41 @@ class EngineNetworkComponents : public ConnectionHandler,
   void OnConnectionError(int error) override;
 
   net::NetLog* net_log_;
-  base::Closure quit_closure_;
   uint16_t port_ = 0;
 
-  std::unique_ptr<BrowserConnectionHandler> connection_handler_;
+  BrowserConnectionHandler connection_handler_;
   std::unique_ptr<EngineAuthenticationHandler> authentication_handler_;
   std::unique_ptr<EngineConnectionManager> connection_manager_;
+  std::unique_ptr<BlobChannelService> blob_channel_service_;
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
 
-EngineNetworkComponents::EngineNetworkComponents(
-    net::NetLog* net_log,
-    const base::Closure& quit_closure)
-    : net_log_(net_log),
-      quit_closure_(quit_closure),
-      connection_handler_(new BrowserConnectionHandler) {}
+EngineNetworkComponents::EngineNetworkComponents(net::NetLog* net_log)
+    : net_log_(net_log), quit_closure_(QuitCurrentMessageLoopClosure()) {}
 
 EngineNetworkComponents::~EngineNetworkComponents() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
-void EngineNetworkComponents::Initialize(const std::string& client_token) {
+void EngineNetworkComponents::Initialize(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::WeakPtr<BlobChannelSender> blob_channel_sender,
+    const std::string& client_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!connection_manager_);
   // Plumb authenticated connections from the authentication handler
   // to |this| (which will then pass it to |connection_handler_|.
   authentication_handler_ =
-      base::WrapUnique(new EngineAuthenticationHandler(this, client_token));
+      base::MakeUnique<EngineAuthenticationHandler>(this, client_token);
 
   // Plumb unauthenticated connections to |authentication_handler_|.
   connection_manager_ = base::WrapUnique(
       new EngineConnectionManager(authentication_handler_.get()));
+
+  blob_channel_service_ =
+      base::MakeUnique<BlobChannelService>(blob_channel_sender, ui_task_runner);
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetIPv4AnyAddress(), GetListeningPort());
@@ -199,17 +207,12 @@ void EngineNetworkComponents::HandleConnection(
     std::unique_ptr<BlimpConnection> connection) {
   // Observe |connection| for disconnection events.
   connection->AddConnectionErrorObserver(this);
-  connection_handler_->HandleConnection(std::move(connection));
+  connection_handler_.HandleConnection(std::move(connection));
 }
 
 void EngineNetworkComponents::OnConnectionError(int error) {
   DVLOG(1) << "EngineNetworkComponents::OnConnectionError(" << error << ")";
   quit_closure_.Run();
-}
-
-BrowserConnectionHandler*
-EngineNetworkComponents::GetBrowserConnectionHandler() {
-  return connection_handler_.get();
 }
 
 BlimpEngineSession::BlimpEngineSession(
@@ -223,9 +226,7 @@ BlimpEngineSession::BlimpEngineSession(
       settings_manager_(settings_manager),
       settings_feature_(settings_manager_),
       render_widget_feature_(settings_manager_),
-      net_components_(
-          new EngineNetworkComponents(net_log,
-                                      QuitCurrentMessageLoopClosure())) {
+      net_components_(new EngineNetworkComponents(net_log)) {
   DCHECK(engine_config_);
   DCHECK(settings_manager_);
 
@@ -237,11 +238,12 @@ BlimpEngineSession::BlimpEngineSession(
   std::unique_ptr<HeliumBlobSenderDelegate> helium_blob_delegate(
       new HeliumBlobSenderDelegate);
   blob_delegate_ = helium_blob_delegate.get();
-  blob_channel_sender_ = base::WrapUnique(
-      new BlobChannelSenderImpl(base::WrapUnique(new InMemoryBlobCache),
-                                std::move(helium_blob_delegate)));
-  blob_channel_service_ =
-      base::MakeUnique<BlobChannelService>(blob_channel_sender_.get());
+  blob_channel_sender_ = base::MakeUnique<BlobChannelSenderImpl>(
+      base::MakeUnique<InMemoryBlobCache>(), std::move(helium_blob_delegate));
+  blob_channel_sender_weak_factory_ =
+      base::MakeUnique<base::WeakPtrFactory<BlobChannelSenderImpl>>(
+          blob_channel_sender_.get());
+
   device::GeolocationProvider::SetGeolocationDelegate(
       geolocation_feature_.CreateGeolocationDelegate());
 }
@@ -295,7 +297,13 @@ void BlimpEngineSession::Initialize() {
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&EngineNetworkComponents::Initialize,
                  base::Unretained(net_components_.get()),
+                 base::ThreadTaskRunnerHandle::Get(),
+                 blob_channel_sender_weak_factory_->GetWeakPtr(),
                  engine_config_->client_token()));
+}
+
+BlobChannelService* BlimpEngineSession::GetBlobChannelService() {
+  return net_components_->blob_channel_service();
 }
 
 void BlimpEngineSession::GetEnginePortForTesting(
@@ -311,7 +319,7 @@ void BlimpEngineSession::RegisterFeatures() {
   thread_pipe_manager_.reset(
       new ThreadPipeManager(content::BrowserThread::GetTaskRunnerForThread(
                                 content::BrowserThread::IO),
-                            net_components_->GetBrowserConnectionHandler()));
+                            net_components_->connection_handler()));
 
   // Register features' message senders and receivers.
   tab_control_message_sender_ =

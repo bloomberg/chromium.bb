@@ -69,7 +69,7 @@ BlobChannelSender* BlimpBrowserMainParts::GetBlobChannelSender() {
 }
 
 BlobChannelService* BlimpBrowserMainParts::GetBlobChannelService() {
-  return engine_session_->blob_channel_service();
+  return engine_session_->GetBlobChannelService();
 }
 
 BlimpEngineSession* BlimpBrowserMainParts::GetBlimpEngineSession() {
