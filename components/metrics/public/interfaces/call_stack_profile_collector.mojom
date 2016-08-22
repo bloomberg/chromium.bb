@@ -1,0 +1,40 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module metrics.mojom;
+
+import "mojo/common/common_custom_types.mojom";
+
+// These structs mirror the corresponding types in base::StackSamplingProfiler.
+
+struct CallStackModule {
+  uint64 base_address;
+  string id;
+  mojo.common.mojom.FilePath filename;
+};
+
+struct CallStackFrame {
+  uint64 instruction_pointer;
+  uint64 module_index;
+};
+
+struct CallStackProfile {
+  array<CallStackModule> modules;
+  array<array<CallStackFrame>> samples;
+  mojo.common.mojom.TimeDelta profile_duration;
+  mojo.common.mojom.TimeDelta sampling_period;
+};
+
+enum Trigger {
+  UNKNOWN,
+  PROCESS_STARTUP,
+  JANKY_TASK,
+  THREAD_HUNG,
+};
+
+interface CallStackProfileCollector {
+  Collect(Trigger trigger, bool preserve_sample_ordering,
+          mojo.common.mojom.TimeTicks start_timestamp,
+          array<CallStackProfile> profiles);
+};

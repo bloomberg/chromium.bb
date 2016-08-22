@@ -101,7 +101,9 @@ StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
 
 StackSamplingProfiler::Frame::~Frame() {}
 
-StackSamplingProfiler::Frame::Frame() {}
+StackSamplingProfiler::Frame::Frame()
+    : instruction_pointer(0), module_index(kUnknownModuleIndex) {
+}
 
 // StackSamplingProfiler::CallStackProfile ------------------------------------
 
@@ -274,6 +276,12 @@ void StackSamplingProfiler::Stop() {
 }
 
 // StackSamplingProfiler::Frame global functions ------------------------------
+
+bool operator==(const StackSamplingProfiler::Module& a,
+                const StackSamplingProfiler::Module& b) {
+  return a.base_address == b.base_address && a.id == b.id &&
+      a.filename == b.filename;
+}
 
 bool operator==(const StackSamplingProfiler::Frame &a,
                 const StackSamplingProfiler::Frame &b) {
