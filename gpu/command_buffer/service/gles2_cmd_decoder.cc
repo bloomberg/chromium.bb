@@ -5671,6 +5671,11 @@ void GLES2DecoderImpl::DoResumeTransformFeedback() {
                        "transform feedback is not active or not paused");
     return;
   }
+  if (feature_info_->workarounds().rebind_transform_feedback_before_resume) {
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK,
+        state_.bound_transform_feedback->service_id());
+  }
   state_.bound_transform_feedback->DoResumeTransformFeedback();
 }
 

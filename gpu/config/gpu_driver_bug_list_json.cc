@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.84",
+  "version": "8.85",
   "entries": [
     {
       "id": 1,
@@ -1926,6 +1926,18 @@ LONG_STRING_CONST(
       "gl_renderer": "Intel(R) HD Graphics for BayTrail",
       "features": [
         "disable_blend_equation_advanced"
+      ]
+    },
+    {
+      "id": 179,
+      "description": "glResumeTransformFeedback works incorrectly on Intel GPUs",
+      "cr_bugs": [638514],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "rebind_transform_feedback_before_resume"
       ]
     }
   ]
