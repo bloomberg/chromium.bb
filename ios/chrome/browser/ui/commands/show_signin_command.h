@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #include "components/signin/core/browser/signin_metrics.h"
-#include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 
 typedef void (^ShowSigninCommandCompletionCallback)(BOOL succeeded);
@@ -36,19 +35,9 @@ enum AuthenticationOperation {
 // Initializes a command to perform the specified operation with a
 // SigninInteractionController and invoke a possibly-nil callback when finished.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                     signInSource:(SignInSource)signInSource
+                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
                          callback:(ShowSigninCommandCompletionCallback)callback
     NS_DESIGNATED_INITIALIZER;
-
-// Initializes a ShowSigninCommand with a nil callback.
-- (instancetype)initWithOperation:(AuthenticationOperation)operation
-                     signInSource:(SignInSource)signInSource;
-
-// Initializes a command to perform the specified operation with a
-// SigninInteractionController and invoke a possibly-nil callback when finished.
-- (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
-                         callback:(ShowSigninCommandCompletionCallback)callback;
 
 // Initializes a ShowSigninCommand with a nil callback.
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
@@ -60,9 +49,6 @@ enum AuthenticationOperation {
 
 // The operation to perform during the sign-in flow.
 @property(nonatomic, readonly) AuthenticationOperation operation;
-
-// The source of this authentication operation.
-@property(nonatomic, readonly) SignInSource signInSource;
 
 // The access point of this authentication operation.
 @property(nonatomic, readonly) signin_metrics::AccessPoint signInAccessPoint;

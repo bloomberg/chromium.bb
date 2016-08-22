@@ -13,7 +13,6 @@
 }
 
 @synthesize operation = _operation;
-@synthesize signInSource = _signInSource;
 @synthesize signInAccessPoint = _signInAccessPoint;
 
 - (instancetype)initWithTag:(NSInteger)tag {
@@ -22,31 +21,13 @@
 }
 
 - (instancetype)initWithOperation:(AuthenticationOperation)operation
-                     signInSource:(SignInSource)signInSource
+                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
                          callback:
                              (ShowSigninCommandCompletionCallback)callback {
   if ((self = [super initWithTag:IDC_SHOW_SIGNIN_IOS])) {
     _operation = operation;
-    _signInSource = signInSource;
-    _callback.reset(callback, base::scoped_policy::RETAIN);
-  }
-  return self;
-}
-
-- (instancetype)initWithOperation:(AuthenticationOperation)operation
-                     signInSource:(SignInSource)signInSource {
-  return
-      [self initWithOperation:operation signInSource:signInSource callback:nil];
-}
-
-- (instancetype)initWithOperation:(AuthenticationOperation)operation
-                signInAccessPoint:(signin_metrics::AccessPoint)signInAccessPoint
-                         callback:
-                             (ShowSigninCommandCompletionCallback)callback {
-  if ((self = [self initWithOperation:operation
-                         signInSource:SIGN_IN_SOURCE_OTHER
-                             callback:callback])) {
     _signInAccessPoint = signInAccessPoint;
+    _callback.reset(callback, base::scoped_policy::RETAIN);
   }
   return self;
 }
