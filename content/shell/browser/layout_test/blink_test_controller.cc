@@ -315,7 +315,6 @@ bool BlinkTestController::PrepareForLayoutTest(
     // Compositing tests override the default preferences (see
     // BlinkTestController::OverrideWebkitPrefs) so we force them to be
     // calculated again to ensure is_compositing_test_ changes are picked up.
-    default_prefs_ = render_view_host->GetWebkitPreferences();
     OverrideWebkitPrefs(&default_prefs_);
 
     render_view_host->UpdateWebkitPreferences(default_prefs_);
