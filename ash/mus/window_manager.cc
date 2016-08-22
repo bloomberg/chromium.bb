@@ -214,13 +214,15 @@ void WindowManager::OnDidDestroyClient(ui::WindowTreeClient* client) {
   // |root_window_controllers_|.
   DCHECK(root_window_controllers_.empty());
 
+  // Observers can rely on WmShell from the callback. So notify the observers
+  // before destroying it.
+  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                    OnWindowTreeClientDestroyed());
+
   lookup_.reset();
   shell_->Shutdown();
   shell_.reset();
   shadow_controller_.reset();
-
-  FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                    OnWindowTreeClientDestroyed());
 
   pointer_watcher_event_router_.reset();
 
