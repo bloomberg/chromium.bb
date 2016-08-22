@@ -63,7 +63,7 @@ std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
 class DelayableBackend : public disk_cache::Backend {
  public:
   DelayableBackend(std::unique_ptr<disk_cache::Backend> backend)
-      : backend_(std::move(backend)), delay_open_(false) {}
+      : backend_(std::move(backend)), delay_doom_(false) {}
 
   // disk_cache::Backend overrides
   net::CacheType GetCacheType() const override {
@@ -73,15 +73,9 @@ class DelayableBackend : public disk_cache::Backend {
   int OpenEntry(const std::string& key,
                 disk_cache::Entry** entry,
                 const CompletionCallback& callback) override {
-    if (delay_open_) {
-      open_entry_callback_ =
-          base::Bind(&DelayableBackend::OpenEntryDelayedImpl,
-                     base::Unretained(this), key, entry, callback);
-      return net::ERR_IO_PENDING;
-    }
-
     return backend_->OpenEntry(key, entry, callback);
   }
+
   int CreateEntry(const std::string& key,
                   disk_cache::Entry** entry,
                   const CompletionCallback& callback) override {
@@ -89,6 +83,12 @@ class DelayableBackend : public disk_cache::Backend {
   }
   int DoomEntry(const std::string& key,
                 const CompletionCallback& callback) override {
+    if (delay_doom_) {
+      doom_entry_callback_ = base::Bind(&DelayableBackend::DoomEntryDelayedImpl,
+                                        base::Unretained(this), key, callback);
+      return net::ERR_IO_PENDING;
+    }
+
     return backend_->DoomEntry(key, callback);
   }
   int DoomAllEntries(const CompletionCallback& callback) override {
@@ -117,26 +117,25 @@ class DelayableBackend : public disk_cache::Backend {
     return backend_->OnExternalCacheHit(key);
   }
 
-  // Call to continue a delayed open.
-  void OpenEntryContinue() {
-    EXPECT_FALSE(open_entry_callback_.is_null());
-    open_entry_callback_.Run();
+  // Call to continue a delayed doom.
+  void DoomEntryContinue() {
+    EXPECT_FALSE(doom_entry_callback_.is_null());
+    doom_entry_callback_.Run();
   }
 
-  void set_delay_open(bool value) { delay_open_ = value; }
+  void set_delay_doom(bool value) { delay_doom_ = value; }
 
  private:
-  void OpenEntryDelayedImpl(const std::string& key,
-                            disk_cache::Entry** entry,
+  void DoomEntryDelayedImpl(const std::string& key,
                             const CompletionCallback& callback) {
-    int rv = backend_->OpenEntry(key, entry, callback);
+    int rv = backend_->DoomEntry(key, callback);
     if (rv != net::ERR_IO_PENDING)
       callback.Run(rv);
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
-  bool delay_open_;
-  base::Closure open_entry_callback_;
+  bool delay_doom_;
+  base::Closure doom_entry_callback_;
 };
 
 void CopyBody(const storage::BlobDataHandle& blob_handle, std::string* output) {
@@ -460,11 +459,13 @@ class CacheStorageCacheTest : public testing::Test {
     return error == CACHE_STORAGE_OK;
   }
 
-  bool Match(const ServiceWorkerFetchRequest& request) {
+  bool Match(const ServiceWorkerFetchRequest& request,
+             const CacheStorageCacheQueryParams& match_params =
+                 CacheStorageCacheQueryParams()) {
     std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
 
     cache_->Match(
-        CopyFetchRequest(request),
+        CopyFetchRequest(request), match_params,
         base::Bind(&CacheStorageCacheTest::ResponseAndErrorCallback,
                    base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -925,6 +926,155 @@ TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
   EXPECT_TRUE(
       ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
   EXPECT_TRUE(body_handles->empty());
+}
+
+TEST_P(CacheStorageCacheTestP, Match_IgnoreSearch) {
+  EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
+
+  EXPECT_FALSE(Match(body_request_));
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = true;
+  EXPECT_TRUE(Match(body_request_, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, Match_IgnoreMethod) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  ServiceWorkerFetchRequest post_request = body_request_;
+  post_request.method = "POST";
+  EXPECT_FALSE(Match(post_request));
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_method = true;
+  EXPECT_TRUE(Match(post_request, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, Match_IgnoreVary) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = "vary_foo";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Match(body_request_));
+
+  body_request_.headers["vary_foo"] = "bar";
+  EXPECT_FALSE(Match(body_request_));
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_vary = true;
+  EXPECT_TRUE(Match(body_request_, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, Keys_IgnoreSearch) {
+  EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
+
+  EXPECT_TRUE(Keys(body_request_));
+  EXPECT_EQ(0u, callback_strings_.size());
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = true;
+  EXPECT_TRUE(Keys(body_request_, match_params));
+  EXPECT_EQ(1u, callback_strings_.size());
+}
+
+TEST_P(CacheStorageCacheTestP, Keys_IgnoreMethod) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  ServiceWorkerFetchRequest post_request = body_request_;
+  post_request.method = "POST";
+  EXPECT_TRUE(Keys(post_request));
+  EXPECT_EQ(0u, callback_strings_.size());
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_method = true;
+  EXPECT_TRUE(Keys(post_request, match_params));
+  EXPECT_EQ(1u, callback_strings_.size());
+}
+
+TEST_P(CacheStorageCacheTestP, Keys_IgnoreVary) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = "vary_foo";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Keys(body_request_));
+  EXPECT_EQ(1u, callback_strings_.size());
+
+  body_request_.headers["vary_foo"] = "bar";
+  EXPECT_TRUE(Keys(body_request_));
+  EXPECT_EQ(0u, callback_strings_.size());
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_vary = true;
+  EXPECT_TRUE(Keys(body_request_, match_params));
+  EXPECT_EQ(1u, callback_strings_.size());
+}
+
+TEST_P(CacheStorageCacheTestP, Delete_IgnoreSearch) {
+  EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
+
+  EXPECT_FALSE(Delete(body_request_));
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_search = true;
+  EXPECT_TRUE(Delete(body_request_, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, Delete_IgnoreMethod) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  ServiceWorkerFetchRequest post_request = body_request_;
+  post_request.method = "POST";
+  EXPECT_FALSE(Delete(post_request));
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_method = true;
+  EXPECT_TRUE(Delete(post_request, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, Delete_IgnoreVary) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = "vary_foo";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  body_request_.headers["vary_foo"] = "bar";
+  EXPECT_FALSE(Delete(body_request_));
+
+  CacheStorageCacheQueryParams match_params;
+  match_params.ignore_vary = true;
+  EXPECT_TRUE(Delete(body_request_, match_params));
+}
+
+TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreMethod) {
+  EXPECT_TRUE(Put(body_request_, body_response_));
+
+  ServiceWorkerFetchRequest post_request = body_request_;
+  post_request.method = "POST";
+  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
+  CacheStorageCacheQueryParams match_params;
+
+  EXPECT_TRUE(MatchAll(post_request, match_params, &responses, &body_handles));
+  EXPECT_EQ(0u, responses->size());
+
+  match_params.ignore_method = true;
+  EXPECT_TRUE(MatchAll(post_request, match_params, &responses, &body_handles));
+  EXPECT_EQ(1u, responses->size());
+}
+
+TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreVary) {
+  body_request_.headers["vary_foo"] = "foo";
+  body_response_.headers["vary"] = "vary_foo";
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
+  CacheStorageCacheQueryParams match_params;
+
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(1u, responses->size());
+  body_request_.headers["vary_foo"] = "bar";
+
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(0u, responses->size());
+
+  match_params.ignore_vary = true;
+  EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
+  EXPECT_EQ(1u, responses->size());
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreSearch) {
@@ -1404,7 +1554,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   // second should wait for the first.
   EXPECT_TRUE(Keys());  // Opens the backend.
   DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
-  delayable_backend->set_delay_open(true);
+  delayable_backend->set_delay_doom(true);
 
   int sequence_out = -1;
 
@@ -1419,7 +1569,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
       base::Bind(&CacheStorageCacheTest::SequenceCallback,
                  base::Unretained(this), 1, &sequence_out, close_loop1.get()));
 
-  // Blocks on opening the cache entry.
+  // Blocks on creating the cache entry.
   base::RunLoop().RunUntilIdle();
 
   CacheStorageBatchOperation operation2;
@@ -1427,7 +1577,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   operation2.request = body_request_;
   operation2.response = body_response_;
 
-  delayable_backend->set_delay_open(false);
+  delayable_backend->set_delay_doom(false);
   std::unique_ptr<base::RunLoop> close_loop2(new base::RunLoop());
   cache_->BatchOperation(
       std::vector<CacheStorageBatchOperation>(1, operation2),
@@ -1438,7 +1588,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_response_);
 
-  delayable_backend->OpenEntryContinue();
+  delayable_backend->DoomEntryContinue();
   close_loop1->Run();
   EXPECT_EQ(1, sequence_out);
   close_loop2->Run();

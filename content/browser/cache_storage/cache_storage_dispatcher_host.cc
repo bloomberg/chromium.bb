@@ -203,7 +203,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
 
   if (match_params.cache_name.is_null()) {
     context_->cache_manager()->MatchAllCaches(
-        GURL(origin.Serialize()), std::move(scoped_request),
+        GURL(origin.Serialize()), std::move(scoped_request), match_params,
         base::Bind(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback,
                    this, thread_id, request_id));
     return;
@@ -211,7 +211,7 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
   context_->cache_manager()->MatchCache(
       GURL(origin.Serialize()),
       base::UTF16ToUTF8(match_params.cache_name.string()),
-      std::move(scoped_request),
+      std::move(scoped_request), match_params,
       base::Bind(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback, this,
                  thread_id, request_id));
 }
@@ -235,7 +235,7 @@ void CacheStorageDispatcherHost::OnCacheMatch(
                                     request.headers, request.referrer,
                                     request.is_reload));
   cache->Match(
-      std::move(scoped_request),
+      std::move(scoped_request), match_params,
       base::Bind(&CacheStorageDispatcherHost::OnCacheMatchCallback, this,
                  thread_id, request_id, base::Passed(it->second->Clone())));
 }
@@ -274,7 +274,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAll(
     return;
   }
   cache->Match(
-      std::move(scoped_request),
+      std::move(scoped_request), match_params,
       base::Bind(&CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter,
                  this, thread_id, request_id,
                  base::Passed(it->second->Clone())));

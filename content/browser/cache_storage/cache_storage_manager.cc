@@ -197,19 +197,22 @@ void CacheStorageManager::MatchCache(
     const GURL& origin,
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
 
-  cache_storage->MatchCache(cache_name, std::move(request), callback);
+  cache_storage->MatchCache(cache_name, std::move(request), match_params,
+                            callback);
 }
 
 void CacheStorageManager::MatchAllCaches(
     const GURL& origin,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
 
-  cache_storage->MatchAllCaches(std::move(request), callback);
+  cache_storage->MatchAllCaches(std::move(request), match_params, callback);
 }
 
 void CacheStorageManager::SetBlobParametersForCache(

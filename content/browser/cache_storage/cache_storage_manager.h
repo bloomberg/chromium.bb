@@ -68,9 +68,11 @@ class CONTENT_EXPORT CacheStorageManager {
   void MatchCache(const GURL& origin,
                   const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,
+                  const CacheStorageCacheQueryParams& match_params,
                   const CacheStorageCache::ResponseCallback& callback);
   void MatchAllCaches(const GURL& origin,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
+                      const CacheStorageCacheQueryParams& match_params,
                       const CacheStorageCache::ResponseCallback& callback);
 
   // This must be called before creating any of the public *Cache functions

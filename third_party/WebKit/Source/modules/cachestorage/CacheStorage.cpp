@@ -12,7 +12,6 @@
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "wtf/PtrUtil.h"
@@ -40,16 +39,6 @@ bool commonChecks(ScriptState* scriptState, ExceptionState& exceptionState)
         return false;
     }
     return true;
-}
-
-void checkCacheQueryOptions(const CacheQueryOptions& options, ExecutionContext* context)
-{
-    if (!RuntimeEnabledFeatures::cacheIgnoreSearchOptionEnabled() && options.ignoreSearch())
-        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784"));
-    if (options.ignoreMethod())
-        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreMethod' option yet. See http://crbug.com/482256"));
-    if (options.ignoreVary())
-        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216"));
 }
 
 } // namespace
@@ -315,7 +304,6 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
 {
     WebServiceWorkerRequest webRequest;
     request->populateWebServiceWorkerRequest(webRequest);
-    checkCacheQueryOptions(options, scriptState->getExecutionContext());
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();

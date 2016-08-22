@@ -81,6 +81,56 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
   },
   'Cache.matchAll with ignoreSearch option (request with search parameters)');
 
+cache_test(function(cache) {
+    var request = new Request('http://example.com/');
+    var head_request = new Request('http://example.com/', {method: 'HEAD'});
+    var response = new Response('foo');
+    return cache.put(request.clone(), response.clone())
+      .then(function() {
+          return cache.matchAll(head_request.clone());
+        })
+      .then(function(result) {
+          assert_response_array_equals(
+            result, [],
+            'Cache.matchAll should resolve with empty array for a ' +
+            'mismatched method.');
+          return cache.matchAll(head_request.clone(),
+                                {ignoreMethod: true});
+        })
+      .then(function(result) {
+          assert_response_array_equals(
+            result, [response],
+            'Cache.matchAll with ignoreMethod should ignore the ' +
+            'method of request.');
+        });
+  }, 'Cache.matchAll supports ignoreMethod');
+
+cache_test(function(cache) {
+    var vary_request = new Request('http://example.com/c',
+                                   {headers: {'Cookies': 'is-for-cookie'}});
+    var vary_response = new Response('', {headers: {'Vary': 'Cookies'}});
+    var mismatched_vary_request = new Request('http://example.com/c');
+
+    return cache.put(vary_request.clone(), vary_response.clone())
+      .then(function() {
+          return cache.matchAll(mismatched_vary_request.clone());
+        })
+      .then(function(result) {
+          assert_response_array_equals(
+            result, [],
+            'Cache.matchAll should resolve as undefined with a ' +
+            'mismatched vary.');
+          return cache.matchAll(mismatched_vary_request.clone(),
+                              {ignoreVary: true});
+        })
+      .then(function(result) {
+          assert_response_array_equals(
+            result, [vary_response],
+            'Cache.matchAll with ignoreVary should ignore the ' +
+            'vary of request.');
+        });
+  }, 'Cache.matchAll supports ignoreVary');
+
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.matchAll(entries.cat.request.url + '#mouse')
       .then(function(result) {
@@ -179,8 +229,9 @@ prepopulated_cache_test(vary_entries, function(cache, entries) {
               entries.vary_cookie_is_good.response,
               entries.vary_cookie_absent.response
             ],
-            'Cache.matchAll should honor "ignoreVary" parameter.');
+            'Cache.matchAll should support multiple vary request/response ' +
+            'pairs.');
         });
-  }, 'Cache.matchAll with "ignoreVary" parameter');
+  }, 'Cache.matchAll with multiple vary pairs');
 
 done();

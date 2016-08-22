@@ -588,6 +588,7 @@ void CacheStorage::EnumerateCaches(const StringsAndErrorCallback& callback) {
 void CacheStorage::MatchCache(
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -600,12 +601,13 @@ void CacheStorage::MatchCache(
 
   scheduler_->ScheduleOperation(
       base::Bind(&CacheStorage::MatchCacheImpl, weak_factory_.GetWeakPtr(),
-                 cache_name, base::Passed(std::move(request)),
+                 cache_name, base::Passed(std::move(request)), match_params,
                  scheduler_->WrapCallbackToRunNext(callback)));
 }
 
 void CacheStorage::MatchAllCaches(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -618,7 +620,7 @@ void CacheStorage::MatchAllCaches(
 
   scheduler_->ScheduleOperation(
       base::Bind(&CacheStorage::MatchAllCachesImpl, weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(request)),
+                 base::Passed(std::move(request)), match_params,
                  scheduler_->WrapCallbackToRunNext(callback)));
 }
 
@@ -841,6 +843,7 @@ void CacheStorage::EnumerateCachesImpl(
 void CacheStorage::MatchCacheImpl(
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   std::unique_ptr<CacheStorageCacheHandle> cache_handle =
       GetLoadedCache(cache_name);
@@ -856,7 +859,7 @@ void CacheStorage::MatchCacheImpl(
   // match is done.
   CacheStorageCache* cache_ptr = cache_handle->value();
   cache_ptr->Match(
-      std::move(request),
+      std::move(request), match_params,
       base::Bind(&CacheStorage::MatchCacheDidMatch, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(cache_handle)), callback));
 }
@@ -872,6 +875,7 @@ void CacheStorage::MatchCacheDidMatch(
 
 void CacheStorage::MatchAllCachesImpl(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
+    const CacheStorageCacheQueryParams& match_params,
     const CacheStorageCache::ResponseCallback& callback) {
   std::vector<CacheMatchResponse>* match_responses =
       new std::vector<CacheMatchResponse>(ordered_cache_names_.size());
@@ -889,6 +893,7 @@ void CacheStorage::MatchAllCachesImpl(
 
     CacheStorageCache* cache_ptr = cache_handle->value();
     cache_ptr->Match(base::WrapUnique(new ServiceWorkerFetchRequest(*request)),
+                     match_params,
                      base::Bind(&CacheStorage::MatchAllCachesDidMatch,
                                 weak_factory_.GetWeakPtr(),
                                 base::Passed(std::move(cache_handle)),

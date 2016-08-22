@@ -1710,7 +1710,7 @@ class CacheStorageSideDataSizeChecker
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle->value();
     cache->Match(
-        std::move(scoped_request),
+        std::move(scoped_request), CacheStorageCacheQueryParams(),
         base::Bind(&self::OnCacheStorageCacheMatchCallback, this, result,
                    continuation, base::Passed(std::move(cache_handle))));
   }

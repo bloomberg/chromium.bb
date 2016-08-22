@@ -21,9 +21,9 @@ namespace content {
 struct CONTENT_EXPORT CacheStorageCacheQueryParams {
   CacheStorageCacheQueryParams();
 
-  bool ignore_search;
-  bool ignore_method;
-  bool ignore_vary;
+  bool ignore_search = false;
+  bool ignore_method = false;
+  bool ignore_vary = false;
   base::NullableString16 cache_name;
 };
 

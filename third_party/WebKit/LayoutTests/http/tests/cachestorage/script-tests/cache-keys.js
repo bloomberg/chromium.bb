@@ -84,6 +84,62 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
   },
   'Cache.keys with ignoreSearch option (request with search parameters)');
 
+cache_test(function(cache) {
+    var request = new Request('http://example.com/');
+    var head_request = new Request('http://example.com/', {method: 'HEAD'});
+    var response = new Response('foo');
+    return cache.put(request.clone(), response.clone())
+      .then(function() {
+          return cache.keys(head_request.clone());
+        })
+      .then(function(result) {
+          assert_request_array_equals(
+            result, [],
+            'Cache.keys should resolve with an empty array with a ' +
+            'mismatched method.');
+          return cache.keys(head_request.clone(),
+                            {ignoreMethod: true});
+        })
+      .then(function(result) {
+          assert_request_array_equivalent(
+            result,
+            [
+              request,
+            ],
+            'Cache.keys with ignoreMethod should ignore the ' +
+            'method of request.');
+        });
+  }, 'Cache.keys supports ignoreMethod');
+
+cache_test(function(cache) {
+    var vary_request = new Request('http://example.com/c',
+                                   {headers: {'Cookies': 'is-for-cookie'}});
+    var vary_response = new Response('', {headers: {'Vary': 'Cookies'}});
+    var mismatched_vary_request = new Request('http://example.com/c');
+
+    return cache.put(vary_request.clone(), vary_response.clone())
+      .then(function() {
+          return cache.keys(mismatched_vary_request.clone());
+        })
+      .then(function(result) {
+          assert_request_array_equals(
+            result, [],
+            'Cache.keys should resolve with an empty array with a ' +
+            'mismatched vary.');
+          return cache.keys(mismatched_vary_request.clone(),
+                              {ignoreVary: true});
+        })
+      .then(function(result) {
+          assert_request_array_equivalent(
+            result,
+            [
+              vary_request,
+            ],
+            'Cache.keys with ignoreVary should ignore the ' +
+            'vary of request.');
+        });
+  }, 'Cache.keys supports ignoreVary');
+
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.keys(entries.cat.request.url + '#mouse')
       .then(function(result) {

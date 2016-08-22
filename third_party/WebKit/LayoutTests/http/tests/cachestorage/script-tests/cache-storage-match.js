@@ -165,4 +165,79 @@ cache_test(function(cache) {
         });
 }, 'CacheStorageMatch with empty cache name provided');
 
+
+cache_test(function(cache) {
+    var request = new Request('http://example.com/?foo');
+    var no_query_request = new Request('http://example.com/');
+    var response = new Response('foo');
+    return cache.put(request.clone(), response.clone())
+      .then(function() {
+          return self.caches.match(no_query_request.clone());
+        })
+      .then(function(result) {
+          assert_equals(
+            result, undefined,
+            'CacheStorageMatch should resolve as undefined with a ' +
+            'mismatched query.');
+          return self.caches.match(no_query_request.clone(),
+                                   {ignoreSearch: true});
+        })
+      .then(function(result) {
+          assert_response_equals(
+            result, response,
+            'CacheStorageMatch with ignoreSearch should ignore the ' +
+            'query of the request.');
+        });
+  }, 'CacheStorageMatch supports ignoreSearch');
+
+cache_test(function(cache) {
+    var request = new Request('http://example.com/');
+    var head_request = new Request('http://example.com/', {method: 'HEAD'});
+    var response = new Response('foo');
+    return cache.put(request.clone(), response.clone())
+      .then(function() {
+          return self.caches.match(head_request.clone());
+        })
+      .then(function(result) {
+          assert_equals(
+            result, undefined,
+            'CacheStorageMatch should resolve as undefined with a ' +
+            'mismatched method.');
+          return self.caches.match(head_request.clone(),
+                                   {ignoreMethod: true});
+        })
+      .then(function(result) {
+          assert_response_equals(
+            result, response,
+            'CacheStorageMatch with ignoreMethod should ignore the ' +
+            'method of request.');
+        });
+  }, 'Cache.match supports ignoreMethod');
+
+cache_test(function(cache) {
+    var vary_request = new Request('http://example.com/c',
+                                   {headers: {'Cookies': 'is-for-cookie'}});
+    var vary_response = new Response('', {headers: {'Vary': 'Cookies'}});
+    var mismatched_vary_request = new Request('http://example.com/c');
+
+    return cache.put(vary_request.clone(), vary_response.clone())
+      .then(function() {
+          return self.caches.match(mismatched_vary_request.clone());
+        })
+      .then(function(result) {
+          assert_equals(
+            result, undefined,
+            'CacheStorageMatch should resolve as undefined with a ' +
+            ' mismatched vary.');
+          return self.caches.match(mismatched_vary_request.clone(),
+                                   {ignoreVary: true});
+        })
+      .then(function(result) {
+          assert_response_equals(
+            result, vary_response,
+            'CacheStorageMatch with ignoreVary should ignore the ' +
+            'vary of request.');
+        });
+  }, 'CacheStorageMatch supports ignoreVary');
+
 done();

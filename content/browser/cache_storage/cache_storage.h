@@ -91,6 +91,7 @@ class CONTENT_EXPORT CacheStorage {
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,
+                  const CacheStorageCacheQueryParams& match_params,
                   const CacheStorageCache::ResponseCallback& callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
@@ -98,6 +99,7 @@ class CONTENT_EXPORT CacheStorage {
   // entry. If no response is found then |callback| is called with
   // CACHE_STORAGE_ERROR_NOT_FOUND.
   void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
+                      const CacheStorageCacheQueryParams& match_params,
                       const CacheStorageCache::ResponseCallback& callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
@@ -174,6 +176,7 @@ class CONTENT_EXPORT CacheStorage {
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
+                      const CacheStorageCacheQueryParams& match_params,
                       const CacheStorageCache::ResponseCallback& callback);
   void MatchCacheDidMatch(std::unique_ptr<CacheStorageCacheHandle> cache_handle,
                           const CacheStorageCache::ResponseCallback& callback,
@@ -183,6 +186,7 @@ class CONTENT_EXPORT CacheStorage {
 
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
+                          const CacheStorageCacheQueryParams& match_params,
                           const CacheStorageCache::ResponseCallback& callback);
   void MatchAllCachesDidMatch(
       std::unique_ptr<CacheStorageCacheHandle> cache_handle,
