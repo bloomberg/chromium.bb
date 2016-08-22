@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Värskendage sünkroonimise parooli.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Taotlus või selle parameetrid on kehtetud</translation>
+<translation id="1838667051080421715">Vaatate veebilehe lähtekoodi.</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
 <translation id="1883255238294161206">Ahenda loend</translation>
 <translation id="1898423065542865115">Filtreerimine</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
 <translation id="1974060860693918893">Täpsemad</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
 <translation id="2025186561304664664">Puhverserver seadistatakse automaatselt.</translation>
 <translation id="2030481566774242610">Kas mõtlesite aadressi <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Näete seda sõnumit, kuna teie vanemad peavad uued saidid esmakordsel külastusel kinnitama.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollige puhverserverit ja tulemüüri<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postiindeks</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 soovitus}other{# soovitust}}</translation>
 <translation id="2065985942032347596">Vajalik autentimine</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="20817612488360358">Kasutamiseks on määratud süsteemi puhverserveri seaded, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">See sait ei saa turvalist ühendust luua</translation>
 <translation id="2171101176734966184">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mis on allkirjastatud nõrga allkirjaalgoritmiga. See tähendab, et serveri esitatud turvamandaadid võivad olla võltsitud ning server ei pruugi olla see, mida eeldate (võimalik, et suhtlete ründajaga).</translation>
 <translation id="2181821976797666341">Reeglid</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 aadress}other{# aadressi}}</translation>
 <translation id="2212735316055980242">Reeglit ei leitud</translation>
 <translation id="2213606439339815911">Kirjete toomine ...</translation>
 <translation id="2230458221926704099">Parandage oma ühendus <ph name="BEGIN_LINK" />diagnostikarakenduse<ph name="END_LINK" /> abil</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Reegli tüüp on vale</translation>
 <translation id="3032412215588512954">Kas soovite selle saidi uuesti laadida?</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{vähemalt 1 üksus sünkroonitud seadmetes}=1{1 üksus (ja rohkem sünkroonitud seadmetes)}other{# üksust (ja rohkem sünkroonitud seadmetes)}}</translation>
 <translation id="3041612393474885105">Sertifikaadi andmed</translation>
 <translation id="3063697135517575841">Chrome ei saanud praegu teie kaarti kinnitada. Proovige hiljem uuesti.</translation>
 <translation id="3093245981617870298">Olete võrguühenduseta.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="4103763322291513355">Külastage saiti &lt;strong&gt;chrome://policy&lt;/strong&gt;, et näha mustas nimekirjas olevate URL-ide loendit ja teisi reegleid, mille on jõustanud teie süsteemiadministraator.</translation>
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{veel 1}other{veel #}}</translation>
 <translation id="4130226655945681476">Kontrollige võrgukaableid, modemit ja ruuterit</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Kas soovite, et Chromium salvestaks selle kaardi?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Keelatud</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{mitte ühtegi}=1{1 rakendus ($1)}=2{2 rakendust ($1, $2)}other{# rakendust ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Krahhid</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proovige käitada võrgudiagnostikat<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Ei</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Näete seda sõnumit, kuna teie vanem peab uued saidid esmakordsel külastusel kinnitama.</translation>
 <translation id="495170559598752135">Toimingud</translation>
 <translation id="4958444002117714549">Laienda loendit</translation>
+<translation id="4986920000862467124">Kõik on loetud</translation>
 <translation id="498957508165411911">Kas tõlkida <ph name="ORIGINAL_LANGUAGE" /> keelest <ph name="TARGET_LANGUAGE" /> keelde?</translation>
 <translation id="5002932099480077015">Kui see on lubatud, salvestab Chrome teie kaardi koopia vormide kiiremini täitmiseks sellesse seadmesse.</translation>
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Automaatne</translation>
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{mitte ühtegi}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Kontrollige kaableid ning taaskäivitage kõik ruuterid, modemid ja muud
     kasutuses olevad võrguseadmed.</translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">tundmatu suurus</translation>
 <translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6358450015545214790">Mida need tähendavad?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{veel 1 soovitus}other{veel # soovitust}}</translation>
 <translation id="6387478394221739770">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie beetakanalit aadressil chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromiumil pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
 <translation id="6417515091412812850">Ei saa kontrollida sertifikaadi võimalikku tühistamist.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="6710594484020273272">&lt;Sisestage otsingutermin&gt;</translation>
 <translation id="6711464428925977395">Puhverserveriga on midagi valesti või aadress on vale.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{mitte ühtegi}=1{1 üksus}other{# üksust}}</translation>
 <translation id="674375294223700098">Serveri sertifikaadi tundmatu viga.</translation>
 <translation id="6753269504797312559">Reegli väärtus</translation>
 <translation id="6757797048963528358">Teie seade lülitus unerežiimile.</translation>
@@ -568,6 +579,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7637571805876720304">Kas eemaldada Chromiumist krediitkaart?</translation>
 <translation id="765676359832457558">Peida täpsemad seaded ...</translation>
 <translation id="7658239707568436148">Tühista</translation>
+<translation id="7667346355482952095">Tagastatud reegli luba on tühi või ei kattu praeguse loaga</translation>
 <translation id="7668654391829183341">Tundmatu seade</translation>
 <translation id="7674629440242451245">Kas olete huvitatud Chrome'i uutest lahedatest funktsioonidest? Proovige meie arenduskanalit aadressil chrome.com/beta.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Edasiliikumine saidile <ph name="SITE" /> (ebaturvaline)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8433057134996913067">See logib teid välja enamikult veebisaitidelt.</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 krediitkaart}other{# krediitkaarti}}</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
 <translation id="8530504477309582336">Google Payments ei toeta seda tüüpi kaarti. Valige teine kaart.</translation>

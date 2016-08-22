@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
+<translation id="1838667051080421715">Katselet verkkosivun lähdekoodia.</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
 <translation id="1883255238294161206">Tiivistä luettelo</translation>
 <translation id="1898423065542865115">Suodatus</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Verkkotunnuksen <ph name="DOMAIN" /> kirjanmerkit</translation>
 <translation id="1973335181906896915">Sarjaesittämisen virhe</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{ja 1 muu}other{ja # muuta}}</translation>
 <translation id="2025186561304664664">Välityspalvelimen asetus: automaattisesti määritetty.</translation>
 <translation id="2030481566774242610">Tarkoititko: <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Tämä viesti näytetään, koska vanhempiesi täytyy hyväksyä uudet sivustot ennen ensimmäistä lataamista.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen ja palomuurin määritykset.<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postinumero</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 ehdotus}other{# ehdotusta}}</translation>
 <translation id="2065985942032347596">Käyttöoikeustarkistus pakollinen</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="20817612488360358">Järjestelmän välityspalvelinasetukset on määritetty käytettäviksi, mutta erilliset välityspalvelimen asetukset on myös määritetty.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Tämä sivusto ei voi tarjota suojattua yhteyttä</translation>
 <translation id="2171101176734966184">Yritit yhdistää verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka käyttää heikkoa allekirjoitusalgoritmia. Tämä tarkoittaa sitä, että palvelimen esittämät tunnistetiedot saattavat olla väärennettyjä. Palvelin ei siis välttämättä ole tavoittelemasi palvelin, vaan saatat viestiä hakkerin kanssa.</translation>
 <translation id="2181821976797666341">Käytännöt</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 osoite}other{# osoitetta}}</translation>
 <translation id="2212735316055980242">Käytäntöä ei löydy</translation>
 <translation id="2213606439339815911">Noudetaan merkintöjä…</translation>
 <translation id="2230458221926704099">Korjaa yhteytesi käyttämällä <ph name="BEGIN_LINK" />diagnostiikkasovellusta<ph name="END_LINK" />.</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Väärä käytäntötyyppi</translation>
 <translation id="3032412215588512954">Haluatko päivittää tämän sivuston?</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{vähintään 1 kohde synkronoiduilla laitteilla}=1{1 kohde (ja lisää synkronoiduilla laitteilla)}other{# kohdetta (ja lisää synkronoiduilla laitteilla)}}</translation>
 <translation id="3041612393474885105">Varmenteen tiedot</translation>
 <translation id="3063697135517575841">Chrome ei voinut vahvistaa korttiasi. Yritä myöhemmin uudelleen.</translation>
 <translation id="3093245981617870298">Olet offline-tilassa.</translation>
@@ -292,6 +297,7 @@
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 muu}other{# muuta}}</translation>
 <translation id="4130226655945681476">Tarkista verkkojohdot, modeemi ja reititin.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Haluatko, että Chromium tallentaa tämän kortin?</translation>
@@ -299,6 +305,7 @@
 <translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tarkista palomuurin ja virustorjuntaohjelmiston määritykset.<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{ei yhtään}=1{1 sovellus ($1)}=2{2 sovellusta ($1 ja $2)}other{# sovellusta ($1, $2 $3)}}</translation>
 <translation id="4220128509585149162">Kaatuu</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Kokeile verkon diagnostiikkaa<ph name="END_LINK" /></translation>
 <translation id="4250680216510889253">Ei</translation>
@@ -354,6 +361,7 @@
 <translation id="4930497775425430760">Tämä viesti näytetään, koska vanhempasi täytyy hyväksyä uudet sivustot ennen ensimmäistä lataamista.</translation>
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4958444002117714549">Laajenna luettelo</translation>
+<translation id="4986920000862467124">Kaikki luettu</translation>
 <translation id="498957508165411911">Käännetäänkö kielestä <ph name="ORIGINAL_LANGUAGE" /> kielelle <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Kun tämä vaihtoehto on käytössä, Chrome nopeuttaa lomakkeiden täyttämistä tallentamalla kortin tiedot tälle laittelle.</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>
@@ -442,6 +450,7 @@
 <translation id="604124094241169006">Automaattinen</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{ei yhtään}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Tarkista kaikki kaapelit ja käynnistä uudelleen reitittimet, modeemit ja muut
     käytössä olevat verkkolaitteet.</translation>
 <translation id="614940544461990577">Kokeile seuraavia toimenpiteitä:</translation>
@@ -462,6 +471,7 @@
 <translation id="6345221851280129312">tuntematon koko</translation>
 <translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
 <translation id="6358450015545214790">Mitä nämä tarkoittavat?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 muu ehdotus}other{# muuta ehdotusta}}</translation>
 <translation id="6387478394221739770">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile beta-kanavaa osoitteessa chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromiumin muisti loppui verkkosivua näytettäessä.</translation>
 <translation id="6417515091412812850">Ei voida tarkistaa, onko varmenne kumottu.</translation>
@@ -486,6 +496,7 @@
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6710594484020273272">&lt;Anna hakukysely&gt;</translation>
 <translation id="6711464428925977395">Välityspalvelimessa on jotain vikaa tai osoite on virheellinen.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{ei yhtään}=1{1 kohde}other{# kohdetta}}</translation>
 <translation id="674375294223700098">Tuntematon palvelimen varmennevirhe.</translation>
 <translation id="6753269504797312559">Käytännön arvo</translation>
 <translation id="6757797048963528358">Laitteesi siirtyi virransäästötilaan.</translation>
@@ -569,6 +580,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7637571805876720304">Poistetaanko luottokortti Chromiumista?</translation>
 <translation id="765676359832457558">Piilota lisäasetukset...</translation>
 <translation id="7658239707568436148">Peruuta</translation>
+<translation id="7667346355482952095">Palautettu käytäntötunnus on tyhjä tai ei vastaa nykyistä tunnusta.</translation>
 <translation id="7668654391829183341">Tuntematon laite</translation>
 <translation id="7674629440242451245">Oletko kiinnostunut Chromen uusista jännittävistä ominaisuuksista? Kokeile kehittäjäkanavaa osoitteessa chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Siirry sivustoon <ph name="SITE" /> (tämä ei ole turvallista)<ph name="END_LINK" /></translation>
@@ -631,6 +643,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433057134996913067">Sinut kirjataan ulos useimmilta verkkosivustoilta.</translation>
 <translation id="8437238597147034694">K&amp;umoa siirto</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 luottokortti}other{# luottokorttia}}</translation>
 <translation id="8488350697529856933">Käyttöalue</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ei vastannut riittävän nopeasti.</translation>
 <translation id="8530504477309582336">Google Payments ei tue tämän tyyppistä korttia. Valitse eri kortti.</translation>

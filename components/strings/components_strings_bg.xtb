@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
+<translation id="1838667051080421715">Преглеждате изходния код на уеб страницата.</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
 <translation id="1883255238294161206">Свиване на списъка</translation>
 <translation id="1898423065542865115">Филтриране</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
 <translation id="1974060860693918893">Разширени</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Виждате това съобщение, защото родителите ви трябва да одобрят новите сайтове при първото ви посещение.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверете прокси сървъра и защитната стена<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Пощенски код</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 предложение}other{# предложения}}</translation>
 <translation id="2065985942032347596">Изисква се удостоверяване на самоличността</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Този сайт не може да осигури защитена връзка</translation>
 <translation id="2171101176734966184">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, подписан със слаб алгоритъм. Това означава, че идентификационните данни за сигурност от сървъра може да са фалшифицирани и той да не е този, който очаквате (възможно е да сте се свързали с извършител на атака).</translation>
 <translation id="2181821976797666341">Правила</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 адрес}other{# адреса}}</translation>
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Грешен тип на правилото</translation>
 <translation id="3032412215588512954">Искате ли да презаредите този сайт?</translation>
 <translation id="3037605927509011580">Ужас!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{поне 1 елемент на синхронизирани устройства}=1{1 елемент (и други на синхронизирани устройства)}other{# елемента (и други на синхронизирани устройства)}}</translation>
 <translation id="3041612393474885105">Информация за сертификата</translation>
 <translation id="3063697135517575841">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
 <translation id="3093245981617870298">Понастоящем сте офлайн.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="4103763322291513355">Посетете &lt;strong&gt;chrome://policy&lt;/strong&gt;, за да видите изброени URL адресите в черния списък и другите правила, наложени от системния ви администратор.</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{още 1 елемент}other{още # елемента}}</translation>
 <translation id="4130226655945681476">Проверете мрежовите кабели, модема и маршрутизатора.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Искате ли Chromium да запази тази карта?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Деактивирано</translation>
 <translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверете конфигурацията на защитната стена и антивирусния софтуер<ph name="END_LINK" />.</translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{няма}=1{1 приложение ($1)}=2{2 приложения ($1, $2)}other{# приложения ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Сривове</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Опитайте да стартирате мрежова диагностика<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Не</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Виждате това съобщение, защото родителят ви трябва да одобри новите сайтове при първото ви посещение.</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Разгъване на списъка</translation>
+<translation id="4986920000862467124">Всичко е прочетено</translation>
 <translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Ако настройката е активирана, копие на картата ви ще се съхранява в Chrome на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Автоматично</translation>
 <translation id="6042308850641462728">Още</translation>
 <translation id="6060685159320643512">Внимавайте, тези експерименти може да са опасни</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{няма}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">неизвестен размер</translation>
 <translation id="6355080345576803305">Принудително зададено поради обществена сесия</translation>
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
 <translation id="6387478394221739770">Търсите интересни нови функции на Chrome? Изпробвайте бета канала на адрес chrome.com/beta.</translation>
 <translation id="6389758589412724634">Паметта на Chromium се изчерпа, докато браузърът опитваше да покаже тази уеб страница.</translation>
 <translation id="6417515091412812850">Не може да се провери дали сертификатът е анулиран.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6710594484020273272">&lt;Въведете дума за търсене&gt;</translation>
 <translation id="6711464428925977395">Нещо не е наред с прокси сървъра или адресът е неправилен.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{няма}=1{1 елемент}other{# елемента}}</translation>
 <translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
@@ -568,6 +579,7 @@
 <translation id="7637571805876720304">Кредитната карта да се премахне ли от Chromium?</translation>
 <translation id="765676359832457558">Скриване на разширените настройки...</translation>
 <translation id="7658239707568436148">Отказ</translation>
+<translation id="7667346355482952095">Върнатото означение за правилата е празно или не съответства на текущото</translation>
 <translation id="7668654391829183341">Неизвестно устройство</translation>
 <translation id="7674629440242451245">Търсите интересни нови функции на Chrome? Изпробвайте канала за програмисти на адрес chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Продължаване към <ph name="SITE" /> (опасно)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
 <translation id="8530504477309582336">Този тип карта не се поддържа от Google Payments. Моля, изберете друга.</translation>

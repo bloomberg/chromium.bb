@@ -148,7 +148,6 @@
 <translation id="4573676252416618192">Chrome 遠端
 桌面主機</translation>
 <translation id="4619978527973181021">接受並安裝</translation>
-<translation id="4647791084836149355">顯示 Cardboard 畫面</translation>
 <translation id="4703302905453407178">必要的元件已停止運作，請向開發人員回報這個問題。</translation>
 <translation id="4703799847237267011">您的 Chromoting 工作階段已結束。</translation>
 <translation id="4736223761657662401">連線紀錄</translation>
@@ -209,7 +208,6 @@
 <translation id="6284412385303060032">在控制台登入畫面執行的主機已關閉。這樣才能切換成在個別使用者工作階段中執行的主機，以支援帷幕模式。</translation>
 <translation id="629730747756840877">帳戶</translation>
 <translation id="6304318647555713317">用戶端</translation>
-<translation id="6324708100353784493">您已啟用 Google Cardboard 整合模式。如要使用這個模式，請將您的裝置插入與 Google Cardboard 相容的檢視器。</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6408143143164565232">• 聽取 Windows 或 Linux 電腦的音訊。
@@ -229,7 +227,7 @@
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. 保留所有權利。</translation>
 <translation id="6746493157771801606">清除紀錄</translation>
-<translation id="6748108480210050150">來源電腦</translation>
+<translation id="6748108480210050150">寄件者</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME" />。</translation>
 <translation id="6865175692670882333">檢視/編輯</translation>
 <translation id="6930242544192836755">持續時間</translation>
@@ -238,7 +236,7 @@
 <translation id="6963936880795878952">有人嘗試使用無效的 PIN 連線至遠端電腦，因此您的連線暫時遭到封鎖。請稍後再試。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME" /> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
-<translation id="6998989275928107238">目標電腦</translation>
+<translation id="6998989275928107238">收件者</translation>
 <translation id="7019153418965365059">不明主機錯誤：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">遠端協助</translation>
 <translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chromoting。</translation>

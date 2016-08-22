@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
+<translation id="1838667051080421715">È visualizzata la sorgente di una pagina web.</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
 <translation id="1883255238294161206">Comprimi elenco</translation>
 <translation id="1898423065542865115">Filtri</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Segnalibri di <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Errore di serializzazione</translation>
 <translation id="1974060860693918893">Avanzate</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{e un'altra}other{e altre #}}</translation>
 <translation id="2025186561304664664">È stata impostata la configurazione automatica del proxy.</translation>
 <translation id="2030481566774242610">Forse cercavi <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Visualizzi questo messaggio perché i tuoi genitori devono approvare i nuovi siti alla tua prima visita.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Controllare il proxy e firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ZIP</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 suggerimento}other{# suggerimenti}}</translation>
 <translation id="2065985942032347596">Autenticazione richiesta</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Il sito non può fornire una connessione protetta</translation>
 <translation id="2171101176734966184">Hai tentato di accedere a <ph name="DOMAIN" /> ma il server ha presentato un certificato firmato utilizzando un algoritmo di firma debole. Ciò significa che le credenziali di sicurezza presentate dal server potrebbero essere state falsificate e il server potrebbe non essere quello previsto (è possibile che tu stia comunicando con un utente malintenzionato).</translation>
 <translation id="2181821976797666341">Criteri</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 indirizzo}other{# indirizzi}}</translation>
 <translation id="2212735316055980242">Criterio non trovato</translation>
 <translation id="2213606439339815911">Recupero voci...</translation>
 <translation id="2230458221926704099">Correggi la connessione con l'<ph name="BEGIN_LINK" />app diagnostica<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="3032412215588512954">Vuoi ricaricare questo sito?</translation>
 <translation id="3037605927509011580">Uffa!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{almeno 1 elemento sui dispositivi sincronizzati}=1{1 elemento (e altri sui dispositivi sincronizzati)}other{# elementi (e altri sui dispositivi sincronizzati)}}</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
 <translation id="3063697135517575841">Al momento non è possibile confermare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="3093245981617870298">Sei offline.</translation>
@@ -288,6 +293,7 @@
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
 <translation id="4117700440116928470">L'ambito della norma non è supportato.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 altro}other{# altri}}</translation>
 <translation id="4130226655945681476">Controllare i cavi di rete, il modem e il router</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Vuoi che Chromium salvi questa carta?</translation>
@@ -295,6 +301,7 @@
 <translation id="4176463684765177261">Disabilitato</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{nessuna}=1{1 app ($ 1)}=2{2 app ($ 1, $ 2)}other{# app ($ 1, $ 2, $ 3)}}</translation>
 <translation id="4220128509585149162">Arresti anomali</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">No</translation>
@@ -350,6 +357,7 @@
 <translation id="4930497775425430760">Visualizzi questo messaggio perché il tuo genitore deve approvare i nuovi siti alla tua prima visita.</translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4958444002117714549">Espandi elenco</translation>
+<translation id="4986920000862467124">Tutto letto</translation>
 <translation id="498957508165411911">Tradurre da <ph name="ORIGINAL_LANGUAGE" /> in <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Se questa opzione viene attivata, Chrome memorizza una copia della carta sul dispositivo per velocizzare la compilazione dei moduli.</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>
@@ -438,6 +446,7 @@
 <translation id="604124094241169006">Automatica</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="6060685159320643512">Attenzione, prova questi esperimenti a tuo rischio e pericolo</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{nessuna}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Controlla eventuali cavi e riavvia eventuali router, modem o altri dispositivi di rete in uso.</translation>
 <translation id="614940544461990577">Prova a:</translation>
 <translation id="6150607114729249911">Spiacenti. Devi chiedere ai tuoi genitori se puoi visitare la pagina.</translation>
@@ -457,6 +466,7 @@
 <translation id="6345221851280129312">dimensioni sconosciute</translation>
 <translation id="6355080345576803305">Sostituzione sessione pubblica</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
 <translation id="6387478394221739770">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale beta all'indirizzo chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium ha esaurito la memoria mentre cercava di visualizzare questa pagina web.</translation>
 <translation id="6417515091412812850">Impossibile controllare se il certificato è stato revocato.</translation>
@@ -481,6 +491,7 @@
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6710594484020273272">&lt;Digita un termine di ricerca&gt;</translation>
 <translation id="6711464428925977395">Si è verificato un problema con il server proxy oppure l'indirizzo non è corretto.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{nessuno}=1{1 elemento}other{# elementi}}</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6753269504797312559">Valore norma</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
@@ -564,6 +575,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7637571805876720304">Rimuovere la carta di credito da Chromium?</translation>
 <translation id="765676359832457558">Nascondi impostazioni avanzate...</translation>
 <translation id="7658239707568436148">Annulla</translation>
+<translation id="7667346355482952095">Il token della norma restituito è vuoto o non corrisponde al token corrente</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="7674629440242451245">Ti interessano le nuove e straordinarie funzioni di Chrome? Prova il nostro canale Dev all'indirizzo chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Procedi su <ph name="SITE" /> (non sicuro)<ph name="END_LINK" /></translation>
@@ -626,6 +638,7 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 carta di credito}other{# carte di credito}}</translation>
 <translation id="8488350697529856933">Si applica a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha impiegato troppo tempo a rispondere.</translation>
 <translation id="8530504477309582336">Questo tipo di carta non è supportato in Google Payments. Seleziona un'altra carta.</translation>

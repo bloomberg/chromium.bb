@@ -148,7 +148,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4573676252416618192">Chrome リモート
 デスクトップ ホスト</translation>
 <translation id="4619978527973181021">同意してインストール</translation>
-<translation id="4647791084836149355">Cardboard ビューを表示</translation>
 <translation id="4703302905453407178">必須コンポーネントが停止しました。デベロッパーにこの問題を報告してください。</translation>
 <translation id="4703799847237267011">Chromoting セッションが終了しました。</translation>
 <translation id="4736223761657662401">接続履歴</translation>
@@ -209,7 +208,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6284412385303060032">コンソールのログイン画面で実行されるホストは、カーテンモードをサポートするために終了されました（ユーザー固有のセッションで実行されるホストに切り替えられました）。</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6304318647555713317">クライアント</translation>
-<translation id="6324708100353784493">Google Cardboard 統合モードを有効にしました。このモードを使用するには、端末を Google Cardboard 対応ビューアに装着してください。</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="6408143143164565232">• Windows や Linux パソコンからの音声を聞き取る。
@@ -229,7 +227,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6668065415969892472">PIN を更新しました。</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. All Rights Reserved.</translation>
 <translation id="6746493157771801606">履歴をクリア</translation>
-<translation id="6748108480210050150">接続元</translation>
+<translation id="6748108480210050150">From</translation>
 <translation id="677755392401385740">次のユーザーのホストを開始しました: <ph name="HOST_USERNAME" />。</translation>
 <translation id="6865175692670882333">表示/編集</translation>
 <translation id="6930242544192836755">接続時間</translation>
@@ -238,7 +236,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6963936880795878952">無効な PIN を使用した接続が試みられたため、リモートのパソコンへの接続が一時的にブロックされています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
-<translation id="6998989275928107238">接続先</translation>
+<translation id="6998989275928107238">To</translation>
 <translation id="7019153418965365059">不明なホストエラー: <ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">リモート サポート</translation>
 <translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>

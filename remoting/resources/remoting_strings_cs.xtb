@@ -149,7 +149,6 @@ Chromoting</translation>
 <translation id="4573676252416618192">Hostitel Vzdálené
 plochy Chrome</translation>
 <translation id="4619978527973181021">Přijmout a nainstalovat</translation>
-<translation id="4647791084836149355">Přepnout na zobrazení Cardboard</translation>
 <translation id="4703302905453407178">Vyžadovaná komponenta přestala pracovat. Nahlaste tento problém vývojářům.</translation>
 <translation id="4703799847237267011">Relace funkce Chromoting byla ukončena.</translation>
 <translation id="4736223761657662401">Historie připojení</translation>
@@ -210,7 +209,6 @@ plochy Chrome</translation>
 <translation id="6284412385303060032">Hostitel spuštěný na obrazovce logiky konzole byl ukončen za účelem zajištění podpory režimu opony prostřednictvím přepnutí na hostitele spuštěného v relaci specifické pro uživatele.</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6304318647555713317">Klient</translation>
-<translation id="6324708100353784493">Povolili jste režim integrace Google Cardboard. Chcete-li tento režim používat, vložte zařízení do brýlí pro virtuální realitu kompatibilních se službou Google Cardboard.</translation>
 <translation id="6381670701864002291">Něco jiného</translation>
 <translation id="6398765197997659313">Ukončit režim celé obrazovky</translation>
 <translation id="6408143143164565232">• Poslech zvuku z počítačů se systémem Windows nebo Linux
@@ -230,7 +228,7 @@ plochy Chrome</translation>
 <translation id="6668065415969892472">Váš kód PIN byl aktualizován.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="6746493157771801606">Vymazat historii</translation>
-<translation id="6748108480210050150">Klient</translation>
+<translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Pro následujícího uživatele bylo zahájeno hostování: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Zobrazit/upravit</translation>
 <translation id="6930242544192836755">Délka</translation>
@@ -239,7 +237,7 @@ plochy Chrome</translation>
 <translation id="6963936880795878952">Připojení ke vzdálenému počítači jsou dočasně zablokována, protože došlo k několika pokusům o připojení s nesprávným kódem PIN. Zkuste to znovu později.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Opravdu chcete zakázat vzdálená připojení k počítači <ph name="HOSTNAME" />? Pokud později své rozhodnutí změníte, bude nutné připojení povolit přímo z uvedeného počítače.</translation>
-<translation id="6998989275928107238">Hostitel</translation>
+<translation id="6998989275928107238">Komu</translation>
 <translation id="7019153418965365059">Neznámá chyba hostitele: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Vzdálená pomoc</translation>
 <translation id="7038683108611689168">Pomozte nám funkci Chromoting vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>

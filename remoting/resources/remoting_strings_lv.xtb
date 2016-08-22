@@ -148,7 +148,6 @@ saimniekdators</translation>
 <translation id="4573676252416618192">Chrome attālās
 darbvirsmas saimniekdators</translation>
 <translation id="4619978527973181021">Piekrist un instalēt</translation>
-<translation id="4647791084836149355">Rādīt Cardboard skatījumu</translation>
 <translation id="4703302905453407178">Tika pārtraukta obligātā komponenta darbība. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
 <translation id="4703799847237267011">Jūsu Chrome saites sesija ir pārtraukta.</translation>
 <translation id="4736223761657662401">Savienojumu vēsture</translation>
@@ -209,7 +208,6 @@ darbvirsmas saimniekdators</translation>
 <translation id="6284412385303060032">Saimniekdators, kas darbojas konsoles pieteikšanās ekrānā, ir izslēgts, lai atbalstītu aizkara režīmu, pārslēdzoties uz saimniekdatoru, kurš darbojas noteikta lietotāja sesijā.</translation>
 <translation id="629730747756840877">Konts</translation>
 <translation id="6304318647555713317">Klients</translation>
-<translation id="6324708100353784493">Jūs esat iespējojis Google Cardboard integrācijas režīmu. Lai izmantotu šo režīmu, ievietojiet ierīci ar Google Cardboard saderīgā skatītājā.</translation>
 <translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
 <translation id="6408143143164565232">• Audio atskaņošana no Windows vai Linux datora.
@@ -238,7 +236,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="6963936880795878952">Savienojumi ar attālo datoru īslaicīgi ir bloķēti, jo kāda persona mēģināja izveidot savienojumu, izmantojot nederīgu PIN. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="6985691951107243942">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME" />? Ja pārdomāsiet, savienojumus ar šo datoru varēsiet iespējot tikai klātienē.</translation>
-<translation id="6998989275928107238">Ar</translation>
+<translation id="6998989275928107238">Kam</translation>
 <translation id="7019153418965365059">Neatpazīta saimniekdatora kļūda: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
 <translation id="7038683108611689168">Palīdziet mums uzlabot Chrome saiti, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>

@@ -316,7 +316,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4943872375798546930">Inga resultat</translation>
 <translation id="4961700429721424617">Du håller på att logga ut från ett konto som hanteras av <ph name="MANAGED_DOMAIN" />. Åtgärden raderar din data i Chrome från den här enheten, men den finns kvar i Google-kontot.</translation>
 <translation id="497421865427891073">Fortsätt</translation>
-<translation id="4986920000862467124">Alla lästa</translation>
 <translation id="4988526792673242964">Sidor</translation>
 <translation id="4996978546172906250">Dela via</translation>
 <translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
@@ -486,6 +485,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6857778194843072568">Skicka endast via Wi-Fi</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
+<translation id="6910211073230771657">Borttagen</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7876243839304621966">Ta bort alla</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7949961459945740081">Få de senaste funktionerna</translation>
-<translation id="7954261717155239372">Fler kort visas när tiden är rätt.</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
@@ -627,7 +626,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
 <translation id="8588878054171169263">Spara bild</translation>
 <translation id="8617240290563765734">Vill du öppna den föreslagna webbadressen i det nedladdade innehållet?</translation>
-<translation id="8627706565932943526">Synkroniseringsfel</translation>
 <translation id="862875433388403934">Det kan hända att det inte går att spela upp innehåll (t.ex. filmer och musik) som har hämtats i andra appar förrän dessa appar får nya licenser som baseras på nya användaruppgifter för enheten.
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det nedladdade innehållet.</translation>
@@ -644,6 +642,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883635517171802338">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="884264119367021077">Leveransadress</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Inga bokmärken hittades</translation>

@@ -89,6 +89,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="2020525020270327736">Sao chép trang web</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
+<translation id="2069736994598857257">Đã sử dụng <ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">Tải hình ảnh</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
@@ -120,6 +121,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2349710944427398404">Tổng số dữ liệu mà Chrome sử dụng, bao gồm tài khoản, dấu trang và cài đặt đã lưu</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
+<translation id="2369533728426058518">tab đang mở</translation>
 <translation id="2385560268894525395">tuần trước</translation>
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
 <translation id="238909021488141516">Đã xảy ra lỗi khi tải xuống nội dung.</translation>
@@ -200,6 +202,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3350687908700087792">Đóng tất cả các tab ẩn danh</translation>
 <translation id="3351441609270267898">Nhập dữ liệu hiện có</translation>
 <translation id="3365671512111106261">Không khả dụng khi Trình tiết kiệm dữ liệu được bật</translation>
+<translation id="3367813778245106622">Đăng nhập lại để bắt đầu đồng bộ hóa</translation>
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
 <translation id="3386292677130313581">Hỏi trước khi cho phép các trang web biết vị trí của bạn (được đề xuất)</translation>
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
@@ -288,6 +291,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4572422548854449519">Đăng nhập vào tài khoản được quản lý</translation>
 <translation id="4581964774250883625">Bạn đã chuyển sang chế độ ẩn danh.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# phút trước}other{# phút trước}}</translation>
+<translation id="4605958867780575332">Đã xóa mục: <ph name="ITEM_TITLE" /></translation>
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
@@ -316,7 +320,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="4961700429721424617">Bạn đang đăng xuất khỏi tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome khỏi thiết bị này nhưng dữ liệu sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
 <translation id="497421865427891073">Đi về phía trước</translation>
-<translation id="4986920000862467124">Đã đọc tất cả</translation>
 <translation id="4988526792673242964">Trang</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
@@ -361,6 +364,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5400569084694353794">Bằng cách sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="5414836363063783498">Đang xác minh...</translation>
 <translation id="5423934151118863508">Trang bạn truy cập nhiều nhất sẽ xuất hiện ở đây</translation>
+<translation id="5424588387303617268">Còn trống <ph name="GIGABYTES" /> GB</translation>
 <translation id="544291274896356069">Rời khỏi chế độ ẩn danh nếu liên kết này đã được mở trong một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="5447201525962359567">Tất cả bộ nhớ trang web, bao gồm cookie và các dữ liệu được lưu trữ cục bộ khác</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
@@ -389,6 +393,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
+<translation id="572392919096807438">Ghi nhớ quyết định của tôi</translation>
 <translation id="5748802427693696783">Đã chuyển sang tab chuẩn</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập bộ nhớ để tải xuống tệp.</translation>
 <translation id="57586589942790530">Số thẻ không hợp lệ</translation>
@@ -475,6 +480,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
+<translation id="6764789522080107716">Không thể mở tệp</translation>
 <translation id="6770414673596662518">Hệ thống duyệt web an toàn của Chrome cũng sẽ được sử dụng để phát hiện trang độc hại và bảo vệ bạn khỏi lừa đảo, phần mềm độc hại và nội dung tải xuống có hại.</translation>
 <translation id="6790428901817661496">Phát</translation>
 <translation id="679325081238418596">Nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả thiết bị của bạn</translation>
@@ -486,6 +492,8 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6857778194843072568">Chỉ gửi trên Wi-Fi</translation>
 <translation id="6865313869410766144">Dữ liệu biểu mẫu tự động điền</translation>
 <translation id="6868088497967843822">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn</translation>
+<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
+<translation id="6910211073230771657">Đã xóa</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6963766334940102469">Xóa dấu trang</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -539,6 +547,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
+<translation id="7593557518625677601">Mở c.đặt Android &amp; bật lại đ.bộ hóa hệ thống Android để b.đầu đồng bộ hóa Chrome</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
@@ -570,7 +579,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7949961459945740081">Cập nhật tính năng mới nhất</translation>
-<translation id="7954261717155239372">Các thẻ khác sẽ xuất hiện khi thời gian đúng.</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
 <translation id="7987073022710626672">Điều khoản dịch vụ của Chrome</translation>
 <translation id="7998918019931843664">Mở lại tab đã đóng</translation>
@@ -599,6 +607,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8218934717680664417">Bạn hiện có thể tìm kiếm bằng một lần chạm</translation>
 <translation id="8223946939421658889">Xóa dữ liệu khỏi</translation>
 <translation id="8250920743982581267">Tài liệu</translation>
+<translation id="8260126382462817229">Thử đăng nhập lại</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8275818695183729150">Cho phép (dành cho tìm kiếm bằng thanh địa chỉ)</translation>
 <translation id="8283853025636624853">Đang đồng bộ hóa với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
@@ -627,7 +636,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
 <translation id="8588878054171169263">Lưu ảnh</translation>
 <translation id="8617240290563765734">Mở URL đề xuất được chỉ định trong nội dung được tải xuống?</translation>
-<translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
 <translation id="862875433388403934">Nội dung (phim, nhạc, v.v.) được tải xuống trong các ứng dụng khác có thể không còn phát được cho tới khi ứng dụng đó nhận lại giấy phép dựa theo thông tin đăng nhập thiết bị mới.
 
 Để nhận được giấy phép mới, hãy kết nối Internet và phát nội dung đã tải xuống của bạn.</translation>
@@ -644,6 +652,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883635517171802338">Chặn trang web hiển thị cửa sổ bật lên (được đề xuất)</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Dung lượng</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
@@ -687,6 +696,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="970715775301869095">Còn <ph name="MINUTES" /> phút</translation>
+<translation id="974555521953189084">Nhập cụm mật khẩu của bạn để bắt đầu đồng bộ hóa</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="982182592107339124">Thao tác này sẽ xóa dữ liệu của tất cả các trang web, bao gồm:</translation>
 <translation id="983192555821071799">Đóng tất cả các tab</translation>

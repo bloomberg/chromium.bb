@@ -316,7 +316,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4943872375798546930">Sonuç yok</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="497421865427891073">İlerle</translation>
-<translation id="4986920000862467124">Tümü Okundu</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
 <translation id="4996978546172906250">Paylaşım yöntemi:</translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
@@ -486,6 +485,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6857778194843072568">Yalnızca kablosuz ağda gönder</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
+<translation id="6910211073230771657">Silindi</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="6965382102122355670">Tamam</translation>
@@ -570,7 +570,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7876243839304621966">Tümünü kaldır</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7949961459945740081">En yeni özellikleri al</translation>
-<translation id="7954261717155239372">Zamanı geldiğinde daha fazla kart gösterilecek.</translation>
 <translation id="7963646190083259054">Firma:</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
@@ -627,7 +626,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
 <translation id="8588878054171169263">Resmi kaydet</translation>
 <translation id="8617240290563765734">İndirilen öğede belirtilen URL önerisi açılsın mı?</translation>
-<translation id="8627706565932943526">Senkronizasyon hatası</translation>
 <translation id="862875433388403934">Diğer uygulamalarda indirilen içerikler (film, müzik vb.), ilgili uygulamalar cihazın yeni kimlik bilgilerine dayanarak yeniden lisans alana kadar oynatılmayabilir.
 
 Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği oynatın.</translation>
@@ -644,6 +642,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="883635517171802338">Sitelerin pop-up göstermesini engelle (önerilir)</translation>
 <translation id="884264119367021077">Gönderim adresi</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, sekme</translation>
 <translation id="885701979325669005">Depolama</translation>
 <translation id="8901170036886848654">Yer işareti bulunamadı</translation>

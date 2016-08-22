@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
+<translation id="1838667051080421715">You are viewing the source of a web page.</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
 <translation id="1883255238294161206">Collapse list</translation>
 <translation id="1898423065542865115">Filtering</translation>
@@ -353,6 +354,7 @@
 <translation id="4930497775425430760">You're seeing this message because your parent needs to approve new sites on your first visit.</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Expand list</translation>
+<translation id="4986920000862467124">All Read</translation>
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>

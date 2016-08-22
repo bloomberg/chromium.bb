@@ -316,7 +316,6 @@
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
 <translation id="4961700429721424617">በ<ph name="MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ነው። ይሄ የChrome ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን ውሂብዎ አሁንም በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
-<translation id="4986920000862467124">ሁሉንም ያንብቡ</translation>
 <translation id="4988526792673242964">ገፆች</translation>
 <translation id="4996978546172906250">ያጋሩ በ</translation>
 <translation id="5000922062037820727">ታግዷል (የሚመከር)</translation>
@@ -486,6 +485,7 @@
 <translation id="6857778194843072568">በWi-Fi ላይ ሲሆን ብቻ ላክ</translation>
 <translation id="6865313869410766144">የራስ-ሙላ ቅጽ ውሂብ</translation>
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
+<translation id="6910211073230771657">ተሰርዟል</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6963766334940102469">ዕልባቶችን ሰርዝ</translation>
 <translation id="6965382102122355670">ይሁን</translation>
@@ -570,7 +570,6 @@
 <translation id="7876243839304621966">ሁሉንም አስወግድ</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
 <translation id="7949961459945740081">የቅርብ ጊዜዎቹን ባሕሪዎች ያግኙ</translation>
-<translation id="7954261717155239372">ጊዜው ትክክል ሲሆን ተጨማሪ ካርዶች ይታያሉ።</translation>
 <translation id="7963646190083259054">አቅራቢ፦</translation>
 <translation id="7987073022710626672">የChrome አገልግሎት ውል</translation>
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
@@ -627,7 +626,6 @@
 <translation id="8583805026567836021">የመለያ ውሂብን በማጽዳት ላይ</translation>
 <translation id="8588878054171169263">ምስል አስቀምጥ</translation>
 <translation id="8617240290563765734">በወረደው ይዘት ላይ የተጠቆመው ዩአርኤል ይከፈት?</translation>
-<translation id="8627706565932943526">የማመሳሰል ስህተት</translation>
 <translation id="862875433388403934">ይዘቶችን (ፊልሞች፣ ሙዚቃ፣ ወዘተ.) የሚያወርዱ መተግበሪያዎች በአዲስ መሣሪያ ምስክርነት ላይ ተመስርተው ፍቃዶችን ዳግም እስኪያገኙ ድረስ በእነሱ የወረዱ ይዘቶችን መልሶ ማጫወት ላይቻል ይችላል።
 
 አዲስ ፍቃዶችን ለማግኘት ከበይነመሩቡ ጋር ይገናኙና የወረዱት ይዘቶችዎን ያጫውቱ።</translation>
@@ -644,6 +642,7 @@
 <translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="883635517171802338">ጣቢያዎች ብቅ-ባዮችን እንዳያሳዩ ያግዱ (የሚመከር)</translation>
 <translation id="884264119367021077">የመላኪያ አድራሻ</translation>
+<translation id="8847988622838149491">ዩ ኤስ ቢ</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />፣ ትር</translation>
 <translation id="885701979325669005">ማከማቻ</translation>
 <translation id="8901170036886848654">ምንም ዕልባቶች አልተገኙም</translation>

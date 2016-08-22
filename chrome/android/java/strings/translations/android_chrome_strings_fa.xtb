@@ -316,7 +316,6 @@
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
 <translation id="4961700429721424617">‏هم‌اکنون از حسابی که توسط <ph name="MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
-<translation id="4986920000862467124">همه خوانده شده‌اند</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
@@ -485,6 +484,7 @@
 <translation id="6857778194843072568">‏ارسال فقط از طریق Wi-Fi</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
 <translation id="6868088497967843822">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
+<translation id="6910211073230771657">حذف شد</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
 <translation id="6965382102122355670">تأیید</translation>
@@ -569,7 +569,6 @@
 <translation id="7876243839304621966">حذف همه</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7949961459945740081">دریافت جدیدترین قابلیت‌ها</translation>
-<translation id="7954261717155239372">وقتی زمان مناسب باشد کارت‌های بیشتری نشان داده می‌شوند.</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
 <translation id="7987073022710626672">‏شرایط خدمات Chrome</translation>
 <translation id="7998918019931843664">بازکردن مجدد برگه‌های بسته شده</translation>
@@ -626,7 +625,6 @@
 <translation id="8583805026567836021">پاک‌سازی داده‌های حساب</translation>
 <translation id="8588878054171169263">ذخیره تصویر</translation>
 <translation id="8617240290563765734">نشانی وب مشخص شده در محتوای بارگیری‌شده باز شود؟</translation>
-<translation id="8627706565932943526">خطای همگام‌سازی</translation>
 <translation id="862875433388403934">شاید دیگر محتوای بارگیری‌شده (فیلم‌ها، موسیقی و غیره) در برنامه‌های دیگر قابل پخش نباشد، مگر آنکه آن برنامه‌ها مجدداً مجوزها را براساس اعتبارنامه دستگاه جدید بدست آورند.
 
 برای بدست آوردن مجوزهای جدید، به اینترنت وصل شوید و محتوای بارگیری‌شده خودتان را پخش کنید.</translation>
@@ -643,6 +641,7 @@
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="883635517171802338">مسدود کردن نمایش پنجره‌های بازشو در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="884264119367021077">اطلاعات ارسال</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="885701979325669005">فضای ذخیره‌سازی</translation>
 <translation id="8901170036886848654">نشانکی پیدا نشد</translation>

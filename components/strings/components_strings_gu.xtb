@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">કૃપા કરી તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">અમાન્ય વિનંતી અથવા વિનંતી પરિમાણો</translation>
+<translation id="1838667051080421715">તમે વેબ પૃષ્ઠનો સ્રોત જોઈ રહ્યાં છો.</translation>
 <translation id="1871208020102129563">પ્રોક્સી નિયત કરેલા પ્રોક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
 <translation id="1883255238294161206">સૂચિ સંકુચિત કરો</translation>
 <translation id="1898423065542865115">ફિલ્ટરિંગ</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> બુકમાર્ક્સ</translation>
 <translation id="1973335181906896915">અનુક્રમાંકન ભૂલ</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{અને 1 વધુ}one{અને # વધુ}other{અને # વધુ}}</translation>
 <translation id="2025186561304664664">પ્રોક્સી સ્વતઃ ગોઠવાયેલી પર સેટ છે.</translation>
 <translation id="2030481566774242610">શું તમારો અર્થ <ph name="LINK" /> છે?</translation>
 <translation id="2031925387125903299">તમે આ સંદેશ જોઇ રહ્યાં છો કારણ કે નવી સાઇટ્સની તમારી પ્રથમ મુલાકાત પર તમારા માતાપિતાએ મંજૂરી આપવી જરૂરી છે.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />પ્રોક્સી અને ફાયરવોલ તપાસીને<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">પિન કોડ</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 સૂચન}one{# સૂચન}other{# સૂચન}}</translation>
 <translation id="2065985942032347596">પ્રમાણીકરણ આવશ્યક</translation>
 <translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
 <translation id="20817612488360358">સિસ્ટમ પ્રોક્સી સેટિંગ્સ ઉપયોગમાં લેવા માટે સેટ છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી પણ ઉલ્લેખિત કરેલી છે.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">આ સાઇટ એક સુરક્ષિત કનેક્શન આપી શકતી નથી</translation>
 <translation id="2171101176734966184">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોઈ શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરી શકો છો) ન પણ હોય.</translation>
 <translation id="2181821976797666341">નીતિઓ</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 સરનામું}one{# સરનામાં}other{# સરનામાં}}</translation>
 <translation id="2212735316055980242">નીતિ મળી નથી</translation>
 <translation id="2213606439339815911">પ્રવિષ્ટિઓનું આનયન કરી રહ્યાં છે...</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ડાયગ્નોસ્ટિક્સ ઍપ્લિકેશન<ph name="END_LINK" />નો ઉપયોગ કરીને તમારું કનેક્શન ઠીક કરો</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
 <translation id="3032412215588512954">શું તમે આ સાઇટ ફરીથી લોડ કરવા માંગો છો?</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{સમન્વયિત ઉપકરણો પર ઓછામાં ઓછી 1 આઇટમ}=1{1 આઇટમ (અને સમન્વયિત ઉપકરણો પર વધુ)}one{# આઇટમ (અને સમન્વયિત ઉપકરણો પર વધુ)}other{# આઇટમ (અને સમન્વયિત ઉપકરણો પર વધુ)}}</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
 <translation id="3063697135517575841">આ સમયે Chrome તમારા કાર્ડની પુષ્ટિ કરવામાં અસમર્થ હતું. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="3093245981617870298">તમે ઑફલાઇન છો</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="4103763322291513355">બ્લેકલિસ્ટ કરેલા URL ની સૂચિ અને તમારા સિસ્ટમ વ્યવસ્થાપક દ્વારા લાગુ અન્ય નીતિઓ જોવા માટે &lt;strong&gt;chrome://policy&lt;/strong&gt; ની મુલાકાત લો.</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 અન્ય}one{# અન્ય}other{# અન્ય}}</translation>
 <translation id="4130226655945681476">નેટવર્ક કેબલ્સ, મૉડેમ અને રાઉટર તપાસીને</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">શું તમે ઇચ્છો છો કે Chromium આ કાર્ડ સાચવે?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="4196861286325780578">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ફાયરવોલ અને એન્ટીવાઇરસ ગોઠવણી તપાસીને<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{કોઈ નહીં}=1{1 ઍપ્લિકેશન ($1)}=2{2 ઍપ્લિકેશન ($1, $2)}one{# ઍપ્લિકેશન ($1, $2, $3)}other{# ઍપ્લિકેશન ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">ક્રેશેસ</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />નેટવર્ક ડાયગ્નોસ્ટિક્સ ચલાવવાનો પ્રયાસ કરો<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">નહીં</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">તમે આ સંદેશ જોઇ રહ્યાં છો કારણ કે નવી સાઇટ્સની તમારી પ્રથમ મુલાકાત પર તમારા માતાપિતાએ મંજૂરી આપવી જરૂરી છે.</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4958444002117714549">સૂચિ વિસ્તૃત કરો</translation>
+<translation id="4986920000862467124">તમામ વાંચેલ</translation>
 <translation id="498957508165411911">શું <ph name="ORIGINAL_LANGUAGE" /> માંથી <ph name="TARGET_LANGUAGE" /> માં અનુવાદ કરીએ?</translation>
 <translation id="5002932099480077015">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">સ્વચલિત</translation>
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="6060685159320643512">સાવચેતી રાખો, આ પ્રયોગો નુકસાનકારક હોઈ શકે છે</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{કોઈ નહીં}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">કોઈપણ કેબલ્સ તપાસો અને તમે કદાચ ઉપયોગમાં લઇ રહ્યાં હોય તેવા કોઇપણ રાઉટર્સ, મૉડેમ્સ 
     અથવા અન્ય નેટવર્ક ઉપકરણોને રીબૂટ કરો.</translation>
 <translation id="614940544461990577">પ્રયાસ કરો:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">અનામ કદ</translation>
 <translation id="6355080345576803305">સાર્વજનિક સત્ર ઓવરરાઇડ</translation>
 <translation id="6358450015545214790">આનો અર્થ શું છે?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
 <translation id="6387478394221739770">શું કૂલ નવી Chrome સુવિધાઓમાં રુચિ ધરાવો છો? chrome.com/beta પર અમારી બીટા ચેનલ અજમાવી જુઓ.</translation>
 <translation id="6389758589412724634">આ વેબ પૃષ્ઠ પ્રદર્શિત કરવાનો પ્રયાસ કરતી વખતે Chromium ની મેમરી સમાપ્ત થઈ ગઈ.</translation>
 <translation id="6417515091412812850">પ્રમાણપત્ર રદ કરવામાં આવ્યું છે કે નહીં તે તપાસવામાં અક્ષમ છે.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="6710594484020273272">&lt;શોધ શબ્દ લખો&gt;</translation>
 <translation id="6711464428925977395">પ્રોક્સી સર્વરમાં કંઈક ખોટું થયું છે અથવા તો સરનામું ખોટું છે.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{કોઈ નહીં}=1{1 આઇટમ}one{# આઇટમ}other{# આઇટમ}}</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6757797048963528358">તમારું ઉપકરણ નિષ્ક્રિય થઈ ગયું હતું.</translation>
@@ -568,6 +579,7 @@
 <translation id="7637571805876720304">Chromium માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
 <translation id="765676359832457558">વિગતવાર સેટિંગ્સ છુપાવો...</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
+<translation id="7667346355482952095">પરત થયેલ નીતિ ટોકન ખાલી છે અથવા વર્તમાન ટોકન સાથે મેળ ખાતું નથી</translation>
 <translation id="7668654391829183341">અજ્ઞાત ઉપકરણ</translation>
 <translation id="7674629440242451245">શું કૂલ નવી Chrome સુવિધાઓમાં રુચિ ધરાવો છો? chrome.com/dev પર અમારી dev ચૅનલ અજમાવી જુઓ.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> પર આગળ વધો (અસલામત)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8433057134996913067">આ તમને મોટાભાગની વેબસાઇટ્સમાંથી સાઇન આઉટ કરશે.</translation>
 <translation id="8437238597147034694">&amp;ખસેડવું પૂર્વવત્‌ કરો</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 ક્રેડિટ કાર્ડ}one{# ક્રેડિટ કાર્ડ}other{# ક્રેડિટ કાર્ડ}}</translation>
 <translation id="8488350697529856933">આમને લાગુ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> એ પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.</translation>
 <translation id="8530504477309582336">Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>

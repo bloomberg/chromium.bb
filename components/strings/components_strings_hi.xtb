@@ -24,7 +24,7 @@
 <translation id="1181037720776840403">निकालें</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1201895884277373915">इस साइट की ओर से अधिक</translation>
-<translation id="1206967143813997005">गलत आरंभिक हस्ताक्षर</translation>
+<translation id="1206967143813997005">नाम के पहले अक्षर के गलत हस्ताक्षर</translation>
 <translation id="1209206284964581585">अभी छिपाएं</translation>
 <translation id="121201262018556460">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन लेकिन सर्वर ने कमज़ोर कुंजी वाला प्रमाणपत्र प्रस्‍तुत किया. संभवत: हमलावर ने निजी कुंजी का पता लगा लिया है, और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
 <translation id="1219129156119358924">सिस्‍टम सुरक्षा</translation>
@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">कृपया अपना समन्‍वयन पासफ्रेज़ अपडेट करें.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">अमान्य अनुरोध या अनुरोध पैरामीटर</translation>
+<translation id="1838667051080421715">आप एक वेब पृष्ठ का स्रोत देख रहे हैं.</translation>
 <translation id="1871208020102129563">प्रॉक्‍सी को फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर का उपयोग करने के लिए सेट किया गया है, .pac स्‍क्रिप्‍ट फ़ाइल का उपयोग करने के लिए नहीं.</translation>
 <translation id="1883255238294161206">सूची संक्षिप्त करें</translation>
 <translation id="1898423065542865115">फ़िल्टर किया जा रहा है</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="1973335181906896915">क्रमबद्ध करने में त्रुटि</translation>
 <translation id="1974060860693918893">उन्नत</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{और 1 अधिक}one{और # अधिक}other{और # अधिक}}</translation>
 <translation id="2025186561304664664">प्रॉक्‍सी स्‍वत: कॉन्‍फ़‍िगर पर सेट है.</translation>
 <translation id="2030481566774242610">क्या आप मतलब <ph name="LINK" /> से है?</translation>
 <translation id="2031925387125903299">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि किसी नई साइट पर आपके पहली बार जाने से पहले आपके अभिभावकों को उसे स्वीकृति देनी होगी.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रॉक्सी और फायरवॉल की जांच करें<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ज़िप कोड</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 सुझाव}one{# सुझाव}other{# सुझाव}}</translation>
 <translation id="2065985942032347596">प्रमाणीकरण आवश्यक</translation>
 <translation id="2079545284768500474">पूर्ववत् करें</translation>
 <translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी निर्दिष्ट है.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">यह साइट सुरक्षित कनेक्शन प्रदान नहीं कर सकती</translation>
 <translation id="2171101176734966184">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन सर्वर ने कमज़ोर हस्ताक्षर एल्‍गोरिदम का उपयोग करते हुए हस्ताक्षरित प्रमाणपत्र प्रस्तुत किया. इसका अर्थ यह है कि सर्वर द्वारा प्रस्तुत किए गए सुरक्षा प्रमाणिकता नकली हो सकते हैं, और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
 <translation id="2181821976797666341">नीतियां</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 पता}one{# पते}other{# पते}}</translation>
 <translation id="2212735316055980242">नीति नहीं मिली</translation>
 <translation id="2213606439339815911">प्रविष्टियां फ़ेच की जा रही हैं...</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />निदान ऐप्लिकेशन<ph name="END_LINK" /> का उपयोग करके अपने कनेक्शन को ठीक करें</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
 <translation id="3032412215588512954">क्या आप इस साइट को फिर से लोड करना चाहते हैं?</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{समन्वयित डिवाइस पर कम से कम 1 आइटम}=1{1 आइटम (समन्वयित डिवाइस पर और भी)}one{# आइटम (समन्वयित डिवाइस पर और भी)}other{# आइटम (समन्वयित डिवाइस पर और भी)}}</translation>
 <translation id="3041612393474885105">प्रमाणपत्र जानकारी</translation>
 <translation id="3063697135517575841">Chrome इस समय आपके कार्ड की पुष्टि नहीं कर सका. कृपया बाद में पुन: प्रयास करें.</translation>
 <translation id="3093245981617870298">आप ऑफ़लाइन हैं.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="4103763322291513355">काली सूची में डाले गए URL तथा आपके सिस्टम व्यवस्थापक द्वारा लागू की गई अन्य नीतियों को देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
 <translation id="4117700440116928470">नीति क्षेत्र समर्थित नहीं है.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 अन्य}one{# अन्‍य}other{# अन्‍य}}</translation>
 <translation id="4130226655945681476">नेटवर्क केबल, मोडेम और राउटर की जांच करें</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">क्या आप चाहते हैं कि क्रोमियम इस कार्ड को सहेजे?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल और एंटीवायरस कॉन्फ़िगरेशन की जांच करें<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{कोई नहीं}=1{1 ऐप्लिकेशन ($1)}=2{2 ऐप्लिकेशन ($1, $2)}one{# ऐप्लिकेशन ($1, $2, $3)}other{# ऐप्लिकेशन ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">क्रैश</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />नेटवर्क निदान चलाकर देखें<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">नहीं</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">आपको यह संदेश इसलिए दिखाई दे रहा है क्योंकि किसी नई साइट पर आपके पहली बार जाने से पहले आपके अभिभावक को उसे स्वीकृति देनी होगी.</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4958444002117714549">सूची विस्तृत करें</translation>
+<translation id="4986920000862467124">सभी पढ़ी गई</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="5002932099480077015">यदि सक्षम किया हुआ हो, तो Chrome फ़ॉर्म को तेज़ी से भरने के लिए इस डिवाइस पर आपके कार्ड की एक प्रति संग्रहीत करेगा.</translation>
 <translation id="5019198164206649151">बैकिंग संग्रह खराब स्थिति में है</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">स्वचालित</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधान, ये प्रयोग नुकसान पहुंचा सकते हैं</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{कोई नहीं}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">सभी केबल जांचें और आपके द्वारा उपयोग किए जा रहे सभी राउटर, मॉडेम या अन्य नेटवर्क
     डिवाइस को रीबूट करें.</translation>
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">अज्ञात आकार</translation>
 <translation id="6355080345576803305">सार्वजनिक सत्र ओवरराइड</translation>
 <translation id="6358450015545214790">इनका क्‍या अर्थ है?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 अन्‍य सुझाव}one{# अन्‍य सुझाव}other{# अन्‍य सुझाव}}</translation>
 <translation id="6387478394221739770">बेहतरीन नई Chrome सुविधाओं में रूचि है? chrome.com/beta पर हमारा बीटा चैनल आज़माएं.</translation>
 <translation id="6389758589412724634">यह वेबपृष्ठ दिखाते समय क्रोमियम में जगह नहीं बची.</translation>
 <translation id="6417515091412812850">प्रमाणपत्र को रद्द किया गया है या नहीं यह जांच करने में असमरर्थ.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{कोई नहीं}=1{1 आइटम}one{# आइटम}other{# आइटम}}</translation>
 <translation id="674375294223700098">अज्ञात सर्वर प्रमाणपत्र त्रुटि.</translation>
 <translation id="6753269504797312559">नीति मान</translation>
 <translation id="6757797048963528358">आपका डिवाइस निष्क्रिय हो गया है.</translation>
@@ -566,6 +577,7 @@
 <translation id="7637571805876720304">क्रोमियम से क्रेडिट कार्ड निकालें?</translation>
 <translation id="765676359832457558">उन्नत सेटिंग्स छिपाएं...</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
+<translation id="7667346355482952095">वापस लौटा हुआ नीति टोकन खाली है या उसका मिलान वर्तमान टोकन से नहीं होता</translation>
 <translation id="7668654391829183341">अज्ञात डिवाइस</translation>
 <translation id="7674629440242451245">शानदार नई Chrome सुविधाओं में रूचि है? तो chrome.com/dev पर हमारा डेव चैनल आज़माएं.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> में आगे बढ़ें (असुरक्षित)<ph name="END_LINK" /></translation>
@@ -628,6 +640,7 @@
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433057134996913067">इससे आप अधिकांश वेबसाइट से प्रस्थान कर जाएंगे.</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ने प्रतिसाद देने में अत्यधिक समय लिया.</translation>
 <translation id="8530504477309582336">कार्ड का यह प्रकार Google पेमेंट्स द्वारा समर्थित नहीं है. कृपया कोई भिन्न कार्ड चुनें.</translation>

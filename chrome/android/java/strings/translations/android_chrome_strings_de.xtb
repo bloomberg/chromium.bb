@@ -89,6 +89,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="200669432486043882">Datei ersetzen</translation>
 <translation id="2020525020270327736">Website kopieren</translation>
 <translation id="2038563949887743358">"Desktop-Version anfordern" aktivieren</translation>
+<translation id="2069736994598857257"><ph name="GIGABYTES" /> GB verwendet</translation>
 <translation id="2073235970478114994">Bilder laden</translation>
 <translation id="2079545284768500474">Rückgängig</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
@@ -120,6 +121,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
 <translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2359808026110333948">Weiter</translation>
+<translation id="2369533728426058518">Tabs öffnen</translation>
 <translation id="2385560268894525395">für die letzte Woche</translation>
 <translation id="2387895666653383613">Text-Skalierung</translation>
 <translation id="238909021488141516">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
@@ -200,6 +202,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
 <translation id="3351441609270267898">Vorhandene Daten importieren</translation>
 <translation id="3365671512111106261">Nicht verfügbar, wenn die Datenkomprimierung aktiviert ist</translation>
+<translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
 <translation id="3386292677130313581">Nachfragen, bevor Websites Ihr Standort angezeigt wird (empfohlen)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> konnte aufgrund von Dateisystemfehlern nicht heruntergeladen werden.</translation>
@@ -288,6 +291,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
 <translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Vor # Minute}other{Vor # Minuten}}</translation>
+<translation id="4605958867780575332">Element entfernt: <ph name="ITEM_TITLE" /></translation>
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
@@ -316,7 +320,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4961700429721424617">Sie melden sich von einem Konto ab, das von <ph name="MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chrome-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="497421865427891073">Weiter</translation>
-<translation id="4986920000862467124">Alles gelesen</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
@@ -361,6 +364,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="5414836363063783498">Überprüfung...</translation>
 <translation id="5423934151118863508">Hier werden Ihre am meisten aufgerufenen Seiten angezeigt.</translation>
+<translation id="5424588387303617268"><ph name="GIGABYTES" /> GB verfügbar</translation>
 <translation id="544291274896356069">Der Inkognitomodus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
 <translation id="5447201525962359567">Gesamter Websitespeicher einschließlich Cookies und anderer lokal gespeicherter Daten</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
@@ -389,6 +393,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
+<translation id="572392919096807438">Meine Entscheidung speichern</translation>
 <translation id="5748802427693696783">Zu Standard-Tabs gewechselt</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="57586589942790530">Ungültige Kartennummer</translation>
@@ -475,6 +480,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6762156594045689028">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
+<translation id="6764789522080107716">Datei kann nicht geöffnet werden</translation>
 <translation id="6770414673596662518">Das Safe Browsing-System von Chrome erkennt außerdem schädliche Seiten und schützt Sie vor Phishing, Malware und schädlichen Downloads.</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="679325081238418596">Rufen Sie Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten ab</translation>
@@ -486,6 +492,8 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6857778194843072568">Nur bei WLAN senden</translation>
 <translation id="6865313869410766144">AutoFill-Formulardaten</translation>
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
+<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d geöffneter Tab}other{%1$d geöffnete Tabs}}</translation>
+<translation id="6910211073230771657">Gelöscht</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -539,6 +547,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7562080006725997899">Browserdaten werden gelöscht</translation>
 <translation id="756809126120519699">Gelöschte Chrome-Daten</translation>
 <translation id="7588950540487816470">Physical Web</translation>
+<translation id="7593557518625677601">Einstellungen öffnen und Systemsynchr. aktivieren, um Chrome-Synchr. zu starten</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7605594153474022051">Synchronisierung funktioniert nicht</translation>
 <translation id="7612619742409846846">Bei Google angemeldet als</translation>
@@ -570,7 +579,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7876243839304621966">Alle entfernen</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7949961459945740081">Neue Funktionen herunterladen</translation>
-<translation id="7954261717155239372">Weitere Karten werden zu gegebener Zeit erscheinen.</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
 <translation id="7987073022710626672">Chrome-Nutzungsbedingungen</translation>
 <translation id="7998918019931843664">Geschlossenen Tab wieder öffnen</translation>
@@ -599,6 +607,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8218934717680664417">Jetzt durch einfaches Tippen suchen</translation>
 <translation id="8223946939421658889">Daten löschen</translation>
 <translation id="8250920743982581267">Dokumente</translation>
+<translation id="8260126382462817229">Melden Sie sich noch einmal an</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8275818695183729150">Zulassen (für Suchanfragen in der Adressleiste)</translation>
 <translation id="8283853025636624853">Synchronisierung mit <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
@@ -627,7 +636,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
 <translation id="8588878054171169263">Bild speichern</translation>
 <translation id="8617240290563765734">Soll die im heruntergeladenen Inhalt angegebene URL geöffnet werden?</translation>
-<translation id="8627706565932943526">Synchronisierungsfehler</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
 
 Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>
@@ -644,6 +652,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="883635517171802338">Anzeige von Pop-ups für Websites blockieren (empfohlen)</translation>
 <translation id="884264119367021077">Versandadresse</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
 <translation id="8901170036886848654">Keine Lesezeichen gefunden</translation>
@@ -687,6 +696,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> Minuten übrig</translation>
+<translation id="974555521953189084">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="982182592107339124">Alle Daten für alle Websites werden gelöscht, darunter:</translation>
 <translation id="983192555821071799">Alle Tabs schließen</translation>

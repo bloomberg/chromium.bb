@@ -1282,7 +1282,7 @@
 
       Dacă dezactivezi această opțiune sau nu o configurezi, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.
 
-      În cazul dispozitivelor <ph name="PRODUCT_OS_NAME" /> care rulează aplicații Android, această politică controlează și accesul la Opțiunile dezvoltatorilor Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile dezvoltatorilor. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile dezvoltatorilor atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
+      În cazul dispozitivelor <ph name="PRODUCT_OS_NAME" /> care rulează aplicații Android, această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="556941986578702361">Controlați ascunderea automată a raftului <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este setată la „AlwaysAutoHideShelf”, raftul va fi întotdeauna ascuns automat.

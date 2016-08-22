@@ -316,7 +316,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4943872375798546930">Žádné výsledky</translation>
 <translation id="4961700429721424617">Odhlašujete se z účtu, který je spravován doménou <ph name="MANAGED_DOMAIN" />. Touto akcí svá data prohlížeče Chrome smažete z tohoto zařízení, ve vašem účtu Google však zůstanou.</translation>
 <translation id="497421865427891073">Vpřed</translation>
-<translation id="4986920000862467124">Vše již bylo přečteno</translation>
 <translation id="4988526792673242964">Stránky</translation>
 <translation id="4996978546172906250">Sdílet prostřednictvím</translation>
 <translation id="5000922062037820727">Blokováno (doporučeno)</translation>
@@ -486,6 +485,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6857778194843072568">Odesílat pouze v sítích Wi-Fi</translation>
 <translation id="6865313869410766144">Automatické vyplňování formulářů</translation>
 <translation id="6868088497967843822">Přihlaste se a synchronizujte záložky, historii, hesla a další nastavení do všech svých zařízení.</translation>
+<translation id="6910211073230771657">Smazáno</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="7876243839304621966">Odstranit vše</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7949961459945740081">Získejte nejnovější funkce</translation>
-<translation id="7954261717155239372">Ve správnou chvíli se zobrazí další karty.</translation>
 <translation id="7963646190083259054">Dodavatel:</translation>
 <translation id="7987073022710626672">Smluvní podmínky Chrome</translation>
 <translation id="7998918019931843664">Znovu otevřít zavřenou kartu</translation>
@@ -627,7 +626,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8583805026567836021">Mazání dat účtu</translation>
 <translation id="8588878054171169263">Uložit obrázek</translation>
 <translation id="8617240290563765734">Otevřít navrhovanou adresu URL uvedenou ve staženém obsahu?</translation>
-<translation id="8627706565932943526">Chyba synchronizace</translation>
 <translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.
 
 Chcete-li získat nové licence, připojte se k internetu a přehrajte stažený obsah.</translation>
@@ -644,6 +642,7 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="883635517171802338">Bránit webům v zobrazování vyskakovacích oken (doporučeno)</translation>
 <translation id="884264119367021077">Dodací adresa</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, karta</translation>
 <translation id="885701979325669005">Úložiště</translation>
 <translation id="8901170036886848654">Nebyly nalezeny žádné záložky</translation>

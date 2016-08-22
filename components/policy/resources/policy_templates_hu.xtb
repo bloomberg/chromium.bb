@@ -508,6 +508,7 @@
       Ha ez a beállítás ki van kapcsolva, akkor a weboldalak nem használhatnak JavaScriptet, és a felhasználó nem módosíthatja a beállítást.
 
       Ha be van kapcsolva vagy nincs beállítva, akkor a weboldalak használhatnak JavaScriptet, ám a felhasználó módosíthatja a beállítást.</translation>
+<translation id="2753637905605932878">A WebRTC által használt helyi UDP-porttartományok korlátozása</translation>
 <translation id="2757054304033424106">Telepíthető bővítmény-/alkalmazástípusok</translation>
 <translation id="2759224876420453487">A felhasználói viselkedés szabályozása többprofilos munkamenetben</translation>
 <translation id="2761483219396643566">Tétlenségi figyelmeztetés késleltetése akkumulátorról való működés során</translation>
@@ -733,6 +734,15 @@
 <translation id="3264793472749429012">Alapértelmezett keresési szolgáltató kódolásai</translation>
 <translation id="3273221114520206906">Alapértelmezett  JavaScript-beállítás</translation>
 <translation id="3288595667065905535">Kiadási csatorna</translation>
+<translation id="3291367259589875381">Ez az irányelv – a <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> miatt – megszűnt az M48-ban, majd eltávolításra került az M54-ben.
+
+      Engedélyezi a hálózati előrejelzést a(z) <ph name="PRODUCT_NAME" /> termékben, valamint megakadályozza a felhasználókat a beállítás módosításában.
+
+      Nemcsak a DNS-előtöltést, hanem az előzetes TCP- és SSL-kapcsolatokat és a weboldalak előzetes megjelenítését is vezérli. Az irányelv neve történeti okok miatt a DNS-előtöltésre utal.
+
+      A beállítás engedélyezése vagy letiltása esetén a felhasználók nem módosíthatják, és nem bírálhatják felül ezt a beállítást a(z) <ph name="PRODUCT_NAME" /> termékben.
+
+      Ha nem állítja be az irányelvet, akkor aktiválódik, de a felhasználók képesek lesznek módosítani.</translation>
 <translation id="3292147213643666827">Lehetővé teszi, hogy a(z) <ph name="PRODUCT_NAME" /> proxyként működjön a(z) <ph name="CLOUD_PRINT_NAME" /> és a számítógéphez csatlakoztatott régebbi nyomtatók között.
 
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
@@ -1180,6 +1190,9 @@
           A tiltólista „*” értéke azt jelenti, hogy minden üzenetkezelő gazdagép felkerül rá, hacsak nem szerepelnek kifejezetten az engedélyezőlistán.
 
           Ha a házirend nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> minden telepített natív üzenetkezelő gazdagépet betölt.</translation>
+<translation id="5288772341821359899">Az irányelvet beállítva a WebRTC által használt UDP-porttartomány a megadott portintervallumra korlátozódik (a végpontokkal együtt).
+
+      Ha az irányelvet nem állítja be, vagy üres karakterláncot, illetve érvénytelen porttartományt ad meg, akkor a WebRTC bármelyik rendelkezésre álló helyi UDP-portot használhatja.</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
 <translation id="5302612588919538756">Ez a házirend elavult, használja helyette a SyncDisabled házirendet.
 
@@ -1830,6 +1843,7 @@
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth-kérdés</translation>
 <translation id="7468416082528382842">Windows beállításjegyzékének helye:</translation>
 <translation id="7469554574977894907">Keresési javaslatok engedélyezése</translation>
+<translation id="7474249562477552702">A helyi bizalmi horgonyok által nyújtott SHA-1-aláírással rendelkező tanúsítványok engedélyezése</translation>
 <translation id="7485481791539008776">Alapértelmezett nyomtató kiválasztására vonatkozó szabályok</translation>
 <translation id="749556411189861380">A regisztrált eszközökben lévő operációs rendszer és firmware verziójának jelentése.
 
@@ -1845,6 +1859,11 @@
 
       Ha SAML_INTERSTITIAL értékre van beállítva, a bejelentkezés során egy közbeiktatott képernyő jelenik meg, amelyen a felhasználó választhat, hogy az eszköz regisztrációs domainjén érvényes SAML IdP hitelesítés használatával folytatja, vagy visszatér a normál GAIA-bejelentkezési folyamathoz.</translation>
 <translation id="7567380065339179813">Bővítmények engedélyezése ezeken a webhelyeken</translation>
+<translation id="757395965347379751">A beállítás aktiválása esetén a(z) <ph name="PRODUCT_NAME" /> engedélyezi az SHA-1-aláírással rendelkező tanúsítványokat, amennyiben sikeres a hitelesítésük, és helyileg telepített CA-tanúsítványokhoz tartoznak.
+
+      Felhívjuk figyelmét arra, hogy ez az irányelv az SHA-1-aláírásokat engedélyező operációs rendszer tanúsítványhitelesítési készletétől függ. Ha az operációs rendszer valamelyik frissítése módosítja az SHA-1-tanúsítványok kezelésének módját, akkor előfordulhat, hogy ez az irányelv a továbbiakban nem fog működni.  Továbbá ez az irányelv csak ideiglenes megoldásként szolgál, hogy a vállalatoknak több idejük legyen áttérni az SHA-1-ről.  Ez az irányelv 2019. január 1-jén eltávolításra kerül.
+
+      Ha az irányelv nincs beállítva, vagy „hamis” értékre van állítva, akkor a(z) <ph name="PRODUCT_NAME" /> követi az SHA-1 nyilvánosan közzétett megszüntetési időpontját.</translation>
 <translation id="7593523670408385997">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott fájlokat a merevlemezen tárolja.
 
       Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> attól függetlenül használni fogja a megadott méretű gyorsítótárat, hogy a felhasználó megadta-e a „--disk-cache-size” jelölőt. A házirendben meghatározott érték nem abszolút határ, inkább egy javaslat a gyorsítótárazó rendszer számára. A néhány megabájt alatti, túl kicsi értékeket a rendszer automatikusan felkerekíti egy használható minimumra.

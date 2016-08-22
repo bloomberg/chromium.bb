@@ -25,7 +25,7 @@
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1201895884277373915">Več s tega mesta</translation>
 <translation id="1206967143813997005">Neveljaven prvotni podpis</translation>
-<translation id="1209206284964581585">Hide for now</translation>
+<translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="121201262018556460">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar ima strežnik potrdilo s šibkim ključem. Napadalec je morda dešifriral zasebni ključ in strežnik morda ni tisti, ki ste ga pričakovali (morda komunicirate z napadalcem).</translation>
 <translation id="1219129156119358924">Varnost sistema</translation>
 <translation id="1227224963052638717">Neznan pravilnik</translation>
@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Posodobite geslo za sinhronizacijo.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
+<translation id="1838667051080421715">Ogledujete si vir spletne strani.</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
@@ -354,6 +355,7 @@
 <translation id="4930497775425430760">To sporočilo je prikazano, ker mora starš odobriti nova spletna mesta ob prvem obisku.</translation>
 <translation id="495170559598752135">Dejanja</translation>
 <translation id="4958444002117714549">Razširi seznam</translation>
+<translation id="4986920000862467124">Vse je prebrano</translation>
 <translation id="498957508165411911">Želite prevesti iz jezika <ph name="ORIGINAL_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Če je to omogočeno, Chrome shrani kopijo kartice v tej napravi zaradi hitrejšega izpolnjevanja obrazcev.</translation>
 <translation id="5019198164206649151">Neprimerno stanje rezervne shrambe</translation>

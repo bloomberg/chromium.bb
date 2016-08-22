@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
+<translation id="1838667051080421715">Jelenleg egy weboldal forrását látja.</translation>
 <translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
 <translation id="1883255238294161206">Lista bezárása</translation>
 <translation id="1898423065542865115">Szűrés</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN" /> könyvjelzői</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
 <translation id="1974060860693918893">Speciális</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{és 1 további}other{és # további}}</translation>
 <translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
 <translation id="2030481566774242610">Erre gondolt: <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Azért kapta ezt az üzenetet, mert szüleinek jóvá kell hagynia az új webhelyeket az első látogatáskor.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />A proxy és a tűzfal ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Irányítószám</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 javaslat}other{# javaslat}}</translation>
 <translation id="2065985942032347596">Hitelesítés szükséges</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">A webhely nem képes biztonságos kapcsolatot nyújtani</translation>
 <translation id="2171101176734966184">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver egy gyenge aláírási algoritmust használó tanúsítványt adott. Ez alapján elképzelhető, hogy a szerver által megadott biztonsági tanúsítványt meghamisították, és a szerver nem az, amelyikre számított (lehet, hogy éppen egy támadóval kommunikál).</translation>
 <translation id="2181821976797666341">Házirendek</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 cím}other{# cím}}</translation>
 <translation id="2212735316055980242">Nem találhatók irányelvek</translation>
 <translation id="2213606439339815911">Bejegyzések lekérése...</translation>
 <translation id="2230458221926704099">Javítsa meg kapcsolatát a <ph name="BEGIN_LINK" />diagnosztikai alkalmazás<ph name="END_LINK" /> segítségével</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
 <translation id="3032412215588512954">Szeretné újratölteni a webhelyet?</translation>
 <translation id="3037605927509011580">A manóba!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{legalább 1 elem van a szinkronizált eszközökön}=1{1 elem (és még több a szinkronizált eszközökön)}other{# elem (és még több a szinkronizált eszközökön)}}</translation>
 <translation id="3041612393474885105">Tanúsítvány adatai</translation>
 <translation id="3063697135517575841">A Chrome ez alkalommal nem tudta ellenőrizni az Ön kártyáját. Próbálja újra később.</translation>
 <translation id="3093245981617870298">Ön jelenleg offline.</translation>
@@ -289,6 +294,7 @@
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 egyéb}other{# egyéb}}</translation>
 <translation id="4130226655945681476">A hálózati kábelek, a modem és a router ellenőrzése</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Szeretné, hogy a Chromium mentse ezt a kártyát?</translation>
@@ -296,6 +302,7 @@
 <translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />A tűzfal és a vírusirtó konfigurációjának ellenőrzése<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{nincsen}=1{1 alkalmazás (1 USD)}=2{2 alkalmazás (1 USD, 2 USD)}other{# alkalmazás (1 USD, 2 USD és 3 USD)}}</translation>
 <translation id="4220128509585149162">Összeomlások</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Próbálkozzon a Hálózati diagnosztika futtatásával<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nem</translation>
@@ -351,6 +358,7 @@
 <translation id="4930497775425430760">Azért látja ezt az üzenetet, mert szülőjének jóvá kell hagynia az új webhelyeket az első látogatáskor.</translation>
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
+<translation id="4986920000862467124">Minden elolvasva</translation>
 <translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre?</translation>
 <translation id="5002932099480077015">Ha engedélyezi, a Chrome megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
@@ -439,6 +447,7 @@
 <translation id="604124094241169006">Automatikus</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{nincsen}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Ellenőrizze a kábeleket, majd indítsa újra a routert, modemet vagy más
     hálózati eszközt, amelyet használ.</translation>
 <translation id="614940544461990577">Próbálja ki a következőket:</translation>
@@ -459,6 +468,7 @@
 <translation id="6345221851280129312">ismeretlen méret</translation>
 <translation id="6355080345576803305">Nyilvános munkamenet általi felülbírálás</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
 <translation id="6387478394221739770">Érdekli néhány remek új Chrome-funkció? Próbálja ki a Béta csatornánkat a chrome.com/beta webhelyen.</translation>
 <translation id="6389758589412724634">Elfogyott a memória, miközben a Chromium megpróbálta megjeleníteni ezt a weboldalt.</translation>
 <translation id="6417515091412812850">Nem lehet ellenőrizni, hogy a tanúsítványt visszavonták-e.</translation>
@@ -483,6 +493,7 @@
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6710594484020273272">&lt;Írja be a keresési kifejezést&gt;</translation>
 <translation id="6711464428925977395">Valami gond van a proxyszerverrel, vagy a cím nem megfelelő.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{nincsen}=1{1 elem}other{# elem}}</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
 <translation id="6757797048963528358">Eszköze alvó üzemmódba váltott.</translation>
@@ -566,6 +577,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
 <translation id="765676359832457558">Speciális beállítások elrejtése...</translation>
 <translation id="7658239707568436148">Mégse</translation>
+<translation id="7667346355482952095">A visszaadott irányelvtoken üres vagy nem egyezik az aktuális tokennel</translation>
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="7674629440242451245">Érdekli néhány remek új Chrome-funkció? Próbálja ki a fejlesztői csatornánkat a chrome.com/dev webhelyen.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tovább a(z) <ph name="SITE" /> webhelyre (nem biztonságos)<ph name="END_LINK" /></translation>
@@ -628,6 +640,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433057134996913067">Ezzel kijelentkezik a legtöbb webhelyről.</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 hitelkártya}other{# hitelkártya}}</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8498891568109133222">A(z) <ph name="HOST_NAME" /> túl hosszú ideje nem válaszol.</translation>
 <translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>

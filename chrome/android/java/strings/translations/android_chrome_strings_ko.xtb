@@ -316,7 +316,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
-<translation id="4986920000862467124">모두 읽음</translation>
 <translation id="4988526792673242964">페이지</translation>
 <translation id="4996978546172906250">공유 방법</translation>
 <translation id="5000922062037820727">차단(권장)</translation>
@@ -486,6 +485,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6857778194843072568">Wi-Fi 연결 시에만 보내기</translation>
 <translation id="6865313869410766144">양식 데이터 자동완성</translation>
 <translation id="6868088497967843822">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
+<translation id="6910211073230771657">삭제됨</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
 <translation id="6965382102122355670">확인</translation>
@@ -570,7 +570,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7876243839304621966">모두 삭제</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7949961459945740081">최신 기능 다운로드</translation>
-<translation id="7954261717155239372">적절한 시간이 되면 더 많은 카드가 표시됩니다.</translation>
 <translation id="7963646190083259054">공급업체:</translation>
 <translation id="7987073022710626672">Chrome 서비스 약관</translation>
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
@@ -627,7 +626,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
 <translation id="8588878054171169263">이미지 저장</translation>
 <translation id="8617240290563765734">다운로드한 콘텐츠에 지정된 추천 URL을 여시겠습니까?</translation>
-<translation id="8627706565932943526">동기화 오류</translation>
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
 
 새로운 라이선스를 취득하려면 인터넷에 연결하고 다운로드한 콘텐츠를 재생하세요.</translation>
@@ -644,6 +642,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883635517171802338">사이트에서 팝업을 표시하지 못하도록 차단(권장)</translation>
 <translation id="884264119367021077">배송지 주소</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, 탭</translation>
 <translation id="885701979325669005">저장소</translation>
 <translation id="8901170036886848654">북마크가 없습니다.</translation>

@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
+<translation id="1838667051080421715">目前顯示的是網頁原始碼。</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
@@ -353,6 +354,7 @@
 <translation id="4930497775425430760">Chrome 顯示這則訊息是因為您首次瀏覽的新網站需要獲得您的家長核准。</translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4958444002117714549">展開清單</translation>
+<translation id="4986920000862467124">全都讀過了</translation>
 <translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" />？</translation>
 <translation id="5002932099480077015">啟用後，Chrome 會將您的信用卡複本儲存在這個裝置上，以加快表單填寫速度。</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>

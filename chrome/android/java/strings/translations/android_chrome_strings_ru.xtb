@@ -316,7 +316,6 @@
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4961700429721424617">Вы выходите из аккаунта, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Обратите внимание, что данные Chrome будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
 <translation id="497421865427891073">Вперед</translation>
-<translation id="4986920000862467124">Все просмотрено</translation>
 <translation id="4988526792673242964">Страницы</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
@@ -486,6 +485,7 @@
 <translation id="6857778194843072568">Только через Wi-Fi</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
+<translation id="6910211073230771657">Удалено</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
@@ -570,7 +570,6 @@
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7949961459945740081">C новыми функциями</translation>
-<translation id="7954261717155239372">Скоро мы покажем полезные подсказки.</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
@@ -627,7 +626,6 @@
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
 <translation id="8588878054171169263">Сохранить изображение</translation>
 <translation id="8617240290563765734">Открыть предложенный URL из скачанного контента?</translation>
-<translation id="8627706565932943526">Ошибка синхронизации</translation>
 <translation id="862875433388403934">Воспроизведение контента (фильмов, музыки и т. д.), скачанного в других приложениях, может не поддерживаться, пока не будут получены лицензии с новыми учетными данными устройства.
 
 Чтобы получить новые лицензии, подключитесь к Интернету и воспроизведите скачанный контент.</translation>
@@ -644,6 +642,7 @@
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883635517171802338">Блокировать всплывающие окна на сайтах (рекомендуется)</translation>
 <translation id="884264119367021077">Адрес доставки</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="8901170036886848654">Ничего не найдено</translation>

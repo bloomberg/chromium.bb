@@ -316,7 +316,6 @@
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4961700429721424617">您正要退出由 <ph name="MANAGED_DOMAIN" /> 管理的帐户。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐户中。</translation>
 <translation id="497421865427891073">前进</translation>
-<translation id="4986920000862467124">全部已读</translation>
 <translation id="4988526792673242964">页码</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
@@ -486,6 +485,7 @@
 <translation id="6857778194843072568">仅在使用 WLAN 网络时发送</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
+<translation id="6910211073230771657">已删除</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -570,7 +570,6 @@
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7949961459945740081">获取最新功能</translation>
-<translation id="7954261717155239372">系统会适时显示更多卡片。</translation>
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
@@ -627,7 +626,6 @@
 <translation id="8583805026567836021">清除帐户数据</translation>
 <translation id="8588878054171169263">保存图片</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
-<translation id="8627706565932943526">同步错误</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
@@ -644,6 +642,7 @@
 <translation id="8820817407110198400">书签</translation>
 <translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
 <translation id="884264119367021077">送货地址</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>
 <translation id="8901170036886848654">未找到任何书签</translation>

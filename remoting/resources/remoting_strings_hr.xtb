@@ -148,7 +148,6 @@ Chromoting</translation>
 <translation id="4573676252416618192">Host Udaljene radne
 površine Chrome</translation>
 <translation id="4619978527973181021">Prihvati i instaliraj</translation>
-<translation id="4647791084836149355">Prikaži prikaz Cardboarda</translation>
 <translation id="4703302905453407178">Obavezna je komponenta prestala funkcionirati. Prijavite problem razvojnim programerima.</translation>
 <translation id="4703799847237267011">Vaša sesija aplikacije Chromoting završila je.</translation>
 <translation id="4736223761657662401">Povijest veza</translation>
@@ -209,7 +208,6 @@ površine Chrome</translation>
 <translation id="6284412385303060032">Host koji je pokrenut na zaslonu za prijavu na konzolu isključio se radi podrške za način zavjese prelaskom na host koji je pokrenut u sesiji korisnika.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6304318647555713317">Klijent</translation>
-<translation id="6324708100353784493">Omogućili ste način integracije Google Cardboarda. Da biste ga upotrebljavali, umetnite uređaj u pregledač kompatibilan s Google Cardboardom.</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
 <translation id="6408143143164565232">• Slušanje zvuka s Windows ili Linux računala.
@@ -238,7 +236,7 @@ površine Chrome</translation>
 <translation id="6963936880795878952">Veze s udaljenim računalom privremeno su blokirane jer se pokušao spojiti korisnik s nevažećim PIN-om. Pokušajte ponovo kasnije.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6985691951107243942">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME" />? Ako se predomislite, morat ćete se spojiti na to računalo da biste ponovo omogućili veze.</translation>
-<translation id="6998989275928107238">Prima</translation>
+<translation id="6998989275928107238">Do</translation>
 <translation id="7019153418965365059">Nepoznata pogreška hosta: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Daljinska pomoć</translation>
 <translation id="7038683108611689168">Pomognite nam da poboljšamo Chromoting tako da nam dopustite prikupljanje statistika o upotrebi i izvješća o padovima.</translation>

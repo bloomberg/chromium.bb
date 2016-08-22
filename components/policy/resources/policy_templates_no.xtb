@@ -1318,11 +1318,11 @@
       Hvis ikke angitt, endres ikke nettadressen for startverdien.</translation>
 <translation id="5563853101694018649">Slår av utviklerverktøyene og JavaScript-konsollen.
 
-      Hvis du slår på denne innstillingen, har du ikke lenger tilgang til utviklerverktøyene, og nettstedselementer kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller hurtigmenyer for å åpne utviklerverktøy eller JavaScript-konsollen slås av.
+      Hvis du slår på denne innstillingen, fjerner du tilgangen til utviklerverktøyene, og nettstedselementer kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller hurtigmenyer for å åpne utviklerverktøy eller JavaScript-konsollen slås av.
 
       Hvis dette alternativet slås av eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.
 
-      Denne regelen styrer også tilgangen til Android-utvikleralternativer for <ph name="PRODUCT_OS_NAME" />-enheter som kan kjøre Android-apper. Hvis du angir denne regelen til «true», kan ikke brukere få tilgang til utvikleralternativene. Hvis du angir regelen til «false» eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på versjonsnummeret i Android-innstillinger-appen.</translation>
+      Denne regelen styrer også tilgangen til Android-utvikleralternativer for <ph name="PRODUCT_OS_NAME" />-enheter som kan kjøre Android-apper. Hvis du setter denne regelen til «true», har ikke brukerne tilgang til utvikleralternativene. Hvis du setter regelen til «false» eller ikke angir den, kan brukerne få tilgang til utvikleralternativene ved å trykke sju ganger på versjonsnummeret i Android-innstillinger-appen.</translation>
 <translation id="556941986578702361">Kontroller automatisk skjuling av <ph name="PRODUCT_OS_NAME" />-hyllen.
 
       Hvis denne innstillingen angis til «AlwaysAutoHideShelf'», skjules alltid hyllen automatisk.

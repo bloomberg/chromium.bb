@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
+<translation id="1838667051080421715">Du får vist kilden for en webside.</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="1974060860693918893">Avanceret</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{og 1 mere}one{og # mere}other{og # mere}}</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
 <translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Denne meddelelse vises, fordi dine forældre skal godkende nye websites, første gang du besøger dem.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollere din proxy og din firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Postnummer</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 forslag}one{# forslag}other{# forslag}}</translation>
 <translation id="2065985942032347596">Godkendelse påkrævet</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Dette website kan ikke levere en sikker forbindelse</translation>
 <translation id="2171101176734966184">Du forsøgte at få fat på <ph name="DOMAIN" />, men serveren har præsenteret et certifikat, der er signeret med en svag signaturalgoritme. Det betyder, at sikkerhedsoplysningerne fra serveren kan være forfalskede, og at serveren muligvis ikke er den server, som du har forventet (du kommunikerer muligvis med en hacker).</translation>
 <translation id="2181821976797666341">Politikker</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 adresse}one{# adresse}other{# adresser}}</translation>
 <translation id="2212735316055980242">Politikken blev ikke fundet</translation>
 <translation id="2213606439339815911">Indlæg hentes...</translation>
 <translation id="2230458221926704099">Ret problemerne med din forbindelse ved hjælp af <ph name="BEGIN_LINK" />diagnoseappen<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Forkert politiktype</translation>
 <translation id="3032412215588512954">Vil du genindlæse denne side?</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
 <translation id="3041612393474885105">Certifikatoplysninger</translation>
 <translation id="3063697135517575841">Chrome kan ikke bekræfte dit kort i øjeblikket. Prøv igen senere.</translation>
 <translation id="3093245981617870298">Du er offline.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 anden/andet}one{# anden/andet}other{# andre}}</translation>
 <translation id="4130226655945681476">Kontrollerer netværkskabler, modem og routeren</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Skal Chromium gemme dette kort?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollere firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{ingen}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# app ($1, $2 $3)}other{# apps ($1, $2 $3)}}</translation>
 <translation id="4220128509585149162">Nedbrud</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Prøv at køre Netværksdiagnosticering<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Nej</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Denne meddelelse vises, fordi en af dine forældre skal godkende nye websites, første gang du besøger dem.</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Udvid liste</translation>
+<translation id="4986920000862467124">Intet ulæst</translation>
 <translation id="498957508165411911">Vil du oversætte fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Hvis denne indstilling er slået til, gemmer Chrome en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6060685159320643512">Vær forsigtig. Disse eksperimenter kan være farlige</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{ingen}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">Kontrollér eventuelle kabler, og genstart alle routere, modemmer eller andre
     netværksenheder, du bruger.</translation>
 <translation id="614940544461990577">Prøv at:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">ukendt størrelse</translation>
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387478394221739770">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores betakanal på chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium løb tør for hukommelse, da websiden skulle vises.</translation>
 <translation id="6417515091412812850">Kan ikke kontrollere, om certifikatet er tilbagekaldt.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Indtast søgeterm&gt;</translation>
 <translation id="6711464428925977395">Der er noget galt med proxyserveren, eller adressen er forkert.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{ingen}=1{1 element}one{# element}other{# elementer}}</translation>
 <translation id="674375294223700098">Ukendt fejl i servercertifikatet.</translation>
 <translation id="6753269504797312559">Politikkens værdi</translation>
 <translation id="6757797048963528358">Din enhed gik i dvale.</translation>
@@ -568,6 +579,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>
 <translation id="765676359832457558">Skjul avancerede indstillinger...</translation>
 <translation id="7658239707568436148">Annuller</translation>
+<translation id="7667346355482952095">Det returnerede token for politikken er tomt eller stemmer ikke overens med det nuværende token</translation>
 <translation id="7668654391829183341">Ukendt enhed</translation>
 <translation id="7674629440242451245">Er du interesseret i smarte nye Chrome-funktioner? Prøv vores udviklerkanal på chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsæt til <ph name="SITE" /> (usikkert)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 kreditkort}one{# kreditkort}other{# kreditkort}}</translation>
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>
 <translation id="8530504477309582336">Denne korttype understøttes ikke af Google Payments. Vælg et andet kort.</translation>

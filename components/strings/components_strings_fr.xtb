@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Mettre à jour votre phrase secrète de synchronisation</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
+<translation id="1838667051080421715">Vous consultez actuellement la source d'une page Web.</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
 <translation id="1883255238294161206">Réduire la liste</translation>
 <translation id="1898423065542865115">Filtrage</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
 <translation id="2030481566774242610">Essayez avec <ph name="LINK" /></translation>
 <translation id="2031925387125903299">Ce message s'affiche, car tes parents doivent approuver les nouveaux sites lorsque tu les consultes pour la première fois.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Vérifier le proxy et le pare-feu<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Code postal</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}one{# suggestion}other{# suggestions}}</translation>
 <translation id="2065985942032347596">Authentification requise</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Ce site ne peut pas fournir de connexion sécurisée</translation>
 <translation id="2171101176734966184">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé à l'aide d'un algorithme de signature faible. Il est possible que le certificat fourni par le serveur ait été falsifié. Il se peut donc que le serveur ne soit pas celui auquel vous souhaitez accéder, et qu'il s'agisse d'une tentative de piratage.</translation>
 <translation id="2181821976797666341">Règles</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 adresse}one{# adresse}other{# adresses}}</translation>
 <translation id="2212735316055980242">Règle introuvable.</translation>
 <translation id="2213606439339815911">Obtention des entrées en cours…</translation>
 <translation id="2230458221926704099">Vérifiez la connexion à l'aide de l'<ph name="BEGIN_LINK" />application de diagnostic<ph name="END_LINK" />.</translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
 <translation id="3032412215588512954">Voulez-vous actualiser ce site ?</translation>
 <translation id="3037605927509011580">Aie aie aie</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{au moins 1 élément sur les appareils synchronisés}=1{1 élément (et plus sur appareils synchronisés)}one{# élément (et plus sur appareils synchronisés)}other{# éléments (et plus sur appareils synchronisés)}}</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
 <translation id="3063697135517575841">Impossible de valider votre carte dans Chrome pour le moment. Veuillez réessayer plus tard.</translation>
 <translation id="3093245981617870298">Vous êtes actuellement hors connexion</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
 <translation id="4130226655945681476">Vérifiez les câbles réseau, le modem et le routeur.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Voulez-vous que cette carte soit enregistrée dans Chromium ?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Vérifier les configurations du pare-feu et de l'antivirus<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{aucune}=1{1 application ($1)}=2{2 applications ($1, $2)}one{# application ($1, $2 $3)}other{# applications ($1, $2 $3)}}</translation>
 <translation id="4220128509585149162">Plantages</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Essayez d'exécuter les diagnostics réseau<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Non</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Ce message s'affiche, car ton papa/ta maman doit approuver les nouveaux sites lorsque tu les consultes pour la première fois.</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
+<translation id="4986920000862467124">Vous avez tout lu</translation>
 <translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE" /> cette page affichée en <ph name="ORIGINAL_LANGUAGE" /> ?</translation>
 <translation id="5002932099480077015">Si cette option est activée, Chrome enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Automatique</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6060685159320643512">Attention, ces fonctionnalités expérimentales peuvent mordre.</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{aucun}=1{1}one{#}other{#}}</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>
 <translation id="614940544461990577">Essayez les suggestions ci-dessous :</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">taille inconnue</translation>
 <translation id="6355080345576803305">Contournement dû à la session publique</translation>
 <translation id="6358450015545214790">Qu'est-ce que c'est ?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
 <translation id="6387478394221739770">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version bêta à l'adresse chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium n'avait pas suffisamment de mémoire pour afficher cette page Web.</translation>
 <translation id="6417515091412812850">Impossible de vérifier si le certificat a été révoqué.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6710594484020273272">&lt;Saisissez le terme de recherche&gt;</translation>
 <translation id="6711464428925977395">Le serveur proxy présente une erreur, ou l'adresse est incorrecte.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{aucun}=1{1 élément}one{# élément}other{# éléments}}</translation>
 <translation id="674375294223700098">Erreur inconnue liée au certificat du serveur.</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
@@ -568,6 +579,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="765676359832457558">Masquer les paramètres avancés…</translation>
 <translation id="7658239707568436148">Annuler</translation>
+<translation id="7667346355482952095">Le jeton de règle renvoyé est vide ou ne correspond pas au jeton actuel.</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="7674629440242451245">Vous souhaitez bénéficier de nouvelles fonctionnalités Chrome passionnantes ? Essayez notre version en développement à l'adresse chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Continuer vers le site <ph name="SITE" /> (dangereux)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 carte de paiement}one{# carte de paiement}other{# cartes de paiement}}</translation>
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>
 <translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>

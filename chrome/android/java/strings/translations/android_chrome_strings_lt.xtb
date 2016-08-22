@@ -316,7 +316,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4943872375798546930">Rezultatų nėra</translation>
 <translation id="4961700429721424617">Atsijungiate nuo paskyros, kurią tvarko „<ph name="MANAGED_DOMAIN" />“. „Chrome“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
-<translation id="4986920000862467124">Viskas perskaityta</translation>
 <translation id="4988526792673242964">Psl.</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
 <translation id="5000922062037820727">Užblokuota (rekomenduojama)</translation>
@@ -486,6 +485,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6857778194843072568">Siųsti tik naudojant „Wi-Fi“</translation>
 <translation id="6865313869410766144">Automatinio pildymo formos duomenys</translation>
 <translation id="6868088497967843822">Prisijunkite, kad žymės, istorija, slaptažodžiai ir kiti nustatymai būtų pateikti visuose įrenginiuose</translation>
+<translation id="6910211073230771657">Ištrintas</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6963766334940102469">Ištrinti žymes</translation>
 <translation id="6965382102122355670">Gerai</translation>
@@ -570,7 +570,6 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="7876243839304621966">Pašalinti viską</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="7949961459945740081">Gauti naujausias funkcijas</translation>
-<translation id="7954261717155239372">Kai ateis tinkamas laikas, bus rodoma daugiau kortelių.</translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
@@ -627,7 +626,6 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8583805026567836021">Valomi paskyros duomenys</translation>
 <translation id="8588878054171169263">Išsaugoti vaizdą</translation>
 <translation id="8617240290563765734">Atidaryti atsisiųstame turinyje nurodytą siūlomą URL?</translation>
-<translation id="8627706565932943526">Sinchronizavimo klaida</translation>
 <translation id="862875433388403934">Nebegalėsite leisti kitose programose atsisiųsto turinio (filmų, muzikos ir pan.), kol tose programose nebus iš naujo gautos licencijos pagal naujus įrenginio prisijungimo duomenis.
 
 Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsisiųsti turinį.</translation>
@@ -644,6 +642,7 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="883635517171802338">Blokuoti, kad svetainėse nebūtų rodomi iššokantieji langai (rekomenduojama)</translation>
 <translation id="884264119367021077">Siuntimo adresas</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“, skirtukas</translation>
 <translation id="885701979325669005">Saugykla</translation>
 <translation id="8901170036886848654">Žymių nerasta</translation>

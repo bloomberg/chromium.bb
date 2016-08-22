@@ -534,6 +534,7 @@
       Als deze instelling is uitgeschakeld, kunnen webpagina's JavaScript niet gebruiken en kan de gebruiker die instelling niet wijzigen.
 
       Als deze instelling is ingeschakeld of niet wordt ingesteld, kunnen webpagina's JavaScript gebruiken, maar kan de gebruiker die instelling wijzigen.</translation>
+<translation id="2753637905605932878">Het bereik beperken van lokale UDP-poorten die door WebRTC worden gebruikt</translation>
 <translation id="2757054304033424106">Typen extensies/apps die mogen worden geïnstalleerd</translation>
 <translation id="2759224876420453487">Het gebruikersgedrag beheren in een multiprofielsessie</translation>
 <translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de accu wordt gewerkt</translation>
@@ -769,6 +770,15 @@
 <translation id="3264793472749429012">Coderingen voor standaardzoekprovider</translation>
 <translation id="3273221114520206906">Standaardinstelling voor JavaScript</translation>
 <translation id="3288595667065905535">Releasekanaal</translation>
+<translation id="3291367259589875381">Dit beleid is beëindigd in M48 ten gunste van <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> en is verwijderd in M54.
+
+      Hiermee wordt netwerkvoorspelling in <ph name="PRODUCT_NAME" /> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
+
+      Hiermee wordt niet alleen DNS-prefetching beheerd, maar ook het vooraf verbinden met TCP en SSL en het vooraf renderen van webpagina's. De beleidsnaam verwijst naar DNS-prefetching vanwege historische redenen.
+
+      Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet wordt ingesteld, wordt het ingeschakeld, maar kan de gebruiker het wijzigen.</translation>
 <translation id="3292147213643666827">Met deze instelling kan <ph name="PRODUCT_NAME" /> als proxy worden ingesteld tussen <ph name="CLOUD_PRINT_NAME" /> en printers die zijn aangesloten op het apparaat.
 
       Als deze instelling is ingeschakeld of niet is geconfigureerd, kunnen gebruikers de proxy voor Cloudprinter inschakelen met authenticatie via hun Google-account.
@@ -1266,6 +1276,9 @@
           Een waarde van * voor de zwarte lijst betekent dat alle hosts voor systeemeigen berichten op de zwarte lijst staan, tenzij ze expliciet op de witte lijst worden vermeld.
 
           Als dit beleid niet wordt ingesteld, laadt <ph name="PRODUCT_NAME" /> alle geïnstalleerde hosts voor systeemeigen berichten.</translation>
+<translation id="5288772341821359899">Als het beleid is ingesteld, wordt het door WebRTC gebruikte UDP-poortbereik beperkt tot het opgegeven poortinterval (inclusief eindpunten).
+
+      Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
 <translation id="5290940294294002042">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen</translation>
 <translation id="5302612588919538756">Dit beleid is verouderd. Je kunt in plaats hiervan SyncDisabled gebruiken.
 
@@ -1956,6 +1969,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7443616896860707393">Prompts voor algemene HTTP-authenticatie met verschillende herkomst</translation>
 <translation id="7468416082528382842">Locatie van Windows-register:</translation>
 <translation id="7469554574977894907">Zoeksuggesties inschakelen</translation>
+<translation id="7474249562477552702">Of door lokale vertrouwensankers verstrekte, met SHA-1 ondertekende certificaten zijn toegestaan</translation>
 <translation id="7485481791539008776">Regels voor selectie van standaardprinter</translation>
 <translation id="749556411189861380">De OS- en firmwareversie van aangemelde apparaten melden.
 
@@ -1973,6 +1987,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid is ingesteld op SAML_INTERSTITIAL, wordt er bij het inloggen een interstitial weergegeven waarin de gebruiker kan kiezen of hij wil doorgaan met de verificatie via de SAML IdP van het registratiedomein van het apparaat of wil teruggaan naar de normale manier van inloggen volgens GAIA.</translation>
 <translation id="7567380065339179813">Plug-ins toestaan op deze sites</translation>
+<translation id="757395965347379751">Wanneer deze instelling is ingeschakeld, staat <ph name="PRODUCT_NAME" /> met SHA-1 ondertekende certificaten toe, zolang deze correct zijn gevalideerd en zijn gekoppeld aan een lokaal geïnstalleerd CA-certificaat.
+
+      Opmerking: Dit beleid is afhankelijk van de uitgevoerde verificatiestack voor het certificaat van het besturingssysteem en of hiermee SHA-1-handtekeningen zijn toegestaan. Als door een update van het besturingssysteem een wijziging wordt aangebracht in de verwerking van het besturingssysteem ten aanzien van SHA-1-certificaten, is dit beleid wellicht niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing voor bedrijven om af te stappen van SHA-1. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'false', volgt <ph name="PRODUCT_NAME" /> het openbaar aangekondigde verwijderingsschema voor SHA-1.</translation>
 <translation id="7593523670408385997">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven cachegrootte, ongeacht of de gebruiker de markering --disk-cache-size heeft opgegeven. De waarde die in dit beleid wordt opgegeven, is geen vaste waarde maar een suggestie voor het cachesysteem. Een waarde die lager is dan een paar megabytes, is te klein en wordt afgerond naar een redelijk minimum.

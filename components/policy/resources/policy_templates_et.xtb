@@ -538,6 +538,7 @@
       Kui see seade keelatakse, ei saa veebilehed JavaScripti kasutada ja kasutaja ei saa seda seadet muuta.
 
       Kui see seade on lubatud või määramata, saavad veebilehed JavaScripti kasutada, kuid kasutajad saavad seda seadet muuta.</translation>
+<translation id="2753637905605932878">WebRTC kasutatavate kohalike UDP-portide vahemiku piiramine</translation>
 <translation id="2757054304033424106">Laienduste/rakenduste tüübid, mille installimine on lubatud</translation>
 <translation id="2759224876420453487">Kasutaja käitumise kontrollimine multiprofiili seansis</translation>
 <translation id="2761483219396643566">Tegevusetuse hoiatuse viivitus akutoite kasutamisel</translation>
@@ -765,6 +766,15 @@
 <translation id="3264793472749429012">Vaikeotsingupakkuja kodeeringud</translation>
 <translation id="3273221114520206906">JavaScripti vaikeseade</translation>
 <translation id="3288595667065905535">Väljastuskanal</translation>
+<translation id="3291367259589875381">Selle reegli tugi katkestatakse versioonis M48 ja selle asemel võetakse kasutusele reegel <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, ning see eemaldatakse versioonis M54.
+
+      Lubab teenuses <ph name="PRODUCT_NAME" /> võrguprognoosid ja keelab kasutajatel selle seade muutmise.
+
+      See ei juhi mitte ainult DNS-i eeltoomist, vaid ka veebilehtede TCP ja SSL-i eelühendamist ning eelrenderdust. Reegli nimi viitab ajaloolistel põhjustel DNS-i eeltoomisele.
+
+      Kui selle seade lubate või keelate, ei saa kasutajad seda seadet teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
+
+      Kui see reegel jäetakse määramata, on see lubatud, kuid kasutaja saab seda muuta.</translation>
 <translation id="3292147213643666827">Võimaldab rakendusel <ph name="PRODUCT_NAME" /> töötada puhverserverina teenuse <ph name="CLOUD_PRINT_NAME" /> ja seadmega ühendatud pärandprinterite vahel.
 
       Kui seade on lubatud või seadistamata, saavad kasutajad lubada pilvprintimise puhverserveri Google'i kontoga autentides.
@@ -1256,6 +1266,9 @@
           Musta nimekirja väärtus '*' tähendab, et kõik omasõnumside hostid on mustas nimekirjas, kui nad pole lisatud konkreetselt lubatud üksuste loendisse.
 
           Kui seda reeglit ei määrata, laadib <ph name="PRODUCT_NAME" /> kõik installitud omasõnumside hostid.</translation>
+<translation id="5288772341821359899">Kui reegel on määratud, piiratakse WebRTC kasutatava UDP-pordi vahemikku määratud pordi intervalliga (sh lõpp-punktid).
+
+      Kui reeglit ei ole määratud või kui see on määratud tühjale stringile või kehtetule pordivahemikule, on WebRTC-l lubatud kasutada mis tahes saadaolevat kohalikku UDP-porti.</translation>
 <translation id="5290940294294002042">Määrake pistikprogrammide loend, mida kasutaja saab lubada või keelata</translation>
 <translation id="5302612588919538756">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli SyncDisabled kasutamist.
 
@@ -1957,6 +1970,7 @@
 <translation id="7443616896860707393">Erineva päritoluga HTTP Basic Authi viibad</translation>
 <translation id="7468416082528382842">Windowsi registri asukoht:</translation>
 <translation id="7469554574977894907">Luba otsingusoovitused</translation>
+<translation id="7474249562477552702">Kas kohalike usaldusvõtmete väljastatud SHA-1 allkirjastatud sertifikaadid on lubatud?</translation>
 <translation id="7485481791539008776">Vaikeprinteri valimise reeglid</translation>
 <translation id="749556411189861380">Saadab registreeritud seadmete OS-i ja püsivara versiooni.
 
@@ -1974,6 +1988,11 @@
 
       Kui valikuks on määratud SAML_INTERSTITIAL, kuvatakse sisselogimisel vaheekraan, kus kasutajale pakutakse autentimise jätkamist seadme registreerimisdomeeni SAML IdP kaudu või võimalust naasta tavapärasesse GAIA sisselogimisvoogu.</translation>
 <translation id="7567380065339179813">Luba pistikprogrammid nendel saitidel</translation>
+<translation id="757395965347379751">Kui see seade on lubatud, lubab <ph name="PRODUCT_NAME" /> SHA-1 allkirjastatud sertifikaate seni, kuni need on valideeritud ja ühtivad kohalikult installitud CA-sertifikaatidega.
+
+      Arvestage sellega, et see reegel oleneb operatsioonisüsteemi sertifikaadi kinnitamise virnast, mis lubab SHA-1 allkirju. Kui OS-i värskendus muudab OS-i SHA-1 sertifikaatide käsitlemist, ei pruugi see reegel enam kehtida.  Lisaks on see reegel ajutine lahendus, et anda ettevõtetele rohkem aega SHA-1-st lahkumiseks.  See reegel eemaldatakse 2019. aasta 1. jaanuari paiku.
+
+      Kui seda reeglit pole määratud või on selle olekuks määratud Väär, siis järgib <ph name="PRODUCT_NAME" /> avalikult väljakuulutatud SHA-1 toe katkestamise graafikut.</translation>
 <translation id="7593523670408385997">Seadistab vahemälu mahu, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu salvestatud failide kettale salvestamiseks.
 
       Kui kasutate seda reeglit, kasutab <ph name="PRODUCT_NAME" /> olemasolevat vahemälu mahtu sellest olenemata, kas kasutaja on määranud märgendi „--ketta-vahemälu-maht” või mitte. Selle reegliga määratud väärtus pole kindel limiit, vaid pigem soovitus vahemälusüsteemile. Mõnest megabaidist väiksem väärtus on liiga väike ja see ümardatakse mõistliku miinimumini.

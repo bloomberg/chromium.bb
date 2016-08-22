@@ -148,7 +148,6 @@ priegloba</translation>
 <translation id="4573676252416618192">„Chrome“ nuotolinio kompiuterio
 valdymo priegloba</translation>
 <translation id="4619978527973181021">Sutikti ir įdiegti</translation>
-<translation id="4647791084836149355">Rodyti „Cardboard“ rodinį</translation>
 <translation id="4703302905453407178">Būtinas komponentas nebeveikia. Praneškite apie šią problemą kūrėjams.</translation>
 <translation id="4703799847237267011">„Chrome“ nuotolinio ryšio sesija baigėsi.</translation>
 <translation id="4736223761657662401">Ryšių istorija</translation>
@@ -209,7 +208,6 @@ valdymo priegloba</translation>
 <translation id="6284412385303060032">Priegloba, veikianti pulto logikos ekrane, išjungta, kad būtų galima palaikyti nerodomo vaizdo režimą perjungus į prieglobą, veikiančią konkretaus naudotojo sesijoje.</translation>
 <translation id="629730747756840877">Paskyra</translation>
 <translation id="6304318647555713317">Klientas</translation>
-<translation id="6324708100353784493">Įgalinote „Google Cardboard“ integravimo režimą. Kad galėtumėte naudoti šį režimą, įdėkite įrenginį į žiūriklį, suderinamą su „Google Cardboard“.</translation>
 <translation id="6381670701864002291">Kažkas kita.</translation>
 <translation id="6398765197997659313">Išeiti iš viso ekrano režimo</translation>
 <translation id="6408143143164565232">• Klausykitės garso įrašų „Windows“ arba „Linux“ kompiuteriais.
@@ -229,7 +227,7 @@ valdymo priegloba</translation>
 <translation id="6668065415969892472">PIN kodas atnaujintas.</translation>
 <translation id="6681800064886881394">Autorių teisės priklauso „Google Inc.“, 2013 m. Visos teisės saugomos.</translation>
 <translation id="6746493157771801606">Išvalyti istoriją</translation>
-<translation id="6748108480210050150">Ryšį užmezga</translation>
+<translation id="6748108480210050150">Nuo</translation>
 <translation id="677755392401385740">Pradėta naudotojo priegloba: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Žiūrėti / redaguoti</translation>
 <translation id="6930242544192836755">Trukmė</translation>
@@ -238,7 +236,7 @@ valdymo priegloba</translation>
 <translation id="6963936880795878952">Ryšiai su nuotoliniu kompiuteriu laikinai blokuojami, nes kažkas bandė prisijungti prie jo naudodamas netinkamą PIN kodą. Vėliau bandykite dar kartą.</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6985691951107243942">Ar tikrai norite neleisti nuotolinio ryšio su „<ph name="HOSTNAME" />“? Jei apsigalvosite, turėsite iš naujo įgalinti ryšį tame kompiuteryje.</translation>
-<translation id="6998989275928107238">Ryšys užmezgamas su</translation>
+<translation id="6998989275928107238">Kam</translation>
 <translation id="7019153418965365059">Neatpažinta prieglobos klaida: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Nuotolinė pagalba</translation>
 <translation id="7038683108611689168">Leidę mums kaupti naudojimo statistiką ir strigčių ataskaitas, padėsite tobulinti „Chrome“ nuotolinį ryšį.</translation>

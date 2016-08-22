@@ -535,6 +535,7 @@
       Kung hindi pinagana ang setting na ito, hindi makakagamit ng JavaScript ang mga web page at hindi mababago ng user ang setting na iyon.
 
       Kung pinagana o hindi nakatakda ang setting na ito, makakagamit ng JavaScript ang mga web page ngunit mababago ng user ang setting na iyon.</translation>
+<translation id="2753637905605932878">Paghigpitan ang hanay ng mga lokal na UDP port na ginagamit ng WebRTC</translation>
 <translation id="2757054304033424106">Mga uri ng mga extension/apps na pinapayagang ma-install</translation>
 <translation id="2759224876420453487">Kokontrolin ang pag-uugali ng user sa isang session na multiprofile</translation>
 <translation id="2761483219396643566">Delay ng babala bago mag-idle kapag gumagamit ng baterya</translation>
@@ -770,6 +771,15 @@
 <translation id="3264793472749429012">Mga pag-encode ng default na provider ng paghahanap</translation>
 <translation id="3273221114520206906">Default na setting ng JavaScript</translation>
 <translation id="3288595667065905535">I-release ang channel</translation>
+<translation id="3291367259589875381">Hindi na ginagamit ang patakarang ito sa M48 at pinalitan na ng <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, at inalis sa M54.
+
+      Ine-enable ang paghula ng network sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na palitan ang setting na ito.
+
+      Hindi lang pag-prefetch ng DNS ang kinokontrol nito ngunit pati rin paunang pagkonekta at pag-render ng TCP at SSL ng mga web page. Tinutukoy ng pangalan ng patakaran ang pag-prefetch ng DNS para sa mga dati nang dahilan.
+
+      Kung ie-enable o idi-disable mo ang setting na ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
+
+      Kung iwang hindi nakatakda ang patakarang ito, mae-enable ito ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="3292147213643666827">Pinapagana ang <ph name="PRODUCT_NAME" /> na magsilbi bilang proxy sa pagitan ng <ph name="CLOUD_PRINT_NAME" /> at mga legacy printer na nakakonekta sa machine.
 
       Kung pinagana o hindi naka-configure ang setting na ito, mapapagana ng mga user ang proxy ng cloud print proxy sa pamamagitan ng pagpapatotoo sa kanilang Google Account.
@@ -1260,6 +1270,9 @@
           Ang value ng blacklist na '*' ay nangangahulugang naka-blacklist ang lahat ng host ng native na pagmemensahe maliban kung tahasang nakalista ang mga ito sa whitelist.
 
           Kung ang patakarang ito ay naiwang hindi nakatakda, ilo-load ng <ph name="PRODUCT_NAME" /> ang lahat ng naka-install na host ng native na pagmemensahe.</translation>
+<translation id="5288772341821359899">Kung nakatakda ang patakaran, paghihigpitan ang hanay ng UDP port na ginagamit ng WebRTC sa tinukoy na interval ng port (kasama ang mga endpoint).
+
+      Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
 <translation id="5302612588919538756">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang SyncDisabled.
 
@@ -1960,6 +1973,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7443616896860707393">Mga prompt ng Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Lokasyon ng registry ng window:</translation>
 <translation id="7469554574977894907">Paganahin ang mga suhestiyon sa paghahanap</translation>
+<translation id="7474249562477552702">Kung pinapayagan ang mga SHA-1 signed certificate na ibinigay ng mga lokal na trust anchor</translation>
 <translation id="7485481791539008776">Mga panuntunan sa pagpili ng default na printer</translation>
 <translation id="749556411189861380">Iulat ang bersyon ng OS at firmware ng mga naka-enroll na device.
 
@@ -1977,6 +1991,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung itatakda sa SAML_INTERSTITIAL, makikita sa log in ang isang interstitial na screen na nag-aalok sa user na magpatuloy sa pagpapatotoo sa pamamagitan ng SAML IdP ng domain ng pag-enroll ng device, o bumalik sa normal na daloy ng pag-log in sa GAIA.</translation>
 <translation id="7567380065339179813">Pinapayagan ang mga plugin sa mga site na ito</translation>
+<translation id="757395965347379751">Kapag naka-enable ang setting na ito, pinapayagan ng <ph name="PRODUCT_NAME" /> ang mga SHA-1 signed certificate hanggang matagumpay silang nakakapagpatotoo at nakakabit sa isang lokal na naka-install na mga CA certificate.
+
+      Tandaan na nakadepende ang patakarang ito sa operating system certificate verification stack na pumapayag sa mga SHA-1 signature. Kung mabago ng isang update sa OS ang pangangasiwa ng OS sa mga SHA-1 certificate, maaaring mawalan na nang bisa ang patakarang ito.  Bukod pa rito, maaaring nilayon ang patakarang ito na maging isang pansamantalang remedyo upang mabigyan ang mga kumpanya ng higit pang oras upang makalipat mula sa SHA-1.  Aalisin ang patakarang ito sa petsa o malapit sa petsang ika-1 ng Enero, 2019.
+
+      Kung hindi nakatakda ang patakarang ito o nakatakda sa false, susundin ng <ph name="PRODUCT_NAME" /> ang inanunsyo sa publiko na iskedyul ng paghinto sa paggamit ng SHA-1.</translation>
 <translation id="7593523670408385997">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na file sa disk.
 
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na laki ng cache tinukoy man ng user ang '--disk-cache-size' flag o hindi. Ang value na tinutukoy sa patakarang ito ay hindi isang ganap na hangganan ngunit sa halip ay isang suhestiyon sa sistema sa pagka-cache, masyadong maliit ang anumang value na mas mababa sa ilang megabyte at ira-round up sa isang maayos na minimum.

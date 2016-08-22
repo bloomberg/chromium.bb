@@ -315,7 +315,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="4961700429721424617">Você está saindo de uma conta gerenciada por <ph name="MANAGED_DOMAIN" />. Os dados do Chrome serão excluídos desse dispositivo, mas permanecerão na sua Conta do Google.</translation>
 <translation id="497421865427891073">Avançar</translation>
-<translation id="4986920000862467124">Tudo lido</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
 <translation id="5000922062037820727">Bloqueada (recomendado)</translation>
@@ -484,6 +483,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6857778194843072568">Enviar somente em Wi-Fi</translation>
 <translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
 <translation id="6868088497967843822">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos</translation>
+<translation id="6910211073230771657">Excluído</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6963766334940102469">Excluir favoritos</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -568,7 +568,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7949961459945740081">Atualizar recursos</translation>
-<translation id="7954261717155239372">Mais cards serão exibidos quando for a hora certa.</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
@@ -625,7 +624,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8583805026567836021">Limpando os dados da conta</translation>
 <translation id="8588878054171169263">Salvar imagem</translation>
 <translation id="8617240290563765734">Abrir o URL sugerido especificado no conteúdo transferido por download?</translation>
-<translation id="8627706565932943526">Erro de sincronização</translation>
 <translation id="862875433388403934">Conteúdo (filmes, música, etc.) baixado em outros aplicativos pode não ser cobrado até que esses aplicativos readquiram licenças baseadas em uma nova credencial do dispositivo.
 Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado.</translation>
 <translation id="8636825310635137004">Para ver as guias dos seus outros dispositivos, ative a sincronização.</translation>
@@ -641,6 +639,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883635517171802338">Impedir que sites exibam pop-ups (recomendado)</translation>
 <translation id="884264119367021077">Endereço de entrega</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, guia</translation>
 <translation id="885701979325669005">Armazenamento</translation>
 <translation id="8901170036886848654">Nenhum favorito encontrado</translation>

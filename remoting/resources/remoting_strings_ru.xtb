@@ -148,7 +148,6 @@
 <translation id="4573676252416618192">Хост Удаленного
 рабочего стола Chrome</translation>
 <translation id="4619978527973181021">Принять условия и установить</translation>
-<translation id="4647791084836149355">Показать в Google Cardboard</translation>
 <translation id="4703302905453407178">Нужный компонент браузера перестал работать. Сообщите об этой проблеме разработчикам.</translation>
 <translation id="4703799847237267011">Сеанс Пульта Chrome завершен.</translation>
 <translation id="4736223761657662401">История подключений</translation>
@@ -209,7 +208,6 @@
 <translation id="6284412385303060032">Хост консоли экрана авторизации не поддерживает режим Curtain mode (переключается на пользовательский сеанс).</translation>
 <translation id="629730747756840877">Аккаунт</translation>
 <translation id="6304318647555713317">Клиент</translation>
-<translation id="6324708100353784493">Вставьте устройство в очки Google Cardboard (если они совместимы).</translation>
 <translation id="6381670701864002291">Другое.</translation>
 <translation id="6398765197997659313">Обычный режим</translation>
 <translation id="6408143143164565232">• Возможность слушать аудиозаписи с компьютеров Windows и Linux.
@@ -229,7 +227,7 @@
 <translation id="6668065415969892472">PIN-код обновлен.</translation>
 <translation id="6681800064886881394">© Google Inc., 2013. Все права защищены.</translation>
 <translation id="6746493157771801606">Удалить историю</translation>
-<translation id="6748108480210050150">Клиент</translation>
+<translation id="6748108480210050150">От</translation>
 <translation id="677755392401385740">Запущен хост для пользователя: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Просмотр/изменение</translation>
 <translation id="6930242544192836755">Продолжительность</translation>
@@ -238,7 +236,7 @@
 <translation id="6963936880795878952">Подключения к удаленному компьютеру временно заблокированы, поскольку кто-то пытался установить соединение, используя неверный PIN-код. Повторите попытку позже.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6985691951107243942">Заблокировать подключения к <ph name="HOSTNAME" />? Восстановить их можно будет только на соответствующем компьютере.</translation>
-<translation id="6998989275928107238">Хост</translation>
+<translation id="6998989275928107238">Кому</translation>
 <translation id="7019153418965365059">Неизвестная ошибка хоста: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Удаленная поддержка</translation>
 <translation id="7038683108611689168">Разрешить Google собирать данные статистики использования и отчеты о сбоях для улучшения работы Пульта Chrome</translation>

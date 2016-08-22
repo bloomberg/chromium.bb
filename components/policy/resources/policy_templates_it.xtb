@@ -486,6 +486,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa impostazione viene disattivata, le pagine web non potranno utilizzare JavaScript e l'utente non potrà modificare tale impostazione.
 
       Se questa impostazione viene attivata o non è impostata, le pagine web potranno utilizzare JavaScript ma l'utente potrà modificare tale impostazione.</translation>
+<translation id="2753637905605932878">Limita l'intervallo di porte UDP locali utilizzato da WebRTC</translation>
 <translation id="2757054304033424106">Tipi di estensioni/app che possono essere installati</translation>
 <translation id="2759224876420453487">Controlla il comportamento dell'utente in una sessione profilo multiplo</translation>
 <translation id="2761483219396643566">Ritardo avviso inattività in caso di utilizzo della batteria</translation>
@@ -711,6 +712,15 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
 <translation id="3273221114520206906">Impostazione JavaScript predefinita</translation>
 <translation id="3288595667065905535">Canale di rilascio</translation>
+<translation id="3291367259589875381">Questa norma è stata ritirata in M48 per essere sostituita da <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> ed è stata rimossa in M54.
+
+      Consente di attivare la previsione di rete in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
+
+      Questa norma consente di controllare il precaricamento DNS, nonché la preconnessione TCP e SSL e il prerendering delle pagine web. Il nome della norma si riferisce al precaricamento DNS per motivi storici.
+
+      Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificare questa impostazione in <ph name="PRODUCT_NAME" /> o eseguirne l'override.
+
+      Se questa norma non viene impostata, la previsione di rete verrà attivata ma l'utente potrà modificarla.</translation>
 <translation id="3292147213643666827">Consente a <ph name="PRODUCT_NAME" /> di fungere da proxy tra <ph name="CLOUD_PRINT_NAME" /> e le stampanti preesistenti collegate al computer.
 
       Se l'impostazione è attivata o non è configurata, gli utenti possono attivare il proxy Cloud Print attraverso l'autenticazione con il proprio account Google.
@@ -1145,6 +1155,9 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 Il valore della lista nera "*" indica che tutti gli host di messaggi nativi non sono autorizzati, a meno che vengano elencati espressamente nella whitelist.
 
 Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli host di messaggi nativi installati.</translation>
+<translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
+
+      Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
 <translation id="5302612588919538756">Questa norma è stata ritirata; utilizzare la norma SyncDisabled.
 
@@ -1782,6 +1795,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7443616896860707393">Richieste di autenticazione di base HTTP tra origini</translation>
 <translation id="7468416082528382842">Posizione del Registro di sistema di Windows:</translation>
 <translation id="7469554574977894907">Attiva suggerimenti di ricerca</translation>
+<translation id="7474249562477552702">Specifica se i certificati SHA-1 firmati emessi dai trust anchor locali sono consentiti</translation>
 <translation id="7485481791539008776">Regole di selezione della stampante predefinita</translation>
 <translation id="749556411189861380">Consente di indicare la versione del sistema operativo e del firmware dei dispositivi registrati. Se questa impostazione non è impostata o viene impostata su True, i dispositivi registrati indicheranno periodicamente la versione del sitema operativo e del firmware. Se l'impostazione viene impostata su False, le informazioni sulla versione non verranno indicate.</translation>
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
@@ -1795,6 +1809,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se viene impostata su SAML_INTERSTITIAL, durante l'accesso verrà mostrata una schermata interstitial che consentirà all'utente di procedere con l'autenticazione tramite l'IdP SAML del dominio di registrazione del dispositivo oppure di tornare al normale flusso di accesso GAIA.</translation>
 <translation id="7567380065339179813">Consenti plug-in su questi siti</translation>
+<translation id="757395965347379751">Quando questa impostazione è attivata, <ph name="PRODUCT_NAME" /> consente l'utilizzo dei certificati SHA-1 firmati che sono convalidati e concatenati a certificati CA installati localmente.
+
+      Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.
+
+      Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> seguirà il programma di ritiro della crittografia SHA-1 pubblicamente annunciato.</translation>
 <translation id="7593523670408385997">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file memorizzati nella cache.
 
 Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--disk-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.

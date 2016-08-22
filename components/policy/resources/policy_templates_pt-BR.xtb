@@ -1244,7 +1244,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se você ativar essa configuração, as Ferramentas de desenvolvedor não poderão ser acessadas, e os elementos de websites não poderão mais ser inspecionados. Todos os atalhos do teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas de desenvolvedor ou o Console JavaScript serão desativados.
 
-      Se esta opção for definida como desativada ou não for definida, a utilização das Ferramentas do desenvolvedor e do Console JavaScript não será permitida.
+      Se esta opção for definida como desativada ou não for definida, a utilização das Ferramentas do desenvolvedor e do Console JavaScript será permitida.
 
       Em dispositivos <ph name="PRODUCT_OS_NAME" /> com capacidade de executar apps Android, esta política também controla o acesso a Opções do desenvolvedor Android. Se você definir esta política como "true", os usuários não poderão acessar as Opções do desenvolvedor. Se você definir esta política como "false" ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocando sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.

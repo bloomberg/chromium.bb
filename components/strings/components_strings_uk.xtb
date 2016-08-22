@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Оновіть парольну фразу для синхронізації.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Недійсний запит або параметри запиту</translation>
+<translation id="1838667051080421715">Ви бачите джерело веб-сторінки.</translation>
 <translation id="1871208020102129563">Проксі-сервер налаштовано на використання фіксованих проксі-серверів, а не URL-адреси сценарію .pac.</translation>
 <translation id="1883255238294161206">Згорнути список</translation>
 <translation id="1898423065542865115">Фільтрування</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Помилка серіалізації</translation>
 <translation id="1974060860693918893">Розширені</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{і ще 1}one{і ще #}few{і ще #}many{і ще #}other{і ще #}}</translation>
 <translation id="2025186561304664664">Проксі-сервер установлено на автоматичне налаштування.</translation>
 <translation id="2030481566774242610">Можливо, ви мали на увазі <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Ви бачите це повідомлення, оскільки ваші батьки мають схвалити сайти, які ви відвідуєте вперше.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />перевірити проксі-сервер і брандмауер<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Поштовий індекс</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 пропозиція}one{# пропозиція}few{# пропозиції}many{# пропозицій}other{# пропозиції}}</translation>
 <translation id="2065985942032347596">Потрібна автентифікація</translation>
 <translation id="2079545284768500474">Скасувати</translation>
 <translation id="20817612488360358">Системні параметри проксі-сервера налаштовано для використання, але чітко вказано налаштування проксі-сервера.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Цей сайт не може забезпечити захищене з’єднання</translation>
 <translation id="2171101176734966184">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, підписаний із використанням слабкого алгоритму підпису. Це означає, що облікові дані системи захисту, надані сервером, можуть бути сфальсифікованими, а сервер – не тим, який вам потрібен (можливо, ви обмінюєтеся даними зі зловмисником).</translation>
 <translation id="2181821976797666341">Правила</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 адреса}one{# адреса}few{# адреси}many{# адрес}other{# адреси}}</translation>
 <translation id="2212735316055980242">Правило не знайдено</translation>
 <translation id="2213606439339815911">Отримання записів…</translation>
 <translation id="2230458221926704099">Відновіть з’єднання за допомогою <ph name="BEGIN_LINK" />додатка для діагностики<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Неправильний тип правила</translation>
 <translation id="3032412215588512954">Оновити цей сайт?</translation>
 <translation id="3037605927509011580">От халепа!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{щонайменше 1 запис на синхронізованих пристроях}=1{1 запис (і більше на синхронізованих пристроях)}one{# запис (і більше на синхронізованих пристроях)}few{# записи (і більше на синхронізованих пристроях)}many{# записів (і більше на синхронізованих пристроях)}other{# запису (і більше на синхронізованих пристроях)}}</translation>
 <translation id="3041612393474885105">Інформація про сертифікат</translation>
 <translation id="3063697135517575841">Chrome не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="3093245981617870298">Ви в режимі офлайн</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
 <translation id="4117700440116928470">Правило не підтримується.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{і ще 1 елемент даних}one{і ще # елемент даних}few{і ще # елементи даних}many{і ще # елементів даних}other{і ще # елемента даних}}</translation>
 <translation id="4130226655945681476">перевірити мережевий кабель, модем і маршрутизатор</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Зберегти цю картку в Chromium?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Вимкнено</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />перевірити конфігурацію брандмауера й антивірусної програми<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{немає}=1{1 додаток ($1)}=2{2 додатки ($1, $2)}one{# додаток ($1, $2, $3)}few{# додатки ($1, $2, $3)}many{# додатків ($1, $2, $3)}other{# додатка ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Збої в роботі</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Проведіть діагностику мережі<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">ні</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Ви бачите це повідомлення, оскільки один із ваших батьків має схвалити сайти, які ви відвідуєте вперше.</translation>
 <translation id="495170559598752135">Дії</translation>
 <translation id="4958444002117714549">Розгорнути список</translation>
+<translation id="4986920000862467124">Усе прочитано</translation>
 <translation id="498957508165411911">Перекласти цю мовну пару: <ph name="ORIGINAL_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Коли цю функцію ввімкнено, Chrome зберігає копію даних вашої картки на пристрої, щоб ви могли швидше заповнювати форми.</translation>
 <translation id="5019198164206649151">Резервний носій пошкоджено</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Автоматично</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="6060685159320643512">Обережно, ці експерименти ненадійні</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{немає}=1{1}one{#}few{#}many{#}other{#}}</translation>
 <translation id="6146055958333702838">Перевірте всі кабелі та перезавантажте всі маршрутизатори, модеми чи інші мережеві
     пристрої, які ви використовуєте.</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">невідомий розмір</translation>
 <translation id="6355080345576803305">Заміна загальнодоступного сеансу</translation>
 <translation id="6358450015545214790">Що це означає?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{і ще 1 пропозиція}one{і ще # пропозиція}few{і ще # пропозиції}many{і ще # пропозицій}other{і ще # пропозиції}}</translation>
 <translation id="6387478394221739770">Хочете спробувати нові цікаві функції Chrome? Завантажте бета-версію зі сторінки chrome.com/beta.</translation>
 <translation id="6389758589412724634">Недостатньо пам’яті Chromium, щоб показати цю веб-сторінку.</translation>
 <translation id="6417515091412812850">Неможливо перевірити, чи цей сертифікат було відкликано.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6710594484020273272">&lt;Введіть пошуковий термін&gt;</translation>
 <translation id="6711464428925977395">Помилка проксі-сервера або неправильна адреса.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{немає}=1{1 запис}one{# запис}few{# записи}many{# записів}other{# запису}}</translation>
 <translation id="674375294223700098">Помилка "Невідомий сертифікат сервера".</translation>
 <translation id="6753269504797312559">Значення правила</translation>
 <translation id="6757797048963528358">Ваш пристрій перейшов у режим сну.</translation>
@@ -568,6 +579,7 @@
 <translation id="7637571805876720304">Видалити дані кредитної картки з Chromium?</translation>
 <translation id="765676359832457558">Сховати розширені налаштування...</translation>
 <translation id="7658239707568436148">Скасувати</translation>
+<translation id="7667346355482952095">Отриманий маркер правила порожній або не збігається з поточним маркером</translation>
 <translation id="7668654391829183341">Невідомий пристрій</translation>
 <translation id="7674629440242451245">Хочете спробувати нові цікаві функції Chrome? Завантажте версію для розробників зі сторінки chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /> (небезпечно)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картка}one{# кредитна картка}few{# кредитні картки}many{# кредитних карток}other{# кредитної картки}}</translation>
 <translation id="8488350697529856933">Застосовується до:</translation>
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>
 <translation id="8530504477309582336">Цей тип картки не підтримується в Google Payments. Виберіть іншу картку.</translation>

@@ -543,6 +543,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si vous désactivez ce paramètre, les pages Web ne peuvent pas utiliser JavaScript et l'utilisateur n'est pas en mesure de le modifier.
 
       Si vous activez ce paramètre ou si vous ne le définissez pas, les pages Web peuvent utiliser JavaScript, mais l'utilisateur n'est pas en mesure de le modifier.</translation>
+<translation id="2753637905605932878">Restreindre la portée des ports UDP locaux utilisés par WebRTC</translation>
 <translation id="2757054304033424106">Types d'extensions ou d'applications autorisés à être installés</translation>
 <translation id="2759224876420453487">Contrôler le comportement de l'utilisateur lors d'une session à plusieurs profils</translation>
 <translation id="2761483219396643566">Délai d'inactivité avant l'affichage d'un avertissement (en cas d'utilisation de la batterie)</translation>
@@ -778,6 +779,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
 <translation id="3273221114520206906">Paramètre JavaScript par défaut</translation>
 <translation id="3288595667065905535">Version disponible</translation>
+<translation id="3291367259589875381">Cette règle a été abandonnée dans la version M48 pour être remplacée par la règle <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, et a été supprimée de la version M54.
+
+      Elle active la prédiction réseau dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
+
+      Cela permet non seulement de contrôler la prélecture DNS, mais également la préconnexion TCP et SSL et le préchargement des pages Web. Le nom de la règle, qui fait référence à la prélecture DNS, est hérité des anciennes versions.
+
+      Que vous activiez ou désactiviez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle n'est pas définie, elle est activée par défaut, mais les utilisateurs peuvent la modifier.</translation>
 <translation id="3292147213643666827">Permet à <ph name="PRODUCT_NAME" /> de faire office de proxy entre <ph name="CLOUD_PRINT_NAME" /> et les imprimantes existantes connectées à la machine.
 
       Si ce paramètre est activé ou s'il n'est pas configuré, l'utilisateur peut activer le proxy d'impression sur le cloud en se connectant à son compte Google.
@@ -1283,6 +1293,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si vous définissez la valeur liée à la liste noire sur "*", cela signifie que tous les hôtes de messagerie native figurent sur la liste noire tant qu'ils n'ont pas été explicitement ajoutés à la liste blanche.
 
           Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> charge tous les hôtes de messagerie native installés.</translation>
+<translation id="5288772341821359899">Si cette règle est définie, la portée du port UDP utilisé par WebRTC est restreinte à l'intervalle de port spécifié (points de terminaison inclus).
+
+      Si cette règle n'est pas définie, ou si elle est définie sur la chaîne vide ou sur une portée de port non valide, WebRTC peut utiliser n'importe quel port UDP local disponible.</translation>
 <translation id="5290940294294002042">Répertorier les plug-ins pouvant être activés ou désactivés par l'utilisateur</translation>
 <translation id="5302612588919538756">Cette règle est abandonnée. Veuillez utiliser SyncDisabled à la place.
 
@@ -1980,6 +1993,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7443616896860707393">Invites d'authentification de base HTTP (Basic Auth) multi-domaine</translation>
 <translation id="7468416082528382842">Emplacement dans le registre Windows :</translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
+<translation id="7474249562477552702">Définir si les certificats signés par SHA-1 émis par les ancres d'approbation locales sont autorisés</translation>
 <translation id="7485481791539008776">Instructions de sélection de l'imprimante par défaut</translation>
 <translation id="749556411189861380">Indiquer la version du système d'exploitation et du micrologiciel des appareils inscrits.
 
@@ -1997,6 +2011,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si la valeur est SAML_INTERSTITIAL, un écran interstitiel s'affiche lors de la connexion et invite l'utilisateur à poursuivre l'authentification via le fournisseur d'identité SAML du domaine d'inscription de l'appareil, ou à revenir au flux de connexion GAIA normal.</translation>
 <translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
+<translation id="757395965347379751">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> autorise les certificats signés par SHA-1 tant qu'ils sont validés et que leurs chaînes renvoient à un certificat CA installé localement.
+
+      Notez que cette règle dépend de la pile de validation des certificats du système d'exploitation qui autorise les signatures SHA-1. Si la mise à jour d'un OS modifie la gestion des certificats SHA-1 par l'OS, cette règle n'aura plus d'effet. En outre, cette règle sera supprimée dans les environs du 1er janvier 2019.
+
+      Si cette règle n'est pas définie, ou qu'elle est définie sur "False", <ph name="PRODUCT_NAME" /> suivra le planning d'abandon du chiffrage SHA-1 annoncé publiquement.</translation>
 <translation id="7593523670408385997">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--disk-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.

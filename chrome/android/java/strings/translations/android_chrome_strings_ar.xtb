@@ -89,6 +89,7 @@
 <translation id="200669432486043882">استبدال ملف</translation>
 <translation id="2020525020270327736">نسخ الموقع</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
+<translation id="2069736994598857257"><ph name="GIGABYTES" /> غيغابايت مستخدمة</translation>
 <translation id="2073235970478114994">تحميل الصور</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
@@ -120,6 +121,7 @@
 <translation id="2349710944427398404">‏إجمالي البيانات المُستخدَمة من قِبل Chrome، بما في ذلك الحسابات والإشارات المرجعية والإعدادات المحفوظة</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
+<translation id="2369533728426058518">علامات التبويب المفتوحة</translation>
 <translation id="2385560268894525395">الأسبوع الماضي</translation>
 <translation id="2387895666653383613">تغيير حجم النص</translation>
 <translation id="238909021488141516">حدث خطأ أثناء تنزيل المحتوى.</translation>
@@ -200,6 +202,7 @@
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
 <translation id="3351441609270267898">استيراد البيانات الحالية</translation>
 <translation id="3365671512111106261">غير متاح عند تشغيل توفير البيانات</translation>
+<translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
 <translation id="3384347053049321195">مشاركة صورة</translation>
 <translation id="3386292677130313581">السؤال قبل السماح للمواقع بمعرفة الموقع (موصى به)</translation>
 <translation id="3387650086002190359">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
@@ -289,6 +292,7 @@
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
 <translation id="4581964774250883625">لقد أصبحت في وضع التصفح المتخفي.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{قبل دقيقة واحدة (#)}zero{قبل # دقيقة}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # دقيقة}}</translation>
+<translation id="4605958867780575332">تمت إزالة العنصر: <ph name="ITEM_TITLE" /></translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
@@ -317,7 +321,6 @@
 <translation id="4943872375798546930">لا نتائج</translation>
 <translation id="4961700429721424617">‏أنت بصدد الخروج من حساب تتم إدارته من خلال <ph name="MANAGED_DOMAIN" />. سيؤدي ذلك إلى حذف بيانات Chrome من هذا الجهاز، ولكن ستظل البيانات في حسابك في Google.</translation>
 <translation id="497421865427891073">انتقال للأمام</translation>
-<translation id="4986920000862467124">جميع الأقسام مقروءة</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
@@ -362,6 +365,7 @@
 <translation id="5400569084694353794">باستخدام هذا التطبيق، فإنك توافق على <ph name="BEGIN_LINK1" />شروط الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">جارٍ التحقق...</translation>
 <translation id="5423934151118863508">ستظهر صفحاتك الأكثر زيارة هنا</translation>
+<translation id="5424588387303617268">يتوفر <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="544291274896356069">ستتم مغادرة وضع التصفح المتخفي إذا تم فتح هذا الرابط في تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="5447201525962359567">سعة التخزين في الموقع كاملة، بما في ذلك ملفات تعريف الارتباط وغيرها من البيانات المُخزَّنَة محليًا</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
@@ -390,6 +394,7 @@
           
           لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
+<translation id="572392919096807438">تذكر قراري</translation>
 <translation id="5748802427693696783">تم التبديل إلى علامات التبويب القياسية</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome الوصول إلى سعة التخزين لتنزيل الملفات.</translation>
 <translation id="57586589942790530">رقم البطاقة غير صالح</translation>
@@ -476,6 +481,7 @@
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
 <translation id="6762156594045689028">لتغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
+<translation id="6764789522080107716">يتعذر فتح الملف</translation>
 <translation id="6770414673596662518">‏سيتم استخدام نظام التصفح الآمن من Chrome أيضًا في اكتشاف الصفحات الضارة وحمايتك من التصيّد، والبرامج الضارة، والتنزيلات التي تلحق أذى بالجهاز.</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="679325081238418596">يمكنك الحصول على الإشارات المرجعية والسِجل وكلمات المرور والإعدادات الأخرى على جميع أجهزتك</translation>
@@ -487,6 +493,8 @@
 <translation id="6857778194843072568">‏الإرسال عبر Wi-Fi فقط</translation>
 <translation id="6865313869410766144">الملء التلقائي من البيانات</translation>
 <translation id="6868088497967843822">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
+<translation id="6891858906296486776">{OPEN_TABS,plural, =1{‏علامة تبويب واحدة (%1$d) مفتوحة}zero{‏%1$d علامة تبويب مفتوحة}two{‏علامتا تبويب (%1$d) مفتوحتان}few{‏%1$d علامات تبويب مفتوحة}many{‏%1$d علامة تبويب مفتوحة}other{‏%1$d علامة تبويب مفتوحة}}</translation>
+<translation id="6910211073230771657">تم الحذف</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6963766334940102469">حذف الإشارات المرجعية</translation>
 <translation id="6965382102122355670">موافق</translation>
@@ -540,6 +548,7 @@
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
 <translation id="7588950540487816470">الشبكة المادية</translation>
+<translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تمكين مزامنة نظام Android لبدء مزامنة Chrome</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7605594153474022051">المزامنة لا تعمل</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
@@ -571,7 +580,6 @@
 <translation id="7876243839304621966">إزالة الكل</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7949961459945740081">الحصول على أحدث الميزات</translation>
-<translation id="7954261717155239372">ستظهر المزيد من البطاقات عندما يحين الوقت المناسب.</translation>
 <translation id="7963646190083259054">المورّد:</translation>
 <translation id="7987073022710626672">‏بنود خدمة Chrome</translation>
 <translation id="7998918019931843664">إعادة فتح علامة التبويب المغلقة</translation>
@@ -600,6 +608,7 @@
 <translation id="8218934717680664417">يمكنك الآن البحث بلمسة واحدة</translation>
 <translation id="8223946939421658889">محو البيانات من</translation>
 <translation id="8250920743982581267">المستندات</translation>
+<translation id="8260126382462817229">محاولة تسجيل الدخول مرة أخرى</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8275818695183729150">السماح (لعمليات بحث شريط العناوين)</translation>
 <translation id="8283853025636624853">تتم المزامنة مع <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
@@ -628,7 +637,6 @@
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
 <translation id="8588878054171169263">حفظ الصورة</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>
-<translation id="8627706565932943526">حدث خطأ أثناء المزامنة</translation>
 <translation id="862875433388403934">قد لا يكون المحتوى (أفلام، موسيقى، وما إلى ذلك) الذي تم تنزيله في تطبيقات أخرى قابلاً للتشغيل حتى تُعيد هذه التطبيقات الحصول على التراخيص استنادًا إلى بيانات اعتماد الجهاز الجديدة.
 
 للحصول على تراخيص جديدة، عليك الاتصال بالإنترنت ثم تشغيل المحتوى الذي تم تنزيله.</translation>
@@ -645,6 +653,7 @@
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="883635517171802338">منع مواقع الويب من عرض النوافذ المنبثقة (موصى به)</translation>
 <translation id="884264119367021077">عنوان الشحن</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>
 <translation id="8901170036886848654">لا توجد إشارات مرجعية</translation>
@@ -688,6 +697,7 @@
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="969096075394517431">تغيير اللغات</translation>
 <translation id="970715775301869095">عدد الدقائق المتبقية: <ph name="MINUTES" /></translation>
+<translation id="974555521953189084">إدخال عبارة المرور لبدء المزامنة</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
 <translation id="982182592107339124">سيؤدي هذا إلى مسح بيانات جميع المواقع، بما في ذلك:</translation>
 <translation id="983192555821071799">إغلاق جميع علامات التبويب</translation>

@@ -532,6 +532,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto nastavenie zakázané, webové stránky nebudú môcť používať jazyk JavaScript a používateľ toto nastavenie nebude môcť zmeniť.
 
       Ak toto pravidlo ponecháte nenastavené, webové stránky budú môcť používať jazyk JavaScript, ale používateľ bude môcť toto nastavenie zmeniť.</translation>
+<translation id="2753637905605932878">Obmedzenie rozsahu miestnych portov UDP používaných rozhraním WebRTC</translation>
 <translation id="2757054304033424106">Typy rozšírení/aplikácií, ktorých inštalácia je povolená</translation>
 <translation id="2759224876420453487">Ovládať správanie používateľa v relácii viacerých profilov</translation>
 <translation id="2761483219396643566">Oneskorenie upozornenia na nečinnosť pri napájaní z batérie</translation>
@@ -766,6 +767,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3264793472749429012">Kódovania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3273221114520206906">Predvolené nastavenie kódu JavaScript</translation>
 <translation id="3288595667065905535">Kanál verzie</translation>
+<translation id="3291367259589875381">Podpora tohto pravidla bola ukončená vo verzii M48. Toto pravidlo bolo nahradené pravidlom <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> a odstránené vo verzii M54.
+
+      Umožňuje povoliť predvídanie siete v prehliadači <ph name="PRODUCT_NAME" /> a zabráni používateľom toto nastavenie zmeniť.
+
+      Toto pravidlo ovláda spoločne s predbežným načítaním servera DNS aj predbežné pripojenie pomocou protokolu TCP a technológie SSL a predbežné vykreslenie webových stránok. Názov pravidla je založený na predbežnom načítaní servera DNS z historických dôvodov.
+
+      Ak toto nastavenie povolíte alebo zakážete, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť prepísať.
+
+      Ak toto pravidlo ponecháte nenastavené, nastavenie bude povolené, ale používateľ ho bude môcť zmeniť.</translation>
 <translation id="3292147213643666827">Umožňuje prehliadaču <ph name="PRODUCT_NAME" /> fungovať ako server proxy medzi službou <ph name="CLOUD_PRINT_NAME" /> a staršími tlačiarňami pripojenými k počítaču.
 
       Ak je toto nastavenie povolené alebo nebolo nakonfigurované, používatelia môžu povoliť server proxy pre tlač z cloudu prostredníctvom overenia totožnosti pomocou účtu Google.
@@ -1259,6 +1269,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Hodnota * v zozname zakázaných položiek znamená, že všetci hostitelia pre odosielanie natívnych správ sú zakázaní. Povolení budú iba tí, ktorí sú výslovne uvedení na bielej listine.
 
           Ak toto pravidlo nebude nastavené, produkt <ph name="PRODUCT_NAME" /> načíta všetkých nainštalovaných hostiteľov pre odosielanie natívnych správ.</translation>
+<translation id="5288772341821359899">Ak toto pravidlo nastavíte, rozsah portov UDP používaných rozhraním WebRTC bude obmedzovaný na špecifikovaný interval portov (vrátane koncových bodov).
+
+      Ak toto pravidlo nenastavíte, použijete prázdny reťazec alebo neplatný rozsah portov, rozhranie WebRTC bude môcť použiť ľubovoľný dostupný miestny port UDP.</translation>
 <translation id="5290940294294002042">Určiť zoznam doplnkov, ktoré môže používateľ povoliť alebo zakázať</translation>
 <translation id="5302612588919538756">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo SyncDisabled.
 
@@ -1954,6 +1967,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7443616896860707393">Požiadavky typu cross-origin štandardu HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Umiestnenie v registri systému Windows:</translation>
 <translation id="7469554574977894907">Povoliť návrhy pre vyhľadávanie</translation>
+<translation id="7474249562477552702">Či sú povolené certifikáty podpísané algoritmom SHA-1 vydané miestnymi ukotveniami dôvery</translation>
 <translation id="7485481791539008776">Pravidlá výberu predvolenej tlačiarne</translation>
 <translation id="749556411189861380">Nahlásenie verzie operačného systému a firmvéru registrovaných zariadení.
 
@@ -1971,6 +1985,11 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       Ak ho nastavíte na možnosť SAML_INTERSTITIAL, počas prihlásenia bude mať používateľ k dispozícii intersticiálnu obrazovku umožňujúcu pokračovať s overením totožnosti prostredníctvom poskytovateľa identity SAML z domény registrácie príslušného zariadenia, prípadne sa vrátiť na normálne prihlásenie prostredníctvom štandardu GAIA.</translation>
 <translation id="7567380065339179813">Povoliť doplnky na týchto stránkach</translation>
+<translation id="757395965347379751">Ak je toto nastavenie aktivované, prehliadač <ph name="PRODUCT_NAME" /> povolí certifikáty podpísané algoritmom SHA-1, ktoré sú úspešne overené a pripojené k reťazcu miestne nainštalovaných certifikátov CA.
+
+      Upozorňujeme, že toto pravidlo je závislé od balíka súborov na overovanie totožnosti certifikátov operačných systémov, ktorý povoľuje podpisy algoritmom SHA-1. Ak sa v dôsledku aktualizácie operačného systému zmení spracovávanie certifikátov SHA-1 operačným systémom, toto pravidlo nemusí byť uplatňované. Toto pravidlo má fungovať ako dočasné riešenie, ktoré podnikom poskytne viac času na ukončenie používania algoritmu SHA-1. Bude odstránené približne 1. januára 2019.
+
+      Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> bude nasledovať zverejnený plán ukončenia podpory algoritmu SHA-1.</translation>
 <translation id="7593523670408385997">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
 
       Ak nastavíte toto pravidlo, služba <ph name="PRODUCT_NAME" /> použije uvedenú veľkosť vyrovnávacej pamäte bez ohľadu na to, či používateľ určil príznak --disk-cache-size. Hodnota určená v tomto pravidle nie je pevnou hraničnou hodnotou, ale skôr návrhom pre systém ukladania do vyrovnávacej pamäte. Každá hodnota menšia ako niekoľko megabajtov je príliš malá a zaokrúhli sa smerom nahor na rozumné minimum.

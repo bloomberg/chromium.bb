@@ -14,7 +14,7 @@
 <translation id="119944043368869598">Izbriši vse</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1206892813135768548">Kopiraj besedilo povezave</translation>
-<translation id="1209206284964581585">Hide for now</translation>
+<translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="1240668123557180468">Odkrivanje spletnih strani, ki jih pošljejo predmeti v bližini. Chrome zbira spletne strani, povezane s predmeti okoli vas, jih anonimno pošlje Googlovi storitvi, ki poišče tiste, ki so za vas najuporabnejše, nato pa jih prikaže.
 
 Če želite uporabljati Fizični splet, morata biti vklopljeni povezava Bluetooth in lokacijska storitev.</translation>
@@ -316,7 +316,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4943872375798546930">Ni rezultatov</translation>
 <translation id="4961700429721424617">Odjavili se boste iz računa, ki ga upravlja <ph name="MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
-<translation id="4986920000862467124">Vse je prebrano</translation>
 <translation id="4988526792673242964">Strani</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
 <translation id="5000922062037820727">Blokirano (priporočeno)</translation>
@@ -486,6 +485,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6857778194843072568">Pošlji samo v omrežju Wi-Fi</translation>
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
 <translation id="6868088497967843822">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
+<translation id="6910211073230771657">Izbrisano</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
@@ -570,7 +570,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7876243839304621966">Odstrani vse</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7949961459945740081">Prejmite najnovejše funkcije</translation>
-<translation id="7954261717155239372">Ob pravem času bo prikazanih več kartic.</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
 <translation id="7987073022710626672">Pogoji storitve za Chrome</translation>
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
@@ -627,7 +626,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8583805026567836021">Brisanje podatkov računa</translation>
 <translation id="8588878054171169263">Shrani sliko</translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
-<translation id="8627706565932943526">Napaka pri sinhronizaciji</translation>
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
@@ -644,6 +642,7 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="883635517171802338">Spletnim mestom prepreči prikazovanje pojavnih oken (priporočeno)</translation>
 <translation id="884264119367021077">Naslov za pošiljanje</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, zavihek</translation>
 <translation id="885701979325669005">Shramba</translation>
 <translation id="8901170036886848654">Zaznamkov ni bilo mogoče najti</translation>

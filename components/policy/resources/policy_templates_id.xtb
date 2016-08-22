@@ -507,6 +507,7 @@
       Jika setelan ini dinonaktifkan, laman web tidak dapat menggunakan JavaScript dan pengguna tidak dapat mengubah setelan ini.
 
       Jika setelan ini diaktifkan atau tidak disetel, laman web dapat menggunakan JavaScript, namun pengguna dapat mengubah setelan tersebut.</translation>
+<translation id="2753637905605932878">Membatasi rentang port UDP lokal yang digunakan oleh WebRTC</translation>
 <translation id="2757054304033424106">Ketik ekstensi/aplikasi yang diizinkan untuk dipasang</translation>
 <translation id="2759224876420453487">Mengontrol perilaku pengguna pada sesi multiprofil</translation>
 <translation id="2761483219396643566">Menunda peringatan waktu menganggur saat menggunakan daya baterai</translation>
@@ -733,6 +734,15 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3264793472749429012">Penyandiaksaraan penyedia penelusuran default</translation>
 <translation id="3273221114520206906">Setelan JavaScript default</translation>
 <translation id="3288595667065905535">Saluran rilis</translation>
+<translation id="3291367259589875381">Kebijakan ini sudah tidak digunakan di M48 yang mendukung <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, dan dihapus di M54.
+
+      Mengaktifkan prediksi jaringan di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengganti setelan ini.
+
+      Tindakan ini tidak hanya mengontrol penyanggaan DNS, tetapi juga prasambungan dan praperenderan TCP serta DNS pada laman web. Nama kebijakan ini merujuk pada penyanggaan DNS karena alasan historis.
+
+      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
+
+      Jika kebijakan ini tidak disetel, setelan ini akan diaktifkan, tetapi pengguna dapat mengubahnya.</translation>
 <translation id="3292147213643666827">Memungkinkan <ph name="PRODUCT_NAME" /> bertindak sebagai proxy antara <ph name="CLOUD_PRINT_NAME" /> dan printer lawas yang tersambung ke komputer.
 
       Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mengaktifkan proxy cloud print lewat autentikasi dengan akun Google.
@@ -1180,6 +1190,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Nilai daftar hitam '*' menunjukkan bahwa semua hosting perpesanan asli dimasukkan daftar hitam kecuali dicantumkan dalam daftar putih dengan jelas.
 
           Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan memuat semua hosting perpesanan asli yang terpasang.</translation>
+<translation id="5288772341821359899">Jika kebijakan disetel, rentang port UDP yang digunakan oleh WebRTC dibatasi ke interval port yang ditentukan (termasuk titik akhir).
+
+      Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
 <translation id="5302612588919538756">Kebijakan ini tidak digunakan lagi, pertimbangkan untuk menggunakan SyncDisabled sebagai gantinya.
 
@@ -1265,7 +1278,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika opsi ini disetel ke nonaktif atau tidak disetel, Anda memungkinkan penggunaan Alat Pengembang dan Konsol JavaScript.
 
-      Untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang dapat menjalankan aplikasi Android, kebijakan ini juga mengontrol akses ke Opsi Pengembang Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Pengembang. Jika Anda menyetel kebijakan ini ke false atau membiarkannya tidak disetel, pengguna dapat mengakses Opsi Pengembang dengan men-tap tujuh kali nomor versi di aplikasi setelan Android.</translation>
+      Untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang dapat menjalankan aplikasi Android, kebijakan ini juga mengontrol akses ke Opsi Pengembang Android. Jika Anda menyetel kebijakan ini ke true, pengguna tidak dapat mengakses Opsi Pengembang. Jika Anda menyetel kebijakan ini ke false atau membiarkannya tidak disetel, pengguna dapat mengakses Opsi Pengembang dengan mengetuk tujuh kali nomor versi di aplikasi setelan Android.</translation>
 <translation id="556941986578702361">Mengontrol rak <ph name="PRODUCT_OS_NAME" /> sembunyi otomatis.
 
       Jika kebijakan ini disetel ke 'AlwaysAutoHideShelf', rak akan selalu bersembunyi secara otomatis.
@@ -1830,6 +1843,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7443616896860707393">Permintaan Autentikasi Dasar HTTP lintas asal</translation>
 <translation id="7468416082528382842">Lokasi registry Windows:</translation>
 <translation id="7469554574977894907">Aktifkan saran penelusuran</translation>
+<translation id="7474249562477552702">Apakah sertifikat bertanda tangan SHA-1 yang dikeluarkan oleh sumber tepercaya setempat diizinkan atau tidak</translation>
 <translation id="7485481791539008776">Aturan pemilihan printer default</translation>
 <translation id="749556411189861380">Laporkan versi firmware dan OS perangkat yang terdaftar.
 
@@ -1845,6 +1859,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika disetel ke SAML_INTERSTITIAL, alur masuk akan menampilkan layar pengantara yang menawari pengguna untuk melanjutkan autentikasi melalui SAML IdP domain pendaftaran perangkat, atau kembali ke alur proses masuk GAIA normal.</translation>
 <translation id="7567380065339179813">Izinkan plugin pada situs ini</translation>
+<translation id="757395965347379751">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> mengizinkan sertifikat bertanda tangan SHA-1 selama sertifikat tersebut berhasil memvalidasi dan mengarah ke sertifikat CA yang terpasang secara lokal.
+
+      Perlu diingat bahwa kebijakan ini bergantung pada tumpukan verifikasi sertifikat sistem operasi yang mengizinkan tanda tangan SHA-1. Jika pembaruan OS mengubah penanganan OS terkait sertifikat SHA-1, kebijakan ini mungkin tidak berlaku lagi.  Selain itu, kebijakan ini dimaksudkan sebagai solusi sementara guna memberikan perusahaan lebih banyak waktu untuk beralih dari SHA-1.  Kebijakan ini akan dihapus pada atau sekitar tanggal 1 Januari 2019.
+
+      Jika kebijakan ini tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan mengikuti jadwal penghentian SHA-1 yang diumumkan secara publik.</translation>
 <translation id="7593523670408385997">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file dalam cache di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--disk-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.

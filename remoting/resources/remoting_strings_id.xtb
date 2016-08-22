@@ -148,7 +148,6 @@ Chromoting</translation>
 <translation id="4573676252416618192">Host Chrome
 Desktop Jarak Jauh</translation>
 <translation id="4619978527973181021">Setuju dan Pasang</translation>
-<translation id="4647791084836149355">Tampilkan tampilan Cardboard</translation>
 <translation id="4703302905453407178">Komponen wajib berhenti bekerja. Laporkan masalah ini kepada pengembang.</translation>
 <translation id="4703799847237267011">Sesi Chromoting Anda berakhir.</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
@@ -209,7 +208,6 @@ Desktop Jarak Jauh</translation>
 <translation id="6284412385303060032">Host yang berjalan di layar logika konsol telah dinonaktifkan untuk mendukung mode tirai dengan beralih ke host yang berjalan di sesi khusus pengguna.</translation>
 <translation id="629730747756840877">Akun</translation>
 <translation id="6304318647555713317">Klien</translation>
-<translation id="6324708100353784493">Anda telah mengaktifkan mode integrasi Google Cardboard. Untuk menggunakan mode ini, masukkan perangkat ke penampil yang kompatibel dengan Google Cradboard.</translation>
 <translation id="6381670701864002291">Lainnya.</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
 <translation id="6408143143164565232">• Mendengarkan audio dari komputer Windows atau Linux.
@@ -238,7 +236,7 @@ Desktop Jarak Jauh</translation>
 <translation id="6963936880795878952">Sambungan ke komputer jarak jauh diblokir untuk sementara karena seseorang mencoba untuk menyambungkannya dengan PIN yang tidak valid. Coba lagi nanti.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6985691951107243942">Yakin ingin menonaktifkan sambungan jarak jauh dengan <ph name="HOSTNAME" />? Jika Anda berubah pikiran, Anda harus mengunjungi komputer tersebut untuk mengaktifkan kembali sambungan.</translation>
-<translation id="6998989275928107238">Ke</translation>
+<translation id="6998989275928107238">Kepada</translation>
 <translation id="7019153418965365059">Kesalahan host tidak dikenal: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Bantuan Jarak Jauh</translation>
 <translation id="7038683108611689168">Bantu kami meningkatkan Chromoting dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>

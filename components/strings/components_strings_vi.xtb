@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">Vui lòng cập nhật cụm mật khẩu đồng bộ hóa của bạn.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
+<translation id="1838667051080421715">Bạn đang xem nguồn của trang web.</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1883255238294161206">Thu gọn danh sách</translation>
 <translation id="1898423065542865115">Lọc</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
 <translation id="2030481566774242610">Ý của bạn là <ph name="LINK" />?</translation>
 <translation id="2031925387125903299">Bạn thấy thông báo này vì cha mẹ bạn cần phải phê duyệt các trang web mới vào lần truy cập đầu tiên của bạn.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Mã zip</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{1 đề xuất}other{# đề xuất}}</translation>
 <translation id="2065985942032347596">Yêu cầu Xác thực</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="20817612488360358">Cài đặt proxy hệ thống được đặt để sử dụng nhưng cấu hình proxy rõ ràng cũng được chỉ định.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">Trang web này không thể cung cấp kết nối an toàn</translation>
 <translation id="2171101176734966184">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu. Điều này có nghĩa là giấy ủy nhiệm bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang giao tiếp với một kẻ tấn công).</translation>
 <translation id="2181821976797666341">Chính sách</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{1 địa chỉ}other{# địa chỉ}}</translation>
 <translation id="2212735316055980242">Không tìm thấy chính sách</translation>
 <translation id="2213606439339815911">Đang tìm nạp các mục nhập...</translation>
 <translation id="2230458221926704099">Sửa kết nối bằng <ph name="BEGIN_LINK" />ứng dụng chẩn đoán<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">Loại chính sách sai</translation>
 <translation id="3032412215588512954">Bạn có muốn tải lại trang web này không?</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
 <translation id="3063697135517575841">Chrome không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
 <translation id="3093245981617870298">Bạn đang ngoại tuyến.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
 <translation id="4130226655945681476">Kiểm tra cáp mạng, modem và bộ định tuyến</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Bạn có muốn Chromium lưu thẻ này không?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">Đã bị vô hiệu</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{không có gì}=1{1 ứng dụng ($1)}=2{2 ứng dụng ($1, $2)}other{# ứng dụng ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">Sự cố</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">Không</translation>
@@ -353,6 +360,7 @@
 <translation id="4930497775425430760">Bạn thấy thông báo này vì cha mẹ bạn cần phải phê duyệt các trang web mới vào lần truy cập đầu tiên của bạn.</translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
+<translation id="4986920000862467124">Đã đọc tất cả</translation>
 <translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Nếu được bật, Chrome sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
 <translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
@@ -441,6 +449,7 @@
 <translation id="604124094241169006">Tự động</translation>
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="6060685159320643512">Hãy cẩn thận, thử nghiệm này có thể gây lỗi</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{không có gì}=1{1}other{#}}</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
     mạng khác mà bạn có thể đang sử dụng.</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
@@ -461,6 +470,7 @@
 <translation id="6345221851280129312">kích thước không xác định</translation>
 <translation id="6355080345576803305">Ghi đè phiên công khai</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387478394221739770">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh thử nghiệm beta của chúng tôi tại chrome.com/beta.</translation>
 <translation id="6389758589412724634">Chromium đã hết bộ nhớ khi cố gắng hiển thị trang web này.</translation>
 <translation id="6417515091412812850">Không thể kiểm tra liệu chứng chỉ đã bị thu hồi hay chưa.</translation>
@@ -485,6 +495,7 @@
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6710594484020273272">&lt;Nhập cụm từ tìm kiếm&gt;</translation>
 <translation id="6711464428925977395">Đã xảy ra sự cố với máy chủ proxy hoặc địa chỉ không chính xác.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{không có gì}=1{1 mục}other{# mục}}</translation>
 <translation id="674375294223700098">Lỗi chứng chỉ máy chủ không xác định.</translation>
 <translation id="6753269504797312559">Giá trị chính sách</translation>
 <translation id="6757797048963528358">Thiết bị của bạn đã chuyển sang chế độ ngủ.</translation>
@@ -568,6 +579,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7637571805876720304">Bạn muốn xóa thẻ tín dụng khỏi Chromium?</translation>
 <translation id="765676359832457558">Ẩn cài đặt nâng cao...</translation>
 <translation id="7658239707568436148">Hủy</translation>
+<translation id="7667346355482952095">Mã thông báo chính sách trả về trống hoặc không khớp với mã thông báo hiện tại</translation>
 <translation id="7668654391829183341">Thiết bị không xác định</translation>
 <translation id="7674629440242451245">Bạn quan tâm đến các tính năng mới thú vị của Chrome? Hãy dùng thử kênh nhà phát triển của chúng tôi tại chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tiếp tục truy cập <ph name="SITE" /> (không an toàn)<ph name="END_LINK" /></translation>
@@ -630,6 +642,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{1 thẻ tín dụng}other{# thẻ tín dụng}}</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>
 <translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>

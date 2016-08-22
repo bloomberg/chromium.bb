@@ -540,6 +540,7 @@
       Ja šis iestatījums ir atspējots, tīmekļa lapās nevar lietot valodu JavaScript un lietotājs nevar mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai nav iestatīts, tīmekļa lapās var lietot valodu JavaScript, taču lietotājs var mainīt šo iestatījumu.</translation>
+<translation id="2753637905605932878">WebRTC izmantoto lokālo UDP portu diapazona ierobežošana</translation>
 <translation id="2757054304033424106">Paplašinājumu/lietotņu veidi, kurus var instalēt</translation>
 <translation id="2759224876420453487">Noteikt lietotāju rīcību vairākprofilu sesijā</translation>
 <translation id="2761483219396643566">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar akumulatora jaudu</translation>
@@ -775,6 +776,15 @@
 <translation id="3264793472749429012">Noklusējuma meklētājprogrammas kodējumi</translation>
 <translation id="3273221114520206906">Noklusējuma JavaScript iestatījums</translation>
 <translation id="3288595667065905535">Izlaišanas versija</translation>
+<translation id="3291367259589875381">Šī politika ir novecojusi versijā M48 (tās vietā tiek izmantota politika <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />) un noņemta no versijas M54.
+
+      Pārlūkā <ph name="PRODUCT_NAME" /> tiek iespējota tīkla paredzēšana, un lietotājiem tiek liegta iespēja mainīt šo iestatījumu.
+
+      Šī politika nodrošina ne tikai DNS pirmsielādes, bet arī TCP un SSL iepriekšējas savienojuma izveides un tīmekļa lapu iepriekšējas atveidošanas kontroli. Politikas nosaukuma saistībai ar DNS pirmsielādi ir vēsturisks iemesls.
+
+      Ja šis iestatījums tiek iespējots vai atspējots, lietotāji pārlūkā <ph name="PRODUCT_NAME" /> to nevar mainīt vai ignorēt.
+
+      Ja šī politika nav iestatīta, šis iestatījums tiek iespējots, taču lietotājs to var mainīt.</translation>
 <translation id="3292147213643666827">Ļauj <ph name="PRODUCT_NAME" /> darboties kā starpniekserverim starp <ph name="CLOUD_PRINT_NAME" /> un ierīcei pievienotiem mantotiem printeriem.
 
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iespējot mākoņdrukas starpniekserveri, autentifikācijai izmantojot savu Google kontu.
@@ -1266,6 +1276,9 @@
           Ja melnā saraksta vērtība ir “*”, visi vietējās ziņojumapmaiņas saimniekdatori ir iekļauti melnajā sarakstā, izņemot gadījumus, kad tie ir atsevišķi norādīti baltajā sarakstā.
 
           Ja šī politika netiek iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiks ielādēti visi vietējās ziņojumapmaiņas saimniekdatori.</translation>
+<translation id="5288772341821359899">Ja politika ir iestatīta, WebRTC izmantotais UDP portu diapazons ir ierobežots līdz portu intervālam (tostarp galapunktiem).
+
+      Ja politika nav iestatīta vai tā ir iestatīta uz tukšu virkni vai nederīgu portu diapazonu, saskarnei WebRTC ir atļauts izmantot jebkuru pieejamu lokālo UDP portu.</translation>
 <translation id="5290940294294002042">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot</translation>
 <translation id="5302612588919538756">Šī politika ir novecojusi. Tās vietā varat lietot politiku SyncDisabled.
 
@@ -1961,6 +1974,7 @@
 <translation id="7443616896860707393">Savstarpējās izcelsmes HTTP pamata autentifikācijas uzvednes</translation>
 <translation id="7468416082528382842">Windows reģistra atrašanās vieta:</translation>
 <translation id="7469554574977894907">Iespējo meklēšanas ieteikumus</translation>
+<translation id="7474249562477552702">Ar SHA-1 parakstītu sertifikātu, ko izsnieguši lokāli uzticamības enkuri, atļaušana</translation>
 <translation id="7485481791539008776">Noklusējuma printera atlases kārtulas</translation>
 <translation id="749556411189861380">Ziņot par reģistrēto ierīču OS un programmaparatūras versiju.
 
@@ -1978,6 +1992,11 @@
 
       Ja pieteikšanās būs iestatīta uz SAML_INTERSTITIAL, pieteikšanās laikā tiks parādīts ekrāns, kurā lietotājam tiks piedāvāt turpināt autentifikāciju, izmantojot ierīces reģistrācijas domēna SAML identitātes nodrošinātāju, vai atgriezties parastajā GAIA pieteikšanās plūsmā.</translation>
 <translation id="7567380065339179813">Atļauj spraudņus šajās vietnēs</translation>
+<translation id="757395965347379751">Ja šis iestatījums ir iespējots, pārlūks <ph name="PRODUCT_NAME" /> atļauj ar SHA-1 parakstītu sertifikātu izmantošanu, ja tie tiek veiksmīgi apstiprināti un piesaistīti lokāli instalētiem CA sertifikātiem.
+
+      Ņemiet vērā, ka šī politika ir atkarīga no operētājsistēmas sertifikātu verifikācijas kopas, kura atļauj SHA-1 sertifikātus. Ja, atjauninot operētājsistēmu, tiek mainīts veids, kā operētājsistēma apstrādā SHA-1 sertifikātus, šī politika, iespējams, vairs nebūs spēkā. Turklāt šī politika ir pagaidu risinājums, lai uzņēmumiem būtu vairāk laika pārtraukt SHA-1 lietošanu. Šī politika tiks noņemta 2019. gada 1. janvārī vai ap to laiku.
+
+      Ja politika nav iestatīta vai ir iestatīta vērtība “Nepatiesa”, pārlūkā <ph name="PRODUCT_NAME" /> tiks ievērots publicētais SHA-1 lietošanas pārtraukšanas grafiks.</translation>
 <translation id="7593523670408385997">Konfigurē kešatmiņas lielumu, kas tiks izmantots pārlūkā <ph name="PRODUCT_NAME" />, lai kešatmiņā ievietotos failus uzglabātu diskā.
 
       Ja iestatīsiet šo politiku, pārlūkā <ph name="PRODUCT_NAME" /> tiks izmantots norādītais kešatmiņas lielums neatkarīgi no tā, vai lietotājs ir norādījis atzīmi “--disk-cache-size”. Šajā politikā norādītā vērtība nav stingri noteikts ierobežojums, bet drīzāk kā ieteikums kešdarbes sistēmai, turklāt jebkura vērtība, kas ir zemāka par dažiem megabaitiem, ir pārāk maza un tiks noapaļota uz saprātīgu minimālo vērtību.

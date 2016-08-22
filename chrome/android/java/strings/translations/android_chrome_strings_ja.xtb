@@ -316,7 +316,6 @@
 <translation id="4943872375798546930">結果はありません</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントからログアウトしようとしています。この操作を行うと、Chrome データはこの端末から削除されますが、Google アカウントには残ります。</translation>
 <translation id="497421865427891073">次に進む</translation>
-<translation id="4986920000862467124">すべて既読</translation>
 <translation id="4988526792673242964">ページ</translation>
 <translation id="4996978546172906250">共有方法</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
@@ -486,6 +485,7 @@
 <translation id="6857778194843072568">Wi-Fi のみで送信</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
+<translation id="6910211073230771657">削除済み</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@
 <translation id="7876243839304621966">すべて削除</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7949961459945740081">最新機能を取得</translation>
-<translation id="7954261717155239372">準備ができ次第、追加のカードが表示されます。</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
 <translation id="7987073022710626672">Chrome 利用規約</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
@@ -627,7 +626,6 @@
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
 <translation id="8588878054171169263">画像を保存</translation>
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
-<translation id="8627706565932943526">同期エラー</translation>
 <translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。
 
 新しいライセンスを取得するには、インターネットに接続し、ダウンロードしたコンテンツを再生してください。</translation>
@@ -644,6 +642,7 @@
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="883635517171802338">サイトでのポップアップ表示をブロックする（推奨）</translation>
 <translation id="884264119367021077">配送先住所</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>

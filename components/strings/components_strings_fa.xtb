@@ -23,7 +23,7 @@
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1201895884277373915">موارد بیشتر از این سایت</translation>
-<translation id="1206967143813997005">امضای اولیه نامناسب</translation>
+<translation id="1206967143813997005">امضای اولیه نادرست</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
 <translation id="1219129156119358924">سیستم امنیتی</translation>
@@ -75,6 +75,7 @@
 <translation id="1783075131180517613">لطفاً «رمز عبارتی همگام‌سازی» خود را به‌روزرسانی کنید.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">پارامترهای درخواست یا درخواست نامعتبر</translation>
+<translation id="1838667051080421715">درحال مشاهده منبع یک صفحه وب هستید.</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
@@ -352,6 +353,7 @@
 <translation id="4930497775425430760">این پیام را به این دلیل می‌بینید که والدینتان باید اولین باری که از سایت جدیدی بازدید می‌کنید آن را تأیید کنند.</translation>
 <translation id="495170559598752135">عملکردها</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
+<translation id="4986920000862467124">همه خوانده شده‌اند</translation>
 <translation id="498957508165411911">از <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
 <translation id="5002932099480077015">‏اگر فعال شود، Chrome یک کپی از کارت شما را برای پرکردن سریع‌تر فرم در این دستگاه ذخیره می‌کند.</translation>
 <translation id="5019198164206649151">پشتیبان‌گیری ذخیره در وضعیت نادرست است</translation>

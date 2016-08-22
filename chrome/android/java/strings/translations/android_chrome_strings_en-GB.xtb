@@ -316,7 +316,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4943872375798546930">No results</translation>
 <translation id="4961700429721424617">You are signing out of an account managed by <ph name="MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
 <translation id="497421865427891073">go forward</translation>
-<translation id="4986920000862467124">All Read</translation>
 <translation id="4988526792673242964">Pages</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
@@ -486,6 +485,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6857778194843072568">Only send on Wi-Fi</translation>
 <translation id="6865313869410766144">Autofill form data</translation>
 <translation id="6868088497967843822">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
+<translation id="6910211073230771657">Deleted</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7876243839304621966">Remove all</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7949961459945740081">Get the latest features</translation>
-<translation id="7954261717155239372">More cards will appear when the time is right.</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
@@ -627,7 +626,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8583805026567836021">Clearing account data</translation>
 <translation id="8588878054171169263">Save image</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
-<translation id="8627706565932943526">Sync error</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8639651215196239211">All downloads</translation>
@@ -642,6 +640,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="884264119367021077">Delivery address</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>

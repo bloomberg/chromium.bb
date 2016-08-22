@@ -76,6 +76,7 @@
 <translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
+<translation id="1838667051080421715">אתה מציג את המקור של דף אינטרנט.</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
@@ -84,11 +85,13 @@
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
 <translation id="1974060860693918893">מתקדם</translation>
+<translation id="2001146170449793414">{COUNT,plural, =1{ואפליקציה אחת נוספת}two{ושתי אפליקציות נוספות}many{ו-# אפליקציות נוספות}other{ו-# אפליקציות נוספות}}</translation>
 <translation id="2025186561304664664">‏שרת Proxy נקבע למוגדר אוטומטית.</translation>
 <translation id="2030481566774242610">האם התכוונת ל-<ph name="LINK" />?</translation>
 <translation id="2031925387125903299">אתה רואה את ההודעה הזו מפני שההורים שלך צריכים לאשר אתרים חדשים בביקור הראשון שלך.</translation>
 <translation id="2032962459168915086">‏<ph name="BEGIN_LINK" />לבדוק את שרת ה-Proxy ואת חומת האש<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">מספר / מיקוד</translation>
+<translation id="2064691555167957331">{COUNT,plural, =1{הצעה אחת}two{שתי הצעות}many{# הצעות}other{# הצעות}}</translation>
 <translation id="2065985942032347596">נדרש אימות</translation>
 <translation id="2079545284768500474">בטל</translation>
 <translation id="20817612488360358">‏נקבע שימוש בהגדרות שרת Proxy של מערכת אך בנוסף מצוינת גם תצורה מפורשת של שרת Proxy.</translation>
@@ -106,6 +109,7 @@
 <translation id="2166378884831602661">אתר זה לא יכול לספק חיבור מאובטח</translation>
 <translation id="2171101176734966184">ניסית להגיע אל <ph name="DOMAIN" /> אך השרת הציג אישור שנחתם באמצעות אלגוריתם חתימה חלש. כלומר, ייתכן שהרשאות האבטחה שהשרת הציג זויפו, וכן ייתכן שהשרת אינו השרת שרצית (ייתכן שאתה מתקשר עם תוקף).</translation>
 <translation id="2181821976797666341">מדיניות</translation>
+<translation id="2184405333245229118">{COUNT,plural, =1{כתובת אחת}two{שתי כתובות}many{# כתובות}other{# כתובות}}</translation>
 <translation id="2212735316055980242">לא נמצאה מדיניות</translation>
 <translation id="2213606439339815911">מאחזר רשומות...</translation>
 <translation id="2230458221926704099">תקן את החיבור באמצעות <ph name="BEGIN_LINK" />אפליקציית הבדיקה<ph name="END_LINK" /></translation>
@@ -188,6 +192,7 @@
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
 <translation id="3032412215588512954">האם ברצונך לטעון מחדש את האתר?</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
+<translation id="3040955737384246924">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
 <translation id="3063697135517575841">‏Chrome לא הצליח לאשר את הכרטיס שלך הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="3093245981617870298">אתה במצב לא מקוון.</translation>
@@ -291,6 +296,7 @@
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="4103763322291513355">‏היכנס לכתובת &lt;strong&gt;chrome://policy&lt;/strong&gt; כדי לראות רשימה של כתובות אתרים שנמנעה אליהם הגישה, כמו גם תקנונים אחרים שנאכפו על ידי מנהל המערכת שלך.</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
+<translation id="4129401438321186435">{COUNT,plural, =1{אחד נוסף}two{שניים נוספים}many{# נוספים}other{# נוספים}}</translation>
 <translation id="4130226655945681476">בדוק את כבלי הרשת, את המודם ואת הנתב</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
@@ -298,6 +304,7 @@
 <translation id="4176463684765177261">מושבת</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />לבדוק את תצורת האנטי-וירוס וחומת האש<ph name="END_LINK" /></translation>
+<translation id="4206349416402437184">{COUNT,plural, =0{ללא}=1{אפליקציה אחת ($1)}=2{שתי אפליקציות ($1, $2)}many{# אפליקציות ($1, $2, $3)}other{# אפליקציות ($1, $2, $3)}}</translation>
 <translation id="4220128509585149162">קריסה</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת<ph name="END_LINK" />.</translation>
 <translation id="4250680216510889253">לא</translation>
@@ -357,6 +364,7 @@ Del</translation>
 <translation id="4930497775425430760">אתה רואה את ההודעה הזו מפני שההורה שלך צריך לאשר אתרים חדשים בביקור הראשון שלך.</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4958444002117714549">הרחב רשימה</translation>
+<translation id="4986920000862467124">הכל נקרא</translation>
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">‏אם האפשרות הזו תופעל, Chrome יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
@@ -446,6 +454,7 @@ Del</translation>
 <translation id="604124094241169006">אוטומטי</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
+<translation id="6108835911243775197">{COUNT,plural, =0{ללא}=1{אחת}two{שתיים}many{#}other{#}}</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
   שאתה משתמש בהם.</translation>
 <translation id="614940544461990577">נסה:</translation>
@@ -466,6 +475,7 @@ Del</translation>
 <translation id="6345221851280129312">גודל לא ידוע</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
+<translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
 <translation id="6389758589412724634">‏אזל הזיכרון הזמין ל-Chromium בניסיון להציג את דף האינטרנט הזה.</translation>
 <translation id="6417515091412812850">לא ניתן לבדוק אם האישור נשלל.</translation>
@@ -490,6 +500,7 @@ Del</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6710594484020273272">&lt;הקלד מונח חיפוש&gt;</translation>
 <translation id="6711464428925977395">‏משהו אינו תקין בשרת ה-proxy, או שהכתובת שגויה.</translation>
+<translation id="6731320287533051140">{COUNT,plural, =0{ללא}=1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6757797048963528358">המכשיר עבר למצב שינה.</translation>
@@ -573,6 +584,7 @@ Del</translation>
 <translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="765676359832457558">הסתר הגדרות מתקדמות...</translation>
 <translation id="7658239707568436148">ביטול</translation>
+<translation id="7667346355482952095">אסימון המדיניות שהוחזר ריק או לא תואם לאסימון הנוכחי</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
@@ -635,6 +647,7 @@ Del</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
+<translation id="8466379296835108687">{COUNT,plural, =1{כרטיס אשראי אחד}two{שני כרטיסי אשראי}many{# כרטיסי אשראי}other{# כרטיסי אשראי}}</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>
 <translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>

@@ -504,6 +504,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta opció es desactiva, les pàgines web no podran utilitzar JavaScript i l'usuari no podrà canviar aquesta configuració.
 
       Si s'activa aquesta opció o no es defineix, les pàgines web podran fer servir JavaScript però l'usuari podrà canviar aquesta opció.</translation>
+<translation id="2753637905605932878">Restringeix l'interval de ports UDP locals utilitzats per WebRTC</translation>
 <translation id="2757054304033424106">Tipus d'extensions i d'aplicacions que es poden instal·lar</translation>
 <translation id="2759224876420453487">Controla el comportament de l'usuari en una sessió de perfils múltiples</translation>
 <translation id="2761483219396643566">Retard d'advertiment d'inactivitat quan s'utilitza la bateria</translation>
@@ -729,6 +730,15 @@ Si aquesta política no es defineix, els usuaris podran canviar l'ús del client
 <translation id="3264793472749429012">Codificacions del proveïdor de cerca predeterminat</translation>
 <translation id="3273221114520206906">Configuració de JavaScript predeterminada</translation>
 <translation id="3288595667065905535">Canal de la versió</translation>
+<translation id="3291367259589875381">Aquesta política es considera obsoleta a M48 per donar prioritat a <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, i s'ha suprimit a M54.
+
+      Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
+
+      No només controla la baixada prèvia de DNS, sinó també la connexió prèvia de TCP i d'SSL i la renderització prèvia de pàgines web. El nom de la política fa referència a la baixada prèvia de DNS per qüestions històriques.
+
+      Si actives o desactives aquesta opció de configuració, els usuaris no la podran canviar ni substituir a <ph name="PRODUCT_NAME" />.
+
+      Si aquesta política no es defineix, l'opció s'activarà però l'usuari podrà canviar-la.</translation>
 <translation id="3292147213643666827">Activa <ph name="PRODUCT_NAME" /> perquè actuï com a servidor intermediari entre <ph name="CLOUD_PRINT_NAME" /> i les impressores heretades connectades a l'ordinador.
 
 Si s'activa aquest paràmetre o si no es configura, els usuaris podran activar el servidor intermediari d'impressió al núvol en autenticar-se amb el seu compte de Google.
@@ -1178,6 +1188,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Un valor de llista negra de "*" significa que tots els amfitrions de missatgeria s'inclouran a la llista negra llevat que s'indiquin explícitament a la llista blanca.
 
           Si aquesta política no es defineix, <ph name="PRODUCT_NAME" /> carregarà tots els amfitrions de missatgeria nativa instal·lats.</translation>
+<translation id="5288772341821359899">Si es defineix la política, els intervals de ports UDP que utilitza WebRTC estaran restringits a un interval de port específic (extrems inclosos).
+
+      Si la política no es defineix o es defineix a la cadena buida o en un interval de port no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
 <translation id="5290940294294002042">Especifica una llista dels connectors que l'usuari pot activar o desactivar</translation>
 <translation id="5302612588919538756">Aquesta política està obsoleta; substituïu-la per SyncDisabled.
 
@@ -1826,6 +1839,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7443616896860707393">Línies d'ordre d'autenticació bàsica HTTP de diversos orígens</translation>
 <translation id="7468416082528382842">Ubicació del registre de Windows:</translation>
 <translation id="7469554574977894907">Activa els suggeriments de cerca</translation>
+<translation id="7474249562477552702">Defineix si es permeten els certificats SHA-1 signats emesos per ancoratges de confiança local</translation>
 <translation id="7485481791539008776">Regles de selecció de la impressora predeterminada</translation>
 <translation id="749556411189861380">Informa de la versió del SO i del microprogramari dels dispositius inscrits.
 
@@ -1841,6 +1855,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si s'estableix en SAML_INTERSTITIAL, es mostra una pantalla intersticial durant l'inici de sessió per oferir a l'usuari continuar l'autenticació mitjançant el proveïdor d'identitat SAML del domini de registre del dispositiu. L'usuari també pot tornar al flux normal d'inici de sessió de GAIA.</translation>
 <translation id="7567380065339179813">Permet els connectors en aquests llocs</translation>
+<translation id="757395965347379751">Quan s'aplica aquesta opció de configuració, <ph name="PRODUCT_NAME" /> admet certificats SHA-1 signats, sempre que estiguin correctament validats i encadenats a certificats de CA instal·lats localment.
+
+      Tingues en compte que aquesta política depèn que la pila de verificació de certificats del sistema operatiu admeti signatures SHA-1. Si una actualització del SO canvia la gestió de certificats SHA-1, és possible que aquesta política ja no tingui efecte. A més, aquesta política és una solució temporal per donar més temps a les empreses per desvincular-se de SHA-1. Aquesta política se suprimirà l'1 de gener del 2019 o un dia proper a aquesta data.
+
+      Si aquesta política no es defineix o es defineix com a "false", <ph name="PRODUCT_NAME" /> seguirà el programa de desactivació de SHA-1 anunciat públicament.</translation>
 <translation id="7593523670408385997">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers de la memòria cau al disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà la mida de memòria cau proporcionada, tant si l'usuari ha marcat "--disk-cache-size" com si no. El valor que s'especifica en aquesta política no és un límit estricte, és més aviat un suggeriment per al sistema de memòria cau; qualsevol valor per sota d'uns quants megabytes és massa petit i s'arrodonirà a l'alça per arribar a un mínim acceptable.

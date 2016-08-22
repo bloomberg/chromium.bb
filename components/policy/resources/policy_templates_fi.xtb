@@ -503,6 +503,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
       Jos tämä asetus ei ole käytössä, verkkosivut eivät voi käyttää JavaScriptiä eivätkä käyttäjät voi muuttaa asetusta.
 
       Jos tämä asetus on käytössä tai sitä ei ole määritetty, verkkosivut voivat käyttää JavaScriptiä, mutta käyttäjät voivat muuttaa asetusta.</translation>
+<translation id="2753637905605932878">Rajoita WebRTC:n käyttämiä paikallisia UDP-portteja</translation>
 <translation id="2757054304033424106">Laajennuksien tai sovelluksien tyypit, joita saa asentaa</translation>
 <translation id="2759224876420453487">Hallinnoi käyttäjän käytöstä moniprofiili-istunnossa</translation>
 <translation id="2761483219396643566">Käyttämättömyysvaroituksen viive käytettäessä laitetta akkuvirralla</translation>
@@ -728,6 +729,15 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 <translation id="3264793472749429012">Oletushakupalvelun merkkijärjestelmät</translation>
 <translation id="3273221114520206906">JavaScriptin oletusasetus</translation>
 <translation id="3288595667065905535">Julkaisuversio</translation>
+<translation id="3291367259589875381">Tämä käytäntö poistetaan käytöstä M48:ssa, jossa sen korvaa <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />. Käytäntö poistetaan kokonaan M54:ssä.
+
+      Ottaa verkon ennakoinnin käyttöön tuotteessa <ph name="PRODUCT_NAME" /> ja estää käyttäjiä muokkaamasta tätä asetusta.
+
+      Tämä säätelee DNS-esilatauksen lisäksi TCP‑ ja SSL-esiyhteyksiä ja verkkosivujen esipiirtämistä. Käytännön nimi viittaa DNS-esilataukseen historiallisista syistä.
+
+      Jos otat tämän käytännön käyttöön tai poistat sen käytöstä, <ph name="PRODUCT_NAME" /> estää käyttäjiä muokkaamasta tai ohittamasta asetusta.
+
+      Jos tätä käytäntöä ei määritetä, asetus otetaan käyttöön, mutta käyttäjät voivat muokata sitä.</translation>
 <translation id="3292147213643666827">Antaa tuotteen <ph name="PRODUCT_NAME" /> toimia välityspalvelimena palvelun <ph name="CLOUD_PRINT_NAME" /> ja koneeseen liitettyjen tulostimien välillä.
 
 Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat ottaa pilvitulostuksen välityspalvelimen käyttöön todentamalla sen Google-tilinsä avulla.
@@ -1177,6 +1187,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Kiellettyjen luettelon arvo * tarkoittaa, että kaikki laitteen omaa viestijärjestelmää käyttävät isännät on kielletty, ellei niitä ole lisätty sallittujen luetteloon.
 
           Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> lataa kaikki asennetut laitteen omaa viestijärjestelmää käyttävät isännät.</translation>
+<translation id="5288772341821359899">Jos tämä käytäntö on määritetty, WebRTC voi käyttää vain määritetyllä välillä olevia UDP-portteja (välin päätepisteet ovat käytettävissä).
+
+      Jos käytäntöä ei määritetä tai sen arvo on tyhjä merkkijono tai virheellinen porttiväli, WebRTC voi käyttää kaikkia käytettävissä olevia paikallisia UDP-portteja.</translation>
 <translation id="5290940294294002042">Määritä laajennukset, jotka käyttäjä voi ottaa käyttöön tai poistaa käytöstä</translation>
 <translation id="5302612588919538756">Tämä käytäntö on vanhentunut, ja sen sijaan tulee harkita käytäntöä SyncDisabled.
 
@@ -1825,6 +1838,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7443616896860707393">Eri lähteiden HTTP-todennuskehotteet</translation>
 <translation id="7468416082528382842">Windows-rekisterin sijainti:</translation>
 <translation id="7469554574977894907">Ota hakuehdotukset käyttöön</translation>
+<translation id="7474249562477552702">Hyväksytäänkö paikallisten luottamusankkureiden myöntämät SHA-1-allekirjoitetut varmenteet</translation>
 <translation id="7485481791539008776">Oletustulostimen valinnan säännöt</translation>
 <translation id="749556411189861380">Ilmoita laitteiden käyttöjärjestelmän ja laiteohjelmiston versiot.
 
@@ -1840,6 +1854,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos asetus on SAML_INTERSTITIAL, kirjautumisen yhteydessä näytetään välinäyttö, jossa ehdotetaan käyttäjälle todennusta laitteen käyttöönoton verkkotunnuksen SAML IdP:n kautta tai normaaliin GAIA-kirjautumistyönkulkuun palaamista.</translation>
 <translation id="7567380065339179813">Salli laajennukset näissä sivustoissa</translation>
+<translation id="757395965347379751">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> sallii SHA-1-allekirjoitetut varmenteet, jos ne ovat vahvistettavissa ja liittyvät paikallisesti asennettuihin CA-varmenteisiin.
+
+      Huom. Tämän käytännön toiminta riippuu siitä, salliiko käyttöjärjestelmän varmennepino SHA-1-allekirjoitukset. Jos käyttöjärjestelmän päivitys muuttaa tapaa, jolla käyttöjärjestelmä käsittelee SHA-1-varmenteita, tämän käytännön toiminta voi päättyä. Käytäntö on tarkoitettu väliaikaiseksi ratkaisuksi, joka antaa yrityksille lisäaikaa SHA-1:n käytön lopettamiseen. Käytäntö poistetaan 1.1.2019 tai sen tienoilla.
+
+      Jos tätä käytäntöä ei määritetä tai sen arvo on epätosi, <ph name="PRODUCT_NAME" /> noudattaa aiemmin julkaistua SHA-1:n käytöstä poistamisen aikataulua.</translation>
 <translation id="7593523670408385997">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
       Jos asetat tämän käytännön, <ph name="PRODUCT_NAME" /> käyttää määritettyä välimuistin kokoa riippumatta siitä, onko käyttäjä määrittänyt levyn välimuistin kokoon liittyvän merkinnän (--disk-cache-size). Tässä käytännössä määritetty arvo ei ole tiukka raja, vaan suositus välimuistijärjestelmälle. Paria megatavua pienempi arvo on liian pieni, joten se pyöristetään ylöspäin pienimpään sallittuun arvoon.

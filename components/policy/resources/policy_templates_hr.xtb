@@ -507,6 +507,7 @@
       Ako je ova postavka onemogućena, web-stranice ne mogu upotrebljavati JavaScript i korisnik ne može promijeniti tu postavku.
 
       Ako je ova postavka omogućena ili nije postavljena, web-stranice mogu upotrebljavati JavaScript, no korisnik može promijeniti tu postavku.</translation>
+<translation id="2753637905605932878">Ograniči raspon lokalnih UDP priključaka kojima se koristi WebRTC</translation>
 <translation id="2757054304033424106">Vrste proširenja/aplikacija koje se smiju instalirati</translation>
 <translation id="2759224876420453487">Kontroliraj ponašanje korisnika u sesiji višestrukih profila</translation>
 <translation id="2761483219396643566">Odgoda upozorenja o neaktivnosti dok uređaj nije priključen na struju</translation>
@@ -732,6 +733,15 @@
 <translation id="3264793472749429012">Kodiranja zadanog davatelja usluge pretraživanja</translation>
 <translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
+<translation id="3291367259589875381">To je pravilo obustavljeno u verziji M48 i zamijenjeno pravilom <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />. Uklonjeno je u verziji M54.
+
+      Omogućuje predviđanje mreže na usluzi <ph name="PRODUCT_NAME" /> i sprječava korisnike da promijene tu postavku.
+
+      Time se ne kontrolira samo prethodno dohvaćanje DNS-a, već i povezivanje s web-stranicama i njihovo generiranje unaprijed pomoću TCP-a i SSL-a. Naziv pravila navodi prethodno dohvaćanje DNS-a iz povijesnih razloga.
+
+      Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu promijeniti niti poništiti na usluzi <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, bit će omogućeno, ali će ga korisnik moći promijeniti.</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Omogućuje završavanje postupaka u Upravitelju zadataka</translation>
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
@@ -1180,6 +1190,9 @@
           Vrijednost "*" na popisu nedopuštenih znači da su svi hostovi za lokalno slanje poruka zabranjeni, osim u slučaju kada su izričito navedeni na popisu dopuštenih.
 
           Ako se to pravilo ne postavi, usluga <ph name="PRODUCT_NAME" /> učitat će sve instalirane hostove za lokalno slanje poruka.</translation>
+<translation id="5288772341821359899">Ako se to pravilo postavi, raspon UDP priključaka kojima se koristi WebRTC ograničen je na navedeni interval priključaka (krajnje točke uključene).
+
+      Ako se pravilo ne postavi ili se postavi na prazni niz ili nevažeći raspon priključaka, WebRTC može upotrebljavati bilo koji dostupni lokalni UDP priključak.</translation>
 <translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
 <translation id="5302612588919538756">To je pravilo obustavljeno i umjesto njega možete upotrijebiti "SyncDisabled".
 
@@ -1825,6 +1838,7 @@
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Lokacija Windows registra:</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
+<translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
 <translation id="7485481791539008776">Zadana pravila za odabir pisača</translation>
 <translation id="749556411189861380">Generira izvješće o verziji OS-a i opreme registriranih uređaja.
 
@@ -1840,6 +1854,11 @@
 
       Ako je postavljeno na SAML_INTERSTITIAL, prijava će prikazati međuprostorni zaslon koji korisniku nudi da nastavi s autentifikacijom putem SAML IdP-a domene za prijavu uređaja ili da se vrati na uobičajen GAIA-in tijek prijave.</translation>
 <translation id="7567380065339179813">Omogući dodatke na ovim web-lokacijama</translation>
+<translation id="757395965347379751">Kada je ta postavka omogućena, <ph name="PRODUCT_NAME" /> dopušta certifikate s SHA-1 potpisom ako se uspješno ovjere i povežu s lokalno instaliranim CA certifikatima.
+
+      Napominjemo da to pravilo ovisi o tome dopušta li snop za potvrdu certifikata operativnog sustava SHA-1 potpise. Ako se ažuriranjem OS-a promijeni njegovo rukovanje SHA-1 certifikatima, to pravilo možda više neće imati utjecaja. Nadalje, to je pravilo predviđeno kao privremeno rješenje kako bi organizacije imale više vremena za napuštanje algoritma SHA-1. Pravilo će se ukloniti 1. siječnja 2019. ili oko tog datuma.
+
+      Ako se to pravilo ne postavi ili se postavi na False, <ph name="PRODUCT_NAME" /> slijedi javno najavljeni raspored ukidanja algoritma SHA-1.</translation>
 <translation id="7593523670408385997">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranu predmemoriranih datoteka na disku.
 
       Ako postavite ovo pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će ponuđenu veličinu predmemorije, bez obzira je li korisnik označio "--disk-cache-size". Vrijednost navedena u ovom pravilu nije čvrsto postavljena granica, već prijedlog za sustav predmemoriranja; svaka vrijednost ispod nekoliko megabajta premala je i zaokružit će se na prihvatljivi minimum.

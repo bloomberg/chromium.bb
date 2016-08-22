@@ -539,6 +539,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se habilita esta opción, las páginas web no podrán utilizar JavaScript y los usuarios no podrán cambiar esta configuración.
 
       Si se habilita esta opción o si no se establece, las páginas web podrán utilizar JavaScript y los usuarios podrán modificar esta configuración.</translation>
+<translation id="2753637905605932878">Restringe el intervalo de puertos UDP locales utilizado por WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensiones o aplicaciones que se pueden instalar</translation>
 <translation id="2759224876420453487">Controlar el comportamiento del usuario en una sesión de varios perfiles</translation>
 <translation id="2761483219396643566">Tiempo de espera de advertencia de inactividad cuando el dispositivo funciona con batería</translation>
@@ -774,6 +775,15 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
 <translation id="3288595667065905535">Canal de versiones</translation>
+<translation id="3291367259589875381">Esta política está obsoleta en M48 y cambia a <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />. También se ha retirado de M54.
+
+      Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      Permite controlar tanto la solicitud previa de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web. El nombre de esta política hace referencia a la solicitud previa de DNS por motivos históricos.
+
+      Si habilitas o inhabilitas esta opción, los usuarios no pueden cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+      Si esta política no se configura, la predicción de red se habilitará, pero los usuarios podrán cambiarla.</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> actúe como proxy entre <ph name="CLOUD_PRINT_NAME" /> y las impresoras anteriores conectadas al ordenador.
 
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
@@ -1269,6 +1279,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           El valor de lista negra de "*" indica que todos los hosts de mensajes nativos se incluyen en la lista negra a menos que se incluyan explícitamente en la lista blanca.
 
           Si esta política no se establece en <ph name="PRODUCT_NAME" />, se cargarán todos los hosts de mensajes nativos.</translation>
+<translation id="5288772341821359899">Si esta política se configura, el intervalo de puertos UDP utilizado por WebRTC estará restringido al intervalo de puertos especificado (incluidos los puntos finales).
+
+      Si esta política no se configura o si se le asigna una cadena vacía o un intervalo de puertos no válido, WebRTC podrá utilizar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que los usuarios puedan habilitar o inhabilitar</translation>
 <translation id="5302612588919538756">Esta política está obsoleta, pero puedes utilizar SyncDisabled en su lugar.
 
@@ -1957,6 +1970,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7443616896860707393">Mensajes de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
+<translation id="7474249562477552702">Si se permiten los certificados SHA-1 firmados emitidos por los anclajes de confianza locales</translation>
 <translation id="7485481791539008776">Reglas para la selección de la impresora predeterminada</translation>
 <translation id="749556411189861380">Permite informar sobre la versión del firmware y del sistema operativo de los dispositivos registrados.
 
@@ -1974,6 +1988,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Si se le asigna el valor SAML_INTERSTITIAL, el inicio de sesión muestra una pantalla intersticial que permite al usuario continuar con la autenticación a través del proveedor de identidad SAML del dominio de registro del dispositivo o volver al flujo de inicio de sesión normal de GAIA.</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
+<translation id="757395965347379751">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> permitirá los certificados SHA-1 firmados siempre que se validen correctamente y se vinculen a certificados de CA instalados localmente.
+
+      Ten en cuenta que esta política depende de la pila de verificación de certificados del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados SHA-1, es posible que la política deje de hacerse efectiva. Además, el objetivo de esta política es proporcionar a las empresas una solución temporal para que tengan más tiempo para abandonar los certificados SHA-1. Esta política se retirará sobre el 1 de enero de 2019.
+
+      Si esta política no se configura o si se le asigna el valor false, <ph name="PRODUCT_NAME" /> seguirá la programación de desactivación de SHA-1 anunciada públicamente.</translation>
 <translation id="7593523670408385997">Permite configurar el tamaño de memoria caché que utilizará <ph name="PRODUCT_NAME" /> para guardar archivos almacenados en caché en el disco.
 
       Si se define esta política, <ph name="PRODUCT_NAME" /> utilizará el tamaño de caché proporcionado independientemente de que el usuario haya especificado o no un tamaño de caché de disco con el indicador "--disk-cache-size". El valor especificado en esta política no es un límite estricto sino más bien una sugerencia para el sistema de almacenamiento en caché (un valor inferior a unos pocos megabytes sería demasiado pequeño y se redondearía a un valor mínimo viable).

@@ -503,6 +503,7 @@
       Jeśli to ustawienie zostanie wyłączone, strony nie będą mogły używać JavaScriptu, a użytkownik nie będzie mógł zmienić tego ustawienia.
 
       Jeśli to ustawienie będzie włączone lub nieustawione, strony będą mogły używać JavaScriptu, ale użytkownik będzie mógł zmienić to ustawienie.</translation>
+<translation id="2753637905605932878">Ograniczanie zakresu lokalnych portów UDP używanych przez WebRTC</translation>
 <translation id="2757054304033424106">Typy rozszerzeń/aplikacji, które można instalować</translation>
 <translation id="2759224876420453487">Kontrolowanie zachowania użytkownika w sesji wieloprofilowej</translation>
 <translation id="2761483219396643566">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu z baterii</translation>
@@ -728,6 +729,15 @@
 <translation id="3264793472749429012">Kodowania obsługiwane przez domyślnego dostawcę wyszukiwania</translation>
 <translation id="3273221114520206906">Domyślne ustawienie języka JavaScript</translation>
 <translation id="3288595667065905535">Kanał wersji</translation>
+<translation id="3291367259589875381">Ta zasada jest wycofywana w wersji M48 i usunięta w wersji M54. Zastępuje ją <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />.
+
+      Włącza przewidywanie działań sieciowych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Ta zasada steruje nie tylko wstępnym pobieraniem DNS, ale też wstępnym łączeniem przez TCP i SSL oraz wstępnym renderowaniem stron internetowych. Nazwa zasady wiąże się ze wstępnym pobieraniem DNS z przyczyn historycznych.
+
+      Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani nadpisać tego ustawienia w <ph name="PRODUCT_NAME" />.
+
+      Jeśli zasada pozostanie nieskonfigurowana, ustawienie zostanie włączone, ale użytkownicy będą mogli je zmienić.</translation>
 <translation id="3292147213643666827">Umożliwia działanie <ph name="PRODUCT_NAME" /> jako serwera proxy między <ph name="CLOUD_PRINT_NAME" /> a starszymi drukarkami podłączonymi do komputera.
 
       Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą włączyć serwer proxy drukowania w chmurze, uwierzytelniając się na swoim koncie Google.
@@ -1178,6 +1188,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość * na czarnej liście oznacza, że wszystkie hosty wiadomości natywnych są umieszczane na czarnej liście, dopóki nie znajdą się na białej liście.
 
           Jeśli ta zasada nie została określona, <ph name="PRODUCT_NAME" /> wczyta wszystkie zainstalowane hosty wiadomości natywnych.</translation>
+<translation id="5288772341821359899">Jeśli ta zasada jest ustawiona, zakres portów UDP używany przez WebRTC jest ograniczony do określonego zakresu portów (wraz z punktami końcowymi).
+
+      Jeśli zasada nie jest ustawiona lub jest ustawiona na pusty ciąg lub nieprawidłowy zakres portów, WebRTC może skorzystać z dowolnego lokalnego portu UDP, jaki jest dostępny.</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
 <translation id="5302612588919538756">Ta zasada została wycofana. Zamiast niej możesz użyć SyncDisabled.
 
@@ -1259,11 +1272,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli zasada nie zostanie określona, nie będzie modyfikować URL-a odmian.</translation>
 <translation id="5563853101694018649">Wyłącza dostęp do Narzędzi dla programistów i konsoli JavaScript.
 
-      Gdy włączysz to ustawienie, nie będzie można otworzyć Narzędzi dla programistów ani zbadać elementów witryny. Zostaną też wyłączone wszystkie skróty klawiszowe i wszystkie opcje menu i menu kontekstowych, które służyły do otwierania Narzędzi dla programistów i konsoli JavaScript.
+      Gdy włączysz to ustawienie, nie będzie można otworzyć Narzędzi dla programistów ani zbadać elementów witryny. Zostaną też wyłączone wszystkie skróty klawiszowe i wszystkie opcje menu i menu kontekstowych, które służyły do otwierania Narzędzi dla programistów i konsoli JavaScriptu.
 
-      Jeśli ta opcja będzie wyłączona lub nieskonfigurowana, użytkownicy będą mogli korzystać z Narzędzi dla programistów i konsoli JavaScript.
+      Jeśli ta opcja będzie wyłączona lub nieskonfigurowana, użytkownicy będą mogli korzystać z Narzędzi dla programistów i konsoli JavaScriptu.
 
-      W przypadku urządzeń, które mają zainstalowany <ph name="PRODUCT_OS_NAME" /> i pozwalają na uruchamianie aplikacji z Androida, ta zasada zarządza także dostępem do Opcji programisty Androida. Gdy włączysz tę zasadę, użytkownicy nie będą mieli dostępu do Opcji programisty. Jeśli ta zasada będzie wyłączona lub nieskonfigurowana, użytkownicy będą mogli otworzyć Opcje programisty, klikając siedmiokrotnie numer kompilacji w ustawieniach Androida.</translation>
+      W przypadku urządzeń, które mają zainstalowany <ph name="PRODUCT_OS_NAME" /> i pozwalają na uruchamianie aplikacji z Androida, ta zasada obowiązuje także w przypadku dostępu do Opcji programisty Androida. Gdy włączysz tę zasadę, użytkownicy nie będą mieli do nich dostępu. Jeśli ta zasada będzie wyłączona lub nieskonfigurowana, użytkownicy będą mogli otworzyć Opcje programisty, klikając siedmiokrotnie numer kompilacji w ustawieniach Androida.</translation>
 <translation id="556941986578702361">Steruje autoukrywaniem półki <ph name="PRODUCT_OS_NAME" />.
 
       W przypadku ustawienia wartości „AlwaysAutoHideShelf” półka zawsze będzie ukrywana automatycznie.
@@ -1818,6 +1831,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="7468416082528382842">Lokalizacja w rejestrze systemu Windows:</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
+<translation id="7474249562477552702">Określa, czy są dozwolone certyfikaty z podpisem SHA-1 wydane przez lokalne kotwice zaufania</translation>
 <translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>
 <translation id="749556411189861380">Zgłasza wersję systemu operacyjnego i oprogramowania układowego zarejestrowanych urządzeń.
 
@@ -1833,6 +1847,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ustawiona wartość to SAML_INTERSTITIAL, podczas logowania wyświetli się pełnoekranowe okno z informacją, że użytkownik może przejść dalej, gdy dokona uwierzytelnienia przez dostawcę tożsamości SAML domeny rejestracji urządzenia lub może powrócić do normalnego procesu logowania GAIA.</translation>
 <translation id="7567380065339179813">Zezwalaj na wtyczki w tych witrynach</translation>
+<translation id="757395965347379751">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> akceptuje certyfikaty z podpisem SHA-1, o ile zostanie potwierdzona ich poprawność i zostaną łańcuchowo powiązane z zainstalowanymi lokalnie certyfikatami CA.
+
+      Uwaga: ta zasada zależy od tego, czy stos weryfikacji certyfikatów systemu operacyjnego zezwala na podpisy SHA-1. Jeśli w systemie operacyjnym wskutek aktualizacji zmieni się sposób obsługi certyfikatów SHA-1, może ona przestać działać. Oprócz tego zasada została pomyślana jako rozwiązanie tymczasowe, dzięki któremu firmy mają więcej czasu na rezygnację z podpisów SHA-1. Zostanie ona usunięta 1 stycznia 2019 r.
+
+      Jeśli ta zasada nie jest ustawiona lub ma wartość fałsz, <ph name="PRODUCT_NAME" /> przestrzega opublikowanego harmonogramu wycofywania podpisów SHA-1.</translation>
 <translation id="7593523670408385997">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.

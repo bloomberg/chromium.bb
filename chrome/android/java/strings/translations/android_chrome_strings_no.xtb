@@ -316,7 +316,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4961700429721424617">Du logger av en konto som administreres av <ph name="MANAGED_DOMAIN" />. Dette fører til at Chrome-dataene dine slettes fra denne enheten. De fortsetter imidlertid å være lagret i Google-kontoen din.</translation>
 <translation id="497421865427891073">Gå til neste</translation>
-<translation id="4986920000862467124">Alt er lest</translation>
 <translation id="4988526792673242964">Sider</translation>
 <translation id="4996978546172906250">Del via</translation>
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
@@ -486,6 +485,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6857778194843072568">Bare send via Wi-Fi</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
+<translation id="6910211073230771657">Slettet</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6963766334940102469">Slett bokmerker</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7947953824732555851">Godta og logg på</translation>
 <translation id="7949961459945740081">Få de nyeste funksjonene</translation>
-<translation id="7954261717155239372">Flere kort vises når tiden er inne.</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
 <translation id="7987073022710626672">Vilkår for bruk av Chrome</translation>
 <translation id="7998918019931843664">Åpne lukkede faner igjen</translation>
@@ -627,7 +626,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
 <translation id="8588878054171169263">Lagre bildet</translation>
 <translation id="8617240290563765734">Vil du åpne den foreslåtte nettadressen som er spesifisert i det nedlastede innholdet?</translation>
-<translation id="8627706565932943526">Synkroniseringsfeil</translation>
 <translation id="862875433388403934">Innhold (filmer, musikk osv.) som er lastet ned i andre apper, kan kanskje ikke spilles av lenger, før appene får nye lisenser basert på ny enhetslegitimasjon.
 
 For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>
@@ -644,6 +642,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883635517171802338">Blokkér nettsteder fra å vise forgrunnsvinduer (anbefales)</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Fant ingen bokmerker</translation>

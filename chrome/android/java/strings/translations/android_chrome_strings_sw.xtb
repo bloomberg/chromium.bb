@@ -316,7 +316,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4943872375798546930">Hakuna matokeo</translation>
 <translation id="4961700429721424617">Unaondoka kwenye akaunti inayodhibitiwa na <ph name="MANAGED_DOMAIN" />. Hatua hii itafuta data yako ya Chrome kwenye kifaa hiki, lakini data yako itasalia katika akaunti yako ya Google.</translation>
 <translation id="497421865427891073">Nenda mbele</translation>
-<translation id="4986920000862467124">Zote Zimesomwa</translation>
 <translation id="4988526792673242964">Kurasa</translation>
 <translation id="4996978546172906250">Shiriki kupitia</translation>
 <translation id="5000922062037820727">Imezuiwa (imependekezwa)</translation>
@@ -486,6 +485,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6857778194843072568">Tuma kwenye Wi-Fi pekee</translation>
 <translation id="6865313869410766144">Data ya fomu ya Kujaza Kiotomatiki</translation>
 <translation id="6868088497967843822">Ingia katika akaunti ili upate alamisho, historia, manenosiri, na mipangilio yako mingine kwenye vifaa vyako vyote</translation>
+<translation id="6910211073230771657">Imeondolewa</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6963766334940102469">Futa alamisho</translation>
 <translation id="6965382102122355670">Sawa</translation>
@@ -570,7 +570,6 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="7876243839304621966">Ondoa yote</translation>
 <translation id="7947953824732555851">Kubali na uingie</translation>
 <translation id="7949961459945740081">Jipatie vipengele vipya</translation>
-<translation id="7954261717155239372">Kadi nyingine zitaonekana muda ukifika.</translation>
 <translation id="7963646190083259054">Mchuuzi:</translation>
 <translation id="7987073022710626672">Sheria na Masharti ya Chrome</translation>
 <translation id="7998918019931843664">Fungua tena kichupo kilichofungwa</translation>
@@ -627,7 +626,6 @@ Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="8583805026567836021">Inafuta data ya akaunti</translation>
 <translation id="8588878054171169263">Hifadhi picha</translation>
 <translation id="8617240290563765734">Ungependa kufungua URL iliyopendekezwa na kubainishwa katika maudhui yaliyopakuliwa?</translation>
-<translation id="8627706565932943526">Hitilafu ya usawazishaji</translation>
 <translation id="862875433388403934">Maudhui (filamu, muziki, n.k.) yaliyopakuliwa katika programu nyingine huenda yasichezeke tena hadi programu hizo zipate upya leseni kulingana na kitambulisho kipya cha kifaa.
 
 Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyopakuliwa.</translation>
@@ -644,6 +642,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8820817407110198400">Alamisho</translation>
 <translation id="883635517171802338">Zuia tovuti zisionyeshe madirisha ibukizi (inapendekezwa)</translation>
 <translation id="884264119367021077">Anwani ya kusafirisha</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, kichupo</translation>
 <translation id="885701979325669005">Hifadhi</translation>
 <translation id="8901170036886848654">Hakuna alamisho zilizopatikana</translation>

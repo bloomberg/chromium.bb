@@ -507,6 +507,7 @@
 
       Se a definição estiver desativada, as páginas Web não podem utilizar o JavaScript e o utilizador não pode alterá-la.
       Se a definição estiver ativada ou por definir, as páginas Web podem utilizar o JavaScript, mas o utilizador pode alterá-la.</translation>
+<translation id="2753637905605932878">Restringir o intervalo de portas UDP locais utilizadas pelo WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicações com permissão para serem instaladas</translation>
 <translation id="2759224876420453487">Controlar o comportamento dos utilizadores numa sessão multiperfil</translation>
 <translation id="2761483219396643566">Atraso do aviso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
@@ -732,6 +733,15 @@
 <translation id="3264793472749429012">Codificações do fornecedor de pesquisas predefinido</translation>
 <translation id="3273221114520206906">Definição de JavaScript predefinida</translation>
 <translation id="3288595667065905535">Libertar canal</translation>
+<translation id="3291367259589875381">Esta política foi descontinuada no M48 e substituída pela política <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />. Posteriormente, foi removida no M54.
+
+      Ativa a previsão da rede no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
+
+      Isto controla não só o registo prévio do DNS, mas também a ligação e a conversão prévias de TCP e SSL de páginas Web. Por motivos históricos, o nome da política refere-se ao registo prévio do DNS.
+
+      Se ativar ou desativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
+
+      Se esta política for deixada por definir, é ativada, mas o utilizador pode alterá-la.</translation>
 <translation id="3292147213643666827">Permite que o <ph name="PRODUCT_NAME" /> atue como proxy entre o <ph name="CLOUD_PRINT_NAME" /> e as impressoras antigas ligadas ao computador.
 
 Se esta definição estiver ativada ou por configurar, os utilizadores podem ativar o proxy do "cloud print" através da autenticação junto da respetiva Conta Google.
@@ -1180,6 +1190,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Um valor de "*" na lista negra significa que todos os anfitriões de mensagens nativas estão na lista negra, salvo se estiverem expressamente mencionados na lista de autorizações.
 
           Se esta política não for definida, o <ph name="PRODUCT_NAME" /> carregará todos os anfitriões de mensagens nativas instalados.</translation>
+<translation id="5288772341821359899">Se a política for definida, o intervalo de portas UDP utilizado pelo WebRTC é restrito ao intervalo de portas especificado (endpoints incluídos).
+
+      Se a política não for definida ou se for definida para a string vazia ou um intervalo de portas inválido, o WebRTC está autorizado a utilizar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Indique uma lista de plug-ins que o utilizador pode ativar ou desativar</translation>
 <translation id="5302612588919538756">Esta política foi descontinuada. Considere a utilização de SyncDisabled em alternativa.
 
@@ -1830,6 +1843,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7443616896860707393">Mensagens de Autorização Básica de HTTP de origem cruzada</translation>
 <translation id="7468416082528382842">Local de registo do Windows:</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
+<translation id="7474249562477552702">Se os certificados assinados SHA-1 emitidos por âncoras fidedignas locais são ou não autorizados</translation>
 <translation id="7485481791539008776">Regras de seleção da impressora predefinida</translation>
 <translation id="749556411189861380">Comunicar versão do SO e do firmware dos dispositivos inscritos.
 
@@ -1845,6 +1859,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se definida para SAML_INTERSTITIAL, o início de sessão apresenta um ecrã intercalar que pergunta ao utilizador se pretende avançar com a autenticação através do SAML IdP do domínio de inscrição do dispositivo ou retroceder para o fluxo de início de sessão GAIA normal.</translation>
 <translation id="7567380065339179813">Permitir plug-ins nesses sites</translation>
+<translation id="757395965347379751">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> permite certificados assinados SHA-1 desde que validem e incluam com êxito uma cadeia para certificados da AC (Autoridade de certificação) instalados localmente.
+
+      Tenha em atenção que esta política depende da pilha de confirmação de certificados de sistema operativo que autoriza assinaturas SHA-1. Se uma atualização do SO alterar o processamento do SO de certificados SHA-1, esta política pode deixar de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem do SHA-1. Esta política será removida em meados do dia 1 de janeiro de 2019.
+
+      Se esta política não for definida ou se for definida como falsa, o <ph name="PRODUCT_NAME" /> segue o calendário de descontinuação do SHA-1 anunciado publicamente.</translation>
 <translation id="7593523670408385997">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utilizará o tamanho da cache fornecido, independentemente de o utilizador ter especificado ou não a sinalização "--disk-cache-size". O valor especificado nesta política não é um limite rígido, mas, sim, uma sugestão para o sistema de colocação em cache. Qualquer valor alguns megabytes abaixo é demasiado pequeno e será arredondado para o mesmo valor mínimo.

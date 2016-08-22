@@ -316,7 +316,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4943872375798546930">Nu există rezultate</translation>
 <translation id="4961700429721424617">Te deconectezi de la un cont gestionat de <ph name="MANAGED_DOMAIN" />. Astfel, se vor șterge datele Chrome de pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
 <translation id="497421865427891073">Înainte</translation>
-<translation id="4986920000862467124">Tot conținutul este citit</translation>
 <translation id="4988526792673242964">Pagini</translation>
 <translation id="4996978546172906250">Trimiteți prin</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
@@ -486,6 +485,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6857778194843072568">Trimite numai prin Wi-Fi</translation>
 <translation id="6865313869410766144">Datele salvate pentru completarea automată a formularelor</translation>
 <translation id="6868088497967843822">Conectează-te pentru a avea marcajele, istoricul, parolele și alte setări pe toate dispozitivele</translation>
+<translation id="6910211073230771657">Șters</translation>
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6963766334940102469">Șterge marcaje</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -570,7 +570,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7949961459945740081">Obține ultimele funcții</translation>
-<translation id="7954261717155239372">La momentul potrivit vor apărea mai multe carduri.</translation>
 <translation id="7963646190083259054">Producător:</translation>
 <translation id="7987073022710626672">Termenii și condițiile Chrome</translation>
 <translation id="7998918019931843664">Redeschideți fila închisă</translation>
@@ -627,7 +626,6 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8583805026567836021">Se șterg datele contului</translation>
 <translation id="8588878054171169263">Salvați imaginea</translation>
 <translation id="8617240290563765734">Deschizi adresa URL sugerată specificată în conținutul descărcat?</translation>
-<translation id="8627706565932943526">Eroare de sincronizare</translation>
 <translation id="862875433388403934">Conținutul (filme, muzică etc.) descărcat în alte aplicații nu va mai fi redat decât după ce aplicațiile obțin din nou licențe pe baza unor date de conectare noi pe dispozitiv.
 
 Pentru licențe noi, conectează-te la internet și redă conținutul descărcat.</translation>
@@ -644,6 +642,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8820817407110198400">Marcaje</translation>
 <translation id="883635517171802338">Blochează afișarea ferestrelor pop-up de către site-uri (recomandat)</translation>
 <translation id="884264119367021077">Adresa de expediere</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, filă</translation>
 <translation id="885701979325669005">Stocare</translation>
 <translation id="8901170036886848654">Niciun marcaj găsit</translation>

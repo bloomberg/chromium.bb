@@ -505,6 +505,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wird diese Einstellung deaktiviert, können Webseiten kein JavaScript verwenden und der Nutzer kann diese Einstellung nicht ändern.
 
       Ist diese Einstellung aktiviert oder nicht definiert, können Webseiten JavaScript verwenden, wobei der Nutzer diese Einstellung jedoch ändern kann.</translation>
+<translation id="2753637905605932878">Den von WebRTC verwendeten Bereich lokaler UDP-Ports einschränken</translation>
 <translation id="2757054304033424106">Typen von Erweiterungen bzw. Apps, die installiert werden können</translation>
 <translation id="2759224876420453487">Nutzerverhalten in Mehrfachprofil-Sitzung steuern</translation>
 <translation id="2761483219396643566">Inaktivitätsspanne bis zur Warnung im Akkubetrieb</translation>
@@ -730,6 +731,15 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 <translation id="3264793472749429012">Standardsuchmaschinen-Codierungen</translation>
 <translation id="3273221114520206906">JavaScript-Standardeinstellung</translation>
 <translation id="3288595667065905535">Release-Kanal</translation>
+<translation id="3291367259589875381">Diese Richtlinie wurde in M48 zugunsten von <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> eingestellt und in M54 entfernt.
+
+      Mit dieser Richtlinie wird die Netzwerkvervollständigung in <ph name="PRODUCT_NAME" /> aktiviert. Sie verhindert, dass diese Einstellung von Nutzern geändert wird.
+
+      Dadurch wird nicht nur der DNS-Vorabruf gesteuert, sondern auch die TCP- und SSL-Vorverbindung und das Pre-Rendering von Webseiten. Der Richtlinienname bezieht sich aus historischen Gründen auf den DNS-Vorabruf.
+
+      Wenn Sie diese Einstellung aktivieren oder deaktivieren, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+
+      Ist die Richtlinie nicht konfiguriert, wird diese Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.</translation>
 <translation id="3292147213643666827">Mithilfe dieser Richtlinie kann <ph name="PRODUCT_NAME" /> als Proxy zwischen <ph name="CLOUD_PRINT_NAME" /> und älteren Druckern fungieren, die an den Computer angeschlossen sind.
 
      Wenn diese Einstellung aktiviert ist oder nicht konfiguriert wurde, können Nutzer den Google Cloud Print-Proxy durch die Authentifizierung mit ihrem Google-Konto aktivieren.
@@ -1180,6 +1190,9 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Der Wert "*" für die schwarze Liste bedeutet, dass alle Hosts für natives Messaging in die schwarze Liste aufgenommen werden, es sei denn, sie stehen explizit auf der Whitelist.
 
           Wenn für diese Richtlinie kein Wert angegeben wird, lädt <ph name="PRODUCT_NAME" /> alle installierten Hosts für natives Messaging.</translation>
+<translation id="5288772341821359899">Wenn die Richtlinie konfiguriert ist, wird der von WebRTC verwendete UDP-Port-Bereich auf den festgelegten Portintervall, einschließlich der Endpunkte, beschränkt.
+
+      Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
 <translation id="5302612588919538756">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "SyncDisabled" verwenden.
 
@@ -1823,6 +1836,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7443616896860707393">Ursprungsübergreifende HTTP-Basic-Authentifizierungsabfragen</translation>
 <translation id="7468416082528382842">Windows-Registrierungspfad:</translation>
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
+<translation id="7474249562477552702">Genehmigung von SHA-1-signierten Zertifikaten, die von lokalen Trust Anchors herausgegeben werden</translation>
 <translation id="7485481791539008776">Regeln zur Auswahl des Standarddruckers</translation>
 <translation id="749556411189861380">Meldet die Betriebssystem- und Firmwareversion von registrierten Geräten
 
@@ -1838,6 +1852,11 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Wenn sie auf SAML_INTERSTITIAL festgelegt wird, erscheint beim Log-in ein Interstitialbildschirm, über den der Nutzer die Authentifizierung über den SAML-IdP der Registrierungsdomain, in dem sich das Gerät befindet, durchführen oder zum normalen GAIA-Log-in-Vorgang zurückkehren kann.</translation>
 <translation id="7567380065339179813">Plug-ins auf diesen Websites zulassen</translation>
+<translation id="757395965347379751">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> SHA-1-signierte Zertifikate genehmigt, vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem lokal installierten CA-Zertifikat.
+
+      Diese Richtlinie setzt voraus, dass vom Zertifikatüberprüfungsstapel des Betriebssystems SHA-1-Signaturen zugelassen werden. Wenn sich durch ein Update des Betriebssystems die Handhabung von SHA-1-Zertifikaten ändert, ist diese Richtlinie nicht mehr wirksam. Diese Richtlinie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, SHA-1 zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, wird für <ph name="PRODUCT_NAME" /> der offizielle Beendigungszeitplan für SHA-1 herangezogen.</translation>
 <translation id="7593523670408385997">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Dateien im Cache auf dem Datenträger verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die angegebene Cache-Größe unabhängig davon, ob der Nutzer den Parameter "--disk-cache-size" angegeben hat oder nicht. Der in dieser Richtlinie angegebene Wert ist keine feste Grenze, sondern mehr ein Richtwert für das Caching-System. Werte, die unter wenigen Megabytes liegen, sind zu klein und werden auf einen sinnvollen Minimalwert aufgerundet.

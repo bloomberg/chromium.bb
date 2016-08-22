@@ -507,6 +507,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er deaktiveret, kan websider ikke anvende JavaScript, og brugeren kan ikke ændre denne indstilling.
 
       Hvis denne indstilling er deaktiveret eller ikke angivet, kan websider anvende JavaScript, men brugeren kan ændre denne indstilling.</translation>
+<translation id="2753637905605932878">Begræns antallet af lokale UDP-porte, der bruges af WebRTC</translation>
 <translation id="2757054304033424106">Typer af udvidelser/apps, der må installeres</translation>
 <translation id="2759224876420453487">Kontrollér brugeradfærden i en multiprofilsession</translation>
 <translation id="2761483219396643566">Advarsel om inaktivitetsforsinkelse, når batteriet anvendes</translation>
@@ -736,6 +737,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3264793472749429012">Kodninger for standardsøgemaskinen</translation>
 <translation id="3273221114520206906">Standardindstilling for JavaScript</translation>
 <translation id="3288595667065905535">Udgivelseskanal</translation>
+<translation id="3291367259589875381">Denne politik er udfaset i M48 til fordel for <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> og fjernet i M54.
+
+      Aktiverer netværksforudsigelse i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
+
+      Dette styrer både forudhentning af DNS og forhåndstilslutning af TCP og SSL samt forhåndsgengivelse af websider. Navnet på politikken henviser til forudhentning af DNS af historiske årsager.
+
+      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne politik ikke angives, aktiveres dette, men brugerne vil kunne ændre det.</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til at fungere som proxy mellem <ph name="CLOUD_PRINT_NAME" /> og printere, der er sluttet til maskinen.
 
       Hvis indstillingen er aktiveret eller ikke konfigureret, kan brugerne aktivere proxyen til Cloudprinter ved at godkende med deres Google-konto.
@@ -1197,6 +1207,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           En spærrelisteværdi på "*" betyder, at alle indbyggede beskedhosts er på spærrelisten, medmindre de udtrykkeligt opføres på hvidlisten.
 
           Hvis ikke denne politik angives, vil <ph name="PRODUCT_NAME" /> indlæse alle installerede indbyggede beskedhosts.</translation>
+<translation id="5288772341821359899">Hvis politikken er angivet, er UDP-portintervallet, som anvendes af WebRTC, begrænset til det specifikke portinterval (inklusive slutpunkter)
+
+      Hvis politikken ikke er angivet, eller hvis den ikke er angivet til en tom streng eller et ugyldigt portinterval, har WebRTC tilladelse til at anvende enhver tilgængelig lokal UDP-port.</translation>
 <translation id="5290940294294002042">Angiv en liste over plugins, som brugeren kan aktivere eller deaktivere</translation>
 <translation id="5302612588919538756">Denne politik er udfaset. Du kan eventuelt bruge SyncDisabled i stedet.
 
@@ -1842,6 +1855,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7443616896860707393">Påmindelser om HTTP Basic Auth med krydsoprindelse</translation>
 <translation id="7468416082528382842">Placering af Windows-registreringsdatabase:</translation>
 <translation id="7469554574977894907">Aktiver søgeforslag</translation>
+<translation id="7474249562477552702">Om certifikater med SHA-1-signatur, som er udstedt af lokale tillidsankre, er tilladt eller ej</translation>
 <translation id="7485481791539008776">Regler for valg af standardprinter</translation>
 <translation id="749556411189861380">Rapportér OS- og firmwareversion for tilmeldte enheder.
 
@@ -1857,6 +1871,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis den er indstillet til SAML_INTERSTITIAL, vises der ved login en mellemliggende skærm, som giver brugeren mulighed for enten at fortsætte med godkendelse via SAML IdP for enhedens registreringsdomæne eller gå tilbage til den normale loginproces for GAIA.</translation>
 <translation id="7567380065339179813">Tillad plugins på disse websites</translation>
+<translation id="757395965347379751">Når denne indstilling er aktiveret, tillader <ph name="PRODUCT_NAME" /> certifikater med SHA-1-signatur, så længe de bekræfter og sammenkædes med lokalt installerede CA-certifikater.
+
+      Bemærk, at denne politik afhænger af, at certifikatets bekræftelsesstak for operativsystemet tillader SHA-1-signaturer. Hvis en opdatering af operativsystemet ændrer operativsystemets håndtering af SHA-1-certifikater, er denne politik muligvis ikke længere aktiv. Denne politik er desuden beregnet som en midlertidig løsning, der giver virksomheder mere tid til at bevæge sig væk fra SHA-1. Denne politik vil blive fjernet omkring d. 1. januar 2019.
+
+      Hvis denne politik ikke er angivet, eller hvis den er angivet til Falsk, følger <ph name="PRODUCT_NAME" /> den officielle plan for udfasning af SHA-1.</translation>
 <translation id="7593523670408385997">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
       Hvis du indstiller denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne cachestørrelse, uanset om brugeren har markeret flaget "--disk-cache-size" eller ej. Værdien, der er angivet i denne politik, er ikke en hård grænse, men snarere et forslag til et cachelagringssystem, Enhver værdi under et par megabyte er for lille og vil blive rundet op til et fornuftigt minimum.

@@ -316,7 +316,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="4961700429721424617">Estás saliendo de una cuenta administrada por <ph name="MANAGED_DOMAIN" />. Esta acción borrará tus datos de Chrome en este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
 <translation id="497421865427891073">Avanzar</translation>
-<translation id="4986920000862467124">Todo leído</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
@@ -486,6 +485,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6857778194843072568">Enviar solo con Wi-Fi</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
+<translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6963766334940102469">Borrar marcadores</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -570,7 +570,6 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7876243839304621966">Eliminar todo</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7949961459945740081">Obtén últimas características</translation>
-<translation id="7954261717155239372">Se mostrarán más tarjetas cuando haya más información.</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
 <translation id="7987073022710626672">Condiciones del servicio de Chrome</translation>
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
@@ -627,7 +626,6 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
 <translation id="8588878054171169263">Guardar imagen</translation>
 <translation id="8617240290563765734">¿Quieres abrir la URL sugerida que se especifica en el contenido descargado?</translation>
-<translation id="8627706565932943526">Error al sincronizar</translation>
 <translation id="862875433388403934">Tal vez no puedas reproducir el contenido descargado (películas, música, etc.) en otras aplicaciones hasta que dichas aplicaciones vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
 
 Conéctate a Internet y reproduce el contenido descargado para obtener licencias nuevas.</translation>
@@ -644,6 +642,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883635517171802338">Bloquear las ventanas emergentes en los sitios (recomendado)</translation>
 <translation id="884264119367021077">Dirección de envío</translation>
+<translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8901170036886848654">No se encontraron marcadores</translation>
