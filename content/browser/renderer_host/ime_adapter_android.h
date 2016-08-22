@@ -31,27 +31,17 @@ class ImeAdapterAndroid {
   ~ImeAdapterAndroid();
 
   // Called from java -> native
-  // The java side is responsible to translate android KeyEvent various enums
-  // and values into the corresponding blink::WebInputEvent.
   bool SendKeyEvent(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&,
       const base::android::JavaParamRef<jobject>& original_key_event,
-      int action,
-      int meta_state,
+      int type,
+      int modifiers,
       long event_time,
       int key_code,
       int scan_code,
       bool is_system_key,
       int unicode_text);
-  // |event_type| is a value of WebInputEvent::Type.
-  bool SendSyntheticKeyEvent(JNIEnv*,
-                             const base::android::JavaParamRef<jobject>&,
-                             int event_type,
-                             long timestamp_ms,
-                             int native_key_code,
-                             int modifiers,
-                             int unicode_char);
   void SetComposingText(JNIEnv*,
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jobject>& text,

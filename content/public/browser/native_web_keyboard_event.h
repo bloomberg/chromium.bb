@@ -30,14 +30,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 
   explicit NativeWebKeyboardEvent(gfx::NativeEvent native_event);
 #if defined(OS_ANDROID)
-  NativeWebKeyboardEvent(blink::WebInputEvent::Type type,
-                         int modifiers,
-                         double time_secs,
-                         int keycode,
-                         int scancode,
-                         int unicode_character,
-                         bool is_system_key);
-  // Takes ownership of android_key_event.
+  // Holds a global ref to android_key_event (allowed to be null).
   NativeWebKeyboardEvent(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& android_key_event,
