@@ -17,8 +17,6 @@ namespace cc {
 
 namespace {
 
-bool g_allow_rpdq_quad_conversion = false;
-
 // This enum is used for histogram states and should only have new values added
 // to the end before COUNT.
 enum CALayerResult {
@@ -84,11 +82,7 @@ CALayerResult FromRenderPassQuad(ResourceProvider* resource_provider,
   ca_layer_overlay->rpdq = quad;
   ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
 
-  // TODO(erikchen): Enable this when RenderPassDrawQuad promotion to CALayer
-  // is fully functional. https://crbug.com/581526.
-  if (g_allow_rpdq_quad_conversion)
-    return CA_LAYER_SUCCESS;
-  return CA_LAYER_FAILED_RENDER_PASS;
+  return CA_LAYER_SUCCESS;
 }
 
 CALayerResult FromStreamVideoQuad(ResourceProvider* resource_provider,
@@ -302,10 +296,6 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
     return false;
   }
   return true;
-}
-
-void EnableRenderPassDrawQuadForTesting() {
-  g_allow_rpdq_quad_conversion = true;
 }
 
 }  // namespace cc
