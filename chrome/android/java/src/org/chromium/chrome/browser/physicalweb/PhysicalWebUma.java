@@ -233,9 +233,9 @@ public class PhysicalWebUma {
         handleEnum(context, createStateString(LOCATION_PERMISSION, actionName),
                 locationUtils.hasAndroidLocationPermission() ? 1 : 0, BOOLEAN_BOUNDARY);
         handleEnum(context, createStateString(BLUETOOTH, actionName),
-                Utils.getBluetoothEnabledStatus(context), TRISTATE_BOUNDARY);
+                Utils.getBluetoothEnabledStatus(), TRISTATE_BOUNDARY);
         handleEnum(context, createStateString(DATA_CONNECTION, actionName),
-                Utils.isDataConnectionActive(context) ? 1 : 0, BOOLEAN_BOUNDARY);
+                Utils.isDataConnectionActive() ? 1 : 0, BOOLEAN_BOUNDARY);
         int preferenceState = 2;
         if (!PhysicalWeb.isOnboarding()) {
             preferenceState = PhysicalWeb.isPhysicalWebPreferenceEnabled() ? 1 : 0;

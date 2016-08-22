@@ -52,8 +52,8 @@ public class NativePageFactory {
             return new RecentTabsPage(activity, recentTabsManager);
         }
 
-        protected NativePage buildPhysicalWebDiagnosticsPage(Activity activity) {
-            return new PhysicalWebDiagnosticsPage(activity);
+        protected NativePage buildPhysicalWebDiagnosticsPage(Activity activity, Tab tab) {
+            return new PhysicalWebDiagnosticsPage(activity, tab);
         }
     }
 
@@ -137,7 +137,7 @@ public class NativePageFactory {
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);
                 break;
             case PHYSICAL_WEB:
-                page = sNativePageBuilder.buildPhysicalWebDiagnosticsPage(activity);
+                page = sNativePageBuilder.buildPhysicalWebDiagnosticsPage(activity, tab);
                 break;
             default:
                 assert false;
