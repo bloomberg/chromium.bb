@@ -135,8 +135,7 @@ class OzonePlatformGbm
   }
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::WrapUnique(
-        new DrmNativeDisplayDelegate(display_manager_.get()));
+    return base::MakeUnique<DrmNativeDisplayDelegate>(display_manager_.get());
   }
   void InitializeUI() override {
     InitParams default_params;
@@ -161,11 +160,11 @@ class OzonePlatformGbm
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
 #if defined(USE_XKBCOMMON)
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(base::WrapUnique(
-        new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        base::MakeUnique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::WrapUnique(new StubKeyboardLayoutEngine()));
+        base::MakeUnique<StubKeyboardLayoutEngine>());
 #endif
 
     event_factory_ozone_.reset(new EventFactoryEvdev(

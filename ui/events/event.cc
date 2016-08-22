@@ -166,37 +166,35 @@ namespace ui {
 // static
 std::unique_ptr<Event> Event::Clone(const Event& event) {
   if (event.IsKeyEvent()) {
-    return base::WrapUnique(new KeyEvent(static_cast<const KeyEvent&>(event)));
+    return base::MakeUnique<KeyEvent>(static_cast<const KeyEvent&>(event));
   }
 
   if (event.IsMouseEvent()) {
     if (event.IsMouseWheelEvent()) {
-      return base::WrapUnique(
-          new MouseWheelEvent(static_cast<const MouseWheelEvent&>(event)));
+      return base::MakeUnique<MouseWheelEvent>(
+          static_cast<const MouseWheelEvent&>(event));
     }
 
-    return base::WrapUnique(
-        new MouseEvent(static_cast<const MouseEvent&>(event)));
+    return base::MakeUnique<MouseEvent>(static_cast<const MouseEvent&>(event));
   }
 
   if (event.IsTouchEvent()) {
-    return base::WrapUnique(
-        new TouchEvent(static_cast<const TouchEvent&>(event)));
+    return base::MakeUnique<TouchEvent>(static_cast<const TouchEvent&>(event));
   }
 
   if (event.IsGestureEvent()) {
-    return base::WrapUnique(
-        new GestureEvent(static_cast<const GestureEvent&>(event)));
+    return base::MakeUnique<GestureEvent>(
+        static_cast<const GestureEvent&>(event));
   }
 
   if (event.IsPointerEvent()) {
-    return base::WrapUnique(
-        new PointerEvent(static_cast<const PointerEvent&>(event)));
+    return base::MakeUnique<PointerEvent>(
+        static_cast<const PointerEvent&>(event));
   }
 
   if (event.IsScrollEvent()) {
-    return base::WrapUnique(
-        new ScrollEvent(static_cast<const ScrollEvent&>(event)));
+    return base::MakeUnique<ScrollEvent>(
+        static_cast<const ScrollEvent&>(event));
   }
 
   return base::WrapUnique(new Event(event));

@@ -59,7 +59,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
 std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
     const shell::Identity& identity,
     const base::Callback<shell::Connector*(void)>& callback) {
-  return base::WrapUnique(new PlatformTestHelperMus(callback.Run(), identity));
+  return base::MakeUnique<PlatformTestHelperMus>(callback.Run(), identity);
 }
 
 }  // namespace

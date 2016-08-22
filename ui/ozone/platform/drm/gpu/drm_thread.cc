@@ -91,8 +91,8 @@ void DrmThread::Init() {
   use_atomic = true;
 #endif
 
-  device_manager_.reset(new DrmDeviceManager(
-      base::WrapUnique(new GbmDeviceGenerator(use_atomic))));
+  device_manager_.reset(
+      new DrmDeviceManager(base::MakeUnique<GbmDeviceGenerator>(use_atomic)));
   buffer_generator_.reset(new GbmBufferGenerator());
   screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
 

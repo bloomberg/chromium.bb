@@ -223,7 +223,7 @@ void SearchBoxView::InvalidateMenu() {
 }
 
 void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
-  SetBorder(base::WrapUnique(new views::ShadowBorder(shadow)));
+  SetBorder(base::MakeUnique<views::ShadowBorder>(shadow));
   Layout();
 }
 

@@ -48,8 +48,8 @@ std::unique_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
     PlatformEventDispatcher* dispatcher) {
   CHECK(dispatcher);
   overridden_dispatcher_restored_ = false;
-  return base::WrapUnique(
-      new ScopedEventDispatcher(&overridden_dispatcher_, dispatcher));
+  return base::MakeUnique<ScopedEventDispatcher>(&overridden_dispatcher_,
+                                                 dispatcher);
 }
 
 void PlatformEventSource::StopCurrentEventStream() {

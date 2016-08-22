@@ -37,8 +37,8 @@ const int kSearchResultZHeight = 1;
 class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
-    SetBorder(base::WrapUnique(
-        new views::ShadowBorder(GetShadowForZHeight(kSearchResultZHeight))));
+    SetBorder(base::MakeUnique<views::ShadowBorder>(
+        GetShadowForZHeight(kSearchResultZHeight)));
     SetLayoutManager(new views::FillLayout());
     content_view->set_background(
         views::Background::CreateSolidBackground(kCardBackgroundColor));

@@ -719,8 +719,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
 
   // testing::Test overrides:
   void SetUp() override {
-    set_views_delegate(
-        base::WrapUnique(new AppListViewTestViewsDelegate(this)));
+    set_views_delegate(base::MakeUnique<AppListViewTestViewsDelegate>(this));
     views::ViewsTestBase::SetUp();
     test_context_.reset(new AppListViewTestContext(GetParam(), NULL));
   }

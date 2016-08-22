@@ -255,7 +255,7 @@ class MockPopupTimersController : public PopupTimersController {
 
 TEST_F(MessageCenterImplTest, PopupTimersEmptyController) {
   std::unique_ptr<PopupTimersController> popup_timers_controller =
-      base::WrapUnique(new PopupTimersController(message_center()));
+      base::MakeUnique<PopupTimersController>(message_center());
 
   // Test that all functions succed without any timers created.
   popup_timers_controller->PauseAll();
@@ -268,8 +268,7 @@ TEST_F(MessageCenterImplTest, PopupTimersEmptyController) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartTimer) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   run_loop()->Run();
@@ -278,8 +277,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartTimer) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerPauseTimer) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   popup_timers_controller->PauseTimer("test");
@@ -290,8 +288,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerPauseTimer) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerCancelTimer) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   popup_timers_controller->CancelTimer("test");
@@ -302,8 +299,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerCancelTimer) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerPauseAllTimers) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   popup_timers_controller->PauseAll();
@@ -314,8 +310,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerPauseAllTimers) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartAllTimers) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(1));
   popup_timers_controller->PauseAll();
@@ -327,8 +322,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartAllTimers) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimers) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(5));
   popup_timers_controller->StartTimer("test2",
@@ -345,8 +339,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimers) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimersPause) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(5));
   popup_timers_controller->StartTimer("test2",
@@ -363,8 +356,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimersPause) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerResetTimer) {
   std::unique_ptr<MockPopupTimersController> popup_timers_controller =
-      base::WrapUnique(
-          new MockPopupTimersController(message_center(), closure()));
+      base::MakeUnique<MockPopupTimersController>(message_center(), closure());
   popup_timers_controller->StartTimer("test",
                                       base::TimeDelta::FromMilliseconds(5));
   popup_timers_controller->StartTimer("test2",

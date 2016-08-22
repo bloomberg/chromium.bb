@@ -159,12 +159,12 @@ void InProcessContextFactory::CreateOutputSurface(
   std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (use_test_surface_) {
     bool flipped_output_surface = false;
-    display_output_surface = base::WrapUnique(new cc::PixelTestOutputSurface(
+    display_output_surface = base::MakeUnique<cc::PixelTestOutputSurface>(
         context_provider, shared_worker_context_provider_,
-        flipped_output_surface));
+        flipped_output_surface);
   } else {
-    display_output_surface = base::WrapUnique(new DirectOutputSurface(
-        context_provider, shared_worker_context_provider_));
+    display_output_surface = base::MakeUnique<DirectOutputSurface>(
+        context_provider, shared_worker_context_provider_);
   }
 
   if (surface_manager_) {

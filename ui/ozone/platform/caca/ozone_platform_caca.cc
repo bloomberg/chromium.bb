@@ -62,7 +62,7 @@ class OzonePlatformCaca : public OzonePlatform {
   }
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::WrapUnique(new NativeDisplayDelegateOzone());
+    return base::MakeUnique<NativeDisplayDelegateOzone>();
   }
 
   void InitializeUI() override {
@@ -73,7 +73,7 @@ class OzonePlatformCaca : public OzonePlatform {
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
     input_controller_ = CreateStubInputController();
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::WrapUnique(new NoKeyboardLayoutEngine()));
+        base::MakeUnique<NoKeyboardLayoutEngine>());
   }
 
   void InitializeGPU() override {

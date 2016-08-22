@@ -37,13 +37,13 @@ namespace {
 std::unique_ptr<message_center::Notification> CreateTestNotification(
     std::string id,
     std::string text) {
-  return base::WrapUnique(new message_center::Notification(
+  return base::MakeUnique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
       base::UTF8ToUTF16("test title"), base::ASCIIToUTF16(text), gfx::Image(),
       base::string16() /* display_source */, GURL(),
       message_center::NotifierId(message_center::NotifierId::APPLICATION, id),
       message_center::RichNotificationData(),
-      new message_center::NotificationDelegate()));
+      new message_center::NotificationDelegate());
 }
 
 // Provides an aura window context for widget creation.

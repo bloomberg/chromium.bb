@@ -31,7 +31,7 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     const gfx::Vector2dF& initial_velocity) {
   DCHECK(!initial_velocity.IsZero());
 #if defined(OS_ANDROID)
-  auto scroller = base::WrapUnique(new Scroller(Scroller::Config()));
+  auto scroller = base::MakeUnique<Scroller>(Scroller::Config());
   scroller->Fling(0,
                   0,
                   initial_velocity.x(),
@@ -43,7 +43,7 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
                   base::TimeTicks());
   return std::move(scroller);
 #else
-  return base::WrapUnique(new FlingCurve(initial_velocity, base::TimeTicks()));
+  return base::MakeUnique<FlingCurve>(initial_velocity, base::TimeTicks());
 #endif
 }
 

@@ -145,11 +145,11 @@ DrmDisplayHostManager::DrmDisplayHostManager(
       GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
   has_dummy_display_ = !display_infos.empty();
   for (size_t i = 0; i < display_infos.size(); ++i) {
-    displays_.push_back(base::WrapUnique(new DrmDisplayHost(
+    displays_.push_back(base::MakeUnique<DrmDisplayHost>(
         proxy_, CreateDisplaySnapshotParams(
                     display_infos[i], primary_drm_device_handle_->fd(),
                     primary_drm_device_handle_->sys_path(), 0, gfx::Point()),
-        true /* is_dummy */)));
+        true /* is_dummy */));
   }
 }
 
@@ -364,8 +364,8 @@ void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
     auto it = std::find_if(old_displays.begin(), old_displays.end(),
                            FindDrmDisplayHostById(params[i].display_id));
     if (it == old_displays.end()) {
-      displays_.push_back(base::WrapUnique(
-          new DrmDisplayHost(proxy_, params[i], false /* is_dummy */)));
+      displays_.push_back(base::MakeUnique<DrmDisplayHost>(
+          proxy_, params[i], false /* is_dummy */));
     } else {
       (*it)->UpdateDisplaySnapshot(params[i]);
       displays_.push_back(std::move(*it));

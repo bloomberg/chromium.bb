@@ -36,7 +36,7 @@ void CreateSurface(wl_client* client, wl_resource* resource, uint32_t id) {
     wl_client_post_no_memory(client);
     return;
   }
-  compositor->AddSurface(base::WrapUnique(new MockSurface(surface_resource)));
+  compositor->AddSurface(base::MakeUnique<MockSurface>(surface_resource));
 }
 
 const struct wl_compositor_interface compositor_impl = {

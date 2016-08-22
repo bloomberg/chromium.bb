@@ -31,10 +31,10 @@ class EventProcessorTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    processor_.SetRoot(base::WrapUnique(new TestEventTarget()));
+    processor_.SetRoot(base::MakeUnique<TestEventTarget>());
     processor_.Reset();
     root()->SetEventTargeter(
-        base::WrapUnique(new TestEventTargeter(root(), false)));
+        base::MakeUnique<TestEventTargeter>(root(), false));
   }
 
   TestEventTarget* root() {
@@ -63,7 +63,7 @@ class EventProcessorTest : public testing::Test {
 TEST_F(EventProcessorTest, Basic) {
   std::unique_ptr<TestEventTarget> child(new TestEventTarget());
   child->SetEventTargeter(
-      base::WrapUnique(new TestEventTargeter(child.get(), false)));
+      base::MakeUnique<TestEventTargeter>(child.get(), false));
   SetTarget(child.get());
   root()->AddChild(std::move(child));
 

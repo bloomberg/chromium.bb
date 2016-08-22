@@ -30,7 +30,7 @@ DrmDisplayHost::~DrmDisplayHost() {
 
 void DrmDisplayHost::UpdateDisplaySnapshot(
     const DisplaySnapshot_Params& params) {
-  snapshot_ = base::WrapUnique(new DisplaySnapshotProxy(params));
+  snapshot_ = base::MakeUnique<DisplaySnapshotProxy>(params);
 }
 
 void DrmDisplayHost::Configure(const DisplayMode* mode,

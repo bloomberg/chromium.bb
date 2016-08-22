@@ -18,9 +18,9 @@ namespace ui {
 std::unique_ptr<DeviceManager> CreateDeviceManager() {
   TRACE_EVENT0("ozone", "CreateDeviceManager");
 #if defined(USE_UDEV)
-  return base::WrapUnique(new DeviceManagerUdev());
+  return base::MakeUnique<DeviceManagerUdev>();
 #else
-  return base::WrapUnique(new DeviceManagerManual());
+  return base::MakeUnique<DeviceManagerManual>();
 #endif
 }
 

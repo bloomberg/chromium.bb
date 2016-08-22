@@ -701,7 +701,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   // private method on WindowManagerClient.
   if (!is_parallel_widget_in_window_manager()) {
     cursor_manager_.reset(new wm::CursorManager(
-        base::WrapUnique(new NativeCursorManagerMus(window_))));
+        base::MakeUnique<NativeCursorManagerMus>(window_)));
     aura::client::SetCursorClient(hosted_window, cursor_manager_.get());
   }
 

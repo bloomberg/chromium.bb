@@ -408,14 +408,14 @@ Image::Image(const std::vector<ImagePNGRep>& image_reps) {
     return;
 
   storage_ = new internal::ImageStorage(Image::kImageRepPNG);
-  AddRepresentation(base::WrapUnique(new internal::ImageRepPNG(filtered)));
+  AddRepresentation(base::MakeUnique<internal::ImageRepPNG>(filtered));
 }
 
 Image::Image(const ImageSkia& image) {
   if (!image.isNull()) {
     storage_ = new internal::ImageStorage(Image::kImageRepSkia);
     AddRepresentation(
-        base::WrapUnique(new internal::ImageRepSkia(new ImageSkia(image))));
+        base::MakeUnique<internal::ImageRepSkia>(new ImageSkia(image)));
   }
 }
 
@@ -423,14 +423,13 @@ Image::Image(const ImageSkia& image) {
 Image::Image(UIImage* image)
     : storage_(new internal::ImageStorage(Image::kImageRepCocoaTouch)) {
   if (image)
-    AddRepresentation(
-        base::WrapUnique(new internal::ImageRepCocoaTouch(image)));
+    AddRepresentation(base::MakeUnique<internal::ImageRepCocoaTouch>(image));
 }
 #elif defined(OS_MACOSX)
 Image::Image(NSImage* image) {
   if (image) {
     storage_ = new internal::ImageStorage(Image::kImageRepCocoa);
-    AddRepresentation(base::WrapUnique(new internal::ImageRepCocoa(image)));
+    AddRepresentation(base::MakeUnique<internal::ImageRepCocoa>(image));
   }
 }
 #endif

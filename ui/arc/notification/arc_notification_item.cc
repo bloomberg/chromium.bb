@@ -220,14 +220,14 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
   DCHECK(!data.title.is_null());
   DCHECK(!data.message.is_null());
-  SetNotification(base::WrapUnique(new message_center::Notification(
+  SetNotification(base::MakeUnique<message_center::Notification>(
       type, notification_id_, base::UTF8ToUTF16(data.title.get()),
       base::UTF8ToUTF16(data.message.get()),
       gfx::Image(),              // icon image: Will be overriden later.
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data,
-      new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()))));
+      new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr())));
 
   DCHECK(!data.icon_data.is_null());
   if (data.icon_data.size() == 0) {

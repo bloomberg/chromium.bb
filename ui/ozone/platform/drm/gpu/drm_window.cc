@@ -60,7 +60,7 @@ void DrmWindow::Initialize(ScanoutBufferGenerator* buffer_generator) {
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
   overlay_validator_ =
-      base::WrapUnique(new DrmOverlayValidator(this, buffer_generator));
+      base::MakeUnique<DrmOverlayValidator>(this, buffer_generator);
 }
 
 void DrmWindow::Shutdown() {

@@ -408,7 +408,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest, SingleChangePowerConfiguration) {
 TEST_F(UpdateDisplayConfigurationTaskTest, NoopSoftwareMirrorConfiguration) {
   layout_manager_.set_should_mirror(false);
   layout_manager_.set_software_mirroring_controller(
-      base::WrapUnique(new TestSoftwareMirroringController()));
+      base::MakeUnique<TestSoftwareMirroringController>());
   UpdateDisplays(2);
 
   {
@@ -442,7 +442,7 @@ TEST_F(UpdateDisplayConfigurationTaskTest,
        ForceConfigurationWhileGoingToSoftwareMirror) {
   layout_manager_.set_should_mirror(false);
   layout_manager_.set_software_mirroring_controller(
-      base::WrapUnique(new TestSoftwareMirroringController()));
+      base::MakeUnique<TestSoftwareMirroringController>());
   UpdateDisplays(2);
 
   {

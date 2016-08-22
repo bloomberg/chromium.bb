@@ -158,8 +158,8 @@ EventFactoryEvdev::CreateSystemInputInjector() {
   std::unique_ptr<DeviceEventDispatcherEvdev> proxy_dispatcher(
       new ProxyDeviceEventDispatcher(base::ThreadTaskRunnerHandle::Get(),
                                      weak_ptr_factory_.GetWeakPtr()));
-  return base::WrapUnique(
-      new InputInjectorEvdev(std::move(proxy_dispatcher), cursor_));
+  return base::MakeUnique<InputInjectorEvdev>(std::move(proxy_dispatcher),
+                                              cursor_);
 }
 
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {

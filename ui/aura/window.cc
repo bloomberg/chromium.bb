@@ -1094,7 +1094,7 @@ ui::EventTarget* Window::GetParentTarget() {
 }
 
 std::unique_ptr<ui::EventTargetIterator> Window::GetChildIterator() const {
-  return base::WrapUnique(new ui::EventTargetIteratorImpl<Window>(children()));
+  return base::MakeUnique<ui::EventTargetIteratorImpl<Window>>(children());
 }
 
 ui::EventTargeter* Window::GetEventTargeter() {

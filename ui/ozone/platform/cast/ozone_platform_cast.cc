@@ -75,7 +75,7 @@ class OzonePlatformCast : public OzonePlatform {
   }
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::WrapUnique(new NativeDisplayDelegateOzone());
+    return base::MakeUnique<NativeDisplayDelegateOzone>();
   }
 
   void InitializeUI() override {
@@ -99,7 +99,7 @@ class OzonePlatformCast : public OzonePlatform {
   void InitializeGPU() override {
     surface_factory_.reset(new SurfaceFactoryCast(std::move(egl_platform_)));
     g_gpu_platform_support.Get() =
-        base::WrapUnique(new GpuPlatformSupportCast(surface_factory_.get()));
+        base::MakeUnique<GpuPlatformSupportCast>(surface_factory_.get());
   }
 
  private:

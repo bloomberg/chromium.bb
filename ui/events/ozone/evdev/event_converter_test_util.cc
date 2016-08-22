@@ -110,11 +110,11 @@ class TestEventFactoryEvdev : public EventFactoryEvdev {
 
 std::unique_ptr<DeviceEventDispatcherEvdev>
 CreateDeviceEventDispatcherEvdevForTest(EventFactoryEvdev* event_factory) {
-  return base::WrapUnique(new TestDeviceEventDispatcherEvdev(event_factory));
+  return base::MakeUnique<TestDeviceEventDispatcherEvdev>(event_factory);
 }
 
 std::unique_ptr<DeviceManager> CreateDeviceManagerForTest() {
-  return base::WrapUnique(new TestDeviceManager());
+  return base::MakeUnique<TestDeviceManager>();
 }
 
 std::unique_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
@@ -122,8 +122,8 @@ std::unique_ptr<EventFactoryEvdev> CreateEventFactoryEvdevForTest(
     DeviceManager* device_manager,
     KeyboardLayoutEngine* keyboard_layout_engine,
     const EventDispatchCallback& callback) {
-  return base::WrapUnique(new TestEventFactoryEvdev(
-      cursor, device_manager, keyboard_layout_engine, callback));
+  return base::MakeUnique<TestEventFactoryEvdev>(
+      cursor, device_manager, keyboard_layout_engine, callback);
 }
 
 }  // namespace ui

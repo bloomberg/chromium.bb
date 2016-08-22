@@ -344,20 +344,20 @@ Painter* Painter::CreateImageGridPainter(const int image_ids[]) {
 
 // static
 std::unique_ptr<Painter> Painter::CreateDashedFocusPainter() {
-  return base::WrapUnique(new DashedFocusPainter(gfx::Insets()));
+  return base::MakeUnique<DashedFocusPainter>(gfx::Insets());
 }
 
 // static
 std::unique_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
     const gfx::Insets& insets) {
-  return base::WrapUnique(new DashedFocusPainter(insets));
+  return base::MakeUnique<DashedFocusPainter>(insets);
 }
 
 // static
 std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     SkColor color,
     const gfx::Insets& insets) {
-  return base::WrapUnique(new SolidFocusPainter(color, insets));
+  return base::MakeUnique<SolidFocusPainter>(color, insets);
 }
 
 // HorizontalPainter ----------------------------------------------------------

@@ -38,7 +38,7 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
                       NULL),
       string_representation_(params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
-    modes_.push_back(base::WrapUnique(new DisplayModeProxy(params.modes[i])));
+    modes_.push_back(base::MakeUnique<DisplayModeProxy>(params.modes[i]));
 
     if (params.has_current_mode &&
         SameModes(params.modes[i], params.current_mode))

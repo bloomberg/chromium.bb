@@ -1089,7 +1089,7 @@ ui::EventTarget* View::GetParentTarget() {
 }
 
 std::unique_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
-  return base::WrapUnique(new ui::EventTargetIteratorImpl<View>(children_));
+  return base::MakeUnique<ui::EventTargetIteratorImpl<View>>(children_);
 }
 
 ui::EventTargeter* View::GetEventTargeter() {

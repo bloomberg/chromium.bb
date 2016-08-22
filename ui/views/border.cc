@@ -187,20 +187,19 @@ std::unique_ptr<Border> Border::NullBorder() {
 // static
 std::unique_ptr<Border> Border::CreateSolidBorder(int thickness,
                                                   SkColor color) {
-  return base::WrapUnique(new SolidSidedBorder(gfx::Insets(thickness), color));
+  return base::MakeUnique<SolidSidedBorder>(gfx::Insets(thickness), color);
 }
 
 // static
 std::unique_ptr<Border> Border::CreateEmptyBorder(const gfx::Insets& insets) {
-  return base::WrapUnique(new EmptyBorder(insets));
+  return base::MakeUnique<EmptyBorder>(insets);
 }
 
 // static
 std::unique_ptr<Border> Border::CreateRoundedRectBorder(int thickness,
                                                         int corner_radius,
                                                         SkColor color) {
-  return base::WrapUnique(
-      new RoundedRectBorder(thickness, corner_radius, color));
+  return base::MakeUnique<RoundedRectBorder>(thickness, corner_radius, color);
 }
 
 // static
@@ -217,8 +216,8 @@ std::unique_ptr<Border> Border::CreateSolidSidedBorder(int top,
                                                        int bottom,
                                                        int right,
                                                        SkColor color) {
-  return base::WrapUnique(
-      new SolidSidedBorder(gfx::Insets(top, left, bottom, right), color));
+  return base::MakeUnique<SolidSidedBorder>(
+      gfx::Insets(top, left, bottom, right), color);
 }
 
 // static

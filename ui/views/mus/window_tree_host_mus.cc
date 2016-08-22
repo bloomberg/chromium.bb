@@ -38,9 +38,9 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
   // TODO(markdittmer): Use correct device-scale-factor from |window|.
   OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
 
-  SetPlatformWindow(base::WrapUnique(new ui::StubWindow(
+  SetPlatformWindow(base::MakeUnique<ui::StubWindow>(
       this,
-      false)));  // Do not advertise accelerated widget; already set manually.
+      false));  // Do not advertise accelerated widget; already set manually.
 
   compositor()->SetWindow(window);
 

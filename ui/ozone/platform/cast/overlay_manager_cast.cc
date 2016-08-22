@@ -80,7 +80,7 @@ OverlayManagerCast::~OverlayManagerCast() {
 
 std::unique_ptr<OverlayCandidatesOzone>
 OverlayManagerCast::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
-  return base::WrapUnique(new OverlayCandidatesCast());
+  return base::MakeUnique<OverlayCandidatesCast>();
 }
 
 // static

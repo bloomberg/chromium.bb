@@ -55,7 +55,7 @@ std::unique_ptr<Layer> LayerOwner::RecreateLayer() {
     new_layer->SetColor(old_layer->GetTargetColor());
   SkRegion* alpha_shape = old_layer->alpha_shape();
   if (alpha_shape)
-    new_layer->SetAlphaShape(base::WrapUnique(new SkRegion(*alpha_shape)));
+    new_layer->SetAlphaShape(base::MakeUnique<SkRegion>(*alpha_shape));
 
   if (old_layer->parent()) {
     // Install new layer as a sibling of the old layer, stacked below it.

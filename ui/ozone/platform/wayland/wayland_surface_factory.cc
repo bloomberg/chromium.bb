@@ -187,7 +187,7 @@ std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
-  return base::WrapUnique(new WaylandCanvasSurface(connection_, window));
+  return base::MakeUnique<WaylandCanvasSurface>(connection_, window);
 }
 
 scoped_refptr<NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(

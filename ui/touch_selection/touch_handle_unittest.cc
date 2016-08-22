@@ -109,7 +109,7 @@ class TouchHandleTest : public testing::Test, public TouchHandleClient {
   void SetNeedsAnimate() override { needs_animate_ = true; }
 
   std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return base::WrapUnique(new MockTouchHandleDrawable(&drawable_data_));
+    return base::MakeUnique<MockTouchHandleDrawable>(&drawable_data_);
   }
 
   base::TimeDelta GetMaxTapDuration() const override {

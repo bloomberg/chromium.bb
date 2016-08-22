@@ -31,7 +31,7 @@ class TestLabelButton : public LabelButton {
     if (!provide_custom_border_)
       return LabelButton::CreateDefaultBorder();
 
-    return base::WrapUnique(new LabelButtonAssetBorder(style()));
+    return base::MakeUnique<LabelButtonAssetBorder>(style());
   }
 
  private:

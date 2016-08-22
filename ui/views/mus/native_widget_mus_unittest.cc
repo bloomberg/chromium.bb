@@ -172,9 +172,9 @@ class NativeWidgetMusTest : public ViewsTestBase {
   // within the widget that respond to the event must be constructed within the
   // widget coordinate space such that they respond correctly.
   std::unique_ptr<ui::MouseEvent> CreateMouseEvent() {
-    return base::WrapUnique(new ui::MouseEvent(
+    return base::MakeUnique<ui::MouseEvent>(
         ui::ET_MOUSE_PRESSED, gfx::Point(50, 50), gfx::Point(50, 50),
-        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+        base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
   // Simulates an input event to the NativeWidget.

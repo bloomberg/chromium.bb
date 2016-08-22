@@ -543,7 +543,7 @@ void EventGenerator::Dispatch(ui::Event* event) {
 
 void EventGenerator::Init(gfx::NativeWindow root_window,
                           gfx::NativeWindow window_context) {
-  ui::SetEventTickClockForTesting(WrapUnique(new TestTickClock()));
+  ui::SetEventTickClockForTesting(base::MakeUnique<TestTickClock>());
   delegate()->SetContext(this, root_window, window_context);
   if (window_context)
     current_location_ = delegate()->CenterOfWindow(window_context);

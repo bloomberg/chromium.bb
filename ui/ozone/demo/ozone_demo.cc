@@ -218,13 +218,13 @@ std::unique_ptr<ui::Renderer> RendererFactory::CreateRenderer(
       if (!surface)
         LOG(FATAL) << "Failed to create GL surface";
       if (surface->IsSurfaceless())
-        return base::WrapUnique(
-            new ui::SurfacelessGlRenderer(widget, surface, size));
+        return base::MakeUnique<ui::SurfacelessGlRenderer>(widget, surface,
+                                                           size);
       else
-        return base::WrapUnique(new ui::GlRenderer(widget, surface, size));
+        return base::MakeUnique<ui::GlRenderer>(widget, surface, size);
     }
     case SOFTWARE:
-      return base::WrapUnique(new ui::SoftwareRenderer(widget, size));
+      return base::MakeUnique<ui::SoftwareRenderer>(widget, size);
   }
 
   return nullptr;

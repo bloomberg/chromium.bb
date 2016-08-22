@@ -193,9 +193,9 @@ void WaylandConnection::Capabilities(void* data,
         LOG(ERROR) << "Failed to get wl_pointer from seat";
         return;
       }
-      connection->pointer_ = base::WrapUnique(new WaylandPointer(
+      connection->pointer_ = base::MakeUnique<WaylandPointer>(
           pointer, base::Bind(&WaylandConnection::DispatchUiEvent,
-                              base::Unretained(connection))));
+                              base::Unretained(connection)));
     }
   } else if (connection->pointer_) {
     connection->pointer_.reset();

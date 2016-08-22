@@ -151,8 +151,8 @@ class XkbLayoutEngineVkTest : public testing::Test {
   ~XkbLayoutEngineVkTest() override {}
 
   void SetUp() override {
-    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(base::WrapUnique(
-        new VkTestXkbKeyboardLayoutEngine(keycode_converter_)));
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        base::MakeUnique<VkTestXkbKeyboardLayoutEngine>(keycode_converter_));
     layout_engine_ = static_cast<VkTestXkbKeyboardLayoutEngine*>(
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
   }

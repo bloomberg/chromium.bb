@@ -1041,7 +1041,7 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
   for (size_t i = 0; i < sections.size(); ++i) {
     // Create a new configuration section.
     configurations_.push_back(
-        base::WrapUnique(new internal::ConfigurationSection()));
+        base::MakeUnique<internal::ConfigurationSection>());
     internal::ConfigurationSection* config = configurations_.back().get();
 
     // Break the section into lines.
@@ -1197,17 +1197,17 @@ GesturePropertyProvider::CreateMatchCriteria(const std::string& match_type,
                                              const std::string& arg) {
   DVLOG(2) << "Creating match criteria: (" << match_type << ", " << arg << ")";
   if (match_type == "MatchProduct")
-    return base::WrapUnique(new internal::MatchProduct(arg));
+    return base::MakeUnique<internal::MatchProduct>(arg);
   if (match_type == "MatchDevicePath")
-    return base::WrapUnique(new internal::MatchDevicePath(arg));
+    return base::MakeUnique<internal::MatchDevicePath>(arg);
   if (match_type == "MatchUSBID")
-    return base::WrapUnique(new internal::MatchUSBID(arg));
+    return base::MakeUnique<internal::MatchUSBID>(arg);
   if (match_type == "MatchIsPointer")
-    return base::WrapUnique(new internal::MatchIsPointer(arg));
+    return base::MakeUnique<internal::MatchIsPointer>(arg);
   if (match_type == "MatchIsTouchpad")
-    return base::WrapUnique(new internal::MatchIsTouchpad(arg));
+    return base::MakeUnique<internal::MatchIsTouchpad>(arg);
   if (match_type == "MatchIsTouchscreen")
-    return base::WrapUnique(new internal::MatchIsTouchscreen(arg));
+    return base::MakeUnique<internal::MatchIsTouchscreen>(arg);
   NOTREACHED();
   return NULL;
 }

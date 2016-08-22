@@ -196,10 +196,10 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   shadows.push_back(gfx::ShadowValue(gfx::Vector2d(0, kYOffset),
                                      2 * kSkiaBlurRadius,
                                      SkColorSetA(SK_ColorBLACK, 0x3D)));
-  return base::WrapUnique(new InkDropHighlight(
+  return base::MakeUnique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
-          shadows, GetLocalBounds(), kInkDropSmallCornerRadius))));
+          shadows, GetLocalBounds(), kInkDropSmallCornerRadius)));
 }
 
 bool MdTextButton::ShouldShowInkDropForFocus() const {

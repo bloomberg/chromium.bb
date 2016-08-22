@@ -111,8 +111,8 @@ const GLVersionInfo* GLContext::GetVersionInfo() {
   if (!version_info_) {
     std::string version = GetGLVersion();
     std::string renderer = GetGLRenderer();
-    version_info_ = base::WrapUnique(new GLVersionInfo(
-        version.c_str(), renderer.c_str(), GetExtensions().c_str()));
+    version_info_ = base::MakeUnique<GLVersionInfo>(
+        version.c_str(), renderer.c_str(), GetExtensions().c_str());
   }
   return version_info_.get();
 }

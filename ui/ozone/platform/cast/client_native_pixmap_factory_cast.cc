@@ -40,7 +40,7 @@ class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
-    return base::WrapUnique(new ClientNativePixmapCast());
+    return base::MakeUnique<ClientNativePixmapCast>();
   }
 };
 

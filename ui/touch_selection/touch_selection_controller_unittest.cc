@@ -103,7 +103,7 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return base::WrapUnique(new MockTouchHandleDrawable(&dragging_enabled_));
+    return base::MakeUnique<MockTouchHandleDrawable>(&dragging_enabled_);
   }
 
   void EnableLongPressDragSelection() {

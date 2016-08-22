@@ -186,8 +186,8 @@ std::unique_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(
   else
     return nullptr;
 
-  return base::WrapUnique(
-      new DeviceEvent(device_type, action_type, base::FilePath(path)));
+  return base::MakeUnique<DeviceEvent>(device_type, action_type,
+                                       base::FilePath(path));
 }
 
 }  // namespace ui

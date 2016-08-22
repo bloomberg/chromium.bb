@@ -102,9 +102,9 @@ void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
-  controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
+  controllers_.push_back(base::MakeUnique<HardwareDisplayController>(
       std::unique_ptr<CrtcController>(new CrtcController(drm, crtc, connector)),
-      gfx::Point())));
+      gfx::Point()));
 }
 
 void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
@@ -170,8 +170,8 @@ bool ScreenManager::ActualConfigureDisplayController(
   // mirror mode, subsequent calls configuring the other controllers will
   // restore mirror mode.
   if (controller->IsMirrored()) {
-    controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
-        controller->RemoveCrtc(drm, crtc), controller->origin())));
+    controllers_.push_back(base::MakeUnique<HardwareDisplayController>(
+        controller->RemoveCrtc(drm, crtc), controller->origin()));
     it = controllers_.end() - 1;
     controller = it->get();
   }
@@ -192,8 +192,8 @@ bool ScreenManager::DisableDisplayController(
   if (it != controllers_.end()) {
     HardwareDisplayController* controller = it->get();
     if (controller->IsMirrored()) {
-      controllers_.push_back(base::WrapUnique(new HardwareDisplayController(
-          controller->RemoveCrtc(drm, crtc), controller->origin())));
+      controllers_.push_back(base::MakeUnique<HardwareDisplayController>(
+          controller->RemoveCrtc(drm, crtc), controller->origin()));
       controller = controllers_.back().get();
     }
 

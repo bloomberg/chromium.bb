@@ -25,58 +25,51 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   switch (event_type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED:
-      return base::WrapUnique(new KeyEvent(event_type,
-                                           KeyboardCodeFromXKeyEvent(&xev),
-                                           EventFlagsFromXEvent(xev)));
+      return base::MakeUnique<KeyEvent>(event_type,
+                                        KeyboardCodeFromXKeyEvent(&xev),
+                                        EventFlagsFromXEvent(xev));
     case ET_MOUSE_PRESSED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
     case ET_MOUSE_RELEASED:
-      return base::WrapUnique(
-          new MouseEvent(event_type, EventLocationFromXEvent(xev),
-                         EventSystemLocationFromXEvent(xev),
-                         EventTimeFromXEvent(xev), EventFlagsFromXEvent(xev),
-                         GetChangedMouseButtonFlagsFromXEvent(xev)));
+      return base::MakeUnique<MouseEvent>(
+          event_type, EventLocationFromXEvent(xev),
+          EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
+          EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
     case ET_MOUSEWHEEL:
-      return base::WrapUnique(new MouseWheelEvent(
+      return base::MakeUnique<MouseWheelEvent>(
           GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
           EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-          EventFlagsFromXEvent(xev),
-          GetChangedMouseButtonFlagsFromXEvent(xev)));
+          EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
     case ET_SCROLL_FLING_START:
     case ET_SCROLL_FLING_CANCEL: {
       float x_offset, y_offset, x_offset_ordinal, y_offset_ordinal;
       GetFlingDataFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
                              &y_offset_ordinal, nullptr);
-      return base::WrapUnique(new ScrollEvent(
+      return base::MakeUnique<ScrollEvent>(
           event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
-          y_offset_ordinal, 0));
+          y_offset_ordinal, 0);
     }
     case ET_SCROLL: {
       float x_offset, y_offset, x_offset_ordinal, y_offset_ordinal;
       int finger_count;
       GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
                                  &y_offset_ordinal, &finger_count);
-      return base::WrapUnique(new ScrollEvent(
+      return base::MakeUnique<ScrollEvent>(
           event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
-          y_offset_ordinal, finger_count));
+          y_offset_ordinal, finger_count);
     }
     case ET_TOUCH_MOVED:
     case ET_TOUCH_PRESSED:
     case ET_TOUCH_CANCELLED:
     case ET_TOUCH_RELEASED:
-      return base::WrapUnique(
-          new TouchEvent(event_type,
-                         EventLocationFromXEvent(xev),
-                         /* flags */ 0,
-                         GetTouchIdFromXEvent(xev),
-                         EventTimeFromXEvent(xev),
-                         GetTouchRadiusXFromXEvent(xev),
-                         GetTouchRadiusYFromXEvent(xev),
-                         /* angle */ 0.f,
-                         GetTouchForceFromXEvent(xev)));
+      return base::MakeUnique<TouchEvent>(
+          event_type, EventLocationFromXEvent(xev),
+          /* flags */ 0, GetTouchIdFromXEvent(xev), EventTimeFromXEvent(xev),
+          GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
+          /* angle */ 0.f, GetTouchForceFromXEvent(xev));
     case ET_UNKNOWN:
       return nullptr;
     default:
@@ -95,30 +88,30 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
       // not real mouse move event.
       if (xev.type == EnterNotify)
         flags |= EF_IS_SYNTHESIZED;
-      return base::WrapUnique(
-          new MouseEvent(ET_MOUSE_MOVED, EventLocationFromXEvent(xev),
-                         EventSystemLocationFromXEvent(xev),
-                         EventTimeFromXEvent(xev), flags, 0));
+      return base::MakeUnique<MouseEvent>(ET_MOUSE_MOVED,
+                                          EventLocationFromXEvent(xev),
+                                          EventSystemLocationFromXEvent(xev),
+                                          EventTimeFromXEvent(xev), flags, 0);
 
     case KeyPress:
     case KeyRelease:
-      return base::WrapUnique(new KeyEvent(
-          EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev), flags));
+      return base::MakeUnique<KeyEvent>(EventTypeFromXEvent(xev),
+                                        KeyboardCodeFromXKeyEvent(&xev), flags);
 
     case ButtonPress:
     case ButtonRelease: {
       switch (EventTypeFromXEvent(xev)) {
         case ET_MOUSEWHEEL:
-          return base::WrapUnique(new MouseWheelEvent(
+          return base::MakeUnique<MouseWheelEvent>(
               GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
               EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-              flags, 0));
+              flags, 0);
         case ET_MOUSE_PRESSED:
         case ET_MOUSE_RELEASED:
-          return base::WrapUnique(new MouseEvent(
+          return base::MakeUnique<MouseEvent>(
               EventTypeFromXEvent(xev), EventLocationFromXEvent(xev),
               EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-              flags, GetChangedMouseButtonFlagsFromXEvent(xev)));
+              flags, GetChangedMouseButtonFlagsFromXEvent(xev));
         case ET_UNKNOWN:
           // No event is created for X11-release events for mouse-wheel
           // buttons.

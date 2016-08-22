@@ -58,8 +58,8 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    auto window = base::WrapUnique(
-        new WaylandWindow(delegate, connection_.get(), bounds));
+    auto window =
+        base::MakeUnique<WaylandWindow>(delegate, connection_.get(), bounds);
     if (!window->Initialize())
       return nullptr;
     return std::move(window);

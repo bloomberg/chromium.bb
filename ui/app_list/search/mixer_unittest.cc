@@ -46,7 +46,7 @@ class TestSearchResult : public SearchResult {
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
   std::unique_ptr<SearchResult> Duplicate() const override {
-    return base::WrapUnique(new TestSearchResult(id(), relevance()));
+    return base::MakeUnique<TestSearchResult>(id(), relevance());
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
