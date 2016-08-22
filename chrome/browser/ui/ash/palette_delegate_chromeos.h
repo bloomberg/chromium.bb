@@ -21,6 +21,10 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate {
   ~PaletteDelegateChromeOS() override;
 
  private:
+  // ash::PaletteDelegate:
+  void CreateNote() override;
+  bool HasNoteApp() override;
+
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateChromeOS);
 };
 

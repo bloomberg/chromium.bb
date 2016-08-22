@@ -104,6 +104,8 @@
       'vector_icons/overflow_chevron.1x.icon',
       'vector_icons/overflow_chevron.icon',
       'vector_icons/paintbrush.icon',
+      'vector_icons/palette_action_create_note.1x.icon',
+      'vector_icons/palette_action_create_note.icon',
       'vector_icons/palette_tray_icon_default.1x.icon',
       'vector_icons/palette_tray_icon_default.icon',
       'vector_icons/pdf.1x.icon',

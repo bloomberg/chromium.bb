@@ -82,8 +82,12 @@ class MediaDelegateImpl : public MediaDelegate {
 
 class PaletteDelegateImpl : public PaletteDelegate {
  public:
-  PaletteDelegateImpl() {};
-  ~PaletteDelegateImpl() override {};
+  PaletteDelegateImpl() {}
+  ~PaletteDelegateImpl() override {}
+
+  // PaletteDelegate:
+  void CreateNote() override {}
+  bool HasNoteApp() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);

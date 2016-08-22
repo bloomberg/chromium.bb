@@ -16,7 +16,11 @@ class PaletteDelegate {
  public:
   virtual ~PaletteDelegate() {}
 
-  // TODO(jdufault): This delegate will be implemented in later CLs.
+  // Create a new note.
+  virtual void CreateNote() = 0;
+
+  // Returns true if there is a note-taking application available.
+  virtual bool HasNoteApp() = 0;
 
  private:
   DISALLOW_ASSIGN(PaletteDelegate);

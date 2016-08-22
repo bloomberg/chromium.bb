@@ -170,6 +170,11 @@ void WmShell::SetShelfDelegateForTesting(
   shelf_delegate_ = std::move(test_delegate);
 }
 
+void WmShell::SetPaletteDelegateForTesting(
+    std::unique_ptr<PaletteDelegate> palette_delegate) {
+  palette_delegate_ = std::move(palette_delegate);
+}
+
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
       focus_cycler_(new FocusCycler),

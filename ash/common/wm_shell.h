@@ -334,6 +334,8 @@ class ASH_EXPORT WmShell {
   void RemoveLockStateObserver(LockStateObserver* observer);
 
   void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
+  void SetPaletteDelegateForTesting(
+      std::unique_ptr<PaletteDelegate> palette_delegate);
 
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;

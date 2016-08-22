@@ -5,12 +5,16 @@
 #include "ash/common/system/chromeos/palette/palette_tool.h"
 
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
+#include "ash/common/system/chromeos/palette/tools/create_note_action.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
 
 // static
-void PaletteTool::RegisterToolInstances(PaletteToolManager* tool_manager) {}
+void PaletteTool::RegisterToolInstances(PaletteToolManager* tool_manager) {
+  tool_manager->AddTool(base::MakeUnique<CreateNoteAction>(tool_manager));
+}
 
 PaletteTool::PaletteTool(Delegate* delegate) : delegate_(delegate) {}
 

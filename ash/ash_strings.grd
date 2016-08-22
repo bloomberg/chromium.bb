@@ -128,6 +128,11 @@ This file contains the strings for ash.
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
+
+      <message name="IDS_ASH_PALETTE_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in. Additionally, the palette tray is closed.">
+        Create Note
+      </message>
+
       <!-- TODO(zork): Only include these in Aura builds -->
       <message name="IDS_ASH_SHELF_APP_LIST_TITLE" desc="The title used for the Ash App List in the Shelf">
         Apps

@@ -76,9 +76,9 @@ class ASH_EXPORT PaletteTool {
   // same group.
   virtual void OnDisable();
 
-  // Create a view that will be used in the palette. The view is owned by the
-  // caller. OnViewDestroyed is called when the view has been deallocated by its
-  // owner.
+  // Create a view that will be used in the palette, or nullptr if this tool
+  // should not be displayed. The view is owned by the caller. OnViewDestroyed
+  // is called when the view has been deallocated by its owner.
   virtual views::View* CreateView() = 0;
   virtual void OnViewDestroyed() = 0;
 
