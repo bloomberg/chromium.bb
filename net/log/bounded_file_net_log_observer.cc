@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -354,8 +355,8 @@ void BoundedFileNetLogObserver::FileWriter::IncrementCurrentFile() {
   current_file_idx_ %= total_num_files_;
   event_files_[current_file_idx_].reset();
   event_files_[current_file_idx_] = base::ScopedFILE(base::OpenFile(
-      directory_.AppendASCII("event_file_" + std::to_string(current_file_idx_) +
-                             ".json"),
+      directory_.AppendASCII("event_file_" +
+                             base::SizeTToString(current_file_idx_) + ".json"),
       "w"));
 }
 
@@ -394,9 +395,9 @@ void BoundedFileNetLogObserver::FileWriter::DeleteAllFiles() {
   base::DeleteFile(directory_.AppendASCII("constants.json"), false);
   base::DeleteFile(directory_.AppendASCII("end_netlog.json"), false);
   for (size_t i = 0; i < total_num_files_; i++) {
-    base::DeleteFile(
-        directory_.AppendASCII("event_file_" + std::to_string(i) + ".json"),
-        false);
+    base::DeleteFile(directory_.AppendASCII("event_file_" +
+                                            base::SizeTToString(i) + ".json"),
+                     false);
   }
 }
 
