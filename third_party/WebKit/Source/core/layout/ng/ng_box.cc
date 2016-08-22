@@ -28,13 +28,20 @@ NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
       toLayoutBlock(m_layoutBox)->layoutPositionedObjects(true);
     m_layoutBox->clearNeedsLayout();
   } else {
+    // TODO(layout-ng): If fixedSize is true, set the override width/height too
+    NGLogicalSize containerSize = constraintSpace.ContainerSize();
+    m_layoutBox->setOverrideContainingBlockContentLogicalWidth(
+        containerSize.inlineSize);
+    m_layoutBox->setOverrideContainingBlockContentLogicalHeight(
+        containerSize.blockSize);
     if (m_layoutBox->isLayoutNGBlockFlow() && m_layoutBox->needsLayout()) {
       toLayoutNGBlockFlow(m_layoutBox)->LayoutBlockFlow::layoutBlock(true);
     } else {
       m_layoutBox->layoutIfNeeded();
     }
     LayoutRect overflow = m_layoutBox->layoutOverflowRect();
-    // This does not handle writing modes correctly (for overflow & the enums)
+    // TODO(layout-ng): This does not handle writing modes correctly (for
+    // overflow & the enums)
     fragment = new NGFragment(
         m_layoutBox->logicalWidth(), m_layoutBox->logicalHeight(),
         overflow.width(), overflow.height(), HorizontalTopBottom, LeftToRight);

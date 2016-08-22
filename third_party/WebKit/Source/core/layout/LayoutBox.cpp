@@ -3016,7 +3016,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
             availableHeight = containingBlockLogicalHeightForPositioned(toLayoutBoxModelObject(cb));
         } else if (stretchedHeight != -1) {
             availableHeight = stretchedHeight;
-        } else if (isGridItem() && hasOverrideContainingBlockLogicalHeight()) {
+        } else if (hasOverrideContainingBlockLogicalHeight()) {
             availableHeight = overrideContainingBlockContentLogicalHeight();
         } else {
             availableHeight = containingBlockLogicalHeightForContent(IncludeMarginBorderPadding);
