@@ -378,6 +378,7 @@
       # TODO(brettw) should this go with the webrtc sources?
       'browser/media/webrtc_log_list.cc',
       'browser/media/webrtc_log_list.h',
+      'browser/media/window_icon_util.h',
       'browser/memory_details.cc',
       'browser/memory_details.h',
       'browser/memory_details_android.cc',
@@ -1213,6 +1214,7 @@
       'browser/first_run/upgrade_util_linux.h',
       'browser/fullscreen_aurax11.cc',
       'browser/icon_loader_auralinux.cc',
+      'browser/media/window_icon_util_x11.cc',
       'browser/password_manager/native_backend_kwallet_x.cc',
       'browser/password_manager/native_backend_kwallet_x.h',
       'browser/platform_util_linux.cc',
@@ -1224,6 +1226,7 @@
       'browser/web_applications/web_app_linux.cc',
     ],
     'chrome_browser_mac_sources': [
+      'browser/media/window_icon_util_mac.mm',
       'browser/password_manager/password_manager_util_mac.h',
       'browser/password_manager/password_manager_util_mac.mm',
     ],
@@ -1534,6 +1537,7 @@
       'browser/google/did_run_updater_win.h',
       'browser/hang_monitor/hang_crash_dump_win.cc',
       'browser/hang_monitor/hang_crash_dump_win.h',
+      'browser/media/window_icon_util_win.cc',
       'browser/metrics/antivirus_metrics_provider_win.cc',
       'browser/metrics/antivirus_metrics_provider_win.h',
       'browser/password_manager/password_manager_util_win.cc',
