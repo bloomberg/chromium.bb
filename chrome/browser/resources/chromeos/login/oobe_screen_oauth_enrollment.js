@@ -231,7 +231,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Cancels enrollment and drops the user back to the login screen.
+     * Cancels the current authentication and drops the user back to the next
+     * screen (either the next authentication or the login screen).
      */
     cancel: function() {
       if (this.isCancelDisabled)
@@ -277,6 +278,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         this.showStep(STEP_ATTRIBUTE_PROMPT_ERROR);
         return;
       }
+      this.isCancelDisabled_ = false;  // Re-enable if called before Gaia loads.
       $('oauth-enroll-error-card').textContent = message;
       $('oauth-enroll-error-card').buttonLabel =
           retry ? loadTimeData.getString('oauthEnrollRetry') : '';
