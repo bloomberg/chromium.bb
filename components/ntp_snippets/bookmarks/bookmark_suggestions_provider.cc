@@ -92,6 +92,7 @@ BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
       bookmark_model_(bookmark_model),
       fetch_requested_(false),
       end_of_list_last_visit_date_(GetThresholdTime()) {
+  observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
   base::Time first_m54_start;
   base::Time now = base::Time::Now();
   if (pref_service->HasPrefPath(prefs::kBookmarksFirstM54Start)) {
@@ -121,10 +122,6 @@ void BookmarkSuggestionsProvider::RegisterProfilePrefs(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
-
-std::vector<Category> BookmarkSuggestionsProvider::GetProvidedCategories() {
-  return std::vector<Category>({provided_category_});
-}
 
 CategoryStatus BookmarkSuggestionsProvider::GetCategoryStatus(
     Category category) {

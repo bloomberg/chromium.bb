@@ -49,11 +49,10 @@ class ContentSuggestionsProvider {
         Category category,
         std::vector<ContentSuggestion> suggestions) = 0;
 
-    // Called when the status of a category changed.
+    // Called when the status of a category changed, including when it is added.
     // If |new_status| is NOT_PROVIDED, the calling provider must be the one
     // that currently provides the |category|, and the category is unregistered
-    // without clearing the UI. The |category| must also be removed from
-    // |GetProvidedCategories()|.
+    // without clearing the UI.
     // If |new_status| is any other value, it must match the value that is
     // currently returned from the provider's |GetCategoryStatus(category)|. In
     // case the given |category| is not known yet, the calling |provider| will
@@ -80,13 +79,6 @@ class ContentSuggestionsProvider {
   };
 
   virtual ~ContentSuggestionsProvider();
-
-  // Returns the categories provided by this provider.
-  // When the set of provided categories changes, the Observer is notified
-  // through |OnNewSuggestions| or |OnCategoryStatusChanged| for added
-  // categories, and through |OnCategoryStatusChanged| with parameter
-  // NOT_PROVIDED for removed categories.
-  virtual std::vector<Category> GetProvidedCategories() = 0;
 
   // Determines the status of the given |category|, see CategoryStatus.
   virtual CategoryStatus GetCategoryStatus(Category category) = 0;

@@ -28,7 +28,9 @@ PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
     : ContentSuggestionsProvider(observer, category_factory),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(category_factory->FromKnownCategory(
-          KnownCategories::PHYSICAL_WEB_PAGES)) {}
+          KnownCategories::PHYSICAL_WEB_PAGES)) {
+  observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
+}
 
 PhysicalWebPageSuggestionsProvider::~PhysicalWebPageSuggestionsProvider() {}
 
@@ -53,11 +55,6 @@ void PhysicalWebPageSuggestionsProvider::OnDisplayableUrlsChanged(
 
   observer()->OnNewSuggestions(this, provided_category_,
                                std::move(suggestions));
-}
-
-std::vector<Category>
-PhysicalWebPageSuggestionsProvider::GetProvidedCategories() {
-  return std::vector<Category>({provided_category_});
 }
 
 CategoryStatus PhysicalWebPageSuggestionsProvider::GetCategoryStatus(

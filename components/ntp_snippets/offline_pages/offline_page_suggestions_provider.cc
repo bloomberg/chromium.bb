@@ -62,6 +62,14 @@ OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
       pref_service_(pref_service),
       download_manager_ui_enabled_(download_manager_ui_enabled) {
   DCHECK(recent_tabs_enabled || downloads_enabled);
+  if (recent_tabs_enabled) {
+    observer->OnCategoryStatusChanged(this, recent_tabs_category_,
+                                      recent_tabs_status_);
+  }
+  if (downloads_enabled) {
+    observer->OnCategoryStatusChanged(this, downloads_category_,
+                                      downloads_status_);
+  }
   offline_page_model_->AddObserver(this);
   FetchOfflinePages();
 }
@@ -79,15 +87,6 @@ void OfflinePageSuggestionsProvider::RegisterProfilePrefs(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
-
-std::vector<Category> OfflinePageSuggestionsProvider::GetProvidedCategories() {
-  std::vector<Category> provided_categories;
-  if (recent_tabs_status_ != CategoryStatus::NOT_PROVIDED)
-    provided_categories.push_back(recent_tabs_category_);
-  if (downloads_status_ != CategoryStatus::NOT_PROVIDED)
-    provided_categories.push_back(downloads_category_);
-  return provided_categories;
-}
 
 CategoryStatus OfflinePageSuggestionsProvider::GetCategoryStatus(
     Category category) {

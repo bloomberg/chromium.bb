@@ -216,6 +216,7 @@ NTPSnippetsService::NTPSnippetsService(
       thumbnail_requests_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
+  observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
   if (database_->IsErrorState()) {
     EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
     return;
@@ -273,10 +274,6 @@ void NTPSnippetsService::RescheduleFetching() {
   } else {
     scheduler_->Unschedule();
   }
-}
-
-std::vector<Category> NTPSnippetsService::GetProvidedCategories() {
-  return std::vector<Category>({provided_category_});
 }
 
 CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {

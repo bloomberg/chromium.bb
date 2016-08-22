@@ -48,7 +48,6 @@ class OfflinePageSuggestionsProvider
 
  private:
   // ContentSuggestionsProvider implementation.
-  std::vector<Category> GetProvidedCategories() override;
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;
   void DismissSuggestion(const std::string& suggestion_id) override;

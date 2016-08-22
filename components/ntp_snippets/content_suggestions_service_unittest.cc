@@ -71,10 +71,6 @@ class MockProvider : public ContentSuggestionsProvider {
     }
   }
 
-  std::vector<Category> GetProvidedCategories() override {
-    return provided_categories_;
-  }
-
   CategoryStatus GetCategoryStatus(Category category) {
     return statuses_[category.id()];
   }
@@ -92,6 +88,11 @@ class MockProvider : public ContentSuggestionsProvider {
   void FireCategoryStatusChanged(Category category, CategoryStatus new_status) {
     statuses_[category.id()] = new_status;
     observer()->OnCategoryStatusChanged(this, category, new_status);
+  }
+
+  void FireCategoryStatusChangedWithCurrentStatus(Category category) {
+    observer()->OnCategoryStatusChanged(this, category,
+                                        statuses_[category.id()]);
   }
 
   void FireSuggestionInvalidated(Category category,
@@ -229,7 +230,9 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
               Eq(CategoryStatus::NOT_PROVIDED));
 
   MockProvider* provider1 = RegisterProvider(articles_category);
+  provider1->FireCategoryStatusChangedWithCurrentStatus(articles_category);
   EXPECT_THAT(providers().count(offline_pages_category), Eq(0ul));
+  ASSERT_THAT(providers().count(articles_category), Eq(1ul));
   EXPECT_THAT(providers().at(articles_category), Eq(provider1));
   EXPECT_THAT(providers().size(), Eq(1ul));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(articles_category));
@@ -239,7 +242,10 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
               Eq(CategoryStatus::NOT_PROVIDED));
 
   MockProvider* provider2 = RegisterProvider(offline_pages_category);
+  provider2->FireCategoryStatusChangedWithCurrentStatus(offline_pages_category);
+  ASSERT_THAT(providers().count(offline_pages_category), Eq(1ul));
   EXPECT_THAT(providers().at(articles_category), Eq(provider1));
+  ASSERT_THAT(providers().count(articles_category), Eq(1ul));
   EXPECT_THAT(providers().at(offline_pages_category), Eq(provider2));
   EXPECT_THAT(providers().size(), Eq(2ul));
   EXPECT_THAT(service()->GetCategories(),
@@ -350,8 +356,12 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
 
   // Create and register providers
   MockProvider* provider1 = RegisterProvider(articles_category);
+  provider1->FireCategoryStatusChangedWithCurrentStatus(articles_category);
   MockProvider* provider2 = RegisterProvider(offline_pages_category);
+  provider2->FireCategoryStatusChangedWithCurrentStatus(offline_pages_category);
+  ASSERT_THAT(providers().count(articles_category), Eq(1ul));
   EXPECT_THAT(providers().at(articles_category), Eq(provider1));
+  ASSERT_THAT(providers().count(offline_pages_category), Eq(1ul));
   EXPECT_THAT(providers().at(offline_pages_category), Eq(provider2));
 
   // Create and register observer
@@ -416,6 +426,7 @@ TEST_F(ContentSuggestionsServiceTest,
 TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoryInfo) {
   Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
   MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
   base::Optional<CategoryInfo> result = service()->GetCategoryInfo(category);
   ASSERT_TRUE(result.has_value());
   CategoryInfo expected = provider->GetCategoryInfo(category);
@@ -429,6 +440,7 @@ TEST_F(ContentSuggestionsServiceTest,
        ShouldRegisterNewCategoryOnNewSuggestions) {
   Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
   MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
   MockServiceObserver observer;
   service()->AddObserver(&observer);
 
@@ -445,9 +457,11 @@ TEST_F(ContentSuggestionsServiceTest,
   provider->FireSuggestionsChanged(new_category, {1, 2});
 
   ExpectThatSuggestionsAre(new_category, {1, 2});
+  ASSERT_THAT(providers().count(category), Eq(1ul));
   EXPECT_THAT(providers().at(category), Eq(provider));
   EXPECT_THAT(service()->GetCategoryStatus(category),
               Eq(CategoryStatus::AVAILABLE));
+  ASSERT_THAT(providers().count(new_category), Eq(1ul));
   EXPECT_THAT(providers().at(new_category), Eq(provider));
   EXPECT_THAT(service()->GetCategoryStatus(new_category),
               Eq(CategoryStatus::AVAILABLE));
@@ -459,6 +473,7 @@ TEST_F(ContentSuggestionsServiceTest,
        ShouldRegisterNewCategoryOnCategoryStatusChanged) {
   Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
   MockProvider* provider = RegisterProvider(category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(category);
   MockServiceObserver observer;
   service()->AddObserver(&observer);
 
@@ -472,6 +487,7 @@ TEST_F(ContentSuggestionsServiceTest,
   provider->FireCategoryStatusChanged(new_category,
                                       CategoryStatus::INITIALIZING);
 
+  ASSERT_THAT(providers().count(new_category), Eq(1ul));
   EXPECT_THAT(providers().at(new_category), Eq(provider));
   ExpectThatSuggestionsAre(new_category, std::vector<int>());
   EXPECT_THAT(service()->GetCategoryStatus(new_category),

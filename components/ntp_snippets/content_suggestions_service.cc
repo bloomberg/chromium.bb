@@ -152,12 +152,6 @@ void ContentSuggestionsService::RemoveObserver(Observer* observer) {
 void ContentSuggestionsService::RegisterProvider(
     std::unique_ptr<ContentSuggestionsProvider> provider) {
   DCHECK(state_ == State::ENABLED);
-  for (Category category : provider->GetProvidedCategories()) {
-    DCHECK_NE(CategoryStatus::NOT_PROVIDED,
-              provider->GetCategoryStatus(category));
-    RegisterCategoryIfRequired(provider.get(), category);
-    NotifyCategoryStatusChanged(category);
-  }
   providers_.push_back(std::move(provider));
 }
 
