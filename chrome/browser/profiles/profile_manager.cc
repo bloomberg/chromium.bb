@@ -371,6 +371,8 @@ Profile* ProfileManager::GetLastUsedProfile() {
 // static
 Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
   Profile* profile = GetLastUsedProfile();
+  if (!profile)
+    return nullptr;
   if (IncognitoModeForced(profile))
     return profile->GetOffTheRecordProfile();
   return profile;

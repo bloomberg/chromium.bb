@@ -73,6 +73,11 @@ void TabDesktopMediaList::Refresh() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  if (!profile) {
+    ScheduleNextRefresh();
+    return;
+  }
+
   std::vector<Browser*> browsers;
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->GetOriginalProfile() ==
@@ -130,9 +135,9 @@ void TabDesktopMediaList::Refresh() {
   favicon_hashes_ = new_favicon_hashes;
 
   // Sort tab sources by time. Most recent one first. Then update sources list.
-  for (auto it = tab_map.rbegin(); it != tab_map.rend(); ++it) {
+  for (auto it = tab_map.rbegin(); it != tab_map.rend(); ++it)
     sources.push_back(it->second);
-  }
+
   UpdateSourcesList(sources);
 
   for (const auto& it : favicon_pairs) {
