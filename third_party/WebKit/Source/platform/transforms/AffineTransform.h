@@ -183,6 +183,11 @@ public:
         memcpy(m, m_transform, sizeof(Transform));
     }
 
+    // If |asMatrix| is true, the transform is returned as a matrix in row-major
+    // order. Otherwise, the transform's decomposition is returned which shows
+    // the translation, scale, etc.
+    String toString(bool asMatrix = false) const;
+
 private:
     void setMatrix(const Transform m)
     {

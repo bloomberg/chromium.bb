@@ -37,6 +37,7 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -1596,6 +1597,35 @@ SkMatrix44 TransformationMatrix::toSkMatrix44(const TransformationMatrix& matrix
     ret.setDouble(3, 2, matrix.m34());
     ret.setDouble(3, 3, matrix.m44());
     return ret;
+}
+
+String TransformationMatrix::toString(bool asMatrix) const
+{
+    if (asMatrix) {
+        // Return as a matrix in row-major order.
+        return String::format("[%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%lg,\n%lg,%lg,%lg,%lg]",
+            m11(), m21(), m31(), m41(),
+            m12(), m22(), m32(), m42(),
+            m13(), m23(), m33(), m43(),
+            m14(), m24(), m34(), m44());
+    }
+
+    TransformationMatrix::DecomposedType decomposition;
+    if (!decompose(decomposition))
+        return toString(true) + " (degenerate)";
+
+    if (isIdentityOrTranslation()) {
+        if (decomposition.translateX == 0 && decomposition.translateY == 0 && decomposition.translateZ == 0)
+            return "identity";
+        return String::format("translation(%lg,%lg,%lg)", decomposition.translateX, decomposition.translateY, decomposition.translateZ);
+    }
+
+    return String::format("translation(%lg,%lg,%lg), scale(%lg,%lg,%lg), skew(%lg,%lg,%lg), quaternion(%lg,%lg,%lg,%lg), perspective(%lg,%lg,%lg,%lg)",
+        decomposition.translateX, decomposition.translateY, decomposition.translateZ,
+        decomposition.scaleX, decomposition.scaleY, decomposition.scaleZ,
+        decomposition.skewXY, decomposition.skewXZ, decomposition.skewYZ,
+        decomposition.quaternionX, decomposition.quaternionY, decomposition.quaternionZ, decomposition.quaternionW,
+        decomposition.perspectiveX, decomposition.perspectiveY, decomposition.perspectiveZ, decomposition.perspectiveW);
 }
 
 } // namespace blink

@@ -394,6 +394,10 @@ public:
 
     static SkMatrix44 toSkMatrix44(const TransformationMatrix&);
 
+    // If |asMatrix|, return the matrix in row-major order. Otherwise, return
+    // the transform's decomposition which shows the translation, scale, etc.
+    String toString(bool asMatrix = false) const;
+
 private:
     // multiply passed 2D point by matrix (assume z=0)
     void multVecMatrix(double x, double y, double& dstX, double& dstY) const;

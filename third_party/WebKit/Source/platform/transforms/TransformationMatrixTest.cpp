@@ -5,6 +5,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -96,6 +97,34 @@ TEST(TransformationMatrixTest, Multiplication)
 
     a.multiply(b);
     EXPECT_EQ(expectedAtimesB, a);
+}
+
+TEST(TransformationMatrixTest, ToString)
+{
+    TransformationMatrix zeros(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0] (degenerate)", zeros.toString());
+    EXPECT_EQ("[0,0,0,0,\n0,0,0,0,\n0,0,0,0,\n0,0,0,0]", zeros.toString(true));
+
+    TransformationMatrix identity;
+    EXPECT_EQ("identity", identity.toString());
+    EXPECT_EQ("[1,0,0,0,\n0,1,0,0,\n0,0,1,0,\n0,0,0,1]", identity.toString(true));
+
+    TransformationMatrix translation;
+    translation.translate3d(3, 5, 7);
+    EXPECT_EQ("translation(3,5,7)", translation.toString());
+    EXPECT_EQ("[1,0,0,3,\n0,1,0,5,\n0,0,1,7,\n0,0,0,1]", translation.toString(true));
+
+    TransformationMatrix rotation;
+    rotation.rotate(180);
+    EXPECT_EQ("translation(0,0,0), scale(1,1,1), skew(0,0,0), quaternion(0,0,1,-6.12323e-17), perspective(0,0,0,1)", rotation.toString());
+    EXPECT_EQ("[-1,-1.22465e-16,0,0,\n1.22465e-16,-1,0,0,\n0,0,1,0,\n0,0,0,1]", rotation.toString(true));
+
+    TransformationMatrix columnMajorConstructor(1, 1, 1, 6, 2, 2, 0, 7, 3, 3, 3, 8, 4, 4, 4, 9);
+    // [ 1 2 3 4 ]
+    // [ 1 2 3 4 ]
+    // [ 1 0 3 4 ]
+    // [ 6 7 8 9 ]
+    EXPECT_EQ("[1,2,3,4,\n1,2,3,4,\n1,0,3,4,\n6,7,8,9]", columnMajorConstructor.toString(true));
 }
 
 } // namespace blink

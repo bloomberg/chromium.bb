@@ -32,6 +32,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -398,6 +399,36 @@ void AffineTransform::recompose(const DecomposedType& decomp)
     this->setF(decomp.translateY);
     this->rotateRadians(decomp.angle);
     this->scale(decomp.scaleX, decomp.scaleY);
+}
+
+String AffineTransform::toString(bool asMatrix) const
+{
+    if (asMatrix) {
+        // Return as a matrix in row-major order.
+        return String::format("[%lg,%lg,%lg,\n%lg,%lg,%lg]",
+            a(), c(), e(),
+            b(), d(), f());
+    }
+
+    if (isIdentity())
+        return "identity";
+
+    AffineTransform::DecomposedType decomposition;
+    decompose(decomposition);
+
+    if (isIdentityOrTranslation())
+        return String::format("translation(%lg,%lg)", decomposition.translateX, decomposition.translateY);
+
+    return String::format("translation(%lg,%lg), scale(%lg,%lg), angle(%lgdeg), remainder(%lg,%lg,%lg,%lg)",
+        decomposition.translateX,
+        decomposition.translateY,
+        decomposition.scaleX,
+        decomposition.scaleY,
+        rad2deg(decomposition.angle),
+        decomposition.remainderA,
+        decomposition.remainderB,
+        decomposition.remainderC,
+        decomposition.remainderD);
 }
 
 } // namespace blink
