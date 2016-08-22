@@ -104,6 +104,9 @@ class PDFiumEngine : public PDFEngine,
   bool GetPageSizeAndUniformity(pp::Size* size) override;
   void AppendBlankPages(int num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
+#if defined(PDF_USE_XFA)
+  virtual void SetScrollPosition(const pp::Point& position) = 0;
+#endif
   bool IsProgressiveLoad() override;
   std::string GetMetadata(const std::string& key) override;
 
@@ -511,7 +514,7 @@ class PDFiumEngine : public PDFEngine,
   static void Form_GotoPage(IPDF_JSPLATFORM* param, int page_number);
   static int Form_Browse(IPDF_JSPLATFORM* param, void* file_path, int length);
 
-#ifdef PDF_USE_XFA
+#if defined(PDF_USE_XFA)
   static void Form_EmailTo(FPDF_FORMFILLINFO* param,
                            FPDF_FILEHANDLER* file_handler,
                            FPDF_WIDESTRING to,
@@ -573,7 +576,7 @@ class PDFiumEngine : public PDFEngine,
   static int Form_GetLanguage(FPDF_FORMFILLINFO* param,
                               void* language,
                               int length);
-#endif  // PDF_USE_XFA
+#endif  // defined(PDF_USE_XFA)
 
   // IFSDK_PAUSE callbacks
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
