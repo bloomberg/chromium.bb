@@ -8831,29 +8831,4 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame)
     EXPECT_EQ("", toLocalFrame(helper.webView()->page()->mainFrame())->document()->documentElement()->innerText());
 }
 
-class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
-public:
-    void didReceiveData(WebURLLoaderClient* originalClient, WebURLLoader* loader, const char* data, int dataLength, int encodedDataLength) override
-    {
-        EXPECT_GT(dataLength, 16);
-        originalClient->didReceiveData(loader, data, 16, 16, 16);
-        // This didReceiveData call shouldn't crash due to a failed assertion.
-        originalClient->didReceiveData(loader, data + 16, dataLength - 16, encodedDataLength - 16, dataLength - 16);
-    }
-};
-
-TEST_F(WebFrameTest, ImageDocumentDecodeError)
-{
-    std::string url = m_baseURL + "not_an_image.ico";
-    URLTestHelpers::registerMockedURLLoad(toKURL(url), "not_an_image.ico", "image/x-icon");
-    MultipleDataChunkDelegate delegate;
-    Platform::current()->getURLLoaderMockFactory()->setLoaderDelegate(&delegate);
-
-    FrameTestHelpers::WebViewHelper helper;
-    helper.initializeAndLoad(url, true);
-    Document* document = toLocalFrame(helper.webView()->page()->mainFrame())->document();
-    EXPECT_TRUE(document->isImageDocument());
-    EXPECT_EQ(Resource::DecodeError, toImageDocument(document)->cachedImage()->getStatus());
-}
-
 } // namespace blink
