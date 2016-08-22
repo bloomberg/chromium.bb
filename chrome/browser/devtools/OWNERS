@@ -1,6 +1,5 @@
 dgozman@chromium.org
 pfeldman@chromium.org
-yurys@chromium.org
 
 per-file devtools_embedder_message_dispatcher.*=set noparent
 per-file devtools_embedder_message_dispatcher.*=file://ipc/SECURITY_OWNERS

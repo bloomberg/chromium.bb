@@ -14,7 +14,6 @@ pfeldman@chromium.org
 pdr@chromium.org
 schenney@chromium.org
 tkent@chromium.org
-yurys@chromium.org
 
 per-file AssertMatchingEnums.cpp=*
 
@@ -24,4 +23,3 @@ per-file WebBindings.cpp=dcarney@chromium.org
 per-file WebBindings.cpp=esprehn@chromium.org
 per-file WebBindings.cpp=haraken@chromium.org
 per-file WebBindings.cpp=marja@chromium.org
-per-file WebBindings.cpp=yurys@chromium.org
