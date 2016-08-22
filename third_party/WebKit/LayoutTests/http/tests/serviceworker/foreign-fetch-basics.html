@@ -103,13 +103,24 @@ promise_test(t => {
   }, 'Service Worker does not intercept navigations.');
 
 promise_test(t => {
-    var scope = 'simple.txt?fallback';
+    var scope = 'fetch-access-control.php?fallback&ACAOrigin=*';
     var remote_url =
         host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url))
-      .then(response => {});
-  }, 'Service Worker that fallback to network should not crash.');
+      .then(response => response.text())
+      .then(response_text => assert_true(response_text.startsWith('report(')));
+  }, 'Service Worker that fallback to network should fallback to network.');
+
+promise_test(t => {
+    var scope = 'simple.txt?fallback';
+    var remote_url =
+        host_info.HTTPS_REMOTE_ORIGIN + '/serviceworker/resources/' + scope;
+    return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
+      .then(() => fetch(remote_url, {mode: 'no-cors'}))
+      .then(response => assert_equals(response.type, 'opaque'))
+      .then(() => promise_rejects(t, new TypeError(), fetch(remote_url)));
+  }, 'Falling back to network should still respect CORS.');
 
 promise_test(t => {
     var ff_scope = 'foreign-fetch/scope/controlled?basic';

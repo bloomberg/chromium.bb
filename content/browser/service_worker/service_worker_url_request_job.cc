@@ -250,20 +250,13 @@ ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 
 void ServiceWorkerURLRequestJob::FallbackToNetwork() {
   DCHECK_EQ(NOT_DETERMINED, response_type_);
-  // TODO(shimazu): Remove the condition of FOREIGN_FETCH after figuring out
-  // what to do about CORS preflight and fallbacks for foreign fetch events.
-  // http://crbug.com/604084
-  DCHECK(!IsFallbackToRendererNeeded() ||
-         (fetch_type_ == ServiceWorkerFetchType::FOREIGN_FETCH));
+  DCHECK(!IsFallbackToRendererNeeded());
   response_type_ = FALLBACK_TO_NETWORK;
   MaybeStartRequest();
 }
 
 void ServiceWorkerURLRequestJob::FallbackToNetworkOrRenderer() {
   DCHECK_EQ(NOT_DETERMINED, response_type_);
-  // TODO(shimazu): Remove the condition of FOREIGN_FETCH after figuring out
-  // what to do about CORS preflight and fallbacks for foreign fetch events.
-  // http://crbug.com/604084
   DCHECK_NE(ServiceWorkerFetchType::FOREIGN_FETCH, fetch_type_);
   if (IsFallbackToRendererNeeded()) {
     response_type_ = FALLBACK_TO_RENDERER;
@@ -876,7 +869,8 @@ void ServiceWorkerURLRequestJob::FinalizeFallbackToNetwork() {
 void ServiceWorkerURLRequestJob::FinalizeFallbackToRenderer() {
   // TODO(mek): http://crbug.com/604084 Figure out what to do about CORS
   // preflight and fallbacks for foreign fetch events.
-  fall_back_required_ = fetch_type_ != ServiceWorkerFetchType::FOREIGN_FETCH;
+  DCHECK_NE(fetch_type_, ServiceWorkerFetchType::FOREIGN_FETCH);
+  fall_back_required_ = true;
   if (ShouldRecordResult())
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
   CreateResponseHeader(400, "Service Worker Fallback Required",
@@ -891,7 +885,12 @@ bool ServiceWorkerURLRequestJob::IsFallbackToRendererNeeded() const {
   // document, we can't simply fallback to the network in the browser process.
   // It is because the CORS preflight logic is implemented in the renderer. So
   // we return a fall_back_required response to the renderer.
+  // If fetch_type is |FOREIGN_FETCH| any required CORS checks will have already
+  // been done in the renderer (and if a preflight was necesary the request
+  // would never have reached foreign fetch), so such requests can always
+  // fallback to the network directly.
   return !IsMainResourceLoad() &&
+         fetch_type_ != ServiceWorkerFetchType::FOREIGN_FETCH &&
          (request_mode_ == FETCH_REQUEST_MODE_CORS ||
           request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
          !request()->initiator().IsSameOriginWith(
