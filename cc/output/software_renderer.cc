@@ -136,8 +136,8 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   // same texture again.
   current_framebuffer_lock_ = nullptr;
   current_framebuffer_lock_ =
-      base::WrapUnique(new ResourceProvider::ScopedWriteLockSoftware(
-          resource_provider_, texture->id()));
+      base::MakeUnique<ResourceProvider::ScopedWriteLockSoftware>(
+          resource_provider_, texture->id());
   current_framebuffer_canvas_ =
       sk_make_sp<SkCanvas>(current_framebuffer_lock_->sk_bitmap());
   current_canvas_ = current_framebuffer_canvas_.get();

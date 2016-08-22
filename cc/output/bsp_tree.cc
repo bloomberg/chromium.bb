@@ -24,7 +24,7 @@ BspTree::BspTree(std::deque<std::unique_ptr<DrawPolygon>>* list) {
   if (list->size() == 0)
     return;
 
-  root_ = base::WrapUnique(new BspNode(PopFront(list)));
+  root_ = base::MakeUnique<BspNode>(PopFront(list));
   BuildTree(root_.get(), list);
 }
 
@@ -67,13 +67,13 @@ void BspTree::BuildTree(
 
   // Build the back subtree using the front of the back_list as our splitter.
   if (back_list.size() > 0) {
-    node->back_child = base::WrapUnique(new BspNode(PopFront(&back_list)));
+    node->back_child = base::MakeUnique<BspNode>(PopFront(&back_list));
     BuildTree(node->back_child.get(), &back_list);
   }
 
   // Build the front subtree using the front of the front_list as our splitter.
   if (front_list.size() > 0) {
-    node->front_child = base::WrapUnique(new BspNode(PopFront(&front_list)));
+    node->front_child = base::MakeUnique<BspNode>(PopFront(&front_list));
     BuildTree(node->front_child.get(), &front_list);
   }
 }

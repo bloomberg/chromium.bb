@@ -49,7 +49,7 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   ~EndClipPathDisplayItem() override;
 
   static std::unique_ptr<EndClipPathDisplayItem> Create() {
-    return base::WrapUnique(new EndClipPathDisplayItem());
+    return base::MakeUnique<EndClipPathDisplayItem>();
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;

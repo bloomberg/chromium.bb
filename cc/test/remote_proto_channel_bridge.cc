@@ -57,7 +57,7 @@ void FakeRemoteProtoChannelMain::SendCompositorProto(
       return;
     default:
       bridge_->channel_impl.OnProtoReceived(
-          base::WrapUnique(new proto::CompositorMessage(proto)));
+          base::MakeUnique<proto::CompositorMessage>(proto));
   }
 }
 
@@ -68,7 +68,7 @@ FakeRemoteProtoChannelImpl::FakeRemoteProtoChannelImpl(
 void FakeRemoteProtoChannelImpl::SendCompositorProto(
     const proto::CompositorMessage& proto) {
   bridge_->channel_main.OnProtoReceived(
-      base::WrapUnique(new proto::CompositorMessage(proto)));
+      base::MakeUnique<proto::CompositorMessage>(proto));
 }
 
 RemoteProtoChannelBridge::RemoteProtoChannelBridge(TestHooks* test_hooks)

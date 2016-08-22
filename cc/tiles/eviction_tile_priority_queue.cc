@@ -71,8 +71,9 @@ void CreateTilingSetEvictionQueues(
   DCHECK(queues->empty());
 
   for (auto* layer : layers) {
-    std::unique_ptr<TilingSetEvictionQueue> tiling_set_queue = base::WrapUnique(
-        new TilingSetEvictionQueue(layer->picture_layer_tiling_set()));
+    std::unique_ptr<TilingSetEvictionQueue> tiling_set_queue =
+        base::MakeUnique<TilingSetEvictionQueue>(
+            layer->picture_layer_tiling_set());
     // Queues will only contain non empty tiling sets.
     if (!tiling_set_queue->IsEmpty())
       queues->push_back(std::move(tiling_set_queue));

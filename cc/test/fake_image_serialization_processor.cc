@@ -19,14 +19,12 @@ FakeImageSerializationProcessor::~FakeImageSerializationProcessor() {}
 
 std::unique_ptr<EnginePictureCache>
 FakeImageSerializationProcessor::CreateEnginePictureCache() {
-  return base::WrapUnique(
-      new FakeEnginePictureCache(picture_cache_model_.get()));
+  return base::MakeUnique<FakeEnginePictureCache>(picture_cache_model_.get());
 }
 
 std::unique_ptr<ClientPictureCache>
 FakeImageSerializationProcessor::CreateClientPictureCache() {
-  return base::WrapUnique(
-      new FakeClientPictureCache(picture_cache_model_.get()));
+  return base::MakeUnique<FakeClientPictureCache>(picture_cache_model_.get());
 }
 
 }  // namespace cc

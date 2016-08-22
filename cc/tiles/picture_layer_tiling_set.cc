@@ -271,8 +271,8 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     DCHECK_EQ(tilings_[i]->raster_source(), raster_source.get());
   }
 
-  tilings_.push_back(base::WrapUnique(
-      new PictureLayerTiling(tree_, contents_scale, raster_source, client_)));
+  tilings_.push_back(base::MakeUnique<PictureLayerTiling>(
+      tree_, contents_scale, raster_source, client_));
   PictureLayerTiling* appended = tilings_.back().get();
   state_since_last_tile_priority_update_.added_tilings = true;
 

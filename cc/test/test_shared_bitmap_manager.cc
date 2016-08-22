@@ -38,7 +38,7 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::AllocateSharedBitmap(
   memory->CreateAndMapAnonymous(size.GetArea() * 4);
   SharedBitmapId id = SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
-  return base::WrapUnique(new OwnedSharedBitmap(std::move(memory), id));
+  return base::MakeUnique<OwnedSharedBitmap>(std::move(memory), id);
 }
 
 std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
@@ -48,7 +48,7 @@ std::unique_ptr<SharedBitmap> TestSharedBitmapManager::GetSharedBitmapFromId(
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
   uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
-  return base::WrapUnique(new SharedBitmap(pixels, id));
+  return base::MakeUnique<SharedBitmap>(pixels, id);
 }
 
 }  // namespace cc

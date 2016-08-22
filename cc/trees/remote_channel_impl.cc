@@ -470,8 +470,9 @@ void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,
 
   impl().proxy_impl =
       CreateProxyImpl(this, layer_tree_host, task_runner_provider_, nullptr);
-  impl().proxy_impl_weak_factory = base::WrapUnique(
-      new base::WeakPtrFactory<ProxyImpl>(impl().proxy_impl.get()));
+  impl().proxy_impl_weak_factory =
+      base::MakeUnique<base::WeakPtrFactory<ProxyImpl>>(
+          impl().proxy_impl.get());
   proxy_impl_weak_ptr_ = impl().proxy_impl_weak_factory->GetWeakPtr();
   completion->Signal();
 }

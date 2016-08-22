@@ -26,9 +26,9 @@ class MicroBenchmarkControllerTest : public testing::Test {
   void SetUp() override {
     impl_task_runner_provider_ =
         base::WrapUnique(new FakeImplTaskRunnerProvider);
-    layer_tree_host_impl_ = base::WrapUnique(new FakeLayerTreeHostImpl(
+    layer_tree_host_impl_ = base::MakeUnique<FakeLayerTreeHostImpl>(
         impl_task_runner_provider_.get(), &shared_bitmap_manager_,
-        &task_graph_runner_));
+        &task_graph_runner_);
 
     layer_tree_host_ = FakeLayerTreeHost::Create(&layer_tree_host_client_,
                                                  &task_graph_runner_);

@@ -1075,7 +1075,7 @@ void LayerImpl::SetHasRenderSurface(bool should_have_render_surface) {
     return;
 
   if (should_have_render_surface) {
-    render_surface_ = base::WrapUnique(new RenderSurfaceImpl(this));
+    render_surface_ = base::MakeUnique<RenderSurfaceImpl>(this);
     return;
   }
   render_surface_.reset();

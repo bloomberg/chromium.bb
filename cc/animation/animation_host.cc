@@ -46,10 +46,9 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       animation_waiting_for_deletion_(false) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
-        base::WrapUnique(new ScrollOffsetAnimationsImpl(this));
+        base::MakeUnique<ScrollOffsetAnimationsImpl>(this);
   } else {
-    scroll_offset_animations_ =
-        base::WrapUnique(new ScrollOffsetAnimations(this));
+    scroll_offset_animations_ = base::MakeUnique<ScrollOffsetAnimations>(this);
   }
 }
 
@@ -295,7 +294,7 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
 }
 
 std::unique_ptr<AnimationEvents> AnimationHost::CreateEvents() {
-  return base::WrapUnique(new AnimationEvents());
+  return base::MakeUnique<AnimationEvents>();
 }
 
 void AnimationHost::SetAnimationEvents(

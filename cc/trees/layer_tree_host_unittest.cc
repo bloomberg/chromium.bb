@@ -4360,11 +4360,11 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     auto output_surface =
         FakeOutputSurface::Create3d(std::move(compositor_context_provider));
     output_surface->SetMemoryPolicyToSetAtBind(
-        base::WrapUnique(new ManagedMemoryPolicy(
+        base::MakeUnique<ManagedMemoryPolicy>(
             second_context_provider_.get() ? second_output_surface_memory_limit_
                                            : first_output_surface_memory_limit_,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-            ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
+            ManagedMemoryPolicy::kDefaultNumResourcesLimit));
     return std::move(output_surface);
   }
 
@@ -4486,12 +4486,13 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     int frame = host_impl->active_tree()->source_frame_number();
     if (frame == -1) {
-      host_impl->active_tree()->QueuePinnedSwapPromise(base::WrapUnique(
-          new TestSwapPromise(&pinned_active_swap_promise_result_)));
+      host_impl->active_tree()->QueuePinnedSwapPromise(
+          base::MakeUnique<TestSwapPromise>(
+              &pinned_active_swap_promise_result_));
       host_impl->pending_tree()->QueueSwapPromise(
-          base::WrapUnique(new TestSwapPromise(&pending_swap_promise_result_)));
+          base::MakeUnique<TestSwapPromise>(&pending_swap_promise_result_));
       host_impl->active_tree()->QueueSwapPromise(
-          base::WrapUnique(new TestSwapPromise(&active_swap_promise_result_)));
+          base::MakeUnique<TestSwapPromise>(&active_swap_promise_result_));
     }
   }
 
@@ -4642,7 +4643,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
       case 1:
         layer_->SetBounds(gfx::Size(10, 11));
         layer_tree_host()->QueueSwapPromise(
-            base::WrapUnique(new TestSwapPromise(&swap_promise_result_)));
+            base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
         break;
       case 2:
         break;
@@ -4757,7 +4758,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
         // Make no changes so that we abort the next commit caused by queuing
         // the swap promise.
         layer_tree_host()->QueueSwapPromise(
-            base::WrapUnique(new TestSwapPromise(&swap_promise_result_)));
+            base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
         layer_tree_host()->SetNeedsUpdateLayers();
         break;
       case 2:

@@ -544,9 +544,9 @@ SoftwareImageDecodeController::GetOriginalImageDecode(
       return nullptr;
     }
   }
-  return base::WrapUnique(
-      new DecodedImage(decoded_info, std::move(decoded_pixels),
-                       SkSize::Make(0, 0), next_tracing_id_.GetNext()));
+  return base::MakeUnique<DecodedImage>(decoded_info, std::move(decoded_pixels),
+                                        SkSize::Make(0, 0),
+                                        next_tracing_id_.GetNext());
 }
 
 std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
@@ -659,10 +659,10 @@ SoftwareImageDecodeController::GetScaledImageDecode(
     DCHECK(result) << key.ToString();
   }
 
-  return base::WrapUnique(
-      new DecodedImage(scaled_info, std::move(scaled_pixels),
-                       SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
-                       next_tracing_id_.GetNext()));
+  return base::MakeUnique<DecodedImage>(
+      scaled_info, std::move(scaled_pixels),
+      SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
+      next_tracing_id_.GetNext());
 }
 
 void SoftwareImageDecodeController::DrawWithImageFinished(

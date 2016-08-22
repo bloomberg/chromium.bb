@@ -305,8 +305,8 @@ std::unique_ptr<StagingBuffer> StagingBufferPool::AcquireStagingBuffer(
 
   // Create new staging buffer if necessary.
   if (!staging_buffer) {
-    staging_buffer = base::WrapUnique(
-        new StagingBuffer(resource->size(), resource->format()));
+    staging_buffer =
+        base::MakeUnique<StagingBuffer>(resource->size(), resource->format());
     AddStagingBuffer(staging_buffer.get(), resource->format());
   }
 

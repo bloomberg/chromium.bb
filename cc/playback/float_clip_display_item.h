@@ -47,7 +47,7 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
   ~EndFloatClipDisplayItem() override;
 
   static std::unique_ptr<EndFloatClipDisplayItem> Create() {
-    return base::WrapUnique(new EndFloatClipDisplayItem());
+    return base::MakeUnique<EndFloatClipDisplayItem>();
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;

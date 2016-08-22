@@ -43,10 +43,10 @@ class TestablePictureLayerTilingSet : public PictureLayerTilingSet {
 std::unique_ptr<TestablePictureLayerTilingSet> CreateTilingSetWithSettings(
     PictureLayerTilingClient* client,
     const LayerTreeSettings& settings) {
-  return base::WrapUnique(new TestablePictureLayerTilingSet(
+  return base::MakeUnique<TestablePictureLayerTilingSet>(
       ACTIVE_TREE, client, settings.tiling_interest_area_padding,
       settings.skewport_target_time_in_seconds,
-      settings.skewport_extrapolation_limit_in_screen_pixels));
+      settings.skewport_extrapolation_limit_in_screen_pixels);
 }
 
 std::unique_ptr<TestablePictureLayerTilingSet> CreateTilingSet(

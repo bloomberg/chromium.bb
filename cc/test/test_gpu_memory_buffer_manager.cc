@@ -183,8 +183,8 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   last_gpu_memory_buffer_id_ += 1;
   std::unique_ptr<gfx::GpuMemoryBuffer> result(new GpuMemoryBufferImpl(
       this, last_gpu_memory_buffer_id_, size, format,
-      base::WrapUnique(new base::SharedMemory(handle.handle, false)),
-      handle.offset, handle.stride));
+      base::MakeUnique<base::SharedMemory>(handle.handle, false), handle.offset,
+      handle.stride));
   buffers_[last_gpu_memory_buffer_id_] = result.get();
   return result;
 }

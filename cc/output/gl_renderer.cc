@@ -529,7 +529,7 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
     }
 
     current_sync_query_ = available_sync_queries_.empty()
-                              ? base::WrapUnique(new SyncQuery(gl_))
+                              ? base::MakeUnique<SyncQuery>(gl_)
                               : PopFront(&available_sync_queries_);
 
     read_lock_fence = current_sync_query_->Begin();
@@ -1259,8 +1259,8 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
                                 kBottomLeft_GrSurfaceOrigin;
   } else {
     params->contents_resource_lock =
-        base::WrapUnique(new ResourceProvider::ScopedSamplerGL(
-            resource_provider_, params->contents_texture->id(), GL_LINEAR));
+        base::MakeUnique<ResourceProvider::ScopedSamplerGL>(
+            resource_provider_, params->contents_texture->id(), GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               params->contents_resource_lock->target());
     params->source_needs_flip = params->flip_texture;
@@ -1477,9 +1477,9 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     }
     if (params->background_texture) {
       params->shader_background_sampler_lock =
-          base::WrapUnique(new ResourceProvider::ScopedSamplerGL(
+          base::MakeUnique<ResourceProvider::ScopedSamplerGL>(
               resource_provider_, params->background_texture->id(),
-              GL_TEXTURE0 + last_texture_unit, GL_LINEAR));
+              GL_TEXTURE0 + last_texture_unit, GL_LINEAR);
       DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
                 params->shader_background_sampler_lock->target());
     }
@@ -3195,8 +3195,8 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   SetStencilEnabled(false);
   gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
-      base::WrapUnique(new ResourceProvider::ScopedWriteLockGL(
-          resource_provider_, texture->id(), false));
+      base::MakeUnique<ResourceProvider::ScopedWriteLockGL>(
+          resource_provider_, texture->id(), false);
   current_framebuffer_format_ = texture->format();
   unsigned texture_id = current_framebuffer_lock_->texture_id();
   gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
@@ -3238,8 +3238,8 @@ void GLRenderer::InitializeSharedObjects() {
   gl_->GenFramebuffers(1, &offscreen_framebuffer_id_);
 
   shared_geometry_ =
-      base::WrapUnique(new StaticGeometryBinding(gl_, QuadVertexRect()));
-  clipped_geometry_ = base::WrapUnique(new DynamicGeometryBinding(gl_));
+      base::MakeUnique<StaticGeometryBinding>(gl_, QuadVertexRect());
+  clipped_geometry_ = base::MakeUnique<DynamicGeometryBinding>(gl_);
 }
 
 void GLRenderer::PrepareGeometry(BoundGeometry binding) {
@@ -3777,8 +3777,8 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
-              resource_provider_, contents_resource_id)));
+          base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
+              resource_provider_, contents_resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
     GLfloat contents_rect[4] = {
@@ -3833,8 +3833,8 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
-              resource_provider_, overlay.resource_id)));
+          base::MakeUnique<ResourceProvider::ScopedReadLockGL>(
+              resource_provider_, overlay.resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
 
@@ -4005,8 +4005,8 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
     return;
 
   pending_overlay_resources_.push_back(
-      base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
-          resource_provider_, resource->id())));
+      base::MakeUnique<ResourceProvider::ScopedReadLockGL>(resource_provider_,
+                                                           resource->id()));
   unsigned texture_id = pending_overlay_resources_.back()->texture_id();
 
   // Once a resource is released, it is marked as "busy". It will be

@@ -144,8 +144,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.renderer_settings.buffer_to_texture_target_map);
 
-  texture_mailbox_deleter_ = base::WrapUnique(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
+  texture_mailbox_deleter_ = base::MakeUnique<TextureMailboxDeleter>(
+      base::ThreadTaskRunnerHandle::Get());
 
   renderer_ = base::MakeUnique<GLRenderer>(
       &settings_.renderer_settings, output_surface_.get(),

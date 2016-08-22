@@ -48,7 +48,7 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
   ~EndFilterDisplayItem() override;
 
   static std::unique_ptr<EndFilterDisplayItem> Create() {
-    return base::WrapUnique(new EndFilterDisplayItem());
+    return base::MakeUnique<EndFilterDisplayItem>();
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;

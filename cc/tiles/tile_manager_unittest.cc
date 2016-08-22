@@ -1498,9 +1498,9 @@ class TileManagerTest : public TestLayerTreeHostBase {
       SharedBitmapManager* shared_bitmap_manager,
       TaskGraphRunner* task_graph_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) override {
-    return base::WrapUnique(new MockLayerTreeHostImpl(
+    return base::MakeUnique<MockLayerTreeHostImpl>(
         settings, task_runner_provider, shared_bitmap_manager,
-        task_graph_runner, gpu_memory_buffer_manager));
+        task_graph_runner, gpu_memory_buffer_manager);
   }
 
   // By default use software compositing (no context provider).
@@ -1665,7 +1665,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
 class ActivationTasksDoNotBlockReadyToDrawTest : public TileManagerTest {
  protected:
   std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner() override {
-    return base::WrapUnique(new SynchronousTaskGraphRunner());
+    return base::MakeUnique<SynchronousTaskGraphRunner>();
   }
 
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {

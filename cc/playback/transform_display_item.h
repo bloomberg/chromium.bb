@@ -46,7 +46,7 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   ~EndTransformDisplayItem() override;
 
   static std::unique_ptr<EndTransformDisplayItem> Create() {
-    return base::WrapUnique(new EndTransformDisplayItem());
+    return base::MakeUnique<EndTransformDisplayItem>();
   }
 
   void ToProtobuf(proto::DisplayItem* proto) const override;

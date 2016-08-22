@@ -68,7 +68,7 @@ void MailboxReleased(const gpu::SyncToken& sync_token,
 class FullscreenOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(base::WrapUnique(new OverlayStrategyFullscreen()));
+    strategies->push_back(base::MakeUnique<OverlayStrategyFullscreen>());
   }
   bool AllowCALayerOverlays() override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
@@ -80,9 +80,8 @@ class FullscreenOverlayValidator : public OverlayCandidateValidator {
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(
-        base::WrapUnique(new OverlayStrategySingleOnTop(this)));
-    strategies->push_back(base::WrapUnique(new OverlayStrategyUnderlay(this)));
+    strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
+    strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
   }
   bool AllowCALayerOverlays() override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
@@ -122,15 +121,14 @@ class CALayerValidator : public OverlayCandidateValidator {
 class SingleOnTopOverlayValidator : public SingleOverlayValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(
-        base::WrapUnique(new OverlayStrategySingleOnTop(this)));
+    strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
   }
 };
 
 class UnderlayOverlayValidator : public SingleOverlayValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(base::WrapUnique(new OverlayStrategyUnderlay(this)));
+    strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
   }
 };
 
@@ -1294,8 +1292,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     if (use_validator)
       output_surface_->SetOverlayCandidateValidator(new SingleOverlayValidator);
 
-    renderer_ = base::WrapUnique(new OverlayInfoRendererGL(
-        &settings_, output_surface_.get(), resource_provider_.get()));
+    renderer_ = base::MakeUnique<OverlayInfoRendererGL>(
+        &settings_, output_surface_.get(), resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }

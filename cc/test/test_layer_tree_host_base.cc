@@ -47,9 +47,9 @@ std::unique_ptr<FakeLayerTreeHostImpl> TestLayerTreeHostBase::CreateHostImpl(
     SharedBitmapManager* shared_bitmap_manager,
     TaskGraphRunner* task_graph_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  return base::WrapUnique(new FakeLayerTreeHostImpl(
+  return base::MakeUnique<FakeLayerTreeHostImpl>(
       settings, task_runner_provider, shared_bitmap_manager, task_graph_runner,
-      gpu_memory_buffer_manager));
+      gpu_memory_buffer_manager);
 }
 
 std::unique_ptr<TaskGraphRunner>

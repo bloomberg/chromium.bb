@@ -352,8 +352,8 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
-    renderer_ = base::WrapUnique(new FakeRendererGL(
-        &settings_, output_surface_.get(), resource_provider_.get()));
+    renderer_ = base::MakeUnique<FakeRendererGL>(
+        &settings_, output_surface_.get(), resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
@@ -1879,10 +1879,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   class SingleOverlayValidator : public OverlayCandidateValidator {
    public:
     void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(
-          base::WrapUnique(new OverlayStrategySingleOnTop(this)));
-      strategies->push_back(
-          base::WrapUnique(new OverlayStrategyUnderlay(this)));
+      strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
+      strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
     }
 
     bool AllowCALayerOverlays() override { return false; }
@@ -1899,7 +1897,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
 
   void Initialize() override {
     strategies_.push_back(
-        base::WrapUnique(new OverlayStrategySingleOnTop(&validator_)));
+        base::MakeUnique<OverlayStrategySingleOnTop>(&validator_));
   }
 
   SingleOverlayValidator validator_;

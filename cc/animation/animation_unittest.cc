@@ -23,8 +23,8 @@ std::unique_ptr<Animation> CreateAnimation(double iterations,
                                            double duration,
                                            double playback_rate) {
   std::unique_ptr<Animation> to_return(
-      Animation::Create(base::WrapUnique(new FakeFloatAnimationCurve(duration)),
-                        0, 1, TargetProperty::OPACITY));
+      Animation::Create(base::MakeUnique<FakeFloatAnimationCurve>(duration), 0,
+                        1, TargetProperty::OPACITY));
   to_return->set_iterations(iterations);
   to_return->set_playback_rate(playback_rate);
   return to_return;
