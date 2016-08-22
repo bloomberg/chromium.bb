@@ -682,6 +682,13 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   int s0 = av1_cost_bit(skip_prob, 0);
   int s1 = av1_cost_bit(skip_prob, 1);
   const int is_inter = is_inter_block(mbmi);
+  uint8_t zcoeff_blk[256];
+  int num_4x4_blks = 1 << (num_pels_log2_lookup[bs] - 4);
+
+  *distortion = INT64_MAX;
+  *rate = INT_MAX;
+  *skip = 0;
+  *sse = INT64_MAX;
 
   mbmi->tx_size = AOMMIN(max_tx_size, largest_tx_size);
   if (mbmi->tx_size < TX_32X32 && !xd->lossless[mbmi->segment_id]) {
@@ -706,21 +713,19 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (this_rd < ((best_tx_type == DCT_DCT) ? ext_tx_th : 1) * best_rd) {
         best_rd = this_rd;
         best_tx_type = mbmi->tx_type;
+        *distortion = d;
+        *rate = r;
+        *skip = s;
+        *sse = psse;
+        memcpy(zcoeff_blk, x->zcoeff_blk[mbmi->tx_size], num_4x4_blks);
       }
     }
+    memcpy(x->zcoeff_blk[mbmi->tx_size], zcoeff_blk, num_4x4_blks);
+  } else {
+    txfm_rd_in_plane(x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
+                     mbmi->tx_size, cpi->sf.use_fast_coef_costing);
   }
   mbmi->tx_type = best_tx_type;
-  txfm_rd_in_plane(x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
-                   mbmi->tx_size, cpi->sf.use_fast_coef_costing);
-  if (mbmi->tx_size < TX_32X32 && !xd->lossless[mbmi->segment_id] &&
-      *rate != INT_MAX) {
-    if (is_inter)
-      *rate += cpi->inter_tx_type_costs[mbmi->tx_size][mbmi->tx_type];
-    else
-      *rate += cpi->intra_tx_type_costs
-                   [mbmi->tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
-                   [mbmi->tx_type];
-  }
 }
 
 static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
