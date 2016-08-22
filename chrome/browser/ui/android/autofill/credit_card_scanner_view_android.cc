@@ -9,9 +9,11 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/credit_card_scanner_view_delegate.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -75,8 +77,12 @@ void CreditCardScannerViewAndroid::ScanCompleted(
     jint expiration_year) {
   CreditCard card(base::android::ConvertJavaStringToUTF16(env, card_number),
       static_cast<int>(expiration_month), static_cast<int>(expiration_year));
-  card.SetRawInfo(CREDIT_CARD_NAME_FULL,
-      base::android::ConvertJavaStringToUTF16(env, card_holder_name));
+
+  if (base::FeatureList::IsEnabled(kAutofillScanCardholderName)) {
+    card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+        base::android::ConvertJavaStringToUTF16(env, card_holder_name));
+  }
+
   delegate_->ScanCompleted(card);
 }
 

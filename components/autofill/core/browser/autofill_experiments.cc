@@ -21,10 +21,12 @@ namespace autofill {
 
 const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillProfileCleanup{"AutofillProfileCleanup",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardSigninPromo{
     "AutofillCreditCardSigninPromo", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillProfileCleanup{"AutofillProfileCleanup",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillScanCardholderName{
+    "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 
 bool IsAutofillEnabled(const PrefService* pref_service) {

@@ -20,8 +20,9 @@ class PrefService;
 namespace autofill {
 
 extern const base::Feature kAutofillCreditCardAssist;
-extern const base::Feature kAutofillProfileCleanup;
 extern const base::Feature kAutofillCreditCardSigninPromo;
+extern const base::Feature kAutofillProfileCleanup;
+extern const base::Feature kAutofillScanCardholderName;
 extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 
 // Returns true if autofill should be enabled. See also
