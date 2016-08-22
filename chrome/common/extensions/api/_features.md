@@ -122,8 +122,8 @@ The following properties are supported in the feature system.
 ### blacklist
 
 The `blacklist` property specifies a list of ID hashes for extensions that
-cannot access a feature. See _api_features.json for how to generate these
-hashes.
+cannot access a feature. See ID Hashes in this document for how to generate
+these hashes.
 
 Accepted values are lists of id hashes.
 
@@ -260,9 +260,49 @@ are the only extensions allowed to access a feature.
 
 Accepted values are lists of id hashes.
 
+## ID Hashes
+
+Instead of listing the ID directly in the whitelist or blacklist section, we
+use an uppercased SHA1 hash of the id.
+
+To generate a new whitelisted ID for an extension ID, do the following in bash:
+```
+$ echo -n "aaaabbbbccccddddeeeeffffgggghhhh" | \
+     sha1sum | tr '[:lower:]' '[:upper:]'
+```
+(Replacing `aaaabbbbccccddddeeeeffffgggghhhh` with your extension ID.)
+
+The output should be something like:
+```
+9A0417016F345C934A1A88F55CA17C05014EEEBA  -
+```
+
+Add the ID to the whitelist or blacklist for the desired feature. It is also
+often useful to link the crbug next to the id hash, e.g.:
+```
+"whitelist": [
+  "9A0417016F345C934A1A88F55CA17C05014EEEBA"  // crbug.com/<num>
+]
+```
+
+Google employees: please update http://go/chrome-api-whitelist to map hashes
+back to ids.
+
+## Compilation
+
+The feature files are compiled as part of the suite of tools in
+//tools/json\_schema\_compiler/. The output is a set of FeatureProviders that
+contain a mapping of all features.
+
+In addition to being significantly more performant than parsing the JSON files
+at runtime, this has the added benefit of allowing us to validate at compile
+time rather than needing a unittest (or allowing incorrect features).
+
+In theory, invalid features should result in a compilation failure; in practice,
+the compiler is probably missing some cases.
+
 ## Still to come
 
-TODO(devlin): Move documentation for how to create ID hashes, possibly move
-documentation for feature contexts, add documentation for extension types, and
-add documentation for the compilation process. Probably also more on
-requirements for individual features.
+TODO(devlin): Possibly move documentation for feature contexts, add
+documentation for extension types. Probably also more on requirements for
+individual features.
