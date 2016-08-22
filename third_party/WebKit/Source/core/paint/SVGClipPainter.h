@@ -27,9 +27,6 @@ public:
 
     SVGClipPainter(LayoutSVGResourceClipper& clip) : m_clip(clip) { }
 
-    // FIXME: Filters are also stateful resources that could benefit from having their state managed
-    //        on the caller stack instead of the current hashmap. We should look at refactoring these
-    //        into a general interface that can be shared.
     bool prepareEffect(const LayoutObject&, const FloatRect&, const FloatRect&, const FloatPoint&, GraphicsContext&, ClipperState&);
     void finishEffect(const LayoutObject&, GraphicsContext&, ClipperState&);
 
