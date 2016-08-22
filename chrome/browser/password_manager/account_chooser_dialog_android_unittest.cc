@@ -49,7 +49,7 @@ class AccountChooserDialogAndroidTest : public ChromeRenderViewHostTestHarness {
   AccountChooserDialogAndroid* CreateDialogManyAccounts();
 
   AccountChooserDialogAndroid* CreateDialog(
-      ScopedVector<autofill::PasswordForm> credentials);
+      std::vector<std::unique_ptr<autofill::PasswordForm>> credentials);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroidTest);
@@ -62,8 +62,8 @@ void AccountChooserDialogAndroidTest::SetUp() {
 }
 
 AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
-    ScopedVector<autofill::PasswordForm> credentials) {
-  ScopedVector<autofill::PasswordForm> deprecated_federated;
+    std::vector<std::unique_ptr<autofill::PasswordForm>> credentials) {
+  std::vector<std::unique_ptr<autofill::PasswordForm>> deprecated_federated;
   return new AccountChooserDialogAndroid(
       web_contents(), std::move(credentials), std::move(deprecated_federated),
       GURL("https://example.com"),
@@ -73,14 +73,14 @@ AccountChooserDialogAndroid* AccountChooserDialogAndroidTest::CreateDialog(
 
 AccountChooserDialogAndroid*
 AccountChooserDialogAndroidTest::CreateDialogOneAccount() {
-  ScopedVector<autofill::PasswordForm> credentials;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> credentials;
   credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
   return CreateDialog(std::move(credentials));
 }
 
 AccountChooserDialogAndroid*
 AccountChooserDialogAndroidTest::CreateDialogManyAccounts() {
-  ScopedVector<autofill::PasswordForm> credentials;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> credentials;
   credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
   credentials.push_back(CreatePasswordFormFromDataForTesting(kFormData));
   return CreateDialog(std::move(credentials));

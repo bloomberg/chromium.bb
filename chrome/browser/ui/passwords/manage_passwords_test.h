@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -47,7 +46,7 @@ class ManagePasswordsTest : public InProcessBrowserTest {
 
   // Put the controller, icon, and bubble into an auto sign-in state.
   void SetupAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_credentials);
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials);
 
   // Get samples for |histogram|.
   std::unique_ptr<base::HistogramSamples> GetSamples(const char* histogram);

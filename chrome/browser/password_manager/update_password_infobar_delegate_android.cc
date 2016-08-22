@@ -52,7 +52,7 @@ bool UpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
   return GetCurrentForms().size() > 1 && !is_password_overriden;
 }
 
-const std::vector<const autofill::PasswordForm*>&
+const std::vector<std::unique_ptr<autofill::PasswordForm>>&
 UpdatePasswordInfoBarDelegate::GetCurrentForms() const {
   return passwords_state_.GetCurrentForms();
 }

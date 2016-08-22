@@ -52,12 +52,14 @@ class ManagePasswordsUIController
       std::unique_ptr<password_manager::PasswordFormManager> form_manager)
       override;
   bool OnChooseCredentials(
-      ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>
+          federated_credentials,
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
-  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
-                    const GURL& origin) override;
+  void OnAutoSignin(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
+      const GURL& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManager> form_manager)
@@ -88,10 +90,10 @@ class ManagePasswordsUIController
   password_manager::ui::State GetState() const override;
   const autofill::PasswordForm& GetPendingPassword() const override;
   bool IsPasswordOverridden() const override;
-  const std::vector<const autofill::PasswordForm*>& GetCurrentForms()
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
       const override;
-  const std::vector<const autofill::PasswordForm*>& GetFederatedForms()
-      const override;
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  GetFederatedForms() const override;
   password_manager::InteractionsStats* GetCurrentInteractionStats() const
       override;
   void OnBubbleShown() override;

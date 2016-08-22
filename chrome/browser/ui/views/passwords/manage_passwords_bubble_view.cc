@@ -301,9 +301,8 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   // Create the pending credential item, save button and refusal combobox.
   ManagePasswordItemsView* item = nullptr;
   if (!parent->model()->pending_password().username_value.empty()) {
-    std::vector<const autofill::PasswordForm*> credentials(
-        1, &parent->model()->pending_password());
-    item = new ManagePasswordItemsView(parent_->model(), credentials);
+    item = new ManagePasswordItemsView(parent_->model(),
+                                       &parent->model()->pending_password());
   }
   save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
@@ -412,18 +411,10 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // If we have a list of passwords to store for the current site, display
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
-
-  bool only_PSL_matches =
-      find_if(parent_->model()->local_credentials().begin(),
-              parent_->model()->local_credentials().end(),
-              [](const autofill::PasswordForm* form) {
-                return !form->is_public_suffix_match;
-              }) == parent_->model()->local_credentials().end();
-
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  if (!only_PSL_matches) {
+  if (!parent_->model()->local_credentials().empty()) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
-        parent_->model(), parent_->model()->local_credentials().get());
+        parent_->model(), &parent_->model()->local_credentials());
     layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
                                 views::kUnrelatedControlVerticalSpacing);
     layout->AddView(item);
@@ -655,14 +646,11 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   // Create the pending credential item, update button.
   View* item = nullptr;
   if (parent->model()->ShouldShowMultipleAccountUpdateUI()) {
-    selection_view_ = new CredentialsSelectionView(
-        parent->model(), parent->model()->local_credentials().get(),
-        parent->model()->pending_password().username_value);
+    selection_view_ = new CredentialsSelectionView(parent->model());
     item = selection_view_;
   } else {
-    std::vector<const autofill::PasswordForm*> forms;
-    forms.push_back(&parent->model()->pending_password());
-    item = new ManagePasswordItemsView(parent_->model(), forms);
+    item = new ManagePasswordItemsView(parent_->model(),
+                                       &parent->model()->pending_password());
   }
   nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));

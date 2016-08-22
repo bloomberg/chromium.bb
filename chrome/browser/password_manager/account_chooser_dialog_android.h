@@ -11,7 +11,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -29,8 +28,8 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
  public:
   AccountChooserDialogAndroid(
       content::WebContents* web_contents,
-      ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback);
 
@@ -61,11 +60,11 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
  private:
   void OnDialogCancel();
 
-  const std::vector<const autofill::PasswordForm*>& local_credentials_forms()
-      const;
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  local_credentials_forms() const;
 
-  const std::vector<const autofill::PasswordForm*>&
-  federated_credentials_forms() const;
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  federation_providers_forms() const;
 
   void ChooseCredential(size_t index,
                         password_manager::CredentialType type,

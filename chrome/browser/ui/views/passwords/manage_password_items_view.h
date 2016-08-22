@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEMS_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEMS_VIEW_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/views/view.h"
 
@@ -24,7 +24,10 @@ class ManagePasswordItemsView : public views::View {
  public:
   ManagePasswordItemsView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-      const std::vector<const autofill::PasswordForm*>& password_forms);
+      const std::vector<autofill::PasswordForm>* password_forms);
+  ManagePasswordItemsView(
+      ManagePasswordsBubbleModel* manage_passwords_bubble_model,
+      const autofill::PasswordForm* password_form);
 
  private:
   class PasswordFormRow;
@@ -38,7 +41,7 @@ class ManagePasswordItemsView : public views::View {
   // Changes the views according to the state of |password_forms_rows_|.
   void Refresh();
 
-  ScopedVector<PasswordFormRow> password_forms_rows_;
+  std::vector<std::unique_ptr<PasswordFormRow>> password_forms_rows_;
   ManagePasswordsBubbleModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemsView);

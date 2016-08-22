@@ -19,10 +19,8 @@ class ManagePasswordsBubbleModel;
 // A view where the user can select a credential.
 class CredentialsSelectionView : public views::View {
  public:
-  CredentialsSelectionView(
-      ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-      const std::vector<const autofill::PasswordForm*>& password_forms,
-      const base::string16& best_matched_username);
+  explicit CredentialsSelectionView(
+      ManagePasswordsBubbleModel* manage_passwords_bubble_model);
   ~CredentialsSelectionView() override;
 
   // This methods also reports a user action.
@@ -30,11 +28,10 @@ class CredentialsSelectionView : public views::View {
 
  private:
   views::Combobox* GenerateUsernameCombobox(
-      const std::vector<const autofill::PasswordForm*>& forms,
       const base::string16& best_matched_username);
   void ReportUserActionOnce(bool was_update_rejected, int selected_index);
 
-  const std::vector<const autofill::PasswordForm*>& password_forms_;
+  const std::vector<autofill::PasswordForm>* password_forms_;
   views::Combobox* combobox_;
   int default_index_;
   bool is_default_best_match_;

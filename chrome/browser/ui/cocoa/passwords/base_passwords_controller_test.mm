@@ -57,8 +57,6 @@ void ManagePasswordsControllerTest::SetUpSavePendingState(bool empty_username) {
     form.username_value = base::ASCIIToUTF16("username");
   }
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
-  std::vector<const autofill::PasswordForm*> forms;
-  EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
   EXPECT_CALL(*ui_controller_, GetState())
@@ -71,10 +69,10 @@ void ManagePasswordsControllerTest::SetUpUpdatePendingState(
     bool multiple_forms) {
   autofill::PasswordForm form;
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
-  std::vector<const autofill::PasswordForm*> forms;
-  forms.push_back(&form);
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+  forms.push_back(base::MakeUnique<autofill::PasswordForm>(form));
   if (multiple_forms) {
-    forms.push_back(&form);
+    forms.push_back(base::MakeUnique<autofill::PasswordForm>(form));
   }
   EXPECT_CALL(*ui_controller_, GetCurrentForms()).WillOnce(ReturnRef(forms));
   GURL origin(kSiteOrigin);

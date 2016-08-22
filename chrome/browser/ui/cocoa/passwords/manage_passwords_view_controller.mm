@@ -77,8 +77,8 @@
     contentView = noPasswordsView_.get();
   } else {
     passwordsListController_.reset([[PasswordsListViewController alloc]
-        initWithModel:self.model
-                forms:self.model->local_credentials().get()]);
+        initWithModelAndForms:self.model
+                        forms:&self.model->local_credentials()]);
     contentView = [passwordsListController_ view];
   }
   [view addSubview:contentView];

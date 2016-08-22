@@ -17,7 +17,7 @@ struct PasswordForm;
 
 class ManagePasswordsBubbleModel;
 
-typedef std::vector<const autofill::PasswordForm*> PasswordFormsVector;
+typedef std::vector<autofill::PasswordForm> PasswordFormsVector;
 
 // Handles callbacks from ManagePasswordItemViewController.
 @protocol PasswordItemDelegate<NSObject>
@@ -39,8 +39,10 @@ typedef std::vector<const autofill::PasswordForm*> PasswordFormsVector;
   CGFloat firstColumnMaxWidth_;
   CGFloat secondColumnMaxWidth_;
 }
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-              forms:(const PasswordFormsVector&)password_forms;
+- (id)initWithModelAndForms:(ManagePasswordsBubbleModel*)model
+                      forms:(const PasswordFormsVector*)password_forms;
+- (id)initWithModelAndForm:(ManagePasswordsBubbleModel*)model
+                      form:(const autofill::PasswordForm*)form;
 @end
 
 @interface PasswordsListViewController (Testing)

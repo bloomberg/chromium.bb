@@ -254,19 +254,23 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   CredentialsCallback intercept =
       base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
                  base::Unretained(this), callback, local_forms.size() == 1);
+  std::vector<std::unique_ptr<autofill::PasswordForm>> locals =
+      password_manager_util::ConvertScopedVector(std::move(local_forms));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federations =
+      password_manager_util::ConvertScopedVector(std::move(federated_forms));
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
-      new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
-                                      std::move(federated_forms), origin,
+      new AccountChooserDialogAndroid(web_contents(), std::move(locals),
+                                      std::move(federations), origin,
                                       intercept);
   acccount_chooser_dialog->ShowDialog();
   return true;
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnChooseCredentials(std::move(local_forms), std::move(federated_forms),
-                            origin, intercept);
+      ->OnChooseCredentials(std::move(locals), std::move(federations), origin,
+                            intercept);
 #endif
 }
 
@@ -302,11 +306,13 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
   // If a site gets back a credential some navigations are likely to occur. They
   // shouldn't trigger the autofill password manager.
   password_manager_.DropFormManagers();
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms =
+      password_manager_util::ConvertScopedVector(std::move(local_forms));
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ShowAutoSigninPrompt(web_contents(), local_forms[0]->username_value);
+  ShowAutoSigninPrompt(web_contents(), forms[0]->username_value);
 #else
   PasswordsClientUIDelegateFromWebContents(web_contents())
-      ->OnAutoSignin(std::move(local_forms), origin);
+      ->OnAutoSignin(std::move(forms), origin);
 #endif
 }
 

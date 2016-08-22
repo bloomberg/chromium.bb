@@ -27,7 +27,8 @@ class PasswordsModelDelegateMock;
 
 class ManagePasswordsControllerTest : public CocoaProfileTest {
  public:
-  using VectorConstFormPtr = std::vector<const autofill::PasswordForm*>;
+  using VectorConstFormPtr =
+      std::vector<std::unique_ptr<autofill::PasswordForm>>;
 
   ManagePasswordsControllerTest();
   ~ManagePasswordsControllerTest() override;

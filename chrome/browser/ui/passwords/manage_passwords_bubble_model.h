@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "components/autofill/core/common/password_form.h"
@@ -88,7 +88,7 @@ class ManagePasswordsBubbleModel {
     return pending_password_;
   }
   // Returns the available credentials which match the current site.
-  const ScopedVector<const autofill::PasswordForm>& local_credentials() const {
+  const std::vector<autofill::PasswordForm>& local_credentials() const {
     return local_credentials_;
   }
   const base::string16& manage_link() const { return manage_link_; }
@@ -144,7 +144,7 @@ class ManagePasswordsBubbleModel {
   gfx::Range title_brand_link_range_;
   autofill::PasswordForm pending_password_;
   bool password_overridden_;
-  ScopedVector<const autofill::PasswordForm> local_credentials_;
+  std::vector<autofill::PasswordForm> local_credentials_;
   base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;

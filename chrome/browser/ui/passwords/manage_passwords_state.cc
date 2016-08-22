@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -17,80 +18,49 @@ using autofill::PasswordFormMap;
 
 namespace {
 
-// Returns a vector containing the values of a map.
-template <typename Map>
-std::vector<typename Map::mapped_type> MapToVector(const Map& map) {
-  std::vector<typename Map::mapped_type> ret;
-  ret.reserve(map.size());
-  for (const auto& form_pair : map)
-    ret.push_back(form_pair.second);
-  return ret;
-}
-
-// Takes a ScopedPtrMap. Returns a vector of non-owned pointers to the elements
-// inside the scoped_ptrs.
-template <typename Map>
-std::vector<const typename Map::mapped_type::element_type*>
-ScopedPtrMapToVector(const Map& map) {
-  std::vector<const typename Map::mapped_type::element_type*> ret;
-  ret.reserve(map.size());
-  for (const auto& form_pair : map)
-    ret.push_back(form_pair.second.get());
-  return ret;
-}
-
-void AddRawPtrFromOwningVector(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& owning_vector,
-    std::vector<const autofill::PasswordForm*>* destination) {
-  destination->reserve(destination->size() + owning_vector.size());
-  for (const auto& owning_ptr : owning_vector) {
-    destination->push_back(owning_ptr.get());
-  }
-}
-
-ScopedVector<const autofill::PasswordForm> DeepCopyMapToVector(
+std::vector<std::unique_ptr<autofill::PasswordForm>> DeepCopyMapToVector(
     const PasswordFormMap& password_form_map) {
-  ScopedVector<const autofill::PasswordForm> ret;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> ret;
   ret.reserve(password_form_map.size());
   for (const auto& form_pair : password_form_map)
-    ret.push_back(new autofill::PasswordForm(*form_pair.second));
+    ret.push_back(base::MakeUnique<autofill::PasswordForm>(*form_pair.second));
   return ret;
 }
 
-ScopedVector<const autofill::PasswordForm> ConstifyVector(
-    ScopedVector<autofill::PasswordForm>* forms) {
-  ScopedVector<const autofill::PasswordForm> ret;
-  ret.assign(forms->begin(), forms->end());
-  forms->weak_clear();
-  return ret;
+void AppendDeepCopyVector(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* result) {
+  result->reserve(result->size() + forms.size());
+  for (const auto& form : forms)
+    result->push_back(base::MakeUnique<autofill::PasswordForm>(*form));
 }
 
 // Updates one form in |forms| that has the same unique key as |updated_form|.
 // Returns true if the form was found and updated.
-bool UpdateFormInVector(const autofill::PasswordForm& updated_form,
-                        ScopedVector<const autofill::PasswordForm>* forms) {
-  ScopedVector<const autofill::PasswordForm>::iterator it = std::find_if(
+bool UpdateFormInVector(
+    const autofill::PasswordForm& updated_form,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
+  auto it = std::find_if(
       forms->begin(), forms->end(),
-      [&updated_form](const autofill::PasswordForm* form) {
-    return ArePasswordFormUniqueKeyEqual(*form, updated_form);
-  });
+      [&updated_form](const std::unique_ptr<autofill::PasswordForm>& form) {
+        return ArePasswordFormUniqueKeyEqual(*form, updated_form);
+      });
   if (it != forms->end()) {
-    delete *it;
-    *it = new autofill::PasswordForm(updated_form);
+    **it = updated_form;
     return true;
   }
   return false;
 }
 
 // Removes a form from |forms| that has the same unique key as |form_to_delete|.
-template <class Vector>
-void RemoveFormFromVector(const autofill::PasswordForm& form_to_delete,
-                          Vector* forms) {
-  typename Vector::iterator it = std::find_if(
+void RemoveFormFromVector(
+    const autofill::PasswordForm& form_to_delete,
+    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
+  auto it = std::find_if(
       forms->begin(), forms->end(),
-      [&form_to_delete](const autofill::PasswordForm* form) {
-    return ArePasswordFormUniqueKeyEqual(*form, form_to_delete);
-  });
+      [&form_to_delete](const std::unique_ptr<autofill::PasswordForm>& form) {
+        return ArePasswordFormUniqueKeyEqual(*form, form_to_delete);
+      });
   if (it != forms->end())
     forms->erase(it);
 }
@@ -108,9 +78,9 @@ void ManagePasswordsState::OnPendingPassword(
     std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
-  current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
-  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
-                            &current_forms_weak_);
+  local_credentials_forms_ = DeepCopyMapToVector(form_manager_->best_matches());
+  AppendDeepCopyVector(form_manager_->federated_matches(),
+                       &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
@@ -119,29 +89,30 @@ void ManagePasswordsState::OnUpdatePassword(
     std::unique_ptr<password_manager::PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
-  current_forms_weak_ = ScopedPtrMapToVector(form_manager_->best_matches());
-  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
-                            &current_forms_weak_);
+  local_credentials_forms_ = DeepCopyMapToVector(form_manager_->best_matches());
+  AppendDeepCopyVector(form_manager_->federated_matches(),
+                       &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
 }
 
 void ManagePasswordsState::OnRequestCredentials(
-    ScopedVector<autofill::PasswordForm> local_credentials,
-    ScopedVector<autofill::PasswordForm> federated_credentials,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
     const GURL& origin) {
   ClearData();
-  local_credentials_forms_ = ConstifyVector(&local_credentials);
-  federated_credentials_forms_ = ConstifyVector(&federated_credentials);
+  local_credentials_forms_ = std::move(local_credentials);
+  federation_providers_forms_ = std::move(federation_providers);
   origin_ = origin;
   SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
 }
 
 void ManagePasswordsState::OnAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms, const GURL& origin) {
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
+    const GURL& origin) {
   DCHECK(!local_forms.empty());
   ClearData();
-  local_credentials_forms_ = ConstifyVector(&local_forms);
+  local_credentials_forms_ = std::move(local_forms);
   origin_ = origin;
   SetState(password_manager::ui::AUTO_SIGNIN_STATE);
 }
@@ -150,15 +121,25 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
     std::unique_ptr<PasswordFormManager> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
-  autofill::ConstPasswordFormMap current_forms;
-  for (const auto& match : form_manager_->best_matches()) {
-    current_forms.insert(std::make_pair(match.first, match.second.get()));
+  local_credentials_forms_.reserve(form_manager_->best_matches().size());
+  bool updated = false;
+  for (const auto& form : form_manager_->best_matches()) {
+    if (form_manager_->pending_credentials().username_value == form.first) {
+      local_credentials_forms_.push_back(
+          base::MakeUnique<autofill::PasswordForm>(
+              form_manager_->pending_credentials()));
+      updated = true;
+    } else {
+      local_credentials_forms_.push_back(
+          base::MakeUnique<autofill::PasswordForm>(*form.second));
+    }
   }
-  current_forms[form_manager_->pending_credentials().username_value] =
-      &form_manager_->pending_credentials();
-  current_forms_weak_ = MapToVector(current_forms);
-  AddRawPtrFromOwningVector(form_manager_->federated_matches(),
-                            &current_forms_weak_);
+  if (!updated) {
+    local_credentials_forms_.push_back(base::MakeUnique<autofill::PasswordForm>(
+        form_manager_->pending_credentials()));
+  }
+  AppendDeepCopyVector(form_manager_->federated_matches(),
+                       &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::CONFIRMATION_STATE);
 }
@@ -171,11 +152,10 @@ void ManagePasswordsState::OnPasswordAutofilled(
   DCHECK(!password_form_map.empty());
   ClearData();
   bool only_PSL_matches =
-      find_if(password_form_map.begin(), password_form_map.end(),
-              [](const std::pair<const base::string16,
-                                 std::unique_ptr<autofill::PasswordForm>>& p) {
-                return !p.second->is_public_suffix_match;
-              }) == password_form_map.end();
+      std::all_of(password_form_map.begin(), password_form_map.end(),
+                  [](const PasswordFormMap::value_type& p) {
+                    return p.second->is_public_suffix_match;
+                  });
   if (only_PSL_matches) {
     // Don't show the UI for PSL matched passwords. They are not stored for this
     // page and cannot be deleted.
@@ -183,14 +163,8 @@ void ManagePasswordsState::OnPasswordAutofilled(
     SetState(password_manager::ui::INACTIVE_STATE);
   } else {
     local_credentials_forms_ = DeepCopyMapToVector(password_form_map);
-    if (federated_matches) {
-      local_credentials_forms_.reserve(local_credentials_forms_.size() +
-                                       federated_matches->size());
-      for (const auto& owned_form : *federated_matches) {
-        local_credentials_forms_.push_back(
-            new autofill::PasswordForm(*owned_form));
-      }
-    }
+    if (federated_matches)
+      AppendDeepCopyVector(*federated_matches, &local_credentials_forms_);
     origin_ = origin;
     SetState(password_manager::ui::MANAGE_STATE);
   }
@@ -211,7 +185,7 @@ void ManagePasswordsState::TransitionToState(
       credentials_callback_.Run(nullptr);
       credentials_callback_.Reset();
     }
-    federated_credentials_forms_.clear();
+    federation_providers_forms_.clear();
   }
   SetState(state);
 }
@@ -247,9 +221,8 @@ void ManagePasswordsState::ChooseCredential(
 
 void ManagePasswordsState::ClearData() {
   form_manager_.reset();
-  current_forms_weak_.clear();
   local_credentials_forms_.clear();
-  federated_credentials_forms_.clear();
+  federation_providers_forms_.clear();
   credentials_callback_.Reset();
 }
 
@@ -258,41 +231,19 @@ void ManagePasswordsState::AddForm(const autofill::PasswordForm& form) {
     return;
   if (UpdateForm(form))
     return;
-  if (form_manager_) {
-    local_credentials_forms_.push_back(new autofill::PasswordForm(form));
-    current_forms_weak_.push_back(local_credentials_forms_.back());
-  } else {
-    local_credentials_forms_.push_back(new autofill::PasswordForm(form));
-  }
+  local_credentials_forms_.push_back(
+      base::MakeUnique<autofill::PasswordForm>(form));
 }
 
 bool ManagePasswordsState::UpdateForm(const autofill::PasswordForm& form) {
-  if (form_manager_) {
-    // |current_forms_weak_| contains the list of current passwords.
-    std::vector<const autofill::PasswordForm*>::iterator it = std::find_if(
-        current_forms_weak_.begin(), current_forms_weak_.end(),
-        [&form](const autofill::PasswordForm* current_form) {
-      return ArePasswordFormUniqueKeyEqual(form, *current_form);
-    });
-    if (it != current_forms_weak_.end()) {
-      RemoveFormFromVector(form, &local_credentials_forms_);
-      local_credentials_forms_.push_back(new autofill::PasswordForm(form));
-      *it = local_credentials_forms_.back();
-      return true;
-    }
-  } else {
-    // |current_forms_weak_| isn't used.
-    bool updated_locals = UpdateFormInVector(form, &local_credentials_forms_);
-    return (UpdateFormInVector(form, &federated_credentials_forms_) ||
-            updated_locals);
-  }
-  return false;
+  bool updated_locals = UpdateFormInVector(form, &local_credentials_forms_);
+  return (UpdateFormInVector(form, &federation_providers_forms_) ||
+          updated_locals);
 }
 
 void ManagePasswordsState::DeleteForm(const autofill::PasswordForm& form) {
-  RemoveFormFromVector(form, &current_forms_weak_);
   RemoveFormFromVector(form, &local_credentials_forms_);
-  RemoveFormFromVector(form, &federated_credentials_forms_);
+  RemoveFormFromVector(form, &federation_providers_forms_);
 }
 
 void ManagePasswordsState::SetState(password_manager::ui::State state) {

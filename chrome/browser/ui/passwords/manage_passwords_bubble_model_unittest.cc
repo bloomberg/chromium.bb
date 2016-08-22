@@ -172,8 +172,6 @@ void ManagePasswordsBubbleModelTest::SetUpWithState(
 void ManagePasswordsBubbleModelTest::PretendPasswordWaiting() {
   autofill::PasswordForm form = GetPendingPassword();
   EXPECT_CALL(*controller(), GetPendingPassword()).WillOnce(ReturnRef(form));
-  std::vector<const autofill::PasswordForm*> forms;
-  EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   password_manager::InteractionsStats stats = GetTestStats();
   EXPECT_CALL(*controller(), GetCurrentInteractionStats())
       .WillOnce(Return(&stats));
@@ -184,7 +182,7 @@ void ManagePasswordsBubbleModelTest::PretendPasswordWaiting() {
 void ManagePasswordsBubbleModelTest::PretendUpdatePasswordWaiting() {
   autofill::PasswordForm form = GetPendingPassword();
   EXPECT_CALL(*controller(), GetPendingPassword()).WillOnce(ReturnRef(form));
-  std::vector<const autofill::PasswordForm*> forms;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   EXPECT_CALL(*controller(), IsPasswordOverridden()).WillOnce(Return(false));
   SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
@@ -199,8 +197,8 @@ void ManagePasswordsBubbleModelTest::PretendAutoSigningIn() {
 }
 
 void ManagePasswordsBubbleModelTest::PretendManagingPasswords() {
-  autofill::PasswordForm form = GetPendingPassword();
-  std::vector<const autofill::PasswordForm*> forms(1, &form);
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms(1);
+  forms[0].reset(new autofill::PasswordForm(GetPendingPassword()));
   EXPECT_CALL(*controller(), GetCurrentForms()).WillOnce(ReturnRef(forms));
   SetUpWithState(password_manager::ui::MANAGE_STATE,
                  ManagePasswordsBubbleModel::USER_ACTION);

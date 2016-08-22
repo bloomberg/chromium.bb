@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -267,14 +268,23 @@ void ManagePasswordItemsView::PasswordFormRow::ResetControls() {
 // ManagePasswordItemsView
 ManagePasswordItemsView::ManagePasswordItemsView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-    const std::vector<const autofill::PasswordForm*>& password_forms)
+    const std::vector<autofill::PasswordForm>* password_forms)
     : model_(manage_passwords_bubble_model) {
   int fixed_height = PasswordFormRow::GetFixedHeight(model_->state());
-  for (const autofill::PasswordForm* password_form : password_forms) {
-    if (!password_form->is_public_suffix_match)
-      password_forms_rows_.push_back(
-          new PasswordFormRow(this, password_form, fixed_height));
+  for (const auto& password_form : *password_forms) {
+    if (!password_form.is_public_suffix_match)
+      password_forms_rows_.push_back(base::MakeUnique<PasswordFormRow>(
+          this, &password_form, fixed_height));
   }
+  AddRows();
+}
+
+ManagePasswordItemsView::ManagePasswordItemsView(
+    ManagePasswordsBubbleModel* manage_passwords_bubble_model,
+    const autofill::PasswordForm* password_form)
+    : model_(manage_passwords_bubble_model) {
+  password_forms_rows_.push_back(
+      base::MakeUnique<PasswordFormRow>(this, password_form, 0));
   AddRows();
 }
 
@@ -283,7 +293,7 @@ ManagePasswordItemsView::~ManagePasswordItemsView() = default;
 void ManagePasswordItemsView::AddRows() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
-  for (auto* row : password_forms_rows_) {
+  for (const std::unique_ptr<PasswordFormRow>& row : password_forms_rows_) {
     if (row != password_forms_rows_[0])
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     row->AddRow(layout);

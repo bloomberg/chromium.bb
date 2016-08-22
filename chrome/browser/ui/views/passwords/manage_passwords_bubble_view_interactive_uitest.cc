@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -290,13 +291,14 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   base::FeatureList::SetInstance(std::move(feature_list));
   ASSERT_TRUE(base::FeatureList::IsEnabled(features::kCredentialManagementAPI));
 
-  ScopedVector<autofill::PasswordForm> local_credentials;
   test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   GURL icon_url("https://google.com/icon.png");
   test_form()->icon_url = icon_url;
-  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.push_back(
+      base::MakeUnique<autofill::PasswordForm>(*test_form()));
 
   // Prepare to capture the network request.
   TestURLFetcherCallback url_callback;
@@ -322,11 +324,12 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
   test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.push_back(
+      base::MakeUnique<autofill::PasswordForm>(*test_form()));
 
   // Open another window with focus.
   Browser* focused_window = CreateBrowser(browser()->profile());

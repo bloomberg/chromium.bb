@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace content {
@@ -45,15 +44,16 @@ class PasswordsClientUIDelegate {
   // a decision. If the UI isn't shown the method returns false and doesn't call
   // |callback|.
   virtual bool OnChooseCredentials(
-      ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>>
+          federated_credentials,
       const GURL& origin,
       const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
   // the credential returned to the site. |origin| is a URL of the site.
   virtual void OnAutoSignin(
-      ScopedVector<autofill::PasswordForm> local_forms,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin) = 0;
 
   // Called when it's the right time to enable autosign-in explicitly.

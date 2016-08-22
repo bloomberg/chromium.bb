@@ -310,7 +310,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
   EXPECT_EQ(kTestUsername, controller()->GetCurrentForms()[0]->username_value);
 
   // Controller should store a separate copy of the form as it doesn't own it.
-  EXPECT_NE(test_form_ptr, controller()->GetCurrentForms()[0]);
+  EXPECT_NE(test_form_ptr, controller()->GetCurrentForms()[0].get());
 
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
 }
@@ -519,9 +519,9 @@ TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
-  ScopedVector<autofill::PasswordForm> federated_credentials;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -552,10 +552,10 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(
       new autofill::PasswordForm(test_federated_form()));
-  ScopedVector<autofill::PasswordForm> federated_credentials;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -586,9 +586,9 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
-  ScopedVector<autofill::PasswordForm> federated_credentials;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials;
   GURL origin("http://example.com");
   PasswordDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_)).WillOnce(
@@ -611,8 +611,8 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, AutoSignin) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);
@@ -679,8 +679,8 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);
@@ -749,8 +749,8 @@ TEST_F(ManagePasswordsUIControllerTest, ConfirmationStatePasswordAutofilled) {
 
 TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
   // Open the autosignin bubble.
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);
@@ -760,7 +760,7 @@ TEST_F(ManagePasswordsUIControllerTest, OpenBubbleTwice) {
       controller()->GetModelDelegateProxy();
 
   // Open the bubble again.
-  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);

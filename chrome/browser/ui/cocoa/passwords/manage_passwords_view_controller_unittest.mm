@@ -69,15 +69,18 @@ TEST_F(ManagePasswordsViewControllerTest,
 TEST_F(ManagePasswordsViewControllerTest,
        ShouldShowAllPasswordItemsWhenPasswordsExistForSite) {
   // Add a few password entries.
-  autofill::PasswordForm form1;
-  form1.username_value = base::ASCIIToUTF16("username1");
-  form1.password_value = base::ASCIIToUTF16("password1");
+  std::unique_ptr<autofill::PasswordForm> form1(new autofill::PasswordForm);
+  form1->username_value = base::ASCIIToUTF16("username1");
+  form1->password_value = base::ASCIIToUTF16("password1");
 
-  autofill::PasswordForm form2;
-  form2.username_value = base::ASCIIToUTF16("username2");
-  form2.password_value = base::ASCIIToUTF16("password2");
+  std::unique_ptr<autofill::PasswordForm> form2(new autofill::PasswordForm);
+  form2->username_value = base::ASCIIToUTF16("username2");
+  form2->password_value = base::ASCIIToUTF16("password2");
 
-  SetUpManageState({&form1, &form2});
+  VectorConstFormPtr forms;
+  forms.push_back(std::move(form1));
+  forms.push_back(std::move(form2));
+  SetUpManageState(forms);
 
   // Check the view state.
   ASSERT_TRUE([controller() passwordsListController]);

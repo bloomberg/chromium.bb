@@ -41,8 +41,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   std::vector<base::string16> usernames;
   if (update_password_delegate->ShowMultipleAccounts()) {
-    for (auto* password_form : update_password_delegate->GetCurrentForms())
-      usernames.push_back(password_form->username_value);
+    for (const auto& form : update_password_delegate->GetCurrentForms())
+      usernames.push_back(form->username_value);
   } else {
     usernames.push_back(
         update_password_delegate->get_username_for_single_account());

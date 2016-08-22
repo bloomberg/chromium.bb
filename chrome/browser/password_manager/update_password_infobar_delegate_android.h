@@ -40,7 +40,8 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // credential is being affected.
   bool ShowMultipleAccounts() const;
 
-  const std::vector<const autofill::PasswordForm*>& GetCurrentForms() const;
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  GetCurrentForms() const;
 
   // Returns the username of the saved credentials in the case when there is
   // only one credential pair stored.

@@ -45,7 +45,7 @@ password_manager::PasswordStore* GetPasswordStore(
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
-    const ScopedVector<autofill::PasswordForm>& forms) {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> result(forms.size());
   for (size_t i = 0; i < forms.size(); ++i)
     result[i].reset(new autofill::PasswordForm(*forms[i]));
@@ -97,8 +97,8 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
 }
 
 bool ManagePasswordsUIController::OnChooseCredentials(
-    ScopedVector<autofill::PasswordForm> local_credentials,
-    ScopedVector<autofill::PasswordForm> federated_credentials,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> federated_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
@@ -120,7 +120,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
 }
 
 void ManagePasswordsUIController::OnAutoSignin(
-    ScopedVector<autofill::PasswordForm> local_forms,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin) {
   DCHECK(!local_forms.empty());
   DestroyAccountChooser();
@@ -231,14 +231,14 @@ bool ManagePasswordsUIController::IsPasswordOverridden() const {
   return form_manager ? form_manager->password_overridden() : false;
 }
 
-const std::vector<const autofill::PasswordForm*>&
+const std::vector<std::unique_ptr<autofill::PasswordForm>>&
 ManagePasswordsUIController::GetCurrentForms() const {
   return passwords_data_.GetCurrentForms();
 }
 
-const std::vector<const autofill::PasswordForm*>&
+const std::vector<std::unique_ptr<autofill::PasswordForm>>&
 ManagePasswordsUIController::GetFederatedForms() const {
-  return passwords_data_.federated_credentials_forms();
+  return passwords_data_.federation_providers_forms();
 }
 
 password_manager::InteractionsStats*

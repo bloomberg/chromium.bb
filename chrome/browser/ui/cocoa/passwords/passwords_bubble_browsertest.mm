@@ -131,8 +131,8 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenBubble) {
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest, DoubleOpenDifferentBubbles) {
   // Open the autosignin bubble first.
   DoWithSwizzledNSWindow(^{
-    ScopedVector<autofill::PasswordForm> local_credentials;
-    local_credentials.push_back(new autofill::PasswordForm(*test_form()));
+    std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
+    local_credentials.emplace_back(new autofill::PasswordForm(*test_form()));
     SetupAutoSignin(std::move(local_credentials));
   });
   EXPECT_TRUE(controller());

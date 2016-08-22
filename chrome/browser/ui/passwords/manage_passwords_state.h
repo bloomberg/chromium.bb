@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -51,13 +50,14 @@ class ManagePasswordsState {
 
   // Move to CREDENTIAL_REQUEST_STATE.
   void OnRequestCredentials(
-      ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> federation_providers,
       const GURL& origin);
 
   // Move to AUTO_SIGNIN_STATE. |local_forms| can't be empty.
-  void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
-                    const GURL& origin);
+  void OnAutoSignin(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
+      const GURL& origin);
 
   // Move to CONFIRMATION_STATE.
   void OnAutomaticPasswordSave(
@@ -103,14 +103,15 @@ class ManagePasswordsState {
   }
 
   // Current local forms. ManagePasswordsState is responsible for the forms.
-  const std::vector<const autofill::PasswordForm*>& GetCurrentForms() const {
-    return form_manager_ ? current_forms_weak_ : local_credentials_forms_.get();
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
+      const {
+    return local_credentials_forms_;
   }
 
   // Current federated forms.
-  const std::vector<const autofill::PasswordForm*>&
-  federated_credentials_forms() const {
-    return federated_credentials_forms_.get();
+  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+  federation_providers_forms() const {
+    return federation_providers_forms_;
   }
 
  private:
@@ -133,19 +134,12 @@ class ManagePasswordsState {
   // Contains the password that was submitted.
   std::unique_ptr<password_manager::PasswordFormManager> form_manager_;
 
-  // Weak references to the passwords for the current status. The hard pointers
-  // are scattered between |form_manager_| and |local_credentials_forms_|. If
-  // |form_manager_| is nullptr then all the forms are stored in
-  // |local_credentials_forms_|. |current_forms_weak_| remains empty.
-  std::vector<const autofill::PasswordForm*> current_forms_weak_;
+  // Contains all the current forms.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials_forms_;
 
-  // If |form_manager_| is nullptr then |local_credentials_forms_| contains all
-  // the current forms. Otherwise, it's a container for the new forms coming
-  // from the PasswordStore.
-  ScopedVector<const autofill::PasswordForm> local_credentials_forms_;
-
-  // Federated credentials for the CREDENTIAL_REQUEST_STATE.
-  ScopedVector<const autofill::PasswordForm> federated_credentials_forms_;
+  // Federation providers for the CREDENTIAL_REQUEST_STATE.
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+      federation_providers_forms_;
 
   // A callback to be invoked when user selects a credential.
   CredentialsCallback credentials_callback_;

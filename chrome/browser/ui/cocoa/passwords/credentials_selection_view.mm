@@ -15,7 +15,7 @@
 namespace {
 
 NSPopUpButton* CreateUsernamesPopUpButton(
-    const std::vector<const autofill::PasswordForm*>& forms,
+    const std::vector<autofill::PasswordForm>& forms,
     const base::string16& best_matched_username) {
   DCHECK(!forms.empty());
   std::vector<base::string16> usernames;
@@ -23,11 +23,11 @@ NSPopUpButton* CreateUsernamesPopUpButton(
   size_t preffered_form_index = forms.size();
 
   for (size_t index = 0; index < forms.size(); ++index) {
-    usernames.push_back(forms[index]->username_value);
-    if (forms[index]->username_value == best_matched_username) {
+    usernames.push_back(forms[index].username_value);
+    if (forms[index].username_value == best_matched_username) {
       best_matched_username_index = index;
     }
-    if (forms[index]->preferred) {
+    if (forms[index].preferred) {
       preffered_form_index = index;
     }
   }
@@ -61,7 +61,7 @@ NSPopUpButton* CreateUsernamesPopUpButton(
 
     // Create the pop up button with usernames and the password field.
     usernamePopUpButton_.reset([CreateUsernamesPopUpButton(
-        model_->local_credentials().get(),
+        model_->local_credentials(),
         model_->pending_password().username_value) retain]);
     passwordField_.reset(
         [PasswordLabel(model_->pending_password().password_value) retain]);
@@ -111,7 +111,7 @@ NSPopUpButton* CreateUsernamesPopUpButton(
 - (const autofill::PasswordForm*)getSelectedCredentials {
   int selected_index = [usernamePopUpButton_ indexOfSelectedItem];
   CHECK(selected_index >= 0);
-  return model_->local_credentials()[selected_index];
+  return &model_->local_credentials()[selected_index];
 }
 
 @end

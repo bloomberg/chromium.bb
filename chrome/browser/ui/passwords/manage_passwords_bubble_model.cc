@@ -50,14 +50,14 @@ void CleanStatisticsForSite(Profile* profile, const GURL& origin) {
   password_store->RemoveSiteStats(origin.GetOrigin());
 }
 
-ScopedVector<const autofill::PasswordForm> DeepCopyForms(
-    const std::vector<const autofill::PasswordForm*>& forms) {
-  ScopedVector<const autofill::PasswordForm> result;
+std::vector<autofill::PasswordForm> DeepCopyForms(
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms) {
+  std::vector<autofill::PasswordForm> result;
   result.reserve(forms.size());
   std::transform(forms.begin(), forms.end(), std::back_inserter(result),
-                 [](const autofill::PasswordForm* form) {
-    return new autofill::PasswordForm(*form);
-  });
+                 [](const std::unique_ptr<autofill::PasswordForm>& form) {
+                   return *form;
+                 });
   return result;
 }
 
@@ -206,31 +206,37 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       delegate_(std::move(delegate)) {
   origin_ = delegate_->GetOrigin();
   state_ = delegate_->GetState();
+  password_manager::InteractionsStats interaction_stats;
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     pending_password_ = delegate_->GetPendingPassword();
-    local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
-  } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-    // We don't need anything.
-  } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    pending_password_ = delegate_->GetPendingPassword();
-  } else {
-    local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
-  }
-
-  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
-      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+      local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
+      password_overridden_ = delegate_->IsPasswordOverridden();
+    } else {
+      interaction_stats.origin_domain = origin_.GetOrigin();
+      interaction_stats.username_value = pending_password_.username_value;
+      password_manager::InteractionsStats* stats =
+          delegate_->GetCurrentInteractionStats();
+      if (stats) {
+        DCHECK_EQ(interaction_stats.username_value, stats->username_value);
+        DCHECK_EQ(interaction_stats.origin_domain, stats->origin_domain);
+        interaction_stats.dismissal_count = stats->dismissal_count;
+      }
+    }
     UpdatePendingStateTitle();
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    // There is no title.
+    pending_password_ = delegate_->GetPendingPassword();
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
+    local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
     UpdateManageStateTitle();
+    manage_link_ =
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
   }
 
-  password_manager::InteractionsStats interaction_stats;
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     base::string16 save_confirmation_link =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
@@ -250,22 +256,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
             confirmation_text_id, save_confirmation_link, &offset);
     save_confirmation_link_range_ =
         gfx::Range(offset, offset + save_confirmation_link.length());
-  } else if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    interaction_stats.origin_domain = origin_.GetOrigin();
-    interaction_stats.username_value = pending_password_.username_value;
-    password_manager::InteractionsStats* stats =
-        delegate_->GetCurrentInteractionStats();
-    if (stats) {
-      DCHECK_EQ(interaction_stats.username_value, stats->username_value);
-      DCHECK_EQ(interaction_stats.origin_domain, stats->origin_domain);
-      interaction_stats.dismissal_count = stats->dismissal_count;
-    }
-  } else if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
-    password_overridden_ = delegate_->IsPasswordOverridden();
   }
-
-  manage_link_ =
-      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
 
   password_manager::metrics_util::UIDisplayDisposition display_disposition =
       metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
