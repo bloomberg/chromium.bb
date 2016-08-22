@@ -345,6 +345,10 @@ MediaControls.prototype.onProgressChange_ = function(value) {
 
   this.setSeeking_(false);
 
+  // Re-start playing the video when the seek bar is moved from ending point.
+  if (this.media_.ended)
+    this.play();
+
   var current = this.media_.duration * value;
   this.media_.currentTime = current;
   this.updateTimeLabel_(current);
