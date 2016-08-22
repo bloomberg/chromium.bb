@@ -468,7 +468,8 @@ bool RendererSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
   // We regard MouseMove events with the left mouse button down as a signal
   // that the user is doing something requiring a smooth frame rate.
-  if (web_input_event.type == blink::WebInputEvent::MouseMove &&
+  if ((web_input_event.type == blink::WebInputEvent::MouseDown ||
+       web_input_event.type == blink::WebInputEvent::MouseMove) &&
       (web_input_event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
     return true;
   }
@@ -528,58 +529,73 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
   if (input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR)
     AnyThread().user_model.DidFinishProcessingInputEvent(now);
 
-  if (type) {
-    switch (type) {
-      case blink::WebInputEvent::TouchStart:
-        AnyThread().awaiting_touch_start_response = true;
-        // This is just a fail-safe to reset the state of
-        // |last_gesture_was_compositor_driven| to the default. We don't know
-        // yet where the gesture will run.
-        AnyThread().last_gesture_was_compositor_driven = false;
-        AnyThread().have_seen_touchstart = true;
-        // Assume the default gesture is prevented until we see evidence
-        // otherwise.
-        AnyThread().default_gesture_prevented = true;
-        break;
+  switch (type) {
+    case blink::WebInputEvent::TouchStart:
+      AnyThread().awaiting_touch_start_response = true;
+      // This is just a fail-safe to reset the state of
+      // |last_gesture_was_compositor_driven| to the default. We don't know
+      // yet where the gesture will run.
+      AnyThread().last_gesture_was_compositor_driven = false;
+      AnyThread().have_seen_touchstart = true;
+      // Assume the default gesture is prevented until we see evidence
+      // otherwise.
+      AnyThread().default_gesture_prevented = true;
+      break;
 
-      case blink::WebInputEvent::TouchMove:
-        // Observation of consecutive touchmoves is a strong signal that the
-        // page is consuming the touch sequence, in which case touchstart
-        // response prioritization is no longer necessary. Otherwise, the
-        // initial touchmove should preserve the touchstart response pending
-        // state.
-        if (AnyThread().awaiting_touch_start_response &&
-            CompositorThreadOnly().last_input_type ==
-                blink::WebInputEvent::TouchMove) {
-          AnyThread().awaiting_touch_start_response = false;
-        }
-        break;
-
-      case blink::WebInputEvent::GesturePinchUpdate:
-      case blink::WebInputEvent::GestureScrollUpdate:
-        // If we see events for an established gesture, we can lock it to the
-        // appropriate thread as the gesture can no longer be cancelled.
-        AnyThread().last_gesture_was_compositor_driven =
-            input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+    case blink::WebInputEvent::TouchMove:
+      // Observation of consecutive touchmoves is a strong signal that the
+      // page is consuming the touch sequence, in which case touchstart
+      // response prioritization is no longer necessary. Otherwise, the
+      // initial touchmove should preserve the touchstart response pending
+      // state.
+      if (AnyThread().awaiting_touch_start_response &&
+          CompositorThreadOnly().last_input_type ==
+              blink::WebInputEvent::TouchMove) {
         AnyThread().awaiting_touch_start_response = false;
-        AnyThread().default_gesture_prevented = false;
-        break;
+      }
+      break;
 
-      case blink::WebInputEvent::GestureFlingCancel:
-        AnyThread().fling_compositor_escalation_deadline = base::TimeTicks();
-        break;
+    case blink::WebInputEvent::GesturePinchUpdate:
+    case blink::WebInputEvent::GestureScrollUpdate:
+      // If we see events for an established gesture, we can lock it to the
+      // appropriate thread as the gesture can no longer be cancelled.
+      AnyThread().last_gesture_was_compositor_driven =
+          input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+      AnyThread().awaiting_touch_start_response = false;
+      AnyThread().default_gesture_prevented = false;
+      break;
 
-      case blink::WebInputEvent::GestureTapDown:
-      case blink::WebInputEvent::GestureShowPress:
-      case blink::WebInputEvent::GestureScrollEnd:
-        // With no observable effect, these meta events do not indicate a
-        // meaningful touchstart response and should not impact task priority.
-        break;
+    case blink::WebInputEvent::GestureFlingCancel:
+      AnyThread().fling_compositor_escalation_deadline = base::TimeTicks();
+      break;
 
-      default:
-        AnyThread().awaiting_touch_start_response = false;
-        break;
-    }
+    case blink::WebInputEvent::GestureTapDown:
+    case blink::WebInputEvent::GestureShowPress:
+    case blink::WebInputEvent::GestureScrollEnd:
+      // With no observable effect, these meta events do not indicate a
+      // meaningful touchstart response and should not impact task priority.
+      break;
+
+    case blink::WebInputEvent::MouseDown:
+      // Reset tracking state at the start of a new mouse drag gesture.
+      AnyThread().last_gesture_was_compositor_driven = false;
+      AnyThread().default_gesture_prevented = true;
+      break;
+
+    case blink::WebInputEvent::MouseMove:
+      // Consider mouse movement with the left button held down (see
+      // ShouldPrioritizeInputEvent) similarly to a touch gesture.
+      AnyThread().last_gesture_was_compositor_driven =
+          input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
+      AnyThread().awaiting_touch_start_response = false;
+      break;
+
+    case blink::WebInputEvent::Undefined:
+      break;
+
+    default:
+      AnyThread().awaiting_touch_start_response = false;
+      break;
   }
 
   // Avoid unnecessary policy updates if the use case did not change.
@@ -1019,8 +1035,6 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     //    stream of input events and has prevented a default gesture from being
     //    started.
     // 4. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
-    // TODO(skyostil): Consider removing in_idle_period_ and
-    // HadAnIdlePeriodRecently() unless we need them here.
     if (AnyThread().last_gesture_was_compositor_driven) {
       if (AnyThread().begin_main_frame_on_critical_path) {
         return UseCase::SYNCHRONIZED_GESTURE;
@@ -1279,12 +1293,6 @@ void RendererSchedulerImpl::OnNavigationStarted() {
       base::TimeDelta::FromMilliseconds(
           kRailsInitialLoadingPrioritizationMillis);
   ResetForNavigationLocked();
-}
-
-bool RendererSchedulerImpl::HadAnIdlePeriodRecently(base::TimeTicks now) const {
-  return (now - AnyThread().last_idle_period_end_time) <=
-         base::TimeDelta::FromMilliseconds(
-             kIdlePeriodStarvationThresholdMillis);
 }
 
 void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {

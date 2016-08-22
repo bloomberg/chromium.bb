@@ -589,11 +589,6 @@ class RendererSchedulerImplTest : public testing::Test {
         RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
   }
 
-  static base::TimeDelta idle_period_starvation_threshold() {
-    return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kIdlePeriodStarvationThresholdMillis);
-  }
-
   static base::TimeDelta suspend_timers_when_backgrounded_delay() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kSuspendTimersWhenBackgroundedDelayMillis);
@@ -1258,17 +1253,21 @@ TEST_F(RendererSchedulerImplTest,
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
+  // Note that currently the compositor will never consume mouse move events,
+  // but this test reflects what should happen if that was the case.
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::MouseMove,
                      blink::WebInputEvent::LeftButtonDown),
       RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   RunUntilIdle();
-  // Note compositor tasks are prioritized.
+  // Note compositor tasks deprioritized.
+  EXPECT_EQ(RendererSchedulerImpl::UseCase::COMPOSITOR_GESTURE,
+            CurrentUseCase());
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+              testing::ElementsAre(std::string("D1"), std::string("D2"),
+                                   std::string("I1"), std::string("C1"),
+                                   std::string("C2")));
 }
 
 TEST_F(RendererSchedulerImplTest,
@@ -1289,6 +1288,71 @@ TEST_F(RendererSchedulerImplTest,
                                    std::string("I1")));
   scheduler_->DidHandleInputEventOnMainThread(FakeInputEvent(
       blink::WebInputEvent::MouseMove, blink::WebInputEvent::LeftButtonDown));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EventForwardedToMainThread_MouseMove_WhenMouseDown_AfterMouseWheel) {
+  // Simulate a main thread driven mouse wheel scroll gesture.
+  SimulateMainThreadGestureStart(TouchEventPolicy::SEND_TOUCH_START,
+                                 blink::WebInputEvent::GestureScrollUpdate);
+  RunUntilIdle();
+  EXPECT_FALSE(TouchStartExpectedSoon());
+  EXPECT_EQ(RendererSchedulerImpl::UseCase::MAIN_THREAD_GESTURE,
+            CurrentUseCase());
+
+  // Now start a main thread mouse touch gesture. It should be detected as main
+  // thread custom input handling.
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
+  EnableIdleTasks();
+
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::MouseDown,
+                     blink::WebInputEvent::LeftButtonDown),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::MouseMove,
+                     blink::WebInputEvent::LeftButtonDown),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  RunUntilIdle();
+
+  EXPECT_EQ(RendererSchedulerImpl::UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING,
+            CurrentUseCase());
+
+  // Note compositor tasks are prioritized.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EventForwardedToMainThread_MouseClick) {
+  // A mouse click should be detected as main thread input handling, which means
+  // we won't try to defer expensive tasks because of one. We can, however,
+  // prioritize compositing/input handling.
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
+  EnableIdleTasks();
+
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::MouseDown,
+                     blink::WebInputEvent::LeftButtonDown),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::MouseUp,
+                     blink::WebInputEvent::LeftButtonDown),
+      RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  RunUntilIdle();
+
+  EXPECT_EQ(RendererSchedulerImpl::UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING,
+            CurrentUseCase());
+
+  // Note compositor tasks are prioritized.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C1"), std::string("C2"),
+                                   std::string("D1"), std::string("D2"),
+                                   std::string("I1")));
 }
 
 TEST_F(RendererSchedulerImplTest, EventConsumedOnCompositorThread_MouseWheel) {

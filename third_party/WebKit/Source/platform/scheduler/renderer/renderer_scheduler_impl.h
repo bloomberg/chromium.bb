@@ -265,13 +265,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // defined by RAILS.
   static const int kRailsResponseTimeMillis = 50;
 
-  // For the purposes of deciding whether or not it's safe to turn timers and
-  // loading tasks on only in idle periods, we regard the system as being as
-  // being "idle period" starved if there hasn't been an idle period in the last
-  // 10 seconds. This was chosen to be long enough to cover most anticipated
-  // user gestures.
-  static const int kIdlePeriodStarvationThresholdMillis = 10000;
-
   // The amount of time to wait before suspending shared timers after the
   // renderer has been backgrounded. This is used only if background suspension
   // of shared timers is enabled.
@@ -319,10 +312,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEventOnCompositorThread(WebInputEvent::Type type,
                                              InputEventState input_event_state);
-
-  // Returns true if there has been at least one idle period in the last
-  // |kIdlePeriodStarvationThresholdMillis|.
-  bool HadAnIdlePeriodRecently(base::TimeTicks now) const;
 
   // Helpers for safely suspending/resuming the timer queue after a
   // background/foreground signal.
