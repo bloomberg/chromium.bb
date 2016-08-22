@@ -3817,7 +3817,7 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
   // amount as the cache limit.
   if (overlay_resource_pool_) {
     overlay_resource_pool_->SetResourceUsageLimits(
-        std::numeric_limits<std::size_t>::max(), copied_render_pass_count * 3);
+        std::numeric_limits<std::size_t>::max(), copied_render_pass_count * 5);
   }
 }
 
@@ -3994,7 +3994,7 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   if (!overlay_resource_pool_) {
     overlay_resource_pool_ = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
-        gfx::BufferUsage::SCANOUT);
+        gfx::BufferUsage::SCANOUT, base::TimeDelta::FromSeconds(3));
   }
 
   Resource* resource = nullptr;

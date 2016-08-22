@@ -20,12 +20,8 @@
 #include "cc/resources/scoped_resource.h"
 
 namespace cc {
-namespace {
-
-// Delay before a resource is considered expired.
-const int kResourceExpirationDelayMs = 1000;
-
-}  // namespace
+base::TimeDelta ResourcePool::kDefaultExpirationDelay =
+    base::TimeDelta::FromSeconds(1);
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
@@ -60,7 +56,8 @@ void ResourcePool::PoolResource::OnMemoryDump(
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
-                           bool use_gpu_memory_buffers)
+                           bool use_gpu_memory_buffers,
+                           const base::TimeDelta& expiration_delay)
     : resource_provider_(resource_provider),
       use_gpu_memory_buffers_(use_gpu_memory_buffers),
       max_memory_usage_bytes_(0),
@@ -70,8 +67,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
       total_resource_count_(0),
       task_runner_(task_runner),
       evict_expired_resources_pending_(false),
-      resource_expiration_delay_(
-          base::TimeDelta::FromMilliseconds(kResourceExpirationDelayMs)),
+      resource_expiration_delay_(expiration_delay),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());

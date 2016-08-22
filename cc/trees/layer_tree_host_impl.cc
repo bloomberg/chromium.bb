@@ -2253,7 +2253,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       output_surface_->context_provider();
   if (!compositor_context_provider) {
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+                             ResourcePool::kDefaultExpirationDelay);
 
     *raster_buffer_provider =
         BitmapRasterBufferProvider::Create(resource_provider_.get());
@@ -2266,7 +2267,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     DCHECK(worker_context_provider);
 
     *resource_pool =
-        ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
+        ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+                             ResourcePool::kDefaultExpirationDelay);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
@@ -2291,7 +2293,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   if (use_zero_copy) {
     *resource_pool = ResourcePool::CreateForGpuMemoryBufferResources(
         resource_provider_.get(), GetTaskRunner(),
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+        ResourcePool::kDefaultExpirationDelay);
 
     *raster_buffer_provider = ZeroCopyRasterBufferProvider::Create(
         resource_provider_.get(),
@@ -2300,7 +2303,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   }
 
   *resource_pool =
-      ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
+      ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
+                           ResourcePool::kDefaultExpirationDelay);
 
   const int max_copy_texture_chromium_size =
       compositor_context_provider->ContextCapabilities()

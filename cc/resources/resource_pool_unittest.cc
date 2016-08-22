@@ -28,7 +28,8 @@ class ResourcePoolTest : public testing::Test {
         output_surface_.get(), shared_bitmap_manager_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
-        ResourcePool::Create(resource_provider_.get(), task_runner_.get());
+        ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                             ResourcePool::kDefaultExpirationDelay);
   }
 
  protected:
@@ -155,15 +156,16 @@ TEST_F(ResourcePoolTest, LostResource) {
 }
 
 TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
+  // Set a quick resource expiration delay so that this test doesn't take long
+  // to run.
+  resource_pool_ =
+      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           base::TimeDelta::FromMilliseconds(10));
+
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
   size_t count_limit = 100;
   resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
-
-  // Set a quick resource expiration delay so that this test doesn't take long
-  // to run.
-  resource_pool_->SetResourceExpirationDelayForTesting(
-      base::TimeDelta::FromMilliseconds(10));
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;
@@ -194,15 +196,16 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
 }
 
 TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
+  // Set a quick resource expiration delay so that this test doesn't take long
+  // to run.
+  resource_pool_ =
+      ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
+                           base::TimeDelta::FromMilliseconds(100));
+
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
   size_t count_limit = 100;
   resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
-
-  // Set a quick resource expiration delay so that this test doesn't take long
-  // to run.
-  resource_pool_->SetResourceExpirationDelayForTesting(
-      base::TimeDelta::FromMilliseconds(100));
 
   gfx::Size size(100, 100);
   ResourceFormat format = RGBA_8888;

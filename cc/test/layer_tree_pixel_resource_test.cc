@@ -124,7 +124,8 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
 
   // Create resource pool.
-  *resource_pool = ResourcePool::Create(resource_provider, task_runner);
+  *resource_pool = ResourcePool::Create(resource_provider, task_runner,
+                                        ResourcePool::kDefaultExpirationDelay);
 
   switch (raster_buffer_provider_type_) {
     case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:

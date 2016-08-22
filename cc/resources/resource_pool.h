@@ -24,21 +24,26 @@ namespace cc {
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
+  // Delay before a resource is considered expired.
+  static base::TimeDelta kDefaultExpirationDelay;
+
   static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
       ResourceProvider* resource_provider,
       base::SingleThreadTaskRunner* task_runner,
-      gfx::BufferUsage usage) {
-    std::unique_ptr<ResourcePool> pool(
-        new ResourcePool(resource_provider, task_runner, true));
+      gfx::BufferUsage usage,
+      const base::TimeDelta& expiration_delay) {
+    std::unique_ptr<ResourcePool> pool(new ResourcePool(
+        resource_provider, task_runner, true, expiration_delay));
     pool->usage_ = usage;
     return pool;
   }
 
   static std::unique_ptr<ResourcePool> Create(
       ResourceProvider* resource_provider,
-      base::SingleThreadTaskRunner* task_runner) {
-    return base::WrapUnique(
-        new ResourcePool(resource_provider, task_runner, false));
+      base::SingleThreadTaskRunner* task_runner,
+      const base::TimeDelta& expiration_delay) {
+    return base::WrapUnique(new ResourcePool(resource_provider, task_runner,
+                                             false, expiration_delay));
   }
 
   ~ResourcePool() override;
@@ -87,14 +92,12 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   size_t GetBusyResourceCountForTesting() const {
     return busy_resources_.size();
   }
-  void SetResourceExpirationDelayForTesting(base::TimeDelta delay) {
-    resource_expiration_delay_ = delay;
-  }
 
  protected:
   ResourcePool(ResourceProvider* resource_provider,
                base::SingleThreadTaskRunner* task_runner,
-               bool use_gpu_memory_buffers);
+               bool use_gpu_memory_buffers,
+               const base::TimeDelta& expiration_delay);
 
   bool ResourceUsageTooHigh();
 
@@ -172,7 +175,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool evict_expired_resources_pending_;
-  base::TimeDelta resource_expiration_delay_;
+  const base::TimeDelta resource_expiration_delay_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
 
