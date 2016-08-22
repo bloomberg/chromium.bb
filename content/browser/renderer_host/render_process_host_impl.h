@@ -42,6 +42,7 @@
 namespace base {
 class CommandLine;
 class MessageLoop;
+class SharedPersistentMemoryAllocator;
 }
 
 namespace gfx {

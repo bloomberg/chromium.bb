@@ -10,9 +10,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -27,6 +29,7 @@ class SharedPersistentMemoryAllocator;
 // when metrics are being collected for upload, or when something else needs
 // combined metrics (such as the chrome://histograms page).
 class SubprocessMetricsProvider : public metrics::MetricsProvider,
+                                  public content::BrowserChildProcessObserver,
                                   public content::NotificationObserver,
                                   public content::RenderProcessHostObserver {
  public:
@@ -56,6 +59,18 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
   // metrics::MetricsProvider:
   void MergeHistogramDeltas() override;
 
+  // content::BrowserChildProcessObserver:
+  void BrowserChildProcessHostConnected(
+      const content::ChildProcessData& data) override;
+  void BrowserChildProcessHostDisconnected(
+      const content::ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(
+      const content::ChildProcessData& data,
+      int exit_code) override;
+  void BrowserChildProcessKilled(
+      const content::ChildProcessData& data,
+      int exit_code) override;
+
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -67,6 +82,11 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
                            base::TerminationStatus status,
                            int exit_code) override;
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
+
+  // Gets a histogram allocator from a subprocess. This must be called on
+  // the IO thread.
+  static std::unique_ptr<base::PersistentHistogramAllocator>
+  GetSubprocessHistogramAllocatorOnIOThread(int id);
 
   base::ThreadChecker thread_checker_;
 
@@ -81,6 +101,8 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
   // Track all observed render processes to un-observe them on exit.
   ScopedObserver<content::RenderProcessHost, SubprocessMetricsProvider>
       scoped_observer_;
+
+  base::WeakPtrFactory<SubprocessMetricsProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SubprocessMetricsProvider);
 };

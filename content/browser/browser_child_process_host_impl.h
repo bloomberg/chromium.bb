@@ -76,6 +76,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   ChildProcessHost* GetHost() const override;
   base::TerminationStatus GetTerminationStatus(bool known_dead,
                                                int* exit_code) override;
+  std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
+      override;
   void SetName(const base::string16& name) override;
   void SetHandle(base::ProcessHandle handle) override;
 
@@ -120,6 +122,14 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   static void AddObserver(BrowserChildProcessObserver* observer);
   static void RemoveObserver(BrowserChildProcessObserver* observer);
 
+  // Creates the |metrics_allocator_|.
+  void CreateMetricsAllocator();
+
+  // Passes the |metrics_allocator_|, if any, to the managed process. This
+  // requires the process to have been launched and the IPC channel to be
+  // available.
+  void ShareMetricsAllocatorToProcess();
+
   // ChildProcessLauncher::Client implementation.
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
@@ -155,6 +165,9 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // IPC channel.
   base::win::ObjectWatcher early_exit_watcher_;
 #endif
+
+  // The memory allocator, if any, in which the process will write its metrics.
+  std::unique_ptr<base::SharedPersistentMemoryAllocator> metrics_allocator_;
 
   bool is_channel_connected_;
   bool notify_child_disconnected_;

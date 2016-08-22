@@ -11,23 +11,36 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "components/metrics/metrics_service.h"
+#include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 
 SubprocessMetricsProvider::SubprocessMetricsProvider()
-    : scoped_observer_(this) {
+    : scoped_observer_(this), weak_ptr_factory_(this) {
+  content::BrowserChildProcessObserver::Add(this);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-SubprocessMetricsProvider::~SubprocessMetricsProvider() {}
+SubprocessMetricsProvider::~SubprocessMetricsProvider() {
+  // Safe even if this object has never been added as an observer.
+  content::BrowserChildProcessObserver::Remove(this);
+}
 
 void SubprocessMetricsProvider::RegisterSubprocessAllocator(
     int id,
     std::unique_ptr<base::PersistentHistogramAllocator> allocator) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!allocators_by_id_.Lookup(id));
+
+  // Stop now if this was called without an allocator, typically because
+  // GetSubprocessHistogramAllocatorOnIOThread exited early and returned
+  // null.
+  if (!allocator)
+    return;
 
   // Map is "MapOwnPointer" so transfer ownership to it.
   allocators_by_id_.AddWithID(allocator.release(), id);
@@ -83,6 +96,44 @@ void SubprocessMetricsProvider::MergeHistogramDeltas() {
       allocators_by_id_.size());
 }
 
+void SubprocessMetricsProvider::BrowserChildProcessHostConnected(
+    const content::ChildProcessData& data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // It's necessary to access the BrowserChildProcessHost object that is
+  // managing the child in order to extract the metrics memory from it.
+  // Unfortunately, the required lookup can only be performed on the IO
+  // thread so do the necessary dance.
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&SubprocessMetricsProvider::
+                     GetSubprocessHistogramAllocatorOnIOThread,
+                 data.id),
+      base::Bind(&SubprocessMetricsProvider::
+                     RegisterSubprocessAllocator,
+                 weak_ptr_factory_.GetWeakPtr(), data.id));
+}
+
+void SubprocessMetricsProvider::BrowserChildProcessHostDisconnected(
+    const content::ChildProcessData& data) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DeregisterSubprocessAllocator(data.id);
+}
+
+void SubprocessMetricsProvider::BrowserChildProcessCrashed(
+    const content::ChildProcessData& data,
+    int exit_code) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DeregisterSubprocessAllocator(data.id);
+}
+
+void SubprocessMetricsProvider::BrowserChildProcessKilled(
+    const content::ChildProcessData& data,
+    int exit_code) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DeregisterSubprocessAllocator(data.id);
+}
+
 void SubprocessMetricsProvider::Observe(
     int type,
     const content::NotificationSource& source,
@@ -134,4 +185,23 @@ void SubprocessMetricsProvider::RenderProcessHostDestroyed(
 
   DeregisterSubprocessAllocator(host->GetID());
   scoped_observer_.Remove(host);
+}
+
+// static
+std::unique_ptr<base::PersistentHistogramAllocator>
+SubprocessMetricsProvider::GetSubprocessHistogramAllocatorOnIOThread(int id) {
+  // See if the new process has a memory allocator and take control of it if so.
+  // This call can only be made on the browser's IO thread.
+  content::BrowserChildProcessHost* host =
+      content::BrowserChildProcessHost::FromID(id);
+  if (!host)
+    return nullptr;
+
+  std::unique_ptr<base::SharedPersistentMemoryAllocator> allocator =
+      host->TakeMetricsAllocator();
+  if (!allocator)
+    return nullptr;
+
+  return base::MakeUnique<base::PersistentHistogramAllocator>(
+      std::move(allocator));
 }

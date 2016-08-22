@@ -61969,8 +61969,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    Size, before padding, of objects allocated from persistent memory. This is
-    updated with every allocation.
+    Size, before padding, of objects allocated from persistent memory in the
+    browser process. This is updated with every allocation.
   </summary>
 </histogram>
 
@@ -61983,12 +61983,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.PersistentAllocator.GpuMetrics.Allocs" units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a GPU
+    process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.GpuMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
 <histogram name="UMA.PersistentAllocator.RendererMetrics.Allocs" units="bytes">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    Size, before padding, of objects allocated from persistent memory. This is
-    updated with every allocation.
+    Size, before padding, of objects allocated from persistent memory in a
+    renderer process. This is updated with every allocation.
   </summary>
 </histogram>
 
@@ -62005,8 +62023,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    Size, before padding, of objects allocated from persistent memory. This is
-    updated with every allocation.
+    Size, before padding, of objects allocated from persistent memory in a setup
+    process. This is updated with every allocation.
   </summary>
 </histogram>
 

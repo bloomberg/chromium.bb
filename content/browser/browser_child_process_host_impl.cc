@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/persistent_histogram_allocator.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -178,6 +180,9 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
         MojoShellContext::GetConnectorForIOThread(),
         base::ThreadTaskRunnerHandle::Get()));
   }
+
+  // Create a persistent memory segment for subprocess histograms.
+  CreateMetricsAllocator();
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
@@ -283,6 +288,11 @@ const base::Process& BrowserChildProcessHostImpl::GetProcess() const {
   return child_process_->GetProcess();
 }
 
+std::unique_ptr<base::SharedPersistentMemoryAllocator>
+BrowserChildProcessHostImpl::TakeMetricsAllocator() {
+  return std::move(metrics_allocator_);
+}
+
 void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_.name = name;
@@ -353,6 +363,7 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   delegate_->OnChannelConnected(peer_pid);
 
   if (IsProcessLaunched()) {
+    ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&NotifyProcessLaunchedAndConnected,
                                        data_));
@@ -454,6 +465,47 @@ bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
   return child_process_host_->Send(message);
 }
 
+void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
+  // Create a persistent memory segment for subprocess histograms only if
+  // they're active in the browser.
+  // TODO(bcwhite): Remove this once persistence is always enabled.
+  if (!base::GlobalHistogramAllocator::Get())
+    return;
+
+  // Determine the correct parameters based on the process type.
+  size_t memory_size;
+  base::StringPiece metrics_name;
+  switch (data_.process_type) {
+    case PROCESS_TYPE_GPU:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "GpuMetrics";
+      break;
+
+    default:
+      return;
+  }
+
+  // Create the shared memory segment and attach an allocator to it.
+  // Mapping the memory shouldn't fail but be safe if it does; everything
+  // will continue to work but just as if persistence weren't available.
+  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  if (!shm->CreateAndMapAnonymous(memory_size))
+    return;
+  metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
+      std::move(shm), static_cast<uint64_t>(data_.id), metrics_name,
+      /*readonly=*/false));
+}
+
+void BrowserChildProcessHostImpl::ShareMetricsAllocatorToProcess() {
+  if (metrics_allocator_) {
+    base::SharedMemoryHandle shm_handle;
+    metrics_allocator_->shared_memory()->ShareToProcess(data_.handle,
+                                                        &shm_handle);
+    Send(new ChildProcessMsg_SetHistogramMemory(
+        shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
+  }
+}
+
 void BrowserChildProcessHostImpl::OnProcessLaunchFailed(int error_code) {
   delegate_->OnProcessLaunchFailed(error_code);
   notify_child_disconnected_ = false;
@@ -480,6 +532,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   delegate_->OnProcessLaunched();
 
   if (is_channel_connected_) {
+    ShareMetricsAllocatorToProcess();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&NotifyProcessLaunchedAndConnected,
                                        data_));
