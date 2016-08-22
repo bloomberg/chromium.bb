@@ -9,7 +9,7 @@
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/signature_policy.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/der/input.h"
 
@@ -66,7 +66,7 @@ class PathBuilderPkitsTestDelegate {
     }
     // First entry in the PKITS chain is the trust anchor.
     // TODO(mattm): test with all possible trust anchors in the trust store?
-    TrustStore trust_store;
+    TrustStoreInMemory trust_store;
 
     scoped_refptr<TrustAnchor> trust_anchor =
         TrustAnchor::CreateFromCertificateNoConstraints(certs[0]);

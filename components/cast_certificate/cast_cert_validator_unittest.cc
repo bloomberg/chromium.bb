@@ -6,7 +6,7 @@
 
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "net/cert/internal/parsed_certificate.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_certificate {
@@ -67,7 +67,7 @@ void RunTest(TestResult expected_result,
   auto certs =
       cast_certificate::testing::ReadCertificateChainFromFile(certs_file_name);
 
-  std::unique_ptr<net::TrustStore> trust_store;
+  std::unique_ptr<net::TrustStoreInMemory> trust_store;
 
   switch (trust_store_dependency) {
     case TRUST_STORE_BUILTIN:
@@ -87,7 +87,7 @@ void RunTest(TestResult expected_result,
       certs.pop_back();
 
       // Add it to the trust store as a trust anchor
-      trust_store.reset(new net::TrustStore);
+      trust_store.reset(new net::TrustStoreInMemory);
 
       if (trust_store_dependency == TRUST_STORE_FROM_TEST_FILE_UNCONSTRAINED) {
         // This is a test-only mode where anchor constraints are not enforced.

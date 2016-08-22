@@ -23,7 +23,7 @@
 #include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/signature_policy.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/der/encode_values.h"
 #include "net/der/input.h"
@@ -78,7 +78,7 @@ class CastTrustStore {
     store_.AddTrustAnchor(std::move(anchor));
   }
 
-  net::TrustStore store_;
+  net::TrustStoreInMemory store_;
   DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
 };
 

@@ -4,8 +4,6 @@
 
 #include "net/cert/internal/trust_store.h"
 
-#include "base/memory/ptr_util.h"
-
 namespace net {
 
 scoped_refptr<TrustAnchor> TrustAnchor::CreateFromCertificateNoConstraints(
@@ -36,27 +34,9 @@ TrustAnchor::TrustAnchor(scoped_refptr<ParsedCertificate> cert,
   DCHECK(cert_);
 }
 
-TrustAnchor::~TrustAnchor() {}
+TrustAnchor::~TrustAnchor() = default;
 
-TrustStore::TrustStore() {}
-TrustStore::~TrustStore() {}
-
-void TrustStore::Clear() {
-  anchors_.clear();
-}
-
-void TrustStore::AddTrustAnchor(scoped_refptr<TrustAnchor> anchor) {
-  // TODO(mattm): should this check for duplicate anchors?
-  anchors_.insert(std::make_pair(anchor->normalized_subject().AsStringPiece(),
-                                 std::move(anchor)));
-}
-
-void TrustStore::FindTrustAnchorsByNormalizedName(
-    const der::Input& normalized_name,
-    TrustAnchors* matches) const {
-  auto range = anchors_.equal_range(normalized_name.AsStringPiece());
-  for (auto it = range.first; it != range.second; ++it)
-    matches->push_back(it->second);
-}
+TrustStore::TrustStore() = default;
+TrustStore::~TrustStore() = default;
 
 }  // namespace net

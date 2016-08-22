@@ -5,11 +5,9 @@
 #ifndef NET_CERT_INTERNAL_TRUST_STORE_H_
 #define NET_CERT_INTERNAL_TRUST_STORE_H_
 
-#include <unordered_map>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/parsed_certificate.h"
 
@@ -113,32 +111,18 @@ class NET_EXPORT TrustAnchor : public base::RefCountedThreadSafe<TrustAnchor> {
 
 using TrustAnchors = std::vector<scoped_refptr<TrustAnchor>>;
 
-// A very simple implementation of a TrustStore, which contains a set of
-// trust anchors.
-//
-// TODO(mattm): convert this into an interface, provide implementations that
-// interface with OS trust store.
+// Interface for finding trust anchors.
 class NET_EXPORT TrustStore {
  public:
   TrustStore();
-  ~TrustStore();
-
-  // Empties the trust store, resetting it to original state.
-  void Clear();
-
-  void AddTrustAnchor(scoped_refptr<TrustAnchor> anchor);
+  virtual ~TrustStore();
 
   // Returns the trust anchors that match |name| in |*matches|, if any.
-  void FindTrustAnchorsByNormalizedName(const der::Input& normalized_name,
-                                        TrustAnchors* matches) const;
+  virtual void FindTrustAnchorsByNormalizedName(
+      const der::Input& normalized_name,
+      TrustAnchors* matches) const = 0;
 
  private:
-  // Multimap from normalized subject -> TrustAnchor.
-  std::unordered_multimap<base::StringPiece,
-                          scoped_refptr<TrustAnchor>,
-                          base::StringPieceHash>
-      anchors_;
-
   DISALLOW_COPY_AND_ASSIGN(TrustStore);
 };
 

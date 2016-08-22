@@ -16,7 +16,7 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/test_helpers.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
@@ -31,10 +31,11 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
-using ::testing::SaveArg;
-using ::testing::StrictMock;
-using ::testing::SetArgPointee;
+using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::SetArgPointee;
+using ::testing::StrictMock;
 
 // AsyncCertIssuerSourceStatic always returns its certs asynchronously.
 class AsyncCertIssuerSourceStatic : public CertIssuerSource {
@@ -163,7 +164,7 @@ class PathBuilderMultiRootTest : public ::testing::Test {
 };
 
 void AddTrustedCertificate(scoped_refptr<ParsedCertificate> cert,
-                           TrustStore* trust_store) {
+                           TrustStoreInMemory* trust_store) {
   ASSERT_TRUE(cert.get());
   scoped_refptr<TrustAnchor> anchor =
       TrustAnchor::CreateFromCertificateNoConstraints(std::move(cert));
@@ -179,7 +180,7 @@ void AddTrustedCertificate(scoped_refptr<ParsedCertificate> cert,
 // but with different data; also in this test the target cert itself is in the
 // trust store).
 TEST_F(PathBuilderMultiRootTest, TargetHasNameAndSpkiOfTrustAnchor) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(a_by_b_, &trust_store);
   AddTrustedCertificate(b_by_f_, &trust_store);
 
@@ -201,7 +202,7 @@ TEST_F(PathBuilderMultiRootTest, TargetHasNameAndSpkiOfTrustAnchor) {
 // is NOT itself signed by a trust anchor, it fails. Although the provided SPKI
 // is trusted, the certificate contents cannot be verified.
 TEST_F(PathBuilderMultiRootTest, TargetWithSameNameAsTrustAnchorFails) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(a_by_b_, &trust_store);
 
   CertPathBuilder::Result result;
@@ -222,7 +223,7 @@ TEST_F(PathBuilderMultiRootTest, TargetWithSameNameAsTrustAnchorFails) {
 // The second one is extraneous given the shorter one, however path building
 // will enumerate it if the shorter one failed validation.
 TEST_F(PathBuilderMultiRootTest, SelfSignedTrustAnchorSupplementalCert) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(d_by_d_, &trust_store);
 
   // The (extraneous) trust anchor D(D) is supplied as a certificate, as is the
@@ -262,7 +263,7 @@ TEST_F(PathBuilderMultiRootTest, SelfSignedTrustAnchorSupplementalCert) {
 // If the target cert is a self-signed cert whose key is a trust anchor, it
 // should verify.
 TEST_F(PathBuilderMultiRootTest, TargetIsSelfSignedTrustAnchor) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(e_by_e_, &trust_store);
   // This is not necessary for the test, just an extra...
   AddTrustedCertificate(f_by_e_, &trust_store);
@@ -284,7 +285,7 @@ TEST_F(PathBuilderMultiRootTest, TargetIsSelfSignedTrustAnchor) {
 // If the target cert is directly issued by a trust anchor, it should verify
 // without any intermediate certs being provided.
 TEST_F(PathBuilderMultiRootTest, TargetDirectlySignedByTrustAnchor) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(b_by_f_, &trust_store);
 
   CertPathBuilder::Result result;
@@ -304,7 +305,7 @@ TEST_F(PathBuilderMultiRootTest, TargetDirectlySignedByTrustAnchor) {
 // Test that async cert queries are not made if the path can be successfully
 // built with synchronously available certs.
 TEST_F(PathBuilderMultiRootTest, TriesSyncFirst) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
@@ -329,7 +330,7 @@ TEST_F(PathBuilderMultiRootTest, TriesSyncFirst) {
 
 // Test that async cert queries are not made if no callback is provided.
 TEST_F(PathBuilderMultiRootTest, SychronousOnlyMode) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
@@ -353,7 +354,7 @@ TEST_F(PathBuilderMultiRootTest, SychronousOnlyMode) {
 // If async queries are needed, all async sources will be queried
 // simultaneously.
 TEST_F(PathBuilderMultiRootTest, TestAsyncSimultaneous) {
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(e_by_e_, &trust_store);
 
   CertIssuerSourceStatic sync_certs;
@@ -384,7 +385,7 @@ TEST_F(PathBuilderMultiRootTest, TestAsyncSimultaneous) {
 // the supplied certs is itself a trust anchor.
 TEST_F(PathBuilderMultiRootTest, TestLongChain) {
   // Both D(D) and C(D) are trusted roots.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(d_by_d_, &trust_store);
   AddTrustedCertificate(c_by_d_, &trust_store);
 
@@ -413,7 +414,7 @@ TEST_F(PathBuilderMultiRootTest, TestLongChain) {
 // one doesn't work out.
 TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
   // Only D(D) is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(d_by_d_, &trust_store);
 
   // Certs B(F) and F(E) are supplied synchronously, thus the path
@@ -452,7 +453,7 @@ TEST_F(PathBuilderMultiRootTest, TestBacktracking) {
 // building still succeeds.
 TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
   // Only D(D) is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(d_by_d_, &trust_store);
 
   for (bool reverse_order : {false, true}) {
@@ -540,7 +541,7 @@ class PathBuilderKeyRolloverTest : public ::testing::Test {
 // path through the new intermediate and rollover cert to the old root.
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
   // Only oldroot is trusted.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   trust_store.AddTrustAnchor(oldroot_);
 
   // Old intermediate cert is not provided, so the pathbuilder will need to go
@@ -587,7 +588,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverOnlyOldRootTrusted) {
 // always builds the path through the new intermediate and new root.
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   // Both oldroot and newroot are trusted.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   trust_store.AddTrustAnchor(oldroot_);
   AddTrustedCertificate(newroot_, &trust_store);
 
@@ -626,14 +627,31 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   }
 }
 
+class MockTrustStore : public TrustStore {
+ public:
+  MOCK_CONST_METHOD2(FindTrustAnchorsByNormalizedName,
+                     void(const der::Input& normalized_name,
+                          TrustAnchors* matches));
+};
+
 // Tests that multiple trust root matches on a single path will be considered.
 // Both roots have the same subject but different keys. Only one of them will
 // verify.
 TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
-  // Both newroot and oldroot are trusted.
-  TrustStore trust_store;
-  AddTrustedCertificate(newroot_, &trust_store);
-  trust_store.AddTrustAnchor(oldroot_);
+  NiceMock<MockTrustStore> trust_store;
+  // Default handler for any other TrustStore requests.
+  EXPECT_CALL(trust_store, FindTrustAnchorsByNormalizedName(_, _))
+      .WillRepeatedly(Return());
+  // Both newroot and oldroot are trusted, and newroot is returned first in the
+  // matches vector.
+  EXPECT_CALL(trust_store, FindTrustAnchorsByNormalizedName(
+                               newroot_->normalized_subject(), _))
+      .WillRepeatedly(Invoke(
+          [this](const der::Input& normalized_name, TrustAnchors* matches) {
+            matches->push_back(
+                TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
+            matches->push_back(oldroot_);
+          }));
 
   // Only oldintermediate is supplied, so the path with newroot should fail,
   // oldroot should succeed.
@@ -648,14 +666,12 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
   EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
-  // There may be one or two paths attempted depending if the path builder tried
-  // using newroot first.
-  // TODO(mattm): Once TrustStore is an interface, this could be fixed with a
-  // mock version of TrustStore that returns roots in a deterministic order.
-  ASSERT_LE(1U, result.paths.size());
-  ASSERT_GE(2U, result.paths.size());
+  // Since FindTrustAnchorsByNormalizedName returns newroot first, it should be
+  // tried first. (Note: this may change if PathBuilder starts prioritizing the
+  // path building order.)
+  ASSERT_EQ(2U, result.paths.size());
 
-  if (result.paths.size() == 2) {
+  {
     // Path builder may first attempt: target <- oldintermediate <- newroot
     // but it will fail since oldintermediate is signed by oldroot.
     EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
@@ -666,21 +682,23 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
     EXPECT_EQ(newroot_, path.trust_anchor->cert());
   }
 
-  // Path builder will next attempt:
-  // target <- old intermediate <- oldroot
-  // which should succeed.
-  EXPECT_EQ(OK, result.paths[result.best_result_index]->error);
-  const auto& path = result.paths[result.best_result_index]->path;
-  ASSERT_EQ(2U, path.certs.size());
-  EXPECT_EQ(target_, path.certs[0]);
-  EXPECT_EQ(oldintermediate_, path.certs[1]);
-  EXPECT_EQ(oldroot_, path.trust_anchor);
+  {
+    // Path builder will next attempt:
+    // target <- old intermediate <- oldroot
+    // which should succeed.
+    EXPECT_EQ(OK, result.paths[result.best_result_index]->error);
+    const auto& path = result.paths[result.best_result_index]->path;
+    ASSERT_EQ(2U, path.certs.size());
+    EXPECT_EQ(target_, path.certs[0]);
+    EXPECT_EQ(oldintermediate_, path.certs[1]);
+    EXPECT_EQ(oldroot_, path.trust_anchor);
+  }
 }
 
 // Tests that the path builder doesn't build longer than necessary paths.
 TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
   // Only oldroot is trusted.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   trust_store.AddTrustAnchor(oldroot_);
 
   // New intermediate and new root are provided synchronously.
@@ -746,7 +764,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverLongChain) {
 // rest of the certificate cannot be verified).
 TEST_F(PathBuilderKeyRolloverTest, TestEndEntityIsTrustRoot) {
   // Trust newintermediate.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newintermediate_, &trust_store);
 
   CertPathBuilder::Result result;
@@ -766,7 +784,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestEndEntityIsTrustRoot) {
 TEST_F(PathBuilderKeyRolloverTest,
        TestEndEntityHasSameNameAndSpkiAsIntermediate) {
   // Trust oldroot.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   trust_store.AddTrustAnchor(oldroot_);
 
   // New root rollover is provided synchronously.
@@ -791,7 +809,7 @@ TEST_F(PathBuilderKeyRolloverTest,
 TEST_F(PathBuilderKeyRolloverTest,
        TestEndEntityHasSameNameAndSpkiAsTrustAnchor) {
   // Trust newrootrollover.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newrootrollover_, &trust_store);
 
   CertPathBuilder::Result result;
@@ -824,7 +842,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediates) {
           oldintermediate_->der_cert().AsStringPiece(), {}));
 
   // Only newroot is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newroot_, &trust_store);
 
   // The oldintermediate is supplied synchronously by |sync_certs1| and
@@ -886,7 +904,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateIntermediateAndRoot) {
           newroot_->der_cert().AsStringPiece(), {}));
 
   // Only newroot is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newroot_, &trust_store);
 
   // The oldintermediate and newroot are supplied synchronously by |sync_certs|.
@@ -956,7 +974,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleAsyncCallbacksFromSingleSource) {
   StrictMock<MockCertIssuerSource> cert_issuer_source;
 
   // Only newroot is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newroot_, &trust_store);
 
   CertPathBuilder::Result result;
@@ -1056,7 +1074,7 @@ TEST_F(PathBuilderKeyRolloverTest, TestDuplicateAsyncIntermediates) {
   StrictMock<MockCertIssuerSource> cert_issuer_source;
 
   // Only newroot is a trusted root.
-  TrustStore trust_store;
+  TrustStoreInMemory trust_store;
   AddTrustedCertificate(newroot_, &trust_store);
 
   CertPathBuilder::Result result;

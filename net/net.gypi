@@ -113,6 +113,8 @@
       'cert/internal/signature_policy.h',
       'cert/internal/trust_store.cc',
       'cert/internal/trust_store.h',
+      'cert/internal/trust_store_in_memory.cc',
+      'cert/internal/trust_store_in_memory.h',
       'cert/internal/verify_certificate_chain.cc',
       'cert/internal/verify_certificate_chain.h',
       'cert/internal/verify_name_match.cc',

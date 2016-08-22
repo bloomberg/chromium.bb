@@ -17,7 +17,7 @@
 #include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/signature_policy.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/internal/verify_signed_data.h"
 #include "net/cert/x509_certificate.h"
@@ -74,7 +74,7 @@ class CastCRLTrustStore {
     store_.AddTrustAnchor(std::move(anchor));
   }
 
-  net::TrustStore store_;
+  net::TrustStoreInMemory store_;
   DISALLOW_COPY_AND_ASSIGN(CastCRLTrustStore);
 };
 

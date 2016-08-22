@@ -6,7 +6,7 @@
 
 #include "net/cert/internal/cert_issuer_source_static.h"
 #include "net/cert/internal/signature_policy.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain_typed_unittest.h"
 
 namespace net {
@@ -22,7 +22,7 @@ class PathBuilderDelegate {
     SimpleSignaturePolicy signature_policy(1024);
     ASSERT_FALSE(chain.empty());
 
-    TrustStore trust_store;
+    TrustStoreInMemory trust_store;
     trust_store.AddTrustAnchor(trust_anchor);
 
     CertIssuerSourceStatic intermediate_cert_issuer_source;

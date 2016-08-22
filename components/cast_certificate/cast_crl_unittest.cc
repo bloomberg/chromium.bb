@@ -7,16 +7,17 @@
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
 #include "components/cast_certificate/cast_crl.h"
 #include "components/cast_certificate/proto/test_suite.pb.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cast_certificate {
 namespace {
 
 // Creates a trust store using the test roots encoded in the PEM file at |path|.
-std::unique_ptr<net::TrustStore> CreateTrustStoreFromFile(
+std::unique_ptr<net::TrustStoreInMemory> CreateTrustStoreFromFile(
     const std::string& path) {
-  std::unique_ptr<net::TrustStore> trust_store(new net::TrustStore());
+  std::unique_ptr<net::TrustStoreInMemory> trust_store(
+      new net::TrustStoreInMemory());
   const auto trusted_test_roots =
       cast_certificate::testing::ReadCertificateChainFromFile(path);
   for (const auto& trusted_root : trusted_test_roots) {
@@ -135,8 +136,8 @@ bool TestVerifyRevocation(TestStepResult expected_result,
 
 // Runs a single test case.
 bool RunTest(const DeviceCertTest& test_case) {
-  std::unique_ptr<net::TrustStore> crl_trust_store;
-  std::unique_ptr<net::TrustStore> cast_trust_store;
+  std::unique_ptr<net::TrustStoreInMemory> crl_trust_store;
+  std::unique_ptr<net::TrustStoreInMemory> cast_trust_store;
   if (test_case.use_test_trust_anchors()) {
     crl_trust_store =
         CreateTrustStoreFromFile("certificates/cast_crl_test_root_ca.pem");

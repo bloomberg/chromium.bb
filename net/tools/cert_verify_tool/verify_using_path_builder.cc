@@ -18,7 +18,7 @@
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/path_builder.h"
 #include "net/cert/internal/signature_policy.h"
-#include "net/cert/internal/trust_store.h"
+#include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/url_request/url_request_context.h"
@@ -131,7 +131,7 @@ bool VerifyUsingPathBuilder(
   at_time.UTCExplode(&exploded_time);
   net::der::GeneralizedTime time = ConvertExplodedTime(exploded_time);
 
-  net::TrustStore trust_store;
+  net::TrustStoreInMemory trust_store;
   for (const auto& der_cert : root_der_certs) {
     scoped_refptr<net::ParsedCertificate> cert =
         net::ParsedCertificate::CreateFromCertificateCopy(der_cert.der_cert,
