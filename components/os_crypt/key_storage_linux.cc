@@ -18,7 +18,7 @@
 #include "components/os_crypt/key_storage_kwallet.h"
 #endif
 
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
 const char KeyStorageLinux::kFolderName[] = "Chrome Keys";
 const char KeyStorageLinux::kKey[] = "Chrome Safe Storage";
 #else
