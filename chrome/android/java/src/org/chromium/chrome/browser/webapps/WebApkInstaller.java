@@ -5,14 +5,17 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.provider.Settings;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ShortcutHelper;
 
 import java.io.File;
 
@@ -42,11 +45,40 @@ public class WebApkInstaller {
         intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
+            listenForPackageInstallation(packageName);
             ContextUtils.getApplicationContext().startActivity(intent);
         } catch (ActivityNotFoundException e) {
             return false;
         }
         return true;
+    }
+
+    private static class WebApkInstallObserver extends BroadcastReceiver {
+        private final String mPackageName;
+        public WebApkInstallObserver(String packageName) {
+            mPackageName = packageName;
+        }
+
+        private static String getPackageName(Intent intent) {
+            Uri uri = intent.getData();
+            String pkg = uri != null ? uri.getSchemeSpecificPart() : null;
+            return pkg;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mPackageName.equals(getPackageName(intent))) {
+                ShortcutHelper.addWebApkShortcut(context, mPackageName);
+                context.unregisterReceiver(this);
+            }
+        }
+    }
+
+    private static void listenForPackageInstallation(String packageName) {
+        IntentFilter iFilter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        iFilter.addDataScheme("package");
+        ContextUtils.getApplicationContext().registerReceiver(
+                new WebApkInstallObserver(packageName), iFilter);
     }
 
     /**

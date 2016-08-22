@@ -7,7 +7,9 @@ package org.chromium.chrome.browser;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -88,6 +90,9 @@ public class ShortcutHelper {
     // have to update this string.
     private static final String INSTALL_SHORTCUT = "com.android.launcher.action.INSTALL_SHORTCUT";
 
+    // The activity class used for launching a WebApk.
+    private static final String WEBAPK_MAIN_ACTIVITY = "org.chromium.webapk.shell_apk.MainActivity";
+
     // These sizes are from the Material spec for icons:
     // https://www.google.com/design/spec/style/icons.html#icons-product-icons
     private static final float MAX_INNER_SIZE_RATIO = 1.25f;
@@ -157,7 +162,7 @@ public class ShortcutHelper {
             protected void onPostExecute(final Intent resultIntent) {
                 Context context = ContextUtils.getApplicationContext();
                 sDelegate.sendBroadcast(
-                        context, createAddToHomeIntent(url, userTitle, icon, resultIntent));
+                        context, createAddToHomeIntent(userTitle, icon, resultIntent));
 
                 // Store the webapp data so that it is accessible without the intent. Once this
                 // process is complete, call back to native code to start the splash image
@@ -176,6 +181,24 @@ public class ShortcutHelper {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    public static void addWebApkShortcut(Context context, String packageName) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo appInfo = pm.getApplicationInfo(
+                    packageName, PackageManager.GET_META_DATA);
+            String shortcutTitle = pm.getApplicationLabel(appInfo).toString();
+            Bitmap shortcutIcon = ((BitmapDrawable) pm.getApplicationIcon(packageName)).getBitmap();
+
+            Bitmap bitmap = createHomeScreenIconFromWebIcon(shortcutIcon);
+            Intent i = new Intent();
+            i.setClassName(packageName, WEBAPK_MAIN_ACTIVITY);
+            i.addCategory(Intent.CATEGORY_LAUNCHER);
+            context.sendBroadcast(createAddToHomeIntent(shortcutTitle, bitmap, i));
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Adds home screen shortcut which opens in the browser Activity.
      */
@@ -187,7 +210,7 @@ public class ShortcutHelper {
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
         sDelegate.sendBroadcast(
-                context, createAddToHomeIntent(url, userTitle, icon, shortcutIntent));
+                context, createAddToHomeIntent(userTitle, icon, shortcutIntent));
         showAddedToHomescreenToast(userTitle);
     }
 
@@ -226,14 +249,13 @@ public class ShortcutHelper {
 
     /**
      * Creates an intent that will add a shortcut to the home screen.
-     * @param shortcutIntent Intent to fire when the shortcut is activated.
-     * @param url URL of the shortcut.
      * @param title Title of the shortcut.
      * @param icon Image that represents the shortcut.
+     * @param shortcutIntent Intent to fire when the shortcut is activated.
      * @return Intent for the shortcut.
      */
-    public static Intent createAddToHomeIntent(String url, String title,
-            Bitmap icon, Intent shortcutIntent) {
+    public static Intent createAddToHomeIntent(String title, Bitmap icon,
+            Intent shortcutIntent) {
         Intent i = new Intent(INSTALL_SHORTCUT);
         i.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         i.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
