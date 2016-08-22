@@ -138,7 +138,7 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
           schema_constants::kMinimumVersionRequired,
           &minimum_version_required_str)) {
     std::unique_ptr<base::Version> version(
-        new Version(minimum_version_required_str));
+        new base::Version(minimum_version_required_str));
     // We accept a general version string here. Note that count of components in
     // version string of extensions is limited to 4.
     if (!version->IsValid())

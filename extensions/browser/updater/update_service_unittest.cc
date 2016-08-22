@@ -38,9 +38,11 @@ class FakeUpdateClient : public update_client::UpdateClient {
   // Used for tests that uninstall pings get requested properly.
   struct UninstallPing {
     std::string id;
-    Version version;
+    base::Version version;
     int reason;
-    UninstallPing(const std::string& id, const Version& version, int reason)
+    UninstallPing(const std::string& id,
+                  const base::Version& version,
+                  int reason)
         : id(id), version(version), reason(reason) {}
   };
   std::vector<UninstallPing>& uninstall_pings() { return uninstall_pings_; }
@@ -62,7 +64,7 @@ class FakeUpdateClient : public update_client::UpdateClient {
   bool IsUpdating(const std::string& id) const override { return false; }
   void Stop() override {}
   void SendUninstallPing(const std::string& id,
-                         const Version& version,
+                         const base::Version& version,
                          int reason) override {
     uninstall_pings_.emplace_back(id, version, reason);
   }

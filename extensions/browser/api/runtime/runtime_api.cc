@@ -251,7 +251,7 @@ void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
-                 browser_context_, extension->id(), Version(), true));
+                 browser_context_, extension->id(), base::Version(), true));
 }
 
 void RuntimeAPI::OnExtensionWillBeInstalled(
@@ -509,7 +509,7 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 void RuntimeEventRouter::DispatchOnInstalledEvent(
     content::BrowserContext* context,
     const std::string& extension_id,
-    const Version& old_version,
+    const base::Version& old_version,
     bool chrome_updated) {
   if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;

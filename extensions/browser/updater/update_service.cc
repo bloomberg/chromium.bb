@@ -43,7 +43,7 @@ void UpdateService::Shutdown() {
 }
 
 void UpdateService::SendUninstallPing(const std::string& id,
-                                      const Version& version,
+                                      const base::Version& version,
                                       int reason) {
   update_client_->SendUninstallPing(id, version, reason);
 }

@@ -1519,7 +1519,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
 void ExtensionService::AddComponentExtension(const Extension* extension) {
   const std::string old_version_string(
       extension_prefs_->GetVersionString(extension->id()));
-  const Version old_version(old_version_string);
+  const base::Version old_version(old_version_string);
 
   VLOG(1) << "AddComponentExtension " << extension->name();
   if (!old_version.IsValid() || old_version != *extension->version()) {

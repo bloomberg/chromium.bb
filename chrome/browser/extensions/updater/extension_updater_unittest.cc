@@ -432,7 +432,7 @@ void SetupPendingExtensionManagerForTest(
         PendingExtensionInfo(id,
                              std::string(),
                              update_url,
-                             Version(),
+                             base::Version(),
                              should_allow_install,
                              kIsFromSync,
                              Manifest::INTERNAL,
@@ -1172,7 +1172,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string hash;
-    Version version("0.0.1");
+    base::Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
     std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch(
@@ -1282,7 +1282,7 @@ class ExtensionUpdaterTest : public testing::Test {
     GURL test_url(base::StringPrintf("%s/extension.crx", url_prefix.c_str()));
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string hash;
-  Version version("0.0.1");
+    base::Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
     std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch(
