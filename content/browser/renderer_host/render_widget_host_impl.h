@@ -524,6 +524,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   bool renderer_initialized() const { return renderer_initialized_; }
 
+  bool needs_begin_frames() const { return needs_begin_frames_; }
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -593,6 +595,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
   void OnForwardCompositorProto(const std::vector<uint8_t>& proto);
+  void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
 
   // Called (either immediately or asynchronously) after we're done with our
@@ -816,6 +819,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_;
+
+  // Whether the view should send begin frame messages to its render widget.
+  // This is state that may arrive before the view has been set and that must be
+  // consistent with the state in the renderer, so this host handles it.
+  bool needs_begin_frames_ = false;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;

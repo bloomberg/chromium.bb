@@ -48,7 +48,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       ack_pending_count_(0),
       frame_connector_(nullptr),
       begin_frame_source_(nullptr),
-      observing_begin_frame_source_(false),
       parent_surface_client_id_(0),
       weak_factory_(this) {
   id_allocator_.reset(new cc::SurfaceIdAllocator(AllocateSurfaceClientId()));
@@ -108,16 +107,6 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
 void RenderWidgetHostViewChildFrame::InitAsChild(
     gfx::NativeView parent_view) {
   NOTREACHED();
-}
-
-bool RenderWidgetHostViewChildFrame::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewChildFrame, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 RenderWidgetHost* RenderWidgetHostViewChildFrame::GetRenderWidgetHost() const {
@@ -644,10 +633,11 @@ void RenderWidgetHostViewChildFrame::ReturnResources(
 
 void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && observing_begin_frame_source_)
+  bool needs_begin_frames = host_->needs_begin_frames();
+  if (begin_frame_source_ && needs_begin_frames)
     begin_frame_source_->RemoveObserver(this);
   begin_frame_source_ = source;
-  if (begin_frame_source_ && observing_begin_frame_source_)
+  if (begin_frame_source_ && needs_begin_frames)
     begin_frame_source_->AddObserver(this);
 }
 
@@ -667,18 +657,15 @@ void RenderWidgetHostViewChildFrame::OnBeginFrameSourcePausedChanged(
   // Only used on Android WebView.
 }
 
-void RenderWidgetHostViewChildFrame::OnSetNeedsBeginFrames(
+void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
     bool needs_begin_frames) {
-  if (observing_begin_frame_source_ == needs_begin_frames)
+  if (!begin_frame_source_)
     return;
 
-  observing_begin_frame_source_ = needs_begin_frames;
-  if (begin_frame_source_) {
-    if (observing_begin_frame_source_)
-      begin_frame_source_->AddObserver(this);
-    else
-      begin_frame_source_->RemoveObserver(this);
-  }
+  if (needs_begin_frames)
+    begin_frame_source_->AddObserver(this);
+  else
+    begin_frame_source_->RemoveObserver(this);
 }
 
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(

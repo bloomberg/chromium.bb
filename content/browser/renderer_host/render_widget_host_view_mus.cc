@@ -255,6 +255,10 @@ gfx::Rect RenderWidgetHostViewMus::GetBoundsInRootWindow() {
   return bounds;
 }
 
+void RenderWidgetHostViewMus::SetNeedsBeginFrames(bool needs_begin_frames) {
+  // TODO(enne): Implement this.
+}
+
 #if defined(OS_MACOSX)
 ui::AcceleratedWidgetMac* RenderWidgetHostViewMus::GetAcceleratedWidgetMac()
     const {

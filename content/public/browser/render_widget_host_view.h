@@ -167,6 +167,11 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                                   bool editable) = 0;
 
+  // Informs the view that its associated render widget has frames to draw and
+  // wants to have BeginFrame messages sent to it.  This should only be called
+  // when the value has changed.  Views must initially default to false.
+  virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
+
 #if defined(OS_MACOSX)
   // Return the accelerated widget which hosts the CALayers that draw the
   // content of the view in GetNativeView. This may be null.

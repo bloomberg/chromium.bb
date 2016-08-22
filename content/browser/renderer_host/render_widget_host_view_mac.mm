@@ -561,8 +561,6 @@ bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewMac, message)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRenderedTextCompleted,
         OnGetRenderedTextCompleted)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
-                        OnSetNeedsBeginFrames)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1142,7 +1140,7 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   }
 }
 
-void RenderWidgetHostViewMac::OnSetNeedsBeginFrames(bool needs_begin_frames) {
+void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
   browser_compositor_->SetNeedsBeginFrames(needs_begin_frames);
 }
 

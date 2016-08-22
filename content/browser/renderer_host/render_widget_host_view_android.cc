@@ -342,8 +342,6 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
-                        OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
                         OnSmartClipDataExtracted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowUnhandledTapUIIfNeeded,
@@ -639,10 +637,10 @@ void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
     content_view_core_->OnBackgroundColorChanged(color);
 }
 
-void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames(bool enabled) {
-  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames",
-               "enabled", enabled);
-  if (enabled)
+void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
+  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SetNeedsBeginFrames",
+               "needs_begin_frames", needs_begin_frames);
+  if (needs_begin_frames)
     RequestVSyncUpdate(PERSISTENT_BEGIN_FRAME);
   else
     outstanding_vsync_requests_ &= ~PERSISTENT_BEGIN_FRAME;

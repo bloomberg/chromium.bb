@@ -114,7 +114,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   RenderWidgetHostViewAura(RenderWidgetHost* host, bool is_guest_view_hack);
 
   // RenderWidgetHostView implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override;
@@ -134,6 +133,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetInsets(const gfx::Insets& insets) override;
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // Overridden from RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -500,9 +500,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();
-
-  // Called when RenderWidget wants to start BeginFrame scheduling or stop.
-  void OnSetNeedsBeginFrames(bool needs_begin_frames);
 
   RenderFrameHostImpl* GetFocusedFrame();
 

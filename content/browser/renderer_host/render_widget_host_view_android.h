@@ -165,6 +165,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
   void OnDidNavigateMainFrameToNewPage() override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
@@ -213,7 +214,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
   void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
-  void OnSetNeedsBeginFrames(bool enabled);
   void OnSmartClipDataExtracted(const base::string16& text,
                                 const base::string16& html,
                                 const gfx::Rect rect);

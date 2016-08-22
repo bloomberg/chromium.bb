@@ -69,7 +69,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void RegisterFrameSwappedCallback(std::unique_ptr<base::Closure> callback);
 
   // RenderWidgetHostView implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   RenderWidgetHost* GetRenderWidgetHost() const override;
   void SetSize(const gfx::Size& size) override;
@@ -88,6 +87,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetBackgroundColor(SkColor color) override;
   gfx::Size GetPhysicalBackingSize() const override;
   bool IsMouseLocked() override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -169,8 +169,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
-  void OnSetNeedsBeginFrames(bool needs_begin_frames);
-
   // Declared 'public' instead of 'protected' here to allow derived classes
   // to Bind() to it.
   void SurfaceDrawn(uint32_t output_surface_id);
@@ -244,7 +242,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
-  bool observing_begin_frame_source_;
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
   uint32_t parent_surface_client_id_;
 

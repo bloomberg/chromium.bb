@@ -101,6 +101,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMus
   bool LockMouse() override;
   void UnlockMouse() override;
   gfx::Rect GetBoundsInRootWindow() override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

@@ -324,10 +324,15 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
-  if (view)
+  if (view) {
     view_ = view->GetWeakPtr();
-  else
+    // Views start out not needing begin frames, so only update its state
+    // if the value has changed.
+    if (needs_begin_frames_)
+      view_->SetNeedsBeginFrames(needs_begin_frames_);
+  } else {
     view_.reset();
+  }
 
   // If the renderer has not yet been initialized, then the surface ID
   // namespace will be sent during initialization.
@@ -477,6 +482,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnFirstPaintAfterLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardCompositorProto,
                         OnForwardCompositorProto)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1307,6 +1313,15 @@ void RenderWidgetHostImpl::OnForwardCompositorProto(
     const std::vector<uint8_t>& proto) {
   if (delegate_)
     delegate_->ForwardCompositorProto(this, proto);
+}
+
+void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {
+  if (needs_begin_frames_ == needs_begin_frames)
+    return;
+
+  needs_begin_frames_ = needs_begin_frames;
+  if (view_)
+    view_->SetNeedsBeginFrames(needs_begin_frames);
 }
 
 void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,

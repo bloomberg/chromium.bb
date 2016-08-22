@@ -92,6 +92,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void OnSwapCompositorFrame(uint32_t output_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override {}
+  void SetNeedsBeginFrames(bool needs_begin_frames) override {}
 
   // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

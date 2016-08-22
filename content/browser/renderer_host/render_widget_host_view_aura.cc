@@ -440,7 +440,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_composition_text_(false),
       accept_return_character_(false),
       begin_frame_source_(nullptr),
-      needs_begin_frames_(false),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)
@@ -489,17 +488,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, RenderWidgetHostView implementation:
-
-bool RenderWidgetHostViewAura::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAura, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
-                        OnSetNeedsBeginFrames)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
 
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
@@ -723,17 +711,14 @@ ui::TextInputClient* RenderWidgetHostViewAura::GetTextInputClient() {
   return this;
 }
 
-void RenderWidgetHostViewAura::OnSetNeedsBeginFrames(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
+void RenderWidgetHostViewAura::SetNeedsBeginFrames(bool needs_begin_frames) {
+  if (!begin_frame_source_)
     return;
 
-  needs_begin_frames_ = needs_begin_frames;
-  if (begin_frame_source_) {
-    if (needs_begin_frames_)
-      begin_frame_source_->AddObserver(this);
-    else
-      begin_frame_source_->RemoveObserver(this);
-  }
+  if (needs_begin_frames)
+    begin_frame_source_->AddObserver(this);
+  else
+    begin_frame_source_->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAura::OnBeginFrame(
@@ -2940,10 +2925,11 @@ void RenderWidgetHostViewAura::DelegatedFrameHostUpdateVSyncParameters(
 
 void RenderWidgetHostViewAura::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && needs_begin_frames_)
+  bool needs_begin_frames = host_->needs_begin_frames();
+  if (begin_frame_source_ && needs_begin_frames)
     begin_frame_source_->RemoveObserver(this);
   begin_frame_source_ = source;
-  if (begin_frame_source_ && needs_begin_frames_)
+  if (begin_frame_source_ && needs_begin_frames)
     begin_frame_source_->AddObserver(this);
 }
 

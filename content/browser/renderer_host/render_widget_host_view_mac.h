@@ -276,6 +276,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool IsSpeaking() const override;
   void StopSpeaking() override;
   void SetBackgroundColor(SkColor color) override;
+  void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // Implementation of RenderWidgetHostViewBase.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -366,9 +367,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);
-
-  // Called when RenderWidget wants to start BeginFrame scheduling or stop.
-  void OnSetNeedsBeginFrames(bool needs_begin_frames);
 
   void KillSelf();
 
