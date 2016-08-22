@@ -8,7 +8,6 @@
 
 /**
  * Polymer class definition for 'cr-network-list'.
- * TODO(stevenjb): Update with iron-list(?) once implemented in Polymer 1.0.
  */
 Polymer({
   is: 'cr-network-list',
@@ -45,12 +44,6 @@ Polymer({
       }
     },
 
-    /** True if the list is opened. */
-    opened: {
-      type: Boolean,
-      value: true,
-    },
-
     /** True if action buttons should be shown for the itmes. */
     showButtons: {
       type: Boolean,
@@ -64,7 +57,18 @@ Polymer({
       value: false,
       reflectToAttribute: true,
     },
+
+    /**
+     * Reflects the iron-list selecteditem property.
+     * @type {!CrNetworkList.CrNetworkListItemType}
+     */
+    selectedItem: {
+      type: Object,
+      observer: 'selectedItemChanged_',
+    }
   },
+
+  behaviors: [CrScrollableBehavior],
 
   /** @private */
   maxHeightChanged_: function() {
@@ -85,15 +89,23 @@ Polymer({
   },
 
   /**
-   * Event triggered when a list item is tapped.
-   * @param {!{model: {item: !CrNetworkList.CrNetworkListItemType}}} event
+   * Use iron-list selection (which is not the same as focus) to trigger
+   * tap (requires selection-enabled) or keyboard selection.
    * @private
    */
-  onTap_: function(event) {
-    let item = event.model.item;
+  selectedItemChanged_: function() {
+    if (this.selectedItem)
+      this.onItemAction_(this.selectedItem);
+  },
+
+  /**
+   * @param {!CrNetworkList.CrNetworkListItemType} item
+   * @private
+   */
+  onItemAction_: function(item) {
     if (item.hasOwnProperty('customItemName'))
-      this.fire('custom-item-selected', event.model.item);
+      this.fire('custom-item-selected', item);
     else
-      this.fire('selected', event.model.item);
+      this.fire('selected', item);
   },
 });

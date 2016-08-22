@@ -14,13 +14,20 @@ Polymer({
   is: 'network-summary-item',
 
   properties: {
-    /**
-     * True if the list is expanded.
-     */
+    /** The expanded state of the list of networks. */
     expanded: {
       type: Boolean,
       value: false,
       observer: 'expandedChanged_',
+    },
+
+    /**
+     * Whether the list has been expanded. This is used to ensure the
+     * iron-collapse section animates correctly.
+     */
+    wasExpanded: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -98,6 +105,33 @@ Polymer({
    */
   deviceIsEnabled_: function(deviceState) {
     return !!deviceState && deviceState.State == 'Enabled';
+  },
+
+  /**
+   * @return {boolean} Whether the dom-if for the network list should be true.
+   *   The logic here is designed to allow the enclosed content to be stamped
+   *   before it is expanded.
+   * @private
+   */
+  networksDomIfIsTrue_() {
+    if (this.expanded == this.wasExpanded)
+      return this.expanded;
+    if (this.expanded) {
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        this.wasExpanded = true;
+      }.bind(this));
+      return true;
+    }
+    return this.wasExpanded;
+  },
+
+  /**
+   * @return {boolean} Whether the iron-collapse for the network list should
+   *   be opened.
+   * @private
+   */
+  networksIronCollapseIsOpened_() {
+    return this.expanded && this.wasExpanded;
   },
 
   /**

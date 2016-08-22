@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
@@ -16,16 +17,18 @@
         border-top: var(--cr-separator-line);
       }
     </style>
-    <iron-collapse opened="{{opened}}">
-      <div id="container" class="layout vertical flex">
-        <template is="dom-repeat" items="[[getItems_(networks, customItems)]]">
+    <div id="container" class="layout vertical" scrollable>
+      <iron-list items="[[getItems_(networks, customItems)]]"
+          scroll-target="container" selection-enabled
+          selected-item="{{selectedItem}}">
+        <template>
           <cr-network-list-item item="[[item]]" is-list-item
-              on-tap="onTap_" show-buttons="[[showButtons]]"
+              show-buttons="[[showButtons]]" tabindex$="[[tabIndex]]"
               show-separator$="[[showSeparators]]">
           </cr-network-list-item>
         </template>
-      </div>
-    </iron-collapse>
+      </iron-list>
+    </div>
   </template>
   <script src="cr_network_list.js"></script>
 </dom-module>

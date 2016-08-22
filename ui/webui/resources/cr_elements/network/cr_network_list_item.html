@@ -12,6 +12,7 @@
     <style include="cr-shared-style">
       :host {
         display: inline-block;
+        outline: none;
       }
 
       #divButtons {
@@ -105,7 +106,8 @@
       <template is="dom-if"
           if="[[isSettingsButtonVisible_(networkState, showButtons)]]">
         <div id="divButtons">
-          <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_">
+          <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_"
+              tabindex$="[[tabindex]]">
           </paper-icon-button>
         </div>
       </template>

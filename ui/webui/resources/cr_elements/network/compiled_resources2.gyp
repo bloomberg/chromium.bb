@@ -17,6 +17,7 @@
     {
       'target_name': 'cr_network_list',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:cr_scrollable_behavior',
         'cr_network_list_types',
         'cr_onc_types',
       ],

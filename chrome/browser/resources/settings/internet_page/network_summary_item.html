@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
@@ -18,7 +19,6 @@
 
       .button-row {
         align-items: center;
-        border-top: var(--settings-separator-line);
         display: flex;
         min-height: var(--settings-row-min-height);
       }
@@ -60,18 +60,21 @@
         </div>
       </div>
     </div>
-    <template is="dom-if" if="[[expanded]]">
-      <div class="list-frame">
-        <cr-network-list id="networkList" max-height="[[maxHeight]]"
-            networks="[[networkStateList]]" opened="{{expanded}}" show-buttons>
-        </cr-network-list>
-        <template is="dom-if"
-            if="[[knownNetworksIsVisible_(activeNetworkState)]]">
-          <div class="button-row" actionable on-tap="onKnownNetworksTap_">
-            <a is="action-link">$i18n{knownNetworksButton}</a>
-          </div>
-        </template>
-      </div>
+    <template is="dom-if" if="[[networksDomIfIsTrue_(expanded, wasExpanded)]]">
+      <iron-collapse
+          opened="[[networksIronCollapseIsOpened_(expanded, wasExpanded)]]">
+        <div class="list-frame">
+          <cr-network-list id="networkList" max-height="[[maxHeight]]"
+              networks="[[networkStateList]]" show-buttons>
+          </cr-network-list>
+          <template is="dom-if"
+              if="[[knownNetworksIsVisible_(activeNetworkState)]]">
+            <div class="button-row" actionable on-tap="onKnownNetworksTap_">
+              <a is="action-link">$i18n{knownNetworksButton}</a>
+            </div>
+          </template>
+        </div>
+      </iron-collapse>
     </template>
   </template>
   <script src="network_summary_item.js"></script>

@@ -44,6 +44,17 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    /**
+     * Reflect the element's tabindex attribute to a property so that embedded
+     * elements (e.g. the settings button) can become keyboard focusable when
+     * this element has keyboard focus.
+     */
+    tabindex: {
+      type: Number,
+      value: -1,
+      reflectToAttribute: true,
+    },
   },
 
   behaviors: [I18nBehavior],
