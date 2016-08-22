@@ -345,15 +345,16 @@
       .search-bubble {
         pointer-events: none;
         position: absolute;
+        z-index: 1;
       }
 
       .search-bubble-innards {
         align-items: center;
         background-color: var(--paper-yellow-500);
         border-radius: 2px;
-        display: flex;
-        height: 28px;
-        padding: 0 16px;
+        padding: 4px 10px;
+        text-align: center;
+        width: 100px;
       }
 
       /* Provides the arrow which points at the anchor element. */
@@ -362,9 +363,9 @@
         background-color: var(--paper-yellow-500);
         content: '';
         height: 10px;
+        left: 55px;
         position: absolute;
-        right: -5px;
-        top: 10px;
+        top: -5px;
         width: 10px;
       }
     </style>

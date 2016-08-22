@@ -195,9 +195,9 @@ cr.define('settings', function() {
     searchBubble.appendChild(innards);
     element.appendChild(searchBubble);
 
-    // Dynamically position the bubble at the edge the associated controle
-    // elemnt.
-    searchBubble.style.left = '-' + searchBubble.offsetWidth + 'px';
+    // Dynamically position the bubble at the edge the associated control
+    // element.
+    searchBubble.style.top = element.offsetTop + element.offsetHeight + 'px';
   }
 
   /**
