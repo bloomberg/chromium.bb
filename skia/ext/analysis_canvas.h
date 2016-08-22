@@ -39,6 +39,11 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkPicture::AbortCallback {
                   const SkPoint pts[],
                   const SkPaint&) override;
   void onDrawOval(const SkRect&, const SkPaint&) override;
+  void onDrawArc(const SkRect&,
+                 SkScalar startAngle,
+                 SkScalar sweepAngle,
+                 bool useCenter,
+                 const SkPaint&) override;
   void onDrawRect(const SkRect&, const SkPaint&) override;
   void onDrawRRect(const SkRRect&, const SkPaint&) override;
   void onDrawPath(const SkPath& path, const SkPaint&) override;

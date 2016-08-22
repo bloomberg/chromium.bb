@@ -175,6 +175,17 @@ void AnalysisCanvas::onDrawOval(const SkRect& oval, const SkPaint& paint) {
   ++draw_op_count_;
 }
 
+void AnalysisCanvas::onDrawArc(const SkRect& oval,
+                               SkScalar startAngle,
+                               SkScalar sweepAngle,
+                               bool useCenter,
+                               const SkPaint& paint) {
+  TRACE_EVENT0("disabled-by-default-skia", "AnalysisCanvas::onDrawArc");
+  is_solid_color_ = false;
+  is_transparent_ = false;
+  ++draw_op_count_;
+}
+
 void AnalysisCanvas::onDrawRRect(const SkRRect& rr, const SkPaint& paint) {
   TRACE_EVENT0("disabled-by-default-skia", "AnalysisCanvas::onDrawRRect");
   // This should add the SkRRect to an SkPath, and call
