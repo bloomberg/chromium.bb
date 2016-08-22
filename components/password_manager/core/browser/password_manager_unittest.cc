@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -39,20 +40,11 @@ namespace password_manager {
 
 namespace {
 
-class MockStoreResultFilter : public CredentialsFilter {
+class MockStoreResultFilter : public StubCredentialsFilter {
  public:
-  MOCK_CONST_METHOD1(FilterResultsPtr,
-                     void(std::vector<std::unique_ptr<PasswordForm>>* results));
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
   MOCK_CONST_METHOD1(ReportFormLoginSuccess,
                      void(const PasswordFormManager& form_manager));
-
-  // GMock cannot handle move-only arguments.
-  std::vector<std::unique_ptr<PasswordForm>> FilterResults(
-      std::vector<std::unique_ptr<PasswordForm>> results) const override {
-    FilterResultsPtr(&results);
-    return results;
-  }
 };
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {

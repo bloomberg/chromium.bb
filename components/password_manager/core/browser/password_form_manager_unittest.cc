@@ -24,7 +24,6 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -32,6 +31,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
@@ -302,20 +302,11 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   NiceMock<MockAutofillManager> mock_autofill_manager_;
 };
 
-class MockStoreResultFilter : public CredentialsFilter {
+class MockStoreResultFilter : public StubCredentialsFilter {
  public:
+  // This method is called by StubCredentialsFilter::FilterResults.
   MOCK_CONST_METHOD1(FilterResultsPtr,
                      void(std::vector<std::unique_ptr<PasswordForm>>* results));
-
-  // This method is not relevant here.
-  MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
-
-  // GMock cannot handle move-only arguments.
-  std::vector<std::unique_ptr<PasswordForm>> FilterResults(
-      std::vector<std::unique_ptr<PasswordForm>> results) const override {
-    FilterResultsPtr(&results);
-    return results;
-  }
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {

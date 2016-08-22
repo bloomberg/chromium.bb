@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
 
 namespace password_manager {
@@ -45,20 +46,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   const LogManager* GetLogManager() const override;
 
  private:
-  // This filter does not filter out anything, it is a dummy implementation of
-  // the filter interface.
-  class PassThroughCredentialsFilter : public CredentialsFilter {
-   public:
-    PassThroughCredentialsFilter() {}
-
-    // CredentialsFilter:
-    std::vector<std::unique_ptr<autofill::PasswordForm>> FilterResults(
-        std::vector<std::unique_ptr<autofill::PasswordForm>> results)
-        const override;
-    bool ShouldSave(const autofill::PasswordForm& form) const override;
-  };
-
-  const PassThroughCredentialsFilter credentials_filter_;
+  const StubCredentialsFilter credentials_filter_;
   StubLogManager log_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

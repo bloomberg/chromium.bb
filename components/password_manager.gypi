@@ -196,6 +196,8 @@
         'password_manager/core/browser/password_manager_test_utils.cc',
         'password_manager/core/browser/password_manager_test_utils.h',
         # Note: sources list duplicated in GN build.
+        'password_manager/core/browser/stub_credentials_filter.cc',
+        'password_manager/core/browser/stub_credentials_filter.h',
         'password_manager/core/browser/stub_form_saver.h',
         'password_manager/core/browser/stub_log_manager.cc',
         'password_manager/core/browser/stub_log_manager.h',

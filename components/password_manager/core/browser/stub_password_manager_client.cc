@@ -12,17 +12,6 @@
 
 namespace password_manager {
 
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-StubPasswordManagerClient::PassThroughCredentialsFilter::FilterResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) const {
-  return results;
-}
-
-bool StubPasswordManagerClient::PassThroughCredentialsFilter::ShouldSave(
-    const autofill::PasswordForm& form) const {
-  return true;
-}
-
 StubPasswordManagerClient::StubPasswordManagerClient() {}
 
 StubPasswordManagerClient::~StubPasswordManagerClient() {}
