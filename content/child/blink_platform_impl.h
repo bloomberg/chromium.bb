@@ -97,10 +97,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebThread* createThread(const char* name) override;
   blink::WebThread* currentThread() override;
   void recordAction(const blink::UserMetricsAction&) override;
-  void addTraceLogEnabledStateObserver(
-      blink::Platform::TraceLogEnabledStateObserver* observer) override;
-  void removeTraceLogEnabledStateObserver(
-      blink::Platform::TraceLogEnabledStateObserver* observer) override;
 
   blink::WebData loadResource(const char* name) override;
   blink::WebString queryLocalizedString(
@@ -151,9 +147,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
-  base::ScopedPtrHashMap<blink::Platform::TraceLogEnabledStateObserver*,
-                         std::unique_ptr<TraceLogObserverAdapter>>
-      trace_log_observers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
