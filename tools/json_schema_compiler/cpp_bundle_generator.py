@@ -8,26 +8,34 @@ from model import Platforms
 from schema_util import CapitalizeFirstLetter
 from schema_util import JsFunctionNameToClassName
 
+import copy
 import json
 import os
 import re
 
 
-def _RemoveDescriptions(node):
-  """Returns a copy of |schema| with "description" fields removed.
-  """
+def _RemoveKey(node, key, type_restriction):
   if isinstance(node, dict):
-    result = {}
-    for key, value in node.items():
-      # Some schemas actually have properties called "description", so only
-      # remove descriptions that have string values.
-      if key == 'description' and isinstance(value, basestring):
-        continue
-      result[key] = _RemoveDescriptions(value)
-    return result
-  if isinstance(node, list):
-    return [_RemoveDescriptions(v) for v in node]
-  return node
+    if key in node and isinstance(node[key], type_restriction):
+      del node[key]
+    for value in node.values():
+      _RemoveKey(value, key, type_restriction)
+  elif isinstance(node, list):
+    for value in node:
+      _RemoveKey(value, key, type_restriction)
+
+def _RemoveUnneededFields(schema):
+  """Returns a copy of |schema| with fields that aren't necessary at runtime
+  removed.
+  """
+  # Return a copy so that we don't pollute the global api object, which may be
+  # used elsewhere.
+  ret = copy.deepcopy(schema)
+  _RemoveKey(ret, "description", basestring)
+  _RemoveKey(ret, "compiler_options", dict)
+  _RemoveKey(ret, "nodoc", bool)
+  _RemoveKey(ret, "noinline_doc", bool)
+  return ret
 
 
 class CppBundleGenerator(object):
@@ -283,7 +291,7 @@ class _SchemasCCGenerator(object):
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
-      json_content = json.dumps([_RemoveDescriptions(api)],
+      json_content = json.dumps([_RemoveUnneededFields(api)],
                                 separators=(',', ':'))
       # Escape all double-quotes and backslashes. For this to output a valid
       # JSON C string, we need to escape \ and ". Note that some schemas are
