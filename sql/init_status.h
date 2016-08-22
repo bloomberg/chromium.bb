@@ -16,6 +16,9 @@ enum InitStatus {
 
   // The database is from a future version of the app and cannot be read.
   INIT_TOO_NEW,
+
+  // The database was deleted and re-opened successfully.
+  INIT_OK_WITH_DATA_LOSS,
 };
 
 }  // namespace sql

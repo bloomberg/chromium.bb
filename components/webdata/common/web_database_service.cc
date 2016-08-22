@@ -134,22 +134,31 @@ void WebDatabaseService::RegisterDBErrorCallback(
 
 void WebDatabaseService::OnDatabaseLoadDone(sql::InitStatus status,
                                             const std::string& diagnostics) {
-  if (status == sql::INIT_OK) {
-    db_loaded_ = true;
-
-    for (const auto& loaded_callback : loaded_callbacks_) {
-      if (!loaded_callback.is_null())
-        loaded_callback.Run();
-    }
-
-    loaded_callbacks_.clear();
-  } else {
+  // The INIT_OK_WITH_DATA_LOSS status is an initialization success but with
+  // suspected data loss, so we also run the error callbacks.
+  if (status != sql::INIT_OK) {
     // Notify that the database load failed.
-    for (const auto& error_callback : error_callbacks_) {
+    while (!error_callbacks_.empty()) {
+      // The profile error callback is a message box that runs in a nested run
+      // loop. While it's being displayed, other OnDatabaseLoadDone() will run
+      // (posted from WebDatabaseBackend::Delegate::DBLoaded()). We need to make
+      // sure that after the callback running the message box returns, it checks
+      // |error_callbacks_| before it accesses it.
+      DBLoadErrorCallback error_callback = error_callbacks_.back();
+      error_callbacks_.pop_back();
       if (!error_callback.is_null())
         error_callback.Run(status, diagnostics);
     }
+  }
 
-    error_callbacks_.clear();
+  if (status == sql::INIT_OK || status == sql::INIT_OK_WITH_DATA_LOSS) {
+    db_loaded_ = true;
+
+    while (!loaded_callbacks_.empty()) {
+      DBLoadedCallback loaded_callback = loaded_callbacks_.back();
+      loaded_callbacks_.pop_back();
+      if (!loaded_callback.is_null())
+        loaded_callback.Run();
+    }
   }
 }

@@ -10,9 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/history/chrome_history_backend_client.h"
 #include "chrome/browser/history/history_utils.h"
+#include "chrome/browser/profiles/sql_init_error_message_ids.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 
@@ -66,10 +65,7 @@ bool ChromeHistoryClient::CanAddURL(const GURL& url) {
 void ChromeHistoryClient::NotifyProfileError(sql::InitStatus init_status,
                                              const std::string& diagnostics) {
   ShowProfileErrorDialog(PROFILE_ERROR_HISTORY,
-                         (init_status == sql::INIT_FAILURE)
-                             ? IDS_COULDNT_OPEN_PROFILE_ERROR
-                             : IDS_PROFILE_TOO_NEW_ERROR,
-                         diagnostics);
+                         SqlInitStatusToMessageId(init_status), diagnostics);
 }
 
 std::unique_ptr<history::HistoryBackendClient>

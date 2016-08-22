@@ -120,8 +120,8 @@ class WEBDATA_EXPORT WebDatabaseService
   friend class base::RefCountedDeleteOnMessageLoop<WebDatabaseService>;
   friend class base::DeleteHelper<WebDatabaseService>;
 
-  typedef std::vector<DBLoadedCallback> LoadedCallbacks;
-  typedef std::vector<DBLoadErrorCallback> ErrorCallbacks;
+  using LoadedCallbacks = std::vector<DBLoadedCallback>;
+  using ErrorCallbacks = std::vector<DBLoadErrorCallback>;
 
   virtual ~WebDatabaseService();
 

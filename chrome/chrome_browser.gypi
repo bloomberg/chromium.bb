@@ -2668,6 +2668,8 @@
       'browser/profiles/profile_shortcut_manager_win.h',
       'browser/profiles/profiles_state.cc',
       'browser/profiles/profiles_state.h',
+      'browser/profiles/sql_init_error_message_ids.cc',
+      'browser/profiles/sql_init_error_message_ids.h',
       'browser/profiles/storage_partition_descriptor.h',
     ],
     'chrome_browser_rlz_sources': [

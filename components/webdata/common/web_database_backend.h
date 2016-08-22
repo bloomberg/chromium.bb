@@ -58,12 +58,6 @@ class WEBDATA_EXPORT WebDatabaseBackend
   // Callback is called synchronously.
   void InitDatabase();
 
-  // Opens the database file from the profile path if an init has not yet been
-  // attempted. Separated from the constructor to ease construction/destruction
-  // of this object on one thread but database access on the DB thread. Returns
-  // the status of the database.
-  sql::InitStatus LoadDatabaseIfNecessary();
-
   // Shuts down the database.
   void ShutdownDatabase();
 
@@ -94,6 +88,11 @@ class WEBDATA_EXPORT WebDatabaseBackend
   virtual ~WebDatabaseBackend();
 
  private:
+  // Opens the database file from the profile path if an init has not yet been
+  // attempted. Separated from the constructor to ease construction/destruction
+  // of this object on one thread but database access on the DB thread.
+  void LoadDatabaseIfNecessary();
+
   // Invoked on a db error.
   void DatabaseErrorCallback(int error, sql::Statement* statement);
 

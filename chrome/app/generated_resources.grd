@@ -11312,6 +11312,9 @@ The following application will be launched if you accept this request:
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile cannot be opened correctly due to problems reading or writing files in it.">
         Something went wrong when opening your profile. Some features may be unavailable.
       </message>
+      <message name="IDS_OPEN_PROFILE_DATA_LOSS" desc="Error displayed on startup when opening the profile encountered an error but recovered from it with potential data loss.">
+        Something went wrong when opening your profile. Please sign out then sign in again.
+      </message>
       <message name="IDS_PROFILE_ERROR_DIALOG_CHECKBOX" desc="The label of the checkbox on the profile error dialog asking the user whether to send a feedback report or not">
         Send feedback to help us fix this issue.
       </message>

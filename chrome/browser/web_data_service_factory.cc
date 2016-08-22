@@ -11,10 +11,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/sql_init_error_message_ids.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/keyword_web_data_service.h"
@@ -58,10 +57,7 @@ void ProfileErrorCallback(WebDataServiceWrapper::ErrorType error_type,
                           sql::InitStatus status,
                           const std::string& diagnostics) {
   ShowProfileErrorDialog(ProfileErrorFromWebDataServiceWrapperError(error_type),
-                         (status == sql::INIT_FAILURE)
-                             ? IDS_COULDNT_OPEN_PROFILE_ERROR
-                             : IDS_PROFILE_TOO_NEW_ERROR,
-                         diagnostics);
+                         SqlInitStatusToMessageId(status), diagnostics);
 }
 
 }  // namespace

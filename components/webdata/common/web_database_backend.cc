@@ -41,32 +41,6 @@ void WebDatabaseBackend::InitDatabase() {
   }
 }
 
-sql::InitStatus WebDatabaseBackend::LoadDatabaseIfNecessary() {
-  if (init_complete_ || db_path_.empty()) {
-    return init_status_;
-  }
-  init_complete_ = true;
-  db_.reset(new WebDatabase());
-
-  for (const auto& table : tables_)
-    db_->AddTable(table);
-
-  // Unretained to avoid a ref loop since we own |db_|.
-  db_->set_error_callback(base::Bind(&WebDatabaseBackend::DatabaseErrorCallback,
-                                     base::Unretained(this)));
-  diagnostics_.clear();
-  init_status_ = db_->Init(db_path_);
-  if (init_status_ != sql::INIT_OK) {
-    LOG(ERROR) << "Cannot initialize the web database: " << init_status_;
-    diagnostics_ += sql::GetCorruptFileDiagnosticsInfo(db_path_);
-    db_.reset();
-    return init_status_;
-  }
-
-  db_->BeginTransaction();
-  return init_status_;
-}
-
 void WebDatabaseBackend::ShutdownDatabase() {
   if (db_ && init_status_ == sql::INIT_OK)
     db_->CommitTransaction();
@@ -118,12 +92,47 @@ WebDatabaseBackend::~WebDatabaseBackend() {
   ShutdownDatabase();
 }
 
+void WebDatabaseBackend::LoadDatabaseIfNecessary() {
+  if (init_complete_ || db_path_.empty())
+    return;
+
+  init_complete_ = true;
+  db_.reset(new WebDatabase());
+
+  for (const auto& table : tables_)
+    db_->AddTable(table);
+
+  // Unretained to avoid a ref loop since we own |db_|.
+  db_->set_error_callback(base::Bind(&WebDatabaseBackend::DatabaseErrorCallback,
+                                     base::Unretained(this)));
+  diagnostics_.clear();
+  catastrophic_error_occurred_ = false;
+  init_status_ = db_->Init(db_path_);
+
+  if (init_status_ != sql::INIT_OK) {
+    LOG(ERROR) << "Cannot initialize the web database: " << init_status_;
+    db_.reset();
+    return;
+  }
+
+  // A catastrophic error might have happened and recovered.
+  if (catastrophic_error_occurred_) {
+    init_status_ = sql::INIT_OK_WITH_DATA_LOSS;
+    LOG(WARNING)
+        << "Webdata recovered from a catastrophic error. Data loss possible.";
+  }
+  db_->BeginTransaction();
+}
+
 void WebDatabaseBackend::DatabaseErrorCallback(int error,
                                                sql::Statement* statement) {
   // We ignore any further error callbacks after the first catastrophic error.
   if (!catastrophic_error_occurred_ && sql::IsErrorCatastrophic(error)) {
     catastrophic_error_occurred_ = true;
     diagnostics_ = db_->GetDiagnosticInfo(error, statement);
+    diagnostics_ += sql::GetCorruptFileDiagnosticsInfo(db_path_);
+
+    db_->GetSQLConnection()->RazeAndClose();
   }
 }
 
