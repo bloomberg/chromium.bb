@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.StatusItem.ActionDelegate;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -27,8 +28,7 @@ public class SuggestionsSection implements ItemGroup {
     private final ActionDelegate mActionDelegate;
     private final ActionItem mMoreButton;
 
-    public SuggestionsSection(int category, List<SnippetArticle> suggestions,
-            @CategoryStatusEnum int status, SuggestionsCategoryInfo info,
+    public SuggestionsSection(@CategoryInt int category, SuggestionsCategoryInfo info,
             final NewTabPageAdapter adapter) {
         mHeader = new SectionHeader(info.getTitle());
         // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
@@ -53,8 +53,6 @@ public class SuggestionsSection implements ItemGroup {
                 }
             };
         }
-
-        setSuggestions(suggestions, status);
     }
 
     @Override
@@ -90,12 +88,19 @@ public class SuggestionsSection implements ItemGroup {
     public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         copyThumbnails(suggestions);
 
-        mStatus = StatusItem.create(status, mActionDelegate);
-
-        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
+        setStatus(status);
 
         mSuggestions.clear();
         mSuggestions.addAll(suggestions);
+    }
+
+    /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
+    public void setStatus(@CategoryStatusEnum int status) {
+        mStatus = StatusItem.create(status, mActionDelegate);
+
+        if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestions.clear();
+
+        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
     }
 
     private void copyThumbnails(List<SnippetArticle> suggestions) {

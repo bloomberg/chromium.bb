@@ -153,8 +153,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         // The status may have changed while the suggestions were loading, perhaps they should not
         // be displayed any more.
-        if (!SnippetsBridge.isCategoryStatusInitOrAvailable(
-                    mSuggestionsSource.getCategoryStatus(category))) {
+        @CategoryStatusEnum
+        int status = mSuggestionsSource.getCategoryStatus(category);
+        if (!SnippetsBridge.isCategoryEnabled(status)) {
+            Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
+                    status);
             return;
         }
 
@@ -166,7 +169,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // At first, there might be no suggestions available, we wait until they have been fetched.
         if (suggestions.isEmpty()) return;
 
-        setSuggestions(category, suggestions, mSuggestionsSource.getCategoryStatus(category));
+        setSuggestions(category, suggestions, status);
         updateGroups();
 
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
@@ -183,23 +186,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // The section provider has gone away. Keep open UIs as they are.
         if (status == CategoryStatus.NOT_PROVIDED) return;
 
-        SuggestionsSection section = mSections.get(category);
-
-        // The section already has suggestions but we just got notified about the provider being
-        // enabled. Nothing to do.
-        if (SnippetsBridge.isCategoryStatusAvailable(status) && section.hasSuggestions()) return;
-
         if (status == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED
                 || status == CategoryStatus.LOADING_ERROR) {
             // Need to remove the entire section from the UI immediately.
             mSections.remove(category);
         } else {
-            // Two cases, in both we just want to update the status:
-            // - status is one of the AVAILABLE statuses, but we didn't have suggestions before and
-            //   we're also not getting them now (but probably right after in OnNewSuggestions).
-            // - status is non-AVAILABLE, but also none of the serious ones above, so this will
-            //   show a status card and remove the current content.
-            setSuggestions(category, Collections.<SnippetArticle>emptyList(), status);
+            mSections.get(category).setStatus(status);
         }
         updateGroups();
     }
@@ -304,11 +296,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
             if (suggestions.isEmpty() && !info.showIfEmpty()) return;
 
-            mSections.put(
-                    category, new SuggestionsSection(category, suggestions, status, info, this));
-        } else {
-            mSections.get(category).setSuggestions(suggestions, status);
+            mSections.put(category, new SuggestionsSection(category, info, this));
         }
+
+        mSections.get(category).setSuggestions(suggestions, status);
     }
 
     private void updateGroups() {
