@@ -71,10 +71,6 @@ namespace blink {
 // Used by flexible boxes when flexing this element and by table cells.
 typedef WTF::HashMap<const LayoutBox*, LayoutUnit> OverrideSizeMap;
 
-// Used by grid elements to properly size their grid items.
-// FIXME: Move these into LayoutBoxRareData.
-static OverrideSizeMap* gOverrideContainingBlockLogicalHeightMap = nullptr;
-static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = nullptr;
 static OverrideSizeMap* gExtraInlineOffsetMap = nullptr;
 static OverrideSizeMap* gExtraBlockOffsetMap = nullptr;
 
@@ -1139,58 +1135,58 @@ LayoutUnit LayoutBox::overrideLogicalContentHeight() const
 // TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalWidth() const
 {
-    ASSERT(hasOverrideContainingBlockLogicalWidth());
-    return gOverrideContainingBlockLogicalWidthMap->get(this);
+    DCHECK(hasOverrideContainingBlockLogicalWidth());
+    return m_rareData->m_overrideContainingBlockContentLogicalWidth;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalHeight() const
 {
-    ASSERT(hasOverrideContainingBlockLogicalHeight());
-    return gOverrideContainingBlockLogicalHeightMap->get(this);
+    DCHECK(hasOverrideContainingBlockLogicalHeight());
+    return m_rareData->m_overrideContainingBlockContentLogicalHeight;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 bool LayoutBox::hasOverrideContainingBlockLogicalWidth() const
 {
-    return gOverrideContainingBlockLogicalWidthMap && gOverrideContainingBlockLogicalWidthMap->contains(this);
+    return m_rareData && m_rareData->m_hasOverrideContainingBlockContentLogicalWidth;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 bool LayoutBox::hasOverrideContainingBlockLogicalHeight() const
 {
-    return gOverrideContainingBlockLogicalHeightMap && gOverrideContainingBlockLogicalHeightMap->contains(this);
+    return m_rareData && m_rareData->m_hasOverrideContainingBlockContentLogicalHeight;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalWidth(LayoutUnit logicalWidth)
 {
-    if (!gOverrideContainingBlockLogicalWidthMap)
-        gOverrideContainingBlockLogicalWidthMap = new OverrideSizeMap;
-    gOverrideContainingBlockLogicalWidthMap->set(this, logicalWidth);
+    ensureRareData().m_overrideContainingBlockContentLogicalWidth = logicalWidth;
+    ensureRareData().m_hasOverrideContainingBlockContentLogicalWidth = true;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalHeight(LayoutUnit logicalHeight)
 {
-    if (!gOverrideContainingBlockLogicalHeightMap)
-        gOverrideContainingBlockLogicalHeightMap = new OverrideSizeMap;
-    gOverrideContainingBlockLogicalHeightMap->set(this, logicalHeight);
+    ensureRareData().m_overrideContainingBlockContentLogicalHeight = logicalHeight;
+    ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = true;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::clearContainingBlockOverrideSize()
 {
-    if (gOverrideContainingBlockLogicalWidthMap)
-        gOverrideContainingBlockLogicalWidthMap->remove(this);
-    clearOverrideContainingBlockContentLogicalHeight();
+    if (!m_rareData)
+        return;
+    ensureRareData().m_hasOverrideContainingBlockContentLogicalWidth = false;
+    ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = false;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::clearOverrideContainingBlockContentLogicalHeight()
 {
-    if (gOverrideContainingBlockLogicalHeightMap)
-        gOverrideContainingBlockLogicalHeightMap->remove(this);
+    if (!m_rareData)
+        return;
+    ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = false;
 }
 
 LayoutUnit LayoutBox::extraInlineOffset() const

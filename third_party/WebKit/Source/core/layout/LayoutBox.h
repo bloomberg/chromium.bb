@@ -61,8 +61,10 @@ struct LayoutBoxRareData {
 public:
     LayoutBoxRareData()
         : m_spannerPlaceholder(nullptr)
-        , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
+        , m_overrideLogicalContentHeight(-1)
+        , m_hasOverrideContainingBlockContentLogicalWidth(false)
+        , m_hasOverrideContainingBlockContentLogicalHeight(false)
         , m_percentHeightContainer(nullptr)
         , m_snapContainer(nullptr)
         , m_snapAreas(nullptr)
@@ -72,8 +74,13 @@ public:
     // For spanners, the spanner placeholder that lays us out within the multicol container.
     LayoutMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
 
-    LayoutUnit m_overrideLogicalContentHeight;
     LayoutUnit m_overrideLogicalContentWidth;
+    LayoutUnit m_overrideLogicalContentHeight;
+
+    bool m_hasOverrideContainingBlockContentLogicalWidth;
+    bool m_hasOverrideContainingBlockContentLogicalHeight;
+    LayoutUnit m_overrideContainingBlockContentLogicalWidth;
+    LayoutUnit m_overrideContainingBlockContentLogicalHeight;
 
     LayoutUnit m_pageLogicalOffset;
     LayoutUnit m_paginationStrut;
