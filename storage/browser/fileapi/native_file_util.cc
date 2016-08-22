@@ -211,9 +211,9 @@ base::File::Error NativeFileUtil::GetFileInfo(
 std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 NativeFileUtil::CreateFileEnumerator(const base::FilePath& root_path,
                                      bool recursive) {
-  return base::WrapUnique(new NativeFileEnumerator(
+  return base::MakeUnique<NativeFileEnumerator>(
       root_path, recursive,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
 }
 
 base::File::Error NativeFileUtil::Touch(

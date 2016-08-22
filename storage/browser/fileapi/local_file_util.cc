@@ -145,9 +145,9 @@ LocalFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
       base::File::FILE_OK) {
     return base::WrapUnique(new EmptyFileEnumerator);
   }
-  return base::WrapUnique(new LocalFileEnumerator(
+  return base::MakeUnique<LocalFileEnumerator>(
       file_path, root_url.path(),
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
 }
 
 base::File::Error LocalFileUtil::GetLocalFilePath(

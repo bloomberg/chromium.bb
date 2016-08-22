@@ -110,7 +110,7 @@ FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
     FileSystemContext* context,
     base::File::Error* error_code) const {
   return FileSystemOperation::Create(
-      url, context, base::WrapUnique(new FileSystemOperationContext(context)));
+      url, context, base::MakeUnique<FileSystemOperationContext>(context));
 }
 
 bool IsolatedFileSystemBackend::SupportsStreaming(

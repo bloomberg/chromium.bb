@@ -108,8 +108,8 @@ BlobTransportResult BlobAsyncBuilderHost::RegisterBlobUUID(
     }
     handles.emplace_back(std::move(handle));
   }
-  async_blob_map_[uuid] = base::WrapUnique(
-      new BlobBuildingState(uuid, referenced_blob_uuids, &handles));
+  async_blob_map_[uuid] = base::MakeUnique<BlobBuildingState>(
+      uuid, referenced_blob_uuids, &handles);
   return BlobTransportResult::DONE;
 }
 
@@ -404,7 +404,7 @@ BlobTransportResult BlobAsyncBuilderHost::ContinueBlobMemoryRequests(
 
   state->request_memory_callback.Run(
       std::move(byte_requests), std::move(shared_memory),
-      base::WrapUnique(new std::vector<base::File>()));
+      base::MakeUnique<std::vector<base::File>>());
   return BlobTransportResult::PENDING_RESPONSES;
 }
 
