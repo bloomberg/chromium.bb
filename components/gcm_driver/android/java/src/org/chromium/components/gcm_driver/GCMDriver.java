@@ -136,10 +136,15 @@ public class GCMDriver {
             // TODO(johnme): Check there aren't other keys that we need to exclude.
             if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
                     || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
-                    || key.startsWith(bundleGcmplex))
+                    || key.startsWith(bundleGcmplex)) {
                 continue;
+            }
+            Object value = extras.get(key);
+            if (!(value instanceof String)) {
+                continue;
+            }
             dataKeysAndValues.add(key);
-            dataKeysAndValues.add(extras.getString(key));
+            dataKeysAndValues.add((String) value);
         }
 
         sInstance.nativeOnMessageReceived(sInstance.mNativeGCMDriverAndroid,
