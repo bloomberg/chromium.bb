@@ -8,6 +8,6 @@
     ConstructorCallWith=ExecutionContext,
 ]
 partial interface Navigator {
-    [RuntimeEnabled=MediaDevices] readonly attribute MediaDevices mediaDevices;
+    readonly attribute MediaDevices mediaDevices;
 };
 

@@ -99,7 +99,7 @@ ForeignFetch status=experimental, origin_trial_feature_name=ForeignFetch
 FullscreenUnprefixed status=test
 FrameTimingSupport status=experimental
 GeometryInterfaces status=test
-GetUserMedia depends_on=MediaDevices, status=stable
+GetUserMedia status=stable
 GlobalCacheStorage status=stable
 IDBObserver status=experimental
 ImageCapture status=experimental
@@ -120,7 +120,6 @@ MediaCapture
 MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=experimental
 MediaConstraints status=stable
-MediaDevices status=stable
 MediaDocumentDownloadButton
 MediaGetSettings status=test
 MediaSession

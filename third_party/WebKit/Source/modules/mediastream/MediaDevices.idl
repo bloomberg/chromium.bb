@@ -9,8 +9,7 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    ConstructorCallWith=ExecutionContext,
-    RuntimeEnabled=MediaDevices
+    ConstructorCallWith=ExecutionContext
 ]
 interface MediaDevices : EventTarget {
     [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
