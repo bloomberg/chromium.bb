@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -132,9 +133,6 @@ public class NewTabPageView extends FrameLayout
 
         /** @return Whether voice search is enabled and the microphone should be shown. */
         boolean isVoiceSearchEnabled();
-
-        /** @return Whether the toolbar at the bottom of the NTP is enabled and should be shown. */
-        boolean isToolbarEnabled();
 
         /** @return Whether the omnibox 'Search or type URL' text should be shown. */
         boolean isFakeOmniboxTextEnabledTablet();
@@ -399,7 +397,11 @@ public class NewTabPageView extends FrameLayout
      */
     private void initializeToolbar() {
         NewTabPageToolbar toolbar = (NewTabPageToolbar) findViewById(R.id.ntp_toolbar);
-        if (mManager.isToolbarEnabled()) {
+        if (SnippetsConfig.isEnabled()) {
+            ((ViewGroup) toolbar.getParent()).removeView(toolbar);
+            MarginLayoutParams params = (MarginLayoutParams) getWrapperView().getLayoutParams();
+            params.bottomMargin = 0;
+        } else {
             toolbar.getRecentTabsButton().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -412,10 +414,6 @@ public class NewTabPageView extends FrameLayout
                     mManager.navigateToBookmarks();
                 }
             });
-        } else {
-            ((ViewGroup) toolbar.getParent()).removeView(toolbar);
-            MarginLayoutParams params = (MarginLayoutParams) getWrapperView().getLayoutParams();
-            params.bottomMargin = 0;
         }
     }
 

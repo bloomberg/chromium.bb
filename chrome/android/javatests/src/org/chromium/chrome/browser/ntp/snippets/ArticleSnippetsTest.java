@@ -190,11 +190,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public boolean isToolbarEnabled() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public boolean isFakeOmniboxTextEnabledTablet() {
             throw new UnsupportedOperationException();
         }

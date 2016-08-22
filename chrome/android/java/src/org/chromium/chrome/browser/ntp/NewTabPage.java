@@ -222,12 +222,6 @@ public class NewTabPage
         }
 
         @Override
-        public boolean isToolbarEnabled() {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TOOLBAR)
-                    && !SnippetsConfig.isEnabled();
-        }
-
-        @Override
         public boolean isFakeOmniboxTextEnabledTablet() {
             return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_FAKE_OMNIBOX_TEXT);
         }

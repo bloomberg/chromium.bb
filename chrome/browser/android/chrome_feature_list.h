@@ -18,7 +18,6 @@ extern const base::Feature kAndroidPayIntegrationV1;
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kNTPMaterialDesign;
 extern const base::Feature kNTPOfflinePagesFeature;
-extern const base::Feature kNTPToolbarFeature;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebIgnoreOtherClientsFeature;
