@@ -178,7 +178,7 @@ TEST(FloatRoundedRectTest, ToString)
 {
     FloatSize cornerRect(1, 2);
     FloatRoundedRect roundedRect(FloatRect(3, 5, 7, 11), FloatRoundedRect::Radii(cornerRect, cornerRect, cornerRect, cornerRect));
-    EXPECT_EQ(String("3,5 7x11 radii:(tl:1x2; tr:1x2; bl:1x2; br:1x2)"), roundedRect.toString());
+    EXPECT_EQ("3,5 7x11 radii:(tl:1x2; tr:1x2; bl:1x2; br:1x2)", roundedRect.toString());
 }
 
 } // namespace blink

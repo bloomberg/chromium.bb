@@ -118,7 +118,7 @@ TEST(FloatBoxTest, EmptyBoxTest)
 TEST(FloatBoxTest, ToString)
 {
     FloatBox box(2, 3, 5, 7, 11, 13);
-    EXPECT_EQ(String("2,3,5 7x11x13"), box.toString());
+    EXPECT_EQ("2,3,5 7x11x13", box.toString());
 }
 
 } // namespace blink
