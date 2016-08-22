@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/ime/arc_ime_bridge.h"
-#include "ui/aura/client/focus_change_observer.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
@@ -22,10 +22,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
-namespace client {
-class FocusClient;
-}
-
 class Window;
 }
 
@@ -42,8 +38,7 @@ class ArcBridgeService;
 class ArcImeService : public ArcService,
                       public ArcImeBridge::Delegate,
                       public aura::EnvObserver,
-                      public aura::WindowObserver,
-                      public aura::client::FocusChangeObserver,
+                      public exo::WMHelper::FocusObserver,
                       public keyboard::KeyboardControllerObserver,
                       public ui::TextInputClient {
  public:
@@ -59,10 +54,7 @@ class ArcImeService : public ArcService,
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowAddedToRootWindow(aura::Window* window) override;
-
-  // Overridden from aura::client::FocusChangeObserver:
+  // Overridden from exo::WMHelper::FocusObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 
@@ -118,13 +110,12 @@ class ArcImeService : public ArcService,
   gfx::Rect cursor_rect_;
   bool has_composition_text_;
 
-  aura::WindowTracker arc_windows_;
   aura::WindowTracker focused_arc_window_;
 
-  aura::client::FocusClient* focus_client_;
   keyboard::KeyboardController* keyboard_controller_;
 
   ui::InputMethod* test_input_method_;
+  bool is_focus_observer_installed_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcImeService);
 };
