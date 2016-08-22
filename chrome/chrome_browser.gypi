@@ -332,7 +332,7 @@
       'browser/mac/master_prefs.mm',
       'browser/mac/nsprocessinfo_additions.h',
       'browser/mac/nsprocessinfo_additions.mm',
-      'browser/mac/relauncher.cc',
+      'browser/mac/relauncher.mm',
       'browser/mac/relauncher.h',
       'browser/mac/security_wrappers.cc',
       'browser/mac/security_wrappers.h',

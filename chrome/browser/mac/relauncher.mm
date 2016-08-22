@@ -4,7 +4,8 @@
 
 #include "chrome/browser/mac/relauncher.h"
 
-#include <ApplicationServices/ApplicationServices.h>
+#import <AppKit/AppKit.h>
+
 #include <AvailabilityMacros.h>
 #include <crt_externs.h>
 #include <dlfcn.h>
@@ -23,7 +24,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
@@ -245,6 +247,8 @@ void RelauncherSynchronizeWithParent() {
 namespace internal {
 
 int RelauncherMain(const content::MainFunctionParams& main_parameters) {
+  base::mac::ScopedNSAutoreleasePool pool;
+
   // CommandLine rearranges the order of the arguments returned by
   // main_parameters.argv(), rendering it impossible to determine which
   // arguments originally came before kRelauncherArgSeparator and which came
@@ -281,12 +285,8 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   // won't contain the argv[0] of the relauncher process, the
   // RelauncherTypeArg() at argv[1], kRelauncherArgSeparator, or the
   // executable path of the process to be launched.
-  base::ScopedCFTypeRef<CFMutableArrayRef> relaunch_args(
-      CFArrayCreateMutable(NULL, argc - 4, &kCFTypeArrayCallBacks));
-  if (!relaunch_args) {
-    LOG(ERROR) << "CFArrayCreateMutable";
-    return 1;
-  }
+  base::scoped_nsobject<NSMutableArray> relaunch_args(
+      [[NSMutableArray alloc] initWithCapacity:argc - 4]);
 
   // Figure out what to execute, what arguments to pass it, and whether to
   // start it in the background.
@@ -326,13 +326,13 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
         relaunch_executable.assign(arg);
         seen_relaunch_executable = true;
       } else {
-        base::ScopedCFTypeRef<CFStringRef> arg_cf(
-            base::SysUTF8ToCFStringRef(arg));
-        if (!arg_cf) {
-          LOG(ERROR) << "base::SysUTF8ToCFStringRef failed for " << arg;
+
+        NSString* arg_string = base::SysUTF8ToNSString(arg);
+        if (!arg_string) {
+          LOG(ERROR) << "base::SysUTF8ToNSString failed for " << arg;
           return 1;
         }
-        CFArrayAppendValue(relaunch_args, arg_cf);
+        [relaunch_args addObject:arg_string];
       }
     }
   }
@@ -342,26 +342,22 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
     return 1;
   }
 
-  FSRef app_fsref;
-  if (!base::mac::FSRefFromPath(relaunch_executable, &app_fsref)) {
-    LOG(ERROR) << "base::mac::FSRefFromPath failed for " << relaunch_executable;
-    return 1;
-  }
+  NSString* path = base::SysUTF8ToNSString(relaunch_executable);
+  base::scoped_nsobject<NSURL> url([[NSURL alloc] initFileURLWithPath:path]);
+  NSDictionary* configuration =
+      @{NSWorkspaceLaunchConfigurationArguments : (relaunch_args.get())};
 
-  LSApplicationParameters ls_parameters = {
-    0,  // version
-    kLSLaunchDefaults | kLSLaunchAndDisplayErrors | kLSLaunchNewInstance |
-        (background ? kLSLaunchDontSwitch : 0),
-    &app_fsref,
-    NULL,  // asyncLaunchRefCon
-    NULL,  // environment
-    relaunch_args,
-    NULL   // initialEvent
-  };
-
-  OSStatus status = LSOpenApplication(&ls_parameters, NULL);
-  if (status != noErr) {
-    OSSTATUS_LOG(ERROR, status) << "LSOpenApplication";
+  NSRunningApplication *application = [[NSWorkspace sharedWorkspace]
+      launchApplicationAtURL:url
+                     options:NSWorkspaceLaunchDefault |
+                             NSWorkspaceLaunchWithErrorPresentation |
+                             (background ? NSWorkspaceLaunchWithoutActivation
+                                         : 0) |
+                             NSWorkspaceLaunchNewInstance
+               configuration:configuration
+                       error:nil];
+  if (!application) {
+    LOG(ERROR) << "Failed to relaunch " << relaunch_executable;
     return 1;
   }
 
