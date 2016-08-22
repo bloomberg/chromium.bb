@@ -58,7 +58,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
     } else if (args[i] == "check-templates") {
       options_.check_templates = true;
     } else if (args[i] == "follow-macro-expansion") {
-      options_.follow_macro_expansion = true;
+      // TODO(thakis): This is now always on. Remove support for this flag once
+      // the build no longer passes it in.
     } else if (args[i] == "no-realpath") {
       options_.no_realpath = true;
     } else if (args[i] == "check-ipc") {
