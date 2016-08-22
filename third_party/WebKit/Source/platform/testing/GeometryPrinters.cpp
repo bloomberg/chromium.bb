@@ -4,6 +4,9 @@
 
 #include "platform/testing/GeometryPrinters.h"
 
+#include "platform/geometry/DoublePoint.h"
+#include "platform/geometry/DoubleRect.h"
+#include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
@@ -19,6 +22,21 @@
 #include <ostream> // NOLINT
 
 namespace blink {
+
+void PrintTo(const DoublePoint& point, std::ostream* os)
+{
+    *os << point.toString();
+}
+
+void PrintTo(const DoubleRect& rect, std::ostream* os)
+{
+    *os << rect.toString();
+}
+
+void PrintTo(const DoubleSize& size, std::ostream* os)
+{
+    *os << size.toString();
+}
 
 void PrintTo(const FloatBox& box, std::ostream* os)
 {

@@ -51,9 +51,7 @@ public:
         this->scale(scale, scale);
     }
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     double m_width, m_height;
@@ -112,6 +110,10 @@ inline FloatSize toFloatSize(const DoubleSize& p)
 {
     return FloatSize(p.width(), p.height());
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const DoubleSize&, std::ostream*);
 
 } // namespace blink
 

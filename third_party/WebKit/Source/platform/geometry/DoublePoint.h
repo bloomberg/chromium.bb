@@ -99,9 +99,7 @@ public:
         return DoublePoint(m_x * scale, m_y * scale);
     }
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     double m_x, m_y;
@@ -175,6 +173,10 @@ inline DoubleSize toDoubleSize(const DoublePoint& a)
 {
     return DoubleSize(a.x(), a.y());
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const DoublePoint&, std::ostream*);
 
 } // namespace blink
 

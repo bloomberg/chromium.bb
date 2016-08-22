@@ -10,6 +10,9 @@
 
 namespace blink {
 
+class DoublePoint;
+class DoubleRect;
+class DoubleSize;
 class FloatBox;
 class FloatPoint;
 class FloatPoint3D;
@@ -34,6 +37,9 @@ class LayoutSize;
 // use these printers. If, however, you get a link error about these symbols,
 // you need to make sure the blink_platform_test_support target is linked in
 // your unit test binary.
+void PrintTo(const DoublePoint&, std::ostream*);
+void PrintTo(const DoubleRect&, std::ostream*);
+void PrintTo(const DoubleSize&, std::ostream*);
 void PrintTo(const FloatBox&, std::ostream*);
 void PrintTo(const FloatPoint&, std::ostream*);
 void PrintTo(const FloatPoint3D&, std::ostream*);

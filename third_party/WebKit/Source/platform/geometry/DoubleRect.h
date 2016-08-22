@@ -61,9 +61,7 @@ public:
     void scale(float s) { scale(s, s); }
     void scale(float sx, float sy);
 
-#ifndef NDEBUG
     String toString() const;
-#endif
 
 private:
     DoublePoint m_location;
@@ -76,6 +74,10 @@ PLATFORM_EXPORT IntRect enclosingIntRect(const DoubleRect&);
 PLATFORM_EXPORT IntRect enclosedIntRect(const DoubleRect&);
 
 PLATFORM_EXPORT IntRect roundedIntRect(const DoubleRect&);
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const DoubleRect&, std::ostream*);
 
 } // namespace blink
 
