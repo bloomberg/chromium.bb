@@ -23299,6 +23299,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the autoplay source of muted videos.</summary>
 </histogram>
 
+<histogram name="Media.Video.Autoplay.Muted.Attribute.OffscreenDuration"
+    units="ms">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Records the offscreen playing duration of a muted video autoplaying from
+    autoplay attribute.
+  </summary>
+</histogram>
+
 <histogram name="Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"
     enum="Boolean">
   <owner>avayvod@chromium.org</owner>
@@ -23310,6 +23321,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     destructor which is garbage-collected. Please subtract
     Media.Video.Autoplay.Muted &quot;play() method&quot; count with the true
     count of this histogram to obtain the real false count.
+  </summary>
+</histogram>
+
+<histogram name="Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration"
+    units="ms">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Records the offscreen playing duration of a muted video autoplaying from
+    play() method.
   </summary>
 </histogram>
 
