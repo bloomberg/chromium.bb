@@ -325,6 +325,14 @@
             "group_name": "Enabled"
         }
     ],
+    "SignInPasswordPromo": [
+        {
+            "group_name": "Enable",
+            "params": {
+                "dismissal_threshold": "1"
+            }
+        }
+    ],
     "SimpleCacheTrial": [
         {
             "group_name": "ExperimentYes"

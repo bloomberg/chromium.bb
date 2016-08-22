@@ -438,6 +438,14 @@
             "group_name": "enforce_always_with_extensions_and_dse"
         }
     ],
+    "SignInPasswordPromo": [
+        {
+            "group_name": "Enable",
+            "params": {
+                "dismissal_threshold": "1"
+            }
+        }
+    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"
