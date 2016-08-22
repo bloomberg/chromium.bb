@@ -9,11 +9,6 @@
 
 namespace cronet {
 
-// Host used in NativeTestServer for SDCH requests.
-extern const char kFakeSdchDomain[];
-// Host used in QuicTestServer.
-extern const char kFakeQuicDomain[];
-
 bool RegisterCronetTestUtil(JNIEnv* env);
 
 }  // namespace cronet

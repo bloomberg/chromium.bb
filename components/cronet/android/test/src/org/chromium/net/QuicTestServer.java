@@ -57,7 +57,7 @@ public final class QuicTestServer {
     }
 
     public static String getServerHost() {
-        return nativeGetServerHost();
+        return CronetTestUtil.QUIC_FAKE_HOST;
     }
 
     public static int getServerPort() {
@@ -84,6 +84,5 @@ public final class QuicTestServer {
 
     private static native void nativeStartQuicTestServer(String filePath, String testDataDir);
     private static native void nativeShutdownQuicTestServer();
-    private static native String nativeGetServerHost();
     private static native int nativeGetServerPort();
 }

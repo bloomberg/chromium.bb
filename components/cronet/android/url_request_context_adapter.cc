@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -39,6 +40,10 @@
 #include "url/scheme_host_port.h"
 
 namespace {
+
+// Use a global NetLog instance. See crbug.com/486120.
+static base::LazyInstance<net::NetLog>::Leaky g_net_log =
+    LAZY_INSTANCE_INITIALIZER;
 
 class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
@@ -150,8 +155,8 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   context_builder.set_network_delegate(
       base::WrapUnique(new BasicNetworkDelegate()));
   context_builder.set_proxy_config_service(std::move(proxy_config_service_));
-  config_->ConfigureURLRequestContextBuilder(&context_builder, nullptr,
-                                             nullptr);
+  config_->ConfigureURLRequestContextBuilder(&context_builder,
+                                             g_net_log.Pointer(), nullptr);
 
   context_ = context_builder.Build();
 

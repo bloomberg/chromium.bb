@@ -16,7 +16,7 @@
 
 namespace cronet {
 
-TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
+TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -48,7 +48,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "\"close_sessions_on_ip_change\":true,"
       "\"race_cert_verification\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
-      "\"AsyncDNS\":{\"enable\":true}}",
+      "\"AsyncDNS\":{\"enable\":true},"
+      "\"HostResolverRules\":{\"host_resolver_rules\":"
+      "\"MAP * 127.0.0.1\"}}",
       // Data reduction proxy key.
       "",
       // Data reduction proxy.
@@ -109,6 +111,11 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
 
   // Check AsyncDNS resolver is enabled.
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
+
+  net::HostResolver::RequestInfo info(net::HostPortPair("abcde", 80));
+  net::AddressList addresses;
+  EXPECT_EQ(net::OK, context->host_resolver()->ResolveFromCache(
+                         info, &addresses, net::BoundNetLog()));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {

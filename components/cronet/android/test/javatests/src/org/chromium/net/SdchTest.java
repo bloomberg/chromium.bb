@@ -11,6 +11,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 import org.chromium.net.impl.ChromiumUrlRequestFactory;
 import org.chromium.net.impl.CronetUrlRequestContext;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -38,7 +40,7 @@ public class SdchTest extends CronetTestBase {
     }
 
     @SuppressWarnings("deprecation")
-    private void setUp(Sdch setting, Api api) {
+    private void setUp(Sdch setting, Api api) throws JSONException {
         List<String> commandLineArgs = new ArrayList<String>();
         commandLineArgs.add(CronetTestFramework.CACHE_KEY);
         commandLineArgs.add(CronetTestFramework.CACHE_DISK);
@@ -56,9 +58,13 @@ public class SdchTest extends CronetTestBase {
         }
 
         String[] args = new String[commandLineArgs.size()];
-        mTestFramework = startCronetTestFrameworkWithUrlAndCommandLineArgs(
-                null, commandLineArgs.toArray(args));
-        registerHostResolver(mTestFramework, api == Api.LEGACY);
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
+        JSONObject experimentalOptions =
+                new JSONObject().put("HostResolverRules", hostResolverParams);
+        builder.setExperimentalOptions(experimentalOptions.toString());
+        mTestFramework =
+                new CronetTestFramework(null, commandLineArgs.toArray(args), getContext(), builder);
         // Start NativeTestServer.
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
@@ -165,10 +171,6 @@ public class SdchTest extends CronetTestBase {
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
         assertEquals("The quick brown fox jumps over the lazy dog.\n", callback2.mResponseAsString);
 
-        // Wait for a bit until SimpleCache finished closing entries before
-        // calling shutdown on the CronetEngine.
-        // TODO(xunjieli): Remove once crbug.com/486120 is fixed.
-        Thread.sleep(5000);
         mTestFramework.mCronetEngine.shutdown();
 
         // Shutting down the context will make JsonPrefStore to flush pending
@@ -181,7 +183,6 @@ public class SdchTest extends CronetTestBase {
                 null, mTestFramework.getCronetEngineBuilder());
         CronetUrlRequestContext newContext = (CronetUrlRequestContext) mTestFramework.mCronetEngine;
         long newContextAdapter = getContextAdapter(newContext);
-        registerHostResolver(mTestFramework);
         DictionaryAddedObserver newObserver =
                 new DictionaryAddedObserver(targetUrl, newContextAdapter, false /** Legacy Api */);
         newObserver.waitForDictionaryAdded();

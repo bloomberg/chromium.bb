@@ -293,12 +293,9 @@ ScopedJavaLocalRef<jstring> GetFileURL(
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
-ScopedJavaLocalRef<jstring> GetSdchURL(JNIEnv* env,
-                                       const JavaParamRef<jclass>& jcaller) {
+int GetPort(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   DCHECK(g_test_server);
-  std::string url(base::StringPrintf("http://%s:%d", kFakeSdchDomain,
-                                     g_test_server->port()));
-  return base::android::ConvertUTF8ToJavaString(env, url);
+  return g_test_server->port();
 }
 
 ScopedJavaLocalRef<jstring> GetExabyteResponseURL(

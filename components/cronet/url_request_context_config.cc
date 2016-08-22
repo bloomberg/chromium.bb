@@ -19,6 +19,7 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_server_properties.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_utils.h"
@@ -60,6 +61,11 @@ const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
 // Name of boolean to enable AsyncDNS experiment.
 const char kAsyncDnsEnable[] = "enable";
 
+// Rules to override DNS resolution. Intended for testing.
+// See explanation of format in net/dns/mapped_host_resolver.h.
+const char kHostResolverRulesFieldTrialName[] = "HostResolverRules";
+const char kHostResolverRules[] = "host_resolver_rules";
+
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
 void ParseAndSetExperimentalOptions(
@@ -69,6 +75,8 @@ void ParseAndSetExperimentalOptions(
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   if (experimental_options.empty())
     return;
+
+  DCHECK(net_log);
 
   DVLOG(1) << "Experimental Options:" << experimental_options;
   std::unique_ptr<base::Value> options =
@@ -197,21 +205,32 @@ void ParseAndSetExperimentalOptions(
     }
   }
 
+  std::unique_ptr<net::HostResolver> host_resolver =
+      net::HostResolver::CreateDefaultResolver(net_log);
+
   const base::DictionaryValue* async_dns_args = nullptr;
   if (dict->GetDictionary(kAsyncDnsFieldTrialName, &async_dns_args)) {
     bool async_dns_enable = false;
     if (async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable) &&
         async_dns_enable) {
-      if (net_log == nullptr) {
-        DCHECK(false) << "AsyncDNS experiment requires NetLog.";
-      } else {
-        std::unique_ptr<net::HostResolver> host_resolver(
-            net::HostResolver::CreateDefaultResolver(net_log));
-        host_resolver->SetDnsClientEnabled(true);
-        context_builder->set_host_resolver(std::move(host_resolver));
-      }
+      host_resolver->SetDnsClientEnabled(true);
     }
   }
+
+  const base::DictionaryValue* host_resolver_args = nullptr;
+  if (dict->GetDictionary(kHostResolverRulesFieldTrialName,
+                          &host_resolver_args)) {
+    std::string host_resolver_rules;
+    if (host_resolver_args->GetString(kHostResolverRules,
+                                      &host_resolver_rules)) {
+      std::unique_ptr<net::MappedHostResolver> remapped_resolver(
+          new net::MappedHostResolver(std::move(host_resolver)));
+      remapped_resolver->SetRulesFromString(host_resolver_rules);
+      host_resolver = std::move(remapped_resolver);
+    }
+  }
+
+  context_builder->set_host_resolver(std::move(host_resolver));
 
   std::string ssl_key_log_file_string;
   if (dict->GetString(kSSLKeyLogFile, &ssl_key_log_file_string)) {
@@ -292,6 +311,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder,
     net::NetLog* net_log,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+  DCHECK(net_log);
+
   std::string config_cache;
   if (http_cache != DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;

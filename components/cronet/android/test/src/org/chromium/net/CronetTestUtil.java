@@ -6,11 +6,10 @@ package org.chromium.net;
 
 import android.os.ConditionVariable;
 
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.net.impl.ChromiumUrlRequestFactory;
 import org.chromium.net.impl.CronetUrlRequest;
-import org.chromium.net.impl.CronetUrlRequestContext;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Utilities for Cronet testing
@@ -19,36 +18,43 @@ import org.chromium.net.impl.CronetUrlRequestContext;
 public class CronetTestUtil {
     private static final ConditionVariable sHostResolverBlock = new ConditionVariable();
 
+    static final String SDCH_FAKE_HOST = "fake.sdch.domain";
+    // QUIC test domain must match the certificate used
+    // (quic_test.example.com.crt and quic_test.example.com.key.pkcs8), and
+    // the file served (
+    // components/cronet/android/test/assets/test/quic_data/simple.txt).
+    static final String QUIC_FAKE_HOST = "test.example.com";
+    private static final String[] TEST_DOMAINS = {SDCH_FAKE_HOST, QUIC_FAKE_HOST};
+    private static final String LOOPBACK_ADDRESS = "127.0.0.1";
+
     /**
-     * Registers customized DNS mapping for testing host names used by test servers, namely:
+     * Generates rules for customized DNS mapping for testing hostnames used by test servers,
+     * namely:
      * <ul>
      * <li>{@link QuicTestServer#getServerHost}</li>
      * <li>{@link NativeTestServer#getSdchURL}</li>'s host
      * </ul>
-     * @param cronetEngine {@link CronetEngine} that this mapping should apply to.
-     * @param destination host to map to (e.g. 127.0.0.1)
+     * Maps the test hostnames to 127.0.0.1.
      */
-    public static void registerHostResolverProc(CronetEngine cronetEngine, String destination) {
-        long contextAdapter =
-                ((CronetUrlRequestContext) cronetEngine).getUrlRequestContextAdapter();
-        nativeRegisterHostResolverProc(contextAdapter, false, destination);
-        sHostResolverBlock.block();
-        sHostResolverBlock.close();
+    public static JSONObject generateHostResolverRules() throws JSONException {
+        return generateHostResolverRules(LOOPBACK_ADDRESS);
     }
 
     /**
-     * Registers customized DNS mapping for testing host names used by test servers.
-     * @param requestFactory {@link HttpUrlRequestFactory} that this mapping should apply to.
-     * @param destination host to map to (e.g. 127.0.0.1)
+     * Generates rules for customized DNS mapping for testing hostnames used by test servers,
+     * namely:
+     * <ul>
+     * <li>{@link QuicTestServer#getServerHost}</li>
+     * <li>{@link NativeTestServer#getSdchURL}</li>'s host
+     * </ul>
+     * @param destination host to map to
      */
-    public static void registerHostResolverProc(
-            HttpUrlRequestFactory requestFactory, String destination) {
-        long contextAdapter = ((ChromiumUrlRequestFactory) requestFactory)
-                                      .getRequestContext()
-                                      .getUrlRequestContextAdapter();
-        nativeRegisterHostResolverProc(contextAdapter, true, destination);
-        sHostResolverBlock.block();
-        sHostResolverBlock.close();
+    public static JSONObject generateHostResolverRules(String destination) throws JSONException {
+        StringBuilder rules = new StringBuilder();
+        for (String domain : TEST_DOMAINS) {
+            rules.append("MAP " + domain + " " + destination + ",");
+        }
+        return new JSONObject().put("host_resolver_rules", rules);
     }
 
     /**
@@ -58,14 +64,6 @@ public class CronetTestUtil {
     public static int getLoadFlags(UrlRequest urlRequest) {
         return nativeGetLoadFlags(((CronetUrlRequest) urlRequest).getUrlRequestAdapterForTesting());
     }
-
-    @CalledByNative
-    private static void onHostResolverProcRegistered() {
-        sHostResolverBlock.open();
-    }
-
-    private static native void nativeRegisterHostResolverProc(
-            long contextAdapter, boolean isLegacyAPI, String destination);
 
     private static native int nativeGetLoadFlags(long urlRequest);
 }

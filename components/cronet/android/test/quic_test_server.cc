@@ -103,12 +103,6 @@ void ShutdownQuicTestServer(JNIEnv* env,
   delete g_quic_server_thread;
 }
 
-ScopedJavaLocalRef<jstring> GetServerHost(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& /*jcaller*/) {
-  return base::android::ConvertUTF8ToJavaString(env, kFakeQuicDomain);
-}
-
 int GetServerPort(JNIEnv* env, const JavaParamRef<jclass>& /*jcaller*/) {
   return kServerPort;
 }

@@ -9,6 +9,9 @@ import android.content.Context;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.UrlUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * Wrapper class to start an in-process native test server, and get URLs
  * needed to talk to it.
@@ -52,8 +55,8 @@ public final class NativeTestServer {
         return nativeGetFileURL(filePath);
     }
 
-    public static String getSdchURL() {
-        return nativeGetSdchURL();
+    public static String getSdchURL() throws MalformedURLException {
+        return new URL("http", CronetTestUtil.SDCH_FAKE_HOST, getPort(), "").toString();
     }
 
     // Returns a URL that the server will return an Exabyte of data
@@ -80,6 +83,10 @@ public final class NativeTestServer {
         return nativeGetFileURL("/notfound.html");
     }
 
+    public static int getPort() {
+        return nativeGetPort();
+    }
+
     public static String getHostPort() {
         return nativeGetHostPort();
     }
@@ -96,8 +103,8 @@ public final class NativeTestServer {
     private static native String nativeGetEchoMethodURL();
     private static native String nativeGetRedirectToEchoBody();
     private static native String nativeGetFileURL(String filePath);
-    private static native String nativeGetSdchURL();
     private static native String nativeGetExabyteResponseURL();
     private static native String nativeGetHostPort();
+    private static native int nativeGetPort();
     private static native boolean nativeIsDataReductionProxySupported();
 }

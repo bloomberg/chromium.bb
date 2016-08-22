@@ -34,7 +34,10 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         if (enabled == QuicBidirectionalStreams.DISABLED) {
             quicParams.put("quic_disable_bidirectional_streams", true);
         }
-        JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
+        JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
+        JSONObject experimentalOptions = new JSONObject()
+                                                 .put("QUIC", quicParams)
+                                                 .put("HostResolverRules", hostResolverParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
 
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
@@ -43,7 +46,6 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
 
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
-        registerHostResolver(mTestFramework);
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
+import org.chromium.net.CronetTestUtil;
 import org.chromium.net.QuicTestServer;
 import org.json.JSONObject;
 
@@ -37,7 +38,10 @@ public class QuicUploadTest extends CronetTestBase {
         builder.enableQuic(true);
         JSONObject quicParams =
                 new JSONObject().put("host_whitelist", QuicTestServer.getServerHost());
-        JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
+        JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
+        JSONObject experimentalOptions = new JSONObject()
+                                                 .put("QUIC", quicParams)
+                                                 .put("HostResolverRules", hostResolverParams);
         builder.setExperimentalOptions(experimentalOptions.toString());
 
         builder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
@@ -46,7 +50,6 @@ public class QuicUploadTest extends CronetTestBase {
         builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
 
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
-        registerHostResolver(mTestFramework);
     }
 
     @SmallTest

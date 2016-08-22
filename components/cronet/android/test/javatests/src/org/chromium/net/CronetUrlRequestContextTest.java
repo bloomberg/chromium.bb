@@ -20,10 +20,12 @@ import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetLibraryLoader;
 import org.chromium.net.impl.CronetUrlRequestContext;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -1388,5 +1390,29 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             }
         });
         assertTrue(uiThreadDone.block(1000));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testHostResolverRules() throws Exception {
+        String resolverTestHostname = "some-weird-hostname";
+        URL testUrl = new URL(mUrl);
+        CronetEngine.Builder cronetEngineBuilder = new CronetEngine.Builder(getContext());
+        JSONObject hostResolverRules = new JSONObject().put(
+                "host_resolver_rules", "MAP " + resolverTestHostname + " " + testUrl.getHost());
+        JSONObject experimentalOptions =
+                new JSONObject().put("HostResolverRules", hostResolverRules);
+        cronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
+
+        final CronetTestFramework testFramework =
+                startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, cronetEngineBuilder);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        URL requestUrl =
+                new URL("http", resolverTestHostname, testUrl.getPort(), testUrl.getFile());
+        UrlRequest.Builder urlRequestBuilder = new UrlRequest.Builder(requestUrl.toString(),
+                callback, callback.getExecutor(), testFramework.mCronetEngine);
+        urlRequestBuilder.build().start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
     }
 }
