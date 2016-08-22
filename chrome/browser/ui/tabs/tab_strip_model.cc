@@ -793,7 +793,8 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      ResizeWebContents(contents, old_contents->GetContainerBounds().size());
+      ResizeWebContents(
+          contents, gfx::Rect(old_contents->GetContainerBounds().size()));
     }
   }
 }

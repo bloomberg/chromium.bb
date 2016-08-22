@@ -31,7 +31,7 @@ class StubPrerenderContents : public PrerenderContents {
   ~StubPrerenderContents() override;
 
   void StartPrerendering(
-      const gfx::Size& size,
+      const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   void ReportStartEvent() { NotifyPrerenderStart(); }
@@ -53,7 +53,7 @@ StubPrerenderContents::StubPrerenderContents(
 StubPrerenderContents::~StubPrerenderContents() {}
 
 void StubPrerenderContents::StartPrerendering(
-    const gfx::Size& size,
+    const gfx::Rect& bounds,
     content::SessionStorageNamespace* session_storage_namespace) {
   prerendering_has_started_ = true;
 }

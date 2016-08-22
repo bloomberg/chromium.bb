@@ -98,7 +98,8 @@ void OffscreenTab::Start(const GURL& start_url,
 
   // Set initial size, if specified.
   if (!initial_size.IsEmpty())
-    ResizeWebContents(offscreen_tab_web_contents_.get(), initial_size);
+    ResizeWebContents(offscreen_tab_web_contents_.get(),
+                      gfx::Rect(initial_size));
 
   // Mute audio output.  When tab capture starts, the audio will be
   // automatically unmuted, but will be captured into the MediaStream.
@@ -227,7 +228,7 @@ void OffscreenTab::EnterFullscreenModeForTab(WebContents* contents,
       contents->GetRenderWidgetHostView()->GetViewBounds().size();
   if (contents->GetCapturerCount() >= 0 &&
       !contents->GetPreferredSize().IsEmpty()) {
-    ResizeWebContents(contents, contents->GetPreferredSize());
+    ResizeWebContents(contents, gfx::Rect(contents->GetPreferredSize()));
   }
 }
 
@@ -237,7 +238,7 @@ void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
   if (!in_fullscreen_mode())
     return;
 
-  ResizeWebContents(contents, non_fullscreen_size_);
+  ResizeWebContents(contents, gfx::Rect(non_fullscreen_size_));
   non_fullscreen_size_ = gfx::Size();
 }
 

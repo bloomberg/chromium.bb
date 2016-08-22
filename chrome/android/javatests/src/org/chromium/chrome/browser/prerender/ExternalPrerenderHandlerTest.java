@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.prerender;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
+import android.graphics.Rect;
 import android.os.Environment;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -114,7 +115,8 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
             @Override
             public WebContents call() {
                 WebContents webContents =
-                        mExternalPrerenderHandler.addPrerender(mProfile, url, "", 0, 0, false);
+                        mExternalPrerenderHandler.addPrerender(
+                                mProfile, url, "", new Rect(), false);
                 assertNotNull(webContents);
                 assertTrue(mExternalPrerenderHandler.hasPrerenderedUrl(
                         mProfile, url, webContents));

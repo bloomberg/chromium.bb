@@ -34,6 +34,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -59,7 +60,7 @@ class DummyPrerenderContents : public PrerenderContents {
   ~DummyPrerenderContents() override;
 
   void StartPrerendering(
-      const gfx::Size& size,
+      const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   bool GetChildId(int* child_id) const override {
@@ -291,7 +292,7 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 }
 
 void DummyPrerenderContents::StartPrerendering(
-    const gfx::Size& size,
+    const gfx::Rect& bounds,
     content::SessionStorageNamespace* session_storage_namespace) {
   // In the base PrerenderContents implementation, StartPrerendering will
   // be called even when the PrerenderManager is part of the control group,
@@ -1098,7 +1099,7 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
           FINAL_STATUS_MANAGER_SHUTDOWN);
   std::unique_ptr<PrerenderHandle> prerender_handle(
       prerender_manager()->AddPrerenderFromExternalRequest(
-          url, content::Referrer(), nullptr, kSize));
+          url, content::Referrer(), nullptr, gfx::Rect(kSize)));
   EXPECT_FALSE(prerender_handle);
   EXPECT_FALSE(prerender_contents->prerendering_has_started());
 }
@@ -1128,7 +1129,7 @@ TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {
           url, origin, FINAL_STATUS_USED);
       prerender_handle =
           prerender_manager()->AddPrerenderOnCellularFromExternalRequest(
-              url, content::Referrer(), nullptr, kSize);
+              url, content::Referrer(), nullptr, gfx::Rect(kSize));
     }
     EXPECT_TRUE(prerender_handle);
     EXPECT_TRUE(prerender_handle->IsPrerendering());

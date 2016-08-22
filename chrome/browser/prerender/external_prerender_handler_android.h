@@ -35,8 +35,10 @@ class ExternalPrerenderHandlerAndroid {
                     const base::android::JavaParamRef<jobject>& jweb_contents,
                     const base::android::JavaParamRef<jstring>& url,
                     const base::android::JavaParamRef<jstring>& referrer,
-                    jint width,
-                    jint height,
+                    jint top,
+                    jint left,
+                    jint bottom,
+                    jint right,
                     jboolean prerender_on_cellular);
 
   // Cancel the prerender associated with the prerender_handle_

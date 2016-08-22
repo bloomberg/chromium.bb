@@ -59,6 +59,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "ui/gfx/geometry/rect.h"
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -235,8 +236,8 @@ PrerenderManager::AddPrerenderFromLinkRelPrerender(
         source_web_contents->GetController()
             .GetDefaultSessionStorageNamespace();
   }
-
-  return AddPrerender(origin, url, referrer, size, session_storage_namespace);
+  return AddPrerender(
+      origin, url, referrer, gfx::Rect(size), session_storage_namespace);
 }
 
 std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
@@ -245,7 +246,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
     const gfx::Size& size) {
   if (!IsOmniboxEnabled(profile_))
     return nullptr;
-  return AddPrerender(ORIGIN_OMNIBOX, url, content::Referrer(), size,
+  return AddPrerender(ORIGIN_OMNIBOX, url, content::Referrer(), gfx::Rect(size),
                       session_storage_namespace);
 }
 
@@ -254,9 +255,9 @@ PrerenderManager::AddPrerenderFromExternalRequest(
     const GURL& url,
     const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace,
-    const gfx::Size& size) {
-  return AddPrerender(
-      ORIGIN_EXTERNAL_REQUEST, url, referrer, size, session_storage_namespace);
+    const gfx::Rect& bounds) {
+  return AddPrerender(ORIGIN_EXTERNAL_REQUEST, url, referrer,
+                      bounds, session_storage_namespace);
 }
 
 std::unique_ptr<PrerenderHandle>
@@ -264,11 +265,11 @@ PrerenderManager::AddPrerenderOnCellularFromExternalRequest(
     const GURL& url,
     const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace,
-    const gfx::Size& size) {
+    const gfx::Rect& bounds) {
   return AddPrerender(ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
                       url,
                       referrer,
-                      size,
+                      bounds,
                       session_storage_namespace);
 }
 
@@ -276,7 +277,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderForInstant(
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  return AddPrerender(ORIGIN_INSTANT, url, content::Referrer(), size,
+  return AddPrerender(ORIGIN_INSTANT, url, content::Referrer(), gfx::Rect(size),
                       session_storage_namespace);
 }
 
@@ -284,7 +285,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderForOffline(
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  return AddPrerender(ORIGIN_OFFLINE, url, content::Referrer(), size,
+  return AddPrerender(ORIGIN_OFFLINE, url, content::Referrer(), gfx::Rect(size),
                       session_storage_namespace);
 }
 
@@ -853,7 +854,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     Origin origin,
     const GURL& url_arg,
     const content::Referrer& referrer,
-    const gfx::Size& size,
+    const gfx::Rect& bounds,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -954,10 +955,10 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   last_prerender_start_time_ = GetCurrentTimeTicks();
 
-  gfx::Size contents_size =
-      size.IsEmpty() ? config_.default_tab_bounds.size() : size;
+  gfx::Rect contents_bounds =
+      bounds.IsEmpty() ? config_.default_tab_bounds : bounds;
 
-  prerender_contents_ptr->StartPrerendering(contents_size,
+  prerender_contents_ptr->StartPrerendering(contents_bounds,
                                             session_storage_namespace);
 
   DCHECK(IsControlGroup() ||

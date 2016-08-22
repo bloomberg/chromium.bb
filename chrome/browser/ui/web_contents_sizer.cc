@@ -14,13 +14,13 @@
 #endif
 
 void ResizeWebContents(content::WebContents* web_contents,
-                       const gfx::Size& new_size) {
+                       const gfx::Rect& new_bounds) {
 #if defined(USE_AURA)
   aura::Window* window = web_contents->GetNativeView();
-  window->SetBounds(gfx::Rect(window->bounds().origin(), new_size));
+  window->SetBounds(gfx::Rect(window->bounds().origin(), new_bounds.size()));
 #elif defined(OS_ANDROID)
   content::RenderWidgetHostView* view = web_contents->GetRenderWidgetHostView();
   if (view)
-    view->SetSize(new_size);
+    view->SetSize(new_bounds.size());
 #endif
 }

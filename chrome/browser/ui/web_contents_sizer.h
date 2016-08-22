@@ -10,12 +10,11 @@ class WebContents;
 }
 
 namespace gfx {
-class Size;
+class Rect;
 }
 
-// A platform-agnostic function to resize a WebContents. The top-left corner of
-// the WebContents does not move during the resizing.
+// A platform-agnostic function to resize a WebContents.
 void ResizeWebContents(content::WebContents* web_contents,
-                       const gfx::Size& size);
+                       const gfx::Rect& bounds);
 
 #endif  // CHROME_BROWSER_UI_WEB_CONTENTS_SIZER_H_

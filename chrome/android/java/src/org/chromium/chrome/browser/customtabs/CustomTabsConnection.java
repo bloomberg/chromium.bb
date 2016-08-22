@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -751,7 +752,8 @@ public class CustomTabsConnection {
         }
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
-                Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y,
+                Profile.getLastUsedProfile(), url, referrer,
+                new Rect(0, 0, contentSize.x, contentSize.y),
                 shouldPrerenderOnCellularForSession(session));
         if (webContents == null) return false;
         if (throttle) mClientManager.registerPrerenderRequest(uid, url);

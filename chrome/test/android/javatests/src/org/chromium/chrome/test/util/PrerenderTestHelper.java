@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.test.util;
 
+import android.graphics.Rect;
+
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
@@ -92,13 +94,14 @@ public class PrerenderTestHelper {
                     @Override
                     public ExternalPrerenderHandler call() throws Exception {
                         ExternalPrerenderHandler prerenderHandler = new ExternalPrerenderHandler();
-                        boolean didPrerender = prerenderHandler.addPrerender(
-                                currentTab.getProfile(), currentTab.getWebContents(), testUrl, null,
-                                currentTab.getContentViewCore().getRenderCoordinates()
+                        Rect bounds = new Rect(
+                                0, 0, currentTab.getContentViewCore().getRenderCoordinates()
                                         .getContentWidthPixInt(),
                                 currentTab.getContentViewCore().getRenderCoordinates()
-                                        .getContentHeightPixInt(),
-                                false);
+                                        .getContentHeightPixInt());
+                        boolean didPrerender = prerenderHandler.addPrerender(
+                                currentTab.getProfile(), currentTab.getWebContents(), testUrl, null,
+                                bounds, false);
                         Assert.assertTrue("Failed to prerender test url: " + testUrl, didPrerender);
                         return prerenderHandler;
                     }

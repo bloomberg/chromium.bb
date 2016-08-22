@@ -128,7 +128,7 @@ content::WebContents* AddRestoredTab(
     // yet and the bounds may not be available on all platforms.
     if (size.IsEmpty())
       size = browser->window()->GetRestoredBounds().size();
-    ResizeWebContents(web_contents, size);
+    ResizeWebContents(web_contents, gfx::Rect(size));
     web_contents->WasHidden();
   }
   SessionService* session_service =

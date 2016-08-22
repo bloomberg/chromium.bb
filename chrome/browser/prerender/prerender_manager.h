@@ -50,6 +50,7 @@ class WebContents;
 }
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -131,7 +132,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url,
       const content::Referrer& referrer,
       content::SessionStorageNamespace* session_storage_namespace,
-      const gfx::Size& size);
+      const gfx::Rect& bounds);
 
   // Adds a prerender from an external request that will prerender even on
   // cellular networks as long as the user setting for prerendering is ON.
@@ -139,7 +140,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       const GURL& url,
       const content::Referrer& referrer,
       content::SessionStorageNamespace* session_storage_namespace,
-      const gfx::Size& size);
+      const gfx::Rect& bounds);
 
   // Adds a prerender for Instant Search |url| if valid. The
   // |session_storage_namespace| matches the namespace of the active tab at the
@@ -413,14 +414,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       Origin origin) const;
 
   // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
-  // prerender was added. If |size| is empty, then
+  // prerender was added. If |bounds| is empty, then
   // PrerenderContents::StartPrerendering will instead use a default from
   // PrerenderConfig. Returns a PrerenderHandle or NULL.
   std::unique_ptr<PrerenderHandle> AddPrerender(
       Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
-      const gfx::Size& size,
+      const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace);
 
   void StartSchedulingPeriodicCleanups();

@@ -114,7 +114,7 @@ void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   CHECK(web_contents);
-  ResizeWebContents(web_contents, gfx::Size(400, 400));
+  ResizeWebContents(web_contents, gfx::Rect(0, 0, 400, 400));
 }
 
 const Extension* ExtensionSettingsUIBrowserTest::InstallUnpackedExtension(

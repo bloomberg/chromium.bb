@@ -232,7 +232,7 @@ void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
       old_contents->GetFullscreenRenderWidgetHostView();
   if (current_fs_view)
     current_fs_view->SetSize(old_contents->GetPreferredSize());
-  ResizeWebContents(old_contents, old_contents->GetPreferredSize());
+  ResizeWebContents(old_contents, gfx::Rect(old_contents->GetPreferredSize()));
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {

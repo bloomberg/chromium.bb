@@ -8,6 +8,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.WindowManager;
 
 import org.chromium.base.VisibleForTesting;
@@ -38,17 +39,16 @@ public class ExternalPrerenderHandler {
      * @param profile The profile to use for the prerender.
      * @param url The url to prerender.
      * @param referrer The referrer for the prerender request.
-     * @param width The width for the content view (render widget host view) for the prerender.
-     * @param height The height for the content view (render widget host view) for the prerender.
+     * @param bounds The bounds for the content view (render widget host view) for the prerender.
      * @param prerenderOnCellular Whether the prerender should happen if the device has a cellular
      *                            connection.
      * @return The {@link WebContents} that is linked to this prerender. {@code null} if
      *         unsuccessful.
      */
-    public WebContents addPrerender(Profile profile, String url, String referrer, int width,
-            int height, boolean prerenderOnCellular) {
+    public WebContents addPrerender(Profile profile, String url, String referrer,
+            Rect bounds, boolean prerenderOnCellular) {
         WebContents webContents = WebContentsFactory.createWebContents(false, false);
-        if (addPrerender(profile, webContents, url, referrer, width, height, prerenderOnCellular)) {
+        if (addPrerender(profile, webContents, url, referrer, bounds, prerenderOnCellular)) {
             return webContents;
         }
         if (webContents != null) webContents.destroy();
@@ -63,16 +63,16 @@ public class ExternalPrerenderHandler {
      * @param webContents The WebContents to add the prerender to.
      * @param url The url to prerender.
      * @param referrer The referrer for the prerender request.
-     * @param width The width for the content view (render widget host view) for the prerender.
-     * @param height The height for the content view (render widget host view) for the prerender.
+     * @param bounds The bounds for the content view (render widget host view) for the prerender.
      * @param prerenderOnCellular Whether the prerender should happen if the device has a cellular
      *                            connection.
      * @return Whether the prerender was successful.
      */
     public boolean addPrerender(Profile profile, WebContents webContents, String url,
-            String referrer, int width, int height, boolean prerenderOnCellular) {
-        return nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents,
-                url, referrer, width, height, prerenderOnCellular);
+            String referrer, Rect bounds, boolean prerenderOnCellular) {
+        return nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents, url,
+                referrer, bounds.top, bounds.left, bounds.bottom, bounds.right,
+                prerenderOnCellular);
     }
 
     /**
@@ -148,7 +148,7 @@ public class ExternalPrerenderHandler {
     private static native boolean nativeAddPrerender(
             long nativeExternalPrerenderHandlerAndroid, Profile profile,
             WebContents webContents, String url, String referrer,
-            int width, int height, boolean prerenderOnCellular);
+            int top, int left, int bottom, int right, boolean prerenderOnCellular);
     private static native boolean nativeHasPrerenderedUrl(
             Profile profile, String url, WebContents webContents);
     private static native boolean nativeHasPrerenderedAndFinishedLoadingUrl(

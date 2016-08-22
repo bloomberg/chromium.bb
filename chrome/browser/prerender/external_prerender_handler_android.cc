@@ -57,8 +57,10 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jurl,
     const JavaParamRef<jstring>& jreferrer,
-    jint width,
-    jint height,
+    jint top,
+    jint left,
+    jint bottom,
+    jint right,
     jboolean prerender_on_cellular) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
@@ -91,12 +93,12 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
         prerender_manager->AddPrerenderOnCellularFromExternalRequest(
             url, referrer,
             web_contents->GetController().GetDefaultSessionStorageNamespace(),
-            gfx::Size(width, height));
+            gfx::Rect(top, left, bottom, right));
   } else {
     prerender_handle_ = prerender_manager->AddPrerenderFromExternalRequest(
         url, referrer,
         web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        gfx::Size(width, height));
+        gfx::Rect(top, left, bottom, right));
   }
 
   return !!prerender_handle_;

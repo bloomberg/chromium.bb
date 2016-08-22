@@ -9,13 +9,16 @@
 #include "content/public/browser/web_contents.h"
 
 void ResizeWebContents(content::WebContents* web_contents,
-                       const gfx::Size& new_size) {
+                       const gfx::Rect& new_bounds) {
   NSView* view = web_contents->GetNativeView();
   NSRect old_wcv_frame = [view frame];
   CGFloat new_x = old_wcv_frame.origin.x;
   CGFloat new_y =
-      old_wcv_frame.origin.y + (old_wcv_frame.size.height - new_size.height());
+      old_wcv_frame.origin.y
+      + (old_wcv_frame.size.height - new_bounds.size().height());
   NSRect new_wcv_frame =
-      NSMakeRect(new_x, new_y, new_size.width(), new_size.height());
+      NSMakeRect(new_x, new_y,
+                 new_bounds.size().width(),
+                 new_bounds.size().height());
   [view setFrame:new_wcv_frame];
 }

@@ -64,7 +64,7 @@ class DummyPrerenderContents : public PrerenderContents {
       bool call_did_finish_load);
 
   void StartPrerendering(
-      const gfx::Size& size,
+      const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace) override;
   bool GetChildId(int* child_id) const override;
   bool GetRouteId(int* route_id) const override;
@@ -110,7 +110,7 @@ DummyPrerenderContents::DummyPrerenderContents(
 }
 
 void DummyPrerenderContents::StartPrerendering(
-    const gfx::Size& size,
+    const gfx::Rect& bounds,
     content::SessionStorageNamespace* session_storage_namespace) {
   content::SessionStorageNamespaceMap session_storage_namespace_map;
   session_storage_namespace_map[std::string()] = session_storage_namespace;

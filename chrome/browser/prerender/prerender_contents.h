@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/rect.h"
 
 class Profile;
 
@@ -110,12 +110,12 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Start rendering the contents in the prerendered state. If
   // |is_control_group| is true, this will go through some of the mechanics of
-  // starting a prerender, without actually creating the RenderView. |size|
-  // indicates the rectangular dimensions that the prerendered page should be.
+  // starting a prerender, without actually creating the RenderView. |bounds|
+  // indicates the rectangle that the prerendered page should be in.
   // |session_storage_namespace| indicates the namespace that the prerendered
   // page should be part of.
   virtual void StartPrerendering(
-      const gfx::Size& size,
+      const gfx::Rect& bounds,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
@@ -343,8 +343,8 @@ class PrerenderContents : public content::NotificationObserver,
   // Origin for this prerender.
   Origin origin_;
 
-  // The size of the WebView from the launching page.
-  gfx::Size size_;
+  // The bounds of the WebView from the launching page.
+  gfx::Rect bounds_;
 
   typedef std::vector<history::HistoryAddPageArgs> AddPageVector;
 

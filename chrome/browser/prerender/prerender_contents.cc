@@ -43,7 +43,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
@@ -169,7 +169,7 @@ class PrerenderContents::WebContentsDelegateImpl
   gfx::Size GetSizeForNewRenderView(WebContents* web_contents) const override {
     // Have to set the size of the RenderView on initialization to be sure it is
     // set before the RenderView is hidden on all platforms (esp. Android).
-    return prerender_contents_->size_;
+    return prerender_contents_->bounds_.size();
   }
 
  private:
@@ -235,17 +235,16 @@ PrerenderContents* PrerenderContents::FromWebContents(
 }
 
 void PrerenderContents::StartPrerendering(
-    const gfx::Size& size,
+    const gfx::Rect& bounds,
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_);
-  DCHECK(!size.IsEmpty());
+  DCHECK(!bounds.IsEmpty());
   DCHECK(!prerendering_has_started_);
   DCHECK(!prerender_contents_);
-  DCHECK(size_.IsEmpty());
   DCHECK_EQ(1U, alias_urls_.size());
 
   session_storage_namespace_id_ = session_storage_namespace->id();
-  size_ = size;
+  bounds_ = bounds;
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
@@ -270,7 +269,7 @@ void PrerenderContents::StartPrerendering(
   web_contents_delegate_.reset(new WebContentsDelegateImpl(this));
   prerender_contents_.get()->SetDelegate(web_contents_delegate_.get());
   // Set the size of the prerender WebContents.
-  ResizeWebContents(prerender_contents_.get(), size_);
+  ResizeWebContents(prerender_contents_.get(), bounds_);
 
   // TODO(davidben): This logic assumes each prerender has at most one
   // route. https://crbug.com/440544
