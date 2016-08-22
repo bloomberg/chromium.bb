@@ -273,7 +273,7 @@ WebReferrerPolicy WebURLRequest::referrerPolicy() const
 
 void WebURLRequest::addHTTPOriginIfNeeded(const WebString& origin)
 {
-    m_resourceRequest->addHTTPOriginIfNeeded(WebSecurityOrigin::createFromString(origin));
+    m_resourceRequest->addHTTPOriginIfNeeded(WebSecurityOrigin::createFromString(origin).get());
 }
 
 bool WebURLRequest::hasUserGesture() const

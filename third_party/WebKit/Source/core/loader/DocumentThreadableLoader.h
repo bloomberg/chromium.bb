@@ -174,7 +174,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         Member<RawResource> m_resource;
         // End of ResourceOwner re-implementation, see above.
 
-        SecurityOrigin* getSecurityOrigin() const;
+        const SecurityOrigin* getSecurityOrigin() const;
         Document& document() const;
 
         ThreadableLoaderClient* m_client;

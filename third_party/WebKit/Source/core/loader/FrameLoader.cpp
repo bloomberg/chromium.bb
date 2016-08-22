@@ -141,7 +141,7 @@ ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item, W
         request.setHTTPBody(formData);
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
-        request.addHTTPOriginIfNeeded(securityOrigin);
+        request.addHTTPOriginIfNeeded(securityOrigin.get());
     }
     return request;
 }
@@ -812,7 +812,7 @@ void FrameLoader::setReferrerForFrameRequest(FrameLoadRequest& frameRequest)
 
     request.setHTTPReferrer(referrer);
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer.referrer);
-    request.addHTTPOriginIfNeeded(referrerOrigin);
+    request.addHTTPOriginIfNeeded(referrerOrigin.get());
 }
 
 FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& request)

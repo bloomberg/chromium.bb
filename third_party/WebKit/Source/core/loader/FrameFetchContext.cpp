@@ -192,7 +192,7 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
             outgoingOrigin = SecurityOrigin::createFromString(request.httpReferrer());
         }
 
-        request.addHTTPOriginIfNeeded(outgoingOrigin);
+        request.addHTTPOriginIfNeeded(outgoingOrigin.get());
     }
 
     if (m_document)

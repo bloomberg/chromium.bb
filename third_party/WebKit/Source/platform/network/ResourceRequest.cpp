@@ -253,7 +253,7 @@ void ResourceRequest::clearHTTPReferrer()
     m_didSetHTTPReferrer = false;
 }
 
-void ResourceRequest::setHTTPOrigin(PassRefPtr<SecurityOrigin> origin)
+void ResourceRequest::setHTTPOrigin(const SecurityOrigin* origin)
 {
     setHTTPHeaderField(HTTPNames::Origin, origin->toAtomicString());
     if (origin->hasSuborigin())
@@ -266,7 +266,7 @@ void ResourceRequest::clearHTTPOrigin()
     m_httpHeaderFields.remove(HTTPNames::Suborigin);
 }
 
-void ResourceRequest::addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin> origin)
+void ResourceRequest::addHTTPOriginIfNeeded(const SecurityOrigin* origin)
 {
     if (!httpOrigin().isEmpty())
         return; // Request already has an Origin header.
@@ -287,7 +287,7 @@ void ResourceRequest::addHTTPOriginIfNeeded(PassRefPtr<SecurityOrigin> origin)
     if (originString.isEmpty()) {
         // If we don't know what origin header to attach, we attach the value
         // for an empty origin.
-        setHTTPOrigin(SecurityOrigin::createUnique());
+        setHTTPOrigin(SecurityOrigin::createUnique().get());
         return;
     }
     setHTTPOrigin(origin);

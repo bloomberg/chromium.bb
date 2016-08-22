@@ -960,7 +960,7 @@ StoredCredentials DocumentThreadableLoader::effectiveAllowCredentials() const
     return m_resourceLoaderOptions.allowCredentials;
 }
 
-SecurityOrigin* DocumentThreadableLoader::getSecurityOrigin() const
+const SecurityOrigin* DocumentThreadableLoader::getSecurityOrigin() const
 {
     return m_securityOrigin ? m_securityOrigin.get() : document().getSecurityOrigin();
 }

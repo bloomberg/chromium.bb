@@ -56,7 +56,7 @@ bool isOnAccessControlResponseHeaderWhitelist(const String& name)
     return allowedCrossOriginResponseHeaders.contains(name);
 }
 
-void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* securityOrigin, StoredCredentials allowCredentials)
+void updateRequestForAccessControl(ResourceRequest& request, const SecurityOrigin* securityOrigin, StoredCredentials allowCredentials)
 {
     request.removeCredentials();
     request.setAllowStoredCredentials(allowCredentials == AllowStoredCredentials);
@@ -65,7 +65,7 @@ void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* sec
         request.setHTTPOrigin(securityOrigin);
 }
 
-ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin* securityOrigin)
+ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, const SecurityOrigin* securityOrigin)
 {
     ResourceRequest preflightRequest(request.url());
     updateRequestForAccessControl(preflightRequest, securityOrigin, DoNotAllowStoredCredentials);
@@ -124,12 +124,12 @@ static bool isInterestingStatusCode(int statusCode)
     return statusCode >= 400;
 }
 
-static String buildAccessControlFailureMessage(const String& detail, SecurityOrigin* securityOrigin)
+static String buildAccessControlFailureMessage(const String& detail, const SecurityOrigin* securityOrigin)
 {
     return detail + " Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
 }
 
-bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription, WebURLRequest::RequestContext context)
+bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, const SecurityOrigin* securityOrigin, String& errorDescription, WebURLRequest::RequestContext context)
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin")));
     DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials")));
@@ -272,12 +272,22 @@ void extractCorsExposedHeaderNamesList(const ResourceResponse& response, HTTPHea
 
 bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, String& errorDescription)
 {
-    // CORS restrictions imposed on Location: URL -- http://www.w3.org/TR/cors/#redirect-steps (steps 2 + 3.)
+    // Block non HTTP(S) schemes as specified in the step 4 in
+    // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
+    // the data scheme.
+    //
+    // TODO(tyoshino): This check should be performed regardless of the CORS
+    // flag and request's mode.
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(requestURL.protocol())) {
         errorDescription = "Redirect location '" + requestURL.getString() + "' has a disallowed scheme for cross-origin requests.";
         return false;
     }
 
+    // Block URLs including credentials as specified in the step 9 in
+    // https://fetch.spec.whatwg.org/#http-redirect-fetch.
+    //
+    // TODO(tyoshino): This check should be performed also when request's
+    // origin is not same origin with the redirect destination's origin.
     if (!(requestURL.user().isEmpty() && requestURL.pass().isEmpty())) {
         errorDescription = "Redirect location '" + requestURL.getString() + "' contains userinfo, which is disallowed for cross-origin requests.";
         return false;
@@ -286,45 +296,49 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
     return true;
 }
 
-bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
+bool CrossOriginAccessControl::handleRedirect(const SecurityOrigin* securityOrigin, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
 {
     // http://www.w3.org/TR/cors/#redirect-steps terminology:
-    const KURL& originalURL = redirectResponse.url();
+    const KURL& lastURL = redirectResponse.url();
     const KURL& newURL = newRequest.url();
 
-    bool redirectCrossOrigin = !securityOrigin->canRequest(newURL);
+    const SecurityOrigin* securityOriginForHeader = securityOrigin;
 
-    // Same-origin request URLs that redirect are allowed without checking access.
-    if (!securityOrigin->canRequest(originalURL)) {
+    // TODO(tyoshino): This should be fixed to check not only the last one but
+    // all redirect responses.
+    if (!securityOrigin->canRequest(lastURL)) {
         // Follow http://www.w3.org/TR/cors/#redirect-steps
         String errorDescription;
 
-        // Steps 3 & 4 - check if scheme and other URL restrictions hold.
         if (!isLegalRedirectLocation(newURL, errorDescription)) {
-            errorMessage = "Redirect from '" + originalURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
+            errorMessage = "Redirect from '" + lastURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
             return false;
         }
 
         // Step 5: perform resource sharing access check.
         if (!passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription, newRequest.requestContext())) {
-            errorMessage = "Redirect from '" + originalURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
+            errorMessage = "Redirect from '" + lastURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
             return false;
         }
 
-        RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
-        // Step 6: if the request URL origin is not same origin as the original URL's,
-        // set the source origin to a globally unique identifier.
-        if (!originalOrigin->canRequest(newURL)) {
+        RefPtr<SecurityOrigin> lastOrigin = SecurityOrigin::create(lastURL);
+        // Set request's origin to a globally unique identifier as specified in
+        // the step 10 in https://fetch.spec.whatwg.org/#http-redirect-fetch.
+        if (!lastOrigin->canRequest(newURL)) {
             options.securityOrigin = SecurityOrigin::createUnique();
-            securityOrigin = options.securityOrigin.get();
+            securityOriginForHeader = options.securityOrigin.get();
         }
     }
-    if (redirectCrossOrigin) {
-        // If now to a different origin, update/set Origin:.
+
+    if (!securityOrigin->canRequest(newURL)) {
         newRequest.clearHTTPOrigin();
-        newRequest.setHTTPOrigin(securityOrigin);
-        // If the user didn't request credentials in the first place, update our
-        // state so we neither request them nor expect they must be allowed.
+        newRequest.setHTTPOrigin(securityOriginForHeader);
+
+        // Unset credentials flag if request's credentials mode is
+        // "same-origin" as request's response tainting becomes "cors".
+        //
+        // This is equivalent to the step 2 in
+        // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
         if (options.credentialsRequested == ClientDidNotRequestCredentials)
             options.allowCredentials = DoNotAllowStoredCredentials;
     }
