@@ -545,6 +545,19 @@ component("skia") {
 
 # Separated out so it can be compiled with different flags for SSE.
 if (!skia_build_no_opts) {
+  if (current_cpu == "arm64") {
+    source_set("skia_opts_crc32") {
+      sources = gypi_skia_opts.crc32_sources
+      cflags = [ "-march=armv8-a+crc" ]
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
+    }
+  }
   if (current_cpu == "x86" || current_cpu == "x64") {
     source_set("skia_opts_sse3") {
       sources = gypi_skia_opts.ssse3_sources
@@ -670,6 +683,7 @@ source_set("skia_opts") {
     }
   } else if (current_cpu == "arm64") {
     sources = gypi_skia_opts.arm64_sources
+    deps += [ ":skia_opts_crc32" ]
   } else if (current_cpu == "mipsel") {
     cflags += [ "-fomit-frame-pointer" ]
 
