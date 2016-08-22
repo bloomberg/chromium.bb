@@ -34,7 +34,7 @@ TEST(PluginUtilsTest, VersionExtraction) {
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {
-    Version version;
+    base::Version version;
     WebPluginInfo::CreateVersionFromString(
         base::ASCIIToUTF16(versions[i][0]), &version);
 

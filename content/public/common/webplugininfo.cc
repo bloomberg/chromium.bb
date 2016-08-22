@@ -101,7 +101,7 @@ void WebPluginInfo::CreateVersionFromString(
     }
   }
 
-  *parsed_version = Version(no_leading_zeros_version);
+  *parsed_version = base::Version(no_leading_zeros_version);
 }
 
 }  // namespace content
