@@ -168,6 +168,15 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
     return true;
   }
 
+  // Save the |BeginFrameArgs| as the callback (missed_begin_frame_task_) can be
+  // destroyed if we StopObservingBeginFrames(), and it would take the |args|
+  // with it. Instead save the args and cancel the |missed_begin_frame_task_|.
+  BeginFrameArgs save_args = args;
+  // If we get another BeginFrame before a posted missed frame, just drop the
+  // missed frame. Also if this was the missed frame, drop the Callback inside
+  // it.
+  missed_begin_frame_task_.Cancel();
+
   // If we get another BeginFrame before the previous deadline,
   // synchronously trigger the previous deadline before progressing.
   if (inside_begin_frame_deadline_interval_) {
@@ -175,17 +184,11 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   }
 
   // Schedule the deadline.
-  current_begin_frame_args_ = args;
+  current_begin_frame_args_ = save_args;
   current_begin_frame_args_.deadline -=
       BeginFrameArgs::DefaultEstimatedParentDrawTime();
   inside_begin_frame_deadline_interval_ = true;
   ScheduleBeginFrameDeadline();
-
-  // If we get another BeginFrame before a posted missed frame, just drop the
-  // missed frame. Also if this was the missed frame, drop the Callback inside
-  // it. Do this last because this might be the missed frame and we don't want
-  // to destroy |args| prematurely.
-  missed_begin_frame_task_.Cancel();
 
   return true;
 }
