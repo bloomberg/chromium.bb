@@ -39,7 +39,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
-#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.  NOLINT
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_LINUX)
@@ -98,14 +97,6 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
   return true;
 }
 
-bool IsPepperFlash(const content::WebPluginInfo& plugin) {
-  // We try to recognize Pepper Flash by the following criteria:
-  // * It is a Pepper plugin.
-  // * It has the special Flash permissions.
-  return plugin.is_pepper_plugin() &&
-         (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);
-}
-
 // |path| is the path to the latest Chrome-managed Flash installation (bundled
 // or component updated).
 // |version| is the version of that Flash implementation.
@@ -115,6 +106,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
+  content::WebPluginInfo web_plugin = plugin_info.ToWebPluginInfo();
 
   base::FilePath system_flash_path;
   PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN, &system_flash_path);
@@ -122,7 +114,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
   for (const auto& plugin : plugins) {
-    if (!IsPepperFlash(plugin))
+    if (!plugin.is_pepper_plugin() || plugin.name != web_plugin.name)
       continue;
 
     Version registered_version(base::UTF16ToUTF8(plugin.version));
@@ -157,8 +149,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
     break;
   }
 
-  PluginService::GetInstance()->RegisterInternalPlugin(
-      plugin_info.ToWebPluginInfo(), true);
+  PluginService::GetInstance()->RegisterInternalPlugin(web_plugin, true);
   PluginService::GetInstance()->RefreshPlugins();
 }
 

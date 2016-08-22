@@ -340,12 +340,9 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
 }
 #endif  // defined(OS_LINUX)
 
-// Similar to GetComponentUpdatedPepperFlash, this should be used on Linux only
-// because on other platforms the component updater can take responsibility for
-// locating and registering the bundled version of Flash.
-// However, a large number of tests depend upon having Flash registered
-// *synchronously* during browser startup.
-// TODO(waffles): Fix those tests and then compile / run this only on Linux.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// This should be used on ChromeOS and Linux only - other platforms do not
+// bundle Flash.
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #if defined(FLAPPER_AVAILABLE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -371,6 +368,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -539,10 +537,12 @@ void ChromeContentClient::AddPepperPlugins(
     flash_versions.push_back(component_flash.release());
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
   std::unique_ptr<content::PepperPluginInfo> bundled_flash(
       new content::PepperPluginInfo);
   if (GetBundledPepperFlash(bundled_flash.get()))
     flash_versions.push_back(bundled_flash.release());
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
   std::unique_ptr<content::PepperPluginInfo> system_flash(
       new content::PepperPluginInfo);
