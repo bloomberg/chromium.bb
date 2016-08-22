@@ -17,7 +17,7 @@ FAIL Element in non-HTML namespace, prefix, uppercase name assert_array_equals: 
 FAIL Element in HTML namespace, no prefix, non-ascii characters in name assert_equals: expected "aÇ" but got "aç"
 PASS Element in non-HTML namespace, non-ascii characters in name 
 FAIL Element in HTML namespace, prefix, non-ascii characters in name assert_array_equals: All uppercase input lengths differ, expected 1 got 0
-PASS Element in non-HTML namespace, prefix, non-ascii characters in name 
+FAIL Element in non-HTML namespace, prefix, non-ascii characters in name assert_array_equals: All uppercase input lengths differ, expected 1 got 0
 PASS getElementsByTagName('*') 
 Harness: the test ran to completion.
 
