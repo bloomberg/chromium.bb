@@ -37,6 +37,7 @@
           '../../externs/es6_workaround.js',
           '../../externs/gallery_background.js',
           '../../externs/platform.js',
+          '../../externs/volume_info.js',
         ],
       },
       'includes': [
@@ -146,6 +147,7 @@
           '../../externs/gallery_foreground.js',
           '../../externs/paper_elements.js',
           '../../externs/platform.js',
+          '../../externs/volume_info.js',
           '../../externs/webview_tag.js',
         ],
       },

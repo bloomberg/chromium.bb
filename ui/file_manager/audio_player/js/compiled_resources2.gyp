@@ -8,21 +8,17 @@
 #      'includes': ['../../compile_js2.gypi'],
 #    },
 #    {
-#      'target_name': 'audio_player_scripts',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
 #      'target_name': 'background',
 #      'includes': ['../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'error_util',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
-#    {
-#      'target_name': 'metadata_worker',
-#      'includes': ['../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'error_util',
+      'includes': ['../../compile_js2.gypi'],
+    },
+    {
+      'target_name': 'metadata_worker',
+      'includes': ['../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'test_util',
 #      'includes': ['../../compile_js2.gypi'],

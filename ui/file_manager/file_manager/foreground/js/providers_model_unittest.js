@@ -80,7 +80,7 @@ function addProvidedVolume(volumeManager, extensionId, volumeId) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '');
 
-  var volumeInfo = new VolumeInfo(
+  var volumeInfo = new VolumeInfoImpl(
       VolumeManagerCommon.VolumeType.PROVIDED,
       volumeId,
       fileSystem,

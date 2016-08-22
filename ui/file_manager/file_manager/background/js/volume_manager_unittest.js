@@ -252,7 +252,7 @@ function testGetLocationInfo(callback) {
 function testVolumeInfoListWhenReady(callback) {
   var list = new VolumeInfoList();
   var promiseBeforeAdd = list.whenVolumeInfoReady('volumeId');
-  var volumeInfo = new VolumeInfo(
+  var volumeInfo = new VolumeInfoImpl(
       /* volumeType */ null,
       'volumeId',
       /* fileSystem */ null,

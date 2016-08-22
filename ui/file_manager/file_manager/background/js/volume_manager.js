@@ -7,6 +7,7 @@
  * flush storage", or "mounted zip archive" etc.
  *
  * @constructor
+ * @implements {VolumeInfo}
  * @struct
  *
  * @param {VolumeManagerCommon.VolumeType} volumeType The type of the volume.
@@ -29,7 +30,7 @@
  * @param {boolean} configurable When true, then the volume can be configured.
  * @param {VolumeManagerCommon.Source} source Source of the volume's data.
  */
-function VolumeInfo(
+function VolumeInfoImpl(
     volumeType,
     volumeId,
     fileSystem,
@@ -90,7 +91,7 @@ function VolumeInfo(
   this.source_ = source;
 }
 
-VolumeInfo.prototype = /** @struct */ {
+VolumeInfoImpl.prototype = /** @struct */ {
   /**
    * @return {VolumeManagerCommon.VolumeType} Volume type.
    */
@@ -191,16 +192,10 @@ VolumeInfo.prototype = /** @struct */ {
 };
 
 /**
- * Starts resolving the display root and obtains it.  It may take long time for
- * Drive. Once resolved, it is cached.
- *
- * @param {function(!DirectoryEntry)=} opt_onSuccess Success callback with the
- *     display root directory as an argument.
- * @param {function(*)=} opt_onFailure Failure callback.
- * @return {!Promise.<!DirectoryEntry>}
+ * @override
  */
-VolumeInfo.prototype.resolveDisplayRoot = function(opt_onSuccess,
-                                                   opt_onFailure) {
+VolumeInfoImpl.prototype.resolveDisplayRoot = function(opt_onSuccess,
+                                                       opt_onFailure) {
   if (!this.displayRootPromise_) {
     // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
     // remove this if logic. Call opt_onSuccess() always, instead.
@@ -346,7 +341,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                     error.name);
               });
         }
-        return new VolumeInfo(
+        return new VolumeInfoImpl(
             /** @type {VolumeManagerCommon.VolumeType} */
             (volumeMetadata.volumeType),
             volumeMetadata.volumeId,
@@ -374,7 +369,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             (error.stack || error));
         volumeManagerUtil.reportMountError(volumeMetadata, error);
 
-        return new VolumeInfo(
+        return new VolumeInfoImpl(
             /** @type {VolumeManagerCommon.VolumeType} */
             (volumeMetadata.volumeType),
             volumeMetadata.volumeId,

@@ -60,6 +60,7 @@
           '../../../externs/launcher_search_provider.js',
           '../../../externs/webview_tag.js',
           '../../../externs/platform.js',
+          '../../../externs/volume_info.js',
           '../../common/js/externs.js',
         ],
       },

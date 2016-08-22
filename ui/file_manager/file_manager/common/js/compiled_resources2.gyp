@@ -79,9 +79,13 @@
 #      'target_name': 'util',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'volume_manager_common',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'volume_manager_common',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '../../../externs/compiled_resources2.gyp:volume_info',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
   ],
 }

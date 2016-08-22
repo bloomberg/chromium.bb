@@ -14,7 +14,7 @@ var test = test || {};
  * @param {Array<string>=} opt_styleNames List of CSS property name to be
  *     obtained.
  * @return {{attributes:Object<string>, text:string,
- *                  styles:Object<string>, hidden:boolean}} Element
+ *           styles:Object<string>, hidden:boolean}} Element
  *     information that contains contentText, attribute names and
  *     values, hidden attribute, and style names and values.
  */

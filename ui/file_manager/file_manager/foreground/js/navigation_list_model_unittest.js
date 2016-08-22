@@ -16,7 +16,7 @@ loadTimeData.data = {
 
 function setUp() {
   // Override VolumeInfo.prototype.resolveDisplayRoot.
-  VolumeInfo.prototype.resolveDisplayRoot = function() {};
+  VolumeInfoImpl.prototype.resolveDisplayRoot = function() {};
 
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');

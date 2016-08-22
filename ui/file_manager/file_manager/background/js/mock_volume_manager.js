@@ -116,7 +116,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '');
 
-  var volumeInfo = new VolumeInfo(
+  var volumeInfo = new VolumeInfoImpl(
       type,
       volumeId,
       fileSystem,
@@ -247,7 +247,7 @@ MockVolumeManagerWrapper.createMockVolumeInfo =
     function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '');
-  var volumeInfo = new VolumeInfo(
+  var volumeInfo = new VolumeInfoImpl(
       type,
       volumeId,
       fileSystem,

@@ -181,6 +181,7 @@
           '../../../externs/webview_tag.js',
           '../../../externs/paper_elements.js',
           '../../../externs/platform.js',
+          '../../../externs/volume_info.js',
           '../../common/js/externs.js',
         ],
       },

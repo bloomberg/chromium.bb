@@ -27,10 +27,10 @@
 #      'target_name': 'dialog_action_controller',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'dialog_type',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'dialog_type',
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'directory_contents',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -103,10 +103,14 @@
 #      'target_name': 'import_controller_unittest',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'launch_param',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'launch_param',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        'dialog_type',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'list_thumbnail_loader',
 #      'includes': ['../../../compile_js2.gypi'],

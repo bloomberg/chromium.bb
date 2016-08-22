@@ -38,6 +38,7 @@
           '../../externs/chrome_test.js',
           '../../externs/es6_workaround.js',
           '../../externs/platform.js',
+          '../../externs/volume_info.js',
         ],
       },
       'includes': [
@@ -102,6 +103,7 @@
           '../../externs/chrome_test.js',
           '../../externs/es6_workaround.js',
           '../../externs/platform.js',
+          '../../externs/volume_info.js',
         ],
       },
       'includes': [
