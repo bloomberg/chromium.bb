@@ -122,7 +122,7 @@ cr.define('settings', function() {
   function findAndHighlightMatches_(request, root) {
     var foundMatches = false;
     function doSearch(node) {
-      if (node.nodeName == 'TEMPLATE' && node.hasAttribute('name') &&
+      if (node.nodeName == 'TEMPLATE' && node.hasAttribute('route-path') &&
           !node.if && !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
         getSearchManager().queue_.addRenderTask(
             new RenderTask(request, node));
@@ -269,16 +269,18 @@ cr.define('settings', function() {
   RenderTask.prototype = {
     /** @override */
     exec: function() {
+      var routePath = this.node.getAttribute('route-path');
       var subpageTemplate =
           this.node['_content'].querySelector('settings-subpage');
-      subpageTemplate.id = subpageTemplate.id || this.node.getAttribute('name');
+      subpageTemplate.setAttribute('route-path', routePath);
       assert(!this.node.if);
       this.node.if = true;
 
       return new Promise(function(resolve, reject) {
         var parent = this.node.parentNode;
         parent.async(function() {
-          var renderedNode = parent.querySelector('#' + subpageTemplate.id);
+          var renderedNode =
+              parent.querySelector('[route-path="' + routePath + '"]');
           // Register a SearchAndHighlightTask for the part of the DOM that was
           // just rendered.
           getSearchManager().queue_.addSearchAndHighlightTask(
