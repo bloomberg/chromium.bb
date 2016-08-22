@@ -39,6 +39,9 @@ and select:
 You must have the 10586 SDK installed or else you will hit compile errors such
 as redefined macros.
 
+Install Windows Driver Kit (WDK) 10, or use some other method to get the
+Debugging Tools for Windows.
+
 Run `set DEPOT_TOOLS_WIN_TOOLCHAIN=0`, or set that variable in your
 global environment.
 
