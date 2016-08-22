@@ -2014,8 +2014,10 @@ Polymer({
           // Remove any sinks that are no longer discovered.
           this.sinksToShow_.splice(i, 1);
         } else {
-          // If the sink exists, remove it from |updatedSinkList| as it is
-          // already in |sinksToShow_|.
+          // If the sink exists, move it from |updatedSinkList| to
+          // |sinksToShow_| in the same position, as the cast modes or other
+          // fields may have been updated.
+          this.sinksToShow_[i] = updatedSinkList[index];
           updatedSinkList.splice(index, 1);
         }
       }
