@@ -412,16 +412,16 @@ class ProfileSyncServiceAutofillTest
         data_type_thread()->task_runner());
 
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
-    web_data_wrapper_ = base::WrapUnique(new MockWebDataServiceWrapper(
+    web_data_wrapper_ = base::MakeUnique<MockWebDataServiceWrapper>(
         new WebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
                                data_type_thread()->task_runner()),
         new TokenWebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
-                                    data_type_thread()->task_runner())));
+                                    data_type_thread()->task_runner()));
     web_data_service_ = static_cast<WebDataServiceFake*>(
         web_data_wrapper_->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
-    personal_data_manager_ = base::WrapUnique(new MockPersonalDataManager());
+    personal_data_manager_ = base::MakeUnique<MockPersonalDataManager>();
 
     EXPECT_CALL(personal_data_manager(), LoadProfiles());
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());

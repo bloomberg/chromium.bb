@@ -217,14 +217,14 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetBookmarkModelCallback(
 
 std::unique_ptr<sync_driver::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
-  return base::WrapUnique(new BundleSyncClient(
+  return base::MakeUnique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
       bundle_->sync_sessions_client(), personal_data_manager_,
       get_syncable_service_callback_, get_sync_service_callback_,
       get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::ThreadTaskRunnerHandle::Get() : nullptr,
-      history_service_));
+      history_service_);
 }
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
@@ -257,7 +257,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.signin_wrapper =
-      base::WrapUnique(new SigninManagerWrapper(signin_manager()));
+      base::MakeUnique<SigninManagerWrapper>(signin_manager());
   init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback =
       base::Bind(&EmptyNetworkTimeUpdate);

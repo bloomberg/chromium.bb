@@ -191,7 +191,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
       profile_sync_service_bundle_.CreateBasicInitParams(
           ProfileSyncService::AUTO_START, std::move(sync_client));
   sync_service_ =
-      base::WrapUnique(new TestProfileSyncService(std::move(init_params)));
+      base::MakeUnique<TestProfileSyncService>(std::move(init_params));
 
   SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();

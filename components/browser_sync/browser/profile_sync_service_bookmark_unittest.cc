@@ -437,8 +437,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   // will be deleted before starting up the BookmarkModel.
   std::unique_ptr<BookmarkModel> CreateBookmarkModel(bool delete_bookmarks) {
     const base::FilePath& data_path = data_dir_.path();
-    auto model = base::WrapUnique(new BookmarkModel(
-        base::WrapUnique(new bookmarks::TestBookmarkClient())));
+    auto model = base::MakeUnique<BookmarkModel>(
+        base::WrapUnique(new bookmarks::TestBookmarkClient()));
     managed_bookmark_service_->BookmarkModelCreated(model.get());
     int64_t next_id = 0;
     static_cast<bookmarks::TestBookmarkClient*>(model->client())
@@ -787,8 +787,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   void delete_change_processor() { change_processor_.reset(); }
 
   void ResetChangeProcessor() {
-    change_processor_ = base::WrapUnique(new BookmarkChangeProcessor(
-        sync_client_.get(), model_associator_.get(), &mock_error_handler_));
+    change_processor_ = base::MakeUnique<BookmarkChangeProcessor>(
+        sync_client_.get(), model_associator_.get(), &mock_error_handler_);
   }
 
   syncer::DataTypeErrorHandlerMock* mock_error_handler() {

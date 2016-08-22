@@ -197,8 +197,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   void CreateHistoryService() {
     history_backend_ = new HistoryBackendMock();
-    syncable_service_ = base::WrapUnique(
-        new TestTypedUrlSyncableService(history_backend_.get()));
+    syncable_service_ =
+        base::MakeUnique<TestTypedUrlSyncableService>(history_backend_.get());
   }
 
   void DeleteSyncableService() {

@@ -294,9 +294,8 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
 
 std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
-  return base::WrapUnique(
-      new browser_sync::LocalDeviceInfoProviderImpl(channel_, version_,
-                                                    is_tablet_));
+  return base::MakeUnique<browser_sync::LocalDeviceInfoProviderImpl>(
+      channel_, version_, is_tablet_);
 }
 
 class TokenServiceProvider
