@@ -959,7 +959,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
 
   if extra_args is None:
     extra_args = []
-  kwargs.setdefault('debug_level', logging.DEBUG)
+  kwargs.setdefault('debug_level', logging.INFO)
 
   comp = FindCompressor(compression, chroot=chroot)
   cmd = (['tar'] +
