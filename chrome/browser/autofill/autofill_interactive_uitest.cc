@@ -560,7 +560,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
 // Test that basic form fill is working.
 // Flakily times out on ChromeOS http://crbug.com/585885
-#if defined(OS_CHROMEOS)
+// Flakily fails on Windows http://crbug.com/639940
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_BasicFormFill DISABLED_BasicFormFill
 #else
 #define MAYBE_BasicFormFill BasicFormFill
