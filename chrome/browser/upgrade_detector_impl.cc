@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
@@ -393,6 +394,12 @@ void UpgradeDetectorImpl::CheckForUpgrade() {
 }
 
 bool UpgradeDetectorImpl::DetectOutdatedInstall() {
+  constexpr base::Feature kOutdatedBuildDetector =
+      { "OutdatedBuildDetector", base::FEATURE_ENABLED_BY_DEFAULT };
+
+  if (!base::FeatureList::IsEnabled(kOutdatedBuildDetector))
+    return false;
+
   // Don't show the bubble if we have a brand code that is NOT organic, unless
   // an outdated build is being simulated by command line switches.
   static bool simulate_outdated = SimulatingOutdated();
