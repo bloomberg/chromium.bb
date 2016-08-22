@@ -11,8 +11,8 @@ new failing tests before committing.
 
 import argparse
 import json
-import time
 
+from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 
 # Import destination directories (under LayoutTests/imported/).
@@ -34,6 +34,7 @@ class DepsUpdater(object):
         self.fs = host.filesystem
         self.finder = WebKitFinder(self.fs)
         self.verbose = False
+        self.git_cl = None
 
     def main(self, argv=None):
         options = self.parse_args(argv)
@@ -41,6 +42,8 @@ class DepsUpdater(object):
 
         if not self.checkout_is_okay(options.allow_local_commits):
             return 1
+
+        self.git_cl = GitCL(self.executive, auth_refresh_token_json=options.auth_refresh_token_json)
 
         self.print_('## Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
@@ -268,22 +271,23 @@ class DepsUpdater(object):
         Returns:
             True if successfully committed, False otherwise.
         """
-        email_list = self.get_directory_owners_to_cc()
         self.print_('## Uploading change list.')
-        self.check_run(self.generate_upload_command(email_list, auth_refresh_token_json))
-        self.trigger_try_jobs(auth_refresh_token_json)
-        if self.has_failing_results():
-            self.write_test_expectations(auth_refresh_token_json)
-        command = ['git', 'cl', 'set-commit', '--rietveld']
-        if auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', auth_refresh_token_json]
-        self.run(command)
-        if self.has_failing_results():
+        cc_list = self.get_directory_owners_to_cc()
+        self.git_cl.run([
+            'upload', '-f', '--rietveld'
+            '-m', 'W3C auto test import CL.\n\nTBR=qyearsley@chromium.org',
+        ] + ['--cc=' + email for email in cc_list])
+
+        self.print_('## Triggering try jobs.')
+        for try_bot in self.host.builders.all_try_builder_names():
+            self.git_cl.run(['try', '-b', try_bot])
+        if self.git_cl.has_failing_try_results():
+            self.write_test_expectations()
+
+        self.run(['set-commit', '--rietveld'])
+        if self.git_cl.has_failing_try_results():
             self.print_('## CL has failing results when trying to land; aborting.')
-            command = ['git', 'cl', 'set-close']
-            if auth_refresh_token_json:
-                command += ['--auth-refresh-token-json', auth_refresh_token_json]
-            self.run(command)
+            self.git_cl.run(['set-close'])
             return False
         return True
 
@@ -326,69 +330,10 @@ class DepsUpdater(object):
                 email_addresses.add(directory_to_owner[test_dir])
         return sorted(email_addresses)
 
-    def generate_upload_command(self, email_list, auth_refresh_token_json):
-        message = 'W3C auto test importer\n\nTBR=qyearsley@chromium.org'
-        command = ['git', 'cl', 'upload', '-f', '-m', message, '--rietveld']
-        command += ['--cc=' + email for email in email_list]
-        if auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', auth_refresh_token_json]
-        return command
-
-    def trigger_try_jobs(self, auth_refresh_token_json):
-        """Triggers try jobs on all Blink layout test try bots."""
-        self.print_('## Triggering try jobs.')
-        for try_bot in self.host.builders.all_try_builder_names():
-            self.run(['git', 'cl', 'try', '-b', try_bot,
-                      '--auth-refresh-token-json', auth_refresh_token_json])
-
-    def has_failing_results(self):
-        """Waits for try job results and checks whether there are failing results."""
-        self.print_('## Waiting for try job results.')
-        while True:
-            time.sleep(POLL_DELAY_SECONDS)
-            self.print_('Still waiting...')
-            _, out = self.run(['git', 'cl', 'try-results'])
-            results = self.parse_try_job_results(out)
-            if results.get('Started') or results.get('Scheduled'):
-                continue
-            if results.get('Failures'):
-                return True
-            return False
-
-    def parse_try_job_results(self, results):
-        """Parses try job results from `git cl try-results`.
-
-        Args:
-            results: The stdout obtained by running `git cl try-results`.
-
-        Returns:
-            A dict mapping result type (e.g. Success, Failure) to list of bots
-            with that result type. The list of builders is represented as a set
-            and any bots with both success and failure results are not included
-            in failures.
-
-        Raises:
-            AttributeError: An unexpected result was found.
-        """
-        sets = {}
-        for line in results.splitlines():
-            line = line.strip()
-            if line[-1] == ':':
-                result_type = line[:-1]
-                sets[result_type] = set()
-            elif line.split()[0] == 'Total:':
-                break
-            else:
-                sets[result_type].add(line.split()[0])
-        return sets
-
-    def write_test_expectations(self, auth_refresh_token_json):
+    def write_test_expectations(self):
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
         self.run([self.host.executable, script_path])
         message = '\'Modifies TestExpectations and/or downloads new baselines for tests\''
         self.check_run(['git', 'commit', '-a', '-m', message])
-        command = ['git', 'cl', 'upload', '-m', message, '--rietveld']
-        if auth_refresh_token_json:
-            command += ['--auth-refresh-token-json', auth_refresh_token_json]
-        self.check_run(command)
+        self.git_cl(['upload', '-m', message, '--rietveld'])

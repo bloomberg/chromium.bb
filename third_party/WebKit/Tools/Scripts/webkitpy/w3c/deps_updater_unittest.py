@@ -11,37 +11,6 @@ from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 class DepsUpdaterTest(unittest.TestCase):
 
-    def test_parse_try_job_results(self):
-        output = """Successes:
-linux_builder     http://example.com/linux_builder/builds/222
-mac_builder       http://example.com/mac_builder/builds/222
-win_builder       http://example.com/win_builder/builds/222
-Failures:
-android_builder   http://example.com/android_builder/builds/111
-chromeos_builder  http://example.com/chromeos_builder/builds/111
-Started:
-chromeos_generic  http://example.com/chromeos_generic/builds/111
-chromeos_daisy    http://example.com/chromeos_daisy/builds/111
-Total: 8 tryjobs
-"""
-        host = MockHost()
-        updater = DepsUpdater(host)
-        self.assertEqual(updater.parse_try_job_results(output), {
-            'Successes': set([
-                'mac_builder',
-                'win_builder',
-                'linux_builder'
-            ]),
-            'Failures': set([
-                'android_builder',
-                'chromeos_builder'
-            ]),
-            'Started': set([
-                'chromeos_generic',
-                'chromeos_daisy'
-            ])
-        })
-
     def test_is_manual_test_regular_test(self):
         updater = DepsUpdater(MockHost())
         fs = MockFileSystem()
