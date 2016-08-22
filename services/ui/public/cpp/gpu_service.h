@@ -35,8 +35,11 @@ class GpuService : public gpu::GpuChannelHostFactory,
   }
 
   // The GpuService has to be initialized in the main thread before establishing
-  // the gpu channel.
-  static std::unique_ptr<GpuService> Initialize(shell::Connector* connector);
+  // the gpu channel. If no |task_runner| is provided, then a new thread is
+  // created and used.
+  static std::unique_ptr<GpuService> Create(
+      shell::Connector* connector,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(
@@ -47,7 +50,8 @@ class GpuService : public gpu::GpuChannelHostFactory,
  private:
   friend struct base::DefaultSingletonTraits<GpuService>;
 
-  explicit GpuService(shell::Connector* connector);
+  GpuService(shell::Connector* connector,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannelLocked();
   void EstablishGpuChannelOnMainThread();
@@ -65,9 +69,10 @@ class GpuService : public gpu::GpuChannelHostFactory,
       size_t size) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   shell::Connector* connector_;
   base::WaitableEvent shutdown_event_;
-  base::Thread io_thread_;
+  std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Lock for |gpu_channel_|, |establish_callbacks_| & |is_establishing_|.

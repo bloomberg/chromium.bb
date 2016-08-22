@@ -30,20 +30,25 @@ void PostTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
 
 }  // namespace
 
-GpuService::GpuService(shell::Connector* connector)
+GpuService::GpuService(shell::Connector* connector,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(std::move(task_runner)),
       connector_(connector),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-      io_thread_("GPUIOThread"),
       gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager),
       is_establishing_(false),
       establishing_condition_(&lock_) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-  CHECK(io_thread_.StartWithOptions(thread_options));
+  if (!io_task_runner_) {
+    io_thread_.reset(new base::Thread("GPUIOThread"));
+    base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+    thread_options.priority = base::ThreadPriority::NORMAL;
+    CHECK(io_thread_->StartWithOptions(thread_options));
+    io_task_runner_ = io_thread_->task_runner();
+  }
 }
 
 GpuService::~GpuService() {
@@ -53,9 +58,10 @@ GpuService::~GpuService() {
 }
 
 // static
-std::unique_ptr<GpuService> GpuService::Initialize(
-    shell::Connector* connector) {
-  return base::WrapUnique(new GpuService(connector));
+std::unique_ptr<GpuService> GpuService::Create(
+    shell::Connector* connector,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return base::WrapUnique(new GpuService(connector, std::move(task_runner)));
 }
 
 void GpuService::EstablishGpuChannel(
@@ -205,7 +211,7 @@ bool GpuService::IsMainThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 GpuService::GetIOThreadTaskRunner() {
-  return io_thread_.task_runner();
+  return io_task_runner_;
 }
 
 std::unique_ptr<base::SharedMemory> GpuService::AllocateSharedMemory(

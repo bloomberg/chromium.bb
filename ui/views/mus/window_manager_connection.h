@@ -55,9 +55,12 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
  public:
   ~WindowManagerConnection() override;
 
+  // |io_task_runner| is used by the gpu service. If no task runner is provided,
+  // then a new thread is created and used by ui::GpuService.
   static std::unique_ptr<WindowManagerConnection> Create(
       shell::Connector* connector,
-      const shell::Identity& identity);
+      const shell::Identity& identity,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
   static WindowManagerConnection* Get();
   static bool Exists();
 
@@ -79,8 +82,10 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   const std::set<ui::Window*>& GetRoots() const;
 
  private:
-  WindowManagerConnection(shell::Connector* connector,
-                          const shell::Identity& identity);
+  WindowManagerConnection(
+      shell::Connector* connector,
+      const shell::Identity& identity,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // ui::WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;

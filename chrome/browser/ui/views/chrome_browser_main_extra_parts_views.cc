@@ -10,9 +10,11 @@
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/runner/common/client_util.h"
+#include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/display/screen.h"
@@ -64,7 +66,9 @@ void ChromeBrowserMainExtraPartsViews::MojoShellConnectionStarted(
     input_device_client_->Connect(std::move(server));
 
     window_manager_connection_ = views::WindowManagerConnection::Create(
-        connection->GetConnector(), connection->GetIdentity());
+        connection->GetConnector(), connection->GetIdentity(),
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::IO));
   }
 #endif  // defined(USE_AURA)
 }

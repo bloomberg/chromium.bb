@@ -629,7 +629,8 @@ void RenderThreadImpl::Init(
 #if defined(USE_AURA)
   if (IsRunningInMash()) {
     gpu_service_ =
-        ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
+        ui::GpuService::Create(GetMojoShellConnection()->GetConnector(),
+                               ChildProcess::current()->io_task_runner());
   }
 #endif
 
