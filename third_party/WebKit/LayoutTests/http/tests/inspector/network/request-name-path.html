@@ -4,13 +4,29 @@
 <script>
 function test()
 {
-    function createNetworkRequestForURLAndDumpNameAndPath(url)
+    /**
+     * @param {string} url
+     * @param {string=} targetUrl
+     */
+    function createNetworkRequestForURLAndDumpNameAndPath(url, targetUrl)
     {
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var currentTargetURL = mainTarget.inspectedURL();
+        if (targetUrl)
+            mainTarget.setInspectedURL(targetUrl);
         InspectorTest.addResult("Dumping request name and path for url: " + url);
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), 0, url);
+        var request = new WebInspector.NetworkRequest(mainTarget, 0, url);
         InspectorTest.addResult("    name = " + request.name());
         InspectorTest.addResult("    path = " + request.path());
+        InspectorTest.addResult("    targetUrl = " + (targetUrl ? targetUrl : currentTargetURL));
+        if (targetUrl !== currentTargetURL)
+            mainTarget.setInspectedURL(currentTargetURL);
     }
+
+    // Save the target URL to ensure test works well with other tests.
+    var mainTarget = WebInspector.targetManager.mainTarget();
+    var originalTargetURL = mainTarget.inspectedURL();
+    mainTarget.setInspectedURL("http://127.0.0.1/aFolder/aTest.html");
 
     createNetworkRequestForURLAndDumpNameAndPath("http://www.example.com/foo/bar/baz?key=value");
     createNetworkRequestForURLAndDumpNameAndPath("http://www.example.com/foo/bar/?key=value");
@@ -31,6 +47,12 @@ function test()
     createNetworkRequestForURLAndDumpNameAndPath("http://127.0.0.1/?key=value");
     createNetworkRequestForURLAndDumpNameAndPath("http://127.0.0.1/baz");
     createNetworkRequestForURLAndDumpNameAndPath("http://127.0.0.1/");
+    createNetworkRequestForURLAndDumpNameAndPath("http://127.0.0.1/", "data:text/html,<html><body><img src=\"data:,foobar\" /></body></html>");
+    createNetworkRequestForURLAndDumpNameAndPath("data:text/html,<html><body><img src=\"data:,foobar\" /></body></html>", "data:text/html,<html><body><img src=\"data:,foobar\" /></body></html>");
+    createNetworkRequestForURLAndDumpNameAndPath("data:text/html,<html><body><img src=\"data:,foobar\" /></body></html>", "http://127.0.0.1/");
+
+    // Restore the target URL to ensure test works well with other tests.
+    mainTarget.setInspectedURL(originalTargetURL);
 
     InspectorTest.completeTest();
 }
