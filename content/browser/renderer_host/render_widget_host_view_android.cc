@@ -806,11 +806,6 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
   content_view_core_->OnSelectionChanged(utf8_selection);
 }
 
-void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-  NOTREACHED() << "Selection bounds should be routed through the compositor.";
-}
-
 void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
   RenderWidgetHostViewBase::SetBackgroundColor(color);
   host_->SetBackgroundOpaque(GetBackgroundOpaque());

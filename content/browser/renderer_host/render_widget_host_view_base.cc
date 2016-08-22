@@ -120,8 +120,12 @@ float RenderWidgetHostViewBase::GetTopControlsHeight() const {
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
+#if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->SelectionBoundsChanged(this, params);
+#else
+  NOTREACHED() << "Selection bounds should be routed through the compositor.";
+#endif
 }
 
 float RenderWidgetHostViewBase::GetBottomControlsHeight() const {

@@ -144,14 +144,21 @@ id MockGestureEvent(NSEventType type, double magnification) {
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() {}
+  MockRenderWidgetHostDelegate()
+      : text_input_manager_(new TextInputManager()) {}
   ~MockRenderWidgetHostDelegate() override {}
+
+  TextInputManager* GetTextInputManager() override {
+    return text_input_manager_.get();
+  }
 
  private:
   void Cut() override {}
   void Copy() override {}
   void Paste() override {}
   void SelectAll() override {}
+
+  std::unique_ptr<TextInputManager> text_input_manager_;
 };
 
 class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {

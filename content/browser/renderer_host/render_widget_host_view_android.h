@@ -126,8 +126,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SelectionChanged(const base::string16& text,
                         size_t offset,
                         const gfx::Range& range) override;
-  void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void SetBackgroundColor(SkColor color) override;
   void CopyFromCompositingSurface(

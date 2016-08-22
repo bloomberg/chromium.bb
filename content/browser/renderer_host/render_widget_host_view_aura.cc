@@ -1476,7 +1476,11 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectFromScreen(
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() const {
   if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
     return gfx::Rect();
-  return ConvertRectToScreen(text_input_manager_->GetSelectionBoundsRect());
+
+  const TextInputManager::SelectionRegion* region =
+      text_input_manager_->GetSelectionRegion();
+  return ConvertRectToScreen(
+      gfx::RectBetweenSelectionBounds(region->anchor, region->focus));
 }
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(

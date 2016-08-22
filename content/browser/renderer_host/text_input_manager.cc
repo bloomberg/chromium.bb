@@ -61,13 +61,12 @@ const TextInputState* TextInputManager::GetTextInputState() const {
   return !!active_view_ ? &text_input_state_map_.at(active_view_) : nullptr;
 }
 
-gfx::Rect TextInputManager::GetSelectionBoundsRect() const {
-  if (!active_view_)
-    return gfx::Rect();
-
-  return gfx::RectBetweenSelectionBounds(
-      selection_region_map_.at(active_view_).anchor,
-      selection_region_map_.at(active_view_).focus);
+const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(
+    RenderWidgetHostViewBase* view) const {
+  DCHECK(!view || IsRegistered(view));
+  if (!view)
+    view = active_view_;
+  return view ? &selection_region_map_.at(view) : nullptr;
 }
 
 const TextInputManager::CompositionRangeInfo*
@@ -149,14 +148,14 @@ void TextInputManager::SelectionBoundsChanged(
     RenderWidgetHostViewBase* view,
     const ViewHostMsg_SelectionBounds_Params& params) {
   DCHECK(IsRegistered(view));
-
-// TODO(ekaramad): Implement the logic for other platforms (crbug.com/578168).
+  // Converting the anchor point to root's coordinate space (for child frame
+  // views).
+  gfx::Point anchor_origin_transformed =
+      view->TransformPointToRootCoordSpace(params.anchor_rect.origin());
 #if defined(USE_AURA)
   gfx::SelectionBound anchor_bound, focus_bound;
-  // Converting the points to the |view|'s root coordinate space (for child
-  // frame views).
-  anchor_bound.SetEdge(gfx::PointF(view->TransformPointToRootCoordSpace(
-                           params.anchor_rect.origin())),
+
+  anchor_bound.SetEdge(gfx::PointF(anchor_origin_transformed),
                        gfx::PointF(view->TransformPointToRootCoordSpace(
                            params.anchor_rect.bottom_left())));
   focus_bound.SetEdge(gfx::PointF(view->TransformPointToRootCoordSpace(
@@ -193,10 +192,19 @@ void TextInputManager::SelectionBoundsChanged(
 
   selection_region_map_[view].anchor = anchor_bound;
   selection_region_map_[view].focus = focus_bound;
-
+#else
+  if (params.anchor_rect == params.focus_rect) {
+    selection_region_map_[view].caret_rect.set_origin(
+        anchor_origin_transformed);
+    selection_region_map_[view].caret_rect.set_size(params.anchor_rect.size());
+  }
+  selection_region_map_[view].first_selection_rect.set_origin(
+      anchor_origin_transformed);
+  selection_region_map_[view].first_selection_rect.set_size(
+      params.anchor_rect.size());
+#endif  // USE_AURA
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnSelectionBoundsChanged(this, view));
-#endif
 }
 
 // TODO(ekaramad): We use |range| only on Mac OS; but we still track its value

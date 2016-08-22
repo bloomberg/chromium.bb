@@ -543,7 +543,7 @@ cc::SurfaceId RenderWidgetHostViewMac::SurfaceIdForTesting() const {
 }
 
 ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
-  if (!GetTextInputManager() || !GetTextInputManager()->GetActiveWidget())
+  if (!GetActiveWidget())
     return ui::TEXT_INPUT_TYPE_NONE;
   return GetTextInputManager()->GetTextInputState()->type;
 }
@@ -1056,13 +1056,6 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 // which implements NSServicesRequests protocol.
 //
 
-void RenderWidgetHostViewMac::SelectionBoundsChanged(
-    const ViewHostMsg_SelectionBounds_Params& params) {
-  if (params.anchor_rect == params.focus_rect)
-    caret_rect_ = params.anchor_rect;
-  first_selection_rect_ = params.anchor_rect;
-}
-
 void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   RenderWidgetHostViewBase::SetShowingContextMenu(showing);
 
@@ -1248,6 +1241,9 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
     NSRange range,
     NSRect* rect,
     NSRange* actual_range) {
+  if (!GetTextInputManager())
+    return false;
+
   DCHECK(rect);
   // This exists to make IMEs more responsive, see http://crbug.com/115920
   TRACE_EVENT0("browser",
@@ -1256,18 +1252,26 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   const gfx::Range requested_range(range);
   // If requested range is same as caret location, we can just return it.
   if (selection_range_.is_empty() && requested_range == selection_range_) {
+    DCHECK(GetFocusedWidget());
     if (actual_range)
       *actual_range = range;
-    *rect = NSRectFromCGRect(caret_rect_.ToCGRect());
+    *rect =
+        NSRectFromCGRect(GetTextInputManager()
+                             ->GetSelectionRegion(GetFocusedWidget()->GetView())
+                             ->caret_rect.ToCGRect());
     return true;
   }
 
   if (composition_range_.is_empty()) {
     if (!selection_range_.Contains(requested_range))
       return false;
+    DCHECK(GetFocusedWidget());
     if (actual_range)
       *actual_range = selection_range_.ToNSRange();
-    *rect = NSRectFromCGRect(first_selection_rect_.ToCGRect());
+    *rect =
+        NSRectFromCGRect(GetTextInputManager()
+                             ->GetSelectionRegion(GetFocusedWidget()->GetView())
+                             ->first_selection_rect.ToCGRect());
     return true;
   }
 
@@ -2817,7 +2821,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
           &rect,
           actualRange)) {
     rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
-        renderWidgetHostView_->render_widget_host_, theRange);
+        renderWidgetHostView_->GetFocusedWidget(), theRange);
 
     // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
     if (actualRange)
@@ -2835,7 +2839,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
                          actualRange:(NSRangePointer)actualRange {
   // During tab closure, events can arrive after RenderWidgetHostViewMac::
   // Destroy() is called, which will have set |render_widget_host_| to null.
-  if (!renderWidgetHostView_->render_widget_host_) {
+  if (!renderWidgetHostView_->GetFocusedWidget()) {
     [self cancelComposition];
     return NSZeroRect;
   }

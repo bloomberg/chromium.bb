@@ -602,9 +602,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     send_tab_set_composition_wait_for_bounds_change(view);
 }
 
-// TODO(ekaramad): Enable the following tests on other platforms when the
-// corresponding feature is implemented (http://crbug.com/578168).
-#if defined(USE_AURA)
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
 // Then, after |TextInputState.type| for a view is changed to text, another key
@@ -642,7 +639,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   for (auto* view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
 }
-#endif
 
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
@@ -694,6 +690,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   }
 }
 
+// TODO(ekaramad): Enable the following tests on other platforms when the
+// corresponding feature is implemented (http://crbug.com/578168).
 #if defined(USE_AURA)
 // The following test verifies that when the active widget changes value, it is
 // always from nullptr to non-null or vice versa.

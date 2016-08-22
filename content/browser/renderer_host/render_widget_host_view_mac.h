@@ -289,8 +289,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  void SelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params) override;
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& dst_size,
                                   const ReadbackRequestCallback& callback,
@@ -539,12 +537,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The current composition character range and its bounds.
   gfx::Range composition_range_;
   std::vector<gfx::Rect> composition_bounds_;
-
-  // The current caret bounds.
-  gfx::Rect caret_rect_;
-
-  // The current first selection bounds.
-  gfx::Rect first_selection_rect_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;

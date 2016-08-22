@@ -62,6 +62,34 @@ class CONTENT_EXPORT TextInputManager {
         RenderWidgetHostViewBase* updated_view) {}
   };
 
+  // Text selection bounds.
+  struct SelectionRegion {
+    SelectionRegion();
+    SelectionRegion(const SelectionRegion& other);
+
+    // The following variables are only used on Aura platforms.
+    // The begining of the selection region.
+    gfx::SelectionBound anchor;
+    // The end of the selection region (caret position).
+    gfx::SelectionBound focus;
+
+    // The following variables are only used on Mac platform.
+    // The current caret bounds.
+    gfx::Rect caret_rect;
+    // The current first selection bounds.
+    gfx::Rect first_selection_rect;
+  };
+
+  // Composition range information.
+  struct CompositionRangeInfo {
+    CompositionRangeInfo();
+    CompositionRangeInfo(const CompositionRangeInfo& other);
+    ~CompositionRangeInfo();
+
+    std::vector<gfx::Rect> character_bounds;
+    gfx::Range range;
+  };
+
   // This struct is used to store text selection related information for views.
   struct TextSelection {
     TextSelection();
@@ -83,16 +111,6 @@ class CONTENT_EXPORT TextInputManager {
     base::string16 text;
   };
 
-  // Composition range information.
-  struct CompositionRangeInfo {
-    CompositionRangeInfo();
-    CompositionRangeInfo(const CompositionRangeInfo& other);
-    ~CompositionRangeInfo();
-
-    std::vector<gfx::Rect> character_bounds;
-    gfx::Range range;
-  };
-
   TextInputManager();
   ~TextInputManager();
 
@@ -111,8 +129,11 @@ class CONTENT_EXPORT TextInputManager {
   // interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE.
   const TextInputState* GetTextInputState() const;
 
-  // Returns the rect between selection bounds.
-  gfx::Rect GetSelectionBoundsRect() const;
+  // Returns the selection bounds information for |view|. If |view| == nullptr,
+  // it will return the corresponding information for |active_view_| or nullptr
+  // if there are no active views.
+  const SelectionRegion* GetSelectionRegion(
+      RenderWidgetHostViewBase* view = nullptr) const;
 
   // Returns the composition range and character bounds information for the
   // |view|. If |view| == nullptr, it will assume |active_view_| and return its
@@ -186,17 +207,6 @@ class CONTENT_EXPORT TextInputManager {
       RenderWidgetHostViewBase* view);
 
  private:
-  // Text selection bounds.
-  struct SelectionRegion {
-    SelectionRegion();
-    SelectionRegion(const SelectionRegion& other);
-
-    // The begining of the selection region.
-    gfx::SelectionBound anchor;
-    // The end of the selection region (caret position).
-    gfx::SelectionBound focus;
-  };
-
   // This class is used to create maps which hold specific IME state for a
   // view.
   template <class Value>
