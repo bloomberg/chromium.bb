@@ -4500,7 +4500,7 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 void RenderFrameImpl::OnStop() {
   DCHECK(frame_);
   frame_->stopLoading();
-  if (!frame_->parent())
+  if (frame_ && !frame_->parent())
     FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_, OnStop());
 
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
@@ -5657,7 +5657,7 @@ void RenderFrameImpl::NavigateInternal(
     // send a stop message if the HistoryController is loading in this frame
     // nonetheless. This behavior will go away with subframe navigation
     // entries.
-    if (!frame_->isLoading() && !has_history_navigation_in_frame)
+    if (frame_ && !frame_->isLoading() && !has_history_navigation_in_frame)
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
 
