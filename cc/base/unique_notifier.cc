@@ -23,10 +23,12 @@ UniqueNotifier::~UniqueNotifier() {
 }
 
 void UniqueNotifier::Cancel() {
+  base::AutoLock hold(lock_);
   notification_pending_ = false;
 }
 
 void UniqueNotifier::Schedule() {
+  base::AutoLock hold(lock_);
   if (notification_pending_)
     return;
 
@@ -37,12 +39,17 @@ void UniqueNotifier::Schedule() {
 }
 
 void UniqueNotifier::Notify() {
-  if (!notification_pending_)
-    return;
+  // Scope to release |lock_| before running the closure.
+  {
+    base::AutoLock hold(lock_);
+    if (!notification_pending_)
+      return;
 
-  // Note that the order here is important in case closure schedules another
-  // run.
-  notification_pending_ = false;
+    // Note that the order here is important in case closure schedules another
+    // run.
+    notification_pending_ = false;
+  }
+
   closure_.Run();
 }
 
