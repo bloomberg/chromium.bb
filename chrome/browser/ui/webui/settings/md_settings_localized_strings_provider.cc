@@ -535,7 +535,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
 
   LocalizedString display_strings[] = {
-      {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
       {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},
       {"displayArrangement", IDS_SETTINGS_DISPLAY_ARRANGEMENT},
       {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
@@ -1197,7 +1196,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsMaySaveCookies",
        IDS_SETTINGS_SITE_SETTINGS_MAY_SAVE_COOKIES},
       {"siteSettingsAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
-      {"siteSettingsAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
       {"siteSettingsAskFirstRecommended",
        IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
       {"siteSettingsAskBeforeAccessing",
@@ -1257,10 +1255,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"siteSettingsBlock", IDS_SETTINGS_SITE_SETTINGS_BLOCK},
       {"siteSettingsSessionOnly", IDS_SETTINGS_SITE_SETTINGS_SESSION_ONLY},
       {"siteSettingsAllowed", IDS_SETTINGS_SITE_SETTINGS_ALLOWED},
-      {"siteSettingsAllowed", IDS_SETTINGS_SITE_SETTINGS_ALLOWED},
       {"siteSettingsAllowedRecommended",
        IDS_SETTINGS_SITE_SETTINGS_ALLOWED_RECOMMENDED},
-      {"siteSettingsBlocked", IDS_SETTINGS_SITE_SETTINGS_BLOCKED},
       {"siteSettingsBlocked", IDS_SETTINGS_SITE_SETTINGS_BLOCKED},
       {"siteSettingsBlockedRecommended",
        IDS_SETTINGS_SITE_SETTINGS_BLOCKED_RECOMMENDED},
