@@ -1336,11 +1336,10 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
 
 #if CONFIG_RANS
 static void build_token_cdfs(const aom_prob *pdf_model, rans_lut cdf) {
-  int i;
+  int i, sum = 0;
   assert(pdf_model[2] != 0);
-  cdf[0] = 0;
   for (i = 0; i < ENTROPY_TOKENS - 2; ++i) {
-    cdf[i + 1] = cdf[i] + av1_pareto8_token_probs[pdf_model[2] - 1][i];
+    cdf[i] = sum += av1_pareto8_token_probs[pdf_model[2] - 1][i];
   }
 }
 
