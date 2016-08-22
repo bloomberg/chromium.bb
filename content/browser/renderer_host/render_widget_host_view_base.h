@@ -419,10 +419,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // |text_input_manager_|.
   TextInputManager* GetTextInputManager();
 
-  // Returns the the view which has a RWH and is currently accepting input
-  // events (focused).
-  RenderWidgetHostViewBase* GetFocusedAttachedSubView() const;
-
   // Whether this view is a popup and what kind of popup it is (select,
   // autofill...).
   blink::WebPopupType popup_type_;
