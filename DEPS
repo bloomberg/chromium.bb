@@ -189,7 +189,7 @@ deps = {
     Var('chromium_git') + '/external/selenium/py.git' + '@' + '5fd78261a75fe08d27ca4835fb6c5ce4b42275bd',
 
   'src/third_party/libvpx/source/libvpx':
-   Var('chromium_git') + '/webm/libvpx.git' + '@' +  '149d082377569c0330f8ed87327a837d25525f6a',
+   Var('chromium_git') + '/webm/libvpx.git' + '@' +  'f5bd76f5c1b56bcb0e38063daff0c3a604ac420a',
 
   'src/third_party/ffmpeg':
    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '75976ae026fdbedb14f006eec6cd9119c543aa7f',
