@@ -1117,6 +1117,8 @@ private:
     void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 
     const unsigned m_version;
+
+    bool isPaintable() const final { return drawingBuffer(); }
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

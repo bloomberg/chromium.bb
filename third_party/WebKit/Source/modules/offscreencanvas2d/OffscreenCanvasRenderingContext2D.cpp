@@ -195,4 +195,8 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const
     return false;
 }
 
+bool OffscreenCanvasRenderingContext2D::isPaintable() const
+{
+    return this->imageBuffer();
+}
 }

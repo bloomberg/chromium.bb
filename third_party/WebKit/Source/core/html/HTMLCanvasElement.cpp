@@ -87,14 +87,6 @@ namespace {
 const int DefaultWidth = 300;
 const int DefaultHeight = 150;
 
-// Firefox limits width/height to 32767 pixels, but slows down dramatically before it
-// reaches that limit. We limit by area instead, giving us larger maximum dimensions,
-// in exchange for a smaller maximum canvas size.
-const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
-
-// In Skia, we will also limit width/height to 32767.
-const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
-
 #if OS(ANDROID)
 // We estimate that the max limit for android phones is a quarter of that for
 // desktops based on local experimental results on Android One.
@@ -120,22 +112,9 @@ const int UndefinedQualityValue = -1.0;
 // Default image mime type for toDataURL and toBlob functions
 const char DefaultMimeType[] = "image/png";
 
-bool canCreateImageBuffer(const IntSize& size)
-{
-    if (size.isEmpty())
-        return false;
-    CheckedNumeric<int> area = size.width();
-    area *= size.height();
-    if (!area.IsValid() || area.ValueOrDie() > MaxCanvasArea)
-        return false;
-    if (size.width() > MaxSkiaDim || size.height() > MaxSkiaDim)
-        return false;
-    return true;
-}
-
 PassRefPtr<Image> createTransparentImage(const IntSize& size)
 {
-    DCHECK(canCreateImageBuffer(size));
+    DCHECK(ImageBuffer::canCreateImageBuffer(size));
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
     return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
 }
@@ -277,7 +256,7 @@ bool HTMLCanvasElement::shouldBeDirectComposited() const
 bool HTMLCanvasElement::isPaintable() const
 {
     if (!m_context)
-        return canCreateImageBuffer(size());
+        return ImageBuffer::canCreateImageBuffer(size());
     return buffer();
 }
 
@@ -896,7 +875,7 @@ void HTMLCanvasElement::createImageBufferInternal(std::unique_ptr<ImageBufferSur
     m_didFailToCreateImageBuffer = true;
     m_imageBufferIsClear = true;
 
-    if (!canCreateImageBuffer(size()))
+    if (!ImageBuffer::canCreateImageBuffer(size()))
         return;
 
     int msaaSampleCount = 0;

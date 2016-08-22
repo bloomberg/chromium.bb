@@ -8,6 +8,7 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "wtf/MathExtras.h"
 #include <memory>
 
@@ -107,6 +108,13 @@ void OffscreenCanvas::registerRenderingContextFactory(std::unique_ptr<CanvasRend
 bool OffscreenCanvas::originClean() const
 {
     return m_originClean && !m_disableReadingFromCanvas;
+}
+
+bool OffscreenCanvas::isPaintable() const
+{
+    if (!m_context)
+        return ImageBuffer::canCreateImageBuffer(m_size);
+    return m_context->isPaintable();
 }
 
 DEFINE_TRACE(OffscreenCanvas)

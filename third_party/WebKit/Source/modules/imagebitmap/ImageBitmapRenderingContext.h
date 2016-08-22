@@ -52,6 +52,8 @@ private:
 
     bool m_hasAlpha;
     RefPtr<Image> m_image;
+
+    bool isPaintable() const final { return m_image.get(); }
 };
 
 DEFINE_TYPE_CASTS(ImageBitmapRenderingContext, CanvasRenderingContext, context,

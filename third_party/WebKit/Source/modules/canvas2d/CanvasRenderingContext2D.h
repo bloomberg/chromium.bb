@@ -225,6 +225,12 @@ private:
     HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;
     bool m_pruneLocalFontCacheScheduled;
     ListHashSet<String> m_fontLRUList;
+
+    bool isPaintable() const final
+    {
+        NOTREACHED();
+        return false;
+    }
 };
 
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context,

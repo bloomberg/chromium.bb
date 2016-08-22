@@ -104,6 +104,19 @@ ImageBuffer::~ImageBuffer()
     ImageBuffer::s_globalGPUMemoryUsage -= m_gpuMemoryUsage;
 }
 
+bool ImageBuffer::canCreateImageBuffer(const IntSize& size)
+{
+    if (size.isEmpty())
+        return false;
+    CheckedNumeric<int> area = size.width();
+    area *= size.height();
+    if (!area.IsValid() || area.ValueOrDie() > kMaxCanvasArea)
+        return false;
+    if (size.width() > kMaxSkiaDim || size.height() > kMaxSkiaDim)
+        return false;
+    return true;
+}
+
 SkCanvas* ImageBuffer::canvas() const
 {
     return m_surface->canvas();

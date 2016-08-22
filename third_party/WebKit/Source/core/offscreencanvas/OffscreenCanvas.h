@@ -76,6 +76,8 @@ private:
     bool m_originClean;
     bool m_disableReadingFromCanvas = false;
 
+    bool isPaintable() const;
+
     // cc::SurfaceId is broken into three integer components as this can be used
     // in transfer of OffscreenCanvas across threads
     // If this object is not created via HTMLCanvasElement.transferControlToOffscreen(),

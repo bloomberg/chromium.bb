@@ -82,6 +82,8 @@ private:
     bool m_hasAlpha;
     bool m_needsMatrixClipRestore = false;
     std::unique_ptr<ImageBuffer> m_imageBuffer;
+
+    bool isPaintable() const final;
 };
 
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D, CanvasRenderingContext, context,

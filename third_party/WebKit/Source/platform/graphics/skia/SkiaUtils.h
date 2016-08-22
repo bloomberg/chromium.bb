@@ -48,6 +48,18 @@ namespace blink {
 
 class GraphicsContext;
 
+/**** constants ****/
+
+enum {
+    // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
+    // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
+    // in exchange for a smaller maximum canvas size.
+    kMaxCanvasArea = 32768 * 8192, // Maximum canvas area in CSS pixels
+
+    // In Skia, we will also limit width/height to 32767.
+    kMaxSkiaDim = 32767 // Maximum width/height in CSS pixels.
+};
+
 SkXfermode::Mode PLATFORM_EXPORT WebCoreCompositeToSkiaComposite(CompositeOperator, WebBlendMode = WebBlendModeNormal);
 CompositeOperator PLATFORM_EXPORT compositeOperatorFromSkia(SkXfermode::Mode);
 WebBlendMode PLATFORM_EXPORT blendModeFromSkia(SkXfermode::Mode);

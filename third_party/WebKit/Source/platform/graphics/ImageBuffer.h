@@ -82,6 +82,7 @@ public:
 
     void setClient(ImageBufferClient* client) { m_client = client; }
 
+    static bool canCreateImageBuffer(const IntSize&);
     const IntSize& size() const { return m_surface->size(); }
     bool isAccelerated() const { return m_surface->isAccelerated(); }
     bool isRecording() const { return m_surface->isRecording(); }

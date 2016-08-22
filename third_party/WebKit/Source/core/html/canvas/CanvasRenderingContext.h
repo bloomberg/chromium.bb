@@ -82,6 +82,9 @@ public:
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
 
+    // Note: this function is strictly for OffscreenCanvas only.
+    virtual bool isPaintable() const = 0;
+
     virtual WebLayer* platformLayer() const { return nullptr; }
 
     enum LostContextMode {
