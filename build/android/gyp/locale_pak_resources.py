@@ -93,7 +93,7 @@ def main():
   build_utils.CheckOptions(options, parser,
                            required=['locale_paks'])
 
-  sources = build_utils.ParseGypList(options.locale_paks)
+  sources = build_utils.ParseGnList(options.locale_paks)
 
   if options.depfile:
     deps = sources + build_utils.GetPythonDependencies()

@@ -77,9 +77,9 @@ def main():
   parser.add_option('--input-jar', help='Jar to include .class files from')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option('--excluded-classes',
-      help='GYP list of .class file patterns to exclude from the jar.')
+      help='GN list of .class file patterns to exclude from the jar.')
   parser.add_option('--strip-resource-classes-for',
-      help='GYP list of java package names exclude R.class files in.')
+      help='GN list of java package names exclude R.class files in.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
   args = build_utils.ExpandFileArgs(sys.argv[1:])
@@ -89,10 +89,10 @@ def main():
 
   excluded_classes = []
   if options.excluded_classes:
-    excluded_classes = build_utils.ParseGypList(options.excluded_classes)
+    excluded_classes = build_utils.ParseGnList(options.excluded_classes)
 
   if options.strip_resource_classes_for:
-    packages = build_utils.ParseGypList(options.strip_resource_classes_for)
+    packages = build_utils.ParseGnList(options.strip_resource_classes_for)
     excluded_classes.extend(p.replace('.', '/') + '/' + f
                             for p in packages for f in _RESOURCE_CLASSES)
 

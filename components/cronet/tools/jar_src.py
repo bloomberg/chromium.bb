@@ -63,7 +63,7 @@ def main():
 
   src_dirs = []
   for src_dir in options.src_dir:
-    src_dirs.extend(build_utils.ParseGypList(src_dir))
+    src_dirs.extend(build_utils.ParseGnList(src_dir))
   if unzipped_jar_path:
     src_dirs += [unzipped_jar_path]
 

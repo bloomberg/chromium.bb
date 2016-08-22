@@ -124,20 +124,20 @@ def _ParseArgs(args):
   if (options.R_dir is None) == (options.srcjar_out is None):
     raise Exception('Exactly one of --R-dir or --srcjar-out must be specified.')
 
-  options.resource_dirs = build_utils.ParseGypList(options.resource_dirs)
+  options.resource_dirs = build_utils.ParseGnList(options.resource_dirs)
   options.dependencies_res_zips = (
-      build_utils.ParseGypList(options.dependencies_res_zips))
+      build_utils.ParseGnList(options.dependencies_res_zips))
 
   # Don't use [] as default value since some script explicitly pass "".
   if options.extra_res_packages:
     options.extra_res_packages = (
-        build_utils.ParseGypList(options.extra_res_packages))
+        build_utils.ParseGnList(options.extra_res_packages))
   else:
     options.extra_res_packages = []
 
   if options.extra_r_text_files:
     options.extra_r_text_files = (
-        build_utils.ParseGypList(options.extra_r_text_files))
+        build_utils.ParseGnList(options.extra_r_text_files))
   else:
     options.extra_r_text_files = []
 

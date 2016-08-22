@@ -69,18 +69,18 @@ def _ParseArgs(args):
                       action='store_true',
                       help='Uncompress shared libraries')
   options = parser.parse_args(args)
-  options.assets = build_utils.ParseGypList(options.assets)
-  options.uncompressed_assets = build_utils.ParseGypList(
+  options.assets = build_utils.ParseGnList(options.assets)
+  options.uncompressed_assets = build_utils.ParseGnList(
       options.uncompressed_assets)
-  options.native_lib_placeholders = build_utils.ParseGypList(
+  options.native_lib_placeholders = build_utils.ParseGnList(
       options.native_lib_placeholders)
   all_libs = []
   for gyp_list in options.native_libs:
-    all_libs.extend(build_utils.ParseGypList(gyp_list))
+    all_libs.extend(build_utils.ParseGnList(gyp_list))
   options.native_libs = all_libs
   secondary_libs = []
   for gyp_list in options.secondary_native_libs:
-    secondary_libs.extend(build_utils.ParseGypList(gyp_list))
+    secondary_libs.extend(build_utils.ParseGnList(gyp_list))
   options.secondary_native_libs = secondary_libs
 
 

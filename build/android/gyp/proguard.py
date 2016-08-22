@@ -49,7 +49,7 @@ def _ParseOptions(args):
 
   classpath = []
   for arg in options.classpath:
-    classpath += build_utils.ParseGypList(arg)
+    classpath += build_utils.ParseGnList(arg)
   options.classpath = classpath
 
   return options
@@ -60,8 +60,8 @@ def main(args):
   options = _ParseOptions(args)
 
   proguard = proguard_util.ProguardCmdBuilder(options.proguard_path)
-  proguard.injars(build_utils.ParseGypList(options.input_paths))
-  proguard.configs(build_utils.ParseGypList(options.proguard_configs))
+  proguard.injars(build_utils.ParseGnList(options.input_paths))
+  proguard.configs(build_utils.ParseGnList(options.proguard_configs))
   proguard.outjar(options.output_path)
 
   if options.mapping:

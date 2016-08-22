@@ -22,7 +22,7 @@ def ExtractJars(options):
   jar_cwd = options.classes_dir
   build_utils.DeleteDirectory(jar_cwd)
   build_utils.MakeDirectory(jar_cwd)
-  for jar in build_utils.ParseGypList(options.jars):
+  for jar in build_utils.ParseGnList(options.jars):
     jar_path = os.path.abspath(jar)
     jar_cmd = ['jar', 'xf', jar_path]
     build_utils.CheckOutput(jar_cmd, cwd=jar_cwd)

@@ -111,7 +111,7 @@ def main():
   SetReadelfPath(options.readelf)
   SetLibraryDirs(options.libraries_dir.split(','))
 
-  libraries = build_utils.ParseGypList(options.input_libraries)
+  libraries = build_utils.ParseGnList(options.input_libraries)
   if len(libraries):
     libraries = GetSortedTransitiveDependenciesForBinaries(libraries)
 

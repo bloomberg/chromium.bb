@@ -1200,7 +1200,7 @@ if (enable_java_templates) {
   #       ":foo_generated_enum"
   #     ]
   #     jar_excluded_patterns = [
-  #       "*/FooService.class", "*/FooService##*.class"
+  #       "*/FooService.class", "*/FooService\$*.class"
   #     ]
   #   }
   template("java_library") {
@@ -1297,7 +1297,7 @@ if (enable_java_templates) {
   #       ":foo_generated_enum"
   #     ]
   #     jar_excluded_patterns = [
-  #       "*/FooService.class", "*/FooService##*.class"
+  #       "*/FooService.class", "*/FooService\$*.class"
   #     ]
   #   }
   template("android_library") {
@@ -1320,9 +1320,9 @@ if (enable_java_templates) {
       }
       jar_excluded_patterns += [
         "*/R.class",
-        "*/R##*.class",
+        "*/R\$*.class",
         "*/Manifest.class",
-        "*/Manifest##*.class",
+        "*/Manifest\$*.class",
       ]
     }
   }

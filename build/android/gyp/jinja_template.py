@@ -79,7 +79,7 @@ def _ProcessFiles(processor, input_filenames, inputs_base_dir, outputs_zip):
 
 def _ParseVariables(variables_arg, error_func):
   variables = {}
-  for v in build_utils.ParseGypList(variables_arg):
+  for v in build_utils.ParseGnList(variables_arg):
     if '=' not in v:
       error_func('--variables argument must contain "=": ' + v)
     name, _, value = v.partition('=')
@@ -109,7 +109,7 @@ def main():
   build_utils.AddDepfileOption(parser)
   options = parser.parse_args()
 
-  inputs = build_utils.ParseGypList(options.inputs)
+  inputs = build_utils.ParseGnList(options.inputs)
 
   if (options.output is None) == (options.outputs_zip is None):
     parser.error('Exactly one of --output and --output-zip must be given')

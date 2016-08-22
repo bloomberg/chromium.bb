@@ -290,7 +290,7 @@ def main(argv):
   if args:
     parser.error('No positional arguments should be given.')
   if options.fail:
-    parser.error('\n'.join(build_utils.ParseGypList(options.fail)))
+    parser.error('\n'.join(build_utils.ParseGnList(options.fail)))
 
   required_options_map = {
       'java_binary': ['build_config', 'jar_path'],
@@ -322,7 +322,7 @@ def main(argv):
       raise Exception(
           '--supports-android is required when using --requires-android')
 
-  direct_deps_config_paths = build_utils.ParseGypList(options.deps_configs)
+  direct_deps_config_paths = build_utils.ParseGnList(options.deps_configs)
   direct_deps_config_paths = _FilterDepsPaths(direct_deps_config_paths,
                                               options.type)
 
@@ -384,7 +384,7 @@ def main(argv):
       gradle['java_sources_file'] = options.java_sources_file
     if options.bundled_srcjars:
       gradle['bundled_srcjars'] = (
-          build_utils.ParseGypList(options.bundled_srcjars))
+          build_utils.ParseGnList(options.bundled_srcjars))
 
     gradle['dependent_prebuilt_jars'] = deps.PrebuiltJarPaths()
 
@@ -451,16 +451,16 @@ def main(argv):
     all_asset_sources = []
     if options.asset_renaming_sources:
       all_asset_sources.extend(
-          build_utils.ParseGypList(options.asset_renaming_sources))
+          build_utils.ParseGnList(options.asset_renaming_sources))
     if options.asset_sources:
-      all_asset_sources.extend(build_utils.ParseGypList(options.asset_sources))
+      all_asset_sources.extend(build_utils.ParseGnList(options.asset_sources))
 
     deps_info['assets'] = {
         'sources': all_asset_sources
     }
     if options.asset_renaming_destinations:
       deps_info['assets']['outputs'] = (
-          build_utils.ParseGypList(options.asset_renaming_destinations))
+          build_utils.ParseGnList(options.asset_renaming_destinations))
     if options.disable_asset_compression:
       deps_info['assets']['disable_compression'] = True
 
@@ -481,7 +481,7 @@ def main(argv):
     deps_info['resources_dirs'] = []
     if options.resource_dirs:
       for gyp_list in options.resource_dirs:
-        deps_info['resources_dirs'].extend(build_utils.ParseGypList(gyp_list))
+        deps_info['resources_dirs'].extend(build_utils.ParseGnList(gyp_list))
 
   if options.supports_android and options.type in ('android_apk',
                                                    'java_library'):
@@ -525,7 +525,7 @@ def main(argv):
     java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
     if options.extra_classpath_jars:
-      extra_jars = build_utils.ParseGypList(options.extra_classpath_jars)
+      extra_jars = build_utils.ParseGnList(options.extra_classpath_jars)
       deps_info['extra_classpath_jars'] = extra_jars
       javac_classpath += extra_jars
 
@@ -615,7 +615,7 @@ def main(argv):
 
     library_paths = []
     java_libraries_list = None
-    runtime_deps_files = build_utils.ParseGypList(
+    runtime_deps_files = build_utils.ParseGnList(
         options.shared_libraries_runtime_deps or '[]')
     if runtime_deps_files:
       library_paths = _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files)

@@ -23,6 +23,10 @@ import md5_check  # pylint: disable=relative-import
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 from pylib.constants import host_paths
 
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             os.pardir, os.pardir, os.pardir))
+import gn_helpers
+
 COLORAMA_ROOT = os.path.join(host_paths.DIR_SOURCE_ROOT,
                              'third_party', 'colorama', 'src')
 # aapt should ignore OWNERS files in addition the default ignore pattern.
@@ -78,31 +82,23 @@ def FindInDirectories(directories, filename_filter):
 
 
 def ParseGnList(gn_string):
-  # TODO(brettw) bug 573132: This doesn't handle GN escaping properly, so any
-  # weird characters like $ or \ in the strings will be corrupted.
-  #
-  # The code should import build/gn_helpers.py and then do:
-  #   parser = gn_helpers.GNValueParser(gn_string)
-  #   return return parser.ParseList()
-  # As of this writing, though, there is a CastShell build script that sends
-  # JSON through this function, and using correct GN parsing corrupts that.
-  #
-  # We need to be consistent about passing either JSON or GN lists through
-  # this function.
-  return ast.literal_eval(gn_string)
+  """Converts a command-line parameter into a list.
 
+  If the input starts with a '[' it is assumed to be a GN-formatted list and
+  it will be parsed accordingly. When empty an empty list will be returned.
+  Otherwise, the parameter will be treated as a single raw string (not
+  GN-formatted in that it's not assumed to have literal quotes that must be
+  removed) and a list will be returned containing that string.
 
-def ParseGypList(gyp_string):
-  # The ninja generator doesn't support $ in strings, so use ## to
-  # represent $.
-  # TODO(cjhopman): Remove when
-  # https://code.google.com/p/gyp/issues/detail?id=327
-  # is addressed.
-  gyp_string = gyp_string.replace('##', '$')
-
-  if gyp_string.startswith('['):
-    return ParseGnList(gyp_string)
-  return shlex.split(gyp_string)
+  The common use for this behavior is in the Android build where things can
+  take lists of @FileArg references that are expanded via ExpandFileArgs.
+  """
+  if gn_string.startswith('['):
+    parser = gn_helpers.GNValueParser(gn_string)
+    return parser.ParseList()
+  if len(gn_string):
+    return [ gn_string ]
+  return []
 
 
 def CheckOptions(options, parser, required=None):
@@ -469,7 +465,12 @@ def ExpandFileArgs(args):
     for k in lookup_path[1:]:
       expansion = expansion[k]
 
-    new_args[i] = arg[:match.start()] + str(expansion)
+    # This should match ParseGNList. The output is either a GN-formatted list
+    # or a literal (with no quotes).
+    if isinstance(expansion, list):
+      new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)
+    else:
+      new_args[i] = arg[:match.start()] + str(expansion)
 
   return new_args
 

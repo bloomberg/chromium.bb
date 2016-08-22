@@ -91,10 +91,10 @@ def _ParseArgs(args):
     logging.warning('--main-dex-list-path is unused if multidex is not enabled')
 
   if options.inputs:
-    options.inputs = build_utils.ParseGypList(options.inputs)
+    options.inputs = build_utils.ParseGnList(options.inputs)
     _CheckFilePathsEndWithJar(parser, options.inputs)
   if options.excluded_paths:
-    options.excluded_paths = build_utils.ParseGypList(options.excluded_paths)
+    options.excluded_paths = build_utils.ParseGnList(options.excluded_paths)
 
   if options.proguard_enabled_input_path:
     _CheckFilePathEndsWithJar(parser, options.proguard_enabled_input_path)

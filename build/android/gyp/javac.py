@@ -314,17 +314,17 @@ def _ParseOptions(argv):
 
   bootclasspath = []
   for arg in options.bootclasspath:
-    bootclasspath += build_utils.ParseGypList(arg)
+    bootclasspath += build_utils.ParseGnList(arg)
   options.bootclasspath = bootclasspath
 
   classpath = []
   for arg in options.classpath:
-    classpath += build_utils.ParseGypList(arg)
+    classpath += build_utils.ParseGnList(arg)
   options.classpath = classpath
 
   java_srcjars = []
   for arg in options.java_srcjars:
-    java_srcjars += build_utils.ParseGypList(arg)
+    java_srcjars += build_utils.ParseGnList(arg)
   options.java_srcjars = java_srcjars
 
   additional_jar_files = []
@@ -334,11 +334,11 @@ def _ParseOptions(argv):
   options.additional_jar_files = additional_jar_files
 
   if options.src_gendirs:
-    options.src_gendirs = build_utils.ParseGypList(options.src_gendirs)
+    options.src_gendirs = build_utils.ParseGnList(options.src_gendirs)
 
-  options.javac_includes = build_utils.ParseGypList(options.javac_includes)
+  options.javac_includes = build_utils.ParseGnList(options.javac_includes)
   options.jar_excluded_classes = (
-      build_utils.ParseGypList(options.jar_excluded_classes))
+      build_utils.ParseGnList(options.jar_excluded_classes))
 
   java_files = []
   for arg in args:

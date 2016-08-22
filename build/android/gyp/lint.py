@@ -290,7 +290,7 @@ def main():
   if args.enable:
     sources = []
     if args.src_dirs:
-      src_dirs = build_utils.ParseGypList(args.src_dirs)
+      src_dirs = build_utils.ParseGnList(args.src_dirs)
       sources = build_utils.FindInDirectories(src_dirs, '*.java')
     elif args.java_sources_file:
       sources.extend(build_utils.ReadSourcesList(args.java_sources_file))
@@ -314,7 +314,7 @@ def main():
       input_paths.extend(sources)
     classpath = []
     for gyp_list in args.classpath:
-      classpath.extend(build_utils.ParseGypList(gyp_list))
+      classpath.extend(build_utils.ParseGnList(gyp_list))
     input_paths.extend(classpath)
 
     resource_sources = []
@@ -323,7 +323,7 @@ def main():
       resource_sources += [ args.resource_dir ]
 
     for gyp_list in args.resource_sources:
-      resource_sources += build_utils.ParseGypList(gyp_list)
+      resource_sources += build_utils.ParseGnList(gyp_list)
 
     for resource_source in resource_sources:
       if os.path.isdir(resource_source):

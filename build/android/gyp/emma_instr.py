@@ -195,11 +195,11 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
     shutil.rmtree(temp_dir)
 
   if options.source_dirs:
-    source_dirs = build_utils.ParseGypList(options.source_dirs)
+    source_dirs = build_utils.ParseGnList(options.source_dirs)
   else:
     source_files = []
     if options.source_files:
-      source_files += build_utils.ParseGypList(options.source_files)
+      source_files += build_utils.ParseGnList(options.source_files)
     if options.java_sources_file:
       source_files.extend(
           build_utils.ReadSourcesList(options.java_sources_file))

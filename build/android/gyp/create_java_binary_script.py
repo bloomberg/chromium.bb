@@ -88,11 +88,11 @@ def main(argv):
 
   classpath = [options.jar_path]
   for cp_arg in options.classpath:
-    classpath += build_utils.ParseGypList(cp_arg)
+    classpath += build_utils.ParseGnList(cp_arg)
 
   bootclasspath = []
   for bootcp_arg in options.bootclasspath:
-    bootclasspath += build_utils.ParseGypList(bootcp_arg)
+    bootclasspath += build_utils.ParseGnList(bootcp_arg)
 
   run_dir = os.path.dirname(options.output)
   bootclasspath = [os.path.relpath(p, run_dir) for p in bootclasspath]

@@ -82,7 +82,7 @@ def main():
   if args.auxclasspath:
     args.auxclasspath = args.auxclasspath.split(':')
   elif args.auxclasspath_gyp:
-    args.auxclasspath = build_utils.ParseGypList(args.auxclasspath_gyp)
+    args.auxclasspath = build_utils.ParseGnList(args.auxclasspath_gyp)
 
   if args.base_dir:
     if not args.exclude:
