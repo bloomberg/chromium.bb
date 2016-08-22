@@ -94,8 +94,8 @@ const char ResolutionNotificationController::kNotificationId[] =
 
 struct ResolutionNotificationController::ResolutionChangeInfo {
   ResolutionChangeInfo(int64_t display_id,
-                       const scoped_refptr<DisplayMode>& old_resolution,
-                       const scoped_refptr<DisplayMode>& new_resolution,
+                       const scoped_refptr<ManagedDisplayMode>& old_resolution,
+                       const scoped_refptr<ManagedDisplayMode>& new_resolution,
                        const base::Closure& accept_callback);
   ~ResolutionChangeInfo();
 
@@ -103,14 +103,14 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
   int64_t display_id;
 
   // The resolution before the change.
-  scoped_refptr<DisplayMode> old_resolution;
+  scoped_refptr<ManagedDisplayMode> old_resolution;
 
   // The requested resolution. Note that this may be different from
   // |current_resolution| which is the actual resolution set.
-  scoped_refptr<DisplayMode> new_resolution;
+  scoped_refptr<ManagedDisplayMode> new_resolution;
 
   // The actual resolution after the change.
-  scoped_refptr<DisplayMode> current_resolution;
+  scoped_refptr<ManagedDisplayMode> current_resolution;
 
   // The callback when accept is chosen.
   base::Closure accept_callback;
@@ -129,8 +129,8 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
 
 ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
     int64_t display_id,
-    const scoped_refptr<DisplayMode>& old_resolution,
-    const scoped_refptr<DisplayMode>& new_resolution,
+    const scoped_refptr<ManagedDisplayMode>& old_resolution,
+    const scoped_refptr<ManagedDisplayMode>& new_resolution,
     const base::Closure& accept_callback)
     : display_id(display_id),
       old_resolution(old_resolution),
@@ -163,8 +163,8 @@ ResolutionNotificationController::~ResolutionNotificationController() {
 
 void ResolutionNotificationController::PrepareNotification(
     int64_t display_id,
-    const scoped_refptr<DisplayMode>& old_resolution,
-    const scoped_refptr<DisplayMode>& new_resolution,
+    const scoped_refptr<ManagedDisplayMode>& old_resolution,
+    const scoped_refptr<ManagedDisplayMode>& new_resolution,
     const base::Closure& accept_callback) {
   DCHECK(old_resolution);
   DCHECK(new_resolution);
@@ -173,7 +173,7 @@ void ResolutionNotificationController::PrepareNotification(
   // If multiple resolution changes are invoked for the same display,
   // the original resolution for the first resolution change has to be used
   // instead of the specified |old_resolution|.
-  scoped_refptr<DisplayMode> original_resolution;
+  scoped_refptr<ManagedDisplayMode> original_resolution;
   if (change_info_ && change_info_->display_id == display_id) {
     DCHECK(change_info_->new_resolution->size() == old_resolution->size());
     original_resolution = change_info_->old_resolution;
@@ -276,7 +276,8 @@ void ResolutionNotificationController::RevertResolutionChange() {
   if (!change_info_)
     return;
   int64_t display_id = change_info_->display_id;
-  scoped_refptr<DisplayMode> old_resolution = change_info_->old_resolution;
+  scoped_refptr<ManagedDisplayMode> old_resolution =
+      change_info_->old_resolution;
   change_info_.reset();
   Shell::GetInstance()->display_manager()->SetDisplayMode(display_id,
                                                           old_resolution);

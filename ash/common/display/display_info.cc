@@ -57,11 +57,12 @@ bool GetDisplayBounds(const std::string& spec,
 // Display mode list is sorted by:
 //  * the area in pixels in ascending order
 //  * refresh rate in descending order
-struct DisplayModeSorter {
-  explicit DisplayModeSorter(bool is_internal) : is_internal(is_internal) {}
+struct ManagedDisplayModeSorter {
+  explicit ManagedDisplayModeSorter(bool is_internal)
+      : is_internal(is_internal) {}
 
-  bool operator()(const scoped_refptr<DisplayMode>& a,
-                  const scoped_refptr<DisplayMode>& b) {
+  bool operator()(const scoped_refptr<ManagedDisplayMode>& a,
+                  const scoped_refptr<ManagedDisplayMode>& b) {
     gfx::Size size_a_dip = a->GetSizeInDIP(is_internal);
     gfx::Size size_b_dip = b->GetSizeInDIP(is_internal);
     if (size_a_dip.GetArea() == size_b_dip.GetArea())
@@ -74,14 +75,14 @@ struct DisplayModeSorter {
 
 }  // namespace
 
-DisplayMode::DisplayMode()
+ManagedDisplayMode::ManagedDisplayMode()
     : refresh_rate_(0.0f),
       is_interlaced_(false),
       native_(false),
       ui_scale_(1.0f),
       device_scale_factor_(1.0f) {}
 
-DisplayMode::DisplayMode(const gfx::Size& size)
+ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size)
     : size_(size),
       refresh_rate_(0.0f),
       is_interlaced_(false),
@@ -89,10 +90,10 @@ DisplayMode::DisplayMode(const gfx::Size& size)
       ui_scale_(1.0f),
       device_scale_factor_(1.0f) {}
 
-DisplayMode::DisplayMode(const gfx::Size& size,
-                         float refresh_rate,
-                         bool is_interlaced,
-                         bool native)
+ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
+                                       float refresh_rate,
+                                       bool is_interlaced,
+                                       bool native)
     : size_(size),
       refresh_rate_(refresh_rate),
       is_interlaced_(is_interlaced),
@@ -100,14 +101,14 @@ DisplayMode::DisplayMode(const gfx::Size& size,
       ui_scale_(1.0f),
       device_scale_factor_(1.0f) {}
 
-DisplayMode::~DisplayMode(){};
+ManagedDisplayMode::~ManagedDisplayMode(){};
 
-DisplayMode::DisplayMode(const gfx::Size& size,
-                         float refresh_rate,
-                         bool is_interlaced,
-                         bool native,
-                         float ui_scale,
-                         float device_scale_factor)
+ManagedDisplayMode::ManagedDisplayMode(const gfx::Size& size,
+                                       float refresh_rate,
+                                       bool is_interlaced,
+                                       bool native,
+                                       float ui_scale,
+                                       float device_scale_factor)
     : size_(size),
       refresh_rate_(refresh_rate),
       is_interlaced_(is_interlaced),
@@ -115,7 +116,7 @@ DisplayMode::DisplayMode(const gfx::Size& size,
       ui_scale_(ui_scale),
       device_scale_factor_(device_scale_factor) {}
 
-gfx::Size DisplayMode::GetSizeInDIP(bool is_internal) const {
+gfx::Size ManagedDisplayMode::GetSizeInDIP(bool is_internal) const {
   gfx::SizeF size_dip(size_);
   size_dip.Scale(ui_scale_);
   // DSF=1.25 is special on internal display. The screen is drawn with DSF=1.25
@@ -127,7 +128,8 @@ gfx::Size DisplayMode::GetSizeInDIP(bool is_internal) const {
   return gfx::ToFlooredSize(size_dip);
 }
 
-bool DisplayMode::IsEquivalent(const scoped_refptr<DisplayMode>& other) const {
+bool ManagedDisplayMode::IsEquivalent(
+    const scoped_refptr<ManagedDisplayMode>& other) const {
   const float kEpsilon = 0.0001f;
   return size_ == other->size_ &&
          std::abs(ui_scale_ - other->ui_scale_) < kEpsilon &&
@@ -202,7 +204,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
 #endif
   }
 
-  DisplayModeList display_modes;
+  ManagedDisplayModeList display_modes;
   parts = base::SplitString(main_spec, "#", base::KEEP_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
   if (parts.size() == 2) {
@@ -233,14 +235,14 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
           native_mode = i;
         }
         display_modes.push_back(make_scoped_refptr(
-            new DisplayMode(size, refresh_rate, is_interlaced, false, 1.0,
-                            device_scale_factor)));
+            new ManagedDisplayMode(size, refresh_rate, is_interlaced, false,
+                                   1.0, device_scale_factor)));
       }
     }
-    scoped_refptr<DisplayMode> dm = display_modes[native_mode];
-    display_modes[native_mode] =
-        new DisplayMode(dm->size(), dm->refresh_rate(), dm->is_interlaced(),
-                        true, dm->ui_scale(), dm->device_scale_factor());
+    scoped_refptr<ManagedDisplayMode> dm = display_modes[native_mode];
+    display_modes[native_mode] = new ManagedDisplayMode(
+        dm->size(), dm->refresh_rate(), dm->is_interlaced(), true,
+        dm->ui_scale(), dm->device_scale_factor());
   }
 
   if (id == display::Display::kInvalidDisplayID)
@@ -251,7 +253,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   display_info.SetRotation(rotation, display::Display::ROTATION_SOURCE_ACTIVE);
   display_info.set_configured_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_native);
-  display_info.SetDisplayModes(display_modes);
+  display_info.SetManagedDisplayModes(display_modes);
 
   // To test the overscan, it creates the default 5% overscan.
   if (has_overscan) {
@@ -406,10 +408,12 @@ gfx::Insets DisplayInfo::GetOverscanInsetsInPixel() const {
   return overscan_insets_in_dip_.Scale(device_scale_factor_);
 }
 
-void DisplayInfo::SetDisplayModes(const DisplayModeList& display_modes) {
+void DisplayInfo::SetManagedDisplayModes(
+    const ManagedDisplayModeList& display_modes) {
   display_modes_ = display_modes;
-  std::sort(display_modes_.begin(), display_modes_.end(),
-            DisplayModeSorter(display::Display::IsInternalDisplayId(id_)));
+  std::sort(
+      display_modes_.begin(), display_modes_.end(),
+      ManagedDisplayModeSorter(display::Display::IsInternalDisplayId(id_)));
 }
 
 gfx::Size DisplayInfo::GetNativeModeSize() const {
@@ -450,9 +454,9 @@ std::string DisplayInfo::ToString() const {
 
 std::string DisplayInfo::ToFullString() const {
   std::string display_modes_str;
-  DisplayModeList::const_iterator iter = display_modes_.begin();
+  ManagedDisplayModeList::const_iterator iter = display_modes_.begin();
   for (; iter != display_modes_.end(); ++iter) {
-    scoped_refptr<DisplayMode> m(*iter);
+    scoped_refptr<ManagedDisplayMode> m(*iter);
     if (!display_modes_str.empty())
       display_modes_str += ",";
     base::StringAppendF(&display_modes_str, "(%dx%d@%f%c%s)", m->size().width(),

@@ -21,9 +21,10 @@ DisplayInfo CreateDisplayInfo(int64_t id,
   info.AddInputDevice(touch_device_id);
 
   // Create a default mode.
-  DisplayInfo::DisplayModeList default_modes(
-      1, make_scoped_refptr(new DisplayMode(bounds.size(), 60, false, true)));
-  info.SetDisplayModes(default_modes);
+  DisplayInfo::ManagedDisplayModeList default_modes(
+      1, make_scoped_refptr(
+             new ManagedDisplayMode(bounds.size(), 60, false, true)));
+  info.SetManagedDisplayModes(default_modes);
 
   return info;
 }
@@ -46,13 +47,13 @@ TEST_F(TouchTransformerControllerTest, MirrorModeLetterboxing) {
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1920, 1200));
   internal_display_info.set_is_aspect_preserving_scaling(true);
 
-  DisplayInfo::DisplayModeList internal_modes;
+  DisplayInfo::ManagedDisplayModeList internal_modes;
 
   internal_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(2560, 1700), 60, false, true)));
+      new ManagedDisplayMode(gfx::Size(2560, 1700), 60, false, true)));
   internal_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(1920, 1200), 60, false, false)));
-  internal_display_info.SetDisplayModes(internal_modes);
+      new ManagedDisplayMode(gfx::Size(1920, 1200), 60, false, false)));
+  internal_display_info.SetManagedDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 0, 1920, 1200));
@@ -118,12 +119,12 @@ TEST_F(TouchTransformerControllerTest, MirrorModePillarboxing) {
   DisplayInfo internal_display_info =
       CreateDisplayInfo(1, 10, gfx::Rect(0, 0, 1024, 768));
   internal_display_info.set_is_aspect_preserving_scaling(true);
-  DisplayInfo::DisplayModeList internal_modes;
+  DisplayInfo::ManagedDisplayModeList internal_modes;
   internal_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(1366, 768), 60, false, true)));
+      new ManagedDisplayMode(gfx::Size(1366, 768), 60, false, true)));
   internal_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(1024, 768), 60, false, false)));
-  internal_display_info.SetDisplayModes(internal_modes);
+      new ManagedDisplayMode(gfx::Size(1024, 768), 60, false, false)));
+  internal_display_info.SetManagedDisplayModes(internal_modes);
 
   DisplayInfo external_display_info =
       CreateDisplayInfo(2, 11, gfx::Rect(0, 0, 1024, 768));
@@ -192,17 +193,17 @@ TEST_F(TouchTransformerControllerTest, SoftwareMirrorMode) {
   // translated to point (0, 950) in the framebuffer.
   DisplayInfo display1_info =
       CreateDisplayInfo(1, 10u, gfx::Rect(0, 0, 1280, 850));
-  DisplayInfo::DisplayModeList display1_modes;
+  DisplayInfo::ManagedDisplayModeList display1_modes;
   display1_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(1280, 850), 60, false, true)));
-  display1_info.SetDisplayModes(display1_modes);
+      new ManagedDisplayMode(gfx::Size(1280, 850), 60, false, true)));
+  display1_info.SetManagedDisplayModes(display1_modes);
 
   DisplayInfo display2_info =
       CreateDisplayInfo(2, 11u, gfx::Rect(0, 950, 1920, 1080));
-  DisplayInfo::DisplayModeList display2_modes;
+  DisplayInfo::ManagedDisplayModeList display2_modes;
   display2_modes.push_back(make_scoped_refptr(
-      new DisplayMode(gfx::Size(1920, 1080), 60, false, true)));
-  display2_info.SetDisplayModes(display2_modes);
+      new ManagedDisplayMode(gfx::Size(1920, 1080), 60, false, true)));
+  display2_info.SetManagedDisplayModes(display2_modes);
 
   gfx::Size fb_size(1920, 1990);
 

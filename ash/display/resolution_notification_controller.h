@@ -50,10 +50,11 @@ class ASH_EXPORT ResolutionNotificationController
   // asynchronously after the resolution change is requested. So typically this
   // method will be combined with resolution change methods like
   // DisplayManager::SetDisplayMode().
-  void PrepareNotification(int64_t display_id,
-                           const scoped_refptr<DisplayMode>& old_resolution,
-                           const scoped_refptr<DisplayMode>& new_resolution,
-                           const base::Closure& accept_callback);
+  void PrepareNotification(
+      int64_t display_id,
+      const scoped_refptr<ManagedDisplayMode>& old_resolution,
+      const scoped_refptr<ManagedDisplayMode>& new_resolution,
+      const base::Closure& accept_callback);
 
   // Returns true if the notification is visible or scheduled to be visible and
   // the notification times out.

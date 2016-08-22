@@ -1150,7 +1150,7 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   // Get the currently active mode and one other mode to switch to.
   int64_t id;
   base::StringToInt64(primary_info.id, &id);
-  scoped_refptr<ash::DisplayMode> active_mode =
+  scoped_refptr<ash::ManagedDisplayMode> active_mode =
       GetDisplayManager()->GetActiveModeForDisplayId(id);
   const api::system_display::DisplayMode* cur_mode = nullptr;
   const api::system_display::DisplayMode* other_mode = nullptr;
@@ -1167,12 +1167,13 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   ASSERT_NE(other_mode, cur_mode);
 
   // Verify that other_mode differs from the active mode.
-  scoped_refptr<ash::DisplayMode> other_mode_ash(new ash::DisplayMode(
-      gfx::Size(other_mode->width_in_native_pixels,
-                other_mode->height_in_native_pixels),
-      active_mode->refresh_rate(), active_mode->is_interlaced(),
-      active_mode->native(), other_mode->ui_scale,
-      other_mode->device_scale_factor));
+  scoped_refptr<ash::ManagedDisplayMode> other_mode_ash(
+      new ash::ManagedDisplayMode(
+          gfx::Size(other_mode->width_in_native_pixels,
+                    other_mode->height_in_native_pixels),
+          active_mode->refresh_rate(), active_mode->is_interlaced(),
+          active_mode->native(), other_mode->ui_scale,
+          other_mode->device_scale_factor));
   EXPECT_FALSE(active_mode->IsEquivalent(other_mode_ash));
 
   // Switch modes.

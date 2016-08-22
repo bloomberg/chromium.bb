@@ -41,7 +41,7 @@ bool ZoomInternalDisplay(bool up) {
                            : display_manager->GetDisplayIdForUIScaling();
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
 
-  scoped_refptr<DisplayMode> mode;
+  scoped_refptr<ManagedDisplayMode> mode;
   if (display_manager->IsInUnifiedMode())
     mode = GetDisplayModeForNextResolution(display_info, up);
   else
@@ -59,10 +59,12 @@ void ResetInternalDisplayZoom() {
   if (display_manager->IsInUnifiedMode()) {
     const DisplayInfo& display_info =
         display_manager->GetDisplayInfo(DisplayManager::kUnifiedDisplayId);
-    const DisplayInfo::DisplayModeList& modes = display_info.display_modes();
-    auto iter = std::find_if(
-        modes.begin(), modes.end(),
-        [](const scoped_refptr<DisplayMode>& mode) { return mode->native(); });
+    const DisplayInfo::ManagedDisplayModeList& modes =
+        display_info.display_modes();
+    auto iter = std::find_if(modes.begin(), modes.end(),
+                             [](const scoped_refptr<ManagedDisplayMode>& mode) {
+                               return mode->native();
+                             });
     display_manager->SetDisplayMode(DisplayManager::kUnifiedDisplayId, *iter);
   } else {
     SetDisplayUIScale(display_manager->GetDisplayIdForUIScaling(), 1.0f);

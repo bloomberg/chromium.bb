@@ -109,7 +109,7 @@ void DisplayManagerTestApi::UpdateDisplay(const std::string& display_specs) {
   }
 
   display_manager_->OnNativeDisplaysChanged(display_info_list);
-  display_manager_->UpdateInternalDisplayModeListForTest();
+  display_manager_->UpdateInternalManagedDisplayModeListForTest();
   display_manager_->RunPendingTasksForTest();
 }
 
@@ -121,7 +121,7 @@ int64_t DisplayManagerTestApi::SetFirstDisplayAsInternalDisplay() {
 
 void DisplayManagerTestApi::SetInternalDisplayId(int64_t id) {
   display::Display::SetInternalDisplayId(id);
-  display_manager_->UpdateInternalDisplayModeListForTest();
+  display_manager_->UpdateInternalManagedDisplayModeListForTest();
 }
 
 void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
@@ -154,7 +154,7 @@ ScopedSetInternalDisplayId::~ScopedSetInternalDisplayId() {
 bool SetDisplayResolution(int64_t display_id, const gfx::Size& resolution) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& info = display_manager->GetDisplayInfo(display_id);
-  scoped_refptr<DisplayMode> mode =
+  scoped_refptr<ManagedDisplayMode> mode =
       GetDisplayModeForResolution(info, resolution);
   if (!mode)
     return false;

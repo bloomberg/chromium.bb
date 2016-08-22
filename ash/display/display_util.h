@@ -24,35 +24,37 @@ class Size;
 
 namespace ash {
 class AshWindowTreeHost;
-class DisplayMode;
+class ManagedDisplayMode;
 class DisplayInfo;
 
 // Creates the display mode list for internal display
 // based on |native_mode|.
-ASH_EXPORT DisplayInfo::DisplayModeList CreateInternalDisplayModeList(
-    const scoped_refptr<DisplayMode>& native_mode);
+ASH_EXPORT DisplayInfo::ManagedDisplayModeList
+CreateInternalManagedDisplayModeList(
+    const scoped_refptr<ManagedDisplayMode>& native_mode);
 
 // Creates the display mode list for unified display
 // based on |native_mode| and |scales|.
-ASH_EXPORT DisplayInfo::DisplayModeList CreateUnifiedDisplayModeList(
-    const scoped_refptr<DisplayMode>& native_mode,
+ASH_EXPORT DisplayInfo::ManagedDisplayModeList
+CreateUnifiedManagedDisplayModeList(
+    const scoped_refptr<ManagedDisplayMode>& native_mode,
     const std::set<std::pair<float, float>>& dsf_scale_list);
 
 // Gets the display mode for |resolution|. Returns false if no display
 // mode matches the resolution, or the display is an internal display.
-ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForResolution(
+ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForResolution(
     const DisplayInfo& info,
     const gfx::Size& resolution);
 
 // Gets the display mode for the next valid UI scale. Returns false
 // if the display is not an internal display.
-ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForNextUIScale(
+ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextUIScale(
     const DisplayInfo& info,
     bool up);
 
 // Gets the display mode for the next valid resolution. Returns false
 // if the display is an internal display.
-ASH_EXPORT scoped_refptr<DisplayMode> GetDisplayModeForNextResolution(
+ASH_EXPORT scoped_refptr<ManagedDisplayMode> GetDisplayModeForNextResolution(
     const DisplayInfo& info,
     bool up);
 

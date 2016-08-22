@@ -378,7 +378,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  scoped_refptr<ash::DisplayMode> mode(new ash::DisplayMode(
+  scoped_refptr<ash::ManagedDisplayMode> mode(new ash::ManagedDisplayMode(
       gfx::Size(300, 200), 60.0f, false, true, 1.0 /* ui_scale */,
       1.25f /* device_scale_factor */));
   display_manager->SetDisplayMode(id2, mode);
@@ -529,10 +529,10 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   // display preferences should not stored meanwhile.
   ash::Shell* shell = ash::Shell::GetInstance();
 
-  scoped_refptr<ash::DisplayMode> old_mode(
-      new ash::DisplayMode(gfx::Size(400, 300)));
-  scoped_refptr<ash::DisplayMode> new_mode(
-      new ash::DisplayMode(gfx::Size(500, 400)));
+  scoped_refptr<ash::ManagedDisplayMode> old_mode(
+      new ash::ManagedDisplayMode(gfx::Size(400, 300)));
+  scoped_refptr<ash::ManagedDisplayMode> new_mode(
+      new ash::ManagedDisplayMode(gfx::Size(500, 400)));
   if (shell->display_manager()->SetDisplayMode(id, new_mode)) {
     shell->resolution_notification_controller()->PrepareNotification(
         id, old_mode, new_mode, base::Closure());
@@ -558,8 +558,8 @@ TEST_F(DisplayPreferencesTest, PreventStore) {
   // Once the notification is removed, the specified resolution will be stored
   // by SetDisplayMode.
   ash::Shell::GetInstance()->display_manager()->SetDisplayMode(
-      id, make_scoped_refptr(
-              new ash::DisplayMode(gfx::Size(300, 200), 60.0f, false, true)));
+      id, make_scoped_refptr(new ash::ManagedDisplayMode(gfx::Size(300, 200),
+                                                         60.0f, false, true)));
   UpdateDisplay("300x200#500x400|400x300|300x200");
 
   property = nullptr;

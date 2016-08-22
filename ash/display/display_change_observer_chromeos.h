@@ -29,13 +29,13 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
                               public ShellObserver {
  public:
   // Returns the mode list for internal display.
-  ASH_EXPORT static DisplayInfo::DisplayModeList GetInternalDisplayModeList(
-      const DisplayInfo& display_info,
-      const ui::DisplaySnapshot& output);
+  ASH_EXPORT static DisplayInfo::ManagedDisplayModeList
+  GetInternalManagedDisplayModeList(const DisplayInfo& display_info,
+                                    const ui::DisplaySnapshot& output);
 
   // Returns the resolution list.
-  ASH_EXPORT static DisplayInfo::DisplayModeList GetExternalDisplayModeList(
-      const ui::DisplaySnapshot& output);
+  ASH_EXPORT static DisplayInfo::ManagedDisplayModeList
+  GetExternalManagedDisplayModeList(const ui::DisplaySnapshot& output);
 
   DisplayChangeObserver();
   ~DisplayChangeObserver() override;

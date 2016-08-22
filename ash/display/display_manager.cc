@@ -85,22 +85,24 @@ display::Display& GetInvalidDisplay() {
   return *invalid_display;
 }
 
-DisplayInfo::DisplayModeList::const_iterator FindDisplayMode(
+DisplayInfo::ManagedDisplayModeList::const_iterator FindDisplayMode(
     const DisplayInfo& info,
-    const scoped_refptr<DisplayMode>& target_mode) {
-  const DisplayInfo::DisplayModeList& modes = info.display_modes();
-  return std::find_if(modes.begin(), modes.end(),
-                      [target_mode](const scoped_refptr<DisplayMode>& mode) {
-                        return target_mode->IsEquivalent(mode);
-                      });
+    const scoped_refptr<ManagedDisplayMode>& target_mode) {
+  const DisplayInfo::ManagedDisplayModeList& modes = info.display_modes();
+  return std::find_if(
+      modes.begin(), modes.end(),
+      [target_mode](const scoped_refptr<ManagedDisplayMode>& mode) {
+        return target_mode->IsEquivalent(mode);
+      });
 }
 
-void SetInternalDisplayModeList(DisplayInfo* info) {
-  scoped_refptr<DisplayMode> native_mode =
-      new DisplayMode(info->bounds_in_native().size(), 0.0 /* refresh_rate */,
-                      false /* interlaced */, false /* native_mode */,
-                      1.0 /* ui_scale */, info->device_scale_factor());
-  info->SetDisplayModes(CreateInternalDisplayModeList(native_mode));
+void SetInternalManagedDisplayModeList(DisplayInfo* info) {
+  scoped_refptr<ManagedDisplayMode> native_mode = new ManagedDisplayMode(
+      info->bounds_in_native().size(), 0.0 /* refresh_rate */,
+      false /* interlaced */, false /* native_mode */, 1.0 /* ui_scale */,
+      info->device_scale_factor());
+  info->SetManagedDisplayModes(
+      CreateInternalManagedDisplayModeList(native_mode));
 }
 
 void MaybeInitInternalDisplay(DisplayInfo* info) {
@@ -108,7 +110,7 @@ void MaybeInitInternalDisplay(DisplayInfo* info) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal)) {
     display::Display::SetInternalDisplayId(id);
-    SetInternalDisplayModeList(info);
+    SetInternalManagedDisplayModeList(info);
   }
 }
 
@@ -355,7 +357,7 @@ void DisplayManager::SetDisplayRotation(
 
 bool DisplayManager::SetDisplayMode(
     int64_t display_id,
-    const scoped_refptr<DisplayMode>& display_mode) {
+    const scoped_refptr<ManagedDisplayMode>& display_mode) {
   bool change_ui_scale = GetDisplayIdForUIScaling() == display_id;
 
   DisplayInfoList display_info_list;
@@ -436,15 +438,15 @@ void DisplayManager::RegisterDisplayProperty(
     DCHECK(!display::Display::IsInternalDisplayId(display_id));
     // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
     // actual display info, is 60 Hz.
-    scoped_refptr<DisplayMode> mode = new DisplayMode(
+    scoped_refptr<ManagedDisplayMode> mode = new ManagedDisplayMode(
         resolution_in_pixels, 60.0f, false, false, 1.0, device_scale_factor);
     display_modes_[display_id] = mode;
   }
 }
 
-scoped_refptr<DisplayMode> DisplayManager::GetActiveModeForDisplayId(
+scoped_refptr<ManagedDisplayMode> DisplayManager::GetActiveModeForDisplayId(
     int64_t display_id) const {
-  scoped_refptr<DisplayMode> selected_mode(
+  scoped_refptr<ManagedDisplayMode> selected_mode(
       GetSelectedModeForDisplayId(display_id));
   if (selected_mode)
     return selected_mode;
@@ -478,12 +480,12 @@ void DisplayManager::RegisterDisplayRotationProperties(
     delegate_->PostDisplayConfigurationChange();
 }
 
-scoped_refptr<DisplayMode> DisplayManager::GetSelectedModeForDisplayId(
+scoped_refptr<ManagedDisplayMode> DisplayManager::GetSelectedModeForDisplayId(
     int64_t id) const {
-  std::map<int64_t, scoped_refptr<DisplayMode>>::const_iterator iter =
+  std::map<int64_t, scoped_refptr<ManagedDisplayMode>>::const_iterator iter =
       display_modes_.find(id);
   if (iter == display_modes_.end())
-    return scoped_refptr<DisplayMode>();
+    return scoped_refptr<ManagedDisplayMode>();
   return iter->second;
 }
 
@@ -578,11 +580,12 @@ void DisplayManager::OnNativeDisplaysChanged(
       new_display_info_list.push_back(*iter);
     }
 
-    scoped_refptr<DisplayMode> new_mode(new DisplayMode(
+    scoped_refptr<ManagedDisplayMode> new_mode(new ManagedDisplayMode(
         iter->bounds_in_native().size(), 0.0 /* refresh rate */,
         false /* interlaced */, false /* native */, iter->configured_ui_scale(),
         iter->device_scale_factor()));
-    const DisplayInfo::DisplayModeList& display_modes = iter->display_modes();
+    const DisplayInfo::ManagedDisplayModeList& display_modes =
+        iter->display_modes();
     // This is empty the displays are initialized from InitFromCommandLine.
     if (display_modes.empty())
       continue;
@@ -1074,12 +1077,12 @@ void DisplayManager::CreateScreenForShutdown() const {
   display::Screen::SetScreenInstance(screen_for_shutdown);
 }
 
-void DisplayManager::UpdateInternalDisplayModeListForTest() {
+void DisplayManager::UpdateInternalManagedDisplayModeListForTest() {
   if (!display::Display::HasInternalDisplay() ||
       display_info_.count(display::Display::InternalDisplayId()) == 0)
     return;
   DisplayInfo* info = &display_info_[display::Display::InternalDisplayId()];
-  SetInternalDisplayModeList(info);
+  SetInternalManagedDisplayModeList(info);
 }
 
 void DisplayManager::CreateSoftwareMirroringDisplayInfo(
@@ -1137,7 +1140,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
         }
       }
 
-      DisplayInfo::DisplayModeList display_mode_list;
+      DisplayInfo::ManagedDisplayModeList display_mode_list;
       std::set<std::pair<float, float>> dsf_scale_list;
 
       // 2nd Pass. Compute the unified display size.
@@ -1157,26 +1160,26 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
 
       DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
 
-      scoped_refptr<DisplayMode> native_mode(
-          new DisplayMode(unified_bounds.size(), 60.0f, false, true, 1.0, 1.0));
-      DisplayInfo::DisplayModeList modes =
-          CreateUnifiedDisplayModeList(native_mode, dsf_scale_list);
+      scoped_refptr<ManagedDisplayMode> native_mode(new ManagedDisplayMode(
+          unified_bounds.size(), 60.0f, false, true, 1.0, 1.0));
+      DisplayInfo::ManagedDisplayModeList modes =
+          CreateUnifiedManagedDisplayModeList(native_mode, dsf_scale_list);
 
       // Find the default mode.
       auto iter = std::find_if(
           modes.begin(), modes.end(),
           [default_height, default_device_scale_factor](
-              const scoped_refptr<DisplayMode>& mode) {
+              const scoped_refptr<ManagedDisplayMode>& mode) {
             return mode->size().height() == default_height &&
                    mode->device_scale_factor() == default_device_scale_factor;
           });
 
-      scoped_refptr<DisplayMode> dm(*iter);
-      *iter = make_scoped_refptr(new DisplayMode(
+      scoped_refptr<ManagedDisplayMode> dm(*iter);
+      *iter = make_scoped_refptr(new ManagedDisplayMode(
           dm->size(), dm->refresh_rate(), dm->is_interlaced(),
           true /* native */, dm->ui_scale(), dm->device_scale_factor()));
 
-      info.SetDisplayModes(modes);
+      info.SetManagedDisplayModes(modes);
       info.set_device_scale_factor(dm->device_scale_factor());
       info.SetBounds(gfx::Rect(dm->size()));
 
@@ -1190,7 +1193,7 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
 
       // 3rd Pass. Set the selected mode, then recompute the mirroring
       // display size.
-      scoped_refptr<DisplayMode> mode =
+      scoped_refptr<ManagedDisplayMode> mode =
           GetSelectedModeForDisplayId(kUnifiedDisplayId);
       if (mode && FindDisplayMode(info, mode) != info.display_modes().end()) {
         info.set_device_scale_factor(mode->device_scale_factor());

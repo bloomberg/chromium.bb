@@ -13,9 +13,9 @@ std::string GetModeSizeInDIP(const gfx::Size& size,
                              float device_scale_factor,
                              float ui_scale,
                              bool is_internal) {
-  scoped_refptr<DisplayMode> mode =
-      new DisplayMode(size, 0.0 /* refresh_rate */, false /* interlaced */,
-                      false /* native */, ui_scale, device_scale_factor);
+  scoped_refptr<ManagedDisplayMode> mode = new ManagedDisplayMode(
+      size, 0.0 /* refresh_rate */, false /* interlaced */, false /* native */,
+      ui_scale, device_scale_factor);
   return mode->GetSizeInDIP(is_internal).ToString();
 }
 
@@ -87,7 +87,7 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_TRUE(info.display_modes()[4]->native());
 }
 
-TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPNormal) {
+TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
   gfx::Size size(1366, 768);
   EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.0f, 1.125f, true));
   EXPECT_EQ("1366x768", GetModeSizeInDIP(size, 1.0f, 1.0f, true));
@@ -96,7 +96,7 @@ TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPNormal) {
   EXPECT_EQ("683x384", GetModeSizeInDIP(size, 1.0f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPHiDPI) {
+TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPHiDPI) {
   gfx::Size size(2560, 1700);
   EXPECT_EQ("2560x1700", GetModeSizeInDIP(size, 2.0f, 2.0f, true));
   EXPECT_EQ("1920x1275", GetModeSizeInDIP(size, 2.0f, 1.5f, true));
@@ -108,7 +108,7 @@ TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPHiDPI) {
   EXPECT_EQ("640x425", GetModeSizeInDIP(size, 2.0f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIP125) {
+TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIP125) {
   gfx::Size size(1920, 1080);
   EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25f, true));
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f, true));
@@ -117,7 +117,7 @@ TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIP125) {
   EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, DisplayModeGetSizeForExternal4K) {
+TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
   gfx::Size size(3840, 2160);
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 2.0f, 1.0f, false));
   EXPECT_EQ("3072x1728", GetModeSizeInDIP(size, 1.25f, 1.0f, false));

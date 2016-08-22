@@ -22,28 +22,29 @@
 namespace ash {
 
 // A class that represents the display's mode info.
-class ASH_EXPORT DisplayMode : public base::RefCounted<DisplayMode> {
+class ASH_EXPORT ManagedDisplayMode
+    : public base::RefCounted<ManagedDisplayMode> {
  public:
-  DisplayMode();
+  ManagedDisplayMode();
 
-  DisplayMode(const gfx::Size& size);
+  ManagedDisplayMode(const gfx::Size& size);
 
-  DisplayMode(const gfx::Size& size,
-              float refresh_rate,
-              bool is_interlaced,
-              bool native);
+  ManagedDisplayMode(const gfx::Size& size,
+                     float refresh_rate,
+                     bool is_interlaced,
+                     bool native);
 
-  DisplayMode(const gfx::Size& size,
-              float refresh_rate,
-              bool is_interlaced,
-              bool native,
-              float ui_scale,
-              float device_scale_factor);
+  ManagedDisplayMode(const gfx::Size& size,
+                     float refresh_rate,
+                     bool is_interlaced,
+                     bool native,
+                     float ui_scale,
+                     float device_scale_factor);
   // Returns the size in DIP which is visible to the user.
   gfx::Size GetSizeInDIP(bool is_internal) const;
 
   // Returns true if |other| has same size and scale factors.
-  bool IsEquivalent(const scoped_refptr<DisplayMode>& other) const;
+  bool IsEquivalent(const scoped_refptr<ManagedDisplayMode>& other) const;
 
   const gfx::Size& size() const { return size_; }
   bool is_interlaced() const { return is_interlaced_; }
@@ -51,13 +52,13 @@ class ASH_EXPORT DisplayMode : public base::RefCounted<DisplayMode> {
 
   bool native() const { return native_; }
 
-  // Missing from ui::DisplayMode
+  // Missing from ui::ManagedDisplayMode
   float ui_scale() const { return ui_scale_; }
   float device_scale_factor() const { return device_scale_factor_; }
 
  private:
-  ~DisplayMode();
-  friend class base::RefCounted<DisplayMode>;
+  ~ManagedDisplayMode();
+  friend class base::RefCounted<ManagedDisplayMode>;
 
   gfx::Size size_;             // Physical pixel size of the display.
   float refresh_rate_;         // Refresh rate of the display, in Hz.
@@ -66,7 +67,7 @@ class ASH_EXPORT DisplayMode : public base::RefCounted<DisplayMode> {
   float ui_scale_;             // The UI scale factor of the mode.
   float device_scale_factor_;  // The device scale factor of the mode.
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayMode);
+  DISALLOW_COPY_AND_ASSIGN(ManagedDisplayMode);
 };
 
 // DisplayInfo contains metadata for each display. This is used to
@@ -75,7 +76,7 @@ class ASH_EXPORT DisplayMode : public base::RefCounted<DisplayMode> {
 // This class is intentionally made copiable.
 class ASH_EXPORT DisplayInfo {
  public:
-  using DisplayModeList = std::vector<scoped_refptr<DisplayMode>>;
+  using ManagedDisplayModeList = std::vector<scoped_refptr<ManagedDisplayMode>>;
 
   // Creates a DisplayInfo from string spec. 100+200-1440x800 creates display
   // whose size is 1440x800 at the location (100, 200) in host coordinates.
@@ -236,10 +237,10 @@ class ASH_EXPORT DisplayInfo {
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
-  const DisplayModeList& display_modes() const { return display_modes_; }
+  const ManagedDisplayModeList& display_modes() const { return display_modes_; }
   // Sets the display mode list. The mode list will be sorted for the
   // display.
-  void SetDisplayModes(const DisplayModeList& display_modes);
+  void SetManagedDisplayModes(const ManagedDisplayModeList& display_modes);
 
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
@@ -340,7 +341,7 @@ class ASH_EXPORT DisplayInfo {
   bool clear_overscan_insets_;
 
   // The list of modes supported by this display.
-  DisplayModeList display_modes_;
+  ManagedDisplayModeList display_modes_;
 
   // The current profile of the color calibration.
   ui::ColorCalibrationProfile color_profile_;

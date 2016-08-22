@@ -17,7 +17,7 @@ typedef testing::Test DisplayChangeObserverTest;
 
 namespace ash {
 
-TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   modes.push_back(
       base::MakeUnique<ui::DisplayMode>(gfx::Size(1920, 1200), false, 60));
@@ -57,8 +57,9 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
   ui::TestDisplaySnapshot display_snapshot;
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetExternalManagedDisplayModeList(
+          display_snapshot);
   ASSERT_EQ(6u, display_modes.size());
   EXPECT_EQ("640x480", display_modes[0]->size().ToString());
   EXPECT_TRUE(display_modes[0]->is_interlaced());
@@ -88,12 +89,12 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
   modes.clear();
   display_snapshot.set_modes(std::move(modes));
 
-  display_modes =
-      DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
+  display_modes = DisplayChangeObserver::GetExternalManagedDisplayModeList(
+      display_snapshot);
   EXPECT_EQ(0u, display_modes.size());
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
   modes.push_back(
@@ -114,8 +115,9 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
   DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetInternalDisplayModeList(info, display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetInternalManagedDisplayModeList(
+          info, display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
   EXPECT_EQ("1366x768", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -143,7 +145,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
   EXPECT_EQ(display_modes[4]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
+TEST_F(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
   modes.push_back(
@@ -161,8 +163,9 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
   info.set_device_scale_factor(2.0f);
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetInternalDisplayModeList(info, display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetInternalManagedDisplayModeList(
+          info, display_snapshot);
   ASSERT_EQ(8u, display_modes.size());
   EXPECT_EQ("2560x1700", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -205,7 +208,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
   EXPECT_EQ(display_modes[7]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
+TEST_F(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
   modes.push_back(
@@ -219,8 +222,9 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
   info.set_device_scale_factor(1.25);
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetInternalDisplayModeList(info, display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetInternalManagedDisplayModeList(
+          info, display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
   EXPECT_EQ("1920x1080", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->native());
@@ -248,7 +252,7 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
   EXPECT_EQ(display_modes[4]->refresh_rate(), 60);
 }
 
-TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
+TEST_F(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   modes.push_back(
       base::MakeUnique<ui::DisplayMode>(gfx::Size(3840, 2160), false, 30));
@@ -291,10 +295,11 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetExternalManagedDisplayModeList(
+          display_snapshot);
   DisplayInfo info(1, "", false);
-  info.SetDisplayModes(display_modes);  // Sort as external display.
+  info.SetManagedDisplayModes(display_modes);  // Sort as external display.
   display_modes = info.display_modes();
 
   ASSERT_EQ(9u, display_modes.size());
@@ -344,8 +349,8 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
   display_snapshot.set_native_mode(NULL);
   display_snapshot.set_modes(std::move(modes));
 
-  display_modes =
-      DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
+  display_modes = DisplayChangeObserver::GetExternalManagedDisplayModeList(
+      display_snapshot);
   EXPECT_EQ(0u, display_modes.size());
 }
 
@@ -401,8 +406,9 @@ TEST_F(DisplayChangeObserverTest,
   display_snapshot.set_native_mode(modes[0].get());
   display_snapshot.set_modes(std::move(modes));
 
-  DisplayInfo::DisplayModeList display_modes =
-      DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
+  DisplayInfo::ManagedDisplayModeList display_modes =
+      DisplayChangeObserver::GetExternalManagedDisplayModeList(
+          display_snapshot);
   ASSERT_EQ(2u, display_modes.size());
   EXPECT_EQ("1920x1080", display_modes[0]->size().ToString());
   EXPECT_FALSE(display_modes[0]->is_interlaced());
