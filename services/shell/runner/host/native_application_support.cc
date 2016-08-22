@@ -44,7 +44,8 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
   base::NativeLibraryLoadError error;
   base::NativeLibrary app_library = base::LoadNativeLibrary(app_path, &error);
   LOG_IF(ERROR, !app_library)
-      << "Failed to load app library (path: " << app_path.value() << ")";
+      << "Failed to load app library (path: " << app_path.value()
+      << " reason: " << error.ToString() << ")";
   return app_library;
 }
 
