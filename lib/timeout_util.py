@@ -257,8 +257,13 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
 
   end = datetime.datetime.now() + timeout
 
+  # pylint: disable=protected-access
+  # It is used to get the main thread '_MainThread'. Without python 3.4, there
+  # may be no perfect solutions. See this discussion for details:
+  # http://stackoverflow.com/questions/23206787.
   is_main_thread = isinstance(threading.current_thread(),
                               threading._MainThread)
+  # pylint: enable=protected-access
   def retry():
     while True:
       # Guarantee we always run at least once.

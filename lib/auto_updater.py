@@ -12,7 +12,6 @@ TODO(xixuan): Make this lib support other update logics, including:
   install firmware images with FAFT
   install android/brillo
 
-
 TODO(xixuan): crbugs.com/631837, re-consider the structure of this file,
 like merging check functions into one class.
 
@@ -32,7 +31,6 @@ Currently, this lib supports ChromiumOSFlashUpdater and ChromiumOSUpdater.
             | ChromiumOSUpdater | : Chromium OS Updater by cros flash
             ---------------------   with more checks
 
-
 ChromiumOSFlashUpdater includes:
   ----Precheck---
   * Pre-check payload's existence before auto-update.
@@ -51,7 +49,6 @@ ChromiumOSFlashUpdater includes:
   ----Verify----
   * Do verification if it's required.
   * Disable rootfs verification in device if it's required.
-
 
 ChromiumOSUpdater adds:
   ----Check-----
@@ -946,5 +943,5 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     logging.debug('Cleaning up old autotest directories...')
     try:
       self.device.RunCommand(['rm', '-rf', self.device_auto_dir])
-    except:
-      logging.debug('No autotest installed directory found.')
+    except cros_build_lib.RunCommandError as e:
+      logging.debug('Cannot clean up the old autotest directories: %s', e)
