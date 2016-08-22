@@ -21,6 +21,12 @@ extern const NSTimeInterval kWaitForJSCompletionTimeout;
 // Waits until |condition| is true, or induces GREYAssert after |timeout|.
 void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void));
 
+// Waits until |condition| is true, or induces GREYAssert after |timeout| with
+// |timeoutDescription| error message.
+void WaitUntilCondition(NSTimeInterval timeout,
+                        NSString* timeoutDescription,
+                        bool (^condition)(void));
+
 }  // namespace testing
 
 #endif  // IOS_TESTING_EARL_GREY_WAIT_UTIL_H_

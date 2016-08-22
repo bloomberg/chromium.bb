@@ -14,14 +14,20 @@ const NSTimeInterval kSpinDelaySeconds = 0.01;
 const NSTimeInterval kWaitForJSCompletionTimeout = 2.0;
 const NSTimeInterval kWaitForUIElementTimeout = 4.0;
 
-void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void)) {
+void WaitUntilCondition(NSTimeInterval timeout,
+                        NSString* timeoutDescription,
+                        bool (^condition)(void)) {
   NSDate* deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
   while (!condition() &&
          [[NSDate date] compare:deadline] != NSOrderedDescending) {
     base::test::ios::SpinRunLoopWithMaxDelay(
         base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
   }
-  GREYAssert(condition(), @"Timeout waiting for condition.");
+  GREYAssert(condition(), timeoutDescription);
+}
+
+void WaitUntilCondition(NSTimeInterval timeout, bool (^condition)(void)) {
+  WaitUntilCondition(timeout, @"Timeout waiting for condition.", condition);
 }
 
 }  // namespace testing
