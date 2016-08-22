@@ -157,6 +157,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
       duration_override_in_ms_(0),
       root_window_controller_observer_(
           new RootWindowControllerObserverImpl(this)) {
+  DCHECK(shelf_widget_);
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
   WmShell::Get()->AddActivationObserver(this);
@@ -884,8 +885,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
-  if (visibility_state != SHELF_AUTO_HIDE || !shelf_widget_ ||
-      !shelf_widget_->shelf())
+  if (visibility_state != SHELF_AUTO_HIDE || !shelf_widget_->shelf())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   const int64_t shelf_display_id = WmLookup::Get()
@@ -987,7 +987,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 }
 
 bool ShelfLayoutManager::IsShelfWindow(WmWindow* window) {
-  if (!window || !shelf_widget_)
+  if (!window)
     return false;
   WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(shelf_widget_);
   WmWindow* status_window =
@@ -1145,10 +1145,10 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     CancelGestureDrag();
     return;
   }
-  if (shelf_widget_) {
-    shelf_widget_->Deactivate();
-    shelf_widget_->status_area_widget()->Deactivate();
-  }
+
+  shelf_widget_->Deactivate();
+  shelf_widget_->status_area_widget()->Deactivate();
+
   gesture_drag_auto_hide_state_ =
       gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN
           ? SHELF_AUTO_HIDE_HIDDEN
