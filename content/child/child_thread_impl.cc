@@ -257,12 +257,10 @@ void InitializeMojoIPCChannel() {
   mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
-class ChannelBootstrapFilter
-    : public ConnectionFilter,
-      public shell::InterfaceFactory<IPC::mojom::ChannelBootstrap> {
+class ChannelBootstrapFilter : public ConnectionFilter {
  public:
   explicit ChannelBootstrapFilter(IPC::mojom::ChannelBootstrapPtrInfo bootstrap)
-      : bootstrap_(std::move(bootstrap)) {}
+      : bootstrap_(std::move(bootstrap)), weak_factory_(this) {}
 
  private:
   // ConnectionFilter:
@@ -272,18 +270,18 @@ class ChannelBootstrapFilter
     if (remote_identity.name() != kBrowserMojoApplicationName)
       return false;
 
-    registry->AddInterface<IPC::mojom::ChannelBootstrap>(this);
+    registry->AddInterface(base::Bind(&ChannelBootstrapFilter::CreateBootstrap,
+                                      weak_factory_.GetWeakPtr()));
     return true;
   }
 
-  // shell::InterfaceFactory<IPC::mojom::ChannelBootstrap>:
-  void Create(const shell::Identity& remote_identity,
-              IPC::mojom::ChannelBootstrapRequest request) override {
+  void CreateBootstrap(IPC::mojom::ChannelBootstrapRequest request) {
     DCHECK(bootstrap_.is_valid());
     mojo::FuseInterface(std::move(request), std::move(bootstrap_));
   }
 
   IPC::mojom::ChannelBootstrapPtrInfo bootstrap_;
+  base::WeakPtrFactory<ChannelBootstrapFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
 };

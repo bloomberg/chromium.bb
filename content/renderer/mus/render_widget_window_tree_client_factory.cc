@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
@@ -38,11 +39,9 @@ void BindMusConnectionOnMainThread(
 // registered with it.
 class RenderWidgetWindowTreeClientFactoryImpl
     : public ConnectionFilter,
-      public shell::InterfaceFactory<
-          mojom::RenderWidgetWindowTreeClientFactory>,
       public mojom::RenderWidgetWindowTreeClientFactory {
  public:
-  RenderWidgetWindowTreeClientFactoryImpl() {
+  RenderWidgetWindowTreeClientFactoryImpl() : weak_factory_(this) {
     main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
@@ -53,15 +52,10 @@ class RenderWidgetWindowTreeClientFactoryImpl
   bool OnConnect(const shell::Identity& remote_identity,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override {
-    registry->AddInterface<mojom::RenderWidgetWindowTreeClientFactory>(this);
+    registry->AddInterface(
+        base::Bind(&RenderWidgetWindowTreeClientFactoryImpl::CreateFactory,
+                   weak_factory_.GetWeakPtr()));
     return true;
-  }
-
-  // shell::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>:
-  void Create(const shell::Identity& remote_identity,
-              mojo::InterfaceRequest<mojom::RenderWidgetWindowTreeClientFactory>
-                  request) override {
-    bindings_.AddBinding(this, std::move(request));
   }
 
   // mojom::RenderWidgetWindowTreeClientFactory implementation.
@@ -73,8 +67,14 @@ class RenderWidgetWindowTreeClientFactoryImpl
                               base::Passed(&request)));
   }
 
+  void CreateFactory(
+      mojom::RenderWidgetWindowTreeClientFactoryRequest request) {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
   scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   mojo::BindingSet<mojom::RenderWidgetWindowTreeClientFactory> bindings_;
+  base::WeakPtrFactory<RenderWidgetWindowTreeClientFactoryImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetWindowTreeClientFactoryImpl);
 };

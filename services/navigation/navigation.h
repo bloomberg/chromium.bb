@@ -6,6 +6,7 @@
 #define SERVICES_NAVIGATION_NAVIGATION_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -20,9 +21,7 @@ class BrowserContext;
 
 namespace navigation {
 
-class Navigation : public content::ConnectionFilter,
-                   public shell::InterfaceFactory<mojom::ViewFactory>,
-                   public mojom::ViewFactory {
+class Navigation : public content::ConnectionFilter, public mojom::ViewFactory {
  public:
   Navigation();
   ~Navigation() override;
@@ -33,14 +32,11 @@ class Navigation : public content::ConnectionFilter,
                  shell::InterfaceRegistry* registry,
                  shell::Connector* connector) override;
 
-  // shell::InterfaceFactory<mojom::ViewFactory>:
-  void Create(const shell::Identity& remote_identity,
-              mojom::ViewFactoryRequest request) override;
-
   // mojom::ViewFactory:
   void CreateView(mojom::ViewClientPtr client,
                   mojom::ViewRequest request) override;
 
+  void CreateViewFactory(mojom::ViewFactoryRequest request);
   void ViewFactoryLost();
 
   scoped_refptr<base::SequencedTaskRunner> view_task_runner_;
@@ -52,6 +48,8 @@ class Navigation : public content::ConnectionFilter,
   std::set<std::unique_ptr<shell::ServiceContextRef>> refs_;
 
   mojo::BindingSet<mojom::ViewFactory> bindings_;
+
+  base::WeakPtrFactory<Navigation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Navigation);
 };

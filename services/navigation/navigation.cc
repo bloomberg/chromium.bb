@@ -29,7 +29,8 @@ void CreateViewOnViewTaskRunner(
 
 Navigation::Navigation()
     : view_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ref_factory_(base::MessageLoop::QuitWhenIdleClosure()) {
+      ref_factory_(base::MessageLoop::QuitWhenIdleClosure()),
+      weak_factory_(this) {
   bindings_.set_connection_error_handler(
       base::Bind(&Navigation::ViewFactoryLost, base::Unretained(this)));
 }
@@ -46,14 +47,9 @@ bool Navigation::OnConnect(const shell::Identity& remote_identity,
   }
   client_user_id_ = remote_user_id;
 
-  registry->AddInterface<mojom::ViewFactory>(this);
+  registry->AddInterface(
+      base::Bind(&Navigation::CreateViewFactory, weak_factory_.GetWeakPtr()));
   return true;
-}
-
-void Navigation::Create(const shell::Identity& remote_identity,
-                        mojom::ViewFactoryRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-  refs_.insert(ref_factory_.CreateRef());
 }
 
 void Navigation::CreateView(mojom::ViewClientPtr client,
@@ -66,6 +62,11 @@ void Navigation::CreateView(mojom::ViewClientPtr client,
       base::Bind(&CreateViewOnViewTaskRunner, base::Passed(&new_connector),
                  client_user_id_, base::Passed(&client), base::Passed(&request),
                  base::Passed(&context_ref)));
+}
+
+void Navigation::CreateViewFactory(mojom::ViewFactoryRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+  refs_.insert(ref_factory_.CreateRef());
 }
 
 void Navigation::ViewFactoryLost() {

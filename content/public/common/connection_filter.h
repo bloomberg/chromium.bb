@@ -32,6 +32,9 @@ class CONTENT_EXPORT ConnectionFilter {
   //
   // If a ConnectionFilter is not interested in an incoming connection, it
   // should return |false|.
+  //
+  // NOTE: This ConnectionFilter is NOT guaranteed to outlive |registry|, so you
+  // must not attach unsafe references to |this|, e.g., via AddInterface().
   virtual bool OnConnect(const shell::Identity& remote_identity,
                          shell::InterfaceRegistry* registry,
                          shell::Connector* connector) = 0;
