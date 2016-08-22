@@ -22,11 +22,10 @@ class StubFormSaver : public FormSaver {
   void Save(const autofill::PasswordForm& pending,
             const autofill::PasswordFormMap& best_matches,
             const autofill::PasswordForm* old_primary_key) override {}
-  void Update(
-      const autofill::PasswordForm& pending,
-      const autofill::PasswordFormMap& best_matches,
-      const std::vector<const autofill::PasswordForm*>* credentials_to_update,
-      const autofill::PasswordForm* old_primary_key) override {}
+  void Update(const autofill::PasswordForm& pending,
+              const autofill::PasswordFormMap& best_matches,
+              const std::vector<autofill::PasswordForm>* credentials_to_update,
+              const autofill::PasswordForm* old_primary_key) override {}
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& generated) override {}
   void RemovePresavedPassword() override {}

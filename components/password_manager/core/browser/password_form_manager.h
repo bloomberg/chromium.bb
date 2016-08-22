@@ -463,11 +463,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // update the password store. It also goes through |not_best_matches|,
   // updates the password of those which share the old password and username
   // with |pending_credentials_| to the new password of |pending_credentials_|,
-  // and adds pointers to all such modified credentials to
+  // and adds copies of all such modified credentials to
   // |credentials_to_update|. If needed, this also returns a PasswordForm to be
   // used as the old primary key during the store update.
   base::Optional<autofill::PasswordForm> UpdatePendingAndGetOldKey(
-      std::vector<const autofill::PasswordForm*>* credentials_to_update);
+      std::vector<autofill::PasswordForm>* credentials_to_update);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most

@@ -46,7 +46,7 @@ void FormSaverImpl::Save(const PasswordForm& pending,
 void FormSaverImpl::Update(
     const PasswordForm& pending,
     const autofill::PasswordFormMap& best_matches,
-    const std::vector<const PasswordForm*>* credentials_to_update,
+    const std::vector<PasswordForm>* credentials_to_update,
     const PasswordForm* old_primary_key) {
   SaveImpl(pending, false, best_matches, credentials_to_update,
            old_primary_key);
@@ -96,13 +96,8 @@ void FormSaverImpl::SaveImpl(
     const PasswordForm& pending,
     bool is_new_login,
     const PasswordFormMap& best_matches,
-    const std::vector<const PasswordForm*>* credentials_to_update,
+    const std::vector<PasswordForm>* credentials_to_update,
     const PasswordForm* old_primary_key) {
-  // Empty and null |credentials_to_update| mean the same, having a canonical
-  // representation as nullptr makes the code simpler.
-  if (credentials_to_update && credentials_to_update->empty())
-    credentials_to_update = nullptr;
-
   DCHECK(pending.preferred);
   DCHECK(!pending.blacklisted_by_user);
 
@@ -126,8 +121,8 @@ void FormSaverImpl::SaveImpl(
   }
 
   if (credentials_to_update) {
-    for (const PasswordForm* credential : *credentials_to_update) {
-      store_->UpdateLogin(*credential);
+    for (const PasswordForm& credential : *credentials_to_update) {
+      store_->UpdateLogin(credential);
     }
   }
 }

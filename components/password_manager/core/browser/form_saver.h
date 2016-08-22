@@ -26,8 +26,7 @@ class FormSaver {
 
   // Saves the |pending| form and updates the stored preference on
   // |best_matches|. If |old_primary_key| is given, uses it for saving
-  // |pending|. It also updates the password store with all
-  // |credentials_to_update|.
+  // |pending|.
   virtual void Save(const autofill::PasswordForm& pending,
                     const autofill::PasswordFormMap& best_matches,
                     const autofill::PasswordForm* old_primary_key) = 0;
@@ -39,7 +38,7 @@ class FormSaver {
   virtual void Update(
       const autofill::PasswordForm& pending,
       const autofill::PasswordFormMap& best_matches,
-      const std::vector<const autofill::PasswordForm*>* credentials_to_update,
+      const std::vector<autofill::PasswordForm>* credentials_to_update,
       const autofill::PasswordForm* old_primary_key) = 0;
 
   // Ensures that |generated| is saved in the store. This is in ideal case

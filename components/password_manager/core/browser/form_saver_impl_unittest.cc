@@ -137,8 +137,7 @@ TEST_F(FormSaverImplTest, Save_UpdateAlsoOtherCredentials) {
   PasswordForm related2 = pending;
   related2.origin = GURL("http://complete.example.net");
   related2.signon_realm = related2.origin.spec();
-  std::vector<const autofill::PasswordForm*> credentials_to_update = {
-      &related1, &related2};
+  std::vector<PasswordForm> credentials_to_update = {related1, related2};
   pending.password_value = ASCIIToUTF16("abcd");
 
   PasswordForm saved[3];

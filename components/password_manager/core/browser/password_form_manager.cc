@@ -363,7 +363,7 @@ void PasswordFormManager::Save() {
                       old_primary_key ? &old_primary_key.value() : nullptr);
   } else {
     ProcessUpdate();
-    std::vector<const PasswordForm*> credentials_to_update;
+    std::vector<PasswordForm> credentials_to_update;
     old_primary_key = UpdatePendingAndGetOldKey(&credentials_to_update);
     form_saver_->Update(pending_credentials_, best_matches_,
                         &credentials_to_update,
@@ -395,7 +395,7 @@ void PasswordFormManager::Update(
   pending_credentials_.preferred = true;
   is_new_login_ = false;
   ProcessUpdate();
-  std::vector<const PasswordForm*> more_credentials_to_update;
+  std::vector<PasswordForm> more_credentials_to_update;
   base::Optional<PasswordForm> old_primary_key =
       UpdatePendingAndGetOldKey(&more_credentials_to_update);
   form_saver_->Update(pending_credentials_, best_matches_,
@@ -1348,7 +1348,7 @@ void PasswordFormManager::SetUserAction(UserAction user_action) {
 }
 
 base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
-    std::vector<const PasswordForm*>* credentials_to_update) {
+    std::vector<PasswordForm>* credentials_to_update) {
   base::Optional<PasswordForm> old_primary_key;
   bool update_related_credentials = false;
 
@@ -1395,8 +1395,9 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
       if (not_best_match->username_value ==
               pending_credentials_.username_value &&
           not_best_match->password_value == old_password) {
-        not_best_match->password_value = pending_credentials_.password_value;
-        credentials_to_update->push_back(not_best_match.get());
+        credentials_to_update->push_back(*not_best_match);
+        credentials_to_update->back().password_value =
+            pending_credentials_.password_value;
       }
     }
   }

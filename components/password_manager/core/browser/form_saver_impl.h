@@ -28,11 +28,10 @@ class FormSaverImpl : public FormSaver {
   void Save(const autofill::PasswordForm& pending,
             const autofill::PasswordFormMap& best_matches,
             const autofill::PasswordForm* old_primary_key) override;
-  void Update(
-      const autofill::PasswordForm& pending,
-      const autofill::PasswordFormMap& best_matches,
-      const std::vector<const autofill::PasswordForm*>* credentials_to_update,
-      const autofill::PasswordForm* old_primary_key) override;
+  void Update(const autofill::PasswordForm& pending,
+              const autofill::PasswordFormMap& best_matches,
+              const std::vector<autofill::PasswordForm>* credentials_to_update,
+              const autofill::PasswordForm* old_primary_key) override;
   void PresaveGeneratedPassword(
       const autofill::PasswordForm& generated) override;
   void RemovePresavedPassword() override;
@@ -48,7 +47,7 @@ class FormSaverImpl : public FormSaver {
       const autofill::PasswordForm& pending,
       bool is_new_login,
       const autofill::PasswordFormMap& best_matches,
-      const std::vector<const autofill::PasswordForm*>* credentials_to_update,
+      const std::vector<autofill::PasswordForm>* credentials_to_update,
       const autofill::PasswordForm* old_primary_key);
 
   // Marks all of |best_matches_| as not preferred unless the username is

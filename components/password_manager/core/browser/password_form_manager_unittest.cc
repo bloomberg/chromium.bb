@@ -76,12 +76,12 @@ class MockFormSaver : public StubFormSaver {
                void(const autofill::PasswordForm& pending,
                     const autofill::PasswordFormMap& best_matches,
                     const autofill::PasswordForm* old_primary_key));
-  MOCK_METHOD4(Update,
-               void(const autofill::PasswordForm& pending,
-                    const autofill::PasswordFormMap& best_matches,
-                    const std::vector<const autofill::PasswordForm*>*
-                        credentials_to_update,
-                    const autofill::PasswordForm* old_primary_key));
+  MOCK_METHOD4(
+      Update,
+      void(const autofill::PasswordForm& pending,
+           const autofill::PasswordFormMap& best_matches,
+           const std::vector<autofill::PasswordForm>* credentials_to_update,
+           const autofill::PasswordForm* old_primary_key));
   MOCK_METHOD3(WipeOutdatedCopies,
                void(const autofill::PasswordForm& pending,
                     autofill::PasswordFormMap* best_matches,
@@ -2432,7 +2432,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
 
   // Trigger saving to exercise some special case handling during updating.
   PasswordForm new_credentials;
-  std::vector<const autofill::PasswordForm*> credentials_to_update;
+  std::vector<autofill::PasswordForm> credentials_to_update;
   EXPECT_CALL(MockFormSaver::Get(&form_manager), Update(_, _, _, nullptr))
       .WillOnce(testing::DoAll(SaveArg<0>(&new_credentials),
                                SaveArgPointee<2>(&credentials_to_update)));
@@ -2451,14 +2451,14 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
 
   ASSERT_EQ(1u, credentials_to_update.size());
   EXPECT_EQ(credentials.password_value,
-            credentials_to_update[0]->password_value);
+            credentials_to_update[0].password_value);
   EXPECT_EQ(psl_saved_match()->username_element,
-            credentials_to_update[0]->username_element);
+            credentials_to_update[0].username_element);
   EXPECT_EQ(psl_saved_match()->username_element,
-            credentials_to_update[0]->username_element);
+            credentials_to_update[0].username_element);
   EXPECT_EQ(psl_saved_match()->password_element,
-            credentials_to_update[0]->password_element);
-  EXPECT_EQ(psl_saved_match()->origin, credentials_to_update[0]->origin);
+            credentials_to_update[0].password_element);
+  EXPECT_EQ(psl_saved_match()->origin, credentials_to_update[0].origin);
 }
 
 TEST_F(PasswordFormManagerTest,
