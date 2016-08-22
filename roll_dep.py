@@ -63,7 +63,6 @@ def should_show_log(upstream_url):
   # Skip logs for very active projects.
   if upstream_url.endswith((
       '/angle/angle.git',
-      '/catapult-project/catapult.git',
       '/v8/v8.git')):
     return False
   if 'webrtc' in upstream_url:
