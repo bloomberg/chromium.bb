@@ -225,10 +225,6 @@ struct StructTraits<gpu::mojom::GpuInfo, gpu::GPUInfo> {
     return input.gl_reset_notification_strategy;
   }
 
-  static bool can_lose_context(const gpu::GPUInfo& input) {
-    return input.can_lose_context;
-  }
-
   static bool software_rendering(const gpu::GPUInfo& input) {
     return input.software_rendering;
   }

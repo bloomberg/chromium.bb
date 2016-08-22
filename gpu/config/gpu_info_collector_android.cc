@@ -279,8 +279,6 @@ CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
-  gpu_info->can_lose_context = false;
-
   // When command buffer is compiled as a standalone library, the process might
   // not have a Java environment.
   if (base::android::IsVMInitialized()) {

@@ -686,7 +686,7 @@ bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   if (!host)
     return false;
 
-  return host->gpu_info().SupportsAccelerated2dCanvas();
+  return !host->gpu_info().software_rendering;
 }
 
 bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {

@@ -213,7 +213,6 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   if (!context_gpu_info.driver_version.empty())
     basic_gpu_info->driver_version = context_gpu_info.driver_version;
 
-  basic_gpu_info->can_lose_context = context_gpu_info.can_lose_context;
   basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
   basic_gpu_info->direct_rendering = context_gpu_info.direct_rendering;
   basic_gpu_info->in_process_gpu = context_gpu_info.in_process_gpu;

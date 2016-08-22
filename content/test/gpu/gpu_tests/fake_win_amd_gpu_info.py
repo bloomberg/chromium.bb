@@ -39,7 +39,6 @@ FAKE_GPU_INFO = {
             'adapter_luid': 0.0,
             'amd_switchable': False,
             'basic_info_state': 1,
-            'can_lose_context': False,
             'context_info_state': 1,
             'direct_rendering': True,
             'driver_date': '11-20-2014',

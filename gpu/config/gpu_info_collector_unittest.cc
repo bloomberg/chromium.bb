@@ -127,8 +127,6 @@ class GPUInfoCollectorTest
       }
     }
 
-    test_values_.can_lose_context = false;
-
     EXPECT_CALL(*gl_, GetString(GL_VERSION))
         .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
             test_values_.gl_version.c_str())));

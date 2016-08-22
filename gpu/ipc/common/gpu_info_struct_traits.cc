@@ -220,7 +220,6 @@ bool StructTraits<gpu::mojom::GpuInfo, gpu::GPUInfo>::Read(
   out->lenovo_dcute = data.lenovo_dcute();
   out->adapter_luid = data.adapter_luid();
   out->gl_reset_notification_strategy = data.gl_reset_notification_strategy();
-  out->can_lose_context = data.can_lose_context();
   out->software_rendering = data.software_rendering();
   out->direct_rendering = data.direct_rendering();
   out->sandboxed = data.sandboxed();

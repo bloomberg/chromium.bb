@@ -71,7 +71,6 @@ GPUInfo::GPUInfo()
       lenovo_dcute(false),
       adapter_luid(0),
       gl_reset_notification_strategy(0),
-      can_lose_context(false),
       software_rendering(false),
       direct_rendering(true),
       sandboxed(false),
@@ -115,7 +114,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_version;
     std::string gl_ws_extensions;
     uint32_t gl_reset_notification_strategy;
-    bool can_lose_context;
     bool software_rendering;
     bool direct_rendering;
     bool sandboxed;
@@ -174,7 +172,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt(
       "glResetNotificationStrategy",
       static_cast<int>(gl_reset_notification_strategy));
-  enumerator->AddBool("can_lose_context", can_lose_context);
   // TODO(kbr): add performance_stats.
   enumerator->AddBool("softwareRendering", software_rendering);
   enumerator->AddBool("directRendering", direct_rendering);

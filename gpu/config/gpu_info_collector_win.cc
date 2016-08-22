@@ -326,7 +326,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
                         " ps_(\\d+)_(\\d+)",
                         &pixel_shader_major_version,
                         &pixel_shader_minor_version)) {
-    gpu_info->can_lose_context = direct3d_version == "9";
     gpu_info->vertex_shader_version =
         base::StringPrintf("%d.%d",
                            vertex_shader_major_version,

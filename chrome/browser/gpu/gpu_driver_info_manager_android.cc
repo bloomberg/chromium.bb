@@ -67,7 +67,6 @@ void GpuDriverInfoManager::Initialize() {
       prefs::kGpuDriverInfoShaderVersion);
   gpu_info.pixel_shader_version = shader_version;
   gpu_info.vertex_shader_version = shader_version;
-  gpu_info.can_lose_context = false;
   gpu_info.machine_model_name = BuildInfo::GetInstance()->model();
 
   gpu::CollectInfoResult result = gpu::CollectDriverInfoGL(&gpu_info);

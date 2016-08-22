@@ -186,20 +186,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGpuNoContextLost)) {
-    gpu_info->can_lose_context = false;
-  } else {
-#if defined(OS_CHROMEOS)
-    gpu_info->can_lose_context = false;
-#else
-    // TODO(zmo): need to consider the case where we are running on top
-    // of desktop GL and GL_ARB_robustness extension is available.
-    gpu_info->can_lose_context =
-        (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2);
-#endif
-  }
-
   CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
   gpu_info->context_info_state = result;
   return result;

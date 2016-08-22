@@ -70,10 +70,7 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   const GpuFeatureInfo kGpuFeatureInfo[] = {
     {"2d_canvas",
      manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
-     command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
-         !GpuDataManagerImpl::GetInstance()
-              ->GetGPUInfo()
-              .SupportsAccelerated2dCanvas(),
+     command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
      "Accelerated 2D canvas is unavailable: either disabled via blacklist or"
      " the command line.",
      true},

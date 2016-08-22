@@ -169,8 +169,6 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
-  gpu_info->can_lose_context =
-      (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2);
   CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
   gpu_info->context_info_state = result;
   return result;

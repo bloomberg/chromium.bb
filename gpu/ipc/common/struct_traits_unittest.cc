@@ -143,7 +143,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const std::string gl_ws_version = "gl_ws_version";
   const std::string gl_ws_extensions = "gl_ws_extensions";
   const uint32_t gl_reset_notification_strategy = 0xbeef;
-  const bool can_lose_context = true;
   const bool software_rendering = true;
   const bool direct_rendering = true;
   const bool sandboxed = true;
@@ -189,7 +188,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.gl_ws_version = gl_ws_version;
   input.gl_ws_extensions = gl_ws_extensions;
   input.gl_reset_notification_strategy = gl_reset_notification_strategy;
-  input.can_lose_context = can_lose_context;
   input.software_rendering = software_rendering;
   input.direct_rendering = direct_rendering;
   input.sandboxed = sandboxed;
@@ -248,7 +246,6 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(gl_ws_extensions, output.gl_ws_extensions);
   EXPECT_EQ(gl_reset_notification_strategy,
             output.gl_reset_notification_strategy);
-  EXPECT_EQ(can_lose_context, output.can_lose_context);
   EXPECT_EQ(software_rendering, output.software_rendering);
   EXPECT_EQ(direct_rendering, output.direct_rendering);
   EXPECT_EQ(sandboxed, output.sandboxed);

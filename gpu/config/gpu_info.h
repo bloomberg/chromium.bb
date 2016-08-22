@@ -119,10 +119,6 @@ struct GPU_EXPORT GPUInfo {
   GPUInfo(const GPUInfo& other);
   ~GPUInfo();
 
-  bool SupportsAccelerated2dCanvas() const {
-    return !can_lose_context && !software_rendering;
-  }
-
   // The amount of time taken to get from the process starting to the message
   // loop being pumped.
   base::TimeDelta initialization_time;
@@ -208,10 +204,6 @@ struct GPU_EXPORT GPUInfo {
   // GL reset notification strategy as defined by GL_ARB_robustness. 0 if GPU
   // reset detection or notification not available.
   uint32_t gl_reset_notification_strategy;
-
-  // The device semantics, i.e. whether the Vista and Windows 7 specific
-  // semantics are available.
-  bool can_lose_context;
 
   bool software_rendering;
 
