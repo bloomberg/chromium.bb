@@ -1984,7 +1984,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->skip_probs[k]);
 
 #if CONFIG_MISC_FIXES
-  if (cm->seg.enabled) {
+  if (cm->seg.enabled && cm->seg.update_map) {
     if (cm->seg.temporal_update) {
       for (k = 0; k < PREDICTION_PROBS; k++)
         av1_diff_update_prob(&r, &cm->fc->seg.pred_probs[k]);

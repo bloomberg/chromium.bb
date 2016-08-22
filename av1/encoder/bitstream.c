@@ -1290,9 +1290,9 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
 static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *cm = &cpi->common;
 
-  if (!cpi->common.seg.enabled) return;
+  if (!cm->seg.enabled || !cm->seg.update_map) return;
 
-  if (cpi->common.seg.temporal_update) {
+  if (cm->seg.temporal_update) {
     int i;
 
     for (i = 0; i < PREDICTION_PROBS; i++)
