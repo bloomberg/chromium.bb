@@ -71,6 +71,9 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
                                            WKDataDetectorTypePhoneNumber];
     }
 #endif
+    // API available on iOS 9, although doesn't appear to enable inline playback
+    // Works as intended on iOS 10+
+    [configuration_ setAllowsInlineMediaPlayback:YES];
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
     [[configuration_ userContentController]
