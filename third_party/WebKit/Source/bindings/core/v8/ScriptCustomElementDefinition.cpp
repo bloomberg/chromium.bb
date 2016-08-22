@@ -189,6 +189,15 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
     return toHTMLElement(element);
 }
 
+static void dispatchErrorEvent(v8::Isolate* isolate,
+    v8::Local<v8::Value> exception, v8::Local<v8::Object> constructor)
+{
+    v8::TryCatch tryCatch(isolate);
+    tryCatch.SetVerbose(true);
+    V8ScriptRunner::throwException(isolate, exception,
+        constructor.As<v8::Function>()->GetScriptOrigin());
+}
+
 HTMLElement* ScriptCustomElementDefinition::createElementSync(
     Document& document, const QualifiedName& tagName)
 {
@@ -202,16 +211,15 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
         "CustomElement", constructor(), isolate);
     HTMLElement* element = createElementSync(document, tagName, exceptionState);
 
-    if (exceptionState.hadException() || !element) {
+    if (exceptionState.hadException()) {
+        DCHECK(!element);
         // 7. If this step throws an exception, then report the exception, ...
-        {
-            v8::TryCatch tryCatch(isolate);
-            tryCatch.SetVerbose(true);
-            exceptionState.throwIfNeeded();
-        }
-
+        dispatchErrorEvent(isolate, exceptionState.getException(), constructor());
+        exceptionState.clearException();
+        // and return HTMLUnknownElement.
         return CustomElement::createFailedElement(document, tagName);
     }
+    DCHECK(element);
     return element;
 }
 
@@ -238,12 +246,11 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element)
     if (result != element) {
         const String& message = "custom element constructors must call super() first and must "
             "not return a different object";
-        std::unique_ptr<SourceLocation> location = SourceLocation::fromFunction(constructor().As<v8::Function>());
         v8::Local<v8::Value> exception =  V8ThrowException::createDOMException(
             m_scriptState->isolate(),
             InvalidStateError,
             message);
-        fireErrorEvent(m_scriptState.get(), message, exception, std::move(location));
+        dispatchErrorEvent(isolate, exception, constructor());
         return false;
     }
 
@@ -266,14 +273,6 @@ Element* ScriptCustomElementDefinition::runConstructor()
         return nullptr;
     }
     return V8Element::toImplWithTypeCheck(isolate, result);
-}
-
-void ScriptCustomElementDefinition::fireErrorEvent(ScriptState* scriptState, const String& message, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
-{
-    ErrorEvent* event = ErrorEvent::create(message, std::move(location), &scriptState->world());
-    V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event, exception, scriptState->context()->Global());
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    executionContext->dispatchErrorEvent(event, NotSharableCrossOrigin);
 }
 
 v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const

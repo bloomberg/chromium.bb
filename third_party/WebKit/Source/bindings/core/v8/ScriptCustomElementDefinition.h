@@ -47,12 +47,6 @@ public:
     HTMLElement* createElementSync(Document&, const QualifiedName&) override;
     HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) override;
 
-    void fireErrorEvent(
-        ScriptState*,
-        const String& message,
-        v8::Local<v8::Value> exception,
-        std::unique_ptr<SourceLocation>);
-
     bool hasConnectedCallback() const override;
     bool hasDisconnectedCallback() const override;
     bool hasAdoptedCallback() const override;

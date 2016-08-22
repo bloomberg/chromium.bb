@@ -588,4 +588,26 @@ void V8ScriptRunner::setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
     cacheHandler->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), CachedMetadataHandler::SendToPlatform);
 }
 
+void V8ScriptRunner::throwException(v8::Isolate* isolate, v8::Local<v8::Value> exception, const v8::ScriptOrigin& origin)
+{
+    // In order for the current TryCatch to catch this exception and
+    // call MessageCallback when SetVerbose(true), create a v8::Function
+    // that calls isolate->throwException().
+    // Unlike throwStackOverflowExceptionIfNeeded(), create a temporary Script
+    // with the specified ScriptOrigin. When the exception was created but not
+    // thrown yet, the ScriptOrigin of the thrower is set to the exception.
+    // v8::Function::New() has empty ScriptOrigin, and thus the exception will
+    // be "muted" (sanitized in our terminology) if CORS does not allow.
+    // https://html.spec.whatwg.org/multipage/webappapis.html#report-the-error
+    // Avoid compile and run scripts when API is available: crbug.com/639739
+    v8::Local<v8::Script> script = compileWithoutOptions(
+        V8CompileHistogram::Cacheability::Noncacheable, isolate,
+        v8AtomicString(isolate, "((e) => { throw e; })"), origin)
+        .ToLocalChecked();
+    v8::Local<v8::Function> thrower = runCompiledInternalScript(isolate, script)
+        .ToLocalChecked().As<v8::Function>();
+    v8::Local<v8::Value> args[] = { exception };
+    callInternalFunction(thrower, thrower, WTF_ARRAY_LENGTH(args), args, isolate);
+}
+
 } // namespace blink

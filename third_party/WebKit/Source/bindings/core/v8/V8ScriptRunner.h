@@ -87,6 +87,9 @@ public:
         return callExtraHelper(scriptState, name, N, args).ToLocalChecked();
     }
 
+    // Use V8ThrowException instead of this function unless absolutely needed.
+    static void throwException(v8::Isolate*, v8::Local<v8::Value> exception, const v8::ScriptOrigin&);
+
 private:
     static v8::MaybeLocal<v8::Value> callExtraHelper(ScriptState* scriptState, const char* name, size_t numArgs, v8::Local<v8::Value>* args)
     {

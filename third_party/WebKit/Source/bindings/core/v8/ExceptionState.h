@@ -105,6 +105,7 @@ public:
 
     ExceptionCode code() const { return m_code; }
     const String& message() const { return m_message; }
+    v8::Local<v8::Value> getException() { DCHECK(!m_exception.isEmpty()); return m_exception.newLocal(m_isolate); }
 
     bool throwIfNeeded()
     {
