@@ -20,8 +20,8 @@ std::unique_ptr<ScopedOverviewAnimationSettings>
 ScopedOverviewAnimationSettingsFactoryAura::CreateOverviewAnimationSettings(
     OverviewAnimationType animation_type,
     WmWindow* window) {
-  return base::WrapUnique(new ScopedOverviewAnimationSettingsAura(
-      animation_type, WmWindowAura::GetAuraWindow(window)));
+  return base::MakeUnique<ScopedOverviewAnimationSettingsAura>(
+      animation_type, WmWindowAura::GetAuraWindow(window));
 }
 
 }  // namespace ash

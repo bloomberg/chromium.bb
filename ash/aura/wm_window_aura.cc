@@ -683,8 +683,8 @@ void WmWindowAura::SetChildrenUseExtendedHitRegion() {
                            -kResizeOutsideBoundsSize);
   gfx::Insets touch_extend =
       mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
-  window_->SetEventTargeter(base::WrapUnique(
-      new ::wm::EasyResizeWindowTargeter(window_, mouse_extend, touch_extend)));
+  window_->SetEventTargeter(base::MakeUnique<::wm::EasyResizeWindowTargeter>(
+      window_, mouse_extend, touch_extend));
 }
 
 void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
@@ -692,7 +692,7 @@ void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
 }
 
 std::unique_ptr<views::View> WmWindowAura::CreateViewWithRecreatedLayers() {
-  return base::WrapUnique(new wm::WindowMirrorView(this));
+  return base::MakeUnique<wm::WindowMirrorView>(this);
 }
 
 void WmWindowAura::AddObserver(WmWindowObserver* observer) {

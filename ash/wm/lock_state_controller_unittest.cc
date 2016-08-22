@@ -888,7 +888,7 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   modes.push_back(
-      base::WrapUnique(new ui::DisplayMode(gfx::Size(1, 1), false, 60.0f)));
+      base::MakeUnique<ui::DisplayMode>(gfx::Size(1, 1), false, 60.0f));
 
   // Create two outputs, the first internal and the second external.
   ui::DisplayConfigurator::DisplayStateList outputs;
@@ -899,7 +899,7 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 
   modes.clear();
   modes.push_back(
-      base::WrapUnique(new ui::DisplayMode(gfx::Size(1, 1), false, 60.0f)));
+      base::MakeUnique<ui::DisplayMode>(gfx::Size(1, 1), false, 60.0f));
   ui::TestDisplaySnapshot external_display;
   external_display.set_type(ui::DISPLAY_CONNECTION_TYPE_HDMI);
   external_display.set_modes(std::move(modes));

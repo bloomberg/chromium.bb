@@ -496,12 +496,12 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
-  return base::WrapUnique(new views::SquareInkDropRipple(
+  return base::MakeUnique<views::SquareInkDropRipple>(
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       kInkDropLargeCornerRadius,
       gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
       kInkDropSmallCornerRadius, GetLocalBounds().CenterPoint(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity()));
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {

@@ -303,7 +303,7 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
 
     if (original_window_shape_) {
       layer->SetAlphaShape(
-          base::WrapUnique(new SkRegion(*original_window_shape_.get())));
+          base::MakeUnique<SkRegion>(*original_window_shape_.get()));
     } else {
       layer->SetAlphaShape(nullptr);
     }

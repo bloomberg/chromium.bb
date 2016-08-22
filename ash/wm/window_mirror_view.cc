@@ -74,7 +74,7 @@ ui::LayerDelegate* WindowMirrorView::CreateDelegate(
   if (!delegate)
     return nullptr;
   delegates_.push_back(
-      base::WrapUnique(new ForwardingLayerDelegate(target_, delegate)));
+      base::MakeUnique<ForwardingLayerDelegate>(target_, delegate));
 
   return delegates_.back().get();
 }

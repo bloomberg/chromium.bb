@@ -254,7 +254,7 @@ ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
 }
 
 std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
-  return base::WrapUnique(new PaletteDelegateImpl());
+  return base::MakeUnique<PaletteDelegateImpl>();
 }
 
 std::unique_ptr<ash::PointerWatcherDelegate>

@@ -238,7 +238,7 @@ class AshInit {
     AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
 
     std::unique_ptr<AppListPresenterMus> app_list_presenter =
-        base::WrapUnique(new AppListPresenterMus(connector));
+        base::MakeUnique<AppListPresenterMus>(connector);
     ash_delegate_ = new ShellDelegateMus(std::move(app_list_presenter));
 
     InitializeComponents();

@@ -742,7 +742,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         !gpu_support_->IsPanelFittingDisabled());
 #elif defined(USE_X11)
     display_configurator_->Init(
-        base::WrapUnique(new ui::NativeDisplayDelegateX11()),
+        base::MakeUnique<ui::NativeDisplayDelegateX11>(),
         !gpu_support_->IsPanelFittingDisabled());
 #endif
   }

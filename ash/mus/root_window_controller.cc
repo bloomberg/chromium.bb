@@ -204,12 +204,12 @@ void RootWindowController::CreateLayoutManagers() {
   WmWindowMus* docked_container =
       GetWindowByShellWindowId(kShellWindowId_DockedContainer);
   docked_container->SetLayoutManager(
-      base::WrapUnique(new DockedWindowLayoutManager(docked_container)));
+      base::MakeUnique<DockedWindowLayoutManager>(docked_container));
 
   WmWindowMus* panel_container =
       GetWindowByShellWindowId(kShellWindowId_PanelContainer);
   panel_container->SetLayoutManager(
-      base::WrapUnique(new PanelLayoutManager(panel_container)));
+      base::MakeUnique<PanelLayoutManager>(panel_container));
 }
 
 }  // namespace mus

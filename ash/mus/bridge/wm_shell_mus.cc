@@ -313,8 +313,8 @@ void WmShellMus::ShowContextMenu(const gfx::Point& location_in_screen,
 std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {
-  return base::WrapUnique(
-      new DragWindowResizer(std::move(next_window_resizer), window_state));
+  return base::MakeUnique<DragWindowResizer>(std::move(next_window_resizer),
+                                             window_state);
 }
 
 std::unique_ptr<WindowCycleEventFilter>

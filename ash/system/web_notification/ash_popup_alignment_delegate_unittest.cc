@@ -37,7 +37,7 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
     SetAlignmentDelegate(
-        base::WrapUnique(new AshPopupAlignmentDelegate(GetPrimaryShelf())));
+        base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
   }
 
   void TearDown() override {
@@ -253,7 +253,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
     return;
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(
-      base::WrapUnique(new AshPopupAlignmentDelegate(GetPrimaryShelf())));
+      base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
   display::Display second_display =
       Shell::GetInstance()->display_manager()->GetDisplayAt(1u);
@@ -281,7 +281,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
   UpdateDisplay("600x600,800x800");
   SetAlignmentDelegate(
-      base::WrapUnique(new AshPopupAlignmentDelegate(GetPrimaryShelf())));
+      base::MakeUnique<AshPopupAlignmentDelegate>(GetPrimaryShelf()));
 
   EXPECT_GT(600,
             alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));

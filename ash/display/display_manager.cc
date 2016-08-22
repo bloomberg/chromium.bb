@@ -1060,12 +1060,12 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
 std::unique_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
     aura::Window* drag_source) const {
   if (IsInUnifiedMode() && num_connected_displays() >= 2)
-    return base::WrapUnique(new UnifiedMouseWarpController());
+    return base::MakeUnique<UnifiedMouseWarpController>();
   // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
   // that injects MockScreen.
   if (GetNumDisplays() < 2 || num_connected_displays() < 2)
-    return base::WrapUnique(new NullMouseWarpController());
-  return base::WrapUnique(new ExtendedMouseWarpController(drag_source));
+    return base::MakeUnique<NullMouseWarpController>();
+  return base::MakeUnique<ExtendedMouseWarpController>(drag_source);
 }
 
 void DisplayManager::CreateScreenForShutdown() const {

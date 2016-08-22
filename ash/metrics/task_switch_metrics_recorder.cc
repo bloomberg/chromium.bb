@@ -93,9 +93,8 @@ void TaskSwitchMetricsRecorder::AddTaskSwitchTimeTracker(
   const char* histogram_name = GetHistogramName(task_switch_source);
   DCHECK(histogram_name);
 
-  histogram_map_.add(
-      static_cast<int>(task_switch_source),
-      base::WrapUnique(new TaskSwitchTimeTracker(histogram_name)));
+  histogram_map_.add(static_cast<int>(task_switch_source),
+                     base::MakeUnique<TaskSwitchTimeTracker>(histogram_name));
 }
 
 }  // namespace ash
