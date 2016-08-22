@@ -165,8 +165,8 @@ void ProcessChromeWorkItems(const InstallerState& installer_state,
       "Cleanup OS upgrade command and deprecated per-user registrations");
   work_item_list->set_best_effort(true);
   work_item_list->set_rollback_enabled(false);
-  AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
-                        work_item_list.get());
+  AddOsUpgradeWorkItems(installer_state, base::FilePath(), base::Version(),
+                        product, work_item_list.get());
   // Perform a best-effort cleanup of per-user keys. On system-level installs
   // this will only cleanup keys for the user running the uninstall but it was
   // considered that this was good enough (better than triggering Active Setup

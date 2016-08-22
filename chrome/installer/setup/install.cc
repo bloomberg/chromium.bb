@@ -183,8 +183,8 @@ installer::InstallStatus InstallNewVersion(
     const base::FilePath& archive_path,
     const base::FilePath& src_path,
     const base::FilePath& temp_path,
-    const Version& new_version,
-    std::unique_ptr<Version>* current_version,
+    const base::Version& new_version,
+    std::unique_ptr<base::Version>* current_version,
     bool is_downgrade_allowed) {
   DCHECK(current_version);
 
@@ -368,7 +368,7 @@ void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value) {
 }
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
-                                  const Version& version) {
+                                  const base::Version& version) {
   // Construct the relative path to the versioned VisualElements directory.
   base::string16 elements_dir(base::ASCIIToUTF16(version.GetString()));
   elements_dir.push_back(base::FilePath::kSeparators[0]);
@@ -578,7 +578,7 @@ InstallStatus InstallOrUpdateProduct(
     const base::FilePath& src_path,
     const base::FilePath& prefs_path,
     const MasterPreferences& prefs,
-    const Version& new_version) {
+    const base::Version& new_version) {
   DCHECK(!installer_state.products().empty());
 
   // TODO(robertshield): Removing the pending on-reboot moves should be done
@@ -595,7 +595,7 @@ InstallStatus InstallOrUpdateProduct(
   installer_state.UpdateStage(installer::CREATING_VISUAL_MANIFEST);
   CreateVisualElementsManifest(src_path, new_version);
 
-  std::unique_ptr<Version> existing_version;
+  std::unique_ptr<base::Version> existing_version;
   InstallStatus result =
       InstallNewVersion(original_state, installer_state, setup_path,
                         archive_path, src_path, install_temp_path, new_version,

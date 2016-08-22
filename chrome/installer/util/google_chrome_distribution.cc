@@ -106,7 +106,7 @@ GoogleChromeDistribution::GoogleChromeDistribution(
     : BrowserDistribution(CHROME_BROWSER, std::move(app_reg_data)) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const Version& version,
+    const base::Version& version,
     const base::FilePath& local_data_path,
     const base::string16& distribution_data) {
   // Send the Chrome version and OS version as params to the form.

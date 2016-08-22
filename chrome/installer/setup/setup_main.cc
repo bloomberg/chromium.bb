@@ -155,7 +155,7 @@ LONG OverwriteDisplayVersions(const base::string16& product,
 
 void DelayedOverwriteDisplayVersions(const base::FilePath& setup_exe,
                                      const std::string& id,
-                                     const Version& version) {
+                                     const base::Version& version) {
   // This process has to be able to exit so we launch ourselves with
   // instructions on what to do and then return.
   base::CommandLine command_line(setup_exe);
@@ -1313,7 +1313,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       BrowserDistribution* browser_dist = product.distribution();
       // We started as system-level and have been re-launched as user level
       // to continue with the toast experiment.
-      Version installed_version;
+      base::Version installed_version;
       InstallUtil::GetChromeVersion(browser_dist, true, &installed_version);
       if (!installed_version.IsValid()) {
         LOG(ERROR) << "No installation of "
@@ -1524,7 +1524,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   VLOG(1) << "unpacked to " << unpack_path.value();
   base::FilePath src_path(
       unpack_path.Append(kInstallSourceChromeDir));
-  std::unique_ptr<Version> installer_version(
+  std::unique_ptr<base::Version> installer_version(
       GetMaxVersionFromArchiveDir(src_path));
   if (!installer_version.get()) {
     LOG(ERROR) << "Did not find any valid version in installer.";
