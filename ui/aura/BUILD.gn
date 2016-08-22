@@ -261,6 +261,7 @@ test("aura_unittests") {
     "test/run_all_unittests.cc",
     "window_event_dispatcher_unittest.cc",
     "window_targeter_unittest.cc",
+    "window_tree_host_unittest.cc",
     "window_unittest.cc",
   ]
 

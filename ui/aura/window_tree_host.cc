@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace aura {
@@ -114,10 +115,11 @@ void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
   gfx::Rect bounds(output_surface_padding_.left(),
                    output_surface_padding_.top(), host_size.width(),
                    host_size.height());
-  gfx::RectF new_bounds(ui::ConvertRectToDIP(window()->layer(), bounds));
+  float scale_factor = ui::GetDeviceScaleFactor(window()->layer());
+  gfx::RectF new_bounds =
+      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / scale_factor);
   window()->layer()->transform().TransformRect(&new_bounds);
-  window()->SetBounds(gfx::Rect(gfx::ToFlooredPoint(new_bounds.origin()),
-                                gfx::ToFlooredSize(new_bounds.size())));
+  window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
 }
 
 void WindowTreeHost::ConvertPointToNativeScreen(gfx::Point* point) const {
