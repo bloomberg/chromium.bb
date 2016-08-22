@@ -950,9 +950,10 @@ public class AwContents implements SmartClipProvider,
         awViewMethodsImpl.onVisibilityChanged(mContainerView, mContainerView.getVisibility());
         awViewMethodsImpl.onWindowVisibilityChanged(mContainerView.getWindowVisibility());
 
-        if (mContainerView.isAttachedToWindow()) {
+        boolean containerViewAttached = mContainerView.isAttachedToWindow();
+        if (containerViewAttached && !mIsAttachedToWindow) {
             awViewMethodsImpl.onAttachedToWindow();
-        } else {
+        } else if (!containerViewAttached && mIsAttachedToWindow) {
             awViewMethodsImpl.onDetachedFromWindow();
         }
         awViewMethodsImpl.onSizeChanged(
@@ -2213,7 +2214,7 @@ public class AwContents implements SmartClipProvider,
      * @see ContentViewCore.evaluateJavaScript(String, JavaScriptCallback)
      */
     public void evaluateJavaScript(String script, final ValueCallback<String> callback) {
-        if (TRACE) Log.i(TAG, "%s evaluateJavascript=%s", script, this);
+        if (TRACE) Log.i(TAG, "%s evaluateJavascript=%s", this, script);
         if (isDestroyed(WARN)) return;
         JavaScriptCallback jsCallback = null;
         if (callback != null) {
@@ -2392,6 +2393,7 @@ public class AwContents implements SmartClipProvider,
      * @see android.view.View#onAttachedToWindow()
      */
     public void onAttachedToWindow() {
+        if (TRACE) Log.i(TAG, "%s onAttachedToWindow", this);
         mTemporarilyDetached = false;
         mAwViewMethods.onAttachedToWindow();
     }
@@ -2401,6 +2403,7 @@ public class AwContents implements SmartClipProvider,
      */
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
+        if (TRACE) Log.i(TAG, "%s onDetachedFromWindow", this);
         mAwViewMethods.onDetachedFromWindow();
     }
 
