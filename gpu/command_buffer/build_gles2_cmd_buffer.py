@@ -2932,7 +2932,8 @@ _FUNCTION_INFO = {
     'resource_types': 'Buffers',
   },
   'GenMailboxCHROMIUM': {
-    'type': 'HandWritten',
+    'type': 'Manual',
+    'gen_cmd': 'False',
     'impl_func': False,
     'extension': "CHROMIUM_texture_mailbox",
     'chromium': True,

@@ -15780,12 +15780,6 @@ void GLES2DecoderImpl::DoTexStorage3D(GLenum target,
                  ContextState::k3D, "glTexStorage3D");
 }
 
-error::Error GLES2DecoderImpl::HandleGenMailboxCHROMIUM(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  return error::kUnknownCommand;
-}
-
 void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
                                                 const GLbyte* data) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoProduceTextureCHROMIUM",

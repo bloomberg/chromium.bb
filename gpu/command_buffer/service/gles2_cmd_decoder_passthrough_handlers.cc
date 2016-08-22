@@ -1511,15 +1511,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribDivisorANGLE(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleGenMailboxCHROMIUM(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::GenMailboxCHROMIUM& c =
-      *static_cast<const gles2::cmds::GenMailboxCHROMIUM*>(cmd_data);
-  (void)c;
-  return error::kUnknownCommand;
-}
-
 error::Error
 GLES2DecoderPassthroughImpl::HandleBindUniformLocationCHROMIUMBucket(
     uint32_t immediate_data_size,

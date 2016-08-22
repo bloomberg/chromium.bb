@@ -310,17 +310,6 @@ namespace cmds {
 
 #include "../common/gles2_cmd_format_autogen.h"
 
-// These are hand written commands.
-// TODO(gman): Attempt to make these auto-generated.
-
-struct GenMailboxCHROMIUM {
-  typedef GenMailboxCHROMIUM ValueType;
-  static const CommandId kCmdId = kGenMailboxCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-  CommandHeader header;
-};
-
 #pragma pack(pop)
 
 }  // namespace cmd
