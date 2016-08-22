@@ -19,7 +19,7 @@ PASS setValueAsDateAndGetValue(1582, 9, 31) is "1582-10-31"
 PASS setValueAsDateAndGetValue(275760, 8, 13) is "275760-09-13"
 PASS setValueAsDateAndGetValue(275760, 8, 14) is ""
 Invalid objects:
-PASS input.value = "2010-01-01"; input.valueAsDate = document; input.value is ""
+PASS input.valueAsDate = document threw exception TypeError: Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date..
 PASS input.value = "2010-01-01"; input.valueAsDate = null; input.value is ""
 PASS successfullyParsed is true
 

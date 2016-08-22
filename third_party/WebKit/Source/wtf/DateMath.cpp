@@ -99,6 +99,8 @@ static const double hoursPerDay = 24.0;
 static const double secondsPerDay = 24.0 * 60.0 * 60.0;
 
 static const double maxUnixTime = 2145859200.0; // 12/31/2037
+static const double kMinimumECMADateInMs = -8640000000000000.0;
+static const double kMaximumECMADateInMs = 8640000000000000.0;
 
 // Day of year for the first day of each month, where index 0 is January, and day 0 is January 1.
 // First for non-leap years, then for leap years.
@@ -166,6 +168,9 @@ static void appendTwoDigitNumber(StringBuilder& builder, int number)
 
 int msToYear(double ms)
 {
+    DCHECK(std::isfinite(ms));
+    DCHECK_GE(ms, kMinimumECMADateInMs);
+    DCHECK_LE(ms, kMaximumECMADateInMs);
     int approxYear = static_cast<int>(floor(ms / (msPerDay * 365.2425)) + 1970);
     double msFromApproxYearTo1970 = msPerDay * daysFrom1970ToYear(approxYear);
     if (msFromApproxYearTo1970 > ms)

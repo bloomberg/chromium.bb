@@ -472,7 +472,7 @@ def set_component_dirs(new_component_dirs):
 
 V8_VALUE_TO_CPP_VALUE = {
     # Basic
-    'Date': 'toCoreDate({isolate}, {v8_value})',
+    'Date': 'toCoreDate({isolate}, {v8_value}, exceptionState)',
     'DOMString': '{v8_value}',
     'ByteString': 'toByteString({isolate}, {arguments})',
     'USVString': 'toUSVString({isolate}, {arguments})',
@@ -506,7 +506,7 @@ def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
             idl_type.is_enum or
             idl_type.is_dictionary or
-            idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
+            idl_type.name in ('Boolean', 'ByteString', 'Date', 'Dictionary', 'USVString', 'SerializedScriptValue'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True

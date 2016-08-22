@@ -205,8 +205,11 @@ static void dateAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<
 static void dateAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "dateAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    double cppValue = toCoreDate(info.GetIsolate(), v8Value);
+    double cppValue = toCoreDate(info.GetIsolate(), v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setDateAttribute(cppValue);
 }
 
@@ -5075,14 +5078,18 @@ static void unsignedShortMethodMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodDateArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDateArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(info.GetIsolate(), createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodDateArg", "TestObject", 1, info.Length()));
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     double dateArg;
     {
-        dateArg = toCoreDate(info.GetIsolate(), info[0]);
+        dateArg = toCoreDate(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodDateArg(dateArg);
 }

@@ -45,7 +45,7 @@ shouldBeEqualToString('setValueAsDateAndGetValue(275760, 8, 13)', '275760-09-13'
 shouldBeEqualToString('setValueAsDateAndGetValue(275760, 8, 14)', ''); // Date of JavaScript can't represent this.
 
 debug('Invalid objects:');
-shouldBeEqualToString('input.value = "2010-01-01"; input.valueAsDate = document; input.value', '');
+shouldThrow('input.valueAsDate = document');
 shouldBeEqualToString('input.value = "2010-01-01"; input.valueAsDate = null; input.value', '');
 </script>
 </body>

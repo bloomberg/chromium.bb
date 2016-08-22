@@ -19,7 +19,7 @@ PASS setValueAsDateAndGetValue(-23, -59, -59, 0) is "00:00:01"
 Invalid Date:
 PASS var date = new Date(); date.setTime(8.65E15); input.valueAsDate = date; input.value is ""
 Invalid objects:
-PASS input.value = "00:00"; input.valueAsDate = document; input.value is ""
+PASS input.valueAsDate = document threw exception TypeError: Failed to set the 'valueAsDate' property on 'HTMLInputElement': The provided value is not a Date..
 PASS input.value = "00:00"; input.valueAsDate = null; input.value is ""
 Step attribute value and string representation:
 PASS input.step = "1"; setValueAsDateAndGetValue(0, 0, 0, 0) is "00:00:00"

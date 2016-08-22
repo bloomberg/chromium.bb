@@ -562,13 +562,15 @@ inline v8::Local<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
     return value ? v8::True(isolate) : v8::False(isolate);
 }
 
-inline double toCoreDate(v8::Isolate* isolate, v8::Local<v8::Value> object)
+inline double toCoreDate(v8::Isolate* isolate, v8::Local<v8::Value> object, ExceptionState& exceptionState)
 {
-    if (object->IsDate())
-        return object.As<v8::Date>()->ValueOf();
-    if (object->IsNumber())
-        return object.As<v8::Number>()->Value();
-    return std::numeric_limits<double>::quiet_NaN();
+    if (object->IsNull())
+        return std::numeric_limits<double>::quiet_NaN();
+    if (!object->IsDate()) {
+        exceptionState.throwTypeError("The provided value is not a Date.");
+        return 0;
+    }
+    return object.As<v8::Date>()->ValueOf();
 }
 
 inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate, double value)
