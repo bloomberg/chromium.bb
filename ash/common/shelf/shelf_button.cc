@@ -38,14 +38,11 @@ namespace {
 // if the shelf is aligned horizontally then this is the height of the bar.
 const int kBarSize = 3;
 const int kIconSize = 32;
-const int kIconPad = 5;
-const int kIconPadVertical = 6;
 const int kAttentionThrobDurationMS = 800;
 const int kMaxAnimationSeconds = 10;
 const int kIndicatorOffsetFromBottom = 2;
 const int kIndicatorRadius = 2;
 const SkColor kIndicatorColor = SK_ColorWHITE;
-
 // Canvas scale to ensure that the activity indicator is not pixelated even at
 // the highest possible device scale factors.
 const int kIndicatorCanvasScale = 5;
@@ -54,6 +51,13 @@ const int kIndicatorCanvasScale = 5;
 const int kInkDropSmallSize = 48;
 const int kInkDropLargeSize = 60;
 const int kInkDropLargeCornerRadius = 4;
+
+// Padding from the edge of the shelf to the application icon when the shelf
+// is horizontally and vertically aligned, respectively.
+const int kIconPaddingHorizontal = 5;
+const int kIconPaddingHorizontalMD = 7;
+const int kIconPaddingVertical = 6;
+const int kIconPaddingVerticalMD = 8;
 
 // Paints an activity indicator on |canvas| whose |size| is specified in DIP.
 void PaintIndicatorOnCanvas(gfx::Canvas* canvas, const gfx::Size& size) {
@@ -400,7 +404,11 @@ void ShelfButton::Layout() {
   WmShelf* wm_shelf = shelf_view_->wm_shelf();
   const bool is_horizontal_shelf =
       IsHorizontalAlignment(wm_shelf->GetAlignment());
-  int icon_pad = is_horizontal_shelf ? kIconPad : kIconPadVertical;
+  const int icon_pad = ash::MaterialDesignController::IsShelfMaterial()
+                           ? (is_horizontal_shelf ? kIconPaddingHorizontalMD
+                                                  : kIconPaddingVerticalMD)
+                           : (is_horizontal_shelf ? kIconPaddingHorizontal
+                                                  : kIconPaddingVertical);
   int x_offset = is_horizontal_shelf ? 0 : icon_pad;
   int y_offset = is_horizontal_shelf ? icon_pad : 0;
 
