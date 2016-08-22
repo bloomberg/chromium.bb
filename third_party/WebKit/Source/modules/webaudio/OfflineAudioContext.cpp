@@ -92,7 +92,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
     }
 
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "[%p]: OfflineAudioContext::OfflineAudioContext()\n", audioContext);
+    fprintf(stderr, "[%16p]: OfflineAudioContext::OfflineAudioContext()\n", audioContext);
 #endif
     DEFINE_STATIC_LOCAL(SparseHistogram, offlineContextChannelCountHistogram,
         ("WebAudio.OfflineAudioContext.ChannelCount"));
@@ -141,7 +141,7 @@ OfflineAudioContext::OfflineAudioContext(Document* document, unsigned numberOfCh
 OfflineAudioContext::~OfflineAudioContext()
 {
 #if DEBUG_AUDIONODE_REFERENCES
-    fprintf(stderr, "[%p]: OfflineAudioContext::~OfflineAudioContext()\n", this);
+    fprintf(stderr, "[%16p]: OfflineAudioContext::~OfflineAudioContext()\n", this);
 #endif
 }
 

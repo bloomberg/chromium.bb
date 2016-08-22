@@ -70,27 +70,27 @@ public:
     enum { ProcessingSizeInFrames = 128 };
 
     enum NodeType {
-        NodeTypeUnknown,
-        NodeTypeDestination,
-        NodeTypeOscillator,
-        NodeTypeAudioBufferSource,
-        NodeTypeMediaElementAudioSource,
-        NodeTypeMediaStreamAudioDestination,
-        NodeTypeMediaStreamAudioSource,
-        NodeTypeJavaScript,
-        NodeTypeBiquadFilter,
-        NodeTypePanner,
-        NodeTypeStereoPanner,
-        NodeTypeConvolver,
-        NodeTypeDelay,
-        NodeTypeGain,
-        NodeTypeChannelSplitter,
-        NodeTypeChannelMerger,
-        NodeTypeAnalyser,
-        NodeTypeDynamicsCompressor,
-        NodeTypeWaveShaper,
-        NodeTypeIIRFilter,
-        NodeTypeEnd
+        NodeTypeUnknown = 0,
+        NodeTypeDestination = 1,
+        NodeTypeOscillator = 2,
+        NodeTypeAudioBufferSource = 3,
+        NodeTypeMediaElementAudioSource = 4,
+        NodeTypeMediaStreamAudioDestination = 5,
+        NodeTypeMediaStreamAudioSource = 6,
+        NodeTypeJavaScript = 7,
+        NodeTypeBiquadFilter = 8,
+        NodeTypePanner = 9,
+        NodeTypeStereoPanner = 10,
+        NodeTypeConvolver = 11,
+        NodeTypeDelay = 12,
+        NodeTypeGain = 13,
+        NodeTypeChannelSplitter = 14,
+        NodeTypeChannelMerger = 15,
+        NodeTypeAnalyser = 16,
+        NodeTypeDynamicsCompressor = 17,
+        NodeTypeWaveShaper = 18,
+        NodeTypeIIRFilter = 19,
+        NodeTypeEnd = 20
     };
 
     AudioHandler(NodeType, AudioNode&, float sampleRate);
