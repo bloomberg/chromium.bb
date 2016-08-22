@@ -48,6 +48,7 @@
     {
       'target_name': 'passwords_section',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/compiled_resources2.gyp:cr_scrollable_behavior',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):passwords_private',
         'password_edit_dialog',

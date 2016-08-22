@@ -20,6 +20,8 @@ var ExceptionPairEntryEvent;
 Polymer({
   is: 'passwords-section',
 
+  behaviors: [CrScrollableBehavior],
+
   properties: {
     /** Preferences state. */
     prefs: {
@@ -69,6 +71,16 @@ Polymer({
 
   listeners: {
     'passwordList.scroll': 'closeMenu_',
+  },
+
+  observers: ['passwordListChanged_(savedPasswords, filter)'],
+
+  /**
+   * Updates the scrollable contents when the list of passwords has changed.
+   * @private
+   */
+  passwordListChanged_: function() {
+    this.updateScrollableContents();
   },
 
   /**
