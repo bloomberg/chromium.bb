@@ -101,8 +101,8 @@ static INLINE void aom_write_tree(aom_writer *w, const aom_tree_index *tree,
 static INLINE void aom_write_symbol(aom_writer *w, int symb,
                                     const aom_cdf_prob *cdf, int nsymbs) {
 #if CONFIG_RANS
-  (void)nsymbs;
   struct rans_sym s;
+  (void)nsymbs;
   assert(cdf);
   s.cum_prob = cdf[symb];
   s.prob = cdf[symb + 1] - s.cum_prob;
