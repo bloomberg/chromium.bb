@@ -101,17 +101,37 @@ Some are conditional, others are not.
 
 ##### Unconditional disabling
 
-Two annotations disable a test unless a user specifically asks for tests
-annotated with that annotation to be run
-(e.g., via passing `-A DisabledTest` to the test runner).
-Note that these are both implemented in Chromium.
-There are versions of @DisabledTest and @FlakyTest in Android that do not allow users to provide a message field.
+[**@DisabledTest**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java)
+unconditionally disables a test.
+```java
+@DisabledTest(
+    // Describes why the test is disabled. Typically includes a crbug link.
+    message = ""
+)
+```
 
- - [`@DisabledTest`](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java)`(message = "")`
- - [`@FlakyTest`](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/FlakyTest.java)`(message = "")`
+[**@FlakyTest**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/FlakyTest.java)
+marks a test as flaky. This also unconditionally disables the test, though
+tests marked with **@FlakyTest** are explicitly run on some bots.
+```java
+@FlakyTest(
+    // Describes why the test is marked flaky. Typically includes a crbug link.
+    message = ""
+)
+```
 
-In both cases, `message` is a message that should describe why the test is
-disabled or marked as flaky. It should include a crbug link.
+Note that there are Android versions of **@DisabledTest** and **@FlakyTest**
+that do not allow message specification. These are no longer used in Chromium.
+
+As alluded to above, tests marked with either **@DisabledTest** or
+**@FlakyTest** can be explicitly run via the test runner's
+[-A/--annotation](/testing/android/docs/todo.md)
+flag. For example, this would run only the tests marked as flaky in
+`chrome_public_test_apk`:
+
+```bash
+./out/Debug/bin/run_chrome_public_test_apk -A FlakyTest
+```
 
 ##### Conditional disabling
 
@@ -123,7 +143,8 @@ permanently limit a test to specific configurations. It signifies that the test
 was not, is not, and will not be intended to run beyond those configurations.
 In both cases, conditional disabling manifests as a skipped test.
 
-**@DisableIf.Build** allows for conditional test disabling based on values in
+[**@DisableIf.Build**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/DisableIf.java#25)
+allows for conditional test disabling based on values in
 [`android.os.Build`](https://developer.android.com/reference/android/os/Build.html):
 
 ```java
@@ -154,7 +175,8 @@ In both cases, conditional disabling manifests as a skipped test.
 )
 ```
 
-**@DisableIf.Device** allows for conditional test disabling based on whether
+[**@DisableIf.Device**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/DisableIf.java#40)
+allows for conditional test disabling based on whether
 a device is a phone, a tablet, or a "large tablet" as determined by
 [org.chromium.ui.base.DeviceFormFactor](https://chromium.googlesource.com/chromium/src/+/master/ui/android/java/src/org/chromium/ui/base/DeviceFormFactor.java).
 Note that this is currently only available to tests in
@@ -169,7 +191,8 @@ or code that uses //chrome.
 )
 ```
 
-**@Restriction** currently allows for conditional test disabling based on device
+[**@Restriction**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/Restriction.java)
+currently allows for conditional test disabling based on device
 type, device performance, internet connectivity, whether Google Play Services is
 up to date, and whether the build was an official one.
 
@@ -203,7 +226,8 @@ up to date, and whether the build was an official one.
 )
 ```
 
-**@MinAndroidSdkLevel** is similar to @Restriction in purpose in that it's
+[**@MinAndroidSdkLevel**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/MinAndroidSdkLevel.java)
+is similar to **@Restriction** in purpose in that it's
 intended to permanently limit a test to only recent versions of Android.
 
 ```java
@@ -218,7 +242,10 @@ intended to permanently limit a test to only recent versions of Android.
 
 Several annotations affect how a test is run in interesting or nontrivial ways.
 
-**@CommandLineFlags.Add** and **@CommandLineFlags.Remove** manipulate Chrome's
+[**@CommandLineFlags.Add**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/CommandLineFlags.java#46)
+and
+[**@CommandLineFlags.Remove**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/CommandLineFlags.java#58)
+manipulate Chrome's
 command-line flags on a per-test basis (i.e., the flags handled by
 [`org.chromium.base.CommandLine`](https://chromium.googlesource.com/chromium/src/+/master/base/android/java/src/org/chromium/base/CommandLine.java) and
 [`base::CommandLine`](https://chromium.googlesource.com/chromium/src/+/master/base/command_line.h)).
@@ -241,7 +268,8 @@ command-line flags on a per-test basis (i.e., the flags handled by
 
 #### Feature annotations
 
-**@Feature** has been used inconsistently in Chromium to group tests across
+[**@Feature**](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/Feature.java)
+has been used inconsistently in Chromium to group tests across
 test cases according to the feature they're testing.
 
 ```java
