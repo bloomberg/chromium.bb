@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
+#import "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
@@ -397,6 +398,12 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
       addObserver:window_delegate_
          selector:@selector(onWindowOrderChanged:)
              name:NSApplicationDidHideNotification
+           object:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:window_delegate_
+         selector:@selector(onSystemControlTintChanged:)
+             name:NSControlTintDidChangeNotification
            object:nil];
 
   // Validate the window's initial state, otherwise the bridge's initial
@@ -831,6 +838,10 @@ void BridgedNativeWidget::OnVisibilityChanged() {
   // prevents Cocoa drawing just *after* a minimize, resulting in a blank window
   // represented in the deminiaturize animation.
   [window_ setAutodisplay:window_visible_];
+}
+
+void BridgedNativeWidget::OnSystemControlTintChanged() {
+  ui::NativeThemeMac::instance()->NotifyObservers();
 }
 
 void BridgedNativeWidget::OnBackingPropertiesChanged() {

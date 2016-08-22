@@ -29,6 +29,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 
   static NativeThemeMac* instance();
 
+  // Adjusts an SkColor based on the current system control tint. For example,
+  // if the current tint is "graphite", this function maps the provided value to
+  // an appropriate gray.
+  static SkColor ApplySystemControlTint(SkColor color);
+
   // Overridden from NativeTheme:
   SkColor GetSystemColor(ColorId color_id) const override;
 

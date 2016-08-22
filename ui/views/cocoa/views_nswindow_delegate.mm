@@ -39,6 +39,10 @@
   parent_->OnVisibilityChanged();
 }
 
+- (void)onSystemControlTintChanged:(NSNotification*)notification {
+  parent_->OnSystemControlTintChanged();
+}
+
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
         contextInfo:(void*)contextInfo {

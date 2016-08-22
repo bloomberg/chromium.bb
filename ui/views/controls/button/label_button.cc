@@ -426,6 +426,9 @@ void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   ResetLabelEnabledColor();
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
+  // The entire button has to be repainted here, since the native theme can
+  // define the tint for the entire background/border/focus ring.
+  SchedulePaint();
 }
 
 void LabelButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {

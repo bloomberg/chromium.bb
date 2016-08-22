@@ -142,6 +142,9 @@ class VIEWS_EXPORT BridgedNativeWidget
   // being reordered in (or out of) the screen list.
   void OnVisibilityChanged();
 
+  // Called by the NSWindowDelegate when the system control tint changes.
+  void OnSystemControlTintChanged();
+
   // Called by the NSWindowDelegate on a scale factor or color space change.
   void OnBackingPropertiesChanged();
 
