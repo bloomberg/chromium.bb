@@ -540,6 +540,7 @@ bool LoginDatabase::Init() {
                         kCompatibleVersionNumber)) {
     LogDatabaseInitError(META_TABLE_INIT_ERROR);
     LOG(ERROR) << "Unable to create the meta table.";
+    transaction.Rollback();
     db_.Close();
     return false;
   }
@@ -548,6 +549,7 @@ bool LoginDatabase::Init() {
     LOG(ERROR) << "Password store database is too new, kCurrentVersionNumber="
                << kCurrentVersionNumber << ", GetCompatibleVersionNumber="
                << meta_table_.GetCompatibleVersionNumber();
+    transaction.Rollback();
     db_.Close();
     return false;
   }
@@ -559,6 +561,7 @@ bool LoginDatabase::Init() {
   if (!db_.DoesTableExist("logins")) {
     if (!builder.CreateTable(&db_)) {
       VLOG(0) << "Failed to create the 'logins' table";
+      transaction.Rollback();
       db_.Close();
       return false;
     }
@@ -588,6 +591,7 @@ bool LoginDatabase::Init() {
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;
+    transaction.Rollback();
     db_.Close();
     return false;
   }
@@ -595,6 +599,7 @@ bool LoginDatabase::Init() {
   if (!stats_table_.CreateTableIfNecessary()) {
     LogDatabaseInitError(INIT_STATS_ERROR);
     LOG(ERROR) << "Unable to create the stats table.";
+    transaction.Rollback();
     db_.Close();
     return false;
   }

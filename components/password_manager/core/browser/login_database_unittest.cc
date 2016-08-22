@@ -1476,6 +1476,30 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
 }
 #endif  // defined(OS_POSIX)
 
+// If the database initialisation fails, the initialisation transaction should
+// roll back without crashing.
+TEST(LoginDatabaseFailureTest, Init_NoCrashOnFailedRollback) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath database_path = temp_dir.path().AppendASCII("test.db");
+
+  // To cause an init failure, set the compatible version to be higher than the
+  // current version (in reality, this could happen if, e.g., someone opened a
+  // Canary-created profile with Chrome Stable.
+  {
+    sql::Connection connection;
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(connection.Open(database_path));
+    ASSERT_TRUE(meta_table.Init(&connection, kCurrentVersionNumber + 1,
+                                kCompatibleVersionNumber + 1));
+  }
+
+  // Now try to init the database with the file. The test succeeds if it does
+  // not crash.
+  LoginDatabase db(database_path);
+  EXPECT_FALSE(db.Init());
+}
+
 // Test the migration from GetParam() version to kCurrentVersionNumber.
 class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
  protected:
