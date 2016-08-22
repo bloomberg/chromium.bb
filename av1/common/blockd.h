@@ -185,7 +185,6 @@ struct macroblockd_plane {
   ENTROPY_CONTEXT *above_context;
   ENTROPY_CONTEXT *left_context;
   int16_t seg_dequant[MAX_SEGMENTS][2];
-  uint8_t *color_index_map;
 
   // number of 4x4s in current block
   uint16_t n4_w, n4_h;

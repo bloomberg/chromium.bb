@@ -1280,8 +1280,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
-      tile_data->xd.plane[0].color_index_map = tile_data->color_index_map[0];
-      tile_data->xd.plane[1].color_index_map = tile_data->color_index_map[1];
     }
   }
 
@@ -1506,8 +1504,6 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
-      tile_data->xd.plane[0].color_index_map = tile_data->color_index_map[0];
-      tile_data->xd.plane[1].color_index_map = tile_data->color_index_map[1];
 
       worker->had_error = 0;
       if (i == num_workers - 1 || n == tile_cols - 1) {
