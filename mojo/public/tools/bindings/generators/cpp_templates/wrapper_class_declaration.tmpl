@@ -1,5 +1,3 @@
-{% from "enum_macros.tmpl" import enum_decl -%}
-
 class {{export_attribute}} {{struct.name}} {
  public:
   using DataView = {{struct.name}}DataView;
@@ -7,11 +5,7 @@ class {{export_attribute}} {{struct.name}} {
 
 {#--- Enums #}
 {%- for enum in struct.enums -%}
-{%-   if enum|is_native_only_kind %}
-  using {{enum.name}} = mojo::NativeEnum;
-{%-   else %}
-  {{enum_decl(enum)|indent(2)}}
-{%-   endif %}
+  using {{enum.name}} = {{enum|get_name_for_kind(flatten_nested_kind=True)}};
 {%- endfor %}
 
 {#--- Constants #}

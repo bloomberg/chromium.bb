@@ -234,7 +234,6 @@ template("mojom") {
       generator_cpp_outputs += [
         "{{source_gen_dir}}/{{source_name_part}}.mojom${variant_dash_suffix}.cc",
         "{{source_gen_dir}}/{{source_name_part}}.mojom${variant_dash_suffix}.h",
-        "{{source_gen_dir}}/{{source_name_part}}.mojom${variant_dash_suffix}-internal.h",
       ]
       enabled_sources = []
       if (defined(bindings_configuration.blacklist)) {
@@ -436,14 +435,15 @@ template("mojom") {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
       }
       deps = [
-        ":$shared_cpp_sources_target_name",
         "//mojo/public/cpp/bindings:struct_traits",
         "//mojo/public/interfaces/bindings:bindings__generator",
+        "//mojo/public/interfaces/bindings:bindings_shared__generator",
       ]
       if (enabled_sources != []) {
         deps += [ ":$generator_target_name" ]
       }
       public_deps = [
+        ":$shared_cpp_sources_target_name",
         "//base",
       ]
       foreach(d, all_deps) {

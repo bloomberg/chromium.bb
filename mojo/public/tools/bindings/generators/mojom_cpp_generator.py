@@ -50,22 +50,40 @@ class _NameFormatter(object):
     self._variant = variant
 
   def Format(self, separator, prefixed=False, internal=False,
-             include_variant=False, add_same_module_namespaces=False):
+             include_variant=False, add_same_module_namespaces=False,
+             flatten_nested_kind=False):
+    """Formats the name according to the given configuration.
+
+    Args:
+      separator: Separator between different parts of the name.
+      prefixed: Whether a leading separator should be added.
+      internal: Returns the name in the "internal" namespace.
+      include_variant: Whether to include variant as namespace. If |internal| is
+          True, then this flag is ignored and variant is not included.
+      add_same_module_namespaces: Includes all namespaces even if the token is
+          from the same module as the current mojom file.
+      flatten_nested_kind: It is allowed to define enums inside structs and
+          interfaces. If this flag is set to True, this method concatenates the
+          parent kind and the nested kind with '_', instead of treating the
+          parent kind as a scope."""
+
     parts = []
     if self._ShouldIncludeNamespace(add_same_module_namespaces):
       if prefixed:
         parts.append("")
       parts.extend(self._GetNamespace())
-      if include_variant and self._variant:
+      if include_variant and self._variant and not internal:
         parts.append(self._variant)
-    parts.extend(self._GetName(internal))
+    parts.extend(self._GetName(internal, flatten_nested_kind))
     return separator.join(parts)
 
-  def FormatForCpp(self, add_same_module_namespaces=False, internal=False):
+  def FormatForCpp(self, add_same_module_namespaces=False, internal=False,
+                   flatten_nested_kind=False):
     return self.Format(
         "::", prefixed=True,
         add_same_module_namespaces=add_same_module_namespaces,
-        internal=internal, include_variant=True)
+        internal=internal, include_variant=True,
+        flatten_nested_kind=flatten_nested_kind)
 
   def FormatForMojom(self):
     return self.Format(".", add_same_module_namespaces=True)
@@ -74,24 +92,32 @@ class _NameFormatter(object):
     if not internal:
       return token.name
     if (mojom.IsStructKind(token) or mojom.IsUnionKind(token) or
-        mojom.IsInterfaceKind(token) or mojom.IsEnumKind(token)):
+        mojom.IsEnumKind(token)):
       return token.name + "_Data"
     return token.name
 
-  def _GetName(self, internal):
-    name = []
-    if internal:
-      name.append("internal")
-    if self._token.parent_kind:
-      name.append(self._MapKindName(self._token.parent_kind, internal))
-    # Both variable and enum constants are constructed like:
-    # Namespace::Struct::CONSTANT_NAME
-    # For enums, CONSTANT_NAME is EnumName::ENUM_VALUE.
+  def _GetName(self, internal, flatten_nested_kind):
     if isinstance(self._token, mojom.EnumValue):
-      name.extend([self._token.enum.name, self._token.name])
-    else:
-      name.append(self._MapKindName(self._token, internal))
-    return name
+      name_parts = _NameFormatter(self._token.enum, self._variant)._GetName(
+          internal, flatten_nested_kind)
+      name_parts.append(self._token.name)
+      return name_parts
+
+    name_parts = []
+    if internal:
+      name_parts.append("internal")
+
+    if (flatten_nested_kind and mojom.IsEnumKind(self._token) and
+        self._token.parent_kind):
+      name = "%s_%s" % (self._token.parent_kind.name,
+                        self._MapKindName(self._token, internal))
+      name_parts.append(name)
+      return name_parts
+
+    if self._token.parent_kind:
+      name_parts.append(self._MapKindName(self._token.parent_kind, internal))
+    name_parts.append(self._MapKindName(self._token, internal))
+    return name_parts
 
   def _ShouldIncludeNamespace(self, add_same_module_namespaces):
     return add_same_module_namespaces or self._token.imported_from
@@ -126,12 +152,14 @@ def DefaultValue(field):
 def NamespaceToArray(namespace):
   return namespace.split(".") if namespace else []
 
-def GetNameForKind(kind, internal=False):
-  return _NameFormatter(kind, _variant).FormatForCpp(internal=internal)
-
-def GetQualifiedNameForKind(kind, internal=False):
+def GetNameForKind(kind, internal=False, flatten_nested_kind=False):
   return _NameFormatter(kind, _variant).FormatForCpp(
-      internal=internal, add_same_module_namespaces=True)
+      internal=internal, flatten_nested_kind=flatten_nested_kind)
+
+def GetQualifiedNameForKind(kind, internal=False, flatten_nested_kind=False):
+  return _NameFormatter(kind, _variant).FormatForCpp(
+      internal=internal, add_same_module_namespaces=True,
+      flatten_nested_kind=flatten_nested_kind)
 
 def GetFullMojomNameForKind(kind):
   return _NameFormatter(kind, _variant).FormatForMojom()
@@ -334,7 +362,8 @@ def GetUnmappedTypeForSerializer(kind):
 
 def TranslateConstants(token, kind):
   if isinstance(token, mojom.NamedValue):
-    return _NameFormatter(token, _variant).FormatForCpp()
+    return _NameFormatter(token, _variant).FormatForCpp(
+        flatten_nested_kind=True)
 
   if isinstance(token, mojom.BuiltinValue):
     if token.value == "double.INFINITY" or token.value == "float.INFINITY":
@@ -416,7 +445,8 @@ def GetContainerValidateParamsCtorArgs(kind):
     element_validate_params = GetNewContainerValidateParams(kind.kind)
     if mojom.IsEnumKind(kind.kind):
       enum_validate_func = ("%s::Validate" %
-                            GetQualifiedNameForKind(kind.kind, internal=True))
+                            GetQualifiedNameForKind(kind.kind, internal=True,
+                                                    flatten_nested_kind=True))
     else:
       enum_validate_func = "nullptr"
 
@@ -453,7 +483,7 @@ class Generator(generator.Generator):
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
     "get_container_validate_params_ctor_args":
-    GetContainerValidateParamsCtorArgs,
+        GetContainerValidateParamsCtorArgs,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "get_qualified_name_for_kind": GetQualifiedNameForKind,
@@ -495,6 +525,14 @@ class Generator(generator.Generator):
     return list(extra_headers)
 
   def GetJinjaExports(self):
+    structs = self.GetStructs()
+    interfaces = self.GetInterfaces()
+    all_enums = list(self.module.enums)
+    for struct in structs:
+      all_enums.extend(struct.enums)
+    for interface in interfaces:
+      all_enums.extend(interface.enums)
+
     return {
       "module": self.module,
       "namespace": self.module.namespace,
@@ -502,9 +540,10 @@ class Generator(generator.Generator):
       "imports": self.module.imports,
       "kinds": self.module.kinds,
       "enums": self.module.enums,
-      "structs": self.GetStructs(),
+      "all_enums": all_enums,
+      "structs": structs,
       "unions": self.GetUnions(),
-      "interfaces": self.GetInterfaces(),
+      "interfaces": interfaces,
       "variant": self.variant,
       "extra_traits_headers": self.GetExtraTraitsHeaders(),
       "extra_public_headers": self.GetExtraPublicHeaders(),
@@ -524,10 +563,6 @@ class Generator(generator.Generator):
 
   @UseJinja("module.h.tmpl")
   def GenerateModuleHeader(self):
-    return self.GetJinjaExports()
-
-  @UseJinja("module-internal.h.tmpl")
-  def GenerateModuleInternalHeader(self):
     return self.GetJinjaExports()
 
   @UseJinja("module.cc.tmpl")
@@ -567,9 +602,6 @@ class Generator(generator.Generator):
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self.GenerateModuleHeader(),
                  self.MatchMojomFilePath("%s%s.h" % (self.module.name, suffix)))
-      self.Write(self.GenerateModuleInternalHeader(),
-                 self.MatchMojomFilePath("%s%s-internal.h" %
-                                             (self.module.name, suffix)))
       self.Write(
           self.GenerateModuleSource(),
           self.MatchMojomFilePath("%s%s.cc" % (self.module.name, suffix)))

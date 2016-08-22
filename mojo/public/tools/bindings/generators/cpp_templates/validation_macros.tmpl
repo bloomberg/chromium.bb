@@ -66,7 +66,7 @@
 {#- Validates the specified field, which is supposed to be an enum.
     This macro is expanded by the Validate() method. #}
 {%- macro validate_enum(field, field_expr) %}
-  if (!{{field.kind|get_qualified_name_for_kind(internal=True)}}
+  if (!{{field.kind|get_qualified_name_for_kind(internal=True,flatten_nested_kind=True)}}
         ::Validate({{field_expr}}, validation_context))
     return false;
 {%- endmacro %}

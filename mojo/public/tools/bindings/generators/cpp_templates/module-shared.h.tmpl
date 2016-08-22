@@ -9,7 +9,60 @@
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
-// TODO(yzshen): Move code here.
+#include <stdint.h>
+
+#include <functional>
+#include <ostream>
+#include <type_traits>
+#include <utility>
+
+#include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/lib/serialization_forward.h"
+#include "mojo/public/cpp/bindings/native_enum.h"
+#include "{{module.path}}-shared-internal.h"
+{%- for import in imports %}
+#include "{{import.module.path}}-shared.h"
+{%- endfor %}
+
+{%-   for namespace in namespaces_as_array %}
+namespace {{namespace}} {
+{%-   endfor %}
+
+{#--- Enums #}
+{%- from "enum_macros.tmpl" import enum_decl%}
+{%- for enum in all_enums %}
+{%-   if enum|is_native_only_kind %}
+using {{enum.name}} = mojo::NativeEnum;
+{%-   else %}
+{{enum_decl(enum)}}
+{%-   endif %}
+{%- endfor %}
+
+{%-   for namespace in namespaces_as_array|reverse %}
+}  // namespace {{namespace}}
+{%-   endfor %}
+
+namespace std {
+
+{%- from "enum_macros.tmpl" import enum_hash %}
+{%- for enum in all_enums %}
+{%-   if not enum|is_native_only_kind %}
+{{enum_hash(enum)}}
+{%-   endif %}
+{%- endfor %}
+
+}  // namespace std
+
+namespace mojo {
+
+{#--- Enum Serialization Helpers -#}
+{%- for enum in all_enums %}
+{%-   if not enum|is_native_only_kind %}
+{%      include "enum_serialization_declaration.tmpl" %}
+{%-   endif %}
+{%- endfor %}
+
+}  // namespace mojo
 
 #endif  // {{header_guard}}
 

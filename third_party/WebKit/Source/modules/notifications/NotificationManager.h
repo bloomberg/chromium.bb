@@ -13,12 +13,6 @@
 
 namespace blink {
 
-namespace mojom {
-namespace blink {
-enum class PermissionStatus;
-}
-}
-
 // The notification manager, unique to the execution context, is responsible for
 // connecting and communicating with the Mojo notification service.
 //

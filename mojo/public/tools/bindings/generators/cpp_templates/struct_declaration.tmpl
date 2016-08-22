@@ -9,16 +9,6 @@ class {{class_name}} {
   static bool Validate(const void* data,
                        mojo::internal::ValidationContext* validation_context);
 
-{% from "enum_macros.tmpl" import enum_data_decl -%}
-{#--- Enums #}
-{%- for enum in struct.enums -%}
-{%-   if enum|is_native_only_kind %}
-  using {{enum.name}}_Data = mojo::internal::NativeEnum_Data;
-{%-   else %}
-  {{enum_data_decl(enum)|indent(2)}}
-{%-   endif %}
-{%- endfor %}
-
   mojo::internal::StructHeader header_;
 {%- for packed_field in struct.packed.packed_fields %}
 {%-   set name = packed_field.field.name %}

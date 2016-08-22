@@ -25,13 +25,8 @@ class {{export_attribute}} {{interface.name}} {
 {%- endif %}
 
 {#--- Enums #}
-{% from "enum_macros.tmpl" import enum_decl -%}
 {%- for enum in interface.enums %}
-{%-   if enum|is_native_only_kind %}
-  using {{enum.name}} = mojo::NativeEnum;
-{%-   else %}
-  {{enum_decl(enum)|indent(2)}}
-{%-   endif %}
+  using {{enum.name}} = {{enum|get_name_for_kind(flatten_nested_kind=True)}};
 {%- endfor %}
 
 {#--- Constants #}
