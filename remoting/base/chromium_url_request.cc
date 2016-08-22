@@ -71,7 +71,7 @@ ChromiumUrlRequestFactory::~ChromiumUrlRequestFactory() {}
 std::unique_ptr<UrlRequest> ChromiumUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url) {
-  return base::WrapUnique(new ChromiumUrlRequest(url_context_, type, url));
+  return base::MakeUnique<ChromiumUrlRequest>(url_context_, type, url);
 }
 
 }  // namespace remoting

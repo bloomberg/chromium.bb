@@ -115,8 +115,7 @@ void GlRendererTest::RequestRender() {
 
 void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
   renderer_->OnFrameReceived(
-      base::WrapUnique(
-          new webrtc::BasicDesktopFrame(size)),
+      base::MakeUnique<webrtc::BasicDesktopFrame>(size),
       base::Bind(&GlRendererTest::OnDesktopFrameProcessed,
                  base::Unretained(this)));
 }

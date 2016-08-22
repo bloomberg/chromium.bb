@@ -68,8 +68,8 @@ void TestChromotingClientTest::SetUp() {
   // keep the ptr around so we can use it to simulate state changes.  It will
   // remain valid until |test_chromoting_client_| is destroyed.
   fake_connection_to_host_ = new FakeConnectionToHost();
-  test_chromoting_client_->SetSignalStrategyForTests(base::WrapUnique(
-      new FakeSignalStrategy("test_user@faux_address.com/123")));
+  test_chromoting_client_->SetSignalStrategyForTests(
+      base::MakeUnique<FakeSignalStrategy>("test_user@faux_address.com/123"));
   test_chromoting_client_->SetConnectionToHostForTests(
       base::WrapUnique(fake_connection_to_host_));
 

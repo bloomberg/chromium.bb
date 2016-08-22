@@ -18,9 +18,9 @@ ChromiumPortAllocatorFactory::~ChromiumPortAllocatorFactory() {}
 std::unique_ptr<cricket::PortAllocator>
 ChromiumPortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<TransportContext> transport_context) {
-  return base::WrapUnique(new PortAllocator(
+  return base::MakeUnique<PortAllocator>(
       base::WrapUnique(new rtc::BasicNetworkManager()),
-      base::WrapUnique(new ChromiumPacketSocketFactory()), transport_context));
+      base::WrapUnique(new ChromiumPacketSocketFactory()), transport_context);
 }
 
 }  // namespace protocol

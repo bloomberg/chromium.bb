@@ -350,7 +350,7 @@ TEST_P(ConnectionTest, Video) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          base::WrapUnique(new TestScreenCapturer()));
+          base::MakeUnique<TestScreenCapturer>());
 
   WaitFirstVideoFrame();
 }
@@ -405,7 +405,7 @@ TEST_P(ConnectionTest, VideoStats) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          base::WrapUnique(new TestScreenCapturer()));
+          base::MakeUnique<TestScreenCapturer>());
 
   // Simulate an input invent injected at the start.
   video_stream->OnInputEventReceived(start_time.ToInternalValue());

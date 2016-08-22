@@ -92,7 +92,7 @@ class PairingRegistryTest : public testing::Test {
 
 TEST_F(PairingRegistryTest, CreateAndGetPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::WrapUnique(new MockPairingRegistryDelegate()));
+      base::MakeUnique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("my_client");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("my_client");
 
@@ -114,7 +114,7 @@ TEST_F(PairingRegistryTest, CreateAndGetPairings) {
 
 TEST_F(PairingRegistryTest, GetAllPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::WrapUnique(new MockPairingRegistryDelegate()));
+      base::MakeUnique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -142,7 +142,7 @@ TEST_F(PairingRegistryTest, GetAllPairings) {
 
 TEST_F(PairingRegistryTest, DeletePairing) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::WrapUnique(new MockPairingRegistryDelegate()));
+      base::MakeUnique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -167,7 +167,7 @@ TEST_F(PairingRegistryTest, DeletePairing) {
 
 TEST_F(PairingRegistryTest, ClearAllPairings) {
   scoped_refptr<PairingRegistry> registry = new SynchronousPairingRegistry(
-      base::WrapUnique(new MockPairingRegistryDelegate()));
+      base::MakeUnique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
 
@@ -218,7 +218,7 @@ TEST_F(PairingRegistryTest, SerializedRequests) {
 
   scoped_refptr<PairingRegistry> registry =
       new PairingRegistry(base::ThreadTaskRunnerHandle::Get(),
-                          base::WrapUnique(new MockPairingRegistryDelegate()));
+                          base::MakeUnique<MockPairingRegistryDelegate>());
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client1");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client2");
   registry->GetPairing(

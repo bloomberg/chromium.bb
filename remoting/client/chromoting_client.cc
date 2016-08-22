@@ -247,10 +247,9 @@ void ChromotingClient::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   connection_->Connect(
       session_manager_->Connect(
-          host_jid_,
-          base::WrapUnique(new protocol::NegotiatingClientAuthenticator(
-              NormalizeJid(signal_strategy_->GetLocalJid()), host_jid_,
-              client_auth_config_))),
+          host_jid_, base::MakeUnique<protocol::NegotiatingClientAuthenticator>(
+                         NormalizeJid(signal_strategy_->GetLocalJid()),
+                         host_jid_, client_auth_config_)),
       transport_context_, this);
 }
 

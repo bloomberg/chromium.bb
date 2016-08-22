@@ -60,9 +60,9 @@ class SetResponseURLRequestContext: public net::TestURLRequestContext {
  public:
   void SetResponse(const std::string& headers, const std::string& response) {
     std::unique_ptr<net::URLRequestJobFactoryImpl> factory =
-        base::WrapUnique(new net::URLRequestJobFactoryImpl());
+        base::MakeUnique<net::URLRequestJobFactoryImpl>();
     factory->SetProtocolHandler(
-        "https", base::WrapUnique(new FakeProtocolHandler(headers, response)));
+        "https", base::MakeUnique<FakeProtocolHandler>(headers, response));
     context_storage_.set_job_factory(std::move(factory));
   }
 };
@@ -96,7 +96,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.task_runner(),
-        base::WrapUnique(new SetResponseURLRequestContext()));
+        base::MakeUnique<SetResponseURLRequestContext>());
     ThirdPartyAuthConfig config;
     config.token_url = GURL(kTokenUrl);
     config.token_validation_url = GURL(kTokenValidationUrl);

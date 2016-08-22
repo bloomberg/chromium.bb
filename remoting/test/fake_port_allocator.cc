@@ -81,8 +81,8 @@ FakePortAllocatorFactory::~FakePortAllocatorFactory() {}
 std::unique_ptr<cricket::PortAllocator>
 FakePortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<protocol::TransportContext> transport_context) {
-  return base::WrapUnique(new FakePortAllocator(
-      network_manager_.get(), socket_factory_.get(), transport_context));
+  return base::MakeUnique<FakePortAllocator>(
+      network_manager_.get(), socket_factory_.get(), transport_context);
 }
 
 }  // namespace remoting

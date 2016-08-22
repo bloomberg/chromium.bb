@@ -198,7 +198,7 @@ DaemonController::State MockDaemonControllerDelegate::GetState() {
 
 std::unique_ptr<base::DictionaryValue>
 MockDaemonControllerDelegate::GetConfig() {
-  return base::WrapUnique(new base::DictionaryValue());
+  return base::MakeUnique<base::DictionaryValue>();
 }
 
 void MockDaemonControllerDelegate::SetConfigAndStart(

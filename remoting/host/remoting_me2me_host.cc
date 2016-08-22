@@ -1436,9 +1436,9 @@ void HostProcess::StartHost() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signal_strategy_.get(),
-          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
-          base::WrapUnique(new ChromiumUrlRequestFactory(
-              context_->url_request_context_getter())),
+          base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
+          base::MakeUnique<ChromiumUrlRequestFactory>(
+              context_->url_request_context_getter()),
           network_settings, protocol::TransportRole::SERVER);
   transport_context->set_ice_config_url(
       ServiceUrls::GetInstance()->ice_config_url());
@@ -1461,8 +1461,8 @@ void HostProcess::StartHost() {
                                  context_->video_encode_task_runner()));
 
   if (security_key_auth_policy_enabled_ && security_key_extension_supported_) {
-    host_->AddExtension(base::WrapUnique(
-        new SecurityKeyExtension(context_->file_task_runner())));
+    host_->AddExtension(
+        base::MakeUnique<SecurityKeyExtension>(context_->file_task_runner()));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.

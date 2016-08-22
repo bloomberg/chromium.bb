@@ -173,7 +173,7 @@ PamAuthorizationFactory::CreateAuthenticator(const std::string& local_jid,
                                              const std::string& remote_jid) {
   std::unique_ptr<protocol::Authenticator> authenticator(
       underlying_->CreateAuthenticator(local_jid, remote_jid));
-  return base::WrapUnique(new PamAuthorizer(std::move(authenticator)));
+  return base::MakeUnique<PamAuthorizer>(std::move(authenticator));
 }
 
 }  // namespace remoting

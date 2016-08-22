@@ -21,10 +21,10 @@ PepperPortAllocatorFactory::~PepperPortAllocatorFactory() {}
 std::unique_ptr<cricket::PortAllocator>
 PepperPortAllocatorFactory::CreatePortAllocator(
     scoped_refptr<protocol::TransportContext> transport_context) {
-  return base::WrapUnique(new protocol::PortAllocator(
+  return base::MakeUnique<protocol::PortAllocator>(
       base::WrapUnique(new PepperNetworkManager(pp_instance_)),
       base::WrapUnique(new PepperPacketSocketFactory(pp_instance_)),
-      transport_context));
+      transport_context);
 }
 
 }  // namespace remoting

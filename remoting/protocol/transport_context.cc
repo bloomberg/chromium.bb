@@ -31,7 +31,7 @@ namespace protocol {
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   return new protocol::TransportContext(
-      nullptr, base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
+      nullptr, base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
       nullptr, protocol::NetworkSettings(
                    protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);

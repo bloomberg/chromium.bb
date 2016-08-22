@@ -272,7 +272,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
     std::unique_ptr<net::SSLServerSocket> server_socket =
         server_context_->CreateSSLServerSocket(
-            base::WrapUnique(new NetStreamSocketAdapter(std::move(socket))));
+            base::MakeUnique<NetStreamSocketAdapter>(std::move(socket)));
     net::SSLServerSocket* raw_server_socket = server_socket.get();
     socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(
@@ -308,7 +308,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<net::ClientSocketHandle> socket_handle(
         new net::ClientSocketHandle);
     socket_handle->SetSocket(
-        base::WrapUnique(new NetStreamSocketAdapter(std::move(socket))));
+        base::MakeUnique<NetStreamSocketAdapter>(std::move(socket)));
 
 #if defined(OS_NACL)
     // net_nacl doesn't include ClientSocketFactory.
@@ -476,8 +476,8 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
       *callback_called = true;
 
     base::ResetAndReturn(&done_callback_)
-        .Run(net::OK, base::WrapUnique(new P2PStreamSocketAdapter(
-                          std::move(socket_), std::move(server_context_))));
+        .Run(net::OK, base::MakeUnique<P2PStreamSocketAdapter>(
+                          std::move(socket_), std::move(server_context_)));
   }
 }
 

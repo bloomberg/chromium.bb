@@ -76,7 +76,7 @@ void DisconnectWindowMac::Start(
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::WrapUnique(new DisconnectWindowMac());
+  return base::MakeUnique<DisconnectWindowMac>();
 }
 
 }  // namespace remoting

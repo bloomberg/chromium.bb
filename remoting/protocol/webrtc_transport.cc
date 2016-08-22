@@ -250,8 +250,8 @@ std::unique_ptr<MessagePipe> WebrtcTransport::CreateOutgoingChannel(
     const std::string& name) {
   webrtc::DataChannelInit config;
   config.reliable = true;
-  return base::WrapUnique(new WebrtcDataStreamAdapter(
-      peer_connection()->CreateDataChannel(name, &config)));
+  return base::MakeUnique<WebrtcDataStreamAdapter>(
+      peer_connection()->CreateDataChannel(name, &config));
 }
 
 void WebrtcTransport::Start(
@@ -521,7 +521,7 @@ void WebrtcTransport::OnDataChannel(
   DCHECK(thread_checker_.CalledOnValidThread());
   event_handler_->OnWebrtcTransportIncomingDataChannel(
       data_channel->label(),
-      base::WrapUnique(new WebrtcDataStreamAdapter(data_channel)));
+      base::MakeUnique<WebrtcDataStreamAdapter>(data_channel));
 }
 
 void WebrtcTransport::OnRenegotiationNeeded() {

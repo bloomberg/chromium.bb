@@ -87,8 +87,8 @@ void StreamMessageChannelFactoryAdapter::OnChannelCreated(
     error_callback_.Run(net::ERR_FAILED);
     return;
   }
-  callback.Run(base::WrapUnique(
-      new StreamMessagePipeAdapter(std::move(socket), error_callback_)));
+  callback.Run(base::MakeUnique<StreamMessagePipeAdapter>(std::move(socket),
+                                                          error_callback_));
 }
 
 }  // namespace protocol

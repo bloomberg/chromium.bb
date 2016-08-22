@@ -193,7 +193,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
   rtc::InitRandom(random_seed, sizeof(random_seed));
 
   // Send hello message.
-  PostLegacyJsonMessage("hello", base::WrapUnique(new base::DictionaryValue()));
+  PostLegacyJsonMessage("hello", base::MakeUnique<base::DictionaryValue>());
 }
 
 ChromotingInstance::~ChromotingInstance() {
@@ -342,7 +342,7 @@ void ChromotingInstance::OnVideoDecodeError() {
 
 void ChromotingInstance::OnVideoFirstFrameReceived() {
   PostLegacyJsonMessage("onFirstFrameReceived",
-                        base::WrapUnique(new base::DictionaryValue()));
+                        base::MakeUnique<base::DictionaryValue>());
 }
 
 void ChromotingInstance::OnVideoFrameDirtyRegion(
@@ -678,8 +678,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
           signal_strategy_.get(),
-          base::WrapUnique(new PepperPortAllocatorFactory(this)),
-          base::WrapUnique(new PepperUrlRequestFactory(this)),
+          base::MakeUnique<PepperPortAllocatorFactory>(this),
+          base::MakeUnique<PepperUrlRequestFactory>(this),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT));

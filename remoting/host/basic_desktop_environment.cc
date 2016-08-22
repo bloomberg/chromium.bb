@@ -51,8 +51,8 @@ BasicDesktopEnvironment::CreateScreenControls() {
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-  return base::WrapUnique(new MouseCursorMonitorProxy(
-      video_capture_task_runner_, *desktop_capture_options_));
+  return base::MakeUnique<MouseCursorMonitorProxy>(video_capture_task_runner_,
+                                                   *desktop_capture_options_);
 }
 
 std::string BasicDesktopEnvironment::GetCapabilities() const {
@@ -73,8 +73,8 @@ std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return base::WrapUnique(new DesktopCapturerProxy(video_capture_task_runner_,
-                                                   *desktop_capture_options_));
+  return base::MakeUnique<DesktopCapturerProxy>(video_capture_task_runner_,
+                                                *desktop_capture_options_);
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

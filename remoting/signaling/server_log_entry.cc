@@ -74,8 +74,8 @@ void ServerLogEntry::AddEventNameField(const char* name) {
 
 // static
 std::unique_ptr<XmlElement> ServerLogEntry::MakeStanza() {
-  return base::WrapUnique(
-      new XmlElement(QName(kChromotingXmlNamespace, kLogCommand)));
+  return base::MakeUnique<XmlElement>(
+      QName(kChromotingXmlNamespace, kLogCommand));
 }
 
 std::unique_ptr<XmlElement> ServerLogEntry::ToStanza() const {

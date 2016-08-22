@@ -62,7 +62,7 @@ std::unique_ptr<HostExtensionSession> FakeExtension::CreateExtensionSession(
     protocol::ClientStub* client_stub) {
   DCHECK(!was_instantiated());
   was_instantiated_ = true;
-  return base::WrapUnique(new Session(this, message_type_));
+  return base::MakeUnique<Session>(this, message_type_);
 }
 
 } // namespace remoting

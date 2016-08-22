@@ -141,9 +141,9 @@ TokenValidatorFactoryImpl::~TokenValidatorFactoryImpl() {
 std::unique_ptr<protocol::TokenValidator>
 TokenValidatorFactoryImpl::CreateTokenValidator(const std::string& local_jid,
                                                 const std::string& remote_jid) {
-  return base::WrapUnique(
-      new TokenValidatorImpl(third_party_auth_config_, key_pair_, local_jid,
-                             remote_jid, request_context_getter_));
+  return base::MakeUnique<TokenValidatorImpl>(third_party_auth_config_,
+                                              key_pair_, local_jid, remote_jid,
+                                              request_context_getter_);
 }
 
 }  // namespace remoting

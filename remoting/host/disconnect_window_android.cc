@@ -29,7 +29,7 @@ class DisconnectWindowAndroid : public HostWindow {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::WrapUnique(new DisconnectWindowAndroid());
+  return base::MakeUnique<DisconnectWindowAndroid>();
 }
 
 }  // namespace remoting

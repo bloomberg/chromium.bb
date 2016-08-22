@@ -50,7 +50,7 @@ std::unique_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
     webrtc::SharedMemoryFactory* shared_memory_factory) {
   const webrtc::DesktopSize kSize(800, 640);
   // updated_region() is already empty by default in new BasicDesktopFrames.
-  return base::WrapUnique(new webrtc::BasicDesktopFrame(kSize));
+  return base::MakeUnique<webrtc::BasicDesktopFrame>(kSize);
 }
 
 class MockVideoEncoder : public VideoEncoder {
@@ -85,7 +85,7 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
 
   std::unique_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame,
                                       uint32_t flags) override {
-    return base::WrapUnique(new VideoPacket());
+    return base::MakeUnique<VideoPacket>();
   }
 
  private:

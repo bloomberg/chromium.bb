@@ -32,7 +32,7 @@ class ContinueWindowAndroid : public ContinueWindow {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::WrapUnique(new ContinueWindowAndroid());
+  return base::MakeUnique<ContinueWindowAndroid>();
 }
 
 }  // namespace remoting

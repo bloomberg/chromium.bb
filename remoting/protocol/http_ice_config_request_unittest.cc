@@ -53,7 +53,7 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
       const std::string& url) override {
     EXPECT_EQ(UrlRequest::Type::POST, type);
     CHECK(results_.count(url));
-    return base::WrapUnique(new FakeUrlRequest(results_[url]));
+    return base::MakeUnique<FakeUrlRequest>(results_[url]);
   }
 
   std::map<std::string, UrlRequest::Result> results_;
@@ -66,7 +66,7 @@ static const char kTestUrl[] = "http://host/ice_config";
 class HttpIceConfigRequestTest : public testing::Test {
  public:
   void OnResult(const IceConfig& config) {
-    received_config_ = base::WrapUnique(new IceConfig(config));
+    received_config_ = base::MakeUnique<IceConfig>(config);
   }
 
  protected:

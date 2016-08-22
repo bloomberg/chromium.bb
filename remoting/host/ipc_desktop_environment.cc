@@ -94,10 +94,10 @@ std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return base::WrapUnique(new IpcDesktopEnvironment(
+  return base::MakeUnique<IpcDesktopEnvironment>(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
       client_session_control, connector_factory_.GetWeakPtr(), curtain_enabled_,
-      supports_touch_events_));
+      supports_touch_events_);
 }
 
 void IpcDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {

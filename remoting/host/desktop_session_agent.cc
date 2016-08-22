@@ -119,11 +119,11 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
 
   std::unique_ptr<webrtc::SharedMemory> CreateSharedMemory(
       size_t size) override {
-    base::Closure release_buffer_callback =
-        base::Bind(send_message_callback_,
-                   base::Passed(base::WrapUnique(
-                       new ChromotingDesktopNetworkMsg_ReleaseSharedBuffer(
-                           next_shared_buffer_id_))));
+    base::Closure release_buffer_callback = base::Bind(
+        send_message_callback_,
+        base::Passed(
+            base::MakeUnique<ChromotingDesktopNetworkMsg_ReleaseSharedBuffer>(
+                next_shared_buffer_id_)));
     std::unique_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
         size, next_shared_buffer_id_, release_buffer_callback);
     if (buffer) {
@@ -138,9 +138,8 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
       next_shared_buffer_id_ += 2;
 
       send_message_callback_.Run(
-          base::WrapUnique(new ChromotingDesktopNetworkMsg_CreateSharedBuffer(
-              buffer->id(), buffer->shared_memory()->handle(),
-              buffer->size())));
+          base::MakeUnique<ChromotingDesktopNetworkMsg_CreateSharedBuffer>(
+              buffer->id(), buffer->shared_memory()->handle(), buffer->size()));
     }
 
     return std::move(buffer);
@@ -241,8 +240,8 @@ const std::string& DesktopSessionAgent::client_jid() const {
 }
 
 void DesktopSessionAgent::DisconnectSession(protocol::ErrorCode error) {
-  SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_DisconnectSession(error)));
+  SendToNetwork(
+      base::MakeUnique<ChromotingDesktopNetworkMsg_DisconnectSession>(error));
 }
 
 void DesktopSessionAgent::OnLocalMouseMoved(
@@ -342,8 +341,8 @@ void DesktopSessionAgent::OnCaptureResult(
 
   last_frame_ = std::move(frame);
 
-  SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_CaptureResult(result, serialized_frame)));
+  SendToNetwork(base::MakeUnique<ChromotingDesktopNetworkMsg_CaptureResult>(
+      result, serialized_frame));
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
@@ -351,8 +350,8 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   std::unique_ptr<webrtc::MouseCursor> owned_cursor(cursor);
 
-  SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_MouseCursor(*owned_cursor)));
+  SendToNetwork(
+      base::MakeUnique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
 }
 
 void DesktopSessionAgent::OnMouseCursorPosition(
@@ -372,8 +371,9 @@ void DesktopSessionAgent::InjectClipboardEvent(
     return;
   }
 
-  SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_InjectClipboardEvent(serialized_event)));
+  SendToNetwork(
+      base::MakeUnique<ChromotingDesktopNetworkMsg_InjectClipboardEvent>(
+          serialized_event));
 }
 
 void DesktopSessionAgent::ProcessAudioPacket(
@@ -386,8 +386,8 @@ void DesktopSessionAgent::ProcessAudioPacket(
     return;
   }
 
-  SendToNetwork(base::WrapUnique(
-      new ChromotingDesktopNetworkMsg_AudioPacket(serialized_packet)));
+  SendToNetwork(base::MakeUnique<ChromotingDesktopNetworkMsg_AudioPacket>(
+      serialized_packet));
 }
 
 bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,

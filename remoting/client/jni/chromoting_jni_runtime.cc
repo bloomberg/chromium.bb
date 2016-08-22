@@ -131,8 +131,7 @@ void ChromotingJniRuntime::StartLoggerOnNetworkThread() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
   logger_.reset(new ClientTelemetryLogger(ChromotingEvent::Mode::ME2ME));
   logger_->Start(
-      base::WrapUnique(
-          new ChromiumUrlRequestFactory(runtime_->url_requester())),
+      base::MakeUnique<ChromiumUrlRequestFactory>(runtime_->url_requester()),
       kTelemetryBaseUrl);
   logger_->SetAuthClosure(
       base::Bind(&ChromotingJniRuntime::FetchAuthToken,

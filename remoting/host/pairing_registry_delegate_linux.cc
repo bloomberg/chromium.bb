@@ -159,7 +159,7 @@ void PairingRegistryDelegateLinux::SetRegistryPathForTesting(
 }
 
 std::unique_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return base::WrapUnique(new PairingRegistryDelegateLinux());
+  return base::MakeUnique<PairingRegistryDelegateLinux>();
 }
 
 }  // namespace remoting

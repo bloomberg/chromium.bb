@@ -196,7 +196,7 @@ class ProtocolPerfTest
   // protocol::FrameConsumer interface.
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override {
-    return base::WrapUnique(new webrtc::BasicDesktopFrame(size));
+    return base::MakeUnique<webrtc::BasicDesktopFrame>(size);
   }
 
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,

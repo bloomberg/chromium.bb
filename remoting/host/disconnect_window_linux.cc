@@ -290,7 +290,7 @@ gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::WrapUnique(new DisconnectWindowGtk());
+  return base::MakeUnique<DisconnectWindowGtk>();
 }
 
 }  // namespace remoting

@@ -23,10 +23,10 @@ std::unique_ptr<InputInjector>
 SessionDesktopEnvironment::CreateInputInjector() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return base::WrapUnique(new SessionInputInjectorWin(
+  return base::MakeUnique<SessionInputInjectorWin>(
       input_task_runner(),
       InputInjector::Create(input_task_runner(), ui_task_runner()),
-      ui_task_runner(), inject_sas_, lock_workstation_));
+      ui_task_runner(), inject_sas_, lock_workstation_);
 }
 
 SessionDesktopEnvironment::SessionDesktopEnvironment(

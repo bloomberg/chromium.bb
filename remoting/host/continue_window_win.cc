@@ -131,7 +131,7 @@ void ContinueWindowWin::EndDialog() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::WrapUnique(new ContinueWindowWin());
+  return base::MakeUnique<ContinueWindowWin>();
 }
 
 }  // namespace remoting

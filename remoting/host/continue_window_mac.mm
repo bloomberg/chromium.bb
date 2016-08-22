@@ -76,7 +76,7 @@ void ContinueWindowMac::HideUi() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::WrapUnique(new ContinueWindowMac());
+  return base::MakeUnique<ContinueWindowMac>();
 }
 
 }  // namespace remoting

@@ -24,7 +24,7 @@ bool Authenticator::IsAuthenticatorMessage(const buzz::XmlElement* message) {
 // static
 std::unique_ptr<buzz::XmlElement>
 Authenticator::CreateEmptyAuthenticatorMessage() {
-  return base::WrapUnique(new buzz::XmlElement(kAuthenticationQName));
+  return base::MakeUnique<buzz::XmlElement>(kAuthenticationQName);
 }
 
 // static

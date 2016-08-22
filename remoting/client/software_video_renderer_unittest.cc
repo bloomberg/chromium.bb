@@ -52,7 +52,7 @@ class TestFrameConsumer : public protocol::FrameConsumer {
   std::unique_ptr<DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override {
     EXPECT_TRUE(thread_checker_.CalledOnValidThread());
-    return base::WrapUnique(new webrtc::BasicDesktopFrame(size));
+    return base::MakeUnique<webrtc::BasicDesktopFrame>(size);
   }
 
   void DrawFrame(std::unique_ptr<DesktopFrame> frame,

@@ -58,9 +58,9 @@ std::unique_ptr<webrtc::DesktopFrame> DualBufferFrameConsumer::AllocateFrame(
   // Both buffers are reallocated whenever screen size changes.
   if (!buffers_[0] || !buffers_[0]->size().equals(size)) {
     buffers_[0] = webrtc::SharedDesktopFrame::Wrap(
-        base::WrapUnique(new webrtc::BasicDesktopFrame(size)));
+        base::MakeUnique<webrtc::BasicDesktopFrame>(size));
     buffers_[1] = webrtc::SharedDesktopFrame::Wrap(
-        base::WrapUnique(new webrtc::BasicDesktopFrame(size)));
+        base::MakeUnique<webrtc::BasicDesktopFrame>(size));
     buffer_1_mask_.Clear();
     current_buffer_ = 0;
   } else {

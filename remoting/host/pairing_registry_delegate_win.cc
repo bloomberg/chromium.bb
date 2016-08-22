@@ -266,7 +266,7 @@ bool PairingRegistryDelegateWin::Delete(const std::string& client_id) {
 }
 
 std::unique_ptr<PairingRegistry::Delegate> CreatePairingRegistryDelegate() {
-  return base::WrapUnique(new PairingRegistryDelegateWin());
+  return base::MakeUnique<PairingRegistryDelegateWin>();
 }
 
 }  // namespace remoting

@@ -65,7 +65,7 @@ void ContinueWindowAura::HideUi() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::WrapUnique(new ContinueWindowAura());
+  return base::MakeUnique<ContinueWindowAura>();
 }
 
 }  // namespace remoting

@@ -189,8 +189,8 @@ const std::string& FakeAuthenticator::GetAuthKey() const {
 std::unique_ptr<ChannelAuthenticator>
 FakeAuthenticator::CreateChannelAuthenticator() const {
   EXPECT_EQ(ACCEPTED, state());
-  return base::WrapUnique(
-      new FakeChannelAuthenticator(action_ != REJECT_CHANNEL, async_));
+  return base::MakeUnique<FakeChannelAuthenticator>(action_ != REJECT_CHANNEL,
+                                                    async_);
 }
 
 FakeHostAuthenticatorFactory::FakeHostAuthenticatorFactory(

@@ -488,9 +488,9 @@ std::unique_ptr<DesktopSession> DesktopSessionWin::CreateForConsole(
     DaemonProcess* daemon_process,
     int id,
     const ScreenResolution& resolution) {
-  return base::WrapUnique(new ConsoleSession(caller_task_runner, io_task_runner,
-                                             daemon_process, id,
-                                             HostService::GetInstance()));
+  return base::MakeUnique<ConsoleSession>(caller_task_runner, io_task_runner,
+                                          daemon_process, id,
+                                          HostService::GetInstance());
 }
 
 // static

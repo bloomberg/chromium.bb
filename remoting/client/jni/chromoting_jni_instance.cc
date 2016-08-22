@@ -400,9 +400,9 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signaling_.get(),
-          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
-          base::WrapUnique(
-              new ChromiumUrlRequestFactory(jni_runtime_->url_requester())),
+          base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
+          base::MakeUnique<ChromiumUrlRequestFactory>(
+              jni_runtime_->url_requester()),
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);

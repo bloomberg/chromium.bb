@@ -50,7 +50,7 @@ void DisconnectWindowAura::Start(
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::WrapUnique(new DisconnectWindowAura());
+  return base::MakeUnique<DisconnectWindowAura>();
 }
 
 }  // namespace remoting

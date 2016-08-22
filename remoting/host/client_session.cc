@@ -48,9 +48,9 @@ std::unique_ptr<AudioEncoder> CreateAudioEncoder(
   const protocol::ChannelConfig& audio_config = config.audio_config();
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return base::WrapUnique(new AudioEncoderVerbatim());
+    return base::MakeUnique<AudioEncoderVerbatim>();
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return base::WrapUnique(new AudioEncoderOpus());
+    return base::MakeUnique<AudioEncoderOpus>();
   }
 
   NOTREACHED();
@@ -189,7 +189,7 @@ void ClientSession::SetCapabilities(
   }
 
   // Compute the set of capabilities supported by both client and host.
-  client_capabilities_ = base::WrapUnique(new std::string());
+  client_capabilities_ = base::MakeUnique<std::string>();
   if (capabilities.has_capabilities())
     *client_capabilities_ = capabilities.capabilities();
   capabilities_ = IntersectCapabilities(*client_capabilities_,
@@ -450,9 +450,9 @@ ClientSessionControl* ClientSession::session_control() {
 std::unique_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
 
-  return base::WrapUnique(
-      new protocol::ClipboardThreadProxy(client_clipboard_factory_.GetWeakPtr(),
-                                         base::ThreadTaskRunnerHandle::Get()));
+  return base::MakeUnique<protocol::ClipboardThreadProxy>(
+      client_clipboard_factory_.GetWeakPtr(),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,

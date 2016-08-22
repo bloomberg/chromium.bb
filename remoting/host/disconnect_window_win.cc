@@ -397,7 +397,7 @@ bool DisconnectWindowWin::SetStrings() {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
-  return base::WrapUnique(new DisconnectWindowWin());
+  return base::MakeUnique<DisconnectWindowWin>();
 }
 
 }  // namespace remoting

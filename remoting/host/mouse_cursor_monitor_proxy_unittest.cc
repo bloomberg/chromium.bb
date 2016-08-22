@@ -124,8 +124,9 @@ TEST_F(MouseCursorMonitorProxyTest, CursorShape) {
   proxy_.reset(new MouseCursorMonitorProxy(
       capture_thread_.task_runner(),
       webrtc::DesktopCaptureOptions::CreateDefault()));
-  proxy_->SetMouseCursorMonitorForTests(base::WrapUnique(
-      new ThreadCheckMouseCursorMonitor(capture_thread_.task_runner())));
+  proxy_->SetMouseCursorMonitorForTests(
+      base::MakeUnique<ThreadCheckMouseCursorMonitor>(
+          capture_thread_.task_runner()));
   proxy_->Init(this, webrtc::MouseCursorMonitor::SHAPE_ONLY);
   proxy_->Capture();
 

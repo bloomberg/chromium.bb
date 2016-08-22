@@ -118,7 +118,7 @@ void ContinueWindowGtk::OnResponse(GtkDialog* dialog, int response_id) {
 
 // static
 std::unique_ptr<HostWindow> HostWindow::CreateContinueWindow() {
-  return base::WrapUnique(new ContinueWindowGtk());
+  return base::MakeUnique<ContinueWindowGtk>();
 }
 
 }  // namespace remoting

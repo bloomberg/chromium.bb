@@ -184,8 +184,8 @@ VideoFramePump::EncodeFrame(VideoEncoder* encoder,
       (timestamps->encode_ended_time - timestamps->encode_started_time)
           .InMilliseconds());
 
-  return base::WrapUnique(
-      new PacketWithTimestamps(std::move(packet), std::move(timestamps)));
+  return base::MakeUnique<PacketWithTimestamps>(std::move(packet),
+                                                std::move(timestamps));
 }
 
 void VideoFramePump::OnFrameEncoded(
@@ -267,7 +267,7 @@ void VideoFramePump::SendKeepAlivePacket() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   video_stub_->ProcessVideoPacket(
-      base::WrapUnique(new VideoPacket()),
+      base::MakeUnique<VideoPacket>(),
       base::Bind(&VideoFramePump::OnKeepAlivePacketSent,
                  weak_factory_.GetWeakPtr()));
 }

@@ -111,7 +111,7 @@ PepperUrlRequestFactory::~PepperUrlRequestFactory() {}
 std::unique_ptr<UrlRequest> PepperUrlRequestFactory::CreateUrlRequest(
     UrlRequest::Type type,
     const std::string& url) {
-  return base::WrapUnique(new PepperUrlRequest(pp_instance_, type, url));
+  return base::MakeUnique<PepperUrlRequest>(pp_instance_, type, url);
 }
 
 }  // namespace remoting

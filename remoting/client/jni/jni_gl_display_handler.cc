@@ -46,8 +46,8 @@ void JniGlDisplayHandler::InitializeClient(
 
 std::unique_ptr<protocol::CursorShapeStub>
 JniGlDisplayHandler::CreateCursorShapeStub() {
-  return base::WrapUnique(
-      new CursorShapeStubProxy(weak_ptr_, runtime_->display_task_runner()));
+  return base::MakeUnique<CursorShapeStubProxy>(
+      weak_ptr_, runtime_->display_task_runner());
 }
 
 std::unique_ptr<protocol::VideoRenderer>
@@ -55,12 +55,12 @@ JniGlDisplayHandler::CreateVideoRenderer() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   DCHECK(!frame_consumer_);
   std::unique_ptr<DualBufferFrameConsumer> consumer =
-      base::WrapUnique(new DualBufferFrameConsumer(
+      base::MakeUnique<DualBufferFrameConsumer>(
           base::Bind(&GlRenderer::OnFrameReceived, renderer_.GetWeakPtr()),
           runtime_->display_task_runner(),
-          protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
+          protocol::FrameConsumer::PixelFormat::FORMAT_RGBA);
   frame_consumer_ = consumer->GetWeakPtr();
-  return base::WrapUnique(new SoftwareVideoRenderer(std::move(consumer)));
+  return base::MakeUnique<SoftwareVideoRenderer>(std::move(consumer));
 }
 
 // static

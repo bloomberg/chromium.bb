@@ -122,9 +122,8 @@ void TestChromotingClient::StartConnection(
   scoped_refptr<protocol::TransportContext> transport_context(
       new protocol::TransportContext(
           signal_strategy_.get(),
-          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
-          base::WrapUnique(
-              new ChromiumUrlRequestFactory(request_context_getter)),
+          base::MakeUnique<protocol::ChromiumPortAllocatorFactory>(),
+          base::MakeUnique<ChromiumUrlRequestFactory>(request_context_getter),
           network_settings, protocol::TransportRole::CLIENT));
 
   protocol::ClientAuthenticationConfig client_auth_config;
