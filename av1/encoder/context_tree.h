@@ -28,16 +28,10 @@ typedef struct {
   MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
   uint8_t *color_index_map[2];
-  tran_low_t *coeff[MAX_MB_PLANE][3];
-  tran_low_t *qcoeff[MAX_MB_PLANE][3];
-  tran_low_t *dqcoeff[MAX_MB_PLANE][3];
-  uint16_t *eobs[MAX_MB_PLANE][3];
-
-  // dual buffer pointers, 0: in use, 1: best in store
-  tran_low_t *coeff_pbuf[MAX_MB_PLANE][3];
-  tran_low_t *qcoeff_pbuf[MAX_MB_PLANE][3];
-  tran_low_t *dqcoeff_pbuf[MAX_MB_PLANE][3];
-  uint16_t *eobs_pbuf[MAX_MB_PLANE][3];
+  tran_low_t *coeff[MAX_MB_PLANE];
+  tran_low_t *qcoeff[MAX_MB_PLANE];
+  tran_low_t *dqcoeff[MAX_MB_PLANE];
+  uint16_t *eobs[MAX_MB_PLANE];
 
   int num_4x4_blk;
   int skip;

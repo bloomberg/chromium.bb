@@ -20,40 +20,32 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
                                PICK_MODE_CONTEXT *ctx) {
   const int num_blk = (num_4x4_blk < 4 ? 4 : num_4x4_blk);
   const int num_pix = num_blk << 4;
-  int i, k;
+  int i;
   ctx->num_4x4_blk = num_blk;
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-    for (k = 0; k < 3; ++k) {
-      CHECK_MEM_ERROR(cm, ctx->coeff[i][k],
-                      aom_memalign(32, num_pix * sizeof(*ctx->coeff[i][k])));
-      CHECK_MEM_ERROR(cm, ctx->qcoeff[i][k],
-                      aom_memalign(32, num_pix * sizeof(*ctx->qcoeff[i][k])));
-      CHECK_MEM_ERROR(cm, ctx->dqcoeff[i][k],
-                      aom_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i][k])));
-      CHECK_MEM_ERROR(cm, ctx->eobs[i][k],
-                      aom_memalign(32, num_blk * sizeof(*ctx->eobs[i][k])));
-      ctx->coeff_pbuf[i][k] = ctx->coeff[i][k];
-      ctx->qcoeff_pbuf[i][k] = ctx->qcoeff[i][k];
-      ctx->dqcoeff_pbuf[i][k] = ctx->dqcoeff[i][k];
-      ctx->eobs_pbuf[i][k] = ctx->eobs[i][k];
-    }
+    CHECK_MEM_ERROR(cm, ctx->coeff[i],
+                    aom_memalign(32, num_pix * sizeof(*ctx->coeff[i])));
+    CHECK_MEM_ERROR(cm, ctx->qcoeff[i],
+                    aom_memalign(32, num_pix * sizeof(*ctx->qcoeff[i])));
+    CHECK_MEM_ERROR(cm, ctx->dqcoeff[i],
+                    aom_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i])));
+    CHECK_MEM_ERROR(cm, ctx->eobs[i],
+                    aom_memalign(32, num_blk * sizeof(*ctx->eobs[i])));
   }
 }
 
 static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
-  int i, k;
+  int i;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-    for (k = 0; k < 3; ++k) {
-      aom_free(ctx->coeff[i][k]);
-      ctx->coeff[i][k] = 0;
-      aom_free(ctx->qcoeff[i][k]);
-      ctx->qcoeff[i][k] = 0;
-      aom_free(ctx->dqcoeff[i][k]);
-      ctx->dqcoeff[i][k] = 0;
-      aom_free(ctx->eobs[i][k]);
-      ctx->eobs[i][k] = 0;
-    }
+    aom_free(ctx->coeff[i]);
+    ctx->coeff[i] = 0;
+    aom_free(ctx->qcoeff[i]);
+    ctx->qcoeff[i] = 0;
+    aom_free(ctx->dqcoeff[i]);
+    ctx->dqcoeff[i] = 0;
+    aom_free(ctx->eobs[i]);
+    ctx->eobs[i] = 0;
   }
 
   for (i = 0; i < 2; ++i) {

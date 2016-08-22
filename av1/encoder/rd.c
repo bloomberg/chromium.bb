@@ -290,11 +290,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_error_per_bit(x, rd->RDMULT);
 
-  x->select_tx_size = (cpi->sf.tx_size_search_method == USE_LARGESTALL &&
-                       cm->frame_type != KEY_FRAME)
-                          ? 0
-                          : 1;
-
   set_block_thresholds(cm, rd);
 
   fill_token_costs(x->token_costs, cm->fc->coef_probs);

@@ -67,7 +67,6 @@ struct macroblock {
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;
   int skip_block;
-  int select_tx_size;
   int q_index;
 
   // The equivalent error at the current rdmult of one whole bit (not one

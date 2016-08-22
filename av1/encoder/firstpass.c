@@ -520,10 +520,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   av1_frame_init_quantizer(cpi);
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-    p[i].coeff = ctx->coeff_pbuf[i][1];
-    p[i].qcoeff = ctx->qcoeff_pbuf[i][1];
-    pd[i].dqcoeff = ctx->dqcoeff_pbuf[i][1];
-    p[i].eobs = ctx->eobs_pbuf[i][1];
+    p[i].coeff = ctx->coeff[i];
+    p[i].qcoeff = ctx->qcoeff[i];
+    pd[i].dqcoeff = ctx->dqcoeff[i];
+    p[i].eobs = ctx->eobs[i];
   }
 
   av1_init_mv_probs(cm);
