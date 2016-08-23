@@ -6,22 +6,12 @@ cr.define('downloads', function() {
   var Toolbar = Polymer({
     is: 'downloads-toolbar',
 
-    attached: function() {
-      // isRTL() only works after i18n_template.js runs to set <html dir>.
-      this.overflowAlign_ = isRTL() ? 'left' : 'right';
-    },
-
     properties: {
       downloadsShowing: {
         reflectToAttribute: true,
         type: Boolean,
         value: false,
         observer: 'downloadsShowingChanged_',
-      },
-
-      overflowAlign_: {
-        type: String,
-        value: 'right',
       },
     },
 

@@ -6570,19 +6570,12 @@ var SearchField = Polymer({
 cr.define('downloads', function() {
   var Toolbar = Polymer({
     is: 'downloads-toolbar',
-    attached: function() {
-      this.overflowAlign_ = isRTL() ? 'left' : 'right';
-    },
     properties: {
       downloadsShowing: {
         reflectToAttribute: true,
         type: Boolean,
         value: false,
         observer: 'downloadsShowingChanged_'
-      },
-      overflowAlign_: {
-        type: String,
-        value: 'right'
       }
     },
     listeners: {
