@@ -97,7 +97,8 @@ std::string ChromeURLs() {
   std::sort(hosts.begin(), hosts.end());
   for (std::vector<std::string>::const_iterator i = hosts.begin();
        i != hosts.end(); ++i)
-    html += "<li><a href='chrome://" + *i + "/'>chrome://" + *i + "</a></li>\n";
+    html += "<li><a href='chrome://" + *i + "/' id='" + *i + "'>chrome://" +
+            *i + "</a></li>\n";
   html += "</ul>\n";
   AppendFooter(&html);
   return html;
