@@ -22,26 +22,10 @@ namespace blink {
 namespace {
 double gCurrentTimeSecs = 0.0;
 
-// This class exists because gcc doesn't know how to move an std::unique_ptr.
-class RefCountedTaskContainer : public RefCounted<RefCountedTaskContainer> {
-public:
-    explicit RefCountedTaskContainer(WebTaskRunner::Task* task) : m_task(wrapUnique(task)) { }
-
-    ~RefCountedTaskContainer() { }
-
-    void run()
-    {
-        m_task->run();
-    }
-
-private:
-    std::unique_ptr<WebTaskRunner::Task> m_task;
-};
-
 class DelayedTask {
 public:
     DelayedTask(WebTaskRunner::Task* task, double delaySeconds)
-        : m_task(adoptRef(new RefCountedTaskContainer(task)))
+        : m_task(task)
         , m_runTimeSeconds(gCurrentTimeSecs + delaySeconds)
         , m_delaySeconds(delaySeconds)
     {
@@ -68,7 +52,7 @@ public:
     }
 
 private:
-    RefPtr<RefCountedTaskContainer> m_task;
+    std::unique_ptr<WebTaskRunner::Task> m_task;
     double m_runTimeSeconds;
     double m_delaySeconds;
 };
