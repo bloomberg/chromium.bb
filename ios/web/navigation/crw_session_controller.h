@@ -28,33 +28,33 @@ struct SSLStatus;
 // NavigationManager.
 @interface CRWSessionController : NSObject<NSCoding, NSCopying>
 
-@property(nonatomic, readonly, retain) NSString* tabId;
+@property(nonatomic, readonly, copy) NSString* tabId;
 @property(nonatomic, readonly, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, readonly, assign) NSInteger previousNavigationIndex;
-@property(nonatomic, readonly, retain) NSArray* entries;
+@property(nonatomic, readonly, strong) NSArray* entries;
 @property(nonatomic, copy) NSString* windowName;
 // Indicates whether the page was opened by DOM (e.g. with |window.open|
 // JavaScript call or by clicking a link with |_blank| target).
 @property(nonatomic, readonly, getter=isOpenedByDOM) BOOL openedByDOM;
-@property(nonatomic, readonly, retain)
+@property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 // Returns the current entry in the session list, or the pending entry if there
 // is a navigation in progress.
-@property(nonatomic, readonly) CRWSessionEntry* currentEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* currentEntry;
 // Returns the entry that should be displayed to users (e.g., in the omnibox).
-@property(nonatomic, readonly) CRWSessionEntry* visibleEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* visibleEntry;
 // Returns the pending entry, if any.
-@property(nonatomic, readonly) CRWSessionEntry* pendingEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* pendingEntry;
 // Returns the transient entry, if any.
-@property(nonatomic, readonly) CRWSessionEntry* transientEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* transientEntry;
 // Returns the last committed entry.
-@property(nonatomic, readonly) CRWSessionEntry* lastCommittedEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* lastCommittedEntry;
 // Returns the previous entry in the session list, or nil if there isn't any.
-@property(nonatomic, readonly) CRWSessionEntry* previousEntry;
+@property(nonatomic, readonly, strong) CRWSessionEntry* previousEntry;
 @property(nonatomic, assign) NSTimeInterval lastVisitedTimestamp;
 @property(nonatomic, readonly, copy) NSString* openerId;
 @property(nonatomic, readonly, assign) NSInteger openerNavigationIndex;
-@property(nonatomic, retain) XCallbackParameters* xCallbackParameters;
+@property(nonatomic, strong) XCallbackParameters* xCallbackParameters;
 
 // CRWSessionController doesn't have public constructors. New
 // CRWSessionControllers are created by deserialization, or via a

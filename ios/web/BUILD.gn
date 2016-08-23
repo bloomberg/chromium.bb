@@ -7,7 +7,7 @@ import("//ios/web/js_compile.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
-source_set("web") {
+source_set("web_arc") {
   deps = [
     ":core",
     ":js_resources",
@@ -62,6 +62,46 @@ source_set("web") {
     "navigation/nscoder_util.mm",
     "navigation/time_smoother.cc",
     "navigation/time_smoother.h",
+    "string_util.cc",
+    "url_scheme_util.mm",
+    "url_util.cc",
+    "web_kit_constants.cc",
+    "web_thread_impl.cc",
+    "web_thread_impl.h",
+    "web_view_creation_util.mm",
+  ]
+
+  libs = [ "WebKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("web") {
+  deps = [
+    ":core",
+    ":js_resources",
+    ":resources",
+    ":user_agent",
+    "//base",
+    "//components/url_formatter",
+    "//ios/net",
+    "//ios/third_party/blink:html_tokenizer",
+    "//mojo/public/cpp/system",
+    "//mojo/public/js",
+    "//net",
+    "//services/shell/public/cpp",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry:geometry",
+    "//ui/resources",
+    "//url",
+  ]
+
+  public_deps = [
+    ":web_arc",
+  ]
+
+  sources = [
     "net/cert_host_pair.cc",
     "net/cert_host_pair.h",
     "net/cert_policy.cc",
@@ -169,10 +209,6 @@ source_set("web") {
     "public/webui/web_ui_ios_controller_factory.h",
     "public/webui/web_ui_ios_message_handler.cc",
     "public/webui/web_ui_ios_message_handler.h",
-    "string_util.cc",
-    "url_scheme_util.mm",
-    "url_util.cc",
-    "web_kit_constants.cc",
     "web_state/blocked_popup_info.h",
     "web_state/blocked_popup_info.mm",
     "web_state/context_menu_params.mm",
@@ -234,9 +270,6 @@ source_set("web") {
     "web_state/web_view_internal_creation_util.mm",
     "web_state/wk_web_view_security_util.h",
     "web_state/wk_web_view_security_util.mm",
-    "web_thread_impl.cc",
-    "web_thread_impl.h",
-    "web_view_creation_util.mm",
     "webui/crw_web_ui_manager.h",
     "webui/crw_web_ui_manager.mm",
     "webui/crw_web_ui_page_builder.h",
@@ -265,6 +298,8 @@ source_set("web") {
   ]
 
   libs = [ "WebKit.framework" ]
+
+  allow_circular_includes_from = [ ":web_arc" ]
 }
 
 source_set("core") {

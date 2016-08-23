@@ -8,6 +8,10 @@
 
 #include "base/logging.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 void AddAllocWithZoneMethod(Class target, id (^impl_block)(Class, NSZone*)) {

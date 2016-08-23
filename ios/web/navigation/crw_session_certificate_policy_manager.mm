@@ -16,6 +16,10 @@
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Break if we detect that CertStatus values changed, because we persist them on
 // disk and thus require them to be consistent.
 static_assert(net::CERT_STATUS_ALL_ERRORS == 0xFF00FFFF,

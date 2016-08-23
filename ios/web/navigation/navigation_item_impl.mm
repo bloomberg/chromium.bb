@@ -14,6 +14,10 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/text_elider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Returns a new unique ID for use in NavigationItem during construction.  The
@@ -204,7 +208,7 @@ bool NavigationItemImpl::HasPostData() const {
 }
 
 NSDictionary* NavigationItemImpl::GetHttpRequestHeaders() const {
-  return [[http_request_headers_ copy] autorelease];
+  return [http_request_headers_ copy];
 }
 
 void NavigationItemImpl::AddHttpRequestHeaders(
@@ -220,7 +224,7 @@ void NavigationItemImpl::AddHttpRequestHeaders(
 
 void NavigationItemImpl::SetSerializedStateObject(
     NSString* serialized_state_object) {
-  serialized_state_object_.reset([serialized_state_object retain]);
+  serialized_state_object_.reset(serialized_state_object);
 }
 
 NSString* NavigationItemImpl::GetSerializedStateObject() const {
@@ -244,7 +248,7 @@ bool NavigationItemImpl::ShouldSkipResubmitDataConfirmation() const {
 }
 
 void NavigationItemImpl::SetPostData(NSData* post_data) {
-  post_data_.reset([post_data retain]);
+  post_data_.reset(post_data);
 }
 
 NSData* NavigationItemImpl::GetPostData() const {

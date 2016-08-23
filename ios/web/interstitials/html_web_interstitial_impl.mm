@@ -17,6 +17,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/gfx/geometry/size.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // The delegate of the web view that is used to display the HTML content.
 // It intercepts JavaScript-triggered commands and forwards them
 // to the interstitial.

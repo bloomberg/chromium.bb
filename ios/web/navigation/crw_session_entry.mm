@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/navigation/navigation_item_impl.h"
@@ -16,6 +15,10 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #import "net/base/mac/url_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 // Keys used to serialize web::PageScrollState properties.
@@ -50,8 +53,6 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
   // The NavigationItemImpl corresponding to this CRWSessionEntry.
   // TODO(stuartmorgan): Move ownership to NavigationManagerImpl.
   std::unique_ptr<web::NavigationItemImpl> _navigationItem;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_CRWSessionEntry;
 }
 // Redefine originalUrl to be read-write.
 @property(nonatomic, readwrite) const GURL& originalUrl;
@@ -75,7 +76,6 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
     (std::unique_ptr<web::NavigationItem>)item {
   self = [super init];
   if (self) {
-    _propertyReleaser_CRWSessionEntry.Init(self, [CRWSessionEntry class]);
     _navigationItem.reset(
         static_cast<web::NavigationItemImpl*>(item.release()));
     self.originalUrl = _navigationItem->GetURL();
@@ -86,7 +86,6 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 - (instancetype)initWithCoder:(NSCoder*)aDecoder {
   self = [super init];
   if (self) {
-    _propertyReleaser_CRWSessionEntry.Init(self, [CRWSessionEntry class]);
     _navigationItem.reset(new web::NavigationItemImpl());
 
     // Desktop chrome only persists virtualUrl_ and uses it to feed the url
@@ -175,7 +174,6 @@ NSString* const kSessionEntryUseDesktopUserAgentKey = @"useDesktopUserAgent";
 
 - (instancetype)copyWithZone:(NSZone*)zone {
   CRWSessionEntry* copy = [[[self class] alloc] init];
-  copy->_propertyReleaser_CRWSessionEntry.Init(copy, [CRWSessionEntry class]);
   copy->_navigationItem.reset(
       new web::NavigationItemImpl(*_navigationItem.get()));
   copy->_originalUrl = _originalUrl;

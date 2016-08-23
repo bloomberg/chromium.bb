@@ -20,6 +20,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Checks whether or not two URL are an in-page navigation (differing only
@@ -84,7 +88,7 @@ NavigationManagerImpl::~NavigationManagerImpl() {
 
 void NavigationManagerImpl::SetSessionController(
     CRWSessionController* session_controller) {
-  session_controller_.reset([session_controller retain]);
+  session_controller_.reset(session_controller);
   [session_controller_ setNavigationManager:this];
 }
 
@@ -92,21 +96,21 @@ void NavigationManagerImpl::InitializeSession(NSString* window_name,
                                               NSString* opener_id,
                                               BOOL opened_by_dom,
                                               int opener_navigation_index) {
-  SetSessionController([[[CRWSessionController alloc]
+  SetSessionController([[CRWSessionController alloc]
          initWithWindowName:window_name
                    openerId:opener_id
                 openedByDOM:opened_by_dom
       openerNavigationIndex:opener_navigation_index
-               browserState:browser_state_] autorelease]);
+               browserState:browser_state_]);
 }
 
 void NavigationManagerImpl::ReplaceSessionHistory(
     ScopedVector<web::NavigationItem> items,
     int current_index) {
-  SetSessionController([[[CRWSessionController alloc]
+  SetSessionController([[CRWSessionController alloc]
       initWithNavigationItems:std::move(items)
                  currentIndex:current_index
-                 browserState:browser_state_] autorelease]);
+                 browserState:browser_state_]);
 }
 
 void NavigationManagerImpl::SetFacadeDelegate(
@@ -322,8 +326,7 @@ void NavigationManagerImpl::RemoveTransientURLRewriters() {
 
 void NavigationManagerImpl::CopyState(
     NavigationManagerImpl* navigation_manager) {
-  SetSessionController(
-      [[navigation_manager->GetSessionController() copy] autorelease]);
+  SetSessionController([navigation_manager->GetSessionController() copy]);
 }
 
 }  // namespace web
