@@ -50,6 +50,8 @@
     'android/wrapped_channel_upload_element_reader.h',
     'histogram_manager.cc',
     'histogram_manager.h',
+    'stale_host_resolver.cc',
+    'stale_host_resolver.h',
     'url_request_context_config.cc',
     'url_request_context_config.h',
   ],

@@ -602,9 +602,10 @@
           ],
           'sources': [
             'cronet/android/cert/cert_verifier_cache_serializer_unittest.cc',
-            'cronet/run_all_unittests.cc',
-            'cronet/url_request_context_config_unittest.cc',
             'cronet/histogram_manager_unittest.cc',
+            'cronet/run_all_unittests.cc',
+            'cronet/stale_host_resolver_unittest.cc',
+            'cronet/url_request_context_config_unittest.cc',
           ],
         },
         {
@@ -830,6 +831,8 @@
             'cronet/ios/cronet_c_for_grpc.cc',
             'cronet/ios/cronet_environment.cc',
             'cronet/ios/cronet_environment.h',
+            'cronet/stale_host_resolver.cc',
+            'cronet/stale_host_resolver.h',
             'cronet/url_request_context_config.cc',
             'cronet/url_request_context_config.h',
           ],

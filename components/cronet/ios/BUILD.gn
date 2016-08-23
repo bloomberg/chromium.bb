@@ -40,6 +40,8 @@ source_set("cronet_sources") {
   sources = [
     "../histogram_manager.cc",
     "../histogram_manager.h",
+    "../stale_host_resolver.cc",
+    "../stale_host_resolver.h",
     "../url_request_context_config.cc",
     "../url_request_context_config.h",
     "cronet_bidirectional_stream.cc",
@@ -126,6 +128,7 @@ test("cronet_unittests") {
   sources = [
     "//components/cronet/histogram_manager_unittest.cc",
     "//components/cronet/run_all_unittests.cc",
+    "//components/cronet/stale_host_resolver_unittest.cc",
     "//components/cronet/url_request_context_config_unittest.cc",
   ]
 

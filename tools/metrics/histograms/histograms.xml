@@ -10193,6 +10193,43 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DNS.StaleHostResolver.NetworkEarly" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver returns, a stale cached
+    result was available, and the network responded before or exactly at the
+    stale delay, how much earlier it responded.
+  </summary>
+</histogram>
+
+<histogram name="DNS.StaleHostResolver.NetworkLate" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver returns, a stale cached
+    result was available, and the network responded after the stale delay, how
+    much later it responded.
+  </summary>
+</histogram>
+
+<histogram name="DNS.StaleHostResolver.RequestOutcome"
+    enum="DNS.StaleHostResolverRequestOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver returns or is canceled,
+    the outcome of the request.
+  </summary>
+</histogram>
+
+<histogram name="DNS.StaleHostResolver.StaleAddressListDelta"
+    enum="DNS.AddressListDeltaType">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When a DNS request made through StaleHostResolver had a stale cached result
+    and both the stale and network results were successful, the difference
+    between the old and new address lists.
+  </summary>
+</histogram>
+
 <histogram name="DNS.TotalTime" units="ms">
   <owner>juliatuttle@chromium.org</owner>
   <summary>
@@ -73834,6 +73871,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Inserted new entry"/>
   <int value="1" label="Updated valid entry"/>
   <int value="2" label="Updated stale entry"/>
+</enum>
+
+<enum name="DNS.StaleHostResolverRequestOutcome" type="int">
+  <int value="0"
+      label="Returned synchronously (cache, hosts, IP literal etc.)"/>
+  <int value="1"
+      label="Returned network result; no stale cached result was available."/>
+  <int value="2"
+      label="Returned network result; stale cached result was available."/>
+  <int value="3" label="Returned stale cached result; network was too slow."/>
+  <int value="4" label="Canceled; no stale cached result was available."/>
+  <int value="5" label="Canceled; stale cached result was available."/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError" type="int">

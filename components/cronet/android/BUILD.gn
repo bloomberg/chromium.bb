@@ -205,6 +205,8 @@ template("cronet_static_tmpl") {
       "//components/cronet/android/wrapped_channel_upload_element_reader.h",
       "//components/cronet/histogram_manager.cc",
       "//components/cronet/histogram_manager.h",
+      "//components/cronet/stale_host_resolver.cc",
+      "//components/cronet/stale_host_resolver.h",
       "//components/cronet/url_request_context_config.cc",
       "//components/cronet/url_request_context_config.h",
     ]
@@ -724,6 +726,7 @@ test("cronet_unittests") {
     "//components/cronet/android/cert/cert_verifier_cache_serializer_unittest.cc",
     "//components/cronet/histogram_manager_unittest.cc",
     "//components/cronet/run_all_unittests.cc",
+    "//components/cronet/stale_host_resolver_unittest.cc",
     "//components/cronet/url_request_context_config_unittest.cc",
   ]
 

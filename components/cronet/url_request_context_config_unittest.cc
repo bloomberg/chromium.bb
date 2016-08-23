@@ -174,4 +174,6 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
   EXPECT_TRUE(params->quic_migrate_sessions_early);
 }
 
+// See stale_host_resolver_unittest.cc for test of StaleDNS options.
+
 }  // namespace cronet

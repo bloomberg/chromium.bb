@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "components/cronet/stale_host_resolver.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
@@ -60,6 +61,23 @@ const char kQuicRaceCertVerification[] = "race_cert_verification";
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
 // Name of boolean to enable AsyncDNS experiment.
 const char kAsyncDnsEnable[] = "enable";
+
+// Stale DNS (StaleHostResolver) experiment dictionary name.
+const char kStaleDnsFieldTrialName[] = "StaleDNS";
+// Name of boolean to enable stale DNS experiment.
+const char kStaleDnsEnable[] = "enable";
+// Name of integer delay in milliseconds before a stale DNS result will be
+// used.
+const char kStaleDnsDelayMs[] = "delay_ms";
+// Name of integer maximum age (past expiration) in milliseconds of a stale DNS
+// result that will be used, or 0 for no limit.
+const char kStaleDnsMaxExpiredTimeMs[] = "max_expired_time_ms";
+// Name of integer maximum times each stale DNS result can be used, or 0 for no
+// limit.
+const char kStaleDnsMaxStaleUses[] = "max_stale_uses";
+// Name of boolean to allow stale DNS results from other networks to be used on
+// the current network.
+const char kStaleDnsAllowOtherNetwork[] = "allow_other_network";
 
 // Rules to override DNS resolution. Intended for testing.
 // See explanation of format in net/dns/mapped_host_resolver.h.
@@ -205,32 +223,70 @@ void ParseAndSetExperimentalOptions(
     }
   }
 
-  std::unique_ptr<net::HostResolver> host_resolver =
-      net::HostResolver::CreateDefaultResolver(net_log);
+  bool async_dns_enable = false;
+  bool stale_dns_enable = false;
+  bool host_resolver_rules_enable = false;
+  StaleHostResolver::StaleOptions stale_dns_options;
+  std::string host_resolver_rules_string;
 
   const base::DictionaryValue* async_dns_args = nullptr;
-  if (dict->GetDictionary(kAsyncDnsFieldTrialName, &async_dns_args)) {
-    bool async_dns_enable = false;
-    if (async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable) &&
-        async_dns_enable) {
-      host_resolver->SetDnsClientEnabled(true);
+  if (dict->GetDictionary(kAsyncDnsFieldTrialName, &async_dns_args))
+    async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable);
+
+  const base::DictionaryValue* stale_dns_args = nullptr;
+  if (dict->GetDictionary(kStaleDnsFieldTrialName, &stale_dns_args)) {
+    if (stale_dns_args->GetBoolean(kStaleDnsEnable, &stale_dns_enable) &&
+        stale_dns_enable) {
+      int delay;
+      if (stale_dns_args->GetInteger(kStaleDnsDelayMs, &delay))
+        stale_dns_options.delay = base::TimeDelta::FromMilliseconds(delay);
+      int max_expired_time_ms;
+      if (stale_dns_args->GetInteger(kStaleDnsMaxExpiredTimeMs,
+                                     &max_expired_time_ms)) {
+        stale_dns_options.max_expired_time =
+            base::TimeDelta::FromMilliseconds(max_expired_time_ms);
+      }
+      int max_stale_uses;
+      if (stale_dns_args->GetInteger(kStaleDnsMaxStaleUses, &max_stale_uses))
+        stale_dns_options.max_stale_uses = max_stale_uses;
+      bool allow_other_network;
+      if (stale_dns_args->GetBoolean(kStaleDnsAllowOtherNetwork,
+                                     &allow_other_network)) {
+        stale_dns_options.allow_other_network = allow_other_network;
+      }
     }
   }
 
-  const base::DictionaryValue* host_resolver_args = nullptr;
+  const base::DictionaryValue* host_resolver_rules_args = nullptr;
   if (dict->GetDictionary(kHostResolverRulesFieldTrialName,
-                          &host_resolver_args)) {
-    std::string host_resolver_rules;
-    if (host_resolver_args->GetString(kHostResolverRules,
-                                      &host_resolver_rules)) {
+                          &host_resolver_rules_args)) {
+    host_resolver_rules_enable = host_resolver_rules_args->GetString(
+        kHostResolverRules, &host_resolver_rules_string);
+  }
+
+  if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable) {
+    if (net_log == nullptr) {
+      CHECK(false) << "AsyncDNS, StaleDNS, and HostResolverRules experiments "
+                   << "require NetLog.";
+    }
+    std::unique_ptr<net::HostResolver> host_resolver;
+    if (stale_dns_enable) {
+      host_resolver.reset(new StaleHostResolver(
+          net::HostResolver::CreateDefaultResolverImpl(net_log),
+          stale_dns_options));
+    } else {
+      host_resolver = net::HostResolver::CreateDefaultResolver(net_log);
+    }
+    if (async_dns_enable)
+      host_resolver->SetDnsClientEnabled(true);
+    if (host_resolver_rules_enable) {
       std::unique_ptr<net::MappedHostResolver> remapped_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
-      remapped_resolver->SetRulesFromString(host_resolver_rules);
+      remapped_resolver->SetRulesFromString(host_resolver_rules_string);
       host_resolver = std::move(remapped_resolver);
     }
+    context_builder->set_host_resolver(std::move(host_resolver));
   }
-
-  context_builder->set_host_resolver(std::move(host_resolver));
 
   std::string ssl_key_log_file_string;
   if (dict->GetString(kSSLKeyLogFile, &ssl_key_log_file_string)) {
