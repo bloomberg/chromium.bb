@@ -257,6 +257,8 @@ bool HTMLCanvasElement::isPaintable() const
 {
     if (!m_context)
         return ImageBuffer::canCreateImageBuffer(size());
+    if (renderingContext()->getImage())
+        return true;
     return buffer();
 }
 
@@ -1102,10 +1104,17 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
         m_context->paintRenderingResultsToCanvas(BackBuffer);
     }
 
-    RefPtr<SkImage> image = buffer()->newSkImageSnapshot(hint, reason);
-    if (image) {
+    RefPtr<SkImage> skImage;
+    RefPtr<blink::Image> image = renderingContext()->getImage();
+
+    if (image)
+        skImage = image->imageForCurrentFrame();
+    else
+        skImage = hasImageBuffer() ? buffer()->newSkImageSnapshot(hint, reason) : createTransparentImage(size())->imageForCurrentFrame();
+
+    if (skImage) {
         *status = NormalSourceImageStatus;
-        return StaticBitmapImage::create(image.release());
+        return StaticBitmapImage::create(skImage.release());
     }
 
     *status = InvalidSourceImageStatus;
