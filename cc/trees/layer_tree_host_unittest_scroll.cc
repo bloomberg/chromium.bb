@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
@@ -24,9 +25,12 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+
+using ::testing::Mock;
 
 namespace cc {
 namespace {
@@ -1795,6 +1799,183 @@ class LayerTreeHostScrollTestScrollAbortedCommitMFBA
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollAbortedCommitMFBA);
+
+class MockInputHandlerClient : public InputHandlerClient {
+ public:
+  MockInputHandlerClient() {}
+
+  MOCK_METHOD0(ReconcileElasticOverscrollAndRootScroll, void());
+
+  void WillShutdown() override {}
+  void Animate(base::TimeTicks) override {}
+  void MainThreadHasStoppedFlinging() override {}
+  void UpdateRootLayerStateForSynchronousInputHandler(
+      const gfx::ScrollOffset& total_scroll_offset,
+      const gfx::ScrollOffset& max_scroll_offset,
+      const gfx::SizeF& scrollable_size,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) override {}
+};
+
+// This is a regression test, see crbug.com/639046.
+class LayerTreeHostScrollTestElasticOverscroll
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestElasticOverscroll()
+      : num_begin_main_frames_impl_thread_(0),
+        scroll_elasticity_helper_(nullptr),
+        num_begin_main_frames_main_thread_(0) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->enable_elastic_overscroll = true;
+  }
+
+  void BeginTest() override {
+    DCHECK(HasImplThread());
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostScrollTestElasticOverscroll::BindInputHandler,
+                   base::Unretained(this),
+                   layer_tree_host()->GetInputHandler()));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void BindInputHandler(const base::WeakPtr<InputHandler> input_handler) {
+    DCHECK(task_runner_provider()->IsImplThread());
+    input_handler->BindToClient(&input_handler_client_);
+    scroll_elasticity_helper_ = input_handler->CreateScrollElasticityHelper();
+    DCHECK(scroll_elasticity_helper_);
+  }
+
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
+                           const gfx::Vector2dF& outer_delta,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float scale,
+                           float top_controls_delta) override {
+    DCHECK_NE(0, num_begin_main_frames_main_thread_)
+        << "The first BeginMainFrame has no deltas to report";
+    DCHECK_LT(num_begin_main_frames_main_thread_, 5);
+
+    gfx::Vector2dF expected_elastic_overscroll =
+        elastic_overscroll_test_cases_[num_begin_main_frames_main_thread_];
+    current_elastic_overscroll_ += elastic_overscroll_delta;
+    EXPECT_EQ(expected_elastic_overscroll, current_elastic_overscroll_);
+    EXPECT_EQ(expected_elastic_overscroll, layer_tree()->elastic_overscroll());
+  }
+
+  void WillBeginMainFrame() override { num_begin_main_frames_main_thread_++; }
+
+  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
+                                     CommitEarlyOutReason reason) override {
+    VerifyBeginMainFrameResultOnImplThread(host_impl, true);
+  }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    VerifyBeginMainFrameResultOnImplThread(host_impl, false);
+  }
+
+  void VerifyBeginMainFrameResultOnImplThread(LayerTreeHostImpl* host_impl,
+                                              bool begin_main_frame_aborted) {
+    gfx::Vector2dF expected_elastic_overscroll =
+        elastic_overscroll_test_cases_[num_begin_main_frames_impl_thread_];
+    EXPECT_EQ(expected_elastic_overscroll,
+              scroll_elasticity_helper_->StretchAmount());
+    if (!begin_main_frame_aborted)
+      EXPECT_EQ(
+          expected_elastic_overscroll,
+          host_impl->pending_tree()->elastic_overscroll()->Current(false));
+
+    ++num_begin_main_frames_impl_thread_;
+    gfx::Vector2dF next_test_case;
+    if (num_begin_main_frames_impl_thread_ < 5)
+      next_test_case =
+          elastic_overscroll_test_cases_[num_begin_main_frames_impl_thread_];
+
+    switch (num_begin_main_frames_impl_thread_) {
+      case 1:
+        // The first BeginMainFrame is never aborted.
+        EXPECT_FALSE(begin_main_frame_aborted);
+        scroll_elasticity_helper_->SetStretchAmount(next_test_case);
+        break;
+      case 2:
+        EXPECT_TRUE(begin_main_frame_aborted);
+        scroll_elasticity_helper_->SetStretchAmount(next_test_case);
+
+        // Since the elastic overscroll is never mutated on the main thread, the
+        // BeginMainFrame which reports the delta is aborted. Post a commit
+        // request to the main thread to make sure it goes through.
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        EXPECT_FALSE(begin_main_frame_aborted);
+        scroll_elasticity_helper_->SetStretchAmount(next_test_case);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        EXPECT_FALSE(begin_main_frame_aborted);
+        scroll_elasticity_helper_->SetStretchAmount(next_test_case);
+        break;
+      case 5:
+        EXPECT_TRUE(begin_main_frame_aborted);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_begin_main_frames_impl_thread_ == 5)
+      return;
+
+    // Ensure that the elastic overscroll value on the active tree remains
+    // unmodified after activation.
+    gfx::Vector2dF expected_elastic_overscroll =
+        elastic_overscroll_test_cases_[num_begin_main_frames_impl_thread_];
+    EXPECT_EQ(expected_elastic_overscroll,
+              scroll_elasticity_helper_->StretchAmount());
+  }
+
+  void WillPrepareToDrawOnThread(LayerTreeHostImpl* host_impl) override {
+    // The InputHandlerClient must receive a call to reconcile the overscroll
+    // before each draw.
+    EXPECT_CALL(input_handler_client_,
+                ReconcileElasticOverscrollAndRootScroll())
+        .Times(1);
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    Mock::VerifyAndClearExpectations(&input_handler_client_);
+    return draw_result;
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(num_begin_main_frames_impl_thread_, 5);
+    EXPECT_EQ(num_begin_main_frames_main_thread_, 5);
+    gfx::Vector2dF expected_elastic_overscroll =
+        elastic_overscroll_test_cases_[4];
+    EXPECT_EQ(expected_elastic_overscroll, current_elastic_overscroll_);
+  }
+
+ private:
+  // These values should be used on the impl thread only.
+  int num_begin_main_frames_impl_thread_;
+  MockInputHandlerClient input_handler_client_;
+  ScrollElasticityHelper* scroll_elasticity_helper_;
+
+  // These values should be used on the main thread only.
+  int num_begin_main_frames_main_thread_;
+  gfx::Vector2dF current_elastic_overscroll_;
+
+  const gfx::Vector2dF elastic_overscroll_test_cases_[5] = {
+      gfx::Vector2dF(0, 0), gfx::Vector2dF(5, 10), gfx::Vector2dF(5, 5),
+      gfx::Vector2dF(-4, -5), gfx::Vector2dF(0, 0)};
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestElasticOverscroll);
 
 }  // namespace
 }  // namespace cc

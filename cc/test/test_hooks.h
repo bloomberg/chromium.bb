@@ -41,6 +41,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                            bool success) {}
+  virtual void WillPrepareToDrawOnThread(LayerTreeHostImpl* host_impl) {}
   virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,

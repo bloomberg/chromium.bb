@@ -50,12 +50,14 @@ void CreateVirtualViewportLayers(Layer* root_layer,
                                  const gfx::Size& outer_bounds,
                                  LayerTreeHost* host) {
   scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
+  scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
   scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
   scoped_refptr<Layer> outer_viewport_container_layer = Layer::Create();
   scoped_refptr<Layer> page_scale_layer = Layer::Create();
 
   root_layer->AddChild(inner_viewport_container_layer);
-  inner_viewport_container_layer->AddChild(page_scale_layer);
+  inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
+  overscroll_elasticity_layer->AddChild(page_scale_layer);
   page_scale_layer->AddChild(inner_viewport_scroll_layer);
   inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
   outer_viewport_container_layer->AddChild(outer_scroll_layer);
@@ -72,7 +74,8 @@ void CreateVirtualViewportLayers(Layer* root_layer,
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   host->GetLayerTree()->RegisterViewportLayers(
-      NULL, page_scale_layer, inner_viewport_scroll_layer, outer_scroll_layer);
+      overscroll_elasticity_layer, page_scale_layer,
+      inner_viewport_scroll_layer, outer_scroll_layer);
 }
 
 void CreateVirtualViewportLayers(Layer* root_layer,
@@ -175,6 +178,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   DrawResult PrepareToDraw(FrameData* frame) override {
+    test_hooks_->WillPrepareToDrawOnThread(this);
     DrawResult draw_result = LayerTreeHostImpl::PrepareToDraw(frame);
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }
@@ -402,10 +406,13 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
   std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* host_impl_client) override {
-    return LayerTreeHostImplForTesting::Create(
-        test_hooks_, settings(), host_impl_client, task_runner_provider(),
-        shared_bitmap_manager(), gpu_memory_buffer_manager(),
-        task_graph_runner(), rendering_stats_instrumentation());
+    std::unique_ptr<LayerTreeHostImpl> host_impl =
+        LayerTreeHostImplForTesting::Create(
+            test_hooks_, settings(), host_impl_client, task_runner_provider(),
+            shared_bitmap_manager(), gpu_memory_buffer_manager(),
+            task_graph_runner(), rendering_stats_instrumentation());
+    input_handler_weak_ptr_ = host_impl->AsWeakPtr();
+    return host_impl;
   }
 
   void SetNeedsCommit() override {

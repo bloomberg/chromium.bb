@@ -356,6 +356,8 @@ class CC_EXPORT LayerTreeHost {
 
   std::unique_ptr<LayerTree> layer_tree_;
 
+  base::WeakPtr<InputHandler> input_handler_weak_ptr_;
+
  private:
   friend class LayerTreeHostSerializationTest;
 
@@ -410,8 +412,6 @@ class CC_EXPORT LayerTreeHost {
   std::unique_ptr<OutputSurface> new_output_surface_;
   std::unique_ptr<OutputSurface> current_output_surface_;
   bool output_surface_lost_;
-
-  base::WeakPtr<InputHandler> input_handler_weak_ptr_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
