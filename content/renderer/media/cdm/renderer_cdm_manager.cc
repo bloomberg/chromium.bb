@@ -37,7 +37,6 @@ bool RendererCdmManager::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RendererCdmManager, msg)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionMessage, OnSessionMessage)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionClosed, OnSessionClosed)
-    IPC_MESSAGE_HANDLER(CdmMsg_LegacySessionError, OnLegacySessionError)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionKeysChange, OnSessionKeysChange)
     IPC_MESSAGE_HANDLER(CdmMsg_SessionExpirationUpdate,
                         OnSessionExpirationUpdate)
@@ -137,8 +136,7 @@ void RendererCdmManager::OnSessionMessage(
     int cdm_id,
     const std::string& session_id,
     media::MediaKeys::MessageType message_type,
-    const std::vector<uint8_t>& message,
-    const GURL& legacy_destination_url) {
+    const std::vector<uint8_t>& message) {
   if (message.size() > kMaxSessionMessageLength) {
     NOTREACHED();
     LOG(ERROR) << "Message is too long and dropped.";
@@ -147,8 +145,7 @@ void RendererCdmManager::OnSessionMessage(
 
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
-    media_keys->OnSessionMessage(session_id, message_type, message,
-                                 legacy_destination_url);
+    media_keys->OnSessionMessage(session_id, message_type, message);
 }
 
 void RendererCdmManager::OnSessionClosed(int cdm_id,
@@ -156,18 +153,6 @@ void RendererCdmManager::OnSessionClosed(int cdm_id,
   ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionClosed(session_id);
-}
-
-void RendererCdmManager::OnLegacySessionError(
-    int cdm_id,
-    const std::string& session_id,
-    MediaKeys::Exception exception,
-    uint32_t system_code,
-    const std::string& error_message) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
-  if (media_keys)
-    media_keys->OnLegacySessionError(session_id, exception, system_code,
-                                     error_message);
 }
 
 void RendererCdmManager::OnSessionKeysChange(

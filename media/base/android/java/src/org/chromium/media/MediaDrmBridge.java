@@ -912,8 +912,7 @@ public class MediaDrmBridge {
                     : MediaDrm.KeyRequest.REQUEST_TYPE_RENEWAL;
         }
 
-        nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, requestType, request.getData(),
-                request.getDefaultUrl());
+        nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, requestType, request.getData());
     }
 
     private void onSessionClosed(final byte[] sessionId) {
@@ -933,12 +932,6 @@ public class MediaDrmBridge {
     private void onSessionExpirationUpdate(final byte[] sessionId, final long expirationTime) {
         if (isNativeMediaDrmBridgeValid()) {
             nativeOnSessionExpirationUpdate(mNativeMediaDrmBridge, sessionId, expirationTime);
-        }
-    }
-
-    private void onLegacySessionError(final byte[] sessionId, final String errorMessage) {
-        if (isNativeMediaDrmBridgeValid()) {
-            nativeOnLegacySessionError(mNativeMediaDrmBridge, sessionId, errorMessage);
         }
     }
 
@@ -979,8 +972,6 @@ public class MediaDrmBridge {
                     if (request != null) {
                         onSessionMessage(sessionId, request);
                     } else {
-                        onLegacySessionError(sessionId,
-                                "MediaDrm EVENT_KEY_REQUIRED: Failed to generate request.");
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                             onSessionKeysChange(sessionId,
                                     getDummyKeysInfo(MediaDrm.KeyStatus.STATUS_INTERNAL_ERROR)
@@ -993,7 +984,6 @@ public class MediaDrmBridge {
                     break;
                 case MediaDrm.EVENT_KEY_EXPIRED:
                     Log.d(TAG, "MediaDrm.EVENT_KEY_EXPIRED");
-                    onLegacySessionError(sessionId, "MediaDrm EVENT_KEY_EXPIRED.");
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                         onSessionKeysChange(sessionId,
                                 getDummyKeysInfo(MediaDrm.KeyStatus.STATUS_EXPIRED).toArray(),
@@ -1055,15 +1045,13 @@ public class MediaDrmBridge {
     private native void nativeOnPromiseRejected(
             long nativeMediaDrmBridge, long promiseId, String errorMessage);
 
-    private native void nativeOnSessionMessage(long nativeMediaDrmBridge, byte[] sessionId,
-            int requestType, byte[] message, String destinationUrl);
+    private native void nativeOnSessionMessage(
+            long nativeMediaDrmBridge, byte[] sessionId, int requestType, byte[] message);
     private native void nativeOnSessionClosed(long nativeMediaDrmBridge, byte[] sessionId);
     private native void nativeOnSessionKeysChange(long nativeMediaDrmBridge, byte[] sessionId,
             Object[] keysInfo, boolean hasAdditionalUsableKey);
     private native void nativeOnSessionExpirationUpdate(
             long nativeMediaDrmBridge, byte[] sessionId, long expirationTime);
-    private native void nativeOnLegacySessionError(
-            long nativeMediaDrmBridge, byte[] sessionId, String errorMessage);
 
     private native void nativeOnResetDeviceCredentialsCompleted(
             long nativeMediaDrmBridge, boolean success);

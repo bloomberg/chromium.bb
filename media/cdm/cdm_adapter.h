@@ -64,7 +64,6 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
       const CreateCdmFileIOCB& create_cdm_file_io_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
-      const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
       const CdmCreatedCB& cdm_created_cb);
@@ -164,7 +163,6 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
              const CreateCdmFileIOCB& create_cdm_file_io_cb,
              const SessionMessageCB& session_message_cb,
              const SessionClosedCB& session_closed_cb,
-             const LegacySessionErrorCB& legacy_session_error_cb,
              const SessionKeysChangeCB& session_keys_change_cb,
              const SessionExpirationUpdateCB& session_expiration_update_cb);
   ~CdmAdapter() final;
@@ -203,7 +201,6 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
-  LegacySessionErrorCB legacy_session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
 

@@ -56,7 +56,6 @@ class ContentDecryptorDelegate {
       bool allow_persistent_state,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const base::Closure& fatal_plugin_error_cb,
@@ -113,18 +112,13 @@ class ContentDecryptorDelegate {
                          PP_Var error_description);
   void OnSessionMessage(PP_Var session_id,
                         PP_CdmMessageType message_type,
-                        PP_Var message,
-                        PP_Var legacy_destination_url);
+                        PP_Var message);
   void OnSessionKeysChange(PP_Var session_id,
                            PP_Bool has_additional_usable_key,
                            uint32_t key_count,
                            const struct PP_KeyInformation key_information[]);
   void OnSessionExpirationChange(PP_Var session_id, PP_Time new_expiry_time);
   void OnSessionClosed(PP_Var session_id);
-  void OnLegacySessionError(PP_Var session_id,
-                            PP_CdmExceptionCode exception_code,
-                            uint32_t system_code,
-                            PP_Var error_description);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
   void DecoderInitializeDone(PP_DecryptorStreamType decoder_type,
@@ -211,7 +205,6 @@ class ContentDecryptorDelegate {
   // Callbacks for firing session events.
   media::SessionMessageCB session_message_cb_;
   media::SessionClosedCB session_closed_cb_;
-  media::LegacySessionErrorCB legacy_session_error_cb_;
   media::SessionKeysChangeCB session_keys_change_cb_;
   media::SessionExpirationUpdateCB session_expiration_update_cb_;
 

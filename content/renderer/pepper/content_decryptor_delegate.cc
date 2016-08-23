@@ -385,7 +385,6 @@ void ContentDecryptorDelegate::Initialize(
     bool allow_persistent_state,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const base::Closure& fatal_plugin_error_cb,
@@ -396,7 +395,6 @@ void ContentDecryptorDelegate::Initialize(
 
   session_message_cb_ = session_message_cb;
   session_closed_cb_ = session_closed_cb;
-  legacy_session_error_cb_ = legacy_session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
@@ -764,8 +762,7 @@ void ContentDecryptorDelegate::OnPromiseRejected(
 
 void ContentDecryptorDelegate::OnSessionMessage(PP_Var session_id,
                                                 PP_CdmMessageType message_type,
-                                                PP_Var message,
-                                                PP_Var legacy_destination_url) {
+                                                PP_Var message) {
   if (session_message_cb_.is_null())
     return;
 
@@ -780,23 +777,9 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var session_id,
     message_vector.assign(data, data + message_array_buffer->ByteLength());
   }
 
-  StringVar* destination_url_string =
-      StringVar::FromPPVar(legacy_destination_url);
-  if (!destination_url_string) {
-    NOTREACHED();
-    return;
-  }
-
-  GURL verified_gurl = GURL(destination_url_string->value());
-  if (!verified_gurl.is_valid()) {
-    DLOG(WARNING) << "SessionMessage legacy_destination_url is invalid : "
-                  << verified_gurl.possibly_invalid_spec();
-    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
-  }
-
   session_message_cb_.Run(session_id_string->value(),
                           PpCdmMessageTypeToMediaMessageType(message_type),
-                          message_vector, verified_gurl);
+                          message_vector);
 }
 
 void ContentDecryptorDelegate::OnSessionKeysChange(
@@ -846,27 +829,6 @@ void ContentDecryptorDelegate::OnSessionClosed(PP_Var session_id) {
   DCHECK(session_id_string);
 
   session_closed_cb_.Run(session_id_string->value());
-}
-
-void ContentDecryptorDelegate::OnLegacySessionError(
-    PP_Var session_id,
-    PP_CdmExceptionCode exception_code,
-    uint32_t system_code,
-    PP_Var error_description) {
-  ReportSystemCodeUMA(key_system_, system_code);
-
-  if (legacy_session_error_cb_.is_null())
-    return;
-
-  StringVar* session_id_string = StringVar::FromPPVar(session_id);
-  DCHECK(session_id_string);
-
-  StringVar* error_description_string = StringVar::FromPPVar(error_description);
-  DCHECK(error_description_string);
-
-  legacy_session_error_cb_.Run(session_id_string->value(),
-                               PpExceptionTypeToMediaException(exception_code),
-                               system_code, error_description_string->value());
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(

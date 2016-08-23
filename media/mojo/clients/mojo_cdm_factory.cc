@@ -30,7 +30,6 @@ void MojoCdmFactory::Create(
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
@@ -56,8 +55,7 @@ void MojoCdmFactory::Create(
                                                       &cdm_ptr);
 
   MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
-                  session_message_cb, session_closed_cb,
-                  legacy_session_error_cb, session_keys_change_cb,
+                  session_message_cb, session_closed_cb, session_keys_change_cb,
                   session_expiration_update_cb, cdm_created_cb);
 }
 

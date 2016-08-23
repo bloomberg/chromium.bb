@@ -309,36 +309,15 @@ void BrowserCdmManager::OnSessionMessage(int render_frame_id,
                                          int cdm_id,
                                          const std::string& session_id,
                                          MediaKeys::MessageType message_type,
-                                         const std::vector<uint8_t>& message,
-                                         const GURL& legacy_destination_url) {
-  GURL verified_gurl = legacy_destination_url;
-  if (!verified_gurl.is_valid() && !verified_gurl.is_empty()) {
-    DLOG(WARNING) << "SessionMessage legacy_destination_url is invalid : "
-                  << legacy_destination_url.possibly_invalid_spec();
-    verified_gurl =
-        GURL::EmptyGURL();  // Replace invalid legacy_destination_url.
-  }
-
+                                         const std::vector<uint8_t>& message) {
   Send(new CdmMsg_SessionMessage(render_frame_id, cdm_id, session_id,
-                                 message_type, message, verified_gurl));
+                                 message_type, message));
 }
 
 void BrowserCdmManager::OnSessionClosed(int render_frame_id,
                                         int cdm_id,
                                         const std::string& session_id) {
   Send(new CdmMsg_SessionClosed(render_frame_id, cdm_id, session_id));
-}
-
-void BrowserCdmManager::OnLegacySessionError(
-    int render_frame_id,
-    int cdm_id,
-    const std::string& session_id,
-    MediaKeys::Exception exception_code,
-    uint32_t system_code,
-    const std::string& error_message) {
-  Send(new CdmMsg_LegacySessionError(render_frame_id, cdm_id, session_id,
-                                     exception_code, system_code,
-                                     error_message));
 }
 
 void BrowserCdmManager::OnSessionKeysChange(int render_frame_id,
@@ -404,7 +383,6 @@ void BrowserCdmManager::OnInitializeCdm(
       params.key_system, params.security_origin, cdm_config,
       BROWSER_CDM_MANAGER_CB(OnSessionMessage),
       BROWSER_CDM_MANAGER_CB(OnSessionClosed),
-      BROWSER_CDM_MANAGER_CB(OnLegacySessionError),
       BROWSER_CDM_MANAGER_CB(OnSessionKeysChange),
       BROWSER_CDM_MANAGER_CB(OnSessionExpirationUpdate),
       BROWSER_CDM_MANAGER_CB(OnCdmCreated, params.security_origin,

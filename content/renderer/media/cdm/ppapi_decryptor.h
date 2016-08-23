@@ -45,7 +45,6 @@ class PpapiDecryptor : public media::MediaKeys,
       const CreatePepperCdmCB& create_pepper_cdm_cb,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
@@ -101,7 +100,6 @@ class PpapiDecryptor : public media::MediaKeys,
       std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -117,18 +115,13 @@ class PpapiDecryptor : public media::MediaKeys,
   // Callbacks for |plugin_cdm_delegate_| to fire session events.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url);
+                        const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            media::CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  const base::Time& new_expiry_time);
   void OnSessionClosed(const std::string& session_id);
-  void OnLegacySessionError(const std::string& session_id,
-                            MediaKeys::Exception exception_code,
-                            uint32_t system_code,
-                            const std::string& error_description);
 
   void AttemptToResumePlayback();
 
@@ -146,7 +139,6 @@ class PpapiDecryptor : public media::MediaKeys,
   // Callbacks for firing session events.
   media::SessionMessageCB session_message_cb_;
   media::SessionClosedCB session_closed_cb_;
-  media::LegacySessionErrorCB legacy_session_error_cb_;
   media::SessionKeysChangeCB session_keys_change_cb_;
   media::SessionExpirationUpdateCB session_expiration_update_cb_;
 

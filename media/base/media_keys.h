@@ -181,9 +181,7 @@ struct MEDIA_EXPORT MediaKeysTraits {
 // See http://w3c.github.io/encrypted-media/#dom-evt-message
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::MessageType message_type,
-                            const std::vector<uint8_t>& message,
-                            // TODO(ddorwin): Remove. https://crbug.com/249976
-                            const GURL& legacy_destination_url)>
+                            const std::vector<uint8_t>& message)>
     SessionMessageCB;
 
 // Called when the session specified by |session_id| is closed. Note that the
@@ -191,14 +189,6 @@ typedef base::Callback<void(const std::string& session_id,
 // call, when the session is no longer needed, or when system resources are
 // lost. See http://w3c.github.io/encrypted-media/#session-close
 typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
-
-// TODO(xhwang): Remove after prefixed EME support is removed. See
-// http://crbug.com/249976
-typedef base::Callback<void(const std::string& session_id,
-                            MediaKeys::Exception exception,
-                            uint32_t system_code,
-                            const std::string& error_message)>
-    LegacySessionErrorCB;
 
 // Called when there has been a change in the keys in the session or their
 // status. See http://w3c.github.io/encrypted-media/#dom-evt-keystatuseschange

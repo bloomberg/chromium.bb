@@ -285,7 +285,6 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
   // All paths requires the MediaDrmApis.
@@ -297,8 +296,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
 
   scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
       scheme_uuid, security_level, create_fetcher_cb, session_message_cb,
-      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge = nullptr;
@@ -313,7 +311,6 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
   DVLOG(1) << __FUNCTION__;
@@ -323,8 +320,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
 
   return CreateInternal(key_system, security_level, create_fetcher_cb,
                         session_message_cb, session_closed_cb,
-                        legacy_session_error_cb, session_keys_change_cb,
-                        session_expiration_update_cb);
+                        session_keys_change_cb, session_expiration_update_cb);
 }
 
 // static
@@ -338,10 +334,9 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
   if (!AreMediaDrmApisAvailable())
     return nullptr;
 
-  return MediaDrmBridge::Create(key_system, security_level, create_fetcher_cb,
-                                SessionMessageCB(), SessionClosedCB(),
-                                LegacySessionErrorCB(), SessionKeysChangeCB(),
-                                SessionExpirationUpdateCB());
+  return MediaDrmBridge::Create(
+      key_system, security_level, create_fetcher_cb, SessionMessageCB(),
+      SessionClosedCB(), SessionKeysChangeCB(), SessionExpirationUpdateCB());
 }
 
 void MediaDrmBridge::SetServerCertificate(
@@ -638,20 +633,17 @@ void MediaDrmBridge::OnSessionMessage(
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jbyteArray>& j_session_id,
     jint j_message_type,
-    const JavaParamRef<jbyteArray>& j_message,
-    const JavaParamRef<jstring>& j_legacy_destination_url) {
+    const JavaParamRef<jbyteArray>& j_message) {
   DVLOG(2) << __FUNCTION__;
 
   std::vector<uint8_t> message;
   JavaByteArrayToByteVector(env, j_message, &message);
-  GURL legacy_destination_url =
-      GURL(ConvertJavaStringToUTF8(env, j_legacy_destination_url));
   MediaKeys::MessageType message_type =
       GetMessageType(static_cast<RequestType>(j_message_type));
 
   task_runner_->PostTask(
       FROM_HERE, base::Bind(session_message_cb_, AsString(env, j_session_id),
-                            message_type, message, legacy_destination_url));
+                            message_type, message));
 }
 
 void MediaDrmBridge::OnSessionClosed(
@@ -732,21 +724,6 @@ void MediaDrmBridge::OnSessionExpirationUpdate(
                  base::Time::FromDoubleT(expiry_time_ms / 1000.0)));
 }
 
-void MediaDrmBridge::OnLegacySessionError(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_media_drm,
-    const JavaParamRef<jbyteArray>& j_session_id,
-    const JavaParamRef<jstring>& j_error_message) {
-  std::string error_message = ConvertJavaStringToUTF8(env, j_error_message);
-
-  DVLOG(2) << __FUNCTION__ << ": " << error_message;
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(legacy_session_error_cb_, AsString(env, j_session_id),
-                 MediaKeys::UNKNOWN_ERROR, 0, error_message));
-}
-
 void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
     JNIEnv* env,
     const JavaParamRef<jobject>&,
@@ -767,14 +744,12 @@ MediaDrmBridge::MediaDrmBridge(
     const CreateFetcherCB& create_fetcher_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
     : scheme_uuid_(scheme_uuid),
       create_fetcher_cb_(create_fetcher_cb),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),

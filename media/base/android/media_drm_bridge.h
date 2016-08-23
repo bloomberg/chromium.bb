@@ -87,7 +87,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
       const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
-      const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -195,15 +194,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // Session event callbacks.
 
-  // TODO(xhwang): Remove |j_legacy_destination_url| now that prefixed EME
-  // support is removed. http://crbug.com/249976
   void OnSessionMessage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_media_drm,
       const base::android::JavaParamRef<jbyteArray>& j_session_id,
       jint j_message_type,
-      const base::android::JavaParamRef<jbyteArray>& j_message,
-      const base::android::JavaParamRef<jstring>& j_legacy_destination_url);
+      const base::android::JavaParamRef<jbyteArray>& j_message);
   void OnSessionClosed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_media_drm,
@@ -225,19 +221,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
       const base::android::JavaParamRef<jbyteArray>& j_session_id,
       jlong expiry_time_ms);
 
-  // Called by the CDM when an error occurred in session |j_session_id|
-  // unrelated to one of the MediaKeys calls that accept a |promise|.
-  // Note:
-  // - This method is only for supporting prefixed EME API.
-  //   TODO(ddorwin): Remove it now. https://crbug.com/249976
-  // - This method will be ignored by unprefixed EME. All errors reported
-  //   in this method should probably also be reported by one of other methods.
-  void OnLegacySessionError(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& j_media_drm,
-      const base::android::JavaParamRef<jbyteArray>& j_session_id,
-      const base::android::JavaParamRef<jstring>& j_error_message);
-
   // Called by the java object when credential reset is completed.
   void OnResetDeviceCredentialsCompleted(
       JNIEnv* env,
@@ -254,7 +237,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
       const CreateFetcherCB& create_fetcher_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
-      const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -267,7 +249,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
                  const CreateFetcherCB& create_fetcher_cb,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
-                 const LegacySessionErrorCB& legacy_session_error_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -319,7 +300,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
-  LegacySessionErrorCB legacy_session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
 

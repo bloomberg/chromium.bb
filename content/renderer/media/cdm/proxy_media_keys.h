@@ -36,7 +36,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       RendererCdmManager* manager,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
@@ -70,13 +69,8 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   // Callbacks.
   void OnSessionMessage(const std::string& session_id,
                         media::MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url);
+                        const std::vector<uint8_t>& message);
   void OnSessionClosed(const std::string& session_id);
-  void OnLegacySessionError(const std::string& session_id,
-                            media::MediaKeys::Exception exception,
-                            uint32_t system_code,
-                            const std::string& error_message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            media::CdmKeysInfo keys_info);
@@ -96,7 +90,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       RendererCdmManager* manager,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -112,7 +105,6 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
 
   media::SessionMessageCB session_message_cb_;
   media::SessionClosedCB session_closed_cb_;
-  media::LegacySessionErrorCB legacy_session_error_cb_;
   media::SessionKeysChangeCB session_keys_change_cb_;
   media::SessionExpirationUpdateCB session_expiration_update_cb_;
 

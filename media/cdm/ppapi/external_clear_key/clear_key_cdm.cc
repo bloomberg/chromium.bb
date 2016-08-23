@@ -253,8 +253,8 @@ void* CreateCdmInstance(int cdm_interface_version,
     return NULL;
 
   // TODO(jrummell): Obtain the proper origin for this instance.
-  GURL empty_gurl;
-  return new media::ClearKeyCdm(host, key_system_string, empty_gurl);
+  GURL empty_origin;
+  return new media::ClearKeyCdm(host, key_system_string, empty_origin);
 }
 
 const char* GetCdmVersion() {
@@ -464,13 +464,9 @@ void ClearKeyCdm::TimerExpired(void* context) {
     renewal_message = "ERROR: Invalid timer context found!";
   }
 
-  // This URL is only used for testing the code path for defaultURL.
-  // There is no service at this URL, so applications should ignore it.
-  const char url[] = "http://test.externalclearkey.chromium.org";
-
   host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
                           cdm::kLicenseRenewal, renewal_message.data(),
-                          renewal_message.length(), url, arraysize(url) - 1);
+                          renewal_message.length(), nullptr, 0);
 
   ScheduleNextRenewal();
 }
@@ -749,8 +745,7 @@ void ClearKeyCdm::LoadLoadableSession() {
 
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
                                    MediaKeys::MessageType message_type,
-                                   const std::vector<uint8_t>& message,
-                                   const GURL& legacy_destination_url) {
+                                   const std::vector<uint8_t>& message) {
   DVLOG(1) << "OnSessionMessage: " << message.size();
 
   // Ignore the message when we are waiting to update the loadable session.
@@ -763,8 +758,7 @@ void ClearKeyCdm::OnSessionMessage(const std::string& session_id,
   host_->OnSessionMessage(session_id.data(), session_id.length(),
                           cdm::kLicenseRequest,
                           reinterpret_cast<const char*>(message.data()),
-                          message.size(), legacy_destination_url.spec().data(),
-                          legacy_destination_url.spec().size());
+                          message.size(), nullptr, 0);
 }
 
 void ClearKeyCdm::OnSessionKeysChange(const std::string& session_id,
@@ -941,7 +935,7 @@ void ClearKeyCdm::OnUnitTestComplete(bool success) {
   std::string message = GetUnitTestResultMessage(success);
   host_->OnSessionMessage(last_session_id_.data(), last_session_id_.length(),
                           cdm::kLicenseRequest, message.data(),
-                          message.length(), NULL, 0);
+                          message.length(), nullptr, 0);
 }
 
 void ClearKeyCdm::StartFileIOTest() {

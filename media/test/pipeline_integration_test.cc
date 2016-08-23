@@ -208,7 +208,6 @@ class FakeEncryptedMedia {
     virtual void OnSessionMessage(const std::string& session_id,
                                   MediaKeys::MessageType message_type,
                                   const std::vector<uint8_t>& message,
-                                  const GURL& legacy_destination_url,
                                   AesDecryptor* decryptor) = 0;
 
     virtual void OnSessionClosed(const std::string& session_id) = 0;
@@ -216,14 +215,6 @@ class FakeEncryptedMedia {
     virtual void OnSessionKeysChange(const std::string& session_id,
                                      bool has_additional_usable_key,
                                      CdmKeysInfo keys_info) = 0;
-
-    // Errors are not expected unless overridden.
-    virtual void OnLegacySessionError(const std::string& session_id,
-                                      const std::string& error_name,
-                                      uint32_t system_code,
-                                      const std::string& error_message) {
-      FAIL() << "Unexpected Key Error";
-    }
 
     virtual void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                           const std::vector<uint8_t>& init_data,
@@ -247,10 +238,8 @@ class FakeEncryptedMedia {
   // Callbacks for firing session events. Delegate to |app_|.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url) {
-    app_->OnSessionMessage(session_id, message_type, message,
-                           legacy_destination_url, decryptor_.get());
+                        const std::vector<uint8_t>& message) {
+    app_->OnSessionMessage(session_id, message_type, message, decryptor_.get());
   }
 
   void OnSessionClosed(const std::string& session_id) {
@@ -262,14 +251,6 @@ class FakeEncryptedMedia {
                            CdmKeysInfo keys_info) {
     app_->OnSessionKeysChange(session_id, has_additional_usable_key,
                               std::move(keys_info));
-  }
-
-  void OnLegacySessionError(const std::string& session_id,
-                            const std::string& error_name,
-                            uint32_t system_code,
-                            const std::string& error_message) {
-    app_->OnLegacySessionError(session_id, error_name, system_code,
-                               error_message);
   }
 
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
@@ -341,7 +322,6 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
@@ -463,7 +443,6 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
                         const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url,
                         AesDecryptor* decryptor) override {
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());

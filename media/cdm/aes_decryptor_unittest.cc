@@ -257,8 +257,6 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
                      base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnSessionClosed,
                      base::Unretained(this)),
-          base::Bind(&AesDecryptorTest::OnLegacySessionError,
-                     base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnSessionKeysChange,
                      base::Unretained(this)),
           base::Bind(&AesDecryptorTest::OnSessionExpirationUpdate,
@@ -324,8 +322,7 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
   // Creates a new session using |key_id|. Returns the session ID.
   std::string CreateSession(const std::vector<uint8_t>& key_id) {
     DCHECK(!key_id.empty());
-    EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
-                                        GURL::EmptyGURL()));
+    EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary()));
     cdm_->CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
                                           EmeInitDataType::WEBM, key_id,
                                           CreateSessionPromise(RESOLVED));
@@ -455,17 +452,11 @@ class AesDecryptorTest : public testing::TestWithParam<std::string> {
     return nullptr;
   }
 
-  MOCK_METHOD4(OnSessionMessage,
+  MOCK_METHOD3(OnSessionMessage,
                void(const std::string& session_id,
                     MediaKeys::MessageType message_type,
-                    const std::vector<uint8_t>& message,
-                    const GURL& legacy_destination_url));
+                    const std::vector<uint8_t>& message));
   MOCK_METHOD1(OnSessionClosed, void(const std::string& session_id));
-  MOCK_METHOD4(OnLegacySessionError,
-               void(const std::string& session_id,
-                    MediaKeys::Exception exception,
-                    uint32_t system_code,
-                    const std::string& error_message));
   MOCK_METHOD2(OnSessionExpirationUpdate,
                void(const std::string& session_id,
                     const base::Time& new_expiry_time));
@@ -527,20 +518,17 @@ TEST_P(AesDecryptorTest, CreateSessionWithVariousLengthInitData_WebM) {
 }
 
 TEST_P(AesDecryptorTest, MultipleCreateSession) {
-  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
-                                      GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
-  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
-                                      GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
 
-  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty(),
-                                      GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsNotEmpty()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
       std::vector<uint8_t>(1), CreateSessionPromise(RESOLVED));
@@ -563,8 +551,7 @@ TEST_P(AesDecryptorTest, CreateSessionWithCencInitData) {
   };
 
 #if defined(USE_PROPRIETARY_CODECS)
-  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
-                                      GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
       std::vector<uint8_t>(init_data, init_data + arraysize(init_data)),
@@ -581,8 +568,7 @@ TEST_P(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
   const char init_data[] =
       "{\"kids\":[\"AQI\",\"AQIDBA\",\"AQIDBAUGBwgJCgsMDQ4PEA\"]}";
 
-  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
-                                      GURL::EmptyGURL()));
+  EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary()));
   cdm_->CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
       std::vector<uint8_t>(init_data, init_data + arraysize(init_data) - 1),

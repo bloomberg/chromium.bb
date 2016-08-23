@@ -104,23 +104,15 @@ IPC_MESSAGE_CONTROL2(CdmHostMsg_DestroyCdm,
 
 // Messages from browser to render.
 
-IPC_MESSAGE_ROUTED5(CdmMsg_SessionMessage,
+IPC_MESSAGE_ROUTED4(CdmMsg_SessionMessage,
                     int /* cdm_id */,
                     std::string /* session_id */,
                     media::MediaKeys::MessageType /* message_type */,
-                    std::vector<uint8_t> /* message */,
-                    GURL /* legacy_destination_url */)
+                    std::vector<uint8_t> /* message */)
 
 IPC_MESSAGE_ROUTED2(CdmMsg_SessionClosed,
                     int /* cdm_id */,
                     std::string /* session_id */)
-
-IPC_MESSAGE_ROUTED5(CdmMsg_LegacySessionError,
-                    int /* cdm_id */,
-                    std::string /* session_id */,
-                    media::MediaKeys::Exception /* exception_code */,
-                    uint32_t /* system_code */,
-                    std::string /* error_message */)
 
 IPC_MESSAGE_ROUTED4(CdmMsg_SessionKeysChange,
                     int /* cdm_id */,

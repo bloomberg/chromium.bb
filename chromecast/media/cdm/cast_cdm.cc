@@ -76,7 +76,6 @@ CastCdm::~CastCdm() {
 void CastCdm::Initialize(
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
-    const ::media::LegacySessionErrorCB& legacy_session_error_cb,
     const ::media::SessionKeysChangeCB& session_keys_change_cb,
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -86,7 +85,6 @@ void CastCdm::Initialize(
 
   session_message_cb_ = session_message_cb;
   session_closed_cb_ = session_closed_cb;
-  legacy_session_error_cb_ = legacy_session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
 
@@ -111,7 +109,7 @@ void CastCdm::UnregisterPlayer(int registration_id) {
 void CastCdm::OnSessionMessage(const std::string& session_id,
                                const std::vector<uint8_t>& message,
                                ::media::MediaKeys::MessageType message_type) {
-  session_message_cb_.Run(session_id, message_type, message, GURL::EmptyGURL());
+  session_message_cb_.Run(session_id, message_type, message);
 }
 
 void CastCdm::OnSessionClosed(const std::string& session_id) {

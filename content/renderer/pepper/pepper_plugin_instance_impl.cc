@@ -2527,8 +2527,9 @@ void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
                                               PP_CdmMessageType message_type,
                                               PP_Var message_var,
                                               PP_Var legacy_destination_url) {
-  content_decryptor_delegate_->OnSessionMessage(
-      session_id_var, message_type, message_var, legacy_destination_url);
+  // |legacy_destination_url| is obsolete.
+  content_decryptor_delegate_->OnSessionMessage(session_id_var, message_type,
+                                                message_var);
 }
 
 void PepperPluginInstanceImpl::SessionKeysChange(
@@ -2560,8 +2561,7 @@ void PepperPluginInstanceImpl::LegacySessionError(
     PP_CdmExceptionCode exception_code,
     uint32_t system_code,
     PP_Var error_description_var) {
-  content_decryptor_delegate_->OnLegacySessionError(
-      session_id_var, exception_code, system_code, error_description_var);
+  // Obsolete.
 }
 
 void PepperPluginInstanceImpl::DeliverBlock(

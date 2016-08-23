@@ -116,7 +116,6 @@ void MojoCdmService::Initialize(const mojo::String& key_system,
       key_system, GURL(security_origin.get()), cdm_config.To<CdmConfig>(),
       base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
-      base::Bind(&MojoCdmService::OnLegacySessionError, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
       base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
       base::Bind(&MojoCdmService::OnCdmCreated, weak_this, callback));
@@ -222,12 +221,11 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,
                                       MediaKeys::MessageType message_type,
-                                      const std::vector<uint8_t>& message,
-                                      const GURL& legacy_destination_url) {
+                                      const std::vector<uint8_t>& message) {
   DVLOG(2) << __FUNCTION__ << "(" << message_type << ")";
-  client_->OnSessionMessage(
-      session_id, static_cast<mojom::CdmMessageType>(message_type),
-      mojo::Array<uint8_t>::From(message), legacy_destination_url);
+  client_->OnSessionMessage(session_id,
+                            static_cast<mojom::CdmMessageType>(message_type),
+                            mojo::Array<uint8_t>::From(message));
 }
 
 void MojoCdmService::OnSessionKeysChange(const std::string& session_id,
@@ -254,16 +252,6 @@ void MojoCdmService::OnSessionExpirationUpdate(
 void MojoCdmService::OnSessionClosed(const std::string& session_id) {
   DVLOG(2) << __FUNCTION__;
   client_->OnSessionClosed(session_id);
-}
-
-void MojoCdmService::OnLegacySessionError(const std::string& session_id,
-                                          MediaKeys::Exception exception,
-                                          uint32_t system_code,
-                                          const std::string& error_message) {
-  DVLOG(2) << __FUNCTION__ << "(" << exception << ") " << error_message;
-  client_->OnLegacySessionError(session_id,
-                                static_cast<mojom::CdmException>(exception),
-                                system_code, error_message);
 }
 
 void MojoCdmService::OnDecryptorConnectionError() {

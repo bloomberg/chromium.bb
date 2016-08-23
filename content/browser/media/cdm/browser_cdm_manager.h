@@ -94,17 +94,10 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
                         int cdm_id,
                         const std::string& session_id,
                         media::MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url);
+                        const std::vector<uint8_t>& message);
   void OnSessionClosed(int render_frame_id,
                        int cdm_id,
                        const std::string& session_id);
-  void OnLegacySessionError(int render_frame_id,
-                            int cdm_id,
-                            const std::string& session_id,
-                            media::MediaKeys::Exception exception_code,
-                            uint32_t system_code,
-                            const std::string& error_message);
   void OnSessionKeysChange(int render_frame_id,
                            int cdm_id,
                            const std::string& session_id,

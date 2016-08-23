@@ -25,7 +25,6 @@ void AndroidCdmFactory::Create(
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
@@ -65,8 +64,7 @@ void AndroidCdmFactory::Create(
 
   scoped_refptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
       key_system, security_level, create_fetcher_cb_, session_message_cb,
-      session_closed_cb, legacy_session_error_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
   if (!cdm) {
     error_message = "MediaDrmBridge cannot be created for " + key_system +
                     " with security level " + base::IntToString(security_level);

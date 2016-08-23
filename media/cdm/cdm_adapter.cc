@@ -337,21 +337,19 @@ void CdmAdapter::Create(
     const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
   DCHECK(!key_system.empty());
   DCHECK(!session_message_cb.is_null());
   DCHECK(!session_closed_cb.is_null());
-  DCHECK(!legacy_session_error_cb.is_null());
   DCHECK(!session_keys_change_cb.is_null());
   DCHECK(!session_expiration_update_cb.is_null());
 
   scoped_refptr<CdmAdapter> cdm = new CdmAdapter(
       key_system, cdm_config, std::move(allocator), create_cdm_file_io_cb,
-      session_message_cb, session_closed_cb, legacy_session_error_cb,
-      session_keys_change_cb, session_expiration_update_cb);
+      session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
   std::unique_ptr<CdmInitializedPromise> cdm_created_promise(
@@ -367,14 +365,12 @@ CdmAdapter::CdmAdapter(
     const CreateCdmFileIOCB& create_cdm_file_io_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
     : key_system_(key_system),
       cdm_config_(cdm_config),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       audio_samples_per_second_(0),
@@ -386,7 +382,6 @@ CdmAdapter::CdmAdapter(
   DCHECK(!key_system_.empty());
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
-  DCHECK(!legacy_session_error_cb_.is_null());
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
   DCHECK(allocator_);
@@ -772,23 +767,14 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
                                   const char* legacy_destination_url,
                                   uint32_t legacy_destination_url_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(legacy_destination_url_size == 0 ||
-         message_type != cdm::MessageType::kLicenseRequest);
-
-  GURL verified_gurl =
-      GURL(std::string(legacy_destination_url, legacy_destination_url_size));
-  if (!verified_gurl.is_valid()) {
-    DLOG(WARNING) << "SessionMessage legacy_destination_url is invalid : "
-                  << verified_gurl.possibly_invalid_spec();
-    verified_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
-  }
+  // |legacy_destination_url| is obsolete and will be removed as part of
+  // https://crbug.com/570216.
 
   const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
   session_message_cb_.Run(
       std::string(session_id, session_id_size),
       ToMediaMessageType(message_type),
-      std::vector<uint8_t>(message_ptr, message_ptr + message_size),
-      verified_gurl);
+      std::vector<uint8_t>(message_ptr, message_ptr + message_size));
 }
 
 void CdmAdapter::OnSessionKeysChange(const char* session_id,
@@ -843,10 +829,7 @@ void CdmAdapter::OnLegacySessionError(const char* session_id,
                                       const char* error_message,
                                       uint32_t error_message_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  legacy_session_error_cb_.Run(std::string(session_id, session_id_size),
-                               ToMediaExceptionType(error), system_code,
-                               std::string(error_message, error_message_size));
+  // Obsolete and will be removed as part of https://crbug.com/570216.
 }
 
 void CdmAdapter::SendPlatformChallenge(const char* service_id,

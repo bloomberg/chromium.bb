@@ -44,7 +44,6 @@ class MojoCdm : public MediaKeys,
       mojom::ContentDecryptionModulePtr remote_cdm,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::LegacySessionErrorCB& legacy_session_error_cb,
       const media::SessionKeysChangeCB& session_keys_change_cb,
       const media::SessionExpirationUpdateCB& session_expiration_update_cb,
       const media::CdmCreatedCB& cdm_created_cb);
@@ -78,7 +77,6 @@ class MojoCdm : public MediaKeys,
   MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
-          const LegacySessionErrorCB& legacy_session_error_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
           const SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -94,13 +92,8 @@ class MojoCdm : public MediaKeys,
   // mojom::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const mojo::String& session_id,
                         mojom::CdmMessageType message_type,
-                        mojo::Array<uint8_t> message,
-                        const GURL& legacy_destination_url) final;
+                        mojo::Array<uint8_t> message) final;
   void OnSessionClosed(const mojo::String& session_id) final;
-  void OnLegacySessionError(const mojo::String& session_id,
-                            mojom::CdmException exception,
-                            uint32_t system_code,
-                            const mojo::String& error_message) final;
   void OnSessionKeysChange(
       const mojo::String& session_id,
       bool has_additional_usable_key,
@@ -161,7 +154,6 @@ class MojoCdm : public MediaKeys,
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
-  LegacySessionErrorCB legacy_session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
   SessionExpirationUpdateCB session_expiration_update_cb_;
 

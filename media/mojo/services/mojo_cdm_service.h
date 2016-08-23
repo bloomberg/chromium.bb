@@ -85,18 +85,13 @@ class MEDIA_MOJO_EXPORT MojoCdmService
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
-                        const std::vector<uint8_t>& message,
-                        const GURL& legacy_destination_url);
+                        const std::vector<uint8_t>& message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,
                            CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  const base::Time& new_expiry_time);
   void OnSessionClosed(const std::string& session_id);
-  void OnLegacySessionError(const std::string& session_id,
-                            MediaKeys::Exception exception,
-                            uint32_t system_code,
-                            const std::string& error_message);
 
   // Callback for when |decryptor_| loses connectivity.
   void OnDecryptorConnectionError();

@@ -694,18 +694,16 @@ void PpapiCdmAdapter::OnSessionMessage(const char* session_id,
                                        uint32_t message_size,
                                        const char* legacy_destination_url,
                                        uint32_t legacy_destination_url_size) {
+  // |legacy_destination_url| is obsolete and will be removed as part of
+  // https://crbug.com/570216.
   // License requests should not specify |legacy_destination_url|.
-  // |legacy_destination_url| is not passed to unprefixed EME applications,
-  // so it can be removed when the prefixed API is removed.
   PP_DCHECK(legacy_destination_url_size == 0 ||
             message_type != cdm::MessageType::kLicenseRequest);
 
   PostOnMain(callback_factory_.NewCallback(
       &PpapiCdmAdapter::SendSessionMessageInternal,
-      SessionMessage(
-          std::string(session_id, session_id_size), message_type, message,
-          message_size,
-          std::string(legacy_destination_url, legacy_destination_url_size))));
+      SessionMessage(std::string(session_id, session_id_size), message_type,
+                     message, message_size)));
 }
 
 void PpapiCdmAdapter::OnSessionKeysChange(const char* session_id,
@@ -760,11 +758,7 @@ void PpapiCdmAdapter::OnLegacySessionError(const char* session_id,
                                            uint32_t system_code,
                                            const char* error_message,
                                            uint32_t error_message_size) {
-  PostOnMain(callback_factory_.NewCallback(
-      &PpapiCdmAdapter::SendSessionErrorInternal,
-      std::string(session_id, session_id_size),
-      SessionError(error, system_code,
-                   std::string(error_message, error_message_size))));
+  // Obsolete and will be removed as part of https://crbug.com/570216.
 }
 
 // Helpers to pass the event to Pepper.
@@ -806,22 +800,13 @@ void PpapiCdmAdapter::SendSessionMessageInternal(
 
   pp::ContentDecryptor_Private::SessionMessage(
       message.session_id, CdmMessageTypeToPpMessageType(message.message_type),
-      message_array_buffer, message.legacy_destination_url);
+      message_array_buffer, std::string());
 }
 
 void PpapiCdmAdapter::SendSessionClosedInternal(int32_t result,
                                                 const std::string& session_id) {
   PP_DCHECK(result == PP_OK);
   pp::ContentDecryptor_Private::SessionClosed(session_id);
-}
-
-void PpapiCdmAdapter::SendSessionErrorInternal(int32_t result,
-                                               const std::string& session_id,
-                                               const SessionError& error) {
-  PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::LegacySessionError(
-      session_id, CdmExceptionTypeToPpCdmExceptionType(error.error),
-      error.system_code, error.error_description);
 }
 
 void PpapiCdmAdapter::SendSessionKeysChangeInternal(
@@ -1243,16 +1228,13 @@ PpapiCdmAdapter::SessionError::SessionError(
       system_code(system_code),
       error_description(error_description) {}
 
-PpapiCdmAdapter::SessionMessage::SessionMessage(
-    const std::string& session_id,
-    cdm::MessageType message_type,
-    const char* message,
-    uint32_t message_size,
-    const std::string& legacy_destination_url)
+PpapiCdmAdapter::SessionMessage::SessionMessage(const std::string& session_id,
+                                                cdm::MessageType message_type,
+                                                const char* message,
+                                                uint32_t message_size)
     : session_id(session_id),
       message_type(message_type),
-      message(message, message + message_size),
-      legacy_destination_url(legacy_destination_url) {}
+      message(message, message + message_size) {}
 
 void* GetCdmHost(int host_interface_version, void* user_data) {
   if (!host_interface_version || !user_data)

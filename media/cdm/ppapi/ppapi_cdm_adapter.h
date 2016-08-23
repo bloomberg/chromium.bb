@@ -158,12 +158,10 @@ class PpapiCdmAdapter : public pp::Instance,
     SessionMessage(const std::string& session_id,
                    cdm::MessageType message_type,
                    const char* message,
-                   uint32_t message_size,
-                   const std::string& legacy_destination_url);
+                   uint32_t message_size);
     std::string session_id;
     cdm::MessageType message_type;
     std::vector<uint8_t> message;
-    std::string legacy_destination_url;
   };
 
   // Create an instance of the |key_system| CDM. Caller owns the returned
@@ -184,9 +182,6 @@ class PpapiCdmAdapter : public pp::Instance,
   void SendSessionMessageInternal(int32_t result,
                                   const SessionMessage& message);
   void SendSessionClosedInternal(int32_t result, const std::string& session_id);
-  void SendSessionErrorInternal(int32_t result,
-                                const std::string& session_id,
-                                const SessionError& error);
   void SendSessionKeysChangeInternal(
       int32_t result,
       const std::string& session_id,

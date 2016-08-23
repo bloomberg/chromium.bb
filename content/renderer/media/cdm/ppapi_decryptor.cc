@@ -34,7 +34,6 @@ void PpapiDecryptor::Create(
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const media::CdmCreatedCB& cdm_created_cb) {
@@ -56,10 +55,9 @@ void PpapiDecryptor::Create(
     return;
   }
 
-  scoped_refptr<PpapiDecryptor> ppapi_decryptor(
-      new PpapiDecryptor(std::move(pepper_cdm_wrapper), session_message_cb,
-                         session_closed_cb, legacy_session_error_cb,
-                         session_keys_change_cb, session_expiration_update_cb));
+  scoped_refptr<PpapiDecryptor> ppapi_decryptor(new PpapiDecryptor(
+      std::move(pepper_cdm_wrapper), session_message_cb, session_closed_cb,
+      session_keys_change_cb, session_expiration_update_cb));
 
   // |ppapi_decryptor| ownership is passed to the promise.
   std::unique_ptr<media::CdmInitializedPromise> promise(
@@ -73,13 +71,11 @@ PpapiDecryptor::PpapiDecryptor(
     std::unique_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb)
     : pepper_cdm_wrapper_(std::move(pepper_cdm_wrapper)),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       render_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -87,7 +83,6 @@ PpapiDecryptor::PpapiDecryptor(
   DCHECK(pepper_cdm_wrapper_.get());
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
-  DCHECK(!legacy_session_error_cb_.is_null());
   DCHECK(!session_keys_change_cb.is_null());
   DCHECK(!session_expiration_update_cb.is_null());
 }
@@ -106,7 +101,6 @@ void PpapiDecryptor::InitializeCdm(
       key_system, allow_distinctive_identifier, allow_persistent_state,
       base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
-      base::Bind(&PpapiDecryptor::OnLegacySessionError, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionExpirationUpdate, weak_this),
       base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this),
@@ -396,11 +390,9 @@ void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
 
 void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
                                       MessageType message_type,
-                                      const std::vector<uint8_t>& message,
-                                      const GURL& legacy_destination_url) {
+                                      const std::vector<uint8_t>& message) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  session_message_cb_.Run(session_id, message_type, message,
-                          legacy_destination_url);
+  session_message_cb_.Run(session_id, message_type, message);
 }
 
 void PpapiDecryptor::OnSessionKeysChange(const std::string& session_id,
@@ -428,16 +420,6 @@ void PpapiDecryptor::OnSessionExpirationUpdate(
 void PpapiDecryptor::OnSessionClosed(const std::string& session_id) {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
   session_closed_cb_.Run(session_id);
-}
-
-void PpapiDecryptor::OnLegacySessionError(
-    const std::string& session_id,
-    MediaKeys::Exception exception_code,
-    uint32_t system_code,
-    const std::string& error_description) {
-  DCHECK(render_task_runner_->BelongsToCurrentThread());
-  legacy_session_error_cb_.Run(session_id, exception_code, system_code,
-                               error_description);
 }
 
 void PpapiDecryptor::AttemptToResumePlayback() {
