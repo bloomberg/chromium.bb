@@ -47788,12 +47788,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.BackgroundRendererMainThreadLoad" units="%">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load when renderer is backgrounded, i.e. percentage of
+    time spent on running tasks.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per second per
+    renderer amortized.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.ExpectedTaskQueueingDuration" units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
     The estimated queueing duration which would be observed for additional high
     priority tasks posted to the RendererScheduler. Recorded for each 1000 ms
     window.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.ForegroundRendererMainThreadLoad" units="%">
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load when renderer is foregrounded, i.e. percentage of
+    time spent on running tasks.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per second per
+    renderer amortized.
   </summary>
 </histogram>
 

@@ -12,16 +12,17 @@
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/task_time_tracker.h"
+#include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/renderer/deadline_task_runner.h"
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
-#include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
 #include "platform/scheduler/renderer/throttling_helper.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace base {
 namespace trace_event {
@@ -363,7 +364,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   struct MainThreadOnly {
     MainThreadOnly(RendererSchedulerImpl* renderer_scheduler_impl,
                    const scoped_refptr<TaskQueue>& compositor_task_runner,
-                   base::TickClock* time_source);
+                   base::TickClock* time_source,
+                   base::TimeTicks now);
     ~MainThreadOnly();
 
     TaskCostEstimator loading_task_cost_estimator;
@@ -371,6 +373,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     QueueingTimeEstimator queueing_time_estimator;
     LongTaskTracker long_task_tracker;
     IdleTimeEstimator idle_time_estimator;
+    ThreadLoadTracker background_main_thread_load_tracker;
+    ThreadLoadTracker foreground_main_thread_load_tracker;
     UseCase current_use_case;
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;

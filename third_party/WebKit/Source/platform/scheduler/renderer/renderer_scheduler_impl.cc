@@ -36,6 +36,21 @@ const double kShortIdlePeriodDurationPercentile = 50;
 // Amount of idle time left in a frame (as a ratio of the vsync interval) above
 // which main thread compositing can be considered fast.
 const double kFastCompositingIdleTimeThreshold = .2;
+
+void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
+  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.ForegroundRendererMainThreadLoad",
+                           static_cast<int>(load * 100));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.ForegroundRendererLoad", load);
+}
+
+void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
+  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.BackgroundRendererMainThreadLoad",
+                           static_cast<int>(load * 100));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.BackgroundRendererLoad", load);
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -60,7 +75,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           helper_.ControlTaskRunner()),
       main_thread_only_(this,
                         compositor_task_runner_,
-                        helper_.scheduler_tqm_delegate().get()),
+                        helper_.scheduler_tqm_delegate().get(),
+                        helper_.scheduler_tqm_delegate()->NowTicks()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
   throttling_helper_.reset(new ThrottlingHelper(this, "renderer.scheduler"));
@@ -110,7 +126,8 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
     const scoped_refptr<TaskQueue>& compositor_task_runner,
-    base::TickClock* time_source)
+    base::TickClock* time_source,
+    base::TimeTicks now)
     : loading_task_cost_estimator(time_source,
                                   kLoadingTaskEstimationSampleCount,
                                   kLoadingTaskEstimationPercentile),
@@ -123,6 +140,12 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
                           kShortIdlePeriodDurationPercentile),
+      background_main_thread_load_tracker(
+          now,
+          base::Bind(&ReportBackgroundRendererTaskLoad)),
+      foreground_main_thread_load_tracker(
+          now,
+          base::Bind(&ReportForegroundRendererTaskLoad)),
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
       navigation_task_expected_count(0),
@@ -163,6 +186,10 @@ RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
 RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 
 void RendererSchedulerImpl::Shutdown() {
+  base::TimeTicks now = tick_clock()->NowTicks();
+  MainThreadOnly().background_main_thread_load_tracker.RecordIdle(now);
+  MainThreadOnly().foreground_main_thread_load_tracker.RecordIdle(now);
+
   throttling_helper_.reset();
   helper_.Shutdown();
   MainThreadOnly().was_shutdown = true;
@@ -405,6 +432,11 @@ void RendererSchedulerImpl::OnRendererBackgrounded() {
     return;
 
   MainThreadOnly().renderer_backgrounded = true;
+
+  base::TimeTicks now = tick_clock()->NowTicks();
+  MainThreadOnly().foreground_main_thread_load_tracker.Pause(now);
+  MainThreadOnly().background_main_thread_load_tracker.Resume(now);
+
   if (!MainThreadOnly().timer_queue_suspension_when_backgrounded_enabled)
     return;
 
@@ -426,6 +458,11 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
 
   MainThreadOnly().renderer_backgrounded = false;
   MainThreadOnly().renderer_suspended = false;
+
+  base::TimeTicks now = tick_clock()->NowTicks();
+  MainThreadOnly().foreground_main_thread_load_tracker.Resume(now);
+  MainThreadOnly().background_main_thread_load_tracker.Pause(now);
+
   suspend_timers_when_backgrounded_closure_.Cancel();
   ResumeTimerQueueWhenForegrounded();
 }
@@ -1421,6 +1458,13 @@ void RendererSchedulerImpl::ReportTaskTime(base::TimeTicks start_time,
                                                                    end_time);
   MainThreadOnly().long_task_tracker.RecordLongTask(
       start_time, end_time - start_time);
+  // We want to measure thread time here, but for efficiency reasons
+  // we stick with wall time.
+  MainThreadOnly().foreground_main_thread_load_tracker.RecordTaskTime(
+      start_time, end_time);
+  MainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
+      start_time, end_time);
+  // TODO(altimin): Per-page metrics should also be considered.
   UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
                               (end_time - start_time).InMicroseconds(), 1,
                               1000000, 50);
