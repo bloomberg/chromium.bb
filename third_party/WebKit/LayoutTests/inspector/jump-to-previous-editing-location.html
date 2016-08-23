@@ -24,11 +24,11 @@ function test()
         historyManager.rollover();
     }
 
-    function dumpSelection(editor, label)
+    function dumpSelection(label)
     {
-        var selection = editor.selection();
+        var selection = panel.visibleView.textEditor.selection();
         var label = "<" + label + ">";
-        var fileName = "[" + editor._url.split("/").pop() + "]";
+        var fileName = "[" + panel.visibleView._url.split("/").pop() + "]";
         var selectionText = "";
         if (selection.isEmpty())
             selectionText = "line: " + selection.startLine + " column: " + selection.startColumn;
@@ -44,7 +44,7 @@ function test()
         eventSender.mouseMoveTo(coordinates.x, coordinates.y);
         eventSender.mouseDown();
         eventSender.mouseUp();
-        dumpSelection(editor, "Mouse click (" + lineNumber + ", " + columnNumber + ")");
+        dumpSelection("Mouse click (" + lineNumber + ", " + columnNumber + ")");
     }
 
     function clickAndDump(editor, lines, columns)
@@ -55,7 +55,7 @@ function test()
             var originSelection = editor.selection();
             editor.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
             editor._delegate.onJumpToPosition(originSelection, editor.selection());
-            dumpSelection(editor, "Mouse click (" + lineNumber + ", " + columnNumber + ")");
+            dumpSelection("Mouse click (" + lineNumber + ", " + columnNumber + ")");
         }
     }
 
@@ -67,7 +67,7 @@ function test()
             function onContentLoaded()
             {
                 var editor = panel.visibleView.textEditor;
-                dumpSelection(editor, "Initial position");
+                dumpSelection("Initial position");
                 eventSenderClickAtEditor(editor, 4, 7, true);
 
                 InspectorTest.typeIn(editor, "\nSome more text here", step2);
@@ -75,19 +75,19 @@ function test()
 
             function step2() {
                 var editor = panel.visibleView.textEditor;
-                dumpSelection(editor, "Typed in some text");
+                dumpSelection("Typed in some text");
 
                 rollback();
-                dumpSelection(editor, "Rolled back");
+                dumpSelection("Rolled back");
                 InspectorTest.typeIn(editor, "\nSome more text here as well\n", step3);
             }
 
             function step3() {
                 var editor = panel.visibleView.textEditor;
-                dumpSelection(editor, "Typed in some text");
+                dumpSelection("Typed in some text");
 
                 rollover();
-                dumpSelection(editor, "Rolled over");
+                dumpSelection("Rolled over");
                 next();
             }
         },
@@ -102,11 +102,11 @@ function test()
 
             for (var i = 0; i < jumpsToDo; ++i) {
                 rollback();
-                dumpSelection(editor, "Rolled back");
+                dumpSelection("Rolled back");
             }
             for (var i = 0; i < jumpsToDo; ++i) {
                 rollover();
-                dumpSelection(editor, "Rolled over");
+                dumpSelection("Rolled over");
             }
             next();
         },
@@ -115,11 +115,11 @@ function test()
         {
             var editor = panel.visibleView.textEditor;
             editor.editRange(new WebInspector.TextRange(9, 0, 15, 0), "");
-            dumpSelection(editor, "Removed lines from 9 to 15");
+            dumpSelection("Removed lines from 9 to 15");
             rollback();
-            dumpSelection(editor, "Rolled back");
+            dumpSelection("Rolled back");
             rollover();
-            dumpSelection(editor, "Rolled over");
+            dumpSelection("Rolled over");
             next();
         },
 
@@ -131,11 +131,11 @@ function test()
 
             for (var i = 0; i < jumpsToDo; ++i)
                 rollback();
-            dumpSelection(editor, "Rolled back 4 times");
+            dumpSelection("Rolled back 4 times");
             editor.editRange(new WebInspector.TextRange(9, 0, 11, 0), "");
-            dumpSelection(editor, "Removed lines from 9 to 11");
+            dumpSelection("Removed lines from 9 to 11");
             rollover();
-            dumpSelection(editor, "Rolled over");
+            dumpSelection("Rolled over");
             next();
         },
 
@@ -145,15 +145,15 @@ function test()
             function onContentLoaded()
             {
                 var editor = panel.visibleView.textEditor;
-                dumpSelection(editor, "Opened workspace-test.js");
+                dumpSelection("Opened workspace-test.js");
                 clickAndDump(editor, [10, 11], [1, 1]);
                 for (var i = 0; i < 4; ++i) {
                     rollback();
-                    dumpSelection(panel.visibleView.textEditor, "Rolled back");
+                    dumpSelection("Rolled back");
                 }
                 for (var i = 0; i < 4; ++i) {
                     rollover();
-                    dumpSelection(panel.visibleView.textEditor, "Rolled over");
+                    dumpSelection("Rolled over");
                 }
                 next();
             }
@@ -163,14 +163,14 @@ function test()
         {
             var selectedTab = editorContainer._tabbedPane.selectedTabId;
             editorContainer._tabbedPane.closeTab(selectedTab);
-            dumpSelection(panel.visibleView.textEditor, "Close active tab");
+            dumpSelection("Close active tab");
             for (var i = 0; i < 1; ++i) {
                 rollback();
-                dumpSelection(panel.visibleView.textEditor, "Rolled back");
+                dumpSelection("Rolled back");
             }
             for (var i = 0; i < 3; ++i) {
                 rollover();
-                dumpSelection(panel.visibleView.textEditor, "Rolled over");
+                dumpSelection("Rolled over");
             }
             next();
         },
@@ -188,7 +188,7 @@ function test()
             clickAndDump(editor, lines, columns);
             for (var i = 0; i < jumpsAmount; ++i) {
                 rollback();
-                dumpSelection(editor, "Rolled back");
+                dumpSelection("Rolled back");
             }
             next();
         },
@@ -197,7 +197,7 @@ function test()
         {
             var searchableView = panel.searchableView();
 
-            dumpSelection(panel.visibleView.textEditor, "Before searching");
+            dumpSelection("Before searching");
 
             searchableView.showSearchField();
             searchableView._searchInputElement.value = "generate_";
@@ -206,17 +206,17 @@ function test()
                 searchableView.handleFindNextShortcut();
             searchableView.handleCancelSearchShortcut();
 
-            dumpSelection(panel.visibleView.textEditor, "After searching");
+            dumpSelection("After searching");
             rollback();
-            dumpSelection(panel.visibleView.textEditor, "Rolled back");
+            dumpSelection("Rolled back");
             rollover();
-            dumpSelection(panel.visibleView.textEditor, "Rolled over");
+            dumpSelection("Rolled over");
             next();
         },
 
         function testShowAnchorLocation(next)
         {
-            dumpSelection(panel.visibleView.textEditor, "Before switching to other panel");
+            dumpSelection("Before switching to other panel");
             InspectorTest.waitForScriptSource("workspace-test.js", onScriptSource);
             function onScriptSource(uiSourceCode)
             {
@@ -225,11 +225,11 @@ function test()
                 var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
                 WebInspector.Revealer.revealPromise(anchor[WebInspector.Linkifier._uiLocationSymbol]).then(function() {
                     InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
-                    dumpSelection(panel.visibleView.textEditor, "Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
+                    dumpSelection("Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
                     rollback();
-                    dumpSelection(panel.visibleView.textEditor, "Rolled back");
+                    dumpSelection("Rolled back");
                     rollover();
-                    dumpSelection(panel.visibleView.textEditor, "Rolled over");
+                    dumpSelection("Rolled over");
                     next();
                 });
             }
@@ -237,7 +237,7 @@ function test()
 
         function testShowUISourceCode(next)
         {
-            dumpSelection(panel.visibleView.textEditor, "Initial state");
+            dumpSelection("Initial state");
 
             InspectorTest.waitForScriptSource("example-fileset-for-test.js", onScriptSourceLoaded);
             function onScriptSourceLoaded(uiSourceCode)
@@ -245,13 +245,13 @@ function test()
                 var jumps = [20, 10, 30];
                 for (var i = 0; i < jumps.length; ++i) {
                     panel.showUISourceCode(uiSourceCode, jumps[i]);
-                    dumpSelection(panel.visibleView.textEditor, "jump to line " + jumps[i]);
+                    dumpSelection("jump to line " + jumps[i]);
                 }
                 panel.showUISourceCode(uiSourceCode, 40, 10);
-                dumpSelection(panel.visibleView.textEditor, "highlight line 40");
+                dumpSelection("highlight line 40");
                 for (var i = 0; i < jumps.length + 1; ++i) {
                     rollback();
-                    dumpSelection(panel.visibleView.textEditor, "rollback");
+                    dumpSelection("rollback");
                 }
                 next();
             }
