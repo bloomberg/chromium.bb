@@ -55,6 +55,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
   RegisterSurfaceNamespaceId();
 
   host_->SetView(this);
+  GetTextInputManager();
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {

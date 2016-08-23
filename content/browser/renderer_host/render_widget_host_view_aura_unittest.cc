@@ -4494,7 +4494,8 @@ TEST_F(InputMethodStateAuraTest, GetSelectedText) {
   gfx::Range selection_range(20, 21);
 
   for (auto index : active_view_sequence_) {
-    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    render_widget_host_delegate()->set_focused_widget(
+        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
     views_[index]->SelectionChanged(text, offset, selection_range);
     base::string16 expected_text = text.substr(
         selection_range.GetMin() - offset, selection_range.length());
@@ -4514,7 +4515,8 @@ TEST_F(InputMethodStateAuraTest, GetTextRange) {
   gfx::Range selection_range;
 
   for (auto index : active_view_sequence_) {
-    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    render_widget_host_delegate()->set_focused_widget(
+        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
     gfx::Range expected_range(offset, offset + text.length());
     views_[index]->SelectionChanged(text, offset, selection_range);
     gfx::Range range_from_client;
@@ -4535,7 +4537,8 @@ TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
   gfx::Range expected_range(0U, 1U);
 
   for (auto index : active_view_sequence_) {
-    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    render_widget_host_delegate()->set_focused_widget(
+        RenderWidgetHostImpl::From(views_[index]->GetRenderWidgetHost()));
     views_[index]->SelectionChanged(text, 0U, expected_range);
     gfx::Range range_from_client;
 

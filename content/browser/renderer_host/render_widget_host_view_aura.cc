@@ -1505,11 +1505,11 @@ bool RenderWidgetHostViewAura::HasCompositionText() const {
 }
 
 bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
-  if (!text_input_manager_)
+  if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
   const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection();
+      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
   if (!selection)
     return false;
 
@@ -1526,11 +1526,11 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
 }
 
 bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
-  if (!text_input_manager_)
+  if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
   const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection();
+      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
   if (!selection)
     return false;
 
@@ -1554,11 +1554,11 @@ bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
 bool RenderWidgetHostViewAura::GetTextFromRange(
     const gfx::Range& range,
     base::string16* text) const {
-  if (!text_input_manager_)
+  if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
   const TextInputManager::TextSelection* selection =
-      text_input_manager_->GetTextSelection();
+      text_input_manager_->GetTextSelection(GetFocusedWidget()->GetView());
   if (!selection)
     return false;
 
