@@ -52,7 +52,27 @@ class PersistedData {
   // This is called only via update_client's RegisterUpdateClientPreferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // These functions return cohort data for the specified |id|. "Cohort"
+  // indicates the membership of the client in any release channels components
+  // have set up in a machine-readable format, while "CohortName" does so in a
+  // human-readable form. "CohortHint" indicates the client's channel selection
+  // preference.
+  std::string GetCohort(const std::string& id) const;
+  std::string GetCohortHint(const std::string& id) const;
+  std::string GetCohortName(const std::string& id) const;
+
+  // These functions set cohort data for the specified |id|.
+  void SetCohort(const std::string& id, const std::string& cohort);
+  void SetCohortHint(const std::string& id, const std::string& cohort_hint);
+  void SetCohortName(const std::string& id, const std::string& cohort_name);
+
  private:
+  int GetInt(const std::string& id, const std::string& key, int fallback) const;
+  std::string GetString(const std::string& id, const std::string& key) const;
+  void SetString(const std::string& id,
+                 const std::string& key,
+                 const std::string& value);
+
   base::ThreadChecker thread_checker_;
   PrefService* pref_service_;
 

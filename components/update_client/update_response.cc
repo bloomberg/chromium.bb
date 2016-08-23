@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,9 @@
 namespace update_client {
 
 static const char* kExpectedResponseProtocol = "3.0";
+const char UpdateResponse::Result::kCohort[] = "cohort";
+const char UpdateResponse::Result::kCohortHint[] = "cohorthint";
+const char UpdateResponse::Result::kCohortName[] = "cohortname";
 
 UpdateResponse::UpdateResponse() {
 }
@@ -32,8 +36,7 @@ UpdateResponse::Results::Results(const Results& other) = default;
 UpdateResponse::Results::~Results() {
 }
 
-UpdateResponse::Result::Result() {
-}
+UpdateResponse::Result::Result() {}
 UpdateResponse::Result::Result(const Result& other) = default;
 UpdateResponse::Result::~Result() {
 }
@@ -91,6 +94,21 @@ static std::string GetAttribute(xmlNode* node, const char* attribute_name) {
     }
   }
   return std::string();
+}
+
+// Returns the value of a named attribute, or nullptr .
+static std::unique_ptr<std::string> GetAttributePtr(
+    xmlNode* node,
+    const char* attribute_name) {
+  const xmlChar* name = reinterpret_cast<const xmlChar*>(attribute_name);
+  for (xmlAttr* attr = node->properties; attr != NULL; attr = attr->next) {
+    if (!xmlStrcmp(attr->name, name) && attr->children &&
+        attr->children->content) {
+      return base::MakeUnique<std::string>(
+          reinterpret_cast<const char*>(attr->children->content));
+    }
+  }
+  return nullptr;
 }
 
 // This is used for the xml parser to report errors. This assumes the context
@@ -268,6 +286,17 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
 bool ParseAppTag(xmlNode* app,
                  UpdateResponse::Result* result,
                  std::string* error) {
+  // Read cohort information.
+  auto cohort = GetAttributePtr(app, "cohort");
+  static const char* attrs[] = {UpdateResponse::Result::kCohort,
+                                UpdateResponse::Result::kCohortHint,
+                                UpdateResponse::Result::kCohortName};
+  for (const auto& attr : attrs) {
+    auto value = GetAttributePtr(app, attr);
+    if (value)
+      result->cohort_attrs.insert({attr, *value});
+  }
+
   // Read the crx id.
   result->extension_id = GetAttribute(app, "appid");
   if (result->extension_id.empty()) {

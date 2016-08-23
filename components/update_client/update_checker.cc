@@ -91,6 +91,15 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
       base::StringAppendF(&app, " %s=\"%s\"", attr.first.c_str(),
                           attr.second.c_str());
     }
+    const std::string cohort = metadata->GetCohort(item->id);
+    const std::string cohort_name = metadata->GetCohortName(item->id);
+    const std::string cohort_hint = metadata->GetCohortHint(item->id);
+    if (!cohort.empty())
+      base::StringAppendF(&app, " cohort=\"%s\"", cohort.c_str());
+    if (!cohort_name.empty())
+      base::StringAppendF(&app, " cohortname=\"%s\"", cohort_name.c_str());
+    if (!cohort_hint.empty())
+      base::StringAppendF(&app, " cohorthint=\"%s\"", cohort_hint.c_str());
     base::StringAppendF(&app, ">");
 
     base::StringAppendF(&app, "<updatecheck");
@@ -203,6 +212,17 @@ void UpdateCheckerImpl::OnRequestSenderComplete(
       int daynum = update_response.results().daystart_elapsed_days;
       if (daynum != UpdateResponse::kNoDaystart)
         metadata_->SetDateLastRollCall(*ids_checked, daynum);
+      for (const auto& result : update_response.results().list) {
+        auto entry = result.cohort_attrs.find(UpdateResponse::Result::kCohort);
+        if (entry != result.cohort_attrs.end())
+          metadata_->SetCohort(result.extension_id, entry->second);
+        entry = result.cohort_attrs.find(UpdateResponse::Result::kCohortName);
+        if (entry != result.cohort_attrs.end())
+          metadata_->SetCohortName(result.extension_id, entry->second);
+        entry = result.cohort_attrs.find(UpdateResponse::Result::kCohortHint);
+        if (entry != result.cohort_attrs.end())
+          metadata_->SetCohortHint(result.extension_id, entry->second);
+      }
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(update_check_callback_, error,
                                 update_response.results(), retry_after_sec));

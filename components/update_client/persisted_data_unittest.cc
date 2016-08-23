@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,43 @@ TEST(PersistedDataTest, SharedPref) {
   metadata.reset(new PersistedData(pref.get()));
   EXPECT_EQ(3383, metadata->GetDateLastRollCall("someappid"));
   EXPECT_EQ(-2, metadata->GetDateLastRollCall("someotherappid"));
+}
+
+TEST(PersistedDataTest, SimpleCohort) {
+  std::unique_ptr<TestingPrefServiceSimple> pref(
+      new TestingPrefServiceSimple());
+  PersistedData::RegisterPrefs(pref->registry());
+  std::unique_ptr<PersistedData> metadata(new PersistedData(pref.get()));
+  EXPECT_EQ("", metadata->GetCohort("someappid"));
+  EXPECT_EQ("", metadata->GetCohort("someotherappid"));
+  EXPECT_EQ("", metadata->GetCohortHint("someappid"));
+  EXPECT_EQ("", metadata->GetCohortHint("someotherappid"));
+  EXPECT_EQ("", metadata->GetCohortName("someappid"));
+  EXPECT_EQ("", metadata->GetCohortName("someotherappid"));
+  metadata->SetCohort("someappid", "c1");
+  metadata->SetCohort("someotherappid", "c2");
+  metadata->SetCohortHint("someappid", "ch1");
+  metadata->SetCohortHint("someotherappid", "ch2");
+  metadata->SetCohortName("someappid", "cn1");
+  metadata->SetCohortName("someotherappid", "cn2");
+  EXPECT_EQ("c1", metadata->GetCohort("someappid"));
+  EXPECT_EQ("c2", metadata->GetCohort("someotherappid"));
+  EXPECT_EQ("ch1", metadata->GetCohortHint("someappid"));
+  EXPECT_EQ("ch2", metadata->GetCohortHint("someotherappid"));
+  EXPECT_EQ("cn1", metadata->GetCohortName("someappid"));
+  EXPECT_EQ("cn2", metadata->GetCohortName("someotherappid"));
+  metadata->SetCohort("someappid", "oc1");
+  metadata->SetCohort("someotherappid", "oc2");
+  metadata->SetCohortHint("someappid", "och1");
+  metadata->SetCohortHint("someotherappid", "och2");
+  metadata->SetCohortName("someappid", "ocn1");
+  metadata->SetCohortName("someotherappid", "ocn2");
+  EXPECT_EQ("oc1", metadata->GetCohort("someappid"));
+  EXPECT_EQ("oc2", metadata->GetCohort("someotherappid"));
+  EXPECT_EQ("och1", metadata->GetCohortHint("someappid"));
+  EXPECT_EQ("och2", metadata->GetCohortHint("someotherappid"));
+  EXPECT_EQ("ocn1", metadata->GetCohortName("someappid"));
+  EXPECT_EQ("ocn2", metadata->GetCohortName("someotherappid"));
 }
 
 }  // namespace update_client

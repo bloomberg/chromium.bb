@@ -28,33 +28,62 @@ PersistedData::~PersistedData() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-int PersistedData::GetDateLastRollCall(const std::string& id) const {
+int PersistedData::GetInt(const std::string& id,
+                          const std::string& key,
+                          int fallback) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!pref_service_)
-    return kDateLastRollCallUnknown;
-  int dlrc = kDateLastRollCallUnknown;
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(kPersistedDataPreference);
   // We assume ids do not contain '.' characters.
   DCHECK_EQ(std::string::npos, id.find('.'));
-  if (!dict->GetInteger(base::StringPrintf("apps.%s.dlrc", id.c_str()), &dlrc))
-    return kDateLastRollCallUnknown;
-  return dlrc;
+  if (!pref_service_)
+    return fallback;
+  const base::DictionaryValue* dict =
+      pref_service_->GetDictionary(kPersistedDataPreference);
+  if (!dict)
+    return fallback;
+  int result = 0;
+  return dict->GetInteger(
+             base::StringPrintf("apps.%s.%s", id.c_str(), key.c_str()), &result)
+             ? result
+             : fallback;
+}
+
+std::string PersistedData::GetString(const std::string& id,
+                                     const std::string& key) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // We assume ids do not contain '.' characters.
+  DCHECK_EQ(std::string::npos, id.find('.'));
+  if (!pref_service_)
+    return std::string();
+  const base::DictionaryValue* dict =
+      pref_service_->GetDictionary(kPersistedDataPreference);
+  if (!dict)
+    return std::string();
+  std::string result;
+  return dict->GetString(
+             base::StringPrintf("apps.%s.%s", id.c_str(), key.c_str()), &result)
+             ? result
+             : std::string();
+}
+
+int PersistedData::GetDateLastRollCall(const std::string& id) const {
+  return GetInt(id, "dlrc", kDateLastRollCallUnknown);
 }
 
 std::string PersistedData::GetPingFreshness(const std::string& id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!pref_service_)
-    return std::string();
-  std::string freshness;
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(kPersistedDataPreference);
-  // We assume ids do not contain '.' characters.
-  DCHECK_EQ(std::string::npos, id.find('.'));
-  if (!dict->GetString(base::StringPrintf("apps.%s.pf", id.c_str()),
-                       &freshness))
-    return std::string();
-  return base::StringPrintf("{%s}", freshness.c_str());
+  std::string result = GetString(id, "pf");
+  return !result.empty() ? base::StringPrintf("{%s}", result.c_str()) : result;
+}
+
+std::string PersistedData::GetCohort(const std::string& id) const {
+  return GetString(id, "cohort");
+}
+
+std::string PersistedData::GetCohortName(const std::string& id) const {
+  return GetString(id, "cohortname");
+}
+
+std::string PersistedData::GetCohortHint(const std::string& id) const {
+  return GetString(id, "cohorthint");
 }
 
 void PersistedData::SetDateLastRollCall(const std::vector<std::string>& ids,
@@ -70,6 +99,32 @@ void PersistedData::SetDateLastRollCall(const std::vector<std::string>& ids,
     update->SetString(base::StringPrintf("apps.%s.pf", id.c_str()),
                       base::GenerateGUID());
   }
+}
+
+void PersistedData::SetString(const std::string& id,
+                              const std::string& key,
+                              const std::string& value) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!pref_service_)
+    return;
+  DictionaryPrefUpdate update(pref_service_, kPersistedDataPreference);
+  update->SetString(base::StringPrintf("apps.%s.%s", id.c_str(), key.c_str()),
+                    value);
+}
+
+void PersistedData::SetCohort(const std::string& id,
+                              const std::string& cohort) {
+  SetString(id, "cohort", cohort);
+}
+
+void PersistedData::SetCohortName(const std::string& id,
+                                  const std::string& cohort_name) {
+  SetString(id, "cohortname", cohort_name);
+}
+
+void PersistedData::SetCohortHint(const std::string& id,
+                                  const std::string& cohort_hint) {
+  SetString(id, "cohorthint", cohort_hint);
 }
 
 void PersistedData::RegisterPrefs(PrefRegistrySimple* registry) {

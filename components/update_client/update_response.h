@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_UPDATE_RESPONSE_H_
 #define COMPONENTS_UPDATE_CLIENT_UPDATE_RESPONSE_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -99,6 +101,15 @@ class UpdateResponse {
     std::vector<GURL> crx_diffurls;
 
     Manifest manifest;
+
+    // The server has instructed the client to set its [key] to [value] for each
+    // key-value pair in this string.
+    std::map<std::string, std::string> cohort_attrs;
+
+    // The following are the only allowed keys in |cohort_attrs|.
+    static const char kCohort[];
+    static const char kCohortHint[];
+    static const char kCohortName[];
   };
 
   static const int kNoDaystart = -1;
