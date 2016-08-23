@@ -56,9 +56,7 @@ public class TouchInputStrategy implements InputStrategyInterface {
         mInjector = injector;
         mQueuedEvents = new LinkedList<MotionEvent>();
 
-        synchronized (mRenderData) {
-            mRenderData.drawCursor = false;
-        }
+        mRenderData.drawCursor = false;
     }
 
     @Override
@@ -207,13 +205,12 @@ public class TouchInputStrategy implements InputStrategyInterface {
         // Use a copy of the original event so the original event can be passed to other
         // detectors/handlers in an unmodified state.
         event = MotionEvent.obtain(event);
-        synchronized (mRenderData) {
-            // Transform the event coordinates so they represent the remote screen coordinates
-            // instead of the local touch display.
-            Matrix inverted = new Matrix();
-            mRenderData.transform.invert(inverted);
-            event.transform(inverted);
-        }
+
+        // Transform the event coordinates so they represent the remote screen coordinates
+        // instead of the local touch display.
+        Matrix inverted = new Matrix();
+        mRenderData.transform.invert(inverted);
+        event.transform(inverted);
 
         return event;
     }

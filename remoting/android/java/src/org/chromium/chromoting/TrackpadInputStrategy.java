@@ -24,9 +24,7 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
         mRenderData = renderData;
         mInjector = injector;
 
-        synchronized (mRenderData) {
-            mRenderData.drawCursor = true;
-        }
+        mRenderData.drawCursor = true;
     }
 
     @Override
@@ -77,8 +75,6 @@ public class TrackpadInputStrategy implements InputStrategyInterface {
     }
 
     private PointF getCursorPosition() {
-        synchronized (mRenderData) {
-            return mRenderData.getCursorPosition();
-        }
+        return mRenderData.getCursorPosition();
     }
 }

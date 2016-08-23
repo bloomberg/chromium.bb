@@ -8,8 +8,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 
 /**
- * This class stores data that needs to be accessed on both the display thread and the
- * event-processing thread.
+ * This class stores UI configuration that will be used when rendering the remote desktop.
  */
 public class RenderData {
     /** Stores pan and zoom configuration and converts image coordinates to screen coordinates. */

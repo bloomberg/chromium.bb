@@ -77,9 +77,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         scaledDoubleTapSlopInPx *= DOUBLE_TAP_SLOP_SCALE_FACTOR;
         mDoubleTapSlopSquareInPx = scaledDoubleTapSlopInPx * scaledDoubleTapSlopInPx;
 
-        synchronized (mRenderData) {
-            mRenderData.drawCursor = false;
-        }
+        mRenderData.drawCursor = false;
     }
 
     @Override
@@ -154,9 +152,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     }
 
     private PointF getCursorPosition() {
-        synchronized (mRenderData) {
-            return mRenderData.getCursorPosition();
-        }
+        return mRenderData.getCursorPosition();
     }
 
     private boolean isDoubleTap(float currentX, float currentY, long tapInterval) {
@@ -169,10 +165,9 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         //
         float[] currentValues = {currentX, currentY};
         float[] previousValues = {mLastTapPoint.x, mLastTapPoint.y};
-        synchronized (mRenderData) {
-            mRenderData.transform.mapPoints(currentValues);
-            mRenderData.transform.mapPoints(previousValues);
-        }
+
+        mRenderData.transform.mapPoints(currentValues);
+        mRenderData.transform.mapPoints(previousValues);
 
         int deltaX = (int) (currentValues[0] - previousValues[0]);
         int deltaY = (int) (currentValues[1] - previousValues[1]);
