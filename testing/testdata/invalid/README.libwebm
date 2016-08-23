@@ -1,5 +1,10 @@
 Why the files in this directory are considered invalid:
 
+block_ends_beyond_cluster.mkv -
+  File containing a single cluster with two simple blocks. One valid, and the
+  second reporting a size that would cause the block to end far beyond the end
+  of its parent cluster.
+
 chapters_truncated_chapter_string.mkv -
   File with a Chapters element that ends with a ChapterAtom whose ChapterDisplay
   element contains a truncated ChapterString.

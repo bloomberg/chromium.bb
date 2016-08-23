@@ -723,6 +723,16 @@ TEST_F(ParserTest, InvalidFixedLacingSize) {
             segment_->GetFirst()->GetFirst(block_entry));
 }
 
+TEST_F(ParserTest, InvalidBlockEndsBeyondCluster) {
+  ASSERT_NO_FATAL_FAILURE(
+      CreateSegmentNoHeaderChecks("invalid/block_ends_beyond_cluster.mkv"));
+  ASSERT_EQ(0, segment_->Load());
+  const mkvparser::BlockEntry* block_entry = NULL;
+  EXPECT_EQ(0, segment_->GetFirst()->GetFirst(block_entry));
+  EXPECT_EQ(mkvparser::E_FILE_FORMAT_INVALID,
+            segment_->GetFirst()->GetNext(block_entry, block_entry));
+}
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {
