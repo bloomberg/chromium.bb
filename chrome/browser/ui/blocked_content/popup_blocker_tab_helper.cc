@@ -4,23 +4,19 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/features.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
