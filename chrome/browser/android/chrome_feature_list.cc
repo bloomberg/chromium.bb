@@ -46,6 +46,8 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPhysicalWebFeature,
     &kPhysicalWebIgnoreOtherClientsFeature,
     &kReadItLaterInMenu,
+    &kSpecialLocaleFeature,
+    &kSpecialLocaleWrapper,
     &kSystemDownloadManager,
     &kTabReparenting,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
@@ -86,6 +88,12 @@ const base::Feature kPhysicalWebIgnoreOtherClientsFeature{
 
 const base::Feature kReadItLaterInMenu{"ReadItLaterInMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSpecialLocaleFeature{"SpecialLocale",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSystemDownloadManager{"SystemDownloadManager",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

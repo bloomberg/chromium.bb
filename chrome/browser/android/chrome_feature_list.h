@@ -22,6 +22,8 @@ extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kPhysicalWebFeature;
 extern const base::Feature kPhysicalWebIgnoreOtherClientsFeature;
 extern const base::Feature kReadItLaterInMenu;
+extern const base::Feature kSpecialLocaleFeature;
+extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kSystemDownloadManager;
 extern const base::Feature kTabReparenting;
 

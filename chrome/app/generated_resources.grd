@@ -14959,6 +14959,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION" desc="Description for the flag to enable tab switcher in document mode.">
         If enabled, a tab switcher will show even when 'merge tabs and apps' option is on in the settings.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SPECIAL_LOCALE_NAME" desc="Name of the option to show special locale.">
+        Enable custom logic for special locales.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SPECIAL_LOCALE_DESCRIPTION" desc="Description of the option to show special locale.">
+        Enable custom logic for special locales. In this mode, Chrome might behave differently in some locales.
+      </message>
 
       <!-- WebApks -->
       <message name="IDS_FLAGS_ENABLE_WEBAPK" desc="Name for the flag to enable WebAPK feature.">
