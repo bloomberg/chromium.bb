@@ -23,9 +23,16 @@ class WebStateImpl;
 
 // May be implemented in tests to run JavaScript on interstitials. This function
 // has access to private EvaluateJavaScript method to be used for testing.
+// DEPRECATED. TODO(crbug.com/595761): Remove this function.
 void EvaluateScriptForTesting(WebInterstitialImpl*,
                               NSString*,
                               JavaScriptCompletion);
+
+// May be implemented in tests to run JavaScript on interstitials. This function
+// has access to private ExecuteJavaScript method to be used for testing.
+void ExecuteScriptForTesting(WebInterstitialImpl*,
+                             NSString*,
+                             JavaScriptResultBlock);
 
 // An abstract subclass of WebInterstitial that exposes the views necessary to
 // embed the interstitial into a WebState.
@@ -87,9 +94,14 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   bool action_taken_;
 
   // Must be implemented only for testing purposes.
+  // DEPRECATED. TODO(crbug.com/595761): Remove this function.
   friend void web::EvaluateScriptForTesting(WebInterstitialImpl*,
                                             NSString*,
                                             JavaScriptCompletion);
+  // Must be implemented only for testing purposes.
+  friend void web::ExecuteScriptForTesting(WebInterstitialImpl*,
+                                           NSString*,
+                                           JavaScriptResultBlock);
 };
 
 }  // namespace web
