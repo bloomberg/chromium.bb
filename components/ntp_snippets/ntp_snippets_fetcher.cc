@@ -103,7 +103,8 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
   if (endpoint == GURL(kChromeReaderServer)) {
     return false;
   } else if (endpoint != GURL(kContentSuggestionsServer) &&
-             endpoint != GURL(kContentSuggestionsSandboxServer)) {
+             endpoint != GURL(kContentSuggestionsDevServer) &&
+             endpoint != GURL(kContentSuggestionsAlphaServer)) {
     LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
       << "assuming chromecontentsuggestions-style API";
   }

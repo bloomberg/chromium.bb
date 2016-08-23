@@ -16,8 +16,9 @@ const char kChromeReaderServer[] =
     "https://chromereader-pa.googleapis.com/v1/fetch";
 const char kContentSuggestionsServer[] =
     "https://chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
-const char kContentSuggestionsSandboxServer[] =
-    "https://dev-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/"
-    "suggestions/fetch";
+const char kContentSuggestionsDevServer[] =
+    "https://dev-chromecontentsuggestions-pa.googleapis.com/v1/suggestions/fetch";
+const char kContentSuggestionsAlphaServer[] =
+    "https://alpha-chromecontentsuggestions-pa.sandbox.googleapis.com/v1/suggestions/fetch";
 
 }  // namespace ntp_snippets

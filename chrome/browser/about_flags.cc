@@ -562,12 +562,12 @@ const FeatureEntry::FeatureParam
 
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationServer[] = {
     {"content_suggestions_backend",
-     ntp_snippets::kContentSuggestionsSandboxServer}};
+     ntp_snippets::kContentSuggestionsServer}};
 
 const FeatureEntry::FeatureParam
     kNTPSnippetsFeatureVariationServerNonPersonalized[] = {
         {"content_suggestions_backend",
-         ntp_snippets::kContentSuggestionsSandboxServer},
+         ntp_snippets::kContentSuggestionsServer},
         {"fetching_personalization", "non_personal"}};
 
 const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
