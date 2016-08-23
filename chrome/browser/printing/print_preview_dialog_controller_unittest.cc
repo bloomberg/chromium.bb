@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 
 using content::WebContents;
@@ -304,4 +305,60 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   EXPECT_NE(tiger_preview_dialog_2b, web_contents);
 }
 
+// Tests preview dialog controller cleans up correctly and does not throw errors
+// on a renderer process crash. Checks that the renderer process closed
+// notification is still received even if one of two preview dialogs with the
+// same renderer process host is closed before the process "crashes".
+TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogsClose) {
+  // Set up the browser.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  ASSERT_TRUE(tab_strip_model);
+  EXPECT_EQ(0, tab_strip_model->count());
+
+  // Create a new tab with contents |web_contents_1|
+  chrome::NewTab(browser());
+  WebContents* web_contents_1 = tab_strip_model->GetActiveWebContents();
+  ASSERT_TRUE(web_contents_1);
+  EXPECT_EQ(1, tab_strip_model->count());
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
+  ASSERT_TRUE(dialog_controller);
+
+  // Create preview dialog for |web_contents_1|. Should not create a new tab.
+  PrintViewManager::FromWebContents(web_contents_1)->PrintPreviewNow(false);
+  WebContents* preview_dialog_1 =
+      dialog_controller->GetOrCreatePreviewDialog(web_contents_1);
+  EXPECT_NE(web_contents_1, preview_dialog_1);
+  EXPECT_EQ(1, tab_strip_model->count());
+
+  // Create a new tab with contents |web_contents_2|
+  chrome::NewTab(browser());
+  WebContents* web_contents_2 = tab_strip_model->GetActiveWebContents();
+  ASSERT_TRUE(web_contents_2);
+  EXPECT_EQ(2, tab_strip_model->count());
+
+  // Create preview dialog for |web_contents_2|
+  PrintViewManager::FromWebContents(web_contents_2)->PrintPreviewNow(false);
+  WebContents* preview_dialog_2 =
+      dialog_controller->GetOrCreatePreviewDialog(web_contents_2);
+  EXPECT_NE(web_contents_2, preview_dialog_2);
+  EXPECT_NE(preview_dialog_1, preview_dialog_2);
+
+  // 2 initiators and 2 preview dialogs exist in the same browser.  The preview
+  // dialogs are constrained in their respective initiators.
+  EXPECT_EQ(2, tab_strip_model->count());
+
+  // Close |web_contents_1|'s tab
+  int tab_1_index = tab_strip_model->GetIndexOfWebContents(web_contents_1);
+  tab_strip_model->CloseWebContentsAt(tab_1_index, 0);
+  EXPECT_EQ(1, tab_strip_model->count());
+
+  // Simulate a crash of the render process host for |web_contents_2|. Print
+  // preview controller should exit cleanly and not crash.
+  content::MockRenderProcessHost* rph =
+      static_cast<content::MockRenderProcessHost*>(
+          web_contents_2->GetRenderViewHost()->GetProcess());
+  rph->SimulateCrash();
+}
 }  // namespace printing

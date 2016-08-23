@@ -133,6 +133,12 @@ class PrintPreviewDialogController
   // print preview dialog.
   bool is_creating_print_preview_dialog_;
 
+  // How many web contents (dialogs and initiators) are watching a given render
+  // process host. Used to determine when a render process host's
+  // NOTIFICATION_RENDERER_PROCESS_CLOSED notification should be removed from
+  // the registrar.
+  std::map<content::RenderProcessHost*, int> host_contents_count_map_;
+
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogController);
 };
 
