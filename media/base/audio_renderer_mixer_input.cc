@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_pool.h"
 
@@ -175,6 +176,7 @@ void AudioRendererMixerInput::SwitchOutputDevice(
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
                                              uint32_t frames_delayed) {
+  TRACE_EVENT0("audio", "AudioRendererMixerInput::ProvideInput");
   int frames_filled = callback_->Render(audio_bus, frames_delayed, 0);
 
   // AudioConverter expects unfilled frames to be zeroed.

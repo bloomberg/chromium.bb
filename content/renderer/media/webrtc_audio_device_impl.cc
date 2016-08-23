@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
@@ -94,9 +95,12 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   int64_t ntp_time_ms = -1;
   static const int kBitsPerByte = 8;
   int16_t* audio_data = &render_buffer_[0];
+
+  TRACE_EVENT_BEGIN0("audio", "VoE::PullRenderData");
   audio_transport_callback_->PullRenderData(
       bytes_per_sample * kBitsPerByte, sample_rate, audio_bus->channels(),
       frames_per_10_ms, audio_data, &elapsed_time_ms, &ntp_time_ms);
+  TRACE_EVENT_END0("audio", "VoE::PullRenderData");
   if (elapsed_time_ms >= 0) {
     *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
   }

@@ -72,6 +72,10 @@ class OnMoreDataConverter
   // stream has been stopped.
   bool error_occurred_;
 
+  // Information about input and output buffer sizes to be traced.
+  const int input_buffer_size_;
+  const int output_buffer_size_;
+
   DISALLOW_COPY_AND_ASSIGN(OnMoreDataConverter);
 };
 
@@ -348,7 +352,9 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
       source_callback_(nullptr),
       input_bytes_per_frame_(input_params.GetBytesPerFrame()),
       audio_converter_(input_params, output_params, false),
-      error_occurred_(false) {}
+      error_occurred_(false),
+      input_buffer_size_(input_params.frames_per_buffer()),
+      output_buffer_size_(output_params.frames_per_buffer()) {}
 
 OnMoreDataConverter::~OnMoreDataConverter() {
   // Ensure Stop() has been called so we don't end up with an AudioOutputStream
@@ -376,6 +382,8 @@ void OnMoreDataConverter::Stop() {
 int OnMoreDataConverter::OnMoreData(AudioBus* dest,
                                     uint32_t total_bytes_delay,
                                     uint32_t frames_skipped) {
+  TRACE_EVENT2("audio", "OnMoreDataConverter::OnMoreData", "input buffer size",
+               input_buffer_size_, "output buffer size", output_buffer_size_);
   current_total_bytes_delay_ = total_bytes_delay;
   audio_converter_.Convert(dest);
 

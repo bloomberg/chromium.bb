@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 
 namespace media {
 
@@ -164,6 +165,7 @@ bool AudioRendererMixer::CurrentThreadIsRenderingThread() {
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                uint32_t frames_delayed,
                                uint32_t frames_skipped) {
+  TRACE_EVENT0("audio", "AudioRendererMixer::Render");
   base::AutoLock auto_lock(lock_);
 
   // If there are no mixer inputs and we haven't seen one for a while, pause the
