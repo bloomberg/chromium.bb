@@ -1,0 +1,71 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_
+
+#include "base/macros.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+
+namespace content {
+class NavigationHandle;
+class WebContents;
+}
+
+namespace page_load_metrics {
+struct PageLoadExtraInfo;
+struct PageLoadTiming;
+}
+
+namespace previews {
+
+namespace internal {
+
+// Various UMA histogram names for Previews core page load metrics.
+extern const char kHistogramOfflinePreviewsDOMContentLoadedEventFired[];
+extern const char kHistogramOfflinePreviewsFirstLayout[];
+extern const char kHistogramOfflinePreviewsLoadEventFired[];
+extern const char kHistogramOfflinePreviewsFirstContentfulPaint[];
+extern const char kHistogramOfflinePreviewsParseStart[];
+
+}  // namespace internal
+
+// Observer responsible for recording core page load metrics relevant to
+// Previews.
+class PreviewsPageLoadMetricsObserver
+    : public page_load_metrics::PageLoadMetricsObserver {
+ public:
+  PreviewsPageLoadMetricsObserver();
+  ~PreviewsPageLoadMetricsObserver() override;
+
+  // page_load_metrics::PageLoadMetricsObserver:
+  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  void OnDomContentLoadedEventStart(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLoadEventStart(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFirstLayout(const page_load_metrics::PageLoadTiming& timing,
+                     const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnParseStart(const page_load_metrics::PageLoadTiming& timing,
+                    const page_load_metrics::PageLoadExtraInfo& info) override;
+
+ private:
+  // Whether |web_contents| is showing an offline pages preview. Overridden in
+  // testing.
+  virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
+
+  // Whether this page load was an offline pages preview.
+  bool is_offline_preview_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserver);
+};
+
+}  // namespace previews
+
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_PAGE_LOAD_METRICS_OBSERVER_H_

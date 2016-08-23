@@ -68,7 +68,10 @@ class OfflinePageTabHelper :
 
   ~OfflinePageTabHelper() override;
 
-  const OfflinePageItem* offline_page() { return offline_page_.get(); }
+  const OfflinePageItem* offline_page() const { return offline_page_.get(); }
+
+  // Whether the page is an offline preview.
+  bool is_offline_preview() const { return is_offline_preview_; }
 
  private:
   friend class content::WebContentsUserData<OfflinePageTabHelper>;
@@ -116,6 +119,10 @@ class OfflinePageTabHelper :
   // about the offline state of the current web contents.
   std::unique_ptr<OfflinePageItem> offline_page_;
   std::unique_ptr<Delegate> delegate_;
+
+  // Whether the page is an offline preview. Offline page previews are shown
+  // when a user's effective connection type is prohibitively slow.
+  bool is_offline_preview_;
 
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 

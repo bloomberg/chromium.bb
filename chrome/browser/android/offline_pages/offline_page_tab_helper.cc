@@ -75,6 +75,7 @@ class DefaultDelegate : public OfflinePageTabHelper::Delegate {
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       delegate_(new DefaultDelegate()),
+      is_offline_preview_(false),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
@@ -100,8 +101,10 @@ void OfflinePageTabHelper::DidStartNavigation(
   // Since this is a new navigation, we will reset the cached offline page,
   // unless we are currently looking at an offline page.
   GURL navigated_url = navigation_handle->GetURL();
-  if (offline_page_ && navigated_url != offline_page_->GetOfflineURL())
+  if (offline_page_ && navigated_url != offline_page_->GetOfflineURL()) {
     offline_page_ = nullptr;
+    is_offline_preview_ = false;
+  }
 
   // If an offline download file is opened, don't do redirect per network
   // conditions. Also store a cached copy here such that Tab knows that
@@ -220,6 +223,7 @@ void OfflinePageTabHelper::RedirectToOnline(
   Redirect(navigated_url, redirect_url);
   // Clear the offline page since we are redirecting to online.
   offline_page_ = nullptr;
+  is_offline_preview_ = false;
 
   ReportRedirectResultUMA(RedirectResult::REDIRECTED_ON_CONNECTED_NETWORK);
 }
@@ -298,6 +302,8 @@ void OfflinePageTabHelper::TryRedirectToOffline(
 
   Redirect(from_url, redirect_url);
   offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
+  is_offline_preview_ =
+      (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
   ReportRedirectResultUMA(result);
 }
 

@@ -170,6 +170,7 @@
       'browser/page_load_metrics/observers/google_captcha_observer_unittest.cc',
       'browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.cc',
       'browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h',
+      'browser/page_load_metrics/observers/previews_page_load_metrics_observer_unittest.cc',
       'browser/page_load_metrics/observers/service_worker_page_load_metrics_observer_unittest.cc',
       'browser/password_manager/chrome_password_manager_client_unittest.cc',
       'browser/password_manager/password_manager_internals_service_unittest.cc',

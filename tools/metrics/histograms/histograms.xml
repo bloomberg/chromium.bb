@@ -101917,6 +101917,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Clients.DocWrite.Evaluator"
       label="PageLoadMetrics from a page that could have been evaluated by
              the DocumentWriteEvaluator"/>
+  <suffix name="Clients.Previews.OfflinePages"
+      label="PageLoadMetrics that are a result of a navigation that shows
+             users an offline page preview. Offline page previews are shown
+             when a user's effective connection type is prohibitively slow."/>
   <suffix name="Clients.ServiceWorker"
       label="PageLoadMetrics from a page that is controlled by a Service
              Worker"/>

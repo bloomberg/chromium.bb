@@ -371,6 +371,7 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
   EXPECT_EQ(expected_offline_url, item->GetOfflineURL());
   EXPECT_EQ(kLastNNamespace, item->client_id.name_space);
   EXPECT_EQ(base::IntToString(kTabId), item->client_id.id);
+  EXPECT_FALSE(offline_page_tab_helper()->is_offline_preview());
 }
 
 TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
@@ -404,6 +405,8 @@ TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
   EXPECT_EQ(offline_url(), item->GetOfflineURL());
   EXPECT_EQ(online_url(), item->url);
 
+  EXPECT_TRUE(offline_page_tab_helper()->is_offline_preview());
+
   clock()->Advance(base::TimeDelta::FromDays(8));
   StartLoad(kTestPageUrl);
   // Gives a chance to run delayed task to do redirection.
@@ -412,6 +415,7 @@ TEST_F(OfflinePageTabHelperTest, PageFor2GSlow) {
   // This page should not be fresh enough to cause a redirect.
   item = OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
   EXPECT_EQ(nullptr, item);
+  EXPECT_FALSE(offline_page_tab_helper()->is_offline_preview());
 }
 
 // This test saves another copy of page from Async Loading namespace
@@ -443,6 +447,7 @@ TEST_F(OfflinePageTabHelperTest, SwitchToOfflineAsyncLoadedPageOnNoNetwork) {
   EXPECT_EQ(expected_offline_id, item->offline_id);
   EXPECT_EQ(expected_offline_url, item->GetOfflineURL());
   EXPECT_EQ(kAsyncNamespace, item->client_id.name_space);
+  EXPECT_FALSE(offline_page_tab_helper()->is_offline_preview());
 }
 
 }  // namespace offline_pages
