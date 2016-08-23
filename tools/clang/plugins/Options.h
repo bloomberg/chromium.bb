@@ -9,7 +9,6 @@ namespace chrome_checker {
 
 struct Options {
   bool check_base_classes = false;
-  bool enforce_in_pdf = false;
   bool enforce_in_thirdparty_webkit = false;  // Use in Blink code itself
   bool check_enum_last_value = false;
   // This is needed for some distributed build-sytems to respect banned

@@ -224,10 +224,6 @@ void ChromeClassTester::BuildBannedLists() {
     allowed_directories_.emplace("/third_party/WebKit/");
   }
 
-  if (!options_.enforce_in_pdf) {
-    banned_directories_.emplace("/pdf/");
-  }
-
   banned_directories_.emplace("/third_party/");
   banned_directories_.emplace("/native_client/");
   banned_directories_.emplace("/breakpad/");
