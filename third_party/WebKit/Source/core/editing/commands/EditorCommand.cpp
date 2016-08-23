@@ -36,6 +36,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/TagCollection.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SelectionModifier.h"
@@ -358,6 +359,11 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
     return true;
 }
 
+static bool hasChildTags(Element& element, const QualifiedName& tagName)
+{
+    return !element.getElementsByTagName(tagName.localName())->isEmpty();
+}
+
 static TriState selectionListState(const FrameSelection& selection, const QualifiedName& tagName)
 {
     if (selection.isCaret()) {
@@ -366,8 +372,14 @@ static TriState selectionListState(const FrameSelection& selection, const Qualif
     } else if (selection.isRange()) {
         Element* startElement = enclosingElementWithTag(selection.selection().start(), tagName);
         Element* endElement = enclosingElementWithTag(selection.selection().end(), tagName);
-        if (startElement && endElement && startElement == endElement)
+
+        if (startElement && endElement && startElement == endElement) {
+            // If the selected list has the different type of list as child, return |FalseTriState|.
+            // See http://crbug.com/385374
+            if (hasChildTags(*startElement, tagName.matches(ulTag) ? olTag : ulTag))
+                return FalseTriState;
             return TrueTriState;
+        }
     }
 
     return FalseTriState;
