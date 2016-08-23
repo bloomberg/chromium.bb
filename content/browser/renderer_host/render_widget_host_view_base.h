@@ -66,10 +66,10 @@ struct DidOverscrollParams;
 namespace content {
 class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
+class RenderWidgetHostImpl;
 class RenderWidgetHostViewBaseObserver;
 class SyntheticGesture;
 class SyntheticGestureTarget;
-class RenderWidgetHostImpl;
 class TextInputManager;
 class WebCursor;
 struct NativeWebKeyboardEvent;
