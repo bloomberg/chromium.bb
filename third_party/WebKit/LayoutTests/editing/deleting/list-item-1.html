@@ -1,20 +1,22 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<ul><ul><li>^foo|</li></ul><li><br></li></ul>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('delete');
+            selection.document.execCommand('delete');
+        },
+        [
+            '<div contenteditable>',
+                '<ul><li>|<br></li><li><br></li></ul>',
+            '</div>',
+        ].join('')),
+        'Delete a list item to delete empty list');
 </script>
-<body>
-<p>This test deletes the contents of a sub-list.  Then it deletes the empty list item. The list item below it should remain.</p>
-<div id="div" contentEditable="true"><ul><ul><li>foo</li></ul><li><br></li></ul></div>
-
-<script>
-if (window.internals)
-    internals.settings.setEditingBehavior('mac');
-var div = document.getElementById("div");
-var sel = window.getSelection();
-
-sel.collapse(div, 0);
-sel.modify("extend", "forward", "word");
-document.execCommand("Delete");
-document.execCommand("Delete");
-</script>
-</body>
