@@ -6,15 +6,15 @@
 
 #include <memory>
 
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_menu_model.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
 #include "base/strings/string_util.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/connector.h"

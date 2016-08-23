@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,8 +10,10 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
@@ -24,8 +26,6 @@
 #include "ash/common/wm_root_window_controller_observer.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

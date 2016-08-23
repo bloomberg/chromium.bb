@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm_shell.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"

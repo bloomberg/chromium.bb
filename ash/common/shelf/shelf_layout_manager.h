@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
-#define ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_H_
+#define ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
@@ -18,7 +19,6 @@
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/common/wm_activation_observer.h"
-#include "ash/shelf/shelf_widget.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -378,4 +378,4 @@ class ASH_EXPORT ShelfLayoutManager
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_H_

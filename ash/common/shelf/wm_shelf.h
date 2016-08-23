@@ -6,8 +6,8 @@
 #define ASH_COMMON_SHELF_WM_SHELF_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/observer_list.h"
 
 namespace gfx {

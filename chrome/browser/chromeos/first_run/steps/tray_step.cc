@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 
+#include "ash/common/shelf/shelf.h"
 #include "ash/first_run/first_run_helper.h"
-#include "ash/shelf/shelf.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"

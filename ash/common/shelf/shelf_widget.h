@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_WIDGET_H_
-#define ASH_SHELF_SHELF_WIDGET_H_
+#ifndef ASH_COMMON_SHELF_SHELF_WIDGET_H_
+#define ASH_COMMON_SHELF_SHELF_WIDGET_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_background_animator.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
+#include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -135,4 +135,4 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_WIDGET_H_
+#endif  // ASH_COMMON_SHELF_SHELF_WIDGET_H_

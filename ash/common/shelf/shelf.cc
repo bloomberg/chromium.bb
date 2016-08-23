@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf.h"
+#include "ash/common/shelf/shelf.h"
 
 #include <algorithm>
 #include <cmath>
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_navigator.h"
 #include "ash/common/shelf/shelf_view.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -54,11 +54,8 @@ Shelf* Shelf::ForPrimaryDisplay() {
 }
 
 // static
-Shelf* Shelf::ForWindow(const WmWindow* window) {
-  const aura::Window* aura_window = WmWindowAura::GetAuraWindow(window);
-  ShelfWidget* shelf_widget =
-      RootWindowController::ForWindow(aura_window)->shelf_widget();
-  return shelf_widget ? shelf_widget->shelf() : nullptr;
+Shelf* Shelf::ForWindow(WmWindow* window) {
+  return window->GetRootWindowController()->GetShelf()->shelf();
 }
 
 void Shelf::SetAlignment(ShelfAlignment alignment) {

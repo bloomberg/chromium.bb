@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
@@ -10,8 +10,11 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_view.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -20,9 +23,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"

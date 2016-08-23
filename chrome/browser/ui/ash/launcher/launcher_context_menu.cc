@@ -8,10 +8,10 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"

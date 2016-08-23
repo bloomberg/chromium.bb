@@ -7,6 +7,9 @@
 #include <map>
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -14,9 +17,6 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/shell_test_api.h"

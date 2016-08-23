@@ -7,9 +7,9 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/display/display_manager.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/wm/window_properties.h"

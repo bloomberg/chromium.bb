@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_view.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_test_api.h"
 #include "base/command_line.h"

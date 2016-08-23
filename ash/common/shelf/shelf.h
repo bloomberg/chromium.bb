@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_H_
-#define ASH_SHELF_SHELF_H_
+#ifndef ASH_COMMON_SHELF_SHELF_H_
+#define ASH_COMMON_SHELF_SHELF_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_locking_manager.h"
 #include "ash/common/shelf/shelf_types.h"
-#include "ash/shelf/shelf_widget.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_observer.h"
@@ -57,7 +57,7 @@ class ASH_EXPORT Shelf {
   // Return the shelf for the display that |window| is currently on, or a shelf
   // on primary display if the shelf per display feature is disabled. NULL if no
   // user is logged in yet.
-  static Shelf* ForWindow(const WmWindow* window);
+  static Shelf* ForWindow(WmWindow* window);
 
   // DEPRECATED. Use WmShelf::GetAlignment() and SetAlignment().
   void SetAlignment(ShelfAlignment alignment);
@@ -135,4 +135,4 @@ class ASH_EXPORT Shelf {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_H_
+#endif  // ASH_COMMON_SHELF_SHELF_H_

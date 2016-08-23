@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
-#define ASH_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
+#ifndef ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
+#define ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -35,4 +35,4 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_
+#endif  // ASH_COMMON_SHELF_SHELF_LAYOUT_MANAGER_OBSERVER_H_

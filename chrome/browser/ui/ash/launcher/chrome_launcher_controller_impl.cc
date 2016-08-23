@@ -10,12 +10,12 @@
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/multi_profile_uma.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"

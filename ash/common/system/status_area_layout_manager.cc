@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/status_area_layout_manager.h"
+#include "ash/common/system/status_area_layout_manager.h"
 
+#include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_window.h"
-#include "ash/shelf/shelf_layout_manager.h"
-#include "ash/shelf/shelf_widget.h"
 #include "base/auto_reset.h"
 
 namespace ash {

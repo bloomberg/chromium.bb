@@ -5,6 +5,7 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -12,7 +13,6 @@
 #include "ash/common/wm/workspace/phantom_window_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_md_test_base.h"
 #include "ash/test/display_manager_test_api.h"

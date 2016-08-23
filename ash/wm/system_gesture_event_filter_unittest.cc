@@ -8,12 +8,12 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"

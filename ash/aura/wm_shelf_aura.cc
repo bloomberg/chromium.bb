@@ -5,9 +5,9 @@
 #include "ash/aura/wm_shelf_aura.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/shelf/dimmer_view.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 
 namespace ash {

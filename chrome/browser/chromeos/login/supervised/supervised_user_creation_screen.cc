@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
+#include "ash/common/shelf/shelf.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/rand_util.h"
 #include "base/values.h"
