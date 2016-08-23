@@ -2030,7 +2030,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If it's a chrome URL, but not a native one, create the WebUI instance.
   if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
       ![_nativeProvider hasControllerForURL:currentURL]) {
-    [self createWebUIForURL:currentURL];
+    web::NavigationItem* item = [self currentNavItem];
+    if (!(item->GetTransitionType() & ui::PAGE_TRANSITION_TYPED ||
+          item->GetTransitionType() & ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
+        self.sessionController.openedByDOM) {
+      // WebUI URLs can not be opened by DOM to prevent cross-site scripting as
+      // they have increased power. WebUI URLs may only be opened when the user
+      // types in the URL or use bookmarks.
+      [[self sessionController] discardNonCommittedEntries];
+      return;
+    } else {
+      [self createWebUIForURL:currentURL];
+    }
   }
 
   // Loading a new url, must check here if it's a native chrome URL and
