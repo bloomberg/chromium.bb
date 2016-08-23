@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
@@ -82,11 +83,12 @@ bool FakePluginServiceFilter::CanLoadPlugin(int render_process_id,
 
 class PluginInfoMessageFilterTest : public ::testing::Test {
  public:
-  PluginInfoMessageFilterTest() :
-      foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
-      bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
-      context_(0, &profile_) {
-  }
+  PluginInfoMessageFilterTest()
+      : foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
+        bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
+        context_(0, &profile_),
+        host_content_settings_map_(
+            HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 
   void SetUp() override {
     content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plugin"),
@@ -142,9 +144,9 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
         CONTENT_SETTING_BLOCK : CONTENT_SETTING_DEFAULT;
     bool is_default = !expected_is_default;
     bool is_managed = !expected_is_managed;
-    context()->GetPluginContentSetting(
-        content::WebPluginInfo(), url, url, plugin,
-        &setting, &is_default, &is_managed);
+    GetPluginContentSetting(host_content_settings_map_,
+                            content::WebPluginInfo(), url, url, plugin,
+                            &setting, &is_default, &is_managed);
     EXPECT_EQ(expected_setting, setting);
     EXPECT_EQ(expected_is_default, is_default);
     EXPECT_EQ(expected_is_managed, is_managed);
@@ -159,6 +161,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   content::TestBrowserThreadBundle test_thread_bundle;
   TestingProfile profile_;
   PluginInfoMessageFilter::Context context_;
+  HostContentSettingsMap* host_content_settings_map_;
 };
 
 TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {

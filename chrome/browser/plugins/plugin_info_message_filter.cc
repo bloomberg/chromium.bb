@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -57,30 +58,6 @@ using content::PluginService;
 using content::WebPluginInfo;
 
 namespace {
-
-// For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
-bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
-  if (plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
-      plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) {
-    return false;
-  }
-
-#if !defined(DISABLE_NACL)
-  // Treat Native Client invocations like JavaScript.
-  if (plugin.name == base::ASCIIToUTF16(nacl::kNaClPluginName))
-    return true;
-#endif
-
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
-  // Treat CDM invocations like JavaScript.
-  if (plugin.name == base::ASCIIToUTF16(kWidevineCdmDisplayName)) {
-    DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
-    return true;
-  }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
-
-  return false;
-}
 
 #if defined(ENABLE_PEPPER_CDMS)
 
@@ -338,7 +315,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   bool is_managed = false;
   // Check plugin content settings. The primary URL is the top origin URL and
   // the secondary URL is the plugin URL.
-  GetPluginContentSetting(plugin, params.top_origin_url, params.url,
+  GetPluginContentSetting(host_content_settings_map_, plugin,
+                          params.top_origin_url, params.url,
                           plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting, &is_managed);
 
@@ -497,56 +475,6 @@ void PluginInfoMessageFilter::GetPluginInfoReply(
         FROM_HERE, base::Bind(&ReportMetrics, output->actual_mime_type,
                               params.url, params.top_origin_url));
   }
-}
-
-void PluginInfoMessageFilter::Context::GetPluginContentSetting(
-    const WebPluginInfo& plugin,
-    const GURL& policy_url,
-    const GURL& plugin_url,
-    const std::string& resource,
-    ContentSetting* setting,
-    bool* uses_default_content_setting,
-    bool* is_managed) const {
-  std::unique_ptr<base::Value> value;
-  content_settings::SettingInfo info;
-  bool uses_plugin_specific_setting = false;
-  if (ShouldUseJavaScriptSettingForPlugin(plugin)) {
-    value = host_content_settings_map_->GetWebsiteSetting(
-        policy_url,
-        policy_url,
-        CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-        std::string(),
-        &info);
-  } else {
-    content_settings::SettingInfo specific_info;
-    std::unique_ptr<base::Value> specific_setting =
-        host_content_settings_map_->GetWebsiteSetting(
-            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
-            &specific_info);
-    content_settings::SettingInfo general_info;
-    std::unique_ptr<base::Value> general_setting =
-        host_content_settings_map_->GetWebsiteSetting(
-            policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS,
-            std::string(), &general_info);
-    // If there is a plugin-specific setting, we use it, unless the general
-    // setting was set by policy, in which case it takes precedence.
-    uses_plugin_specific_setting =
-        specific_setting &&
-        general_info.source != content_settings::SETTING_SOURCE_POLICY;
-    if (uses_plugin_specific_setting) {
-      value = std::move(specific_setting);
-      info = specific_info;
-    } else {
-      value = std::move(general_setting);
-      info = general_info;
-    }
-  }
-  *setting = content_settings::ValueToContentSetting(value.get());
-  *uses_default_content_setting =
-      !uses_plugin_specific_setting &&
-      info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-      info.secondary_pattern == ContentSettingsPattern::Wildcard();
-  *is_managed = info.source == content_settings::SETTING_SOURCE_POLICY;
 }
 
 void PluginInfoMessageFilter::Context::MaybeGrantAccess(

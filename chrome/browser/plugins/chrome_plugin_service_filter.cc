@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -22,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,13 +130,24 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
         host_content_settings_maps_.find(context);
     DCHECK(host_content_settings_map_it != host_content_settings_maps_.end());
 
-    // TODO(trizzofo): Implement site-origin exceptions once we have the
-    // top-level frame origin.
-    ContentSetting content_setting =
-        host_content_settings_map_it->second->GetDefaultContentSetting(
-            CONTENT_SETTINGS_TYPE_PLUGINS, nullptr);
-    if (content_setting == CONTENT_SETTING_BLOCK)
+    ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
+    std::unique_ptr<PluginMetadata> plugin_metadata =
+        PluginFinder::GetInstance()->GetPluginMetadata(*plugin);
+    // When IsPluginAvailable() is called to check whether a plugin should be
+    // advertised, |url| has the same value of |policy_url| (i.e. the main frame
+    // origin). The intended behavior is that Flash is advertised only if a
+    // Flash embed hosted on the same origin as the main frame origin is allowed
+    // to run.
+    GetPluginContentSetting(host_content_settings_map_it->second.get(), *plugin,
+                            policy_url, url, plugin_metadata->identifier(),
+                            &plugin_setting, nullptr, nullptr);
+    plugin_setting =
+        content_settings::PluginsFieldTrial::EffectiveContentSetting(
+            CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
+    if (plugin_setting == CONTENT_SETTING_BLOCK ||
+        plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
       return false;
+    }
   }
 
   return true;

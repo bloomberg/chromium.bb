@@ -2453,6 +2453,8 @@
       'browser/plugins/chrome_plugin_service_filter.h',
       'browser/plugins/plugin_data_remover_helper.cc',
       'browser/plugins/plugin_data_remover_helper.h',
+      'browser/plugins/plugin_filter_utils.cc',
+      'browser/plugins/plugin_filter_utils.h',
       'browser/plugins/plugin_finder.cc',
       'browser/plugins/plugin_finder.h',
       'browser/plugins/plugin_info_message_filter.cc',

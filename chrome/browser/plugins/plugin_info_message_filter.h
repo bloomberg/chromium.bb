@@ -70,13 +70,6 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
         content::WebPluginInfo* plugin,
         std::string* actual_mime_type,
         std::unique_ptr<PluginMetadata>* plugin_metadata) const;
-    void GetPluginContentSetting(const content::WebPluginInfo& plugin,
-                                 const GURL& policy_url,
-                                 const GURL& plugin_url,
-                                 const std::string& resource,
-                                 ContentSetting* setting,
-                                 bool* is_default,
-                                 bool* is_managed) const;
     void MaybeGrantAccess(ChromeViewHostMsg_GetPluginInfo_Status status,
                           const base::FilePath& path) const;
     bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
