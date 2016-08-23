@@ -184,8 +184,6 @@ private:
     LayoutUnit gridAreaBreadthForChildIncludingAlignmentOffsets(const LayoutBox&, GridTrackSizingDirection, const GridSizingData&) const;
     LayoutUnit assumedRowsSizeForOrthogonalChild(const LayoutBox&, SizingOperation) const;
 
-    StyleSelfAlignmentData justifySelfForChild(const LayoutBox&) const;
-    StyleSelfAlignmentData alignSelfForChild(const LayoutBox&) const;
     void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&);
 
     void paintChildren(const PaintInfo&, const LayoutPoint&) const override;
@@ -193,7 +191,13 @@ private:
     LayoutUnit marginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit computeMarginLogicalSizeForChild(MarginDirection, const LayoutBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox&) const;
+    StyleSelfAlignmentData justifySelfForChild(const LayoutBox&) const;
+    StyleSelfAlignmentData alignSelfForChild(const LayoutBox&) const;
     void applyStretchAlignmentToChildIfNeeded(LayoutBox&);
+    bool hasAutoSizeInColumnAxis(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.styleRef().height().isAuto() : child.styleRef().width().isAuto(); }
+    bool hasAutoSizeInRowAxis(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.styleRef().width().isAuto() : child.styleRef().height().isAuto(); }
+    bool allowedToStretchChildAlongColumnAxis(const LayoutBox& child) const { return alignSelfForChild(child).position() == ItemPositionStretch && hasAutoSizeInColumnAxis(child) && !hasAutoMarginsInColumnAxis(child); }
+    bool allowedToStretchChildAlongRowAxis(const LayoutBox& child) const { return justifySelfForChild(child).position() == ItemPositionStretch && hasAutoSizeInRowAxis(child) && !hasAutoMarginsInRowAxis(child); }
     bool hasAutoMarginsInColumnAxis(const LayoutBox&) const;
     bool hasAutoMarginsInRowAxis(const LayoutBox&) const;
     void updateAutoMarginsInColumnAxisIfNeeded(LayoutBox&);

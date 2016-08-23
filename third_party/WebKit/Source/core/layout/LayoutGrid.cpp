@@ -2197,17 +2197,9 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
     // not, evaluating the conditions which might have changed since the old values were set.
     child.clearOverrideLogicalContentHeight();
 
-    auto& childStyle = child.styleRef();
-    bool isHorizontalMode = isHorizontalWritingMode();
-    bool childHasAutoSizeInColumnAxis = isHorizontalMode ? childStyle.height().isAuto() : childStyle.width().isAuto();
-    bool childHasAutoSizeInRowAxis = isHorizontalMode ? childStyle.width().isAuto() : childStyle.height().isAuto();
-    bool allowedToStretchChildAlongColumnAxis = childHasAutoSizeInColumnAxis && !hasAutoMarginsInColumnAxis(child);
-    bool allowedToStretchChildAlongRowAxis = childHasAutoSizeInRowAxis && !hasAutoMarginsInRowAxis(child);
-    bool stretchingAlongRowAxis = justifySelfForChild(child).position() == ItemPositionStretch;
-    bool stretchingAlongColumnAxis = alignSelfForChild(child).position() == ItemPositionStretch;
-
     GridTrackSizingDirection childBlockDirection = flowAwareDirectionForChild(child, ForRows);
-    bool allowedToStretchChildBlockSize = childBlockDirection == ForRows ? allowedToStretchChildAlongColumnAxis && stretchingAlongColumnAxis : allowedToStretchChildAlongRowAxis && stretchingAlongRowAxis;
+    bool blockFlowIsColumnAxis = childBlockDirection == ForRows;
+    bool allowedToStretchChildBlockSize = blockFlowIsColumnAxis ? allowedToStretchChildAlongColumnAxis(child) : allowedToStretchChildAlongRowAxis(child);
     if (allowedToStretchChildBlockSize) {
         LayoutUnit stretchedLogicalHeight = availableAlignmentSpaceForChildBeforeStretching(overrideContainingBlockContentSizeForChild(child, childBlockDirection), child);
         LayoutUnit desiredLogicalHeight = child.constrainLogicalHeightByMinMax(stretchedLogicalHeight, LayoutUnit(-1));
@@ -2224,16 +2216,16 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
 bool LayoutGrid::hasAutoMarginsInColumnAxis(const LayoutBox& child) const
 {
     if (isHorizontalWritingMode())
-        return child.style()->marginTop().isAuto() || child.style()->marginBottom().isAuto();
-    return child.style()->marginLeft().isAuto() || child.style()->marginRight().isAuto();
+        return child.styleRef().marginTop().isAuto() || child.styleRef().marginBottom().isAuto();
+    return child.styleRef().marginLeft().isAuto() || child.styleRef().marginRight().isAuto();
 }
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
 bool LayoutGrid::hasAutoMarginsInRowAxis(const LayoutBox& child) const
 {
     if (isHorizontalWritingMode())
-        return child.style()->marginLeft().isAuto() || child.style()->marginRight().isAuto();
-    return child.style()->marginTop().isAuto() || child.style()->marginBottom().isAuto();
+        return child.styleRef().marginLeft().isAuto() || child.styleRef().marginRight().isAuto();
+    return child.styleRef().marginTop().isAuto() || child.styleRef().marginBottom().isAuto();
 }
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
