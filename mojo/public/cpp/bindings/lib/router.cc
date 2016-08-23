@@ -246,6 +246,8 @@ void Router::HandleQueuedMessages() {
 }
 
 bool Router::HandleMessageInternal(Message* message) {
+  DCHECK(!encountered_error_);
+
   if (message->has_flag(Message::kFlagExpectsResponse)) {
     if (!incoming_receiver_)
       return false;
@@ -308,6 +310,11 @@ void Router::OnConnectionError() {
   }
 
   encountered_error_ = true;
+
+  // The callbacks may hold on to resources. There is no need to keep them any
+  // longer.
+  async_responders_.clear();
+
   if (!error_handler_.is_null())
     error_handler_.Run();
 }
