@@ -438,7 +438,7 @@ class EditableProfilePhoto : public views::LabelButton {
       canvas->DrawCircle(center_point, GetProfileBadgeSize() / 2, paint);
 
       gfx::VectorIconId icon_id;
-      size_t icon_size;
+      int icon_size;
       SkColor icon_color;
       if (switches::IsMaterialDesignUserMenu()) {
         icon_id = profile_->IsChild()

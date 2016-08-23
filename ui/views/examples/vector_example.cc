@@ -4,8 +4,6 @@
 
 #include "ui/views/examples/vector_example.h"
 
-#include <stddef.h>
-
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -99,7 +97,7 @@ class VectorIconGallery : public View,
   void ContentsChanged(Textfield* sender,
                        const base::string16& new_contents) override {
     if (sender == size_input_) {
-      if (base::StringToSizeT(new_contents, &size_))
+      if (base::StringToInt(new_contents, &size_))
         UpdateImage();
       else
         size_input_->SetText(base::string16());
@@ -153,7 +151,7 @@ class VectorIconGallery : public View,
   Button* file_go_button_;
 
   int vector_id_;
-  size_t size_;
+  int size_;
   SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorIconGallery);

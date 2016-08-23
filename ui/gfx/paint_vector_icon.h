@@ -5,8 +5,6 @@
 #ifndef UI_GFX_PAINT_VECTOR_ICON_H_
 #define UI_GFX_PAINT_VECTOR_ICON_H_
 
-#include <stddef.h>
-
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,7 +19,7 @@ enum class VectorIconId;
 // pixels. |color| is used as the fill.
 GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
                                 VectorIconId id,
-                                size_t dip_size,
+                                int dip_size,
                                 SkColor color);
 
 // Creates an ImageSkia which will render the icon on demand. The size will come
@@ -31,13 +29,13 @@ GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
 
 // As above, but creates the image at the given size.
 GFX_EXPORT ImageSkia CreateVectorIcon(VectorIconId id,
-                                      size_t dip_size,
+                                      int dip_size,
                                       SkColor color);
 
 // As above, but also paints a badge defined by |badge_id| on top of the icon.
 // The badge uses the same canvas size and default color as the icon.
 GFX_EXPORT ImageSkia CreateVectorIconWithBadge(VectorIconId id,
-                                               size_t dip_size,
+                                               int dip_size,
                                                SkColor color,
                                                VectorIconId badge_id);
 
@@ -46,7 +44,7 @@ GFX_EXPORT ImageSkia CreateVectorIconWithBadge(VectorIconId id,
 // a canvas. This should only be used as a debugging aid and should never be
 // used in production code.
 GFX_EXPORT ImageSkia CreateVectorIconFromSource(const std::string& source,
-                                                size_t dip_size,
+                                                int dip_size,
                                                 SkColor color);
 #endif
 
