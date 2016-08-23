@@ -62,7 +62,7 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   for (const BookmarkNode* node : bookmarks_for_url) {
     bookmark_model->SetNodeMetaInfo(node, kBookmarkLastVisitDateKey, now);
     // If the bookmark has been dismissed from NTP before, a new visit overrides
-    // such a dismission.
+    // such a dismissal.
     bookmark_model->DeleteNodeMetaInfo(node, kBookmarkDismissedFromNTP);
   }
 }
@@ -143,28 +143,31 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
 
     // Find the most recent node (minimal w.r.t.
     // CompareBookmarksByLastVisitDate).
-    std::vector<const BookmarkNode*>::iterator most_recent = std::min_element(
+    const BookmarkNode* most_recent = *std::min_element(
         bookmarks_for_url.begin(), bookmarks_for_url.end(),
         [creation_date_fallback](const BookmarkNode* a, const BookmarkNode* b) {
           return CompareBookmarksByLastVisitDate(a, b, creation_date_fallback);
         });
-    const BookmarkNode* node = *most_recent;
 
     // Find out if it has been _visited_ recently enough.
-    if (GetLastVisitDateForBookmarkIfNotDismissed(
-            node, /*creation_date_fallback=*/false) > min_visit_time) {
+    bool visited_recently =
+        min_visit_time < GetLastVisitDateForBookmark(
+                             most_recent, /*creation_date_fallback=*/false);
+    if (visited_recently)
       recently_visited_count++;
-      bookmarks.push_back({node, true});
-    } else {
-      bookmarks.push_back({node, false});
-    }
+    if (!IsDismissedFromNTPForBookmark(most_recent))
+      bookmarks.push_back({most_recent, visited_recently});
   }
 
   if (recently_visited_count < min_count) {
-    // Fill the list up to |min_count| but do not display more.
+    // There aren't enough recently-visited bookmarks. Fill the list up to
+    // |min_count| with older bookmarks (in particular those with only a
+    // creation date, if creation_date_fallback is true).
     max_count = min_count;
   } else {
     // Remove the bookmarks that are not recently visited; we do not need them.
+    // (We might end up with fewer than |min_count| bookmarks if all the recent
+    // ones are dismissed.)
     bookmarks.erase(
         std::remove_if(bookmarks.begin(), bookmarks.end(),
                        [](const RecentBookmark& bookmark) {
