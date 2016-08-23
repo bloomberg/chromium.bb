@@ -545,7 +545,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
         << "Not given any products to install and no products found to update.";
     *status = installer::CHROME_NOT_INSTALLED;
     installer_state->WriteInstallerResult(*status,
-        IDS_INSTALL_NO_PRODUCTS_TO_UPDATE_BASE, NULL);
+        IDS_INSTALL_NO_PRODUCTS_TO_UPDATE_BASE, nullptr);
     return false;
   }
 
@@ -590,14 +590,15 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
             *status = installer::OS_ERROR;
             installer_state->WriteInstallerResult(*status,
                                                   IDS_INSTALL_OS_ERROR_BASE,
-                                                  NULL);
+                                                  nullptr);
           } else {
             *status = installer::EXISTING_VERSION_LAUNCHED;
             base::FilePath chrome_exe =
                 install_path.Append(installer::kChromeExe);
             base::CommandLine cmd(chrome_exe);
             cmd.AppendSwitch(switches::kForceFirstRun);
-            installer_state->WriteInstallerResult(*status, 0, NULL);
+            installer_state->WriteInstallerResult(
+                *status, IDS_INSTALL_EXISTING_VERSION_LAUNCHED_BASE, nullptr);
             VLOG(1) << "Launching existing system-level chrome instead.";
             base::LaunchProcess(cmd, base::LaunchOptions());
           }
