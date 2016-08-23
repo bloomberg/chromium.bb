@@ -7,10 +7,10 @@
 #include <stdint.h>
 
 #include <string>
-#include <tuple>
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,7 +19,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/content/common/autofill_messages.h"
+#include "components/autofill/content/public/interfaces/autofill_agent.mojom.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/log_manager.h"
@@ -37,7 +37,8 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/mock_render_process_host.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,6 +83,55 @@ class DummyLogReceiver : public password_manager::LogReceiver {
   DISALLOW_COPY_AND_ASSIGN(DummyLogReceiver);
 };
 
+class FakePasswordAutofillAgent
+    : public autofill::mojom::PasswordAutofillAgent {
+ public:
+  FakePasswordAutofillAgent()
+      : called_set_logging_state_(false),
+        logging_state_active_(false),
+        binding_(this) {}
+
+  ~FakePasswordAutofillAgent() override {}
+
+  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(mojo::MakeRequest<autofill::mojom::PasswordAutofillAgent>(
+        std::move(handle)));
+  }
+
+  bool called_set_logging_state() { return called_set_logging_state_; }
+
+  bool logging_state_active() { return logging_state_active_; }
+
+  void reset_data() {
+    called_set_logging_state_ = false;
+    logging_state_active_ = false;
+  }
+
+ private:
+  // autofill::mojom::PasswordAutofillAgent:
+  void FillPasswordForm(
+      int key,
+      const autofill::PasswordFormFillData& form_data) override {}
+
+  void SetLoggingState(bool active) override {
+    called_set_logging_state_ = true;
+    logging_state_active_ = active;
+  }
+
+  void AutofillUsernameAndPasswordDataReceived(
+      const autofill::FormsPredictionsMap& predictions) override {}
+
+  void FindFocusedPasswordForm(
+      const FindFocusedPasswordFormCallback& callback) override {}
+
+  // Records whether SetLoggingState() gets called.
+  bool called_set_logging_state_;
+  // Records data received via SetLoggingState() call.
+  bool logging_state_active_;
+
+  mojo::Binding<autofill::mojom::PasswordAutofillAgent> binding_;
+};
+
 }  // namespace
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
@@ -102,10 +152,12 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  protected:
   ChromePasswordManagerClient* GetClient();
 
-  // If the test IPC sink contains an AutofillMsg_SetLoggingState message, then
+  // If autofill::mojom::PasswordAutofillAgent::SetLoggingState() got called,
   // copies its argument into |activation_flag| and returns true. Otherwise
   // returns false.
   bool WasLoggingActivationMessageSent(bool* activation_flag);
+
+  FakePasswordAutofillAgent fake_agent_;
 
   TestingPrefServiceSimple prefs_;
   base::FieldTrialList field_trial_list_;
@@ -113,6 +165,14 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+
+  shell::InterfaceProvider* remote_interfaces =
+      web_contents()->GetMainFrame()->GetRemoteInterfaces();
+  shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+  test_api.SetBinderForName(autofill::mojom::PasswordAutofillAgent::Name_,
+                            base::Bind(&FakePasswordAutofillAgent::BindRequest,
+                                       base::Unretained(&fake_agent_)));
+
   prefs_.registry()->RegisterBooleanPref(
       password_manager::prefs::kPasswordManagerSavingEnabled, true);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
@@ -125,15 +185,13 @@ ChromePasswordManagerClient* ChromePasswordManagerClientTest::GetClient() {
 
 bool ChromePasswordManagerClientTest::WasLoggingActivationMessageSent(
     bool* activation_flag) {
-  const uint32_t kMsgID = AutofillMsg_SetLoggingState::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  if (!message)
+  base::RunLoop().RunUntilIdle();
+  if (!fake_agent_.called_set_logging_state())
     return false;
-  std::tuple<bool> param;
-  AutofillMsg_SetLoggingState::Read(message, &param);
-  *activation_flag = std::get<0>(param);
-  process()->sink().ClearMessages();
+
+  if (activation_flag)
+    *activation_flag = fake_agent_.logging_state_active();
+  fake_agent_.reset_data();
   return true;
 }
 

@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -16,6 +18,9 @@
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -34,6 +39,18 @@ namespace autofill {
 class PasswordGenerationAgentTest : public ChromeRenderViewTest {
  public:
   PasswordGenerationAgentTest() {}
+
+  void RegisterMainFrameRemoteInterfaces() override {
+    // We only use the fake driver for main frame
+    // because our test cases only involve the main frame.
+    shell::InterfaceProvider* remote_interfaces =
+        view_->GetMainRenderFrame()->GetRemoteInterfaces();
+    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
+    test_api.SetBinderForName(
+        mojom::PasswordManagerDriver::Name_,
+        base::Bind(&PasswordGenerationAgentTest::BindPasswordManagerDriver,
+                   base::Unretained(this)));
+  }
 
   void TearDown() override {
     LoadHTML("");
@@ -73,34 +90,35 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   }
 
   void AllowToRunFormClassifier() {
-    AutofillMsg_AllowToRunFormClassifier msg(0);
-    static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
+    password_generation_->AllowToRunFormClassifier();
   }
 
   void ExpectFormClassifierVoteReceived(
       bool received,
       const base::string16& expected_generation_element) {
-    const IPC::Message* message =
-        render_thread_->sink().GetFirstMessageMatching(
-            AutofillHostMsg_SaveGenerationFieldDetectedByClassifier::ID);
+    base::RunLoop().RunUntilIdle();
     if (received) {
-      ASSERT_TRUE(message);
-      std::tuple<autofill::PasswordForm, base::string16> actual_parameters;
-      AutofillHostMsg_SaveGenerationFieldDetectedByClassifier::Read(
-          message, &actual_parameters);
-      EXPECT_EQ(expected_generation_element, std::get<1>(actual_parameters));
+      ASSERT_TRUE(fake_driver_.called_save_generation_field());
+      EXPECT_EQ(expected_generation_element,
+                fake_driver_.save_generation_field());
     } else {
-      ASSERT_FALSE(message);
+      ASSERT_FALSE(fake_driver_.called_save_generation_field());
     }
 
-    render_thread_->sink().ClearMessages();
+    fake_driver_.reset_save_generation_field();
   }
 
   void ShowGenerationPopUpManually(const char* element_id) {
     FocusField(element_id);
-    AutofillMsg_UserTriggeredGeneratePassword msg(0);
-    static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
+    password_generation_->UserTriggeredGeneratePassword();
   }
+
+  void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
+    fake_driver_.BindRequest(
+        mojo::MakeRequest<mojom::PasswordManagerDriver>(std::move(handle)));
+  }
+
+  FakeContentPasswordManagerDriver fake_driver_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
@@ -288,8 +306,7 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   EXPECT_TRUE(second_password_element.value().isNull());
 
   base::string16 password = base::ASCIIToUTF16("random_password");
-  AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
+  password_generation_->GeneratedPasswordAccepted(password);
 
   // Password fields are filled out and set as being autofilled.
   EXPECT_EQ(password, first_password_element.value());
@@ -335,8 +352,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   WebInputElement second_password_element = element.to<WebInputElement>();
 
   base::string16 password = base::ASCIIToUTF16("random_password");
-  AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
+  password_generation_->GeneratedPasswordAccepted(password);
 
   // Passwords start out the same.
   EXPECT_EQ(password, first_password_element.value());
@@ -352,6 +368,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
 
   // Clear any uninteresting sent messages.
   render_thread_->sink().ClearMessages();
+  fake_driver_.reset_called_password_no_longer_generated();
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
@@ -361,8 +378,8 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
 
   // Should have notified the browser that the password is no longer generated
   // and trigger generation again.
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_PasswordNoLongerGenerated::ID));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
   EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_ShowPasswordGenerationPopup::ID));
 }
@@ -650,24 +667,23 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     ExpectGenerationAvailable(test_case.generation_element, true);
 
     base::string16 password = base::ASCIIToUTF16("random_password");
-    AutofillMsg_GeneratedPasswordAccepted msg(0, password);
-    static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
-    EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-        AutofillHostMsg_PresaveGeneratedPassword::ID));
-    render_thread_->sink().ClearMessages();
+    password_generation_->GeneratedPasswordAccepted(password);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
+    fake_driver_.reset_called_presave_generated_password();
 
     FocusField(test_case.generation_element);
     SimulateUserTypingASCIICharacter('a', true);
-    EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-        AutofillHostMsg_PresaveGeneratedPassword::ID));
-    render_thread_->sink().ClearMessages();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
+    fake_driver_.reset_called_presave_generated_password();
 
     for (size_t i = 0; i < password.length(); ++i)
       SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
     SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
-    EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-        AutofillHostMsg_PasswordNoLongerGenerated::ID));
-    render_thread_->sink().ClearMessages();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
+    fake_driver_.reset_called_password_no_longer_generated();
   }
 }
 

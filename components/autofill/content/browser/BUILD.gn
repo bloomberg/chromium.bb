@@ -17,7 +17,6 @@ static_library("browser") {
 
   public_deps = [
     ":risk_proto",
-    "//components/autofill/content/common",
     "//components/autofill/content/public/interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -37,7 +36,6 @@ static_library("browser") {
     "//device/geolocation:device_geolocation",
     "//google_apis",
     "//gpu/config",
-    "//ipc",
     "//mojo/common:common_base",
     "//net",
     "//services/shell/public/cpp",
@@ -69,7 +67,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
-    "//components/autofill/content/common",
+    "//components/autofill/content/public/interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
@@ -78,7 +76,6 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//google_apis",
     "//google_apis:test_support",
-    "//ipc:test_support",
     "//mojo/common:common_base",
     "//net",
     "//net:test_support",

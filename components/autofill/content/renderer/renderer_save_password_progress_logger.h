@@ -8,16 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
-
-class PasswordManagerClient;
 
 namespace blink {
 class WebFormControlElement;
-}
-
-namespace IPC {
-class Sender;
 }
 
 namespace autofill {
@@ -26,10 +21,10 @@ namespace autofill {
 // which sends logs to the browser process over IPC.
 class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
  public:
-  // The logger will use |sender| and |routing_id| to send a
-  // AutofillHostMsg_RecordSavePasswordProgress message with the logs to the
-  // browser. The |sender| needs to outlive the constructed logger.
-  RendererSavePasswordProgressLogger(IPC::Sender* sender, int routing_id);
+  // The logger will use |password_manager_driver| to send logs to the browser.
+  // The |password_manager_driver| needs to outlive the constructed logger.
+  RendererSavePasswordProgressLogger(
+      mojom::PasswordManagerDriver* password_manager_driver);
   ~RendererSavePasswordProgressLogger() override;
 
   void LogElementName(StringID label,
@@ -40,10 +35,9 @@ class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
   void SendLog(const std::string& log) override;
 
  private:
-  // Used by SendLog to send the IPC message with logs. |sender_| needs to
-  // outlive the logger.
-  IPC::Sender* const sender_;
-  const int routing_id_;
+  // Used by SendLog to send the logs to the browser.
+  // |password_manager_driver_| needs to outlive the logger.
+  mojom::PasswordManagerDriver* password_manager_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSavePasswordProgressLogger);
 };
