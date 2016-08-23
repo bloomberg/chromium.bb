@@ -80,6 +80,14 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptMergedBubbleTypes[];
   static const char kPermissionsPromptMergedBubbleAccepted[];
   static const char kPermissionsPromptMergedBubbleDenied[];
+  static const char kPermissionsPromptAcceptedPriorDismissCountPrefix[];
+  static const char kPermissionsPromptAcceptedPriorIgnoreCountPrefix[];
+  static const char kPermissionsPromptDeniedPriorDismissCountPrefix[];
+  static const char kPermissionsPromptDeniedPriorIgnoreCountPrefix[];
+  static const char kPermissionsPromptDismissedPriorDismissCountPrefix[];
+  static const char kPermissionsPromptDismissedPriorIgnoreCountPrefix[];
+  static const char kPermissionsPromptIgnoredPriorDismissCountPrefix[];
+  static const char kPermissionsPromptIgnoredPriorIgnoreCountPrefix[];
 
   static void PermissionRequested(content::PermissionType permission,
                                   const GURL& requesting_origin,
@@ -130,16 +138,6 @@ class PermissionUmaUtil {
   static void PermissionPromptDenied(
       const std::vector<PermissionRequest*>& requests);
 
-  // Records |count| total dismissal actions for a prompt of type |permission|
-  // for a single origin.
-  static void PermissionPromptDismissed(content::PermissionType permission,
-                                        int count);
-
-  // Records |count| total ignore actions for a prompt of type |permission| for
-  // a single origin.
-  static void PermissionPromptIgnored(content::PermissionType permission,
-                                      int count);
-
   // A permission prompt was accepted or denied, and the prompt displayed a
   // persistence toggle. Records whether the toggle was enabled (persist) or
   // disabled (don't persist).
@@ -162,6 +160,13 @@ class PermissionUmaUtil {
                                      PermissionRequestGestureType gesture_type,
                                      const GURL& requesting_origin,
                                      Profile* profile);
+
+  // Records |count| total prior actions for a prompt of type |permission|
+  // for a single origin using |prefix| for the metric.
+  static void RecordPermissionPromptPriorCount(
+      content::PermissionType permission,
+      const std::string& prefix,
+      int count);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);
 };

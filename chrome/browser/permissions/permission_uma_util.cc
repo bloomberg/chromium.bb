@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -225,6 +226,30 @@ const char PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted[] =
     "Permissions.Prompt.MergedBubbleAccepted";
 const char PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied[] =
     "Permissions.Prompt.MergedBubbleDenied";
+const char
+    PermissionUmaUtil::kPermissionsPromptAcceptedPriorDismissCountPrefix[] =
+        "Permissions.Prompt.Accepted.PriorDismissCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptAcceptedPriorIgnoreCountPrefix[] =
+        "Permissions.Prompt.Accepted.PriorIgnoreCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptDeniedPriorDismissCountPrefix[] =
+        "Permissions.Prompt.Denied.PriorDismissCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptDeniedPriorIgnoreCountPrefix[] =
+        "Permissions.Prompt.Denied.PriorIgnoreCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptDismissedPriorDismissCountPrefix[] =
+        "Permissions.Prompt.Dismissed.PriorDismissCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptDismissedPriorIgnoreCountPrefix[] =
+        "Permissions.Prompt.Dismissed.PriorIgnoreCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptIgnoredPriorDismissCountPrefix[] =
+        "Permissions.Prompt.Ignored.PriorDismissCount.";
+const char
+    PermissionUmaUtil::kPermissionsPromptIgnoredPriorIgnoreCountPrefix[] =
+        "Permissions.Prompt.Ignored.PriorIgnoreCount.";
 
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
@@ -243,6 +268,14 @@ void PermissionUmaUtil::PermissionGranted(
     Profile* profile) {
   RecordPermissionAction(permission, GRANTED, PermissionSourceUI::PROMPT,
                          gesture_type, requesting_origin, profile);
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptAcceptedPriorDismissCountPrefix,
+      PermissionDecisionAutoBlocker::GetDismissCount(requesting_origin,
+                                                     permission, profile));
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptAcceptedPriorIgnoreCountPrefix,
+      PermissionDecisionAutoBlocker::GetIgnoreCount(requesting_origin,
+                                                    permission, profile));
 }
 
 void PermissionUmaUtil::PermissionDenied(
@@ -252,6 +285,14 @@ void PermissionUmaUtil::PermissionDenied(
     Profile* profile) {
   RecordPermissionAction(permission, DENIED, PermissionSourceUI::PROMPT,
                          gesture_type, requesting_origin, profile);
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptDeniedPriorDismissCountPrefix,
+      PermissionDecisionAutoBlocker::GetDismissCount(requesting_origin,
+                                                     permission, profile));
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptDeniedPriorIgnoreCountPrefix,
+      PermissionDecisionAutoBlocker::GetIgnoreCount(requesting_origin,
+                                                    permission, profile));
 }
 
 void PermissionUmaUtil::PermissionDismissed(
@@ -261,6 +302,14 @@ void PermissionUmaUtil::PermissionDismissed(
     Profile* profile) {
   RecordPermissionAction(permission, DISMISSED, PermissionSourceUI::PROMPT,
                          gesture_type, requesting_origin, profile);
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptDismissedPriorDismissCountPrefix,
+      PermissionDecisionAutoBlocker::GetDismissCount(requesting_origin,
+                                                     permission, profile));
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptDismissedPriorIgnoreCountPrefix,
+      PermissionDecisionAutoBlocker::GetIgnoreCount(requesting_origin,
+                                                    permission, profile));
 }
 
 void PermissionUmaUtil::PermissionIgnored(
@@ -270,6 +319,14 @@ void PermissionUmaUtil::PermissionIgnored(
     Profile* profile) {
   RecordPermissionAction(permission, IGNORED, PermissionSourceUI::PROMPT,
                          gesture_type, requesting_origin, profile);
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptIgnoredPriorDismissCountPrefix,
+      PermissionDecisionAutoBlocker::GetDismissCount(requesting_origin,
+                                                     permission, profile));
+  RecordPermissionPromptPriorCount(
+      permission, kPermissionsPromptIgnoredPriorIgnoreCountPrefix,
+      PermissionDecisionAutoBlocker::GetIgnoreCount(requesting_origin,
+                                                    permission, profile));
 }
 
 void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
@@ -375,98 +432,22 @@ void PermissionUmaUtil::PermissionPromptDenied(
       requests[0]->GetGestureType(), requests[0]->GetPermissionRequestType());
 }
 
-void PermissionUmaUtil::PermissionPromptDismissed(
+void PermissionUmaUtil::RecordPermissionPromptPriorCount(
     content::PermissionType permission,
+    const std::string& prefix,
     int count) {
-  switch (permission) {
-    case PermissionType::GEOLOCATION:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.Geolocation",
-                               count);
-      break;
-    case PermissionType::NOTIFICATIONS:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.Notifications",
-                               count);
-      break;
-    case PermissionType::MIDI_SYSEX:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.MidiSysEx",
-                               count);
-      break;
-    case PermissionType::PUSH_MESSAGING:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.PushMessaging",
-                               count);
-      break;
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.ProtectedMedia",
-                               count);
-      break;
-    case PermissionType::DURABLE_STORAGE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.DurableStorage",
-                               count);
-      break;
-    case PermissionType::AUDIO_CAPTURE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.AudioCapture",
-                               count);
-      break;
-    case PermissionType::VIDEO_CAPTURE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.DismissCount.VideoCapture",
-                               count);
-      break;
-    // The user is not prompted for these permissions, thus there is no dismiss
-    // recorded for them.
-    case PermissionType::MIDI:
-    case PermissionType::BACKGROUND_SYNC:
-    case PermissionType::NUM:
-      NOTREACHED() << "PERMISSION "
-                   << PermissionUtil::GetPermissionString(permission)
-                   << " not accounted for";
-  }
-}
+  // The user is not prompted for these permissions, thus there is no prompt
+  // event to record a prior count for.
+  DCHECK_NE(PermissionType::MIDI, permission);
+  DCHECK_NE(PermissionType::BACKGROUND_SYNC, permission);
+  DCHECK_NE(PermissionType::NUM, permission);
 
-void PermissionUmaUtil::PermissionPromptIgnored(
-    content::PermissionType permission,
-    int count) {
-  switch (permission) {
-    case PermissionType::GEOLOCATION:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.Geolocation",
-                               count);
-      break;
-    case PermissionType::NOTIFICATIONS:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.Notifications",
-                               count);
-      break;
-    case PermissionType::MIDI_SYSEX:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.MidiSysEx",
-                               count);
-      break;
-    case PermissionType::PUSH_MESSAGING:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.PushMessaging",
-                               count);
-      break;
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.ProtectedMedia",
-                               count);
-      break;
-    case PermissionType::DURABLE_STORAGE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.DurableStorage",
-                               count);
-      break;
-    case PermissionType::AUDIO_CAPTURE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.AudioCapture",
-                               count);
-      break;
-    case PermissionType::VIDEO_CAPTURE:
-      UMA_HISTOGRAM_COUNTS_100("Permissions.Prompt.IgnoreCount.VideoCapture",
-                               count);
-      break;
-    // The user is not prompted for these permissions, thus there is no
-    // ignore recorded for them.
-    case PermissionType::MIDI:
-    case PermissionType::BACKGROUND_SYNC:
-    case PermissionType::NUM:
-      NOTREACHED() << "PERMISSION "
-                   << PermissionUtil::GetPermissionString(permission)
-                   << " not accounted for";
-  }
+  // Expand UMA_HISTOGRAM_COUNTS_100 so that we can use a dynamically suffixed
+  // histogram name.
+  base::Histogram::FactoryGet(
+      prefix + PermissionUtil::GetPermissionString(permission), 1, 100, 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(count);
 }
 
 void PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(

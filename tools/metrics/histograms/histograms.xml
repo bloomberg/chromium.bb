@@ -40346,6 +40346,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.Accepted.PriorDismissCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt accept, records the
+    total number of prompt dismissal events for this origin since the last time
+    the user cleared their history or site data and prior to the accept. The
+    suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Accepted.PriorIgnoreCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt accept, records the
+    total number of prompt ignore events for this origin since the last time the
+    user cleared their history or site data and prior to the accept. The suffix
+    of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.Denied" enum="PermissionRequestType">
   <owner>benwells@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
@@ -40364,8 +40384,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.Denied.PriorDismissCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt deny, records the
+    total number of prompt dismissal events for this origin since the last time
+    the user cleared their history or site data and prior to the accept. The
+    suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Denied.PriorIgnoreCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt deny, records the
+    total number of prompt ignore events for this origin since the last time the
+    user cleared their history or site data and prior to the accept. The suffix
+    of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.DismissCount">
   <owner>dominickn@chromium.org</owner>
+  <obsolete>
+    Renamed to Permissions.Prompt.Dismissed.PriorDismissCount on 17 August 2016.
+  </obsolete>
   <summary>
     This metric, recorded at the time of a permission prompt dismissal, records
     the total number of prompt dismissal events for this origin since the last
@@ -40376,8 +40419,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.Dismissed.PriorDismissCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt dismiss, records
+    the total number of prompt dismissal events for this origin since the last
+    time the user cleared their history or site data and prior to the dismiss.
+    The suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Dismissed.PriorIgnoreCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt dismiss, records
+    the total number of prompt ignore events for this origin since the last time
+    the user cleared their history or site data and prior to the dismiss. The
+    suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.IgnoreCount">
   <owner>dominickn@chromium.org</owner>
+  <obsolete>
+    Renamed to Permissions.Prompt.Dismissed.PriorDismissCount on 17 August 2016.
+  </obsolete>
   <summary>
     This metric, recorded at the time of a permission prompt ignore, records the
     total number of prompt ignore events for this origin since the last time the
@@ -40385,6 +40451,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Every event in a bucket larger than 1 in this histogram will also have an
     event in each smaller bucket. The suffix of the histogram indicates which
     particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Ignored.PriorDismissCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt ignore, records the
+    total number of prompt dismissal events for this origin since the last time
+    the user cleared their history or site data and prior to the ignore. The
+    suffix of the histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Ignored.PriorIgnoreCount">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    This metric, recorded at the time of a permission prompt ignore, records the
+    total number of prompt ignore events for this origin since the last time the
+    user cleared their history or site data and prior to the ignore. The suffix
+    of the histogram indicates which particular permission.
   </summary>
 </histogram>
 
@@ -102206,9 +102292,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Permissions.Action.InsecureOrigin"/>
   <affected-histogram name="Permissions.Action.SecureOrigin"/>
   <affected-histogram name="Permissions.Prompt.Accepted.Persisted"/>
+  <affected-histogram name="Permissions.Prompt.Accepted.PriorDismissCount"/>
+  <affected-histogram name="Permissions.Prompt.Accepted.PriorIgnoreCount"/>
   <affected-histogram name="Permissions.Prompt.Denied.Persisted"/>
-  <affected-histogram name="Permissions.Prompt.DismissCount"/>
-  <affected-histogram name="Permissions.Prompt.IgnoreCount"/>
+  <affected-histogram name="Permissions.Prompt.Denied.PriorDismissCount"/>
+  <affected-histogram name="Permissions.Prompt.Denied.PriorIgnoreCount"/>
+  <affected-histogram name="Permissions.Prompt.Dismissed.PriorDismissCount"/>
+  <affected-histogram name="Permissions.Prompt.Dismissed.PriorIgnoreCount"/>
+  <affected-histogram name="Permissions.Prompt.Ignored.PriorDismissCount"/>
+  <affected-histogram name="Permissions.Prompt.Ignored.PriorIgnoreCount"/>
   <affected-histogram name="Permissions.Requested.CrossOrigin"/>
 </histogram_suffixes>
 

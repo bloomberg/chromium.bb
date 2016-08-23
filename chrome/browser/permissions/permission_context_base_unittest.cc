@@ -167,6 +167,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
     GURL url("http://www.google.com");
     NavigateAndCommit(url);
+    base::HistogramTester histograms;
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
@@ -184,6 +185,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               permission_context.GetContentSettingFromMap(url, url));
+
+    histograms.ExpectUniqueSample(
+        "Permissions.Prompt.Accepted.PriorDismissCount.Notifications", 0, 1);
+    histograms.ExpectUniqueSample(
+        "Permissions.Prompt.Accepted.PriorIgnoreCount.Notifications", 0, 1);
   }
 
   void TestAskAndDismiss_TestContent() {
@@ -192,6 +198,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     GURL url("http://www.google.es");
     NavigateAndCommit(url);
+    base::HistogramTester histograms;
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
@@ -209,6 +216,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.tab_context_updated());
     EXPECT_EQ(CONTENT_SETTING_ASK,
               permission_context.GetContentSettingFromMap(url, url));
+
+    histograms.ExpectUniqueSample(
+        "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", 0, 1);
+    histograms.ExpectUniqueSample(
+        "Permissions.Prompt.Dismissed.PriorIgnoreCount.MidiSysEx", 0, 1);
   }
 
   void DismissMultipleTimesAndExpectBlock(
@@ -236,9 +248,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
       RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
       histograms.ExpectTotalCount(
-          "Permissions.Prompt.DismissCount." +
+          "Permissions.Prompt.Dismissed.PriorDismissCount." +
               PermissionUtil::GetPermissionString(permission_type),
           i + 1);
+      histograms.ExpectBucketCount(
+          "Permissions.Prompt.Dismissed.PriorDismissCount." +
+              PermissionUtil::GetPermissionString(permission_type),
+          i, 1);
 
       EXPECT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected, permission_context.decisions()[0]);
@@ -274,8 +290,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                     base::Unretained(&permission_context)));
 
       RespondToPermission(&permission_context, id, url, CONTENT_SETTING_ASK);
-      histograms.ExpectTotalCount("Permissions.Prompt.DismissCount.Geolocation",
-                                  i + 1);
+      histograms.ExpectTotalCount(
+          "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation",
+          i + 1);
+      histograms.ExpectBucketCount(
+          "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
       EXPECT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
@@ -319,6 +338,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   void TestVariationBlockOnSeveralDismissals_TestContent() {
     GURL url("https://www.google.com");
     NavigateAndCommit(url);
+    base::HistogramTester histograms;
 
     // Set up the custom parameter and custom value.
     base::FieldTrialList field_trials_(nullptr);
@@ -365,6 +385,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(expected,
                 permission_context.GetContentSettingFromMap(url, url));
+
+      histograms.ExpectTotalCount(
+          "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
+      histograms.ExpectBucketCount(
+          "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i, 1);
     }
 
     // Ensure that we finish in the block state.

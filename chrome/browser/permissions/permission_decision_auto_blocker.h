@@ -48,20 +48,6 @@ class PermissionDecisionAutoBlocker {
   static const char kPromptDismissCountKey[];
   static const char kPromptIgnoreCountKey[];
 
-  // Returns the current number of actions recorded under |key| for |permission|
-  // type at |url|.
-  static int GetActionCount(const GURL& url,
-                            content::PermissionType permission,
-                            const char* key,
-                            Profile* profile);
-
-  // Records that the user performed an action for a prompt of type |permission|
-  // on |url| to a website setting keyed by |key|. Returns the total number of
-  // |key| actions which have been performed for |url|.
-  int RecordActionInWebsiteSettings(const GURL& url,
-                                    content::PermissionType permission,
-                                    const char* key);
-
   // Updates |prompt_dismissals_before_block_|.
   void UpdateFromVariations();
 

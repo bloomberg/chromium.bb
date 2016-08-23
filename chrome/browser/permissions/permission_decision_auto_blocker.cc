@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -54,6 +53,44 @@ base::DictionaryValue* GetOrCreatePermissionDict(
   return permission_dict;
 }
 
+int RecordActionInWebsiteSettings(const GURL& url,
+                                  content::PermissionType permission,
+                                  const char* key,
+                                  Profile* profile) {
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
+
+  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  int current_count = 0;
+  permission_dict->GetInteger(key, &current_count);
+  permission_dict->SetInteger(key, ++current_count);
+
+  map->SetWebsiteSettingDefaultScope(
+      url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
+      std::string(), std::move(dict));
+
+  return current_count;
+}
+
+int GetActionCount(const GURL& url,
+                   content::PermissionType permission,
+                   const char* key,
+                   Profile* profile) {
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
+
+  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  int current_count = 0;
+  permission_dict->GetInteger(key, &current_count);
+  return current_count;
+}
+
 }  // namespace
 
 // static
@@ -88,33 +125,19 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 }
 
 // static
-int PermissionDecisionAutoBlocker::GetDismissCount(const GURL& url,
-    content::PermissionType permission, Profile* profile) {
+int PermissionDecisionAutoBlocker::GetDismissCount(
+    const GURL& url,
+    content::PermissionType permission,
+    Profile* profile) {
   return GetActionCount(url, permission, kPromptDismissCountKey, profile);
 }
 
 // static
-int PermissionDecisionAutoBlocker::GetIgnoreCount(const GURL& url,
-    content::PermissionType permission, Profile* profile) {
-  return GetActionCount(url, permission, kPromptIgnoreCountKey, profile);
-}
-
-// static
-int PermissionDecisionAutoBlocker::GetActionCount(
+int PermissionDecisionAutoBlocker::GetIgnoreCount(
     const GURL& url,
     content::PermissionType permission,
-    const char* key,
     Profile* profile) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
-
-  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
-
-  int current_count = 0;
-  permission_dict->GetInteger(key, &current_count);
-  return current_count;
+  return GetActionCount(url, permission, kPromptIgnoreCountKey, profile);
 }
 
 PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
@@ -126,49 +149,20 @@ PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
 int PermissionDecisionAutoBlocker::RecordIgnore(
     const GURL& url,
     content::PermissionType permission) {
-  int current_ignore_count =
-      RecordActionInWebsiteSettings(url, permission, kPromptIgnoreCountKey);
-
-  PermissionUmaUtil::PermissionPromptIgnored(permission, current_ignore_count);
-
-  return current_ignore_count;
+  return RecordActionInWebsiteSettings(url, permission, kPromptIgnoreCountKey,
+                                       profile_);
 }
 
 bool PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
     const GURL& url,
     content::PermissionType permission) {
-  int current_dismissal_count =
-      RecordActionInWebsiteSettings(url, permission, kPromptDismissCountKey);
-
-  PermissionUmaUtil::PermissionPromptDismissed(permission,
-                                               current_dismissal_count);
+  int current_dismissal_count = RecordActionInWebsiteSettings(
+      url, permission, kPromptDismissCountKey, profile_);
 
   if (!base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften))
     return false;
 
   return current_dismissal_count >= prompt_dismissals_before_block_;
-}
-
-int PermissionDecisionAutoBlocker::RecordActionInWebsiteSettings(
-    const GURL& url,
-    content::PermissionType permission,
-    const char* key) {
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> dict = GetOriginDict(map, url);
-
-  base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
-      dict.get(), PermissionUtil::GetPermissionString(permission));
-
-  int current_count = 0;
-  permission_dict->GetInteger(key, &current_count);
-  permission_dict->SetInteger(key, ++current_count);
-
-  map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
-      std::string(), std::move(dict));
-
-  return current_count;
 }
 
 void PermissionDecisionAutoBlocker::UpdateFromVariations() {
