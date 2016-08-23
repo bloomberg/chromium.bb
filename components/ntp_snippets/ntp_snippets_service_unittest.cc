@@ -363,7 +363,7 @@ class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
     SetUpFetchResponse(GetTestJson({GetSnippet()}));
 
     service_.reset(new NTPSnippetsService(
-        &observer_, &category_factory_, pref_service(), nullptr, "fr",
+        &observer_, &category_factory_, pref_service(), nullptr, nullptr, "fr",
         &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), /*image_decoder=*/nullptr,
         base::MakeUnique<NTPSnippetsDatabase>(database_dir_.path(),

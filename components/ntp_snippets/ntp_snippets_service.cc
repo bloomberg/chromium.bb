@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -190,6 +191,7 @@ NTPSnippetsService::NTPSnippetsService(
     Observer* observer,
     CategoryFactory* category_factory,
     PrefService* pref_service,
+    history::HistoryService* history_service,
     SuggestionsService* suggestions_service,
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
@@ -205,12 +207,14 @@ NTPSnippetsService::NTPSnippetsService(
       suggestions_service_(suggestions_service),
       application_language_code_(application_language_code),
       scheduler_(scheduler),
+      history_service_observer_(this),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
       image_decoder_(std::move(image_decoder)),
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
       fetch_after_load_(false),
+      nuke_after_load_(false),
       provided_category_(
           category_factory->FromKnownCategory(KnownCategories::ARTICLES)),
       thumbnail_requests_throttler_(
@@ -221,6 +225,10 @@ NTPSnippetsService::NTPSnippetsService(
     EnterState(State::ERROR_OCCURRED, CategoryStatus::LOADING_ERROR);
     return;
   }
+
+  // Can be null in tests.
+  if (history_service)
+    history_service_observer_.Add(history_service);
 
   database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
                                          base::Unretained(this)));
@@ -389,6 +397,29 @@ int NTPSnippetsService::GetMaxSnippetCountForTesting() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
+
+// history::HistoryServiceObserver implementation.
+void NTPSnippetsService::OnURLsDeleted(
+    history::HistoryService* history_service,
+    bool all_history,
+    bool expired,
+    const history::URLRows& deleted_rows,
+    const std::set<GURL>& favicon_urls) {
+  //TODO handle not-yet-initialized case!
+  // We don't care about expired entries.
+  if (expired)
+    return;
+
+  if (!ready())
+    nuke_after_load_ = true;
+  else
+    NukeAllSnippets();
+}
+
+void NTPSnippetsService::HistoryServiceBeingDeleted(
+    history::HistoryService* history_service) {
+  history_service_observer_.RemoveAll();
+}
 
 // image_fetcher::ImageFetcherDelegate implementation.
 void NTPSnippetsService::OnImageDataFetched(const std::string& snippet_id,
@@ -630,6 +661,19 @@ void NTPSnippetsService::ClearExpiredSnippets() {
                                  base::Unretained(this)));
 }
 
+void NTPSnippetsService::NukeAllSnippets() {
+  ClearCachedSuggestionsForDebugging(provided_category_);
+  ClearDismissedSuggestionsForDebugging(provided_category_);
+
+  // Temporarily enter an "explicitly disabled" state, so that any open UIs
+  // will clear the suggestions too.
+  if (category_status_ != CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
+    CategoryStatus old_category_status = category_status_;
+    UpdateCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
+    UpdateCategoryStatus(old_category_status);
+  }
+}
+
 void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
     const ImageFetchedCallback& callback,
     const std::string& snippet_id,
@@ -739,6 +783,11 @@ void NTPSnippetsService::EnterStateError() {
 }
 
 void NTPSnippetsService::FinishInitialization() {
+  if (nuke_after_load_) {
+    NukeAllSnippets();
+    nuke_after_load_ = false;
+  }
+
   snippets_fetcher_->SetCallback(
       base::Bind(&NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
 

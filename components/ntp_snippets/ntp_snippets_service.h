@@ -15,7 +15,9 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
@@ -66,13 +68,14 @@ class NTPSnippetsServiceObserver;
 // TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
 // a subdirectory.
 // TODO(jkrcal): this class grows really, really large. The fact that
-// NTPSnippetService also implements ImageFetcherDelegate adds unnecssary
+// NTPSnippetService also implements ImageFetcherDelegate adds unnecessary
 // complexity (and after all the Service is conceptually not an
 // ImagerFetcherDeletage ;-)). Instead, the cleaner solution would  be to define
 // a CachedImageFetcher class that handles the caching aspects and looks like an
 // image fetcher to the NTPSnippetService.
-class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
-                           public ContentSuggestionsProvider {
+class NTPSnippetsService : public ContentSuggestionsProvider,
+                           public image_fetcher::ImageFetcherDelegate,
+                           public history::HistoryServiceObserver {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
@@ -81,6 +84,7 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   NTPSnippetsService(Observer* observer,
                      CategoryFactory* category_factory,
                      PrefService* pref_service,
+                     history::HistoryService* history_service,
                      suggestions::SuggestionsService* suggestions_service,
                      const std::string& application_language_code,
                      NTPSnippetsScheduler* scheduler,
@@ -194,6 +198,15 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
     ERROR_OCCURRED
   };
 
+  // history::HistoryServiceObserver implementation.
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
+
   // image_fetcher::ImageFetcherDelegate implementation.
   void OnImageDataFetched(const std::string& snippet_id,
                           const std::string& image_data) override;
@@ -217,6 +230,9 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   // Removes the expired snippets (including dismissed) from the service and the
   // database, and schedules another pass for the next expiration.
   void ClearExpiredSnippets();
+
+  // Clears all stored snippets and updates the observer.
+  void NukeAllSnippets();
 
   // Completes the initialization phase of the service, registering the last
   // observers. This is done after construction, once the database is loaded.
@@ -287,6 +303,11 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
 
+  // Observer for the HistoryService. We clear all cached suggestions when
+  // history gets deleted.
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+        history_service_observer_;
+
   // The subscription to the SuggestionsService. When the suggestions change,
   // SuggestionsService will call |OnSuggestionsChanged|, which triggers an
   // update to the set of snippets.
@@ -312,6 +333,10 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   // Set to true if FetchSnippets is called before the database has been loaded.
   // The fetch will be executed after the database load finishes.
   bool fetch_after_load_;
+
+  // Set to true if NukeAllSnippets is called before the database has been
+  // loaded. The nuke will be executed after the database load finishes.
+  bool nuke_after_load_;
 
   const Category provided_category_;
 

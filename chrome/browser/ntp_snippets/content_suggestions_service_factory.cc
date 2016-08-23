@@ -10,6 +10,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
@@ -21,6 +22,7 @@
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
@@ -56,6 +58,7 @@ using offline_pages::OfflinePageModelFactory;
 
 using bookmarks::BookmarkModel;
 using content::BrowserThread;
+using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
@@ -98,6 +101,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
           "ContentSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 #if defined(OS_ANDROID)
   DependsOn(OfflinePageModelFactory::GetInstance());
 #endif  // OS_ANDROID
@@ -183,6 +187,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     scoped_refptr<net::URLRequestContextGetter> request_context =
         content::BrowserContext::GetDefaultStoragePartition(context)
             ->GetURLRequestContext();
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
     SuggestionsService* suggestions_service =
         SuggestionsServiceFactory::GetForProfile(profile);
     NTPSnippetsScheduler* scheduler = nullptr;
@@ -201,7 +207,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
         base::MakeUnique<NTPSnippetsService>(
             service, service->category_factory(), profile->GetPrefs(),
-            suggestions_service, g_browser_process->GetApplicationLocale(),
+            history_service, suggestions_service,
+            g_browser_process->GetApplicationLocale(),
             scheduler, base::MakeUnique<NTPSnippetsFetcher>(
                            signin_manager, token_service, request_context,
                            profile->GetPrefs(), service->category_factory(),
