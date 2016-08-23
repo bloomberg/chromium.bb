@@ -84,6 +84,15 @@ class ParserTest : public testing::Test {
     return CreateAndLoadSegment(filename, 4);
   }
 
+  void CreateSegmentNoHeaderChecks(const std::string& filename) {
+    filename_ = GetTestFilePath(filename);
+    ASSERT_NE(0u, filename_.length());
+    ASSERT_EQ(0, reader_.Open(filename_.c_str()));
+    mkvparser::EBMLHeader ebml_header;
+    ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
+    ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  }
+
   void CompareBlockContents(const Cluster* const cluster,
                             const Block* const block, std::uint64_t timestamp,
                             int track_number, bool is_key, int frame_count) {
@@ -694,33 +703,20 @@ TEST_F(ParserTest, Vp9CodecPrivateBadTest) {
 }
 
 TEST_F(ParserTest, InvalidTruncatedChapterString) {
-  filename_ = GetTestFilePath("invalid/chapters_truncated_chapter_string.mkv");
-  ASSERT_NE(0u, filename_.length());
-  ASSERT_EQ(0, reader_.Open(filename_.c_str()));
-  mkvparser::EBMLHeader ebml_header;
-  ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
-  ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  ASSERT_NO_FATAL_FAILURE(CreateSegmentNoHeaderChecks(
+      "invalid/chapters_truncated_chapter_string.mkv"));
   EXPECT_EQ(mkvparser::E_PARSE_FAILED, segment_->Load());
 }
 
 TEST_F(ParserTest, InvalidTruncatedChapterString2) {
-  filename_ =
-      GetTestFilePath("invalid/chapters_truncated_chapter_string_2.mkv");
-  ASSERT_NE(0u, filename_.length());
-  ASSERT_EQ(0, reader_.Open(filename_.c_str()));
-  mkvparser::EBMLHeader ebml_header;
-  ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
-  ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  ASSERT_NO_FATAL_FAILURE(CreateSegmentNoHeaderChecks(
+      "invalid/chapters_truncated_chapter_string_2.mkv"));
   EXPECT_EQ(mkvparser::E_FILE_FORMAT_INVALID, segment_->Load());
 }
 
 TEST_F(ParserTest, InvalidFixedLacingSize) {
-  filename_ = GetTestFilePath("invalid/fixed_lacing_bad_lace_size.mkv");
-  ASSERT_NE(0u, filename_.length());
-  ASSERT_EQ(0, reader_.Open(filename_.c_str()));
-  mkvparser::EBMLHeader ebml_header;
-  ASSERT_EQ(0, ebml_header.Parse(&reader_, pos_));
-  ASSERT_EQ(0, mkvparser::Segment::CreateInstance(&reader_, pos_, segment_));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateSegmentNoHeaderChecks("invalid/fixed_lacing_bad_lace_size.mkv"));
   ASSERT_EQ(0, segment_->Load());
   const mkvparser::BlockEntry* block_entry = NULL;
   EXPECT_EQ(mkvparser::E_FILE_FORMAT_INVALID,
