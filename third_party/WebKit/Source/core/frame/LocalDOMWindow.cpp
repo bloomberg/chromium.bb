@@ -1233,7 +1233,7 @@ void LocalDOMWindow::moveBy(int x, int y) const
         return;
 
     IntRect windowRect = host->chromeClient().rootWindowRect();
-    windowRect.move(x, y);
+    windowRect.saturatedMove(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
     host->chromeClient().setWindowRectWithAdjustment(windowRect, *frame());
 }

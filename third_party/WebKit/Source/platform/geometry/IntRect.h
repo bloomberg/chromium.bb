@@ -92,6 +92,7 @@ public:
     void move(const IntSize& size) { m_location += size; }
     void moveBy(const IntPoint& offset) { m_location.move(offset.x(), offset.y()); }
     void move(int dx, int dy) { m_location.move(dx, dy); }
+    void saturatedMove(int dx, int dy) { m_location.saturatedMove(dx, dy); }
 
     void expand(const IntSize& size) { m_size += size; }
     void expand(int dw, int dh) { m_size.expand(dw, dh); }
