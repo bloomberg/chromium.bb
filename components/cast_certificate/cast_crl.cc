@@ -212,7 +212,7 @@ class CastCRLImpl : public CastCRL {
 
   // Revoked public key hashes.
   // The values consist of the SHA256 hash of the SubjectPublicKeyInfo.
-  std::set<std::string> revoked_hashes_;
+  std::unordered_set<std::string> revoked_hashes_;
 
   // Revoked serial number ranges indexed by issuer public key hash.
   // The key is the SHA256 hash of issuer's SubjectPublicKeyInfo.
