@@ -294,4 +294,6 @@ crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
 
 crbug.com/614910 virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Slow ]
 
+crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
+
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]

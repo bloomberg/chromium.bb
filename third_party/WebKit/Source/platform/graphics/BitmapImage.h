@@ -90,7 +90,7 @@ public:
     // Construct a BitmapImage with the given orientation.
     static PassRefPtr<BitmapImage> createWithOrientationForTesting(const SkBitmap&, ImageOrientation);
     // Advance the image animation by one frame.
-    void advanceAnimationForTesting() override { internalAdvanceAnimation(false); }
+    void advanceAnimationForTesting() override { internalAdvanceAnimation(); }
 
 private:
     enum RepetitionCountStatus {
@@ -150,12 +150,18 @@ private:
     // we force the next animation to skip the catch up logic.
     void advanceAnimationWithoutCatchUp(TimerBase*);
 
-    // Function that does the real work of advancing the animation.  When
-    // skippingFrames is true, we're in the middle of a loop trying to skip over
-    // a bunch of animation frames, so we should not do things like decode each
-    // one or notify our observers.
+    // This function does the real work of advancing the animation. When
+    // skipping frames to catch up, we're in the middle of a loop trying to skip
+    // over a bunch of animation frames, so we should not do things like decode
+    // each one or notify our observers.
     // Returns whether the animation was advanced.
-    bool internalAdvanceAnimation(bool skippingFrames);
+    enum AnimationAdvancement {
+        Normal,
+        SkipFramesToCatchUp
+    };
+    bool internalAdvanceAnimation(AnimationAdvancement = Normal);
+
+    void notifyObserversOfAnimationAdvance(TimerBase*);
 
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).
