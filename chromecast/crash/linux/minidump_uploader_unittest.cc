@@ -40,7 +40,7 @@ std::unique_ptr<PrefService> CreateFakePrefService(bool opt_in) {
   retval->registry()->RegisterBooleanPref(prefs::kOptInStats, opt_in);
   retval->registry()->RegisterStringPref(::metrics::prefs::kMetricsClientID,
                                          "");
-  return retval;
+  return std::move(retval);
 }
 
 bool DumpsAreEqual(const DumpInfo& l, const DumpInfo& r) {
