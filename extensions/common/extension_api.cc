@@ -54,15 +54,24 @@ std::unique_ptr<base::ListValue> LoadSchemaList(
       NULL,                                                   // error code
       &error_message));
 
-  // Tracking down http://crbug.com/121424
-  char buf[128];
-  base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'",
-      name.c_str(),
-      result.get() ? result->GetType() : -1,
-      error_message.c_str());
+#if DCHECK_IS_ON()
+  // |schema| comes from JSON hard-coded to the Chrome binary, so in principle
+  // failure to parse indicates we generated corrupted JSON, but in practice
+  // corruption of the Chrome binary (e.g. disk errors) can also break it.
+  // See http://crbug.com/121424.
+  if (!result || !result->IsType(base::Value::TYPE_LIST)) {
+    char buf[128];
+    base::snprintf(buf, arraysize(buf), "%s: (%d) '%s'", name.c_str(),
+                   result.get() ? result->GetType() : -1,
+                   error_message.c_str());
 
-  CHECK(result.get()) << error_message << " for schema " << schema;
-  CHECK(result->IsType(base::Value::TYPE_LIST)) << " for schema " << schema;
+    DCHECK(result) << "JSON parse failed: " << buf;
+    DCHECK(result->IsType(base::Value::TYPE_LIST)) << "JSON wrong type: "
+                                                   << buf;
+  }
+#endif  // DCHECK_IS_ON()
+
+  // From() returns null if passed a null or non-list value.
   return base::ListValue::From(std::move(result));
 }
 
@@ -213,6 +222,9 @@ ExtensionAPI::OverrideSharedInstanceForTest::~OverrideSharedInstanceForTest() {
 void ExtensionAPI::LoadSchema(const std::string& name,
                               const base::StringPiece& schema) {
   std::unique_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
+  if (!schema_list)
+    return;
+
   std::string schema_namespace;
   extensions::ExtensionsClient* extensions_client =
       extensions::ExtensionsClient::Get();
@@ -324,7 +336,12 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
     }
 
     maybe_schema = schemas_.find(api_name);
-    CHECK(schemas_.end() != maybe_schema);
+    // If the schema failed to load then return null for it, rather than
+    // crashing, so that the browser can be notified of the problem.
+    // See http://crbug.com/121424.
+    if (schemas_.end() == maybe_schema)
+      return NULL;
+
     result = maybe_schema->second.get();
   }
 
@@ -383,7 +400,9 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
     api_name_candidate = api_name_candidate.substr(0, last_dot_index);
   }
 
-  *child_name = "";
+  if (child_name)
+    *child_name = "";
+
   return std::string();
 }
 

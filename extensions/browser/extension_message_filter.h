@@ -80,6 +80,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
   void OnExtensionWakeEventPage(int request_id,
                                 const std::string& extension_id);
+  void OnExtensionNotifyBadExtensionApiSchema(const std::string& api);
 
   // Responds to the ExtensionHostMsg_WakeEventPage message.
   void SendWakeEventPageResponse(int request_id, bool success);

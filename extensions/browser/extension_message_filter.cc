@@ -18,6 +18,7 @@
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ipc/ipc_message_macros.h"
@@ -134,6 +135,8 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionTransferBlobsAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_WakeEventPage,
                         OnExtensionWakeEventPage)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_NotifyBadExtensionApiSchema,
+                        OnExtensionNotifyBadExtensionApiSchema)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -316,6 +319,28 @@ void ExtensionMessageFilter::OnExtensionWakeEventPage(
 void ExtensionMessageFilter::SendWakeEventPageResponse(int request_id,
                                                        bool success) {
   Send(new ExtensionMsg_WakeEventPageResponse(request_id, success));
+}
+
+void ExtensionMessageFilter::OnExtensionNotifyBadExtensionApiSchema(
+    const std::string& full_name) {
+  ExtensionAPI* extension_api = ExtensionAPI::GetSharedInstance();
+
+  // Try to resolve the full name; if we can't then the renderer sent a
+  // bogus name.
+  std::string api_name =
+      extension_api->GetAPINameFromFullName(full_name, nullptr);
+  if (api_name.empty()) {
+    ShutdownForBadMessage();
+    return;
+  }
+
+  // Since the renderer indicated that the schema for |api_name| was
+  // bad, we expect getting the schema to fail, and crash the browser.
+  CHECK(extension_api->GetSchema(api_name));
+
+  // If we reach here then the schema looked valid, indicating that
+  // the renderer must be at fault, so kill it.
+  ShutdownForBadMessage();
 }
 
 }  // namespace extensions

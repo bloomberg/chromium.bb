@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
@@ -131,7 +133,16 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
 
   const base::DictionaryValue* schema =
       ExtensionAPI::GetSharedInstance()->GetSchema(api);
-  CHECK(schema) << api;
+
+  // If the schema for |api| cannot be loaded then return an empty object, but
+  // also notify the browser so that it can take appropriate action.
+  // See http://crbug.com/121424.
+  if (!schema) {
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_NotifyBadExtensionApiSchema(api));
+    return v8::Local<v8::Object>();
+  }
+
   std::unique_ptr<V8ValueConverter> v8_value_converter(
       V8ValueConverter::create());
   v8::Local<v8::Value> value = v8_value_converter->ToV8Value(schema, context);
