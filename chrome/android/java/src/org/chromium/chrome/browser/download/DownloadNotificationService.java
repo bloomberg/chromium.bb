@@ -492,10 +492,11 @@ public class DownloadNotificationService extends Service {
 
             @Override
             public void finishNativeInitialization() {
-                DownloadServiceDelegate downloadServiceDelegate =
-                        getServiceDelegate(intent.getAction() == ACTION_DOWNLOAD_OPEN
+                int itemType = entry != null ? entry.itemType
+                        : (intent.getAction() == ACTION_DOWNLOAD_OPEN
                                 ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
-                                : entry.itemType);
+                                : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD);
+                DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(itemType);
                 switch (intent.getAction()) {
                     case ACTION_DOWNLOAD_CANCEL:
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
