@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from core import perf_benchmark
+from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
 from telemetry import benchmark
@@ -13,13 +14,14 @@ from telemetry import benchmark
 class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateTimelineBasedMeasurementOptions(self):
-    options = timeline_based_measurement.Options()
+    options = timeline_based_measurement.Options(
+        chrome_trace_category_filter.ChromeTraceCategoryFilter())
+    options.config.chrome_trace_config.category_filter.AddFilterString('rail')
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.enable_atrace_trace = True
     options.config.atrace_config.categories = ['sched']
     options.config.enable_cpu_trace = True
-    options.config.chrome_trace_config.SetDefaultOverheadFilter()
     options.SetTimelineBasedMetrics(['powerMetric', 'clockSyncLatencyMetric'])
     return options
 
