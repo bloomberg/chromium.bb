@@ -7,10 +7,11 @@ function test()
 {
     InspectorTest.recordNetwork();
 
-    var totalResourceCount = 3;
+    var totalResourceCount = 4;
     InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
     InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
     InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
     var filterChecks = [{
         filterText: "-.css",
         isRegex: false
@@ -40,6 +41,9 @@ function test()
         isRegex: true
     }, {
         filterText: "png",
+        isRegex: false
+    }, {
+        filterText: "-missing",
         isRegex: false
     }];
 
