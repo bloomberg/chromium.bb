@@ -1,8 +1,6 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Creates IPC fuzzer packages suitable for uploading to ClusterFuzz. Stores
 the packages into chrome build directory. See fuzzer_list below for the list of
 fuzzers.
@@ -16,21 +14,29 @@ import sys
 import tempfile
 
 FUZZER_LIST = [
-  'ipc_fuzzer_mut',
-  'ipc_fuzzer_gen',
+    'ipc_fuzzer_mut',
+    'ipc_fuzzer_gen',
 ]
 
+
 class CFPackageBuilder:
+
   def __init__(self):
     self.fuzzer_list = FUZZER_LIST
 
   def parse_arguments(self):
     desc = 'Builder of IPC fuzzer packages for ClusterFuzz'
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--out-dir', dest='out_dir', default='out',
-                        help='output directory under src/ directory')
-    parser.add_argument('--build-type', dest='build_type', default='Release',
-                        help='Debug vs. Release build')
+    parser.add_argument(
+        '--out-dir',
+        dest='out_dir',
+        default='out',
+        help='output directory under src/ directory')
+    parser.add_argument(
+        '--build-type',
+        dest='build_type',
+        default='Release',
+        help='Debug vs. Release build')
     self.args = parser.parse_args()
 
   def set_application_paths(self):
@@ -74,6 +80,7 @@ class CFPackageBuilder:
 
     return 0
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
   builder = CFPackageBuilder()
   sys.exit(builder.main())

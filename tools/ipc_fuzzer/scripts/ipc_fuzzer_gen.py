@@ -1,8 +1,6 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Generational ClusterFuzz fuzzer. It generates IPC messages using
 GenerateTraits. Support of GenerateTraits for different types will be gradually
 added.
@@ -19,14 +17,13 @@ MAX_IPC_MESSAGES_PER_TESTCASE = 1500
 
 
 class GenerationalFuzzer:
+
   def __init__(self):
     self.args = utils.parse_arguments()
 
-    chrome_application_path = utils.get_application_path()
-    chrome_application_directory = os.path.dirname(chrome_application_path)
     self.ipc_fuzzer_binary = utils.get_fuzzer_application_name()
-    self.ipc_fuzzer_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_fuzzer_binary)
+    self.ipc_fuzzer_binary_path = utils.get_application_path(
+        self.ipc_fuzzer_binary)
 
   def generate_ipcdump_testcase(self):
     ipcdump_testcase_path = (
@@ -53,6 +50,6 @@ class GenerationalFuzzer:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   fuzzer = GenerationalFuzzer()
   sys.exit(fuzzer.main())

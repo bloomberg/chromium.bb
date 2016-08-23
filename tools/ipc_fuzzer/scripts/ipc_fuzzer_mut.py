@@ -1,8 +1,6 @@
-#!/usr/bin/env python
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Mutational ClusterFuzz fuzzer. A pre-built corpus of ipcdump files has
 to be uploaded to ClusterFuzz along with this script. As chrome is being
 developed, the corpus will become out-of-date and needs to be updated.
@@ -21,20 +19,19 @@ FUZZER_NAME_OPTION = '--fuzzer-name=mutate'
 IPC_MESSAGE_UTIL_APPLICATION = 'ipc_message_util'
 IPCDUMP_MERGE_LIMIT = 50
 
+
 class MutationalFuzzer:
+
   def __init__(self):
     self.args = utils.parse_arguments()
-
-    chrome_application_path = utils.get_application_path()
-    chrome_application_directory = os.path.dirname(chrome_application_path)
 
     self.ipc_message_util_binary = utils.application_name_for_platform(
         IPC_MESSAGE_UTIL_APPLICATION)
     self.ipc_fuzzer_binary = utils.get_fuzzer_application_name()
-    self.ipc_message_util_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_message_util_binary)
-    self.ipc_fuzzer_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_fuzzer_binary)
+    self.ipc_message_util_binary_path = utils.get_application_path(
+        self.ipc_message_util_binary)
+    self.ipc_fuzzer_binary_path = utils.get_application_path(
+        self.ipc_fuzzer_binary)
 
   def set_corpus(self):
     # Corpus should be set per job as a fuzzer-specific environment variable.
@@ -55,19 +52,19 @@ class MutationalFuzzer:
 
     # Concatenate ipcdumps -> tmp_ipcdump.
     cmd = [
-      self.ipc_message_util_binary_path,
-      ipcdumps,
-      tmp_ipcdump_testcase,
+        self.ipc_message_util_binary_path,
+        ipcdumps,
+        tmp_ipcdump_testcase,
     ]
     if subprocess.call(cmd):
       sys.exit('%s failed.' % self.ipc_message_util_binary)
 
     # Mutate tmp_ipcdump -> mutated_ipcdump.
     cmd = [
-      self.ipc_fuzzer_binary_path,
-      FUZZER_NAME_OPTION,
-      tmp_ipcdump_testcase,
-      mutated_ipcdump_testcase,
+        self.ipc_fuzzer_binary_path,
+        FUZZER_NAME_OPTION,
+        tmp_ipcdump_testcase,
+        mutated_ipcdump_testcase,
     ]
     if subprocess.call(cmd):
       sys.exit('%s failed.' % self.ipc_fuzzer_binary)
@@ -83,6 +80,6 @@ class MutationalFuzzer:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   fuzzer = MutationalFuzzer()
   sys.exit(fuzzer.main())
