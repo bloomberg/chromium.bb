@@ -20,7 +20,6 @@
 #import "base/ios/ns_error_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
@@ -372,11 +371,12 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Long press recognizer that allows showing context menus.
   base::scoped_nsobject<UILongPressGestureRecognizer> _contextMenuRecognizer;
   // DOM element information for the point where the user made the last touch.
-  // Can be null if has not been calculated yet. Precalculation is necessary
+  // Can be nil if has not been calculated yet. Precalculation is necessary
   // because retreiving DOM element relies on async API so element info can not
-  // be built on demand. May contain the following keys: "href", "src", "title",
-  // "referrerPolicy". All values are strings. Used for showing context menus.
-  std::unique_ptr<base::DictionaryValue> _DOMElementForLastTouch;
+  // be built on demand. May contain the following keys: @"href", @"src",
+  // @"title", @"referrerPolicy". All values are strings. Used for showing
+  // context menus.
+  base::scoped_nsobject<NSDictionary> _DOMElementForLastTouch;
   // Whether a click is in progress.
   BOOL _clickInProgress;
   // Data on the recorded last user interaction.
@@ -666,13 +666,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
-// Evaluates the supplied JavaScript in the web view. Calls |handler| with
-// results of the evaluation (which may be nil if the implementing object has no
-// way to run the evaluation or the evaluation returns a nil value) or an
-// NSError if there is an error. The |handler| can be nil.
-- (void)evaluateJavaScript:(NSString*)script
-         JSONResultHandler:
-             (void (^)(std::unique_ptr<base::Value>, NSError*))handler;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 // Returns a new script which wraps |script| with windowID check so |script| is
@@ -735,14 +728,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // UIView coordinates). |handler| can not be nil. See |_DOMElementForLastTouch|
 // for element format description.
 - (void)fetchDOMElementAtPoint:(CGPoint)point
-             completionHandler:
-                 (void (^)(std::unique_ptr<base::DictionaryValue>))handler;
+             completionHandler:(void (^)(NSDictionary*))handler;
 // Extracts context menu information from the given DOM element.
-- (web::ContextMenuParams)contextMenuParamsForElement:
-    (base::DictionaryValue*)element;
+- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element;
 // Sets the value of |_DOMElementForLastTouch|.
-- (void)setDOMElementForLastTouch:
-    (std::unique_ptr<base::DictionaryValue>)element;
+- (void)setDOMElementForLastTouch:(NSDictionary*)element;
 // Called when the window has determined there was a long-press and context menu
 // must be shown.
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer;
@@ -1312,19 +1302,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                     completionHandler:(void (^)(BOOL))completionHandler {
   CGPoint webViewPoint = [gestureRecognizer locationInView:_webView];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self
-      fetchDOMElementAtPoint:webViewPoint
-           completionHandler:^(std::unique_ptr<base::DictionaryValue> element) {
-             std::string link;
-             BOOL hasLink =
-                 element && element->GetString("href", &link) && link.size();
-             completionHandler(hasLink);
-           }];
+  [self fetchDOMElementAtPoint:webViewPoint
+             completionHandler:^(NSDictionary* element) {
+               BOOL hasLink = [element[@"href"] length];
+               completionHandler(hasLink);
+             }];
 }
 
-- (void)setDOMElementForLastTouch:
-    (std::unique_ptr<base::DictionaryValue>)element {
-  _DOMElementForLastTouch = std::move(element);
+- (void)setDOMElementForLastTouch:(NSDictionary*)element {
+  _DOMElementForLastTouch.reset([element copy]);
 }
 
 - (void)showContextMenu:(UIGestureRecognizer*)gestureRecognizer {
@@ -1332,7 +1318,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([gestureRecognizer state] != UIGestureRecognizerStateBegan)
     return;
 
-  if (!_DOMElementForLastTouch || _DOMElementForLastTouch->empty())
+  if (![_DOMElementForLastTouch count])
     return;
 
   web::ContextMenuParams params =
@@ -2382,20 +2368,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     NSString* stateObject = currentItem->GetSerializedStateObject();
     [self setPushedOrReplacedURL:currentItem->GetURL() stateObject:stateObject];
   }
-}
-
-- (void)evaluateJavaScript:(NSString*)script
-         JSONResultHandler:
-             (void (^)(std::unique_ptr<base::Value>, NSError*))handler {
-  [self evaluateJavaScript:script
-       stringResultHandler:^(NSString* stringResult, NSError* error) {
-         DCHECK(stringResult || error);
-         if (handler) {
-           std::unique_ptr<base::Value> result(
-               base::JSONReader::Read(base::SysNSStringToUTF8(stringResult)));
-           handler(std::move(result), error);
-         }
-       }];
 }
 
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer {
@@ -3555,13 +3527,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // touch. If there a link, the web controller will reject system's context
   // menu and show another one. If for some reason context menu info is not
   // fetched - system context menu will be shown.
-  [self setDOMElementForLastTouch:nullptr];
+  [self setDOMElementForLastTouch:nil];
   base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self
-      fetchDOMElementAtPoint:[touch locationInView:_webView]
-           completionHandler:^(std::unique_ptr<base::DictionaryValue> element) {
-             [weakSelf setDOMElementForLastTouch:std::move(element)];
-           }];
+  [self fetchDOMElementAtPoint:[touch locationInView:_webView]
+             completionHandler:^(NSDictionary* element) {
+               [weakSelf setDOMElementForLastTouch:element];
+             }];
   return YES;
 }
 
@@ -3579,7 +3550,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // menu should not be shown.
   UMA_HISTOGRAM_BOOLEAN("WebController.FetchContextMenuInfoAsyncSucceeded",
                         !!_DOMElementForLastTouch);
-  return _DOMElementForLastTouch && !_DOMElementForLastTouch->empty();
+  return [_DOMElementForLastTouch count];
 }
 
 #pragma mark -
@@ -4261,15 +4232,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  [self evaluateJavaScript:@"__gCrWeb.getPageWidth();"
-       stringResultHandler:^(NSString* pageWidthAsString, NSError*) {
-         handler([pageWidthAsString floatValue]);
-       }];
+  [self executeJavaScript:@"__gCrWeb.getPageWidth();"
+        completionHandler:^(id pageWidth, NSError*) {
+          handler([base::mac::ObjCCastStrict<NSNumber>(pageWidth) floatValue]);
+        }];
 }
 
 - (void)fetchDOMElementAtPoint:(CGPoint)point
-             completionHandler:
-                 (void (^)(std::unique_ptr<base::DictionaryValue>))handler {
+             completionHandler:(void (^)(NSDictionary*))handler {
   DCHECK(handler);
   // Convert point into web page's coordinate system (which may be scaled and/or
   // scrolled).
@@ -4283,55 +4253,45 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     NSString* const kGetElementScript =
         [NSString stringWithFormat:@"__gCrWeb.getElementFromPoint(%g, %g);",
                                    localPoint.x, localPoint.y];
-    [weakSelf
-        evaluateJavaScript:kGetElementScript
-         JSONResultHandler:^(std::unique_ptr<base::Value> element, NSError*) {
-           // Release raw element and call handler with DictionaryValue.
-           std::unique_ptr<base::DictionaryValue> elementAsDict;
-           if (element) {
-             base::DictionaryValue* elementAsDictPtr = nullptr;
-             element.release()->GetAsDictionary(&elementAsDictPtr);
-             // |rawElement| and |elementPtr| now point to the same
-             // memory. |elementPtr| ownership will be transferred to
-             // |element| scoped_ptr.
-             elementAsDict.reset(elementAsDictPtr);
-           }
-           handler(std::move(elementAsDict));
-         }];
+    [weakSelf executeJavaScript:kGetElementScript
+              completionHandler:^(id element, NSError*) {
+                handler(base::mac::ObjCCastStrict<NSDictionary>(element));
+              }];
   }];
 }
 
-- (web::ContextMenuParams)contextMenuParamsForElement:
-    (base::DictionaryValue*)element {
+- (web::ContextMenuParams)contextMenuParamsForElement:(NSDictionary*)element {
   web::ContextMenuParams params;
   NSString* title = nil;
-  std::string href;
-  if (element->GetString("href", &href)) {
-    params.link_url = GURL(href);
+  NSString* href = element[@"href"];
+  if (href) {
+    params.link_url = GURL(base::SysNSStringToUTF8(href));
     if (params.link_url.SchemeIs(url::kJavaScriptScheme)) {
       title = @"JavaScript";
     } else {
-      base::string16 urlText = url_formatter::FormatUrl(params.link_url);
-      title = base::SysUTF16ToNSString(urlText);
+      base::string16 URLText = url_formatter::FormatUrl(params.link_url);
+      title = base::SysUTF16ToNSString(URLText);
     }
   }
-  std::string src;
-  if (element->GetString("src", &src)) {
-    params.src_url = GURL(src);
+  NSString* src = element[@"src"];
+  if (src) {
+    params.src_url = GURL(base::SysNSStringToUTF8(src));
     if (!title)
-      title = base::SysUTF8ToNSString(src);
+      title = [[src copy] autorelease];
     if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
       title = nil;
   }
-  std::string titleAttribute;
-  if (element->GetString("title", &titleAttribute))
-    title = base::SysUTF8ToNSString(titleAttribute);
+  NSString* titleAttribute = element[@"title"];
+  if (titleAttribute)
+    title = titleAttribute;
   if (title) {
     params.menu_title.reset([title copy]);
   }
-  std::string referrerPolicy;
-  if (element->GetString("referrerPolicy", &referrerPolicy))
-    params.referrer_policy = web::ReferrerPolicyFromString(referrerPolicy);
+  NSString* referrerPolicy = element[@"referrerPolicy"];
+  if (referrerPolicy) {
+    params.referrer_policy =
+        web::ReferrerPolicyFromString(base::SysNSStringToUTF8(referrerPolicy));
+  }
   return params;
 }
 

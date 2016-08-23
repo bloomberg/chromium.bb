@@ -181,20 +181,23 @@ goog.require('__crWeb.message');
             tagName === 'select' || tagName === 'option') {
           // If the element is a known input element, stop the spiral search and
           // return empty results.
-          return '{}';
+          return {};
         }
 
         if (tagName === 'a' && element.href) {
           // Found a link.
-          return __gCrWeb.common.JSONStringify(
-              {href: element.href,
-               referrerPolicy: getReferrerPolicy_(element)});
+          return {
+            href: element.href,
+            referrerPolicy: getReferrerPolicy_(element)
+          };
         }
 
         if (tagName === 'img' && element.src) {
           // Found an image.
-          var result = {src: element.src,
-                        referrerPolicy: getReferrerPolicy_()};
+          var result = {
+            src: element.src,
+            referrerPolicy: getReferrerPolicy_()
+          };
           // Copy the title, if any.
           if (element.title) {
             result.title = element.title;
@@ -219,12 +222,12 @@ goog.require('__crWeb.message');
             }
             parent = parent.parentNode;
           }
-          return __gCrWeb.common.JSONStringify(result);
+          return result;
         }
         element = element.parentNode;
       }
     }
-    return '{}';
+    return {};
   };
 
   // Suppresses the next click such that they are not handled by JS click

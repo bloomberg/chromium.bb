@@ -16,8 +16,8 @@
 namespace {
 
 struct TestScriptAndExpectedValue {
-  NSString* testScript;
-  NSString* expectedValue;
+  NSString* test_script;
+  id expected_value;
 };
 
 }  // namespace
@@ -27,110 +27,110 @@ namespace web {
 // Test fixture to test core.js.
 class CoreJsTest : public web::WebTestWithWebState {
  protected:
-  void ImageTesterHelper(
-      NSString* htmlForImage,
-      NSString* expectedValueWhenClickingOnImage) {
-    NSString* pageContentTemplate =
+  // Verifies that __gCrWeb.getElementFromPoint returns |expected_value| for
+  // the given image |html|.
+  void ImageTesterHelper(NSString* html, NSDictionary* expected_value) {
+    NSString* page_content_template =
         @"<html><body style='margin-left:10px;margin-top:10px;'>"
-            "<div style='width:100px;height:100px;'>"
-            "  <p style='position:absolute;left:25px;top:25px;"
-            "      width:50px;height:50px'>"
-            "%@"
-            "    Chrome rocks!"
-            "  </p></div></body></html>";
-    NSString* pageContent =
-        [NSString stringWithFormat:pageContentTemplate, htmlForImage];
+         "<div style='width:100px;height:100px;'>"
+         "  <p style='position:absolute;left:25px;top:25px;"
+         "      width:50px;height:50px'>"
+         "%@"
+         "    Chrome rocks!"
+         "  </p></div></body></html>";
+    NSString* page_content =
+        [NSString stringWithFormat:page_content_template, html];
 
-    TestScriptAndExpectedValue testData[] = {
-      // Point outside the document margins.
-      {
-        @"__gCrWeb.getElementFromPoint(0, 0)",
-        @"{}"
-      },
-      // Point outside the <p> element.
-      {
-        @"__gCrWeb.getElementFromPoint(100, 100)",
-        expectedValueWhenClickingOnImage
-      },
-      // Point inside the <p> element.
-      {
-        @"__gCrWeb.getElementFromPoint(300, 300)",
-        @"{}"
-      },
+    TestScriptAndExpectedValue test_data[] = {
+        // Point outside the document margins.
+        {
+            @"__gCrWeb.getElementFromPoint(0, 0)", @{},
+        },
+        // Point outside the <p> element.
+        {@"__gCrWeb.getElementFromPoint(100, 100)", expected_value},
+        // Point inside the <p> element.
+        {
+            @"__gCrWeb.getElementFromPoint(300, 300)", @{},
+        },
     };
-    for (size_t i = 0; i < arraysize(testData); i++) {
-      TestScriptAndExpectedValue& data = testData[i];
-      LoadHtml(pageContent);
-      id result = ExecuteJavaScript(data.testScript);
-      EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
-          [data.testScript UTF8String];
+    for (size_t i = 0; i < arraysize(test_data); i++) {
+      TestScriptAndExpectedValue& data = test_data[i];
+      LoadHtml(page_content);
+      id result = ExecuteJavaScript(data.test_script);
+      EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
+                                               << [data.test_script UTF8String];
     }
   }
 };
 
+// Tests that __gCrWeb.getElementFromPoint function returns correct src.
 TEST_F(CoreJsTest, GetImageUrlAtPoint) {
-  NSString* htmlForImage =
+  NSString* html =
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
-  NSString* expectedValueWhenClickingOnImage =
-      @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\"}";
-  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+  NSDictionary* expected_value = @{
+    @"src" : @"file:///bogus",
+    @"referrerPolicy" : @"default",
+  };
+  ImageTesterHelper(html, expected_value);
 }
 
+// Tests that __gCrWeb.getElementFromPoint function returns correct title.
 TEST_F(CoreJsTest, GetImageTitleAtPoint) {
-  NSString* htmlForImage =
-      @"<img id='foo' title='Hello world!'"
-      "style='width:200;height:200;' src='file:///bogus'/>";
-  NSString* expectedValueWhenClickingOnImage =
-      @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\","
-          "\"title\":\"Hello world!\"}";
-  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+  NSString* html = @"<img id='foo' title='Hello world!'"
+                    "style='width:200;height:200;' src='file:///bogus'/>";
+  NSDictionary* expected_value = @{
+    @"src" : @"file:///bogus",
+    @"referrerPolicy" : @"default",
+    @"title" : @"Hello world!",
+  };
+  ImageTesterHelper(html, expected_value);
 }
 
+// Tests that __gCrWeb.getElementFromPoint function returns correct href.
 TEST_F(CoreJsTest, GetLinkImageUrlAtPoint) {
-  NSString* htmlForImage =
+  NSString* html =
       @"<a href='file:///linky'>"
-          "<img id='foo' style='width:200;height:200;' src='file:///bogus'/>"
-          "</a>";
-  NSString* expectedValueWhenClickingOnImage =
-      @"{\"src\":\"file:///bogus\",\"referrerPolicy\":\"default\","
-          "\"href\":\"file:///linky\"}";
-  ImageTesterHelper(htmlForImage, expectedValueWhenClickingOnImage);
+       "<img id='foo' style='width:200;height:200;' src='file:///bogus'/>"
+       "</a>";
+  NSDictionary* expected_value = @{
+    @"src" : @"file:///bogus",
+    @"referrerPolicy" : @"default",
+    @"href" : @"file:///linky",
+  };
+  ImageTesterHelper(html, expected_value);
 }
 
 TEST_F(CoreJsTest, TextAreaStopsProximity) {
-  NSString* pageContent =
-  @"<html><body style='margin-left:10px;margin-top:10px;'>"
-  "<div style='width:100px;height:100px;'>"
-  "<img id='foo'"
-  "    style='position:absolute;left:0px;top:0px;width:50px;height:50px'"
-  "    src='file:///bogus' />"
-  "<input type='text' name='name'"
-  "       style='position:absolute;left:5px;top:5px; width:40px;height:40px'/>"
-  "</div></body> </html>";
+  NSString* html =
+      @"<html><body style='margin-left:10px;margin-top:10px;'>"
+       "<div style='width:100px;height:100px;'>"
+       "<img id='foo'"
+       "    style='position:absolute;left:0px;top:0px;width:50px;height:50px'"
+       "    src='file:///bogus' />"
+       "<input type='text' name='name'"
+       "       style='position:absolute;left:5px;top:5px; "
+       "width:40px;height:40px'/>"
+       "</div></body> </html>";
 
-  NSString* success = @"{\"src\":\"file:///bogus\","
-      "\"referrerPolicy\":\"default\"}";
-  NSString* failure = @"{}";
+  NSDictionary* success = @{
+    @"src" : @"file:///bogus",
+    @"referrerPolicy" : @"default",
+  };
+  NSDictionary* failure = @{};
 
-  TestScriptAndExpectedValue testData[] = {
-    {
-      @"__gCrWeb.getElementFromPoint(2, 20)",
-      success
-    },
-    {
-      @"__gCrWeb.getElementFromPoint(5, 20)",
-      failure
-    },
+  TestScriptAndExpectedValue test_data[] = {
+      {@"__gCrWeb.getElementFromPoint(2, 20)", success},
+      {@"__gCrWeb.getElementFromPoint(5, 20)", failure},
   };
 
-  for (size_t i = 0; i < arraysize(testData); i++) {
-    TestScriptAndExpectedValue& data = testData[i];
-    LoadHtml(pageContent);
-    id result = ExecuteJavaScript(data.testScript);
-    EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
-    [data.testScript UTF8String];
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    TestScriptAndExpectedValue& data = test_data[i];
+    LoadHtml(html);
+    id result = ExecuteJavaScript(data.test_script);
+    EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
+                                             << [data.test_script UTF8String];
   }
-};
+}
 
 struct TestDataForPasswordFormDetection {
   NSString* pageContent;
@@ -224,9 +224,9 @@ TEST_F(CoreJsTest, Stringify) {
     // Load a sample HTML page. As a side-effect, loading HTML via
     // |webController_| will also inject core.js.
     LoadHtml(@"<p>");
-    id result = ExecuteJavaScript(data.testScript);
-    EXPECT_NSEQ(data.expectedValue, result) << " in test " << i << ": " <<
-        [data.testScript UTF8String];
+    id result = ExecuteJavaScript(data.test_script);
+    EXPECT_NSEQ(data.expected_value, result) << " in test " << i << ": "
+                                             << [data.test_script UTF8String];
   }
 }
 
@@ -239,18 +239,22 @@ TEST_F(CoreJsTest, LinkOfImage) {
   // A page with a link to a destination URL.
   LoadHtml(base::StringPrintf(image, "http://destination"));
   id result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
-  std::string expected_result =
-      R"({"src":"foo","referrerPolicy":"default",)"
-      R"("href":"http://destination/"})";
-  EXPECT_EQ(expected_result, [result UTF8String]);
+  NSDictionary* expected_result = @{
+    @"src" : @"foo",
+    @"referrerPolicy" : @"default",
+    @"href" : @"http://destination/",
+  };
+  EXPECT_NSEQ(expected_result, result);
 
   // A page with a link with some JavaScript that does not result in a NOP.
   LoadHtml(base::StringPrintf(image, "javascript:console.log('whatever')"));
   result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
-  expected_result =
-      R"({"src":"foo","referrerPolicy":"default",)"
-      R"("href":"javascript:console.log("})";
-  EXPECT_EQ(expected_result, [result UTF8String]);
+  expected_result = @{
+    @"src" : @"foo",
+    @"referrerPolicy" : @"default",
+    @"href" : @"javascript:console.log(",
+  };
+  EXPECT_NSEQ(expected_result, result);
 
   // A list of JavaScripts that result in a NOP.
   std::vector<std::string> nop_javascripts;
@@ -263,10 +267,12 @@ TEST_F(CoreJsTest, LinkOfImage) {
     const std::string javascript = std::string("javascript:") + js;
     LoadHtml(base::StringPrintf(image, javascript.c_str()));
     result = ExecuteJavaScript(@"__gCrWeb['getElementFromPoint'](200, 200)");
-    expected_result = R"({"src":"foo","referrerPolicy":"default"})";
-
+    expected_result = @{
+      @"src" : @"foo",
+      @"referrerPolicy" : @"default",
+    };
     // Make sure the returned JSON does not have an 'href' key.
-    EXPECT_EQ(expected_result, [result UTF8String]);
+    EXPECT_NSEQ(expected_result, result);
   }
 }
 
