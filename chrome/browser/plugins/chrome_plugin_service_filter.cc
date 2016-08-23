@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/plugin_filter_utils.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -46,6 +47,24 @@ using content::PluginService;
 
 namespace {
 
+class ProfileContentSettingObserver : public content_settings::Observer {
+ public:
+  explicit ProfileContentSettingObserver(Profile* profile)
+      : profile_(profile) {}
+  ~ProfileContentSettingObserver() override {}
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override {
+    DCHECK(base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins));
+    if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+      PluginService::GetInstance()->PurgePluginListCache(profile_, false);
+  }
+
+ private:
+  Profile* profile_;
+};
+
 void AuthorizeRenderer(content::RenderFrameHost* render_frame_host) {
   ChromePluginServiceFilter::GetInstance()->AuthorizePlugin(
       render_frame_host->GetProcess()->GetID(), base::FilePath());
@@ -53,26 +72,55 @@ void AuthorizeRenderer(content::RenderFrameHost* render_frame_host) {
 
 }  // namespace
 
+struct ChromePluginServiceFilter::ContextInfo {
+  ContextInfo(
+      const scoped_refptr<PluginPrefs>& plugin_prefs,
+      const scoped_refptr<HostContentSettingsMap>& host_content_settings_map,
+      Profile* profile);
+  ~ContextInfo();
+
+  scoped_refptr<PluginPrefs> plugin_prefs;
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map;
+  ProfileContentSettingObserver observer;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContextInfo);
+};
+
+ChromePluginServiceFilter::ContextInfo::ContextInfo(
+    const scoped_refptr<PluginPrefs>& plugin_prefs,
+    const scoped_refptr<HostContentSettingsMap>& host_content_settings_map,
+    Profile* profile)
+    : plugin_prefs(plugin_prefs),
+      host_content_settings_map(host_content_settings_map),
+      observer(ProfileContentSettingObserver(profile)) {
+  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
+    host_content_settings_map->AddObserver(&observer);
+}
+
+ChromePluginServiceFilter::ContextInfo::~ContextInfo() {
+  if (base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))
+    host_content_settings_map->RemoveObserver(&observer);
+}
+
 // static
 ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
   return base::Singleton<ChromePluginServiceFilter>::get();
 }
 
-void ChromePluginServiceFilter::RegisterResourceContext(
-    scoped_refptr<PluginPrefs> plugin_prefs,
-    scoped_refptr<HostContentSettingsMap> host_content_settings_map,
-    const void* context) {
+void ChromePluginServiceFilter::RegisterResourceContext(Profile* profile,
+                                                        const void* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  plugin_prefs_[context] = std::move(plugin_prefs);
-  host_content_settings_maps_[context] = std::move(host_content_settings_map);
+  resource_context_map_[context] = base::MakeUnique<ContextInfo>(
+      PluginPrefs::GetForProfile(profile),
+      HostContentSettingsMapFactory::GetForProfile(profile), profile);
 }
 
 void ChromePluginServiceFilter::UnregisterResourceContext(
     const void* context) {
   base::AutoLock lock(lock_);
-  plugin_prefs_.erase(context);
-  host_content_settings_maps_.erase(context);
+  resource_context_map_.erase(context);
 }
 
 void ChromePluginServiceFilter::OverridePluginForFrame(
@@ -113,23 +161,19 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   }
 
   // Check whether the plugin is disabled.
-  ResourceContextMap::iterator prefs_it = plugin_prefs_.find(context);
+  auto context_info_it = resource_context_map_.find(context);
   // The context might not be found because RenderFrameMessageFilter might
   // outlive the Profile (the context is unregistered during the Profile
   // destructor).
-  if (prefs_it == plugin_prefs_.end())
+  if (context_info_it == resource_context_map_.end())
     return false;
 
-  if (!prefs_it->second.get()->IsPluginEnabled(*plugin))
+  if (!context_info_it->second->plugin_prefs.get()->IsPluginEnabled(*plugin))
     return false;
 
   // Check whether PreferHtmlOverPlugins feature is enabled.
   if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
-    auto host_content_settings_map_it =
-        host_content_settings_maps_.find(context);
-    DCHECK(host_content_settings_map_it != host_content_settings_maps_.end());
-
     ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
     std::unique_ptr<PluginMetadata> plugin_metadata =
         PluginFinder::GetInstance()->GetPluginMetadata(*plugin);
@@ -138,9 +182,10 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     // origin). The intended behavior is that Flash is advertised only if a
     // Flash embed hosted on the same origin as the main frame origin is allowed
     // to run.
-    GetPluginContentSetting(host_content_settings_map_it->second.get(), *plugin,
-                            policy_url, url, plugin_metadata->identifier(),
-                            &plugin_setting, nullptr, nullptr);
+    GetPluginContentSetting(
+        context_info_it->second->host_content_settings_map.get(), *plugin,
+        policy_url, url, plugin_metadata->identifier(), &plugin_setting,
+        nullptr, nullptr);
     plugin_setting =
         content_settings::PluginsFieldTrial::EffectiveContentSetting(
             CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);

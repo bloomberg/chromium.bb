@@ -620,9 +620,7 @@ void ProfileImpl::DoFinalInit() {
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this).get(),
-      HostContentSettingsMapFactory::GetForProfile(this),
-      io_data_.GetResourceContextNoInit());
+      this, io_data_.GetResourceContextNoInit());
 #endif
 
   TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");

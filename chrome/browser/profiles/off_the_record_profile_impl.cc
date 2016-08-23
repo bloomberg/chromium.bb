@@ -149,9 +149,7 @@ void OffTheRecordProfileImpl::Init() {
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this).get(),
-      HostContentSettingsMapFactory::GetForProfile(this),
-      io_data_->GetResourceContextNoInit());
+      this, io_data_->GetResourceContextNoInit());
 #endif
 
 #if defined(ENABLE_EXTENSIONS)

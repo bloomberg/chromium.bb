@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_PLUGINS_CHROME_PLUGIN_SERVICE_FILTER_H_
 
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -37,10 +39,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   static ChromePluginServiceFilter* GetInstance();
 
   // This method should be called on the UI thread.
-  void RegisterResourceContext(
-      scoped_refptr<PluginPrefs> plugin_prefs,
-      scoped_refptr<HostContentSettingsMap> host_content_settings_map,
-      const void* context);
+  void RegisterResourceContext(Profile* profile, const void* context);
 
   void UnregisterResourceContext(const void* context);
 
@@ -63,7 +62,9 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                            bool load_blocked,
                            const std::string& identifier);
 
-  // PluginServiceFilter implementation:
+  // PluginServiceFilter implementation.
+  // If |url| is not available, the same GURL passed as |policy_url| should be
+  // passed.
   bool IsPluginAvailable(int render_process_id,
                          int render_frame_id,
                          const void* context,
@@ -77,6 +78,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                      const base::FilePath& path) override;
 
  private:
+  struct ContextInfo;
   friend struct base::DefaultSingletonTraits<ChromePluginServiceFilter>;
 
   struct OverriddenPlugin {
@@ -111,11 +113,8 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   content::NotificationRegistrar registrar_;
 
   base::Lock lock_;  // Guards access to member variables.
-  typedef std::map<const void*, scoped_refptr<PluginPrefs> > ResourceContextMap;
-  ResourceContextMap plugin_prefs_;
 
-  std::map<const void*, scoped_refptr<HostContentSettingsMap>>
-      host_content_settings_maps_;
+  std::map<const void*, std::unique_ptr<ContextInfo>> resource_context_map_;
 
   std::map<int, ProcessDetails> plugin_details_;
 };
