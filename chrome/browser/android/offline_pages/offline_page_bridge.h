@@ -92,12 +92,12 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jstring>& j_namespace,
       const base::android::JavaParamRef<jstring>& j_client_id);
 
-  void SavePageLater(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jstring>& j_namespace,
-      const base::android::JavaParamRef<jstring>& j_client_id);
+  void SavePageLater(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& url,
+                     const base::android::JavaParamRef<jstring>& j_namespace,
+                     const base::android::JavaParamRef<jstring>& j_client_id,
+                     jboolean user_requested);
 
   void DeletePages(
       JNIEnv* env,

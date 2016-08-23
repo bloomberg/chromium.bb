@@ -45,7 +45,6 @@ namespace android {
 namespace {
 
 const char kOfflinePageBridgeKey[] = "offline-page-bridge";
-const bool kUserRequested = true;
 
 void ToJavaOfflinePageList(JNIEnv* env,
                            jobject j_result_obj,
@@ -412,12 +411,12 @@ void OfflinePageBridge::SavePage(
       base::Bind(&SavePageCallback, j_callback_ref, url));
 }
 
-void OfflinePageBridge::SavePageLater(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_url,
-    const JavaParamRef<jstring>& j_namespace,
-    const JavaParamRef<jstring>& j_client_id) {
+void OfflinePageBridge::SavePageLater(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj,
+                                      const JavaParamRef<jstring>& j_url,
+                                      const JavaParamRef<jstring>& j_namespace,
+                                      const JavaParamRef<jstring>& j_client_id,
+                                      jboolean user_requested) {
   offline_pages::ClientId client_id;
   client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
@@ -426,8 +425,8 @@ void OfflinePageBridge::SavePageLater(
       offline_pages::RequestCoordinatorFactory::GetInstance()->
           GetForBrowserContext(browser_context_);
 
-  coordinator->SavePageLater(
-      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id, kUserRequested);
+  coordinator->SavePageLater(GURL(ConvertJavaStringToUTF8(env, j_url)),
+                             client_id, static_cast<bool>(user_requested));
 }
 
 void OfflinePageBridge::DeletePages(

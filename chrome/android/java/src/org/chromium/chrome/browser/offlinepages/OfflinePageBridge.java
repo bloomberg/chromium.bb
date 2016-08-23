@@ -320,12 +320,28 @@ public class OfflinePageBridge {
     /**
      * Save the given URL as an offline page when the network becomes available.
      *
+     * The page is marked as not having been saved by the user.  Use the 3-argument form to specify
+     * a user request.
+     *
      * @param url The given URL to save for later.
      * @param clientId The client ID for the offline page to be saved later.
      */
-    public void savePageLater(final String url, final ClientId clientId) {
-        nativeSavePageLater(
-                mNativeOfflinePageBridge, url, clientId.getNamespace(), clientId.getId());
+    @VisibleForTesting
+    public void savePageLater(String url, ClientId clientId) {
+        savePageLater(url, clientId, false);
+    }
+
+    /**
+     * Save the given URL as an offline page when the network becomes available.
+     *
+     * @param url The given URL to save for later.
+     * @param clientId The client ID for the offline page to be saved later.
+     * @param userRequested Whether this request should be prioritized because the user explicitly
+     *     requested it.
+     */
+    public void savePageLater(final String url, final ClientId clientId, boolean userRequested) {
+        nativeSavePageLater(mNativeOfflinePageBridge, url, clientId.getNamespace(),
+                clientId.getId(), userRequested);
     }
 
     /**
@@ -339,7 +355,7 @@ public class OfflinePageBridge {
         // Download UI needs "async_loading" namespace and a random (type 4) GUID.
         String uuid = UUID.randomUUID().toString();
         ClientId clientId = new ClientId(namespace, uuid);
-        savePageLater(url, clientId);
+        savePageLater(url, clientId, true /* userRequested */);
     }
 
     /**
@@ -544,8 +560,8 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, String offlineUrl, Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
-    private native void nativeSavePageLater(
-            long nativeOfflinePageBridge, String url, String clientNamespace, String clientId);
+    private native void nativeSavePageLater(long nativeOfflinePageBridge, String url,
+            String clientNamespace, String clientId, boolean userRequested);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, Callback<Integer> callback, long[] offlineIds);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
