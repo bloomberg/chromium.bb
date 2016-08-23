@@ -109,10 +109,12 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
       return GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
           base::StringPrintf("#extension GL_OES_EGL_image_external : require\n"
+                             "%s"  // precision
                              "#define SamplerType samplerExternalOES\n"
                              "#define TextureLookup texture2D\n"
                              "#define TextureScale vec2(1.0, 1.0)\n"
                              "%s",  // main function
+                             is_gles ? "precision mediump float;\n" : "",
                              fragment_shader_main.c_str())
               .c_str());
     default:
