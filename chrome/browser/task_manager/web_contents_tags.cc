@@ -8,7 +8,6 @@
 #include "chrome/browser/task_manager/providers/web_contents/devtools_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/extension_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/guest_tag.h"
-#include "chrome/browser/task_manager/providers/web_contents/panel_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/prerender_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/tab_contents_tag.h"
@@ -18,7 +17,6 @@
 #include "extensions/browser/view_type_utils.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/ui/panels/panel.h"
 #include "extensions/browser/process_manager.h"
 #endif
 
@@ -51,8 +49,7 @@ bool IsExtensionWebContents(content::WebContents* contents) {
   extensions::ViewType view_type = extensions::GetViewType(contents);
   return (view_type != extensions::VIEW_TYPE_INVALID &&
           view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
-          view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS &&
-          view_type != extensions::VIEW_TYPE_PANEL);
+          view_type != extensions::VIEW_TYPE_BACKGROUND_CONTENTS);
 }
 
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -107,21 +104,6 @@ void WebContentsTags::CreateForTabContents(content::WebContents* web_contents) {
                    WebContentsTag::kTagKey);
   }
 #endif  // defined(ENABLE_TASK_MANAGER)
-}
-
-// static
-void WebContentsTags::CreateForPanel(content::WebContents* web_contents,
-                                     Panel* panel) {
-#if defined(ENABLE_TASK_MANAGER) && defined(ENABLE_EXTENSIONS)
-  DCHECK(panel);
-  DCHECK_EQ(web_contents, panel->GetWebContents());
-
-  if (!WebContentsTag::FromWebContents(web_contents)) {
-    TagWebContents(web_contents,
-                   new PanelTag(web_contents, panel),
-                   WebContentsTag::kTagKey);
-  }
-#endif  // defined(ENABLE_TASK_MANAGER) && defined(ENABLE_EXTENSIONS)
 }
 
 // static

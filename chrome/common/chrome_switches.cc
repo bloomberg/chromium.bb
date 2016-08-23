@@ -255,9 +255,6 @@ const char kDisableOfflineAutoReloadVisibleOnly[] =
 // Disable out-of-process V8 proxy resolver.
 const char kDisableOutOfProcessPac[]        = "disable-out-of-process-pac";
 
-// Disables panels (always on-top docked pop-up windows).
-const char kDisablePanels[]                 = "disable-panels";
-
 // Disables permission action reporting to Safe Browsing servers for opted in
 // users.
 const char kDisablePermissionActionReporting[] =
@@ -418,9 +415,6 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 // Only auto-reload error pages when the tab is visible.
 const char kEnableOfflineAutoReloadVisibleOnly[] =
     "enable-offline-auto-reload-visible-only";
-
-// Enables panels (always on-top docked pop-up windows).
-const char kEnablePanels[]                  = "enable-panels";
 
 // Enables permission action reporting to Safe Browsing servers for opted in
 // users.

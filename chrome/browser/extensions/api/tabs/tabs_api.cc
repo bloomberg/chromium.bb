@@ -48,7 +48,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -259,6 +258,14 @@ bool IsValidStateForWindowsCreateFunction(
   }
   NOTREACHED();
   return true;
+}
+
+bool IsHangoutsExtensionId(const std::string& extension_id) {
+  for (const char* id : extension_misc::kHangoutsExtensionIds) {
+    if (extension_id == id)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -506,10 +513,10 @@ bool WindowsCreateFunction::RunSync() {
   }
 
   Browser::Type window_type = Browser::TYPE_TABBED;
-  bool create_panel = false;
 
-  // panel_create_mode only applies if create_panel = true
-  PanelManager::CreateMode panel_create_mode = PanelManager::CREATE_AS_DOCKED;
+#if defined(USE_ASH)
+  bool create_ash_panel = false;
+#endif  // defined(USE_ASH)
 
   gfx::Rect window_bounds;
   bool focused = true;
@@ -524,23 +531,27 @@ bool WindowsCreateFunction::RunSync() {
         window_type = Browser::TYPE_POPUP;
         extension_id = extension()->id();
         break;
+
       case windows::CREATE_TYPE_PANEL:
       case windows::CREATE_TYPE_DETACHED_PANEL: {
         extension_id = extension()->id();
-        bool use_panels = PanelManager::ShouldUsePanels(extension_id);
-        if (use_panels) {
-          create_panel = true;
-#if !defined(USE_ASH)
-          // Non-ash supports both docked and detached panel types.
-          if (create_data->type == windows::CREATE_TYPE_DETACHED_PANEL) {
-            panel_create_mode = PanelManager::CREATE_AS_DETACHED;
-          }
-#endif  // USE_ASH
-        } else {
-          window_type = Browser::TYPE_POPUP;
+#if defined(USE_ASH)
+      // Only ChromeOS' version of chrome.windows.create would create a panel
+      // window. It is whitelisted to Hangouts extension for limited time until
+      // it transitioned to other types of windows.
+        if (IsHangoutsExtensionId(extension_id)) {
+          create_ash_panel = true;
+          break;
         }
+#endif  // defined(USE_ASH)
+        // Everything else gets POPUP instead of PANEL.
+        // TODO(dimich): Eventually, remove the 'panel' values form valid
+        // window.create parameters. However, this is a more breaking change, so
+        // for now simply treat it as a POPUP.
+        window_type = Browser::TYPE_POPUP;
         break;
       }
+
       case windows::CREATE_TYPE_NONE:
       case windows::CREATE_TYPE_NORMAL:
         break;
@@ -551,8 +562,7 @@ bool WindowsCreateFunction::RunSync() {
 
     // Initialize default window bounds according to window type.
     if (window_type == Browser::TYPE_TABBED ||
-        window_type == Browser::TYPE_POPUP ||
-        create_panel) {
+        window_type == Browser::TYPE_POPUP) {
       // Try to position the new browser relative to its originating
       // browser window. The call offsets the bounds by kWindowTilePixels
       // (defined in WindowSizer to be 10).
@@ -566,11 +576,6 @@ bool WindowsCreateFunction::RunSync() {
                                                       GetCurrentBrowser(),
                                                       &window_bounds,
                                                       &show_state);
-    }
-
-    if (create_panel && PanelManager::CREATE_AS_DETACHED == panel_create_mode) {
-      window_bounds.set_origin(
-          PanelManager::GetInstance()->GetDefaultDetachedPanelOrigin());
     }
 
     // Any part of the bounds can optionally be set by the caller.
@@ -592,11 +597,11 @@ bool WindowsCreateFunction::RunSync() {
     }
   }
 
-  if (create_panel) {
+#if defined(USE_ASH)
+  if (create_ash_panel) {
     if (urls.empty())
       urls.push_back(GURL(chrome::kChromeUINewTabURL));
 
-#if defined(USE_ASH)
     AppWindow::CreateParams create_params;
     create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
     create_params.window_key = extension_id;
@@ -614,31 +619,10 @@ bool WindowsCreateFunction::RunSync() {
       return false;
     SetResult(window_controller->CreateWindowValueWithTabs(extension()));
     return true;
-#else
-    std::string title =
-        web_app::GenerateApplicationNameFromExtensionId(extension_id);
-    content::SiteInstance* source_site_instance =
-        render_frame_host()->GetSiteInstance();
-    // Note: Panels ignore all but the first url provided.
-    Panel* panel = PanelManager::GetInstance()->CreatePanel(
-        title, window_profile, urls[0], source_site_instance, window_bounds,
-        panel_create_mode);
-
-    // Unlike other window types, Panels do not take focus by default.
-    if (!saw_focus_key || !focused)
-      panel->ShowInactive();
-    else
-      panel->Show();
-
-    SetResult(panel->extension_window_controller()->CreateWindowValueWithTabs(
-        extension()));
-    return true;
-#endif
   }
+#endif  // defined(USE_ASH)
 
   // Create a new BrowserWindow.
-  if (create_panel)
-    window_type = Browser::TYPE_POPUP;
   Browser::CreateParams create_params(window_type, window_profile);
   if (extension_id.empty()) {
     create_params.initial_bounds = window_bounds;
@@ -662,10 +646,6 @@ bool WindowsCreateFunction::RunSync() {
     navigate_params.source_site_instance =
         render_frame_host()->GetSiteInstance();
     chrome::Navigate(&navigate_params);
-    if (create_panel) {
-      TabHelper::FromWebContents(navigate_params.target_contents)
-          ->SetExtensionAppIconById(extension_id);
-    }
   }
 
   WebContents* contents = NULL;
@@ -687,10 +667,6 @@ bool WindowsCreateFunction::RunSync() {
     chrome::NewTab(new_window);
   }
   chrome::SelectNumberedTab(new_window, 0);
-
-  // Unlike other window types, Panels do not take focus by default.
-  if (!saw_focus_key && create_panel)
-    focused = false;
 
   if (focused)
     new_window->window()->Show();

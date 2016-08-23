@@ -493,34 +493,6 @@ enum NotificationType {
   // status. The source is the profile.
   NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
 
-  // Panels Notifications. The Panels are small browser windows near the bottom
-  // of the screen.
-  // Sent when all nonblocking bounds animations are finished across panels.
-  // Used only in unit testing.
-  NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-
-  // Sent when panel gains/loses focus.
-  // The source is the Panel, no details.
-  // Used only in unit testing.
-  NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-
-  // Sent when panel is minimized/restored/shows title only etc.
-  // The source is the Panel, no details.
-  NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
-
-  // Sent when panel app icon is loaded.
-  // Used only in unit testing.
-  NOTIFICATION_PANEL_APP_ICON_LOADED,
-
-  // Sent when panel collection get updated.
-  // The source is the PanelCollection, no details.
-  // Used only in coordination with notification balloons.
-  NOTIFICATION_PANEL_COLLECTION_UPDATED,
-
-  // Sent when panel is closed.
-  // The source is the Panel, no details.
-  NOTIFICATION_PANEL_CLOSED,
-
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the
   // error. The detail is a GlobalError object that has changed or NULL if

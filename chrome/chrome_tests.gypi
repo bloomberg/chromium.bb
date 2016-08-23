@@ -500,7 +500,6 @@
       'browser/ui/location_bar/location_bar_browsertest.cc',
       'browser/ui/login/login_handler_browsertest.cc',
       'browser/ui/native_window_tracker_browsertest.cc',
-      'browser/ui/panels/panel_extension_browsertest.cc',
       'browser/ui/passwords/manage_passwords_test.cc',
       'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
       'browser/ui/profile_error_browsertest.cc',
@@ -1097,22 +1096,11 @@
       'browser/ui/browser_focus_uitest.cc',
       'browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm',
       'browser/ui/cocoa/apps/quit_with_apps_controller_mac_interactive_uitest.mm',
-      'browser/ui/cocoa/panels/panel_cocoa_browsertest.mm',
       'browser/ui/exclusive_access/flash_fullscreen_interactive_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_interactive_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_state_interactive_browsertest.cc',
       'browser/ui/find_bar/find_bar_host_interactive_uitest.cc',
       'browser/ui/omnibox/omnibox_view_browsertest.cc',
-      'browser/ui/panels/base_panel_browser_test.cc',
-      'browser/ui/panels/base_panel_browser_test.h',
-      'browser/ui/panels/test_panel_active_state_observer.cc',
-      'browser/ui/panels/test_panel_active_state_observer.h',
-      'browser/ui/panels/test_panel_collection_squeeze_observer.cc',
-      'browser/ui/panels/test_panel_collection_squeeze_observer.h',
-      'browser/ui/panels/test_panel_mouse_watcher.cc',
-      'browser/ui/panels/test_panel_mouse_watcher.h',
-      'browser/ui/panels/test_panel_notification_observer.cc',
-      'browser/ui/panels/test_panel_notification_observer.h',
       'browser/ui/passwords/manage_passwords_test.cc',
       'browser/ui/passwords/manage_passwords_test.h',
       'browser/ui/search/instant_extended_interactive_uitest.cc',
@@ -1139,16 +1127,6 @@
       'test/base/view_event_test_platform_part_chromeos.cc',
       'test/base/view_event_test_platform_part_default.cc',
       'test/ppapi/ppapi_interactive_browsertest.cc',
-    ],
-    # Panels sources not related to UI toolkit. ChromeOS doesn't use panels.
-    'chrome_interactive_ui_test_panels_sources': [
-      'browser/ui/panels/detached_panel_browsertest.cc',
-      'browser/ui/panels/docked_panel_browsertest.cc',
-      'browser/ui/panels/panel_browsertest.cc',
-      'browser/ui/panels/panel_resize_browsertest.cc',
-    ],
-    'chrome_interactive_ui_test_panels_views_sources': [
-      'browser/ui/views/panels/panel_view_browsertest.cc',
     ],
      # Cross-platform views interactive tests ready for toolkit-views on Mac.
     'chrome_interactive_ui_test_views_sources': [
@@ -1276,13 +1254,6 @@
       # the individual failures, but each time I disable a test from these
       # suites, it seems like one or another starts timing out too.
       'browser/extensions/api/tabs/tabs_interactive_test.cc',
-    ],
-    'chrome_interactive_ui_test_non_linux_and_chromeos_sources': [
-      # TODO(port): Disable all the interactive panel tests on all linux
-      # platforms. These are badly busted on linux_aura, also time out
-      # when run under openbox. ChromeOS doesn't use this panels code.
-      'browser/ui/panels/panel_drag_browsertest.cc',
-      'browser/ui/panels/stacked_panel_browsertest.cc',
     ],
     'chrome_automation_client_lib_sources': [
       'test/chromedriver/chrome/adb.h',
@@ -1869,17 +1840,6 @@
             # Use only the _chromeos version on ChromeOS.
             'test/base/view_event_test_platform_part_default.cc',
           ],
-        }, {  # Non-ChromeOS.
-          # ChromeOS doesn't use panels, everybody else does.
-          'sources': [ '<@(chrome_interactive_ui_test_panels_sources)' ],
-          'conditions': [
-            # TODO(tapted): Include on mac when views panels are ported.
-            [ 'toolkit_views==1 and OS != "mac"', {
-              'sources': [
-                '<@(chrome_interactive_ui_test_panels_views_sources)',
-              ],
-            }]
-          ],
         }],
         ['chromeos==1 and branding=="Chrome"', {
           'sources!': [
@@ -2459,8 +2419,6 @@
             'browser/service_process/service_process_control_browsertest.cc',
             # bookmark sign in promo not used on chromeos
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc',
-            # chromeos does not use cross-platform panels
-            'browser/ui/panels/panel_extension_browsertest.cc',
             # inline login UI is disabled on chromeos
             'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
             # chromeos does not use the desktop user manager

@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -14,10 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,7 +25,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -37,11 +33,6 @@
 
 #if defined(USE_ASH)
 #include "extensions/browser/app_window/app_window_registry.h"
-#endif
-
-#if defined(USE_ASH) && defined(OS_CHROMEOS)
-// TODO(stevenjb): Figure out the correct behavior for Ash + Win
-#define USE_ASH_PANELS
 #endif
 
 using content::OpenURLParams;
@@ -59,22 +50,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-int GetPanelCount(Browser* browser) {
-#if defined(USE_ASH_PANELS)
-  return static_cast<int>(extensions::AppWindowRegistry::Get(
-      browser->profile())->app_windows().size());
-#else
-  return PanelManager::GetInstance()->num_panels();
-#endif
-}
-
 bool WaitForTabsAndPopups(Browser* browser,
                           int num_tabs,
-                          int num_popups,
-                          int num_panels) {
+                          int num_popups) {
   SCOPED_TRACE(
-      base::StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d, panels:%d",
-                         num_tabs, num_popups, num_panels));
+      base::StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d",
+                         num_tabs, num_popups));
   // We start with one tab and one browser already open.
   ++num_tabs;
   size_t num_browsers = static_cast<size_t>(num_popups) + 1;
@@ -83,8 +64,7 @@ bool WaitForTabsAndPopups(Browser* browser,
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
   while (base::TimeTicks::Now() < end_time) {
     if (chrome::GetBrowserCount(browser->profile()) == num_browsers &&
-        browser->tab_strip_model()->count() == num_tabs &&
-        GetPanelCount(browser) == num_panels)
+        browser->tab_strip_model()->count() == num_tabs)
       break;
 
     content::RunAllPendingInMessageLoop();
@@ -92,7 +72,6 @@ bool WaitForTabsAndPopups(Browser* browser,
 
   EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser->profile()));
   EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
-  EXPECT_EQ(num_panels, GetPanelCount(browser));
 
   int num_popups_seen = 0;
   for (auto* b : *BrowserList::GetInstance()) {
@@ -106,7 +85,6 @@ bool WaitForTabsAndPopups(Browser* browser,
 
   return ((num_browsers == chrome::GetBrowserCount(browser->profile())) &&
           (num_tabs == browser->tab_strip_model()->count()) &&
-          (num_panels == GetPanelCount(browser)) &&
           (num_popups == num_popups_seen));
 }
 
@@ -116,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("browser_is_app")));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 2, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 2));
 
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser())
@@ -133,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupDefault) {
 
   const int num_tabs = 1;
   const int num_popups = 0;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupIframe) {
@@ -146,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupIframe) {
 
   const int num_tabs = 1;
   const int num_popups = 0;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
@@ -157,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupLarge) {
   // On other systems this should open a new popup window.
   const int num_tabs = 0;
   const int num_popups = 1;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
@@ -169,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpenPopupSmall) {
   // On other systems this should open a new popup window.
   const int num_tabs = 0;
   const int num_popups = 1;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), num_tabs, num_popups));
 }
 
 // Disabled on Windows. Often times out or fails: crbug.com/177530
@@ -186,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_PopupBlockingExtension) {
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_blocking")
       .AppendASCII("extension")));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 5, 3, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 5, 3));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
@@ -220,241 +198,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingHostedApp) {
       open_popup, Referrer(), NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_TYPED, false));
 
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 3, 1, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 3, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
   ASSERT_TRUE(RunExtensionTest("window_open/argument_overflow")) << message_;
-}
-
-class WindowOpenPanelDisabledTest : public ExtensionApiTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisablePanels);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, WindowOpenPanelNotEnabled) {
-  ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
-}
-
-class WindowOpenPanelTest : public ExtensionApiTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePanels);
-  }
-};
-
-#if defined(USE_ASH_PANELS)
-// On Ash, this currently fails because we're currently opening new panel
-// windows as popup windows instead.
-#define MAYBE_WindowOpenPanel DISABLED_WindowOpenPanel
-#else
-#define MAYBE_WindowOpenPanel WindowOpenPanel
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
-  ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
-}
-
-// Test verifying that panel-subframe can use window.open to find
-// background-subframe (see the picture below).  In other words, the test
-// verifies that the everything on the picture below stays in the same
-// BrowsingInstance.
-//
-// +-extension background page---+    +-panel-----------------------------+
-// |                             |    |                                   |
-// | chrome.windows.create(      |    | +-panel-subframe----------------+ |
-// |   'type':'panel') -------------> | | (foo.com)                     | |
-// |                             |    | |                               | |
-// |   +-background-subframe-+   |    | | w = window.open(...,          | |
-// |   | (foo.com)           |   |    | |   "background-subframe-name") | |
-// |   |                     | <--------------/                         | |
-// |   +---------------------+   |    | +-------------------------------+ |
-// |                             |    |                                   |
-// +-----------------------------+    +-----------------------------------+
-//
-// See also crbug.com/568357 for more info / context.
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, BrowsingInstanceTest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("window_open/panel_browsing_instance", "panel"))
-      << message_;
-}
-
-// Similar to the previous test, but for when panels are disabled.
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, BrowsingInstanceTest) {
-  host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("window_open/panel_browsing_instance", "popup"))
-      << message_;
-}
-
-#if defined(USE_ASH_PANELS) || defined(OS_LINUX)
-// On Ash, this currently fails because we're currently opening new panel
-// windows as popup windows instead.
-// We're also failing on Linux-aura due to the panel is not opened in the
-// right origin.
-#define MAYBE_WindowOpenPanelDetached DISABLED_WindowOpenPanelDetached
-#else
-#define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
-  ASSERT_TRUE(RunExtensionTest("window_open/panel_detached")) << message_;
-}
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): Bring up ash http://crbug.com/300084
-#define MAYBE_CloseNonExtensionPanelsOnUninstall \
-  DISABLED_CloseNonExtensionPanelsOnUninstall
-#else
-#define MAYBE_CloseNonExtensionPanelsOnUninstall \
-  CloseNonExtensionPanelsOnUninstall
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
-                       MAYBE_CloseNonExtensionPanelsOnUninstall) {
-#if defined(USE_ASH_PANELS)
-  // On Ash, new panel windows open as popup windows instead.
-  int num_popups, num_panels;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePanels)) {
-    num_popups = 2;
-    num_panels = 2;
-  } else {
-    num_popups = 4;
-    num_panels = 0;
-  }
-#else
-  int num_popups = 2;
-  int num_panels = 2;
-#endif
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Setup listeners to wait on strings we expect the extension pages to send.
-  std::vector<std::string> test_strings;
-  test_strings.push_back("content_tab");
-  if (num_panels)
-    test_strings.push_back("content_panel");
-  test_strings.push_back("content_popup");
-
-  ScopedVector<ExtensionTestMessageListener> listeners;
-  for (size_t i = 0; i < test_strings.size(); ++i) {
-    listeners.push_back(
-        new ExtensionTestMessageListener(test_strings[i], false));
-  }
-
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("window_open").AppendASCII(
-          "close_panels_on_uninstall"));
-  ASSERT_TRUE(extension);
-
-  // Two tabs. One in extension domain and one in non-extension domain.
-  // Two popups - one in extension domain and one in non-extension domain.
-  // Two panels - one in extension domain and one in non-extension domain.
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 2, num_popups, num_panels));
-
-  // Wait on test messages to make sure the pages loaded.
-  for (size_t i = 0; i < listeners.size(); ++i)
-    ASSERT_TRUE(listeners[i]->WaitUntilSatisfied());
-
-  UninstallExtension(extension->id());
-
-  // Wait for the tabs and popups in non-extension domain to stay open.
-  // Expect everything else, including panels, to close.
-  num_popups -= 1;
-#if defined(USE_ASH_PANELS)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePanels)) {
-    // On Ash, new panel windows open as popup windows instead, so there are 2
-    // extension domain popups that will close (instead of 1 popup on non-Ash).
-    num_popups -= 1;
-  }
-#endif
-#if defined(USE_ASH)
-#if !defined(OS_WIN)
-  // On linux ash we close all popup applications when closing its extension.
-  num_popups = 0;
-#endif
-#endif
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 1, num_popups, 0));
-}
-
-// This test isn't applicable on Chrome OS, which automatically reloads crashed
-// pages.
-#if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
-#if defined(USE_ASH_PANELS)
-  // On Ash, new panel windows open as popup windows instead.
-  int num_popups = 4;
-  int num_panels = 0;
-#else
-  int num_popups = 2;
-  int num_panels = 2;
-#endif
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Setup listeners to wait on strings we expect the extension pages to send.
-  std::vector<std::string> test_strings;
-  test_strings.push_back("content_tab");
-  if (num_panels)
-    test_strings.push_back("content_panel");
-  test_strings.push_back("content_popup");
-
-  ScopedVector<ExtensionTestMessageListener> listeners;
-  for (size_t i = 0; i < test_strings.size(); ++i) {
-    listeners.push_back(
-        new ExtensionTestMessageListener(test_strings[i], false));
-  }
-
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("window_open").AppendASCII(
-          "close_panels_on_uninstall"));
-  ASSERT_TRUE(extension);
-
-  // Two tabs. One in extension domain and one in non-extension domain.
-  // Two popups - one in extension domain and one in non-extension domain.
-  // Two panels - one in extension domain and one in non-extension domain.
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 2, num_popups, num_panels));
-
-  // Wait on test messages to make sure the pages loaded.
-  for (size_t i = 0; i < listeners.size(); ++i)
-    ASSERT_TRUE(listeners[i]->WaitUntilSatisfied());
-
-  // Crash the extension.
-  extensions::ExtensionHost* extension_host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(extension->id());
-  ASSERT_TRUE(extension_host);
-  extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED,
-                                                  false);
-  WaitForExtensionCrash(extension->id());
-
-  // Only expect panels to close. The rest stay open to show a sad-tab.
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 2, num_popups, 0));
-}
-#endif  // !defined(OS_CHROMEOS)
-
-#if defined(USE_ASH_PANELS)
-// This test is not applicable on Ash. The modified window.open behavior only
-// applies to non-Ash panel windows.
-#define MAYBE_WindowOpenFromPanel DISABLED_WindowOpenFromPanel
-#else
-#define MAYBE_WindowOpenFromPanel WindowOpenFromPanel
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenFromPanel) {
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  // Load the extension that will open a panel which then calls window.open.
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("window_open").
-                            AppendASCII("panel_window_open")));
-
-  // Expect one panel (opened by extension) and one tab (from the panel calling
-  // window.open). Panels modify the WindowOpenDisposition in window.open
-  // to always open in a tab.
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 1, 0, 1));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
@@ -471,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
 // chrome.windows.create match the creation parameters. See crbug.com/173831.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WindowOpenSized) {
   ASSERT_TRUE(RunExtensionTest("window_open/window_size")) << message_;
-  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 1, 0));
+  EXPECT_TRUE(WaitForTabsAndPopups(browser(), 0, 1));
 }
 
 // Tests that an extension page can call window.open to an extension URL and

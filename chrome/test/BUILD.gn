@@ -537,28 +537,6 @@ if (!is_android) {
           "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         ]
       }
-    } else {
-      # ChromeOS doesn't use panels, everybody else does.
-      sources += rebase_path(
-              chrome_tests_gypi_values.chrome_interactive_ui_test_panels_sources,
-              ".",
-              "//chrome")
-
-      # TODO(tapted): Include on mac when views panels are ported.
-      if (toolkit_views && !is_mac) {
-        sources += rebase_path(
-                chrome_tests_gypi_values.chrome_interactive_ui_test_panels_views_sources,
-                ".",
-                "//chrome")
-      }
-    }
-
-    if (!is_linux) {
-      # Non-Linux platforms (Linux includes ChromeOS here).
-      sources += rebase_path(
-              chrome_tests_gypi_values.chrome_interactive_ui_test_non_linux_and_chromeos_sources,
-              ".",
-              "//chrome")
     }
 
     if (is_win) {
@@ -1214,9 +1192,6 @@ test("browser_tests") {
         # chromeos does not support profile list avatar menu
         "../browser/profiles/profile_list_desktop_browsertest.cc",
         "../browser/service_process/service_process_control_browsertest.cc",
-
-        # chromeos does not use cross-platform panels
-        "../browser/ui/panels/panel_extension_browsertest.cc",
 
         # inline login UI is disabled on chromeos
         "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",

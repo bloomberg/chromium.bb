@@ -188,18 +188,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingInterstitial) {
                                   kFlagLoadAsComponent)) << message_;
 }
 
-// Tests connecting from a panel to its extension.
-class PanelMessagingTest : public ExtensionApiTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePanels);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(PanelMessagingTest, MessagingPanel) {
-  ASSERT_TRUE(RunExtensionTest("messaging/connect_panel")) << message_;
-}
-
 // XXX(kalman): All web messaging tests disabled on windows due to extreme
 // flakiness. See http://crbug.com/350517.
 #if !defined(OS_WIN)

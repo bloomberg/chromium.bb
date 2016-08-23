@@ -60,13 +60,6 @@ chrome.test.runTests([
         chrome.test.callbackPass(checkFocused)
     );
   },
-  function defaultUnfocusedPanel() {
-    resetTest(false);
-    chrome.windows.create(
-        { 'url': 'blank.html', 'type': 'panel' },
-        chrome.test.callbackPass(checkUnfocused)
-    );
-  },
   function withFocus() {
     resetTest(true);
     chrome.windows.create(
@@ -81,13 +74,6 @@ chrome.test.runTests([
         chrome.test.callbackPass(checkFocused)
     );
   },
-  function withFocusPanel() {
-    resetTest(true);
-    chrome.windows.create(
-        { 'url': 'blank.html', 'focused': true, 'type': 'panel' },
-        chrome.test.callbackPass(checkFocused)
-    );
-  },
   function withoutFocus() {
     resetTest(false);
     chrome.windows.create(
@@ -99,13 +85,6 @@ chrome.test.runTests([
     resetTest(false);
     chrome.windows.create(
         { 'url': 'blank.html', 'focused': false, 'type': 'popup' },
-        chrome.test.callbackPass(checkUnfocused)
-    );
-  },
-  function withoutFocusPanel() {
-    resetTest(false);
-    chrome.windows.create(
-        { 'url': 'blank.html', 'focused': false, 'type': 'panel' },
         chrome.test.callbackPass(checkUnfocused)
     );
   }
