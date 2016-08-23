@@ -28,9 +28,11 @@ class BluetoothChooserController : public ChooserController {
   ~BluetoothChooserController() override;
 
   // ChooserController:
+  bool ShouldShowIconBeforeText() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
+  int GetSignalStrengthLevel(size_t index) const override;
   base::string16 GetOption(size_t index) const override;
   void RefreshOptions() override;
   base::string16 GetStatus() const override;
@@ -48,12 +50,13 @@ class BluetoothChooserController : public ChooserController {
   void OnDiscoveryStateChanged(content::BluetoothChooser::DiscoveryState state);
 
   // Shows a new device in the chooser or updates its information.
+  // The range of |signal_strength_level| is -1 to 4 inclusively.
   void AddOrUpdateDevice(const std::string& device_id,
                          bool should_update_name,
                          const base::string16& device_name,
                          bool is_gatt_connected,
                          bool is_paired,
-                         const int8_t* rssi);
+                         int signal_strength_level);
 
   // Tells the chooser that a device is no longer available.
   void RemoveDevice(const std::string& device_id);
@@ -63,11 +66,16 @@ class BluetoothChooserController : public ChooserController {
   void ResetEventHandler();
 
  private:
+  struct BluetoothDeviceInfo {
+    std::string id;
+    int signal_strength_level;
+  };
+
   // Clears |device_names_and_ids_| and |device_name_counts_|. Called when
   // Bluetooth adapter is turned on or off, or when re-scan happens.
   void ClearAllDevices();
 
-  std::vector<std::string> device_ids_;
+  std::vector<BluetoothDeviceInfo> devices_;
   std::unordered_map<std::string, base::string16> device_id_to_name_map_;
   // Maps from device name to number of devices with that name.
   std::unordered_map<base::string16, int> device_name_counts_;

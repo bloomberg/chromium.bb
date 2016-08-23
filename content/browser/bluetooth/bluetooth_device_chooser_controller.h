@@ -78,6 +78,10 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
   // that the adapter changed states.
   void AdapterPoweredChanged(bool powered);
 
+  // Received Signal Strength Indicator (RSSI) is a measurement of the power
+  // present in a received radio signal.
+  static int CalculateSignalStrengthLevel(int8_t rssi);
+
   // After this method is called any new instance of
   // BluetoothDeviceChooserController will have a scan duration of 0.
   static void SetTestScanDurationForTesting();

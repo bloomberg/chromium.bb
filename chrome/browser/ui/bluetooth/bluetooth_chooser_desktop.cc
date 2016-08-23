@@ -34,10 +34,10 @@ void BluetoothChooserDesktop::AddOrUpdateDevice(
     const base::string16& device_name,
     bool is_gatt_connected,
     bool is_paired,
-    const int8_t* rssi) {
+    int signal_strength_level) {
   bluetooth_chooser_controller_->AddOrUpdateDevice(
       device_id, should_update_name, device_name, is_gatt_connected, is_paired,
-      rssi);
+      signal_strength_level);
 }
 
 void BluetoothChooserDesktop::RemoveDevice(const std::string& device_id) {

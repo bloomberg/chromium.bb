@@ -390,6 +390,7 @@
       'browser/blob_storage/blob_url_request_job_unittest.cc',
       'browser/bluetooth/bluetooth_allowed_devices_map_unittest.cc',
       'browser/bluetooth/bluetooth_blacklist_unittest.cc',
+      'browser/bluetooth/bluetooth_device_chooser_controller_unittest.cc',
       'browser/bluetooth/frame_connected_bluetooth_devices_unittest.cc',
       'browser/browser_associated_interface_unittest.cc',
       'browser/browser_thread_unittest.cc',

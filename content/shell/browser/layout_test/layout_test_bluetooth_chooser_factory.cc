@@ -66,7 +66,7 @@ class LayoutTestBluetoothChooserFactory::Chooser : public BluetoothChooser {
                          const base::string16& device_name,
                          bool is_gatt_connected,
                          bool is_paired,
-                         const int8_t* rssi) override {
+                         int signal_strength_level) override {
     CheckFactory();
     std::string event = "add-device(";
     event += base::UTF16ToUTF8(device_name);

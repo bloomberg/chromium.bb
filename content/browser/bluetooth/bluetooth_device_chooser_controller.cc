@@ -26,6 +26,17 @@
 
 using device::BluetoothUUID;
 
+namespace {
+
+// Anything worse than or equal to this will show 0 bars.
+const int kMinRSSI = -100;
+// Anything better than or equal to this will show the maximum bars.
+const int kMaxRSSI = -55;
+// Number of RSSI levels used in the signal strength image.
+const int kNumSignalStrengthLevels = 5;
+
+}  // namespace
+
 namespace content {
 
 bool BluetoothDeviceChooserController::use_test_scan_duration_ = false;
@@ -340,13 +351,13 @@ void BluetoothDeviceChooserController::GetDevice(
 void BluetoothDeviceChooserController::AddFilteredDevice(
     const device::BluetoothDevice& device) {
   if (chooser_.get() && MatchesFilters(device, options_->filters)) {
+    base::Optional<int8_t> rssi = device.GetInquiryRSSI();
     chooser_->AddOrUpdateDevice(
         device.GetAddress(), !!device.GetName() /* should_update_name */,
         device.GetNameForDisplay(),
         // TODO(http://crbug.com/543466): Show connection and paired status.
         false /* is_gatt_connected */, false /* is_paired */,
-        // TODO(http://crbug.com/629689): Add signal strength indicator.
-        nullptr /* rssi */);
+        rssi ? CalculateSignalStrengthLevel(rssi.value()) : -1);
   }
 }
 
@@ -368,6 +379,19 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
   if (!powered) {
     discovery_session_timer_.Stop();
   }
+}
+
+int BluetoothDeviceChooserController::CalculateSignalStrengthLevel(
+    int8_t rssi) {
+  if (rssi <= kMinRSSI)
+    return 0;
+
+  if (rssi >= kMaxRSSI)
+    return kNumSignalStrengthLevels - 1;
+
+  double input_range = kMaxRSSI - kMinRSSI;
+  double output_range = kNumSignalStrengthLevels - 1;
+  return static_cast<int>((rssi - kMinRSSI) * output_range / input_range);
 }
 
 void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {

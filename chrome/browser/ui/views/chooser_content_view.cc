@@ -6,7 +6,10 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
@@ -21,6 +24,11 @@ const int kChooserHeight = 220;
 
 const int kThrobberDiameter = 24;
 
+// The lookup table for signal strength level image.
+const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
+                                             IDR_SIGNAL_2_BAR, IDR_SIGNAL_3_BAR,
+                                             IDR_SIGNAL_4_BAR};
+
 }  // namespace
 
 ChooserContentView::ChooserContentView(
@@ -30,8 +38,11 @@ ChooserContentView::ChooserContentView(
   chooser_controller_->set_view(this);
   std::vector<ui::TableColumn> table_columns;
   table_columns.push_back(ui::TableColumn());
-  table_view_ =
-      new views::TableView(this, table_columns, views::TEXT_ONLY, true);
+  table_view_ = new views::TableView(
+      this, table_columns,
+      chooser_controller_->ShouldShowIconBeforeText() ? views::ICON_AND_TEXT
+                                                      : views::TEXT_ONLY,
+      true /* single_selection */);
   table_view_->set_select_on_remove(false);
   table_view_->SetObserver(table_view_observer);
   table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
@@ -81,6 +92,30 @@ base::string16 ChooserContentView::GetText(int row, int column_id) {
 }
 
 void ChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
+
+gfx::ImageSkia ChooserContentView::GetIcon(int row) {
+  DCHECK(chooser_controller_->ShouldShowIconBeforeText());
+
+  size_t num_options = chooser_controller_->NumOptions();
+  if (num_options == 0) {
+    DCHECK_EQ(0, row);
+    return gfx::ImageSkia();
+  }
+
+  DCHECK_GE(row, 0);
+  DCHECK_LT(row, base::checked_cast<int>(num_options));
+
+  int level = chooser_controller_->GetSignalStrengthLevel(row);
+
+  if (level == -1)
+    return gfx::ImageSkia();
+
+  DCHECK_GE(level, 0);
+  DCHECK_LT(level, static_cast<int>(arraysize(kSignalStrengthLevelImageIds)));
+
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      kSignalStrengthLevelImageIds[level]);
+}
 
 void ChooserContentView::OnOptionsInitialized() {
   table_view_->OnModelChanged();

@@ -42,6 +42,10 @@ BluetoothChooserController::BluetoothChooserController(
 
 BluetoothChooserController::~BluetoothChooserController() {}
 
+bool BluetoothChooserController::ShouldShowIconBeforeText() const {
+  return true;
+}
+
 base::string16 BluetoothChooserController::GetNoOptionsText() const {
   return no_devices_text_;
 }
@@ -52,12 +56,16 @@ base::string16 BluetoothChooserController::GetOkButtonLabel() const {
 }
 
 size_t BluetoothChooserController::NumOptions() const {
-  return device_ids_.size();
+  return devices_.size();
+}
+
+int BluetoothChooserController::GetSignalStrengthLevel(size_t index) const {
+  return devices_[index].signal_strength_level;
 }
 
 base::string16 BluetoothChooserController::GetOption(size_t index) const {
-  DCHECK_LT(index, device_ids_.size());
-  const std::string& device_id = device_ids_[index];
+  DCHECK_LT(index, devices_.size());
+  const std::string& device_id = devices_[index].id;
   const auto& device_name_it = device_id_to_name_map_.find(device_id);
   DCHECK(device_name_it != device_id_to_name_map_.end());
   const auto& it = device_name_counts_.find(device_name_it->second);
@@ -87,9 +95,9 @@ void BluetoothChooserController::Select(size_t index) {
             BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID);
     return;
   }
-  DCHECK_LT(index, device_ids_.size());
+  DCHECK_LT(index, devices_.size());
   event_handler_.Run(content::BluetoothChooser::Event::SELECTED,
-                     device_ids_[index]);
+                     devices_[index].id);
 }
 
 void BluetoothChooserController::Cancel() {
@@ -171,7 +179,7 @@ void BluetoothChooserController::AddOrUpdateDevice(
     const base::string16& device_name,
     bool is_gatt_connected,
     bool is_paired,
-    const int8_t* rssi) {
+    int signal_strength_level) {
   auto name_it = device_id_to_name_map_.find(device_id);
   if (name_it != device_id_to_name_map_.end()) {
     if (should_update_name) {
@@ -188,22 +196,30 @@ void BluetoothChooserController::AddOrUpdateDevice(
       ++device_name_counts_[device_name];
     }
 
-    size_t index = std::distance(
-        device_ids_.begin(),
-        std::find(device_ids_.begin(), device_ids_.end(), device_id));
-    DCHECK_NE(device_ids_.size(), index);
+    auto device_it =
+        std::find_if(devices_.begin(), devices_.end(),
+                     [&device_id](const BluetoothDeviceInfo& device) {
+                       return device.id == device_id;
+                     });
+
+    DCHECK(device_it != devices_.end());
     // http://crbug.com/543466 Update connection and paired status
-    // http://crbug.com/629689 Update RSSI.
+
+    // When Bluetooth device scanning stops, the |signal_strength_level|
+    // is -1, and in this case, should still use the previously stored
+    // signal strength level value.
+    if (signal_strength_level != -1)
+      device_it->signal_strength_level = signal_strength_level;
     if (view())
-      view()->OnOptionUpdated(index);
+      view()->OnOptionUpdated(device_it - devices_.begin());
     return;
   }
 
-  device_ids_.push_back(device_id);
+  devices_.push_back({device_id, signal_strength_level});
   device_id_to_name_map_.insert({device_id, device_name});
   ++device_name_counts_[device_name];
   if (view())
-    view()->OnOptionAdded(device_ids_.size() - 1);
+    view()->OnOptionAdded(devices_.size() - 1);
 }
 
 void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
@@ -211,14 +227,14 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
   if (name_it == device_id_to_name_map_.end())
     return;
 
-  size_t index = 0;
-  for (const auto& saved_device_id : device_ids_) {
-    if (saved_device_id != device_id) {
-      ++index;
-      continue;
-    }
+  auto device_it =
+      std::find_if(devices_.begin(), devices_.end(),
+                   [&device_id](const BluetoothDeviceInfo& device) {
+                     return device.id == device_id;
+                   });
 
-    device_ids_.erase(device_ids_.begin() + index);
+  if (device_it != devices_.end()) {
+    devices_.erase(device_it);
 
     const auto& it = device_name_counts_.find(name_it->second);
     DCHECK(it != device_name_counts_.end());
@@ -230,8 +246,7 @@ void BluetoothChooserController::RemoveDevice(const std::string& device_id) {
     device_id_to_name_map_.erase(name_it);
 
     if (view())
-      view()->OnOptionRemoved(index);
-    return;
+      view()->OnOptionRemoved(device_it - devices_.begin());
   }
 }
 
@@ -240,7 +255,7 @@ void BluetoothChooserController::ResetEventHandler() {
 }
 
 void BluetoothChooserController::ClearAllDevices() {
-  device_ids_.clear();
+  devices_.clear();
   device_id_to_name_map_.clear();
   device_name_counts_.clear();
 }

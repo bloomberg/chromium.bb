@@ -62,6 +62,10 @@ class ChooserController {
   // Returns the text to be displayed in the chooser title.
   base::string16 GetTitle() const;
 
+  // Returns if the chooser needs to show an icon before the text.
+  // For WebBluetooth, it is a signal strength icon.
+  virtual bool ShouldShowIconBeforeText() const;
+
   // Returns the text to be displayed in the chooser when there are no options.
   virtual base::string16 GetNoOptionsText() const = 0;
 
@@ -72,6 +76,11 @@ class ChooserController {
   // the number of USB/Bluetooth device names which are listed in the
   // chooser so that users can grant permission.
   virtual size_t NumOptions() const = 0;
+
+  // The signal strength level (0-4 inclusive) of the device at |index|, which
+  // is used to retrieve the corresponding icon to be displayed before the
+  // text. Returns -1 if no icon should be shown.
+  virtual int GetSignalStrengthLevel(size_t index) const;
 
   // The |index|th option string which is listed in the chooser.
   virtual base::string16 GetOption(size_t index) const = 0;

@@ -42,6 +42,7 @@ class ChooserContentView : public views::View,
   int RowCount() override;
   base::string16 GetText(int row, int column_id) override;
   void SetObserver(ui::TableModelObserver* observer) override;
+  gfx::ImageSkia GetIcon(int row) override;
 
   // ChooserController::View:
   void OnOptionsInitialized() override;

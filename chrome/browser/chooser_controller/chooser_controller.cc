@@ -50,3 +50,11 @@ base::string16 ChooserController::GetTitle() const {
       url_formatter::FormatOriginForSecurityDisplay(
           origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
+
+bool ChooserController::ShouldShowIconBeforeText() const {
+  return false;
+}
+
+int ChooserController::GetSignalStrengthLevel(size_t index) const {
+  return -1;
+}

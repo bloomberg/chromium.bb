@@ -51,7 +51,7 @@ void LayoutTestFirstDeviceBluetoothChooser::AddOrUpdateDevice(
     const base::string16& deviceName,
     bool is_gatt_connected,
     bool is_paired,
-    const int8_t* rssi) {
+    int signal_strength_level) {
   event_handler_.Run(Event::SELECTED, device_id);
 }
 

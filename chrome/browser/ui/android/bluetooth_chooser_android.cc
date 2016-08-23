@@ -98,7 +98,7 @@ void BluetoothChooserAndroid::AddOrUpdateDevice(
     const base::string16& device_name,
     bool is_gatt_connected,
     bool is_paired,
-    const int8_t* rssi) {
+    int signal_strength_level) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_device_id =
       ConvertUTF8ToJavaString(env, device_id);

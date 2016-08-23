@@ -34,7 +34,7 @@ class ChromeExtensionBluetoothChooser : public content::BluetoothChooser {
                          const base::string16& device_name,
                          bool is_gatt_connected,
                          bool is_paired,
-                         const int8_t* rssi) override;
+                         int signal_strength_level) override;
   void RemoveDevice(const std::string& device_id) override;
 
  private:

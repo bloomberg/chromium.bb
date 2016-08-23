@@ -74,14 +74,15 @@ class CONTENT_EXPORT BluetoothChooser {
   // Sometimes when a Bluetooth device stops advertising, the |device_name| can
   // be invalid, and in that case |should_update_name| will be set false.
   //
-  // Passing nullptr for |rssi| means that the device doesn't have RSSI which
-  // happens when the device is already connected.
+  // The range of |signal_strength_level| is -1 to 4 inclusively.
+  // -1 means that the device doesn't have RSSI which happens when the device
+  // is already connected.
   virtual void AddOrUpdateDevice(const std::string& device_id,
                                  bool should_update_name,
                                  const base::string16& device_name,
                                  bool is_gatt_connected,
                                  bool is_paired,
-                                 const int8_t* rssi) {}
+                                 int signal_strength_level) {}
 
   // Tells the chooser that a device is no longer available. The chooser should
   // not call DeviceSelected() for a device that's been removed.
