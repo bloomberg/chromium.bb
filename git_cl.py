@@ -176,10 +176,10 @@ def _git_get_branch_config_value(key, default=None, value_type=str,
     return default
 
   args = ['config']
-  if value_type == int:
-    args.append('--int')
-  elif value_type == bool:
+  if value_type == bool:
     args.append('--bool')
+  # git config also has --int, but apparently git config suffers from integer
+  # overflows (http://crbug.com/640115), so don't use it.
   args.append(_git_branch_config_key(branch, key))
   code, out = RunGitWithCode(args)
   if code == 0:
@@ -208,10 +208,9 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
   elif isinstance(value, bool):
     args.append('--bool')
     value = str(value).lower()
-  elif isinstance(value, int):
-    args.append('--int')
-    value = str(value)
   else:
+    # git config also has --int, but apparently git config suffers from integer
+    # overflows (http://crbug.com/640115), so don't use it.
     value = str(value)
   args.append(_git_branch_config_key(branch, key))
   if value is not None:
