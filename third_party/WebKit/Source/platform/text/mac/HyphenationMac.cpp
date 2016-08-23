@@ -6,6 +6,7 @@
 
 #include "wtf/RetainPtr.h"
 #include "wtf/text/StringView.h"
+#include <CoreFoundation/CoreFoundation.h>
 
 namespace blink {
 
