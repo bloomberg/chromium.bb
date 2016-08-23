@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -46,8 +47,20 @@ SkIRect RectToSkIRect(const Rect& rect) {
   return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+// Produces a non-negative integer for the difference between min and max,
+// yielding 0 if it would be negative and INT_MAX if it would overflow.
+// This yields a length such that min+length is in range as well.
+static int ClampLengthFromRange(int min, int max) {
+  if (min > max)
+    return 0;
+  return (base::CheckedNumeric<int>(max) - min)
+      .ValueOrDefault(std::numeric_limits<int>::max());
+}
+
 Rect SkIRectToRect(const SkIRect& rect) {
-  return Rect(rect.x(), rect.y(), rect.width(), rect.height());
+  return Rect(rect.x(), rect.y(),
+              ClampLengthFromRange(rect.left(), rect.right()),
+              ClampLengthFromRange(rect.top(), rect.bottom()));
 }
 
 SkRect RectFToSkRect(const RectF& rect) {

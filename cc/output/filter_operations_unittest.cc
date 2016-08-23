@@ -6,9 +6,11 @@
 
 #include "cc/output/filter_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
+#include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -273,6 +275,23 @@ TEST(FilterOperationsTest, MapRectReverseDropShadowDoesNotContract) {
   ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 0, 0));
   EXPECT_EQ(gfx::Rect(-3, -8, 13, 18),
             ops.MapRectReverse(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
+}
+
+TEST(FilterOperationsTest, MapRectTypeConversionDoesNotOverflow) {
+  // Must be bigger than half of the positive range so that the width/height
+  // overflow happens, but small enough that there aren't other issues before
+  // the overflow would happen.
+  SkScalar big_offset =
+      SkFloatToScalar(std::numeric_limits<int>::max()) * 2 / 3;
+
+  FilterOperations ops;
+  ops.Append(FilterOperation::CreateReferenceFilter(SkXfermodeImageFilter::Make(
+      SkXfermode::Make(SkXfermode::kSrcOver_Mode),
+      SkOffsetImageFilter::Make(-big_offset, -big_offset, nullptr),
+      SkOffsetImageFilter::Make(big_offset, big_offset, nullptr), nullptr)));
+  gfx::Rect rect = ops.MapRect(gfx::Rect(-10, -10, 20, 20), SkMatrix::I());
+  EXPECT_GT(rect.width(), 0);
+  EXPECT_GT(rect.height(), 0);
 }
 
 #define SAVE_RESTORE_AMOUNT(filter_name, filter_type, a)                  \
