@@ -10,14 +10,16 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Histogram.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 
 namespace {
 
-const int32_t maxOffscreenDurationUmaMS = 60 * 60 * 1000;
-const int32_t offscreenDurationUmaBucketCount = 50;
+void recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(bool visible)
+{
+    DEFINE_STATIC_LOCAL(BooleanHistogram, histogram, ("Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"));
+    histogram.count(visible);
+}
 
 } // namespace
 
@@ -30,11 +32,7 @@ AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
     : EventListener(CPPEventListenerType)
     , m_source(AutoplaySource::NumberOfSources)
     , m_element(element)
-    , m_mutedVideoPlayMethodVisibilityObserver(nullptr)
-    , m_mutedVideoAutoplayOffscreenStartTimeMS(0)
-    , m_mutedVideoAutoplayOffscreenDurationMS(0)
-    , m_isVisible(false)
-    , m_mutedVideoOffscreenDurationVisibilityObserver(nullptr) { }
+    , m_videoMutedPlayMethodVisibilityObserver(nullptr) { }
 
 AutoplayUmaHelper::~AutoplayUmaHelper() = default;
 
@@ -49,11 +47,6 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source)
     DEFINE_STATIC_LOCAL(EnumerationHistogram, mutedVideoHistogram, ("Media.Video.Autoplay.Muted", static_cast<int>(AutoplaySource::NumberOfSources)));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, audioHistogram, ("Media.Audio.Autoplay", static_cast<int>(AutoplaySource::NumberOfSources)));
 
-    // Autoplay already initiated
-    // TODO(zqzhang): how about having autoplay attribute and calling `play()` in the script?
-    if (m_source != AutoplaySource::NumberOfSources)
-        return;
-
     m_source = source;
 
     if (m_element->isHTMLVideoElement()) {
@@ -64,7 +57,8 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source)
         audioHistogram.count(static_cast<int>(m_source));
     }
 
-    m_element->addEventListener(EventTypeNames::playing, this, false);
+    if (m_source == AutoplaySource::Method && m_element->isHTMLVideoElement() && m_element->muted())
+        m_element->addEventListener(EventTypeNames::playing, this, false);
 }
 
 void AutoplayUmaHelper::recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus status)
@@ -76,7 +70,7 @@ void AutoplayUmaHelper::recordAutoplayUnmuteStatus(AutoplayUnmuteActionStatus st
 
 void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument)
 {
-    if (!shouldListenToUnloadEvent())
+    if (!m_videoMutedPlayMethodVisibilityObserver)
         return;
 
     if (oldDocument.domWindow())
@@ -85,139 +79,57 @@ void AutoplayUmaHelper::didMoveToNewDocument(Document& oldDocument)
         m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
 }
 
-void AutoplayUmaHelper::onVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool isVisible)
+void AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod(bool isVisible)
 {
-    if (!isVisible || !m_mutedVideoPlayMethodVisibilityObserver)
+    if (!isVisible || !m_videoMutedPlayMethodVisibilityObserver)
         return;
 
-    maybeStopRecordingMutedVideoPlayMethodBecomeVisible(true);
-}
-
-void AutoplayUmaHelper::onVisibilityChangedForMutedVideoOffscreenDuration(bool isVisible)
-{
-    if (isVisible == m_isVisible)
-        return;
-
-    if (isVisible)
-        m_mutedVideoAutoplayOffscreenDurationMS += static_cast<int64_t>(monotonicallyIncreasingTimeMS()) - m_mutedVideoAutoplayOffscreenStartTimeMS;
-    else
-        m_mutedVideoAutoplayOffscreenStartTimeMS = static_cast<int64_t>(monotonicallyIncreasingTimeMS());
-
-    m_isVisible = isVisible;
+    recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(true);
+    m_videoMutedPlayMethodVisibilityObserver->stop();
+    m_videoMutedPlayMethodVisibilityObserver = nullptr;
+    if (m_element && m_element->document().domWindow())
+        m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
 }
 
 void AutoplayUmaHelper::handleEvent(ExecutionContext* executionContext, Event* event)
 {
     if (event->type() == EventTypeNames::playing)
         handlePlayingEvent();
-    else if (event->type() == EventTypeNames::pause)
-        handlePauseEvent();
     else if (event->type() == EventTypeNames::unload)
         handleUnloadEvent();
     else
         NOTREACHED();
 }
 
-void AutoplayUmaHelper::handlePlayingEvent()
-{
-    maybeStartRecordingMutedVideoPlayMethodBecomeVisible();
-    maybeStartRecordingMutedVideoOffscreenDuration();
-
-    m_element->removeEventListener(EventTypeNames::playing, this, false);
-}
-
-void AutoplayUmaHelper::handlePauseEvent()
-{
-    maybeStopRecordingMutedVideoOffscreenDuration();
-}
-
 void AutoplayUmaHelper::handleUnloadEvent()
 {
-    maybeStopRecordingMutedVideoPlayMethodBecomeVisible(false);
-    maybeStopRecordingMutedVideoOffscreenDuration();
-}
-
-void AutoplayUmaHelper::maybeStartRecordingMutedVideoPlayMethodBecomeVisible()
-{
-    if (m_source != AutoplaySource::Method || !m_element->isHTMLVideoElement() || !m_element->muted())
-        return;
-
-    m_mutedVideoPlayMethodVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForMutedVideoPlayMethodBecomeVisible, wrapWeakPersistent(this)));
-    m_mutedVideoPlayMethodVisibilityObserver->start();
-    if (m_element->document().domWindow())
-        m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
-}
-
-void AutoplayUmaHelper::maybeStopRecordingMutedVideoPlayMethodBecomeVisible(bool visible)
-{
-    if (!m_mutedVideoPlayMethodVisibilityObserver)
-        return;
-
-    DEFINE_STATIC_LOCAL(BooleanHistogram, histogram, ("Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"));
-
-    histogram.count(visible);
-    m_mutedVideoPlayMethodVisibilityObserver->stop();
-    m_mutedVideoPlayMethodVisibilityObserver = nullptr;
-    maybeUnregisterUnloadListener();
-}
-
-void AutoplayUmaHelper::maybeStartRecordingMutedVideoOffscreenDuration()
-{
-    if (!m_element->isHTMLVideoElement() || !m_element->muted())
-        return;
-
-    // Start recording muted video playing offscreen duration.
-    m_mutedVideoAutoplayOffscreenStartTimeMS = static_cast<int64_t>(monotonicallyIncreasingTimeMS());
-    m_isVisible = false;
-    m_mutedVideoOffscreenDurationVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForMutedVideoOffscreenDuration, wrapWeakPersistent(this)));
-    m_mutedVideoOffscreenDurationVisibilityObserver->start();
-    m_element->addEventListener(EventTypeNames::pause, this, false);
-    if (m_element->document().domWindow())
-        m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
-}
-
-void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration()
-{
-    if (!m_mutedVideoOffscreenDurationVisibilityObserver)
-        return;
-
-    if (!m_isVisible)
-        m_mutedVideoAutoplayOffscreenDurationMS += static_cast<int64_t>(monotonicallyIncreasingTimeMS()) - m_mutedVideoAutoplayOffscreenStartTimeMS;
-
-    // Since histograms uses int32_t, the duration needs to be limited to std::numeric_limits<int32_t>::max().
-    int32_t boundedTime = static_cast<int32_t>(std::min<int64_t>(m_mutedVideoAutoplayOffscreenDurationMS, std::numeric_limits<int32_t>::max()));
-
-    if (m_source == AutoplaySource::Attribute) {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, durationHistogram, ("Media.Video.Autoplay.Muted.Attribute.OffscreenDuration", 1, maxOffscreenDurationUmaMS, offscreenDurationUmaBucketCount));
-        durationHistogram.count(boundedTime);
-    } else {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, durationHistogram, ("Media.Video.Autoplay.Muted.PlayMethod.OffscreenDuration", 1, maxOffscreenDurationUmaMS, offscreenDurationUmaBucketCount));
-        durationHistogram.count(boundedTime);
+    if (m_videoMutedPlayMethodVisibilityObserver) {
+        recordVideoAutoplayMutedPlayMethodBecomesVisibleUma(false);
+        m_videoMutedPlayMethodVisibilityObserver->stop();
+        m_videoMutedPlayMethodVisibilityObserver = nullptr;
+        if (m_element && m_element->document().domWindow())
+            m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
     }
-    m_mutedVideoOffscreenDurationVisibilityObserver->stop();
-    m_mutedVideoOffscreenDurationVisibilityObserver = nullptr;
-    m_mutedVideoAutoplayOffscreenDurationMS = 0;
-    m_element->removeEventListener(EventTypeNames::pause, this, false);
-    maybeUnregisterUnloadListener();
 }
 
-void AutoplayUmaHelper::maybeUnregisterUnloadListener()
+void AutoplayUmaHelper::handlePlayingEvent()
 {
-    if (!shouldListenToUnloadEvent() && m_element && m_element->document().domWindow())
-        m_element->document().domWindow()->removeEventListener(EventTypeNames::unload, this, false);
-}
-
-bool AutoplayUmaHelper::shouldListenToUnloadEvent() const
-{
-    return m_mutedVideoPlayMethodVisibilityObserver || m_mutedVideoOffscreenDurationVisibilityObserver;
+    if (m_source == AutoplaySource::Method && m_element->isHTMLVideoElement() && m_element->muted()) {
+        if (!m_videoMutedPlayMethodVisibilityObserver) {
+            m_videoMutedPlayMethodVisibilityObserver = new ElementVisibilityObserver(m_element, WTF::bind(&AutoplayUmaHelper::onVisibilityChangedForVideoMutedPlayMethod, wrapWeakPersistent(this)));
+            m_videoMutedPlayMethodVisibilityObserver->start();
+            if (m_element && m_element->document().domWindow())
+                m_element->document().domWindow()->addEventListener(EventTypeNames::unload, this, false);
+        }
+    }
+    m_element->removeEventListener(EventTypeNames::playing, this, false);
 }
 
 DEFINE_TRACE(AutoplayUmaHelper)
 {
     EventListener::trace(visitor);
     visitor->trace(m_element);
-    visitor->trace(m_mutedVideoPlayMethodVisibilityObserver);
-    visitor->trace(m_mutedVideoOffscreenDurationVisibilityObserver);
+    visitor->trace(m_videoMutedPlayMethodVisibilityObserver);
 }
 
 } // namespace blink
