@@ -196,13 +196,17 @@ const char kHistogramFirstContentfulPaintUserInitiated[] =
 const char kHistogramFirstMeaningfulPaintStatus[] =
     "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintStatus";
 
+const char kHistogramFirstNonScrollInputAfterFirstPaint[] =
+    "PageLoad.Input.TimeToFirstNonScroll.AfterPaint";
+const char kHistogramFirstScrollInputAfterFirstPaint[] =
+    "PageLoad.Input.TimeToFirstScroll.AfterPaint";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
     : transition_(ui::PAGE_TRANSITION_LINK),
       initiated_by_user_gesture_(false),
-      was_no_store_main_resource_(false),
-      had_first_paint_(false) {}
+      was_no_store_main_resource_(false) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
@@ -261,8 +265,7 @@ void CorePageLoadMetricsObserver::OnFirstLayout(
 void CorePageLoadMetricsObserver::OnFirstPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  had_first_paint_ = true;
-
+  first_paint_ = navigation_start_ + timing.first_paint.value();
   if (WasStartedInForegroundOptionalEventInForeground(timing.first_paint,
                                                       info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
@@ -517,9 +520,36 @@ void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
 
 void CorePageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event) {
-  if (had_first_paint_ && first_user_interaction_after_first_paint_.is_null() &&
+  base::TimeTicks now;
+  if (!first_paint_.is_null() &&
+      first_user_interaction_after_first_paint_.is_null() &&
       event.type != blink::WebInputEvent::MouseMove) {
-    first_user_interaction_after_first_paint_ = base::TimeTicks::Now();
+    if (now.is_null())
+      now = base::TimeTicks::Now();
+    first_user_interaction_after_first_paint_ = now;
+  }
+
+  if (first_paint_.is_null())
+    return;
+
+  if (!received_non_scroll_input_after_first_paint_) {
+    if (event.type == blink::WebInputEvent::GestureTap ||
+        event.type == blink::WebInputEvent::MouseUp) {
+      received_non_scroll_input_after_first_paint_ = true;
+      if (now.is_null())
+        now = base::TimeTicks::Now();
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramFirstNonScrollInputAfterFirstPaint,
+          now - first_paint_);
+    }
+  }
+  if (!received_scroll_input_after_first_paint_ &&
+      event.type == blink::WebInputEvent::GestureScrollBegin) {
+    received_scroll_input_after_first_paint_ = true;
+    if (now.is_null())
+      now = base::TimeTicks::Now();
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstScrollInputAfterFirstPaint,
+                        now - first_paint_);
   }
 }
 

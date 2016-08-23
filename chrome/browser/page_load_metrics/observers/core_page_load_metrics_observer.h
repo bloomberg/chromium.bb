@@ -46,6 +46,9 @@ extern const char kHistogramFailedProvisionalLoad[];
 extern const char kRapporMetricsNameCoarseTiming[];
 extern const char kHistogramFirstMeaningfulPaintStatus[];
 
+extern const char kHistogramFirstNonScrollInputAfterFirstPaint[];
+extern const char kHistogramFirstScrollInputAfterFirstPaint[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,
@@ -113,9 +116,17 @@ class CorePageLoadMetricsObserver
   ui::PageTransition transition_;
   bool initiated_by_user_gesture_;
   bool was_no_store_main_resource_;
-  bool had_first_paint_;
+
+  // True if we've received a non-scroll input (touch tap or mouse up)
+  // after first paint has happened.
+  bool received_non_scroll_input_after_first_paint_ = false;
+
+  // True if we've received a scroll input after first paint has happened.
+  bool received_scroll_input_after_first_paint_ = false;
+
   base::TimeTicks navigation_start_;
   base::TimeTicks first_user_interaction_after_first_paint_;
+  base::TimeTicks first_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };
