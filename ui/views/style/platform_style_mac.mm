@@ -24,6 +24,7 @@ const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
 const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = true;
+const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_PRESS;

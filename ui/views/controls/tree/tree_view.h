@@ -294,15 +294,28 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
       ui::TreeModelNode* model_node,
       GetInternalNodeCreateType create_type);
 
-  // Returns the bounds for a node.
-  gfx::Rect GetBoundsForNode(InternalNode* node);
+  // Returns the bounds for a node's background.
+  gfx::Rect GetBackgroundBoundsForNode(InternalNode* node);
 
-  // Implementation of GetBoundsForNode. Separated out as some callers already
-  // know the row/depth.
-  gfx::Rect GetBoundsForNodeImpl(InternalNode* node, int row, int depth);
+  // Return the bounds for a node's foreground, which is the part containing the
+  // expand/collapse symbol (if any), the icon (if any), and the text label.
+  gfx::Rect GetForegroundBoundsForNode(InternalNode* node);
+
+  // Returns the bounds for a node's text label.
+  gfx::Rect GetTextBoundsForNode(InternalNode* node);
+
+  // Implementation of GetTextBoundsForNode. Separated out as some callers
+  // already know the row/depth.
+  gfx::Rect GetForegroundBoundsForNodeImpl(InternalNode* node,
+                                           int row,
+                                           int depth);
 
   // Returns the row and depth of a node.
   int GetRowForInternalNode(InternalNode* node, int* depth);
+
+  // Returns the InternalNode (if any) whose foreground bounds contain |point|.
+  // If no node's foreground contains |point|, this function returns nullptr.
+  InternalNode* GetNodeAtPoint(const gfx::Point& point);
 
   // Returns the row and depth of the specified node.
   InternalNode* GetNodeByRow(int row, int* depth);
@@ -330,6 +343,10 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   bool ExpandImpl(ui::TreeModelNode* model_node);
 
   PrefixSelector* GetPrefixSelector();
+
+  // Returns whether |point| is in the bounds of |node|'s expand/collapse
+  // control.
+  bool IsPointInExpandControl(InternalNode* node, const gfx::Point& point);
 
   // The model, may be null.
   ui::TreeModel* model_;

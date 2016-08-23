@@ -49,6 +49,10 @@ class VIEWS_EXPORT PlatformStyle {
   // The menu button's action to show the menu.
   static const CustomButton::NotifyAction kMenuNotifyActivationAction;
 
+  // Whether selecting a row in a TreeView selects the entire row or only the
+  // label for that row.
+  static const bool kTreeViewSelectionPaintsEntireRow;
+
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
   // enabled, and false if the control is disabled. The |style| argument is the
