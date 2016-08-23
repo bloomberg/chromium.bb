@@ -352,7 +352,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.";
 
     case UseCounter::HTMLKeygenElement:
-        return willBeRemoved("The <keygen> element", 54, "5716060992962560");
+        return willBeRemoved("The <keygen> element", 56, "5716060992962560");
 
     case UseCounter::WindowPostMessageWithLegacyTargetOriginArgument:
         return replacedWillBeRemoved("'window.postMessage(message, transferables, targetOrigin)'", "'window.postMessage(message, targetOrigin, transferables)'", 54, "5719033043222528");
