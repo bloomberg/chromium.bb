@@ -79,7 +79,8 @@ SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler()
     : content_suggestions_service_observer_(this),
       dom_loaded_(false),
       ntp_snippets_service_(nullptr),
-      content_suggestions_service_(nullptr) {}
+      content_suggestions_service_(nullptr),
+      weak_ptr_factory_(this) {}
 
 SnippetsInternalsMessageHandler::~SnippetsInternalsMessageHandler() {}
 
@@ -112,6 +113,12 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
       base::Bind(
           &SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions,
           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "toggleDismissedSuggestions",
+      base::Bind(
+          &SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions,
+          base::Unretained(this)));
 }
 
 void SnippetsInternalsMessageHandler::OnNewSuggestions(Category category) {
@@ -143,6 +150,18 @@ void SnippetsInternalsMessageHandler::HandleRefreshContent(
   DCHECK_EQ(0u, args->GetSize());
 
   dom_loaded_ = true;
+
+  for (std::pair<const Category, DismissedState>& category_state_pair :
+       dismissed_state_) {
+    if (category_state_pair.second == DismissedState::VISIBLE) {
+      category_state_pair.second = DismissedState::LOADING;
+      content_suggestions_service_->GetDismissedSuggestionsForDebugging(
+          category_state_pair.first,
+          base::Bind(
+              &SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded,
+              weak_ptr_factory_.GetWeakPtr(), category_state_pair.first));
+    }
+  }
 
   SendAllContent();
 }
@@ -192,6 +211,38 @@ void SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions(
           category_id);
   content_suggestions_service_->ClearDismissedSuggestionsForDebugging(category);
   SendContentSuggestions();
+  dismissed_state_[category] = DismissedState::LOADING;
+  content_suggestions_service_->GetDismissedSuggestionsForDebugging(
+      category,
+      base::Bind(&SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded,
+                 weak_ptr_factory_.GetWeakPtr(), category));
+}
+
+void SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions(
+    const base::ListValue* args) {
+  DCHECK_EQ(2u, args->GetSize());
+
+  int category_id;
+  if (!args->GetInteger(0, &category_id))
+    return;
+  bool dismissed_visible;
+  if (!args->GetBoolean(1, &dismissed_visible))
+    return;
+
+  Category category =
+      content_suggestions_service_->category_factory()->FromIDValue(
+          category_id);
+  if (dismissed_visible) {
+    dismissed_state_[category] = DismissedState::LOADING;
+    content_suggestions_service_->GetDismissedSuggestionsForDebugging(
+        category,
+        base::Bind(
+            &SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded,
+            weak_ptr_factory_.GetWeakPtr(), category));
+  } else {
+    dismissed_state_[category] = DismissedState::HIDDEN;
+    dismissed_suggestions_[category].clear();
+  }
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
@@ -271,9 +322,6 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     DCHECK(info);
     const std::vector<ContentSuggestion>& suggestions =
         content_suggestions_service_->GetSuggestionsForCategory(category);
-    std::vector<ContentSuggestion> dismissed_suggestions =
-        content_suggestions_service_->GetDismissedSuggestionsForDebugging(
-            category);
 
     std::unique_ptr<base::ListValue> suggestions_list(new base::ListValue);
     for (const ContentSuggestion& suggestion : suggestions) {
@@ -281,7 +329,8 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     }
 
     std::unique_ptr<base::ListValue> dismissed_list(new base::ListValue);
-    for (const ContentSuggestion& suggestion : dismissed_suggestions) {
+    for (const ContentSuggestion& suggestion :
+         dismissed_suggestions_[category]) {
       dismissed_list->Append(PrepareSuggestion(suggestion, index++));
     }
 
@@ -316,4 +365,14 @@ void SnippetsInternalsMessageHandler::SendString(const std::string& name,
 
   web_ui()->CallJavascriptFunctionUnsafe(
       "chrome.SnippetsInternals.receiveProperty", string_name, string_value);
+}
+
+void SnippetsInternalsMessageHandler::OnDismissedSuggestionsLoaded(
+    Category category,
+    std::vector<ContentSuggestion> dismissed_suggestions) {
+  if (dismissed_state_[category] == DismissedState::HIDDEN)
+    return;
+  dismissed_suggestions_[category] = std::move(dismissed_suggestions);
+  dismissed_state_[category] = DismissedState::VISIBLE;
+  SendContentSuggestions();
 }

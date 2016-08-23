@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SNIPPETS_INTERNALS_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SNIPPETS_INTERNALS_MESSAGE_HANDLER_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
@@ -28,6 +31,8 @@ class SnippetsInternalsMessageHandler
   ~SnippetsInternalsMessageHandler() override;
 
  private:
+  enum class DismissedState { HIDDEN, LOADING, VISIBLE };
+
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
@@ -44,12 +49,17 @@ class SnippetsInternalsMessageHandler
   void HandleDownload(const base::ListValue* args);
   void HandleClearCachedSuggestions(const base::ListValue* args);
   void HandleClearDismissedSuggestions(const base::ListValue* args);
+  void HandleToggleDismissedSuggestions(const base::ListValue* args);
 
   void SendAllContent();
   void SendHosts();
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
+
+  void OnDismissedSuggestionsLoaded(
+      ntp_snippets::Category category,
+      std::vector<ntp_snippets::ContentSuggestion> dismissed_suggestions);
 
   ScopedObserver<ntp_snippets::ContentSuggestionsService,
                  ntp_snippets::ContentSuggestionsService::Observer>
@@ -60,6 +70,17 @@ class SnippetsInternalsMessageHandler
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
+
+  std::map<ntp_snippets::Category,
+           DismissedState,
+           ntp_snippets::Category::CompareByID>
+      dismissed_state_;
+  std::map<ntp_snippets::Category,
+           std::vector<ntp_snippets::ContentSuggestion>,
+           ntp_snippets::Category::CompareByID>
+      dismissed_suggestions_;
+
+  base::WeakPtrFactory<SnippetsInternalsMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SnippetsInternalsMessageHandler);
 };

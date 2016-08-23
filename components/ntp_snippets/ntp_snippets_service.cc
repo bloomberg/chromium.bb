@@ -336,8 +336,9 @@ void NTPSnippetsService::ClearCachedSuggestionsForDebugging(Category category) {
   NotifyNewSuggestions();
 }
 
-std::vector<ContentSuggestion>
-NTPSnippetsService::GetDismissedSuggestionsForDebugging(Category category) {
+void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(category, provided_category_);
   std::vector<ContentSuggestion> result;
   for (const std::unique_ptr<NTPSnippet>& snippet : dismissed_snippets_) {
@@ -355,7 +356,7 @@ NTPSnippetsService::GetDismissedSuggestionsForDebugging(Category category) {
     suggestion.set_score(snippet->score());
     result.emplace_back(std::move(suggestion));
   }
-  return result;
+  callback.Run(std::move(result));
 }
 
 void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(

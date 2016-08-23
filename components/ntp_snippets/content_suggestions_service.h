@@ -33,6 +33,8 @@ class ContentSuggestionsService : public KeyedService,
  public:
   using ImageFetchedCallback =
       base::Callback<void(const std::string& suggestion_id, const gfx::Image&)>;
+  using DismissedSuggestionsCallback = base::Callback<void(
+      std::vector<ContentSuggestion> dismissed_suggestions)>;
 
   class Observer {
    public:
@@ -135,9 +137,11 @@ class ContentSuggestionsService : public KeyedService,
   // Only for debugging use through the internals page.
   // Retrieves suggestions of the given |category| that have previously been
   // dismissed and are still stored in the respective provider. If the
-  // provider doesn't store dismissed suggestions, this returns an empty vector.
-  std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category);
+  // provider doesn't store dismissed suggestions, the callback receives an
+  // empty vector. The callback may be called synchronously.
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback);
 
   // Only for debugging use through the internals page. Some providers
   // internally store a list of dismissed suggestions to prevent them from

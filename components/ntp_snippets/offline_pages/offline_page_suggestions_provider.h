@@ -54,8 +54,9 @@ class OfflinePageSuggestionsProvider
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearCachedSuggestionsForDebugging(Category category) override;
-  std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category) override;
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
   // OfflinePageModel::Observer implementation.
@@ -69,6 +70,10 @@ class OfflinePageSuggestionsProvider
 
   // Callback from the OfflinePageModel.
   void OnOfflinePagesLoaded(
+      const offline_pages::MultipleOfflinePageItemResult& result);
+  void OnOfflinePagesLoadedForDismissedDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback,
       const offline_pages::MultipleOfflinePageItemResult& result);
 
   // Updates the |category_status_| of the |category| and notifies the

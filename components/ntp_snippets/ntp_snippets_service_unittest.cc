@@ -280,6 +280,18 @@ class MockImageFetcher : public ImageFetcher {
            base::Callback<void(const std::string&, const gfx::Image&)>));
 };
 
+class MockDismissedSuggestionsCallback
+    : public ContentSuggestionsProvider::DismissedSuggestionsCallback {
+ public:
+  MOCK_METHOD2(MockRun,
+               void(Category category,
+                    std::vector<ContentSuggestion>* dismissed_suggestions));
+  void Run(Category category,
+           std::vector<ContentSuggestion> dismissed_suggestions) {
+    MockRun(category, &dismissed_suggestions);
+  }
+};
+
 }  // namespace
 
 class NTPSnippetsServiceTest : public test::NTPSnippetsTestBase {
@@ -553,18 +565,36 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
 
   service()->DismissSuggestion(MakeUniqueID(kSnippetUrl));
-  std::vector<ContentSuggestion> suggestions =
-      service()->GetDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_EQ(1u, suggestions.size());
-  for (auto& suggestion : suggestions) {
-    EXPECT_EQ(MakeUniqueID(kSnippetUrl), suggestion.id());
-  }
+
+  MockDismissedSuggestionsCallback callback;
+
+  EXPECT_CALL(callback, MockRun(_, _))
+      .WillOnce(
+          Invoke([this](Category category,
+                        std::vector<ContentSuggestion>* dismissed_suggestions) {
+            EXPECT_EQ(1u, dismissed_suggestions->size());
+            for (auto& suggestion : *dismissed_suggestions) {
+              EXPECT_EQ(MakeUniqueID(kSnippetUrl), suggestion.id());
+            }
+          }));
+  service()->GetDismissedSuggestionsForDebugging(
+      articles_category(),
+      base::Bind(&MockDismissedSuggestionsCallback::Run,
+                 base::Unretained(&callback), articles_category()));
+  Mock::VerifyAndClearExpectations(&callback);
 
   // There should be no dismissed snippet after clearing the list.
+  EXPECT_CALL(callback, MockRun(_, _))
+      .WillOnce(
+          Invoke([this](Category category,
+                        std::vector<ContentSuggestion>* dismissed_suggestions) {
+            EXPECT_EQ(0u, dismissed_suggestions->size());
+          }));
   service()->ClearDismissedSuggestionsForDebugging(articles_category());
-  EXPECT_EQ(0u, service()
-                    ->GetDismissedSuggestionsForDebugging(articles_category())
-                    .size());
+  service()->GetDismissedSuggestionsForDebugging(
+      articles_category(),
+      base::Bind(&MockDismissedSuggestionsCallback::Run,
+                 base::Unretained(&callback), articles_category()));
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {

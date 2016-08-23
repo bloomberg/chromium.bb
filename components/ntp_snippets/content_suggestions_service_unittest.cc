@@ -101,8 +101,9 @@ class MockProvider : public ContentSuggestionsProvider {
   }
 
   MOCK_METHOD1(ClearCachedSuggestionsForDebugging, void(Category category));
-  MOCK_METHOD1(GetDismissedSuggestionsForDebugging,
-               std::vector<ContentSuggestion>(Category category));
+  MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
+               void(Category category,
+                    const DismissedSuggestionsCallback& callback));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category category));
   MOCK_METHOD1(DismissSuggestion, void(const std::string& suggestion_id));
   MOCK_METHOD2(FetchSuggestionImage,

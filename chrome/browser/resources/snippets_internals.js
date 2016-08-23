@@ -68,6 +68,12 @@ cr.define('chrome.SnippetsInternals', function() {
     for (var button of clearDismissedButtons) {
       button.addEventListener('click', onClearDismissedButtonClicked);
     }
+
+    var toggleDismissedButtons =
+        document.getElementsByClassName('toggle-dismissed-suggestions');
+    for (var button of toggleDismissedButtons) {
+      button.addEventListener('click', onToggleDismissedButtonClicked);
+    }
   }
 
   function onClearCachedButtonClicked(event) {
@@ -80,6 +86,15 @@ cr.define('chrome.SnippetsInternals', function() {
     event.preventDefault();
     var id = parseInt(event.currentTarget.getAttribute('category-id'), 10);
     chrome.send('clearDismissedSuggestions', [id]);
+  }
+
+  function onToggleDismissedButtonClicked(event) {
+    event.preventDefault();
+    var id = parseInt(event.currentTarget.getAttribute('category-id'), 10);
+    var table = $('dismissed-suggestions-' + id);
+    table.classList.toggle('hidden');
+    chrome.send('toggleDismissedSuggestions',
+        [id, !table.classList.contains('hidden')]);
   }
 
   function receiveJson(json) {

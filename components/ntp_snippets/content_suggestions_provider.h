@@ -30,6 +30,8 @@ class ContentSuggestionsProvider {
  public:
   using ImageFetchedCallback =
       base::Callback<void(const std::string& suggestion_id, const gfx::Image&)>;
+  using DismissedSuggestionsCallback = base::Callback<void(
+      std::vector<ContentSuggestion> dismissed_suggestions)>;
 
   // The observer of a provider is notified when new data is available.
   class Observer {
@@ -107,9 +109,11 @@ class ContentSuggestionsProvider {
   // Used only for debugging purposes. Retrieves suggestions for the given
   // |category| that have previously been dismissed and are still stored in the
   // provider. If the provider doesn't store dismissed suggestions for the given
-  // |category|, it always returns an empty vector.
-  virtual std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category) = 0;
+  // |category|, it always calls the callback with an empty vector. The callback
+  // may be called synchronously.
+  virtual void GetDismissedSuggestionsForDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback) = 0;
 
   // Used only for debugging purposes. Clears the cache of dismissed
   // suggestions for the given |category|, if present, so that no suggestions

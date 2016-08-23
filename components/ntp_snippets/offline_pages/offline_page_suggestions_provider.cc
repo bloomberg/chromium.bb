@@ -38,6 +38,17 @@ struct OrderByMostRecentlyVisited {
   }
 };
 
+bool IsRecentTab(const offline_pages::ClientId& client_id) {
+  return client_id.name_space == offline_pages::kLastNNamespace;
+}
+
+bool IsDownload(const offline_pages::ClientId& client_id) {
+  // TODO(pke): Use kDownloadNamespace once the OfflinePageModel uses that.
+  // The current logic is taken from DownloadUIAdapter::IsVisibleInUI.
+  return client_id.name_space == offline_pages::kAsyncNamespace &&
+         base::IsValidGUID(client_id.id);
+}
+
 }  // namespace
 
 OfflinePageSuggestionsProvider::OfflinePageSuggestionsProvider(
@@ -144,21 +155,13 @@ void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging(
   // Ignored.
 }
 
-std::vector<ContentSuggestion>
-OfflinePageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
-    Category category) {
-  // TODO(pke): Make GetDismissedSuggestionsForDebugging asynchronous so this
-  // can return proper values.
-  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
-  std::vector<ContentSuggestion> suggestions;
-  for (const std::string& dismissed_id : dismissed_ids) {
-    ContentSuggestion suggestion(
-        MakeUniqueID(category, dismissed_id),
-        GURL("http://dismissed-offline-page-" + dismissed_id));
-    suggestion.set_title(base::UTF8ToUTF16("Title not available"));
-    suggestions.push_back(std::move(suggestion));
-  }
-  return suggestions;
+void OfflinePageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback) {
+  offline_page_model_->GetAllPages(
+      base::Bind(&OfflinePageSuggestionsProvider::
+                     OnOfflinePagesLoadedForDismissedDebugging,
+                 base::Unretained(this), category, callback));
 }
 
 void OfflinePageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
@@ -185,11 +188,10 @@ void OfflinePageSuggestionsProvider::OfflinePageDeleted(
   // UI containing an invalidated suggestion unless the status is something
   // other than NOT_PROVIDED, so only notify invalidation in that case.
   if (recent_tabs_status_ != CategoryStatus::NOT_PROVIDED &&
-      client_id.name_space == offline_pages::kLastNNamespace) {
+      IsRecentTab(client_id)) {
     InvalidateSuggestion(recent_tabs_category_, offline_id);
   } else if (downloads_status_ != CategoryStatus::NOT_PROVIDED &&
-             client_id.name_space == offline_pages::kAsyncNamespace &&
-             base::IsValidGUID(client_id.id)) {
+             IsDownload(client_id)) {
     InvalidateSuggestion(downloads_category_, offline_id);
   }
 }
@@ -222,20 +224,14 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
   std::vector<const OfflinePageItem*> download_items;
   for (const OfflinePageItem& item : result) {
     std::string offline_page_id = base::IntToString(item.offline_id);
-    if (need_recent_tabs &&
-        item.client_id.name_space == offline_pages::kLastNNamespace) {
+    if (need_recent_tabs && IsRecentTab(item.client_id)) {
       if (dismissed_recent_tab_ids.count(offline_page_id))
         cleaned_recent_tab_ids.insert(offline_page_id);
       else
         recent_tab_items.push_back(&item);
     }
 
-    // TODO(pke): Use kDownloadNamespace once the OfflinePageModel uses that.
-    // The current logic is taken from DownloadUIAdapter::IsVisibleInUI.
-    // Note: This is also copied in |OfflinePageDeleted| above.
-    if (need_downloads &&
-        item.client_id.name_space == offline_pages::kAsyncNamespace &&
-        base::IsValidGUID(item.client_id.id)) {
+    if (need_downloads && IsDownload(item.client_id)) {
       if (dismissed_download_ids.count(offline_page_id))
         cleaned_download_ids.insert(offline_page_id);
       else
@@ -262,6 +258,24 @@ void OfflinePageSuggestionsProvider::OnOfflinePagesLoaded(
     if (cleaned_download_ids.size() != dismissed_download_ids.size())
       StoreDismissedIDsToPrefs(downloads_category_, cleaned_download_ids);
   }
+}
+
+void OfflinePageSuggestionsProvider::OnOfflinePagesLoadedForDismissedDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback,
+    const offline_pages::MultipleOfflinePageItemResult& result) {
+  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
+  std::vector<ContentSuggestion> suggestions;
+  for (const OfflinePageItem& item : result) {
+    if (category == recent_tabs_category_ && !IsRecentTab(item.client_id))
+      continue;
+    if (category == downloads_category_ && !IsDownload(item.client_id))
+      continue;
+    if (!dismissed_ids.count(base::IntToString(item.offline_id)))
+      continue;
+    suggestions.push_back(ConvertOfflinePage(category, item));
+  }
+  callback.Run(std::move(suggestions));
 }
 
 void OfflinePageSuggestionsProvider::NotifyStatusChanged(

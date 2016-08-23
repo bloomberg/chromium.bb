@@ -137,8 +137,9 @@ class NTPSnippetsService : public image_fetcher::ImageFetcherDelegate,
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearCachedSuggestionsForDebugging(Category category) override;
-  std::vector<ContentSuggestion> GetDismissedSuggestionsForDebugging(
-      Category category) override;
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
   // Returns the lists of suggestion hosts the snippets are restricted to.

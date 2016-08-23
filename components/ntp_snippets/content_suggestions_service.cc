@@ -104,13 +104,14 @@ void ContentSuggestionsService::ClearCachedSuggestionsForDebugging(
     iterator->second->ClearCachedSuggestionsForDebugging(category);
 }
 
-std::vector<ContentSuggestion>
-ContentSuggestionsService::GetDismissedSuggestionsForDebugging(
-    Category category) {
+void ContentSuggestionsService::GetDismissedSuggestionsForDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback) {
   auto iterator = providers_by_category_.find(category);
-  if (iterator == providers_by_category_.end())
-    return std::vector<ContentSuggestion>();
-  return iterator->second->GetDismissedSuggestionsForDebugging(category);
+  if (iterator != providers_by_category_.end())
+    iterator->second->GetDismissedSuggestionsForDebugging(category, callback);
+  else
+    callback.Run(std::vector<ContentSuggestion>());
 }
 
 void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging(

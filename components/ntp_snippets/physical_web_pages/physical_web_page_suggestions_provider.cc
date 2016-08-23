@@ -87,11 +87,11 @@ void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestionsForDebugging(
   // Ignored
 }
 
-std::vector<ContentSuggestion>
-PhysicalWebPageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
-    Category category) {
+void PhysicalWebPageSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback) {
   // Not implemented.
-  return std::vector<ContentSuggestion>();
+  callback.Run(std::vector<ContentSuggestion>());
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(

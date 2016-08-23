@@ -157,9 +157,9 @@ void BookmarkSuggestionsProvider::ClearCachedSuggestionsForDebugging(
   // Ignored.
 }
 
-std::vector<ContentSuggestion>
-BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
-    Category category) {
+void BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category,
+    const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(category, provided_category_);
   std::vector<const BookmarkNode*> bookmarks =
       GetDismissedBookmarksForDebugging(bookmark_model_);
@@ -167,7 +167,7 @@ BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks)
     suggestions.emplace_back(ConvertBookmark(bookmark));
-  return suggestions;
+  callback.Run(std::move(suggestions));
 }
 
 void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
