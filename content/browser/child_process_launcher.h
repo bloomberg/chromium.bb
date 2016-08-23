@@ -126,6 +126,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // client went away.
   static void DidLaunch(base::WeakPtr<ChildProcessLauncher> instance,
                         bool terminate_on_shutdown,
+                        mojo::edk::ScopedPlatformHandle server_handle,
                         ZygoteHandle zygote,
 #if defined(OS_ANDROID)
                         base::ScopedFD ipcfd,
@@ -136,6 +137,7 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
 
   // Notifies the client about the result of the operation.
   void Notify(ZygoteHandle zygote,
+              mojo::edk::ScopedPlatformHandle server_handle,
 #if defined(OS_ANDROID)
               base::ScopedFD ipcfd,
 #endif
@@ -155,8 +157,6 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // shutdown. Default behavior is to terminate the child.
   const bool terminate_child_on_shutdown_;
 
-  // Host side platform handle to establish Mojo IPC.
-  mojo::edk::ScopedPlatformHandle mojo_host_platform_handle_;
   const std::string mojo_child_token_;
 
   base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;

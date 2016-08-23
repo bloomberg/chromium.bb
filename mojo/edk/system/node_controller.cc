@@ -243,6 +243,7 @@ void NodeController::ConnectToParent(ScopedPlatformHandle platform_handle) {
     // the broker was unable to negotiate a NodeChannel pipe. In this case we
     // can cancel parent connection.
     DVLOG(1) << "Cannot connect to invalid parent channel.";
+    CancelPendingPortMerges();
     return;
   }
 #endif
@@ -584,17 +585,12 @@ void NodeController::DropPeer(const ports::NodeName& name,
     base::AutoLock lock(parent_lock_);
     is_parent = (name == parent_name_ || channel == bootstrap_parent_channel_);
   }
+
   // If the error comes from the parent channel, we also need to cancel any
   // port merge requests, so that errors can be propagated to the message
   // pipes.
-  if (is_parent) {
-    base::AutoLock lock(pending_port_merges_lock_);
-    reject_pending_merges_ = true;
-
-    for (const auto& port : pending_port_merges_)
-      ports_to_close.push_back(port.second);
-    pending_port_merges_.clear();
-  }
+  if (is_parent)
+    CancelPendingPortMerges();
 
   for (const auto& port : ports_to_close)
     node_->ClosePort(port);
@@ -1313,6 +1309,21 @@ MachPortRelay* NodeController::GetMachPortRelay() {
   return mach_port_relay_.get();
 }
 #endif
+
+void NodeController::CancelPendingPortMerges() {
+  std::vector<ports::PortRef> ports_to_close;
+
+  {
+    base::AutoLock lock(pending_port_merges_lock_);
+    reject_pending_merges_ = true;
+    for (const auto& port : pending_port_merges_)
+      ports_to_close.push_back(port.second);
+    pending_port_merges_.clear();
+  }
+
+  for (const auto& port : ports_to_close)
+    node_->ClosePort(port);
+}
 
 void NodeController::DestroyOnIOThreadShutdown() {
   destroy_on_io_thread_shutdown_ = true;

@@ -224,6 +224,11 @@ class NodeController : public ports::NodeDelegate,
   MachPortRelay* GetMachPortRelay() override;
 #endif
 
+  // Cancels all pending port merges. These are merges which are supposed to
+  // be requested from the parent ASAP, and they may be cancelled if the
+  // connection to the parent is broken or never established.
+  void CancelPendingPortMerges();
+
   // Marks this NodeController for destruction when the IO thread shuts down.
   // This is used in case Core is torn down before the IO thread. Must only be
   // called on the IO thread.

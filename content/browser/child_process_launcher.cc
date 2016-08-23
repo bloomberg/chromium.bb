@@ -455,22 +455,24 @@ void ChildProcessLauncher::Launch(
   // process which is asynchronous on Android.
   base::ScopedFD ipcfd(delegate->TakeIpcFd().release());
 #endif
-  NotifyCallback reply_callback(base::Bind(&ChildProcessLauncher::DidLaunch,
-                                           weak_factory_.GetWeakPtr(),
-                                           terminate_child_on_shutdown_));
+  mojo::edk::ScopedPlatformHandle server_handle;
   mojo::edk::ScopedPlatformHandle client_handle;
 #if defined(OS_WIN)
   if (delegate->ShouldLaunchElevated()) {
     mojo::edk::NamedPlatformChannelPair named_pair;
-    mojo_host_platform_handle_ = named_pair.PassServerHandle();
+    server_handle = named_pair.PassServerHandle();
     named_pair.PrepareToPassClientHandleToChildProcess(cmd_line);
   } else
 #endif
   {
     mojo::edk::PlatformChannelPair channel_pair;
-    mojo_host_platform_handle_ = channel_pair.PassServerHandle();
+    server_handle = channel_pair.PassServerHandle();
     client_handle = channel_pair.PassClientHandle();
   }
+  NotifyCallback reply_callback(base::Bind(&ChildProcessLauncher::DidLaunch,
+                                           weak_factory_.GetWeakPtr(),
+                                           terminate_child_on_shutdown_,
+                                           base::Passed(&server_handle)));
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(&LaunchOnLauncherThread, reply_callback, client_thread_id_,
@@ -519,6 +521,7 @@ void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
 void ChildProcessLauncher::DidLaunch(
     base::WeakPtr<ChildProcessLauncher> instance,
     bool terminate_on_shutdown,
+    mojo::edk::ScopedPlatformHandle server_handle,
     ZygoteHandle zygote,
 #if defined(OS_ANDROID)
     base::ScopedFD ipcfd,
@@ -530,12 +533,11 @@ void ChildProcessLauncher::DidLaunch(
     LOG(ERROR) << "Failed to launch child process";
 
   if (instance.get()) {
-    instance->Notify(zygote,
+    instance->Notify(zygote, std::move(server_handle),
 #if defined(OS_ANDROID)
                      std::move(ipcfd),
 #endif
-                     std::move(process),
-                     error_code);
+                     std::move(process), error_code);
   } else {
     if (process.IsValid() && terminate_on_shutdown) {
       // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
@@ -548,6 +550,7 @@ void ChildProcessLauncher::DidLaunch(
 }
 
 void ChildProcessLauncher::Notify(ZygoteHandle zygote,
+                                  mojo::edk::ScopedPlatformHandle server_handle,
 #if defined(OS_ANDROID)
                                   base::ScopedFD ipcfd,
 #endif
@@ -559,10 +562,8 @@ void ChildProcessLauncher::Notify(ZygoteHandle zygote,
 
   if (process_.IsValid()) {
     // Set up Mojo IPC to the new process.
-    mojo::edk::ChildProcessLaunched(process_.Handle(),
-                                    std::move(mojo_host_platform_handle_),
-                                    mojo_child_token_,
-                                    process_error_callback_);
+    mojo::edk::ChildProcessLaunched(process_.Handle(), std::move(server_handle),
+                                    mojo_child_token_, process_error_callback_);
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
