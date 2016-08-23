@@ -1,0 +1,28 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("generic_sensor") {
+  sources = [
+    "platform_sensor.cc",
+    "platform_sensor.h",
+    "platform_sensor_configuration.cc",
+    "platform_sensor_configuration.h",
+    "platform_sensor_provider.h",
+    "platform_sensor_provider_base.cc",
+    "platform_sensor_provider_base.h",
+    "platform_sensor_provider_default.cc",
+    "sensor_export.h",
+    "sensor_impl.cc",
+    "sensor_impl.h",
+    "sensor_provider_impl.cc",
+    "sensor_provider_impl.h",
+  ]
+
+  defines = [ "DEVICE_GENERIC_SENSOR_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//device/generic_sensor/public/interfaces",
+  ]
+}

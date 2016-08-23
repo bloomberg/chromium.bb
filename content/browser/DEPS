@@ -16,6 +16,7 @@ include_rules = [
   "+content/public/browser",
   "+device/battery",  # For battery status service.
   "+device/gamepad", # For gamepad API
+  "+device/generic_sensor",  # For sensors service.
   "+device/geolocation",
   "+device/power_save_blocker",
   "+device/sensors/public",

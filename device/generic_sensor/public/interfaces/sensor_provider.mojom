@@ -1,0 +1,40 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module device.mojom;
+
+import "sensor.mojom";
+
+struct SensorReadBuffer {
+  // The shared memory handle used to fetch the sensor reading.
+  handle<shared_buffer> memory;
+
+  // The offset at which shared buffer must be mapped.
+  uint64 offset;
+
+  // The ReportingMode supported by the sensor.
+  ReportingMode mode;
+
+  // Note: Each sensor's read buffer contains 4 tightly packed 64-bit floating
+  // point fields, its layout is: { double timestamp; double values[3] }.
+  // So it has a fixed size 4*8 = 32 bytes.
+  const uint64 kReadBufferSize = 32;
+};
+
+interface SensorProvider {
+  // Gets the sensor interface by the given type.
+  //
+  // |type| type of the sensor.
+  //
+  // |sensor_request| the Sensor interface instance to be initialized.
+  //
+  // |read_buffer| on success will contain the SensorReadBuffer describing the
+  //               sensor reading buffer details,
+  //               contains null on failure.
+  // |client_request| on success contains a request to be bound by the client,
+  //                  contains null on failure.
+  GetSensor(SensorType type, Sensor& sensor_request) => (
+      SensorReadBuffer? read_buffer,
+      SensorClient&? client_request);
+};

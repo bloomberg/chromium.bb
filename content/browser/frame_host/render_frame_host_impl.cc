@@ -81,6 +81,7 @@
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "device/generic_sensor/sensor_provider_impl.h"
 #include "device/geolocation/geolocation_service_context.h"
 #include "device/vibration/vibration_manager_impl.h"
 #include "media/mojo/interfaces/media_service.mojom.h"
@@ -2161,6 +2162,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&device::VRServiceImpl::BindRequest));
   }
 #endif
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableGenericSensors)) {
+    GetInterfaceRegistry()->AddInterface(
+        base::Bind(&device::SensorProviderImpl::Create),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  }
 
   GetContentClient()->browser()->RegisterRenderFrameMojoInterfaces(
       GetInterfaceRegistry(), this);
