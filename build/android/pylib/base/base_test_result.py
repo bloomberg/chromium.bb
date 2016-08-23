@@ -41,6 +41,7 @@ class BaseTestResult(object):
     self._test_type = test_type
     self._duration = duration
     self._log = log
+    self._tombstones = None
 
   def __str__(self):
     return self._name
@@ -88,6 +89,11 @@ class BaseTestResult(object):
     """Get the test log."""
     return self._log
 
+  def SetTombstones(self, tombstones):
+    self._tombstones = tombstones
+
+  def GetTombstones(self):
+    return self._tombstones
 
 class TestRunResults(object):
   """Set of results for a test run."""

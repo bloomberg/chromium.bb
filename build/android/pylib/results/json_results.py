@@ -8,7 +8,6 @@ import json
 
 from pylib.base import base_test_result
 
-
 def GenerateResultsDict(test_run_results):
   """Create a results dict from |test_run_results| suitable for writing to JSON.
   Args:
@@ -96,13 +95,15 @@ def GenerateResultsDict(test_run_results):
       results_iterable = test_run_result.GetAll()
 
     for r in results_iterable:
-      iteration_data[r.GetName()].append({
+      result_dict = {
           'status': status_as_string(r.GetType()),
           'elapsed_time_ms': r.GetDuration(),
           'output_snippet': r.GetLog(),
           'losless_snippet': '',
           'output_snippet_base64:': '',
-      })
+          'tombstones': r.GetTombstones() or '',
+      }
+      iteration_data[r.GetName()].append(result_dict)
 
     all_tests = all_tests.union(set(iteration_data.iterkeys()))
     per_iteration_data.append(iteration_data)
