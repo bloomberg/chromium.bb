@@ -126,6 +126,14 @@ def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
       return (hosts_with_creds or {}).get(host)
   return CookiesAuthenticatorMock
 
+class MockChangelistWithBranchAndIssue():
+  def __init__(self, branch, issue):
+    self.branch = branch
+    self.issue = issue
+  def GetBranch(self):
+    return self.branch
+  def GetIssue(self):
+    return self.issue
 
 class TestGitClBasic(unittest.TestCase):
   def _test_ParseIssueUrl(self, func, url, issue, patchset, hostname, fail):
@@ -1701,20 +1709,11 @@ class TestGitCl(TestCase):
          ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
          ((['git', 'branch', '-D', 'foo'],), '')]
 
-    class MockChangelist():
-      def __init__(self, branch, issue):
-        self.branch = branch
-        self.issue = issue
-      def GetBranch(self):
-        return self.branch
-      def GetIssue(self):
-        return self.issue
-
     self.mock(git_cl, 'get_cl_statuses',
               lambda branches, fine_grained, max_processes:
-              [(MockChangelist('master', 1), 'open'),
-               (MockChangelist('foo', 456), 'closed'),
-               (MockChangelist('bar', 789), 'open')])
+              [(MockChangelistWithBranchAndIssue('master', 1), 'open'),
+               (MockChangelistWithBranchAndIssue('foo', 456), 'closed'),
+               (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
 
     self.assertEqual(0, git_cl.main(['archive', '-f']))
 
@@ -1728,20 +1727,56 @@ class TestGitCl(TestCase):
          ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master')]
 
-    class MockChangelist():
-      def __init__(self, branch, issue):
-        self.branch = branch
-        self.issue = issue
-      def GetBranch(self):
-        return self.branch
-      def GetIssue(self):
-        return self.issue
+    self.mock(git_cl, 'get_cl_statuses',
+              lambda branches, fine_grained, max_processes:
+              [(MockChangelistWithBranchAndIssue('master', 1), 'closed')])
+
+    self.assertEqual(1, git_cl.main(['archive', '-f']))
+
+  def test_archive_dry_run(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+
+    self.calls = \
+        [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
+          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
+         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+         ((['git', 'config', 'branch.foo.rietveldissue'],), '456'),
+         ((['git', 'config', 'branch.bar.rietveldissue'],), CERR1),
+         ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
+         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),]
 
     self.mock(git_cl, 'get_cl_statuses',
               lambda branches, fine_grained, max_processes:
-              [(MockChangelist('master', 1), 'closed')])
+              [(MockChangelistWithBranchAndIssue('master', 1), 'open'),
+               (MockChangelistWithBranchAndIssue('foo', 456), 'closed'),
+               (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
 
-    self.assertEqual(1, git_cl.main(['archive', '-f']))
+    self.assertEqual(0, git_cl.main(['archive', '-f', '--dry-run']))
+
+  def test_archive_no_tags(self):
+    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
+
+    self.calls = \
+        [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
+          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
+         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
+         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+         ((['git', 'config', 'branch.foo.rietveldissue'],), '456'),
+         ((['git', 'config', 'branch.bar.rietveldissue'],), CERR1),
+         ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
+         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+         ((['git', 'branch', '-D', 'foo'],), '')]
+
+    self.mock(git_cl, 'get_cl_statuses',
+              lambda branches, fine_grained, max_processes:
+              [(MockChangelistWithBranchAndIssue('master', 1), 'open'),
+               (MockChangelistWithBranchAndIssue('foo', 456), 'closed'),
+               (MockChangelistWithBranchAndIssue('bar', 789), 'open')])
+
+    self.assertEqual(0, git_cl.main(['archive', '-f', '--notags']))
 
   def test_cmd_issue_erase_existing(self):
     out = StringIO.StringIO()

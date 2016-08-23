@@ -3265,10 +3265,17 @@ def CMDarchive(parser, args):
   """Archives and deletes branches associated with closed changelists."""
   parser.add_option(
       '-j', '--maxjobs', action='store', type=int,
-      help='The maximum number of jobs to use when retrieving review status')
+      help='The maximum number of jobs to use when retrieving review status.')
   parser.add_option(
       '-f', '--force', action='store_true',
       help='Bypasses the confirmation prompt.')
+  parser.add_option(
+      '-d', '--dry-run', action='store_true',
+      help='Skip the branch tagging and removal steps.')
+  parser.add_option(
+      '-t', '--notags', action='store_true',
+      help='Do not tag archived branches. '
+           'Note: local commit history may be lost.')
 
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
@@ -3300,26 +3307,36 @@ def CMDarchive(parser, args):
   current_branch = GetCurrentBranch()
 
   print('\nBranches with closed issues that will be archived:\n')
-  print('%*s | %s' % (alignment, 'Branch name', 'Archival tag name'))
-  for next_item in proposal:
-    print('%*s   %s' % (alignment, next_item[0], next_item[1]))
+  if options.notags:
+    for next_item in proposal:
+      print('  ' + next_item[0])
+  else:
+    print('%*s | %s' % (alignment, 'Branch name', 'Archival tag name'))
+    for next_item in proposal:
+      print('%*s   %s' % (alignment, next_item[0], next_item[1]))
 
-  if any(branch == current_branch for branch, _ in proposal):
+  # Quit now on precondition failure or if instructed by the user, either
+  # via an interactive prompt or by command line flags.
+  if options.dry_run:
+    print('\nNo changes were made (dry run).\n')
+    return 0
+  elif any(branch == current_branch for branch, _ in proposal):
     print('You are currently on a branch \'%s\' which is associated with a '
           'closed codereview issue, so archive cannot proceed. Please '
           'checkout another branch and run this command again.' %
           current_branch)
     return 1
-
-  if not options.force:
+  elif not options.force:
     answer = ask_for_data('\nProceed with deletion (Y/n)? ').lower()
     if answer not in ('y', ''):
       print('Aborted.')
       return 1
 
   for branch, tagname in proposal:
-    RunGit(['tag', tagname, branch])
+    if not options.notags:
+      RunGit(['tag', tagname, branch])
     RunGit(['branch', '-D', branch])
+
   print('\nJob\'s done!')
 
   return 0
