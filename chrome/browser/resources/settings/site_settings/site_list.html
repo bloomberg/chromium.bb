@@ -58,7 +58,8 @@
             <template is="dom-if" if="[[isPolicyControlled_(item.source)]]">
               <iron-icon icon="cr:domain"></iron-icon>
             </template>
-            <paper-menu-button hidden="[[!shouldShowMenu_(item.source)]]">
+            <paper-menu-button hidden="[[!shouldShowMenu_(item.source)]]"
+                horizontal-align="right">
               <paper-icon-button icon="cr:more-vert" class="dropdown-trigger">
               </paper-icon-button>
               <paper-menu id="actionMenu" class="dropdown-content"
