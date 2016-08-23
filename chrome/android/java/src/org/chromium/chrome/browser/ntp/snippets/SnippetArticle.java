@@ -14,6 +14,9 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.Con
  * Represents the data for an article card on the NTP.
  */
 public class SnippetArticle implements NewTabPageItem {
+    /** The category of this article. */
+    public final int mCategory;
+
     /** The unique identifier for this article. */
     public final String mId;
 
@@ -38,8 +41,11 @@ public class SnippetArticle implements NewTabPageItem {
     /** The score expressing relative quality of the article for the user. */
     public final float mScore;
 
-    /** The position of this article in the whole list of snippets. */
+    /** The position of this article within its section. */
     public final int mPosition;
+
+    /** The position of this article in the complete list. Populated by NewTabPageAdapter.*/
+    public int mGlobalPosition = -1;
 
     /** The layout that should be used to display the snippet. */
     @ContentSuggestionsCardLayoutEnum
@@ -57,9 +63,10 @@ public class SnippetArticle implements NewTabPageItem {
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
      */
-    public SnippetArticle(String id, String title, String publisher, String previewText,
-            String url, String ampUrl, long timestamp, float score, int position,
-            @ContentSuggestionsCardLayoutEnum int cardLayout) {
+    public SnippetArticle(int category, String id, String title, String publisher,
+            String previewText, String url, String ampUrl, long timestamp, float score,
+            int position, @ContentSuggestionsCardLayoutEnum int cardLayout) {
+        mCategory = category;
         mId = id;
         mTitle = title;
         mPublisher = publisher;
@@ -118,13 +125,14 @@ public class SnippetArticle implements NewTabPageItem {
     }
 
     /** Tracks impression of this NTP snippet. */
-    public void trackImpression() {
+    public boolean trackImpression() {
         // Track UMA only upon the first impression per life-time of this object.
-        if (mImpressionTracked) return;
+        if (mImpressionTracked) return false;
 
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardShown", mPosition);
         recordAgeAndScore("NewTabPage.Snippets.CardShown");
         mImpressionTracked = true;
+        return true;
     }
 
     /** Returns whether impression of this SnippetArticleListItem has already been tracked. */

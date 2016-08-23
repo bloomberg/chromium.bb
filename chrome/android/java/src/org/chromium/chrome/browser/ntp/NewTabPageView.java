@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
@@ -153,19 +154,30 @@ public class NewTabPageView extends FrameLayout
         void navigateToDownloadManager();
 
         /**
-         * Opens a URL in the current tab and records related metrics.
-         * @param url the URL to open
+         * Tracks per-page-load metrics for content suggestions.
+         * @param categories The categories of content suggestions.
+         * @param suggestionsPerCategory The number of content suggestions in each category.
          */
-        void openSnippet(String url);
+        void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory);
 
-        /** Opens a URL in the current tab. */
-        void openUrl(String url);
+        /**
+         * Tracks impression metrics for a content suggestion.
+         * @param article The content suggestion that was shown to the user.
+         */
+        void trackSnippetImpression(SnippetArticle article);
 
-        /** Opens a URL in a new window. */
-        void openUrlInNewWindow(String url);
+        /**
+         * Tracks impression metrics for the long-press menu for a content suggestion.
+         * @param article The content suggestion for which the long-press menu was opened.
+         */
+        void trackSnippetMenuOpened(SnippetArticle article);
 
-        /** Opens a URL in a new tab. */
-        void openUrlInNewTab(String url, boolean incognito);
+        /**
+         * Opens a content suggestion and records related metrics.
+         * @param windowOpenDisposition How to open (current tab, new tab, new window etc).
+         * @param article The content suggestion to open.
+         */
+        void openSnippet(int windowOpenDisposition, SnippetArticle article);
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.

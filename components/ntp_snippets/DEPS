@@ -14,6 +14,6 @@ include_rules = [
   "+net/http",
   "+net/url_request",
   "+google_apis",
-  "+ui/base/l10n",
+  "+ui/base",
   "+ui/gfx",
 ]

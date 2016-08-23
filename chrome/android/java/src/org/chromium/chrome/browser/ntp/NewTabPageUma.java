@@ -10,6 +10,7 @@ import android.support.annotation.IntDef;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -202,22 +203,27 @@ public class NewTabPageUma {
     }
 
     /**
-     * Records stats related to article visits, such as the time spent on the website, or if the
-     * user comes back to the NTP.
-     * @param tab Tab opened to load an article.
+     * Records stats related to content suggestion visits, such as the time spent on the website, or
+     * if the user comes back to the NTP.
+     * @param tab Tab opened to load a content suggestion.
+     * @param category The category of the content suggestion.
      */
-    public static void monitorVisit(Tab tab) {
-        tab.addObserver(new SnippetVisitRecorder());
+    public static void monitorContentSuggestionVisit(Tab tab, int category) {
+        tab.addObserver(new SnippetVisitRecorder(category));
     }
 
     /**
-     * Records stats related to article visits, such as the time spent on the website, or if the
-     * user comes back to the NTP. Use through {@link NewTabPageUma#monitorVisit(Tab)}.
+     * Records stats related to content suggestion visits, such as the time spent on the website, or
+     * if the user comes back to the NTP. Use through
+     * {@link NewTabPageUma#monitorContentSuggestionVisit(Tab, int)}.
      */
     private static class SnippetVisitRecorder extends EmptyTabObserver {
-        private final long mStartTimeNs = SystemClock.elapsedRealtime();
+        private final int mCategory;
+        private final long mStartTimeMs = SystemClock.elapsedRealtime();
 
-        private SnippetVisitRecorder() {}
+        private SnippetVisitRecorder(int category) {
+            mCategory = category;
+        }
 
         @Override
         public void onHidden(Tab tab) {
@@ -248,7 +254,7 @@ public class NewTabPageUma {
         @Override
         public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
             // End recording if a new URL gets loaded e.g. after entering a new query in
-            // the omnibox. This doesn't cover the nagivate-back case so we also need
+            // the omnibox. This doesn't cover the navigate-back case so we also need
             // onUpdateUrl.
             int transitionTypeMask = PageTransition.FROM_ADDRESS_BAR | PageTransition.HOME_PAGE
                     | PageTransition.CHAIN_START | PageTransition.CHAIN_END;
@@ -259,8 +265,10 @@ public class NewTabPageUma {
         private void endRecording(Tab removeObserverFromTab) {
             if (removeObserverFromTab != null) removeObserverFromTab.removeObserver(this);
             RecordUserAction.record("MobileNTP.Snippets.VisitEnd");
-            RecordHistogram.recordLongTimesHistogram("NewTabPage.Snippets.VisitDuration",
-                    SystemClock.elapsedRealtime() - mStartTimeNs, TimeUnit.MILLISECONDS);
+            long visitTimeMs = SystemClock.elapsedRealtime() - mStartTimeMs;
+            RecordHistogram.recordLongTimesHistogram(
+                    "NewTabPage.Snippets.VisitDuration", visitTimeMs, TimeUnit.MILLISECONDS);
+            SnippetsBridge.onSuggestionTargetVisited(mCategory, visitTimeMs);
         }
     }
 }

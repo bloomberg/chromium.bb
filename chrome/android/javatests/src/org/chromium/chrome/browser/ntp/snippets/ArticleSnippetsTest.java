@@ -85,6 +85,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
     private void setupTestData() {
         SnippetArticle shortSnippet = new SnippetArticle(
+                0,  // Category
                 "id1",
                 "Title",
                 "Publisher",
@@ -99,6 +100,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 R.drawable.signin_promo_illustration));
 
         SnippetArticle longSnippet = new SnippetArticle(
+                0,  // Category
                 "id2",
                 new String(new char[20]).replace("\0", "Title "),
                 new String(new char[20]).replace("\0", "Publisher "),
@@ -111,6 +113,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 ContentSuggestionsCardLayout.FULL_CARD);
 
         SnippetArticle minimalSnippet = new SnippetArticle(
+                0,  // Category
                 "id3",
                 new String(new char[20]).replace("\0", "Title "),
                 "Publisher",
@@ -205,7 +208,16 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void openSnippet(String url) {
+        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {}
+
+        @Override
+        public void trackSnippetImpression(SnippetArticle article) {}
+
+        @Override
+        public void trackSnippetMenuOpened(SnippetArticle article) {}
+
+        @Override
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             throw new UnsupportedOperationException();
         }
 
@@ -251,11 +263,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void openUrl(String url) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public boolean isOpenInNewWindowEnabled() {
             throw new UnsupportedOperationException();
         }
@@ -267,16 +274,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
         @Override
         public void navigateToDownloadManager() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void openUrlInNewWindow(String url) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void openUrlInNewTab(String url, boolean incognito) {
             throw new UnsupportedOperationException();
         }
 

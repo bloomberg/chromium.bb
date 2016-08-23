@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -68,6 +69,7 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -243,7 +245,7 @@ public class NewTabPage
             recordOpenedMostVisitedItem(item);
             String url = item.getUrl();
             if (!switchToExistingTab(url)) {
-                mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+                openUrl(WindowOpenDisposition.CURRENT_TAB, url);
             }
         }
 
@@ -276,15 +278,52 @@ public class NewTabPage
         }
 
         @Override
-        public void openSnippet(String url) {
-            openUrl(url);
-            NewTabPageUma.monitorVisit(mTab);
+        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {
+            mSnippetsBridge.onPageShown(categories, suggestionsPerCategory);
         }
 
         @Override
-        public void openUrl(String url) {
+        public void trackSnippetImpression(SnippetArticle article) {
+            mSnippetsBridge.onSuggestionShown(article.mGlobalPosition, article.mCategory,
+                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore);
+        }
+
+        @Override
+        public void trackSnippetMenuOpened(SnippetArticle article) {
+            mSnippetsBridge.onSuggestionMenuOpened(article.mGlobalPosition, article.mCategory,
+                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore);
+        }
+
+        @Override
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
+            openUrl(windowOpenDisposition, article.mUrl);
+            mSnippetsBridge.onSuggestionOpened(article.mGlobalPosition, article.mCategory,
+                    article.mPosition, article.mPublishTimestampMilliseconds, article.mScore,
+                    windowOpenDisposition);
+            NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
+        }
+
+        private void openUrl(int windowOpenDisposition, String url) {
             assert !mIsDestroyed;
-            mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+            switch (windowOpenDisposition) {
+                case WindowOpenDisposition.CURRENT_TAB:
+                    mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+                    break;
+                case WindowOpenDisposition.NEW_FOREGROUND_TAB:
+                    openUrlInNewTab(url, false);
+                    break;
+                case WindowOpenDisposition.OFF_THE_RECORD:
+                    openUrlInNewTab(url, true);
+                    break;
+                case WindowOpenDisposition.NEW_WINDOW:
+                    openUrlInNewWindow(url);
+                    break;
+                case WindowOpenDisposition.SAVE_TO_DISK:
+                    saveUrlForOffline(url);
+                    break;
+                default:
+                    assert false;
+            }
         }
 
         @Override
@@ -311,15 +350,16 @@ public class NewTabPage
             if (mIsDestroyed) return false;
             switch (menuId) {
                 case ID_OPEN_IN_NEW_WINDOW:
-                    openUrlInNewWindow(item.getUrl());
+                    // TODO(treib): Should we call recordOpenedMostVisitedItem here?
+                    openUrl(WindowOpenDisposition.NEW_WINDOW, item.getUrl());
                     return true;
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    openUrlInNewTab(item.getUrl(), false);
+                    openUrl(WindowOpenDisposition.NEW_FOREGROUND_TAB, item.getUrl());
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    openUrlInNewTab(item.getUrl(), true);
+                    openUrl(WindowOpenDisposition.OFF_THE_RECORD, item.getUrl());
                     return true;
                 case ID_REMOVE:
                     mMostVisitedSites.addBlacklistedUrl(item.getUrl());
@@ -340,17 +380,21 @@ public class NewTabPage
             return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
         }
 
-        @Override
-        public void openUrlInNewWindow(String url) {
+        private void openUrlInNewWindow(String url) {
             TabDelegate tabDelegate = new TabDelegate(false);
+            // TODO(treib): Should this use PageTransition.AUTO_BOOKMARK?
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity, mTab.getParentId());
         }
 
-        @Override
-        public void openUrlInNewTab(String url, boolean incognito) {
+        private void openUrlInNewTab(String url, boolean incognito) {
             mTabModelSelector.openNewTab(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK),
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, incognito);
+        }
+
+        private void saveUrlForOffline(String url) {
+            OfflinePageBridge bridge = OfflinePageBridge.getForProfile(mProfile);
+            bridge.savePageLaterForDownload(url, "ntp_suggestions");
         }
 
         @Override

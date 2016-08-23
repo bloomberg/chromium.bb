@@ -69,6 +69,37 @@ class NTPSnippetsBridge
                      const base::android::JavaParamRef<jobject>& callback,
                      const base::android::JavaParamRef<jstring>& jurl);
 
+  void OnPageShown(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jintArray>& jcategories,
+      const base::android::JavaParamRef<jintArray>& jsuggestions_per_category);
+
+  void OnSuggestionShown(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jint global_position,
+                         jint category,
+                         jint category_position,
+                         jlong publish_timestamp_ms,
+                         jfloat score);
+
+  void OnSuggestionOpened(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj,
+                          jint global_position,
+                          jint category,
+                          jint category_position,
+                          jlong publish_timestamp_ms,
+                          jfloat score,
+                          int windowOpenDisposition);
+
+  void OnSuggestionMenuOpened(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              jint global_position,
+                              jint category,
+                              jint category_position,
+                              jlong publish_timestamp_ms,
+                              jfloat score);
+
   static bool Register(JNIEnv* env);
 
  private:
@@ -86,6 +117,8 @@ class NTPSnippetsBridge
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& snippet_id,
                       const gfx::Image& image);
+
+  ntp_snippets::Category CategoryFromIDValue(jint id);
 
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
   history::HistoryService* history_service_;

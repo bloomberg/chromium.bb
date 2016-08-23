@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,8 +19,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -27,6 +30,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaIntArrayToIntVector;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -46,6 +50,12 @@ void URLVisitedHistoryRequestCallback(
     const history::VisitVector& visitVector) {
   bool visited = success && row.visit_count() != 0;
   base::android::RunCallbackAndroid(callback, visited);
+}
+
+// TODO(treib): Move this into the Time class itself.
+base::Time TimeFromJavaTime(jlong timestamp_ms) {
+  return base::Time::UnixEpoch() +
+         base::TimeDelta::FromMilliseconds(timestamp_ms);
 }
 
 } // namespace
@@ -90,6 +100,18 @@ static void RescheduleFetching(JNIEnv* env,
   service->RescheduleFetching();
 }
 
+static void OnSuggestionTargetVisited(JNIEnv* env,
+                                      const JavaParamRef<jclass>& caller,
+                                      jint category,
+                                      jlong visit_time_ms) {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile);
+  ntp_snippets::metrics::OnSuggestionTargetVisited(
+      content_suggestions_service->category_factory()->FromIDValue(category),
+      base::TimeDelta::FromMilliseconds(visit_time_ms));
+}
+
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_profile)
     : content_suggestions_service_observer_(this), weak_ptr_factory_(this) {
@@ -126,7 +148,7 @@ int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          jint category) {
   return static_cast<int>(content_suggestions_service_->GetCategoryStatus(
-      content_suggestions_service_->category_factory()->FromIDValue(category)));
+      CategoryFromIDValue(category)));
 }
 
 base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
@@ -135,8 +157,7 @@ base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
     jint category) {
   base::Optional<CategoryInfo> info =
       content_suggestions_service_->GetCategoryInfo(
-          content_suggestions_service_->category_factory()->FromIDValue(
-              category));
+          CategoryFromIDValue(category));
   if (!info)
     return base::android::ScopedJavaLocalRef<jobject>(env, nullptr);
   return Java_SnippetsBridge_createSuggestionsCategoryInfo(
@@ -152,19 +173,17 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
   // Get layout for the category.
   base::Optional<CategoryInfo> info =
       content_suggestions_service_->GetCategoryInfo(
-          content_suggestions_service_->category_factory()->FromIDValue(
-              category));
+          CategoryFromIDValue(category));
   DCHECK(info);
 
   const std::vector<ContentSuggestion>& suggestions =
       content_suggestions_service_->GetSuggestionsForCategory(
-          content_suggestions_service_->category_factory()->FromIDValue(
-              category));
+          CategoryFromIDValue(category));
   ScopedJavaLocalRef<jobject> result =
       Java_SnippetsBridge_createSuggestionList(env);
   for (const ContentSuggestion& suggestion : suggestions) {
     Java_SnippetsBridge_addSuggestion(
-        env, result, ConvertUTF8ToJavaString(env, suggestion.id()),
+        env, result, category, ConvertUTF8ToJavaString(env, suggestion.id()),
         ConvertUTF16ToJavaString(env, suggestion.title()),
         ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
         ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
@@ -205,6 +224,64 @@ void NTPSnippetsBridge::GetURLVisited(JNIEnv* env,
   history_service_->QueryURL(
       GURL(ConvertJavaStringToUTF8(env, jurl)), false,
       base::Bind(&URLVisitedHistoryRequestCallback, callback), &tracker_);
+}
+
+void NTPSnippetsBridge::OnPageShown(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jintArray>& jcategories,
+    const JavaParamRef<jintArray>& jsuggestions_per_category) {
+  std::vector<int> categories_int;
+  JavaIntArrayToIntVector(env, jcategories, &categories_int);
+  std::vector<int> suggestions_per_category_int;
+  JavaIntArrayToIntVector(env, jsuggestions_per_category,
+                          &suggestions_per_category_int);
+  DCHECK_EQ(categories_int.size(), suggestions_per_category_int.size());
+  std::vector<std::pair<Category, int>> suggestions_per_category;
+  for (size_t i = 0; i < categories_int.size(); i++) {
+    suggestions_per_category.push_back(
+        std::make_pair(CategoryFromIDValue(categories_int[i]),
+                       suggestions_per_category_int[i]));
+  }
+  ntp_snippets::metrics::OnPageShown(suggestions_per_category);
+}
+
+void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj,
+                                          jint global_position,
+                                          jint category,
+                                          jint category_position,
+                                          jlong publish_timestamp_ms,
+                                          jfloat score) {
+  ntp_snippets::metrics::OnSuggestionShown(
+      global_position, CategoryFromIDValue(category), category_position,
+      TimeFromJavaTime(publish_timestamp_ms), score);
+}
+
+void NTPSnippetsBridge::OnSuggestionOpened(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           jint global_position,
+                                           jint category,
+                                           jint category_position,
+                                           jlong publish_timestamp_ms,
+                                           jfloat score,
+                                           int windowOpenDisposition) {
+  ntp_snippets::metrics::OnSuggestionOpened(
+      global_position, CategoryFromIDValue(category), category_position,
+      TimeFromJavaTime(publish_timestamp_ms), score,
+      static_cast<WindowOpenDisposition>(windowOpenDisposition));
+}
+
+void NTPSnippetsBridge::OnSuggestionMenuOpened(JNIEnv* env,
+                                               const JavaParamRef<jobject>& obj,
+                                               jint global_position,
+                                               jint category,
+                                               jint category_position,
+                                               jlong publish_timestamp_ms,
+                                               jfloat score) {
+  ntp_snippets::metrics::OnSuggestionMenuOpened(
+      global_position, CategoryFromIDValue(category), category_position,
+      TimeFromJavaTime(publish_timestamp_ms), score);
 }
 
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
@@ -254,6 +331,10 @@ void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
   base::android::RunCallbackAndroid(callback, j_bitmap);
+}
+
+Category NTPSnippetsBridge::CategoryFromIDValue(jint id) {
+  return content_suggestions_service_->category_factory()->FromIDValue(id);
 }
 
 // static

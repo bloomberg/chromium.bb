@@ -154,7 +154,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
                 Arrays.asList(new SnippetArticle[] {new SnippetArticle(
-                        "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
+                        0, "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
                         ContentSuggestionsCardLayout.FULL_CARD)}));
         assertEquals(loadedItems, mNtpAdapter.getItems());
     }
@@ -192,7 +192,7 @@ public class NewTabPageAdapterTest {
         // The adapter should ignore any new incoming data.
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
                 Arrays.asList(new SnippetArticle[] {new SnippetArticle(
-                        "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
+                        0, "foo", "title1", "pub1", "txt1", "foo", "bar", 0, 0, 0,
                         ContentSuggestionsCardLayout.FULL_CARD)}));
         assertEquals(loadedItems, mNtpAdapter.getItems());
     }
@@ -243,7 +243,7 @@ public class NewTabPageAdapterTest {
 
         // If we have snippets, we should not load the new list (i.e. the extra item does *not*
         // appear).
-        snippets.add(new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
+        snippets.add(new SnippetArticle(0, "https://site.com/url1", "title1", "pub1", "txt1",
                 "https://site.com/url1", "https://amp.site.com/url1", 0, 0, 0,
                 ContentSuggestionsCardLayout.FULL_CARD));
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
@@ -446,7 +446,7 @@ public class NewTabPageAdapterTest {
     private List<SnippetArticle> createDummySnippets(int count) {
         List<SnippetArticle> snippets = new ArrayList<>();
         for (int index = 0; index < count; index++) {
-            snippets.add(new SnippetArticle("https://site.com/url" + index, "title" + index,
+            snippets.add(new SnippetArticle(0, "https://site.com/url" + index, "title" + index,
                     "pub" + index, "txt" + index, "https://site.com/url" + index,
                     "https://amp.site.com/url" + index, 0, 0, 0,
                     ContentSuggestionsCardLayout.FULL_CARD));

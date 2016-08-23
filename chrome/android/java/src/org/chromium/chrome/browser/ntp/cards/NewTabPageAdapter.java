@@ -132,15 +132,24 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mSuggestionsSource = suggestionsSource;
         mUiConfig = uiConfig;
 
-        for (int category : mSuggestionsSource.getCategories()) {
+        int[] categories = mSuggestionsSource.getCategories();
+        int[] suggestionsPerCategory = new int[categories.length];
+        int i = 0;
+        for (int category : categories) {
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
             assert categoryStatus != CategoryStatus.NOT_PROVIDED;
             if (categoryStatus == CategoryStatus.LOADING_ERROR
                     || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
                 continue;
 
-            setSuggestions(category, suggestionsSource.getSuggestionsForCategory(category),
-                    categoryStatus);
+            List<SnippetArticle> suggestions =
+                    suggestionsSource.getSuggestionsForCategory(category);
+            suggestionsPerCategory[i++] = suggestions.size();
+            setSuggestions(category, suggestions, categoryStatus);
+        }
+        // |mNewTabPageManager| is null in some tests.
+        if (mNewTabPageManager != null) {
+            mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
         }
         suggestionsSource.setObserver(this);
         updateGroups();
@@ -297,6 +306,17 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
             @CategoryStatusEnum int status) {
+        // Count the number of suggestions before this category.
+        int globalPositionOffset = 0;
+        for (Map.Entry<Integer, SuggestionsSection> entry : mSections.entrySet()) {
+            if (entry.getKey() == category) break;
+            globalPositionOffset += entry.getValue().getSuggestionsCount();
+        }
+        // Assign global indices to the new suggestions.
+        for (SnippetArticle suggestion : suggestions) {
+            suggestion.mGlobalPosition = globalPositionOffset + suggestion.mPosition;
+        }
+        // Add the new suggestions.
         if (!mSections.containsKey(category)) {
             SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
             if (suggestions.isEmpty() && !info.showIfEmpty()) return;
@@ -310,6 +330,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private void updateGroups() {
         mGroups.clear();
         mGroups.add(mAboveTheFold);
+        // TODO(treib,bauerb): Preserve the order of categories we got from getCategories.
         mGroups.addAll(mSections.values());
         if (!mSections.isEmpty()) {
             mGroups.add(mBottomSpacer);

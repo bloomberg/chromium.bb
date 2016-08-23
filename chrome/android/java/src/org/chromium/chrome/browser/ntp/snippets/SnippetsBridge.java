@@ -129,6 +129,36 @@ public class SnippetsBridge implements SuggestionsSource {
         nativeGetURLVisited(mNativeSnippetsBridge, callback, suggestion.mUrl);
     }
 
+    public void onPageShown(int[] categories, int[] suggestionsPerCategory) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnPageShown(mNativeSnippetsBridge, categories, suggestionsPerCategory);
+    }
+
+    public void onSuggestionShown(int globalPosition, int category, int categoryPosition,
+            long publishTimestampMs, float score) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnSuggestionShown(mNativeSnippetsBridge, globalPosition, category, categoryPosition,
+                publishTimestampMs, score);
+    }
+
+    public void onSuggestionOpened(int globalPosition, int category, int categoryPosition,
+            long publishTimestampMs, float score, int windowOpenDisposition) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnSuggestionOpened(mNativeSnippetsBridge, globalPosition, category, categoryPosition,
+                publishTimestampMs, score, windowOpenDisposition);
+    }
+
+    public void onSuggestionMenuOpened(int globalPosition, int category, int categoryPosition,
+            long publishTimestampMs, float score) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnSuggestionMenuOpened(mNativeSnippetsBridge, globalPosition, category,
+                categoryPosition, publishTimestampMs, score);
+    }
+
+    public static void onSuggestionTargetVisited(int category, long visitTimeMs) {
+        nativeOnSuggestionTargetVisited(category, visitTimeMs);
+    }
+
     /**
      * Sets the recipient for the fetched snippets.
      *
@@ -152,11 +182,11 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private static void addSuggestion(List<SnippetArticle> suggestions, String id,
+    private static void addSuggestion(List<SnippetArticle> suggestions, int category, String id,
             String title, String publisher, String previewText, String url, String ampUrl,
             long timestamp, float score, int cardLayout) {
         int position = suggestions.size();
-        suggestions.add(new SnippetArticle(id, title, publisher, previewText, url, ampUrl,
+        suggestions.add(new SnippetArticle(category, id, title, publisher, previewText, url, ampUrl,
                 timestamp, score, position, cardLayout));
     }
 
@@ -199,5 +229,16 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String suggestionId);
     private native void nativeGetURLVisited(
             long nativeNTPSnippetsBridge, Callback<Boolean> callback, String url);
+    private native void nativeOnPageShown(
+            long nativeNTPSnippetsBridge, int[] categories, int[] suggestionsPerCategory);
+    private native void nativeOnSuggestionShown(long nativeNTPSnippetsBridge, int globalPosition,
+            int category, int categoryPosition, long publishTimestampMs, float score);
+    private native void nativeOnSuggestionOpened(long nativeNTPSnippetsBridge, int globalPosition,
+            int category, int categoryPosition, long publishTimestampMs, float score,
+            int windowOpenDisposition);
+    private native void nativeOnSuggestionMenuOpened(long nativeNTPSnippetsBridge,
+            int globalPosition, int category, int categoryPosition, long publishTimestampMs,
+            float score);
+    private static native void nativeOnSuggestionTargetVisited(int category, long visitTimeMs);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

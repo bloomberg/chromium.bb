@@ -35408,6 +35408,116 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The number of suggestion cards that were available at the time an
+    NTP was opened.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.MenuOpened" units="index">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The position of a suggestion card whose long-press menu was opened,
+    analogous to NewTabPage.ContentSuggestions.Opened.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.MenuOpenedAge" units="minutes">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The age of a suggestion card on the NTP whose long-press menu was
+    opened, analogous to NewTabPage.ContentSuggestions.OpenedAge.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.MenuOpenedScore" units="score">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The relevance score of a suggestion card on the NTP whose
+    long-press menu was opened, analogous to
+    NewTabPage.ContentSuggestions.OpenedScore.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.OpenDisposition"
+    enum="WindowOpenDisposition">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: How an article linked from a suggestion card on the NTP was opened
+    (e.g. plain click, open in new tab, open in incognito).
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.Opened" units="index">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The position of a suggestion card on the NTP that is clicked
+    through to the host website of the content. We track the position the
+    suggestion had in the list when the NTP was loaded. This tracked position
+    can be different from the position observed by the user, e.g. when the user
+    discarded some suggestions from the list.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.OpenedAge" units="minutes">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The age of a suggestion card on the NTP that is clicked through to
+    the host website of the content. The age is measured from the moment the
+    content has been published.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.OpenedScore" units="score">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The score of a suggestion card on the NTP that is clicked through
+    to the host website of the content. The recorded score is from the moment
+    the suggestion was fetched, it could have changed since.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.Shown" units="index">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The position of a suggestion card that was shown on the NTP. A card
+    is considered shown when at least 1/3 of its height is visible on the
+    screen. For each card, at most one impression is recorded per NTP instance.
+    We track the position the suggestion had in the list when the NTP was
+    loaded. This tracked position can be different from the position observed by
+    the user, e.g. when the user discarded some suggestions from the list.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.ShownAge" units="minutes">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The age of a suggestion card that was shown on the NTP. A card is
+    considered shown when at least 1/3 of its height is visible on the screen.
+    For each card, at most one impression is recorded per NTP instance.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.ShownScore" units="score">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The score of a suggestion card that was shown on the NTP. A card is
+    considered shown when at least 1/3 of its height is visible on the screen.
+    For each card, at most one impression is recorded per NTP instance.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.VisitDuration" units="ms">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: Time spent reading the page linked by an opened suggestion card.
+    Exit conditions include the tab not being in the foreground or starting a
+    new navigation.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.DefaultPageType" enum="NtpPaneType">
   <obsolete>
     Deprecated 2016-02.
@@ -97004,6 +97114,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Desktop Aura"/>
 </enum>
 
+<enum name="WindowOpenDisposition" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Current Tab"/>
+  <int value="2" label="Singleton Tab"/>
+  <int value="3" label="New Foreground Tab"/>
+  <int value="4" label="New Background Tab"/>
+  <int value="5" label="New Popup"/>
+  <int value="6" label="New Window"/>
+  <int value="7" label="Save To Disk"/>
+  <int value="8" label="Off The Record"/>
+  <int value="9" label="Ignore Action"/>
+</enum>
+
 <enum name="WindowsExitCode" type="int">
   <int value="-2147483645" label="0x80000003 - STATUS_BREAKPOINT"/>
   <int value="-1073741819" label="0xC0000005 - STATUS_ACCESS_VIOLATION"/>
@@ -98002,6 +98125,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ssl-cert-decisions" label="SSL cert decisions exceptions"/>
   <suffix name="usb-chooser-data" label="USB chooser data exceptions"/>
   <affected-histogram name="ContentSettings.Exceptions"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ContentSuggestionCategory" separator=".">
+  <suffix name="RecentTabs" label="Recent (offline) tabs"/>
+  <suffix name="Downloads" label="Downloads"/>
+  <suffix name="Bookmarks" label="Bookmarks"/>
+  <suffix name="Articles" label="Articles for you"/>
+  <suffix name="Experimental" label="Experimental"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpened"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.MenuOpened"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.MenuOpenedAge"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.MenuOpenedScore"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.OpenDisposition"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.Opened"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.OpenedAge"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.OpenedScore"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.Shown"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.ShownAge"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.ShownScore"/>
+  <affected-histogram name="NewTabPage.ContentSuggestions.VisitDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContextMenuType" separator=".">

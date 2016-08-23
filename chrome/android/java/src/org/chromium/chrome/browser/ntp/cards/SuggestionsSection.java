@@ -85,6 +85,10 @@ public class SuggestionsSection implements ItemGroup {
         return !mSuggestions.isEmpty();
     }
 
+    public int getSuggestionsCount() {
+        return mSuggestions.size();
+    }
+
     public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         copyThumbnails(suggestions);
 

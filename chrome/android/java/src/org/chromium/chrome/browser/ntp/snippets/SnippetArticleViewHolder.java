@@ -41,8 +41,8 @@ import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.variations.VariationsAssociatedData;
+import org.chromium.ui.WindowOpenDisposition;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -121,7 +121,11 @@ public class SnippetArticleViewHolder extends CardViewHolder
                     Rect r = new Rect(0, 0, itemView.getWidth(), itemView.getHeight());
                     itemView.getParent().getChildVisibleRect(itemView, r, null);
                     // Track impression if at least one third of the snippet is shown.
-                    if (r.height() >= itemView.getHeight() / 3) mArticle.trackImpression();
+                    if (r.height() >= itemView.getHeight() / 3) {
+                        if (mArticle.trackImpression()) {
+                            mNewTabPageManager.trackSnippetImpression(mArticle);
+                        }
+                    }
                 }
                 // Proceed with the current drawing pass.
                 return true;
@@ -156,7 +160,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     @Override
     public void onCardTapped() {
-        mNewTabPageManager.openSnippet(mArticle.mUrl);
+        mNewTabPageManager.openSnippet(WindowOpenDisposition.CURRENT_TAB, mArticle);
         mArticle.trackClick();
     }
 
@@ -217,24 +221,22 @@ public class SnippetArticleViewHolder extends CardViewHolder
             case ID_OPEN_IN_NEW_WINDOW:
                 NewTabPageUma.recordOpenSnippetMethod(
                         NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_WINDOW);
-                mNewTabPageManager.openUrlInNewWindow(mArticle.mUrl);
+                mNewTabPageManager.openSnippet(WindowOpenDisposition.NEW_WINDOW, mArticle);
                 return true;
             case ID_OPEN_IN_NEW_TAB:
                 NewTabPageUma.recordOpenSnippetMethod(
                         NewTabPageUma.OPEN_SNIPPET_METHODS_NEW_TAB);
-                mNewTabPageManager.openUrlInNewTab(mArticle.mUrl, false);
+                mNewTabPageManager.openSnippet(WindowOpenDisposition.NEW_FOREGROUND_TAB, mArticle);
                 return true;
             case ID_OPEN_IN_INCOGNITO_TAB:
                 NewTabPageUma.recordOpenSnippetMethod(
                         NewTabPageUma.OPEN_SNIPPET_METHODS_INCOGNITO);
-                mNewTabPageManager.openUrlInNewTab(mArticle.mUrl, true);
+                mNewTabPageManager.openSnippet(WindowOpenDisposition.OFF_THE_RECORD, mArticle);
                 return true;
             case ID_SAVE_FOR_OFFLINE:
                 NewTabPageUma.recordOpenSnippetMethod(
                         NewTabPageUma.OPEN_SNIPPET_METHODS_SAVE_FOR_OFFLINE);
-                OfflinePageBridge bridge =
-                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile());
-                bridge.savePageLaterForDownload(mArticle.mUrl, "ntp_suggestions");
+                mNewTabPageManager.openSnippet(WindowOpenDisposition.SAVE_TO_DISK, mArticle);
                 return true;
             case ID_REMOVE:
                 assert isDismissable() : "Context menu should not be shown for peeking card.";

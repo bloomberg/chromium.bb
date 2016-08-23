@@ -26,6 +26,8 @@ static_library("ntp_snippets") {
     "category_status.h",
     "content_suggestion.cc",
     "content_suggestion.h",
+    "content_suggestions_metrics.cc",
+    "content_suggestions_metrics.h",
     "content_suggestions_provider.cc",
     "content_suggestions_provider.h",
     "content_suggestions_service.cc",
@@ -67,6 +69,7 @@ static_library("ntp_snippets") {
     "//components/sync",
     "//google_apis",
     "//net",
+    "//ui/base",
     "//url",
   ]
 
@@ -81,7 +84,6 @@ static_library("ntp_snippets") {
     "//components/variations",
     "//components/variations/net",
     "//third_party/icu/",
-    "//ui/base",
     "//ui/gfx",
   ]
 }
