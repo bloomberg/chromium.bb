@@ -322,6 +322,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
     return false;
   DCHECK(prerender_data->contents());
 
+  if (prerender_data->contents()->prerender_mode() != FULL_PRERENDER)
+    return false;
+
   std::unique_ptr<WebContents> new_web_contents = SwapInternal(
       url, web_contents, prerender_data, params->should_replace_current_entry);
   if (!new_web_contents)
@@ -573,6 +576,8 @@ const char* PrerenderManager::GetModeString() {
       return "_15MinTTL";
     case PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP:
       return "_NoUse";
+    case PRERENDER_MODE_NOSTATE_PREFETCH:
+      return "_NoStatePrefetch";
     case PRERENDER_MODE_MAX:
     default:
       NOTREACHED() << "Invalid PrerenderManager mode.";
@@ -599,6 +604,11 @@ bool PrerenderManager::IsControlGroup() {
 // static
 bool PrerenderManager::IsNoUseGroup() {
   return GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
+}
+
+// static
+bool PrerenderManager::IsNoStatePrefetch() {
+  return GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
 }
 
 bool PrerenderManager::IsWebContentsPrerendering(
@@ -678,8 +688,11 @@ std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
   std::vector<WebContents*> result;
 
   for (const auto& prerender : active_prerenders_) {
-    if (WebContents* contents = prerender->contents()->prerender_contents())
+    WebContents* contents = prerender->contents()->prerender_contents();
+    if (contents &&
+        prerender->contents()->prerender_mode() == FULL_PRERENDER) {
       result.push_back(contents);
+    }
   }
 
   return result;
@@ -937,6 +950,8 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
       CreatePrerenderContents(url, referrer, origin);
   DCHECK(prerender_contents);
   PrerenderContents* prerender_contents_ptr = prerender_contents.get();
+  if (IsNoStatePrefetch())
+    prerender_contents_ptr->SetPrerenderMode(PREFETCH_ONLY);
   active_prerenders_.push_back(
       base::MakeUnique<PrerenderData>(this, std::move(prerender_contents),
                                       GetExpiryTimeForNewPrerender(origin)));

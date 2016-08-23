@@ -196,7 +196,8 @@ PrerenderContents::PrerenderContents(
     const GURL& url,
     const content::Referrer& referrer,
     Origin origin)
-    : prerendering_has_started_(false),
+    : prerender_mode_(FULL_PRERENDER),
+      prerendering_has_started_(false),
       session_storage_namespace_id_(-1),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
@@ -215,6 +216,11 @@ PrerenderContents::PrerenderContents(
 
 bool PrerenderContents::Init() {
   return AddAliasURL(prerender_url_);
+}
+
+void PrerenderContents::SetPrerenderMode(PrerenderMode mode) {
+  DCHECK(!prerendering_has_started_);
+  prerender_mode_ = mode;
 }
 
 // static
@@ -512,7 +518,7 @@ void PrerenderContents::RenderFrameCreated(
   // occur.  Note that this is always triggered before the first navigation, so
   // there's no need to send the message just after the WebContents is created.
   render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
-      render_frame_host->GetRoutingID(), FULL_PRERENDER));
+      render_frame_host->GetRoutingID(), prerender_mode_));
 }
 
 void PrerenderContents::DidStopLoading() {

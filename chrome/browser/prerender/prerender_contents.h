@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
+#include "chrome/common/prerender_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -100,6 +101,11 @@ class PrerenderContents : public content::NotificationObserver,
   void RemoveObserver(Observer* observer);
 
   bool Init();
+
+  // Set the mode of this contents. This must be called before prerender has
+  // started.
+  void SetPrerenderMode(PrerenderMode mode);
+  PrerenderMode prerender_mode() const { return prerender_mode_; }
 
   static Factory* CreateFactory();
 
@@ -264,6 +270,7 @@ class PrerenderContents : public content::NotificationObserver,
   content::WebContents* CreateWebContents(
       content::SessionStorageNamespace* session_storage_namespace);
 
+  PrerenderMode prerender_mode_;
   bool prerendering_has_started_;
 
   // Time at which we started to load the URL.  This is used to compute

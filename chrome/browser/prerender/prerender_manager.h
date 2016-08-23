@@ -84,7 +84,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP = 6,
     PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP = 7,
     // Obsolete: PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP = 8,
-    PRERENDER_MODE_MAX = 9
+    PRERENDER_MODE_NOSTATE_PREFETCH = 9,
+    PRERENDER_MODE_MAX = 10
   };
 
   // One or more of these flags must be passed to ClearData() to specify just
@@ -205,6 +206,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool ActuallyPrerendering();
   static bool IsControlGroup();
   static bool IsNoUseGroup();
+  static bool IsNoStatePrefetch();
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page. The optional parameter |origin| is an output

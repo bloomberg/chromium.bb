@@ -23,6 +23,8 @@ void ConfigurePrerender(const base::CommandLine& command_line) {
 
     if (switch_value == switches::kPrerenderModeSwitchValueDisabled) {
       mode = PrerenderManager::PRERENDER_MODE_DISABLED;
+    } else if (switch_value == switches::kPrerenderModeSwitchValuePrefetch) {
+      mode = PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH;
     } else if (switch_value.empty() ||
                switch_value == switches::kPrerenderModeSwitchValueEnabled) {
       // The empty string means the option was provided with no value, and that

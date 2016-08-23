@@ -211,6 +211,7 @@ extern const char kPrerenderFromOmniboxSwitchValueEnabled[];
 extern const char kPrerenderMode[];
 extern const char kPrerenderModeSwitchValueDisabled[];
 extern const char kPrerenderModeSwitchValueEnabled[];
+extern const char kPrerenderModeSwitchValuePrefetch[];
 extern const char kPrivetIPv6Only[];
 extern const char kProductVersion[];
 extern const char kProfileDirectory[];
