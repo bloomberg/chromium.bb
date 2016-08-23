@@ -983,6 +983,7 @@ SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const
 ImageBuffer* HTMLCanvasElement::buffer() const
 {
     DCHECK(m_context);
+    DCHECK(m_context->getContextType() != CanvasRenderingContext::ContextImageBitmap);
     if (!hasImageBuffer() && !m_didFailToCreateImageBuffer)
         const_cast<HTMLCanvasElement*>(this)->createImageBuffer();
     return m_imageBuffer.get();
