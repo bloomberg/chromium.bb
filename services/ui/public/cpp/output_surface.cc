@@ -9,6 +9,7 @@
 #include "cc/output/output_surface_client.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/context_provider.h"
+#include "services/ui/public/cpp/gpu_service.h"
 #include "services/ui/public/cpp/window_surface.h"
 
 namespace ui {
@@ -29,10 +30,19 @@ OutputSurface::~OutputSurface() {}
 bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   surface_->BindToThread();
   surface_->set_client(this);
+
+  // TODO(enne): Get this from the WindowSurface via ServerWindowSurface.
+  begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
+      base::MakeUnique<cc::DelayBasedTimeSource>(
+          base::ThreadTaskRunnerHandle::Get().get())));
+
+  client->SetBeginFrameSource(begin_frame_source_.get());
   return cc::OutputSurface::BindToClient(client);
 }
 
 void OutputSurface::DetachFromClient() {
+  client_->SetBeginFrameSource(nullptr);
+  begin_frame_source_.reset();
   surface_.reset();
   cc::OutputSurface::DetachFromClient();
 }

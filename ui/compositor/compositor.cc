@@ -45,11 +45,6 @@ namespace {
 const double kDefaultRefreshRate = 60.0;
 const double kTestRefreshRate = 200.0;
 
-bool IsRunningInMojoShell(base::CommandLine* command_line) {
-  const char kMojoShellFlag[] = "mojo-platform-channel-handle";
-  return command_line->HasSwitch(kMojoShellFlag);
-}
-
 }  // namespace
 
 namespace ui {
@@ -188,10 +183,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // thread.
   settings.image_decode_tasks_enabled = false;
 
-  // TODO(crbug.com/603600): This should always be turned on once mus tells its
-  // clients about BeginFrame.
-  settings.use_output_surface_begin_frame_source =
-      !IsRunningInMojoShell(command_line);
+  settings.use_output_surface_begin_frame_source = true;
 
 #if !defined(OS_ANDROID)
   // TODO(sohanjg): Revisit this memory usage in tile manager.

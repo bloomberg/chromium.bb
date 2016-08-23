@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/cpp/window_surface.h"
@@ -39,6 +40,7 @@ class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
 
   void SwapBuffersComplete();
 
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<WindowSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
