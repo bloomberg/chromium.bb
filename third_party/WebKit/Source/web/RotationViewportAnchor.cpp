@@ -9,6 +9,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -93,16 +94,17 @@ RotationViewportAnchor::~RotationViewportAnchor()
 
 void RotationViewportAnchor::setAnchor()
 {
-    // FIXME: Scroll offsets are now fractional (DoublePoint and FloatPoint for the FrameView and VisualViewport
-    //        respectively. This path should be rewritten without pixel snapping.
-    IntRect outerViewRect = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect(IncludeScrollbars);
-    IntRect innerViewRect = enclosedIntRect(m_rootFrameView->getScrollableArea()->visibleContentRectDouble());
+    RootFrameViewport* rootFrameViewport = m_rootFrameView->getRootFrameViewport();
+    DCHECK(rootFrameViewport);
+
+    IntRect outerViewRect = layoutViewport().visibleContentRect(IncludeScrollbars);
+    IntRect innerViewRect = enclosedIntRect(rootFrameViewport->visibleContentRectDouble());
 
     m_oldPageScaleFactor = m_visualViewport->scale();
     m_oldMinimumPageScaleFactor = m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
     // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
-    m_visualViewportInDocument = FloatPoint(m_rootFrameView->getScrollableArea()->visibleContentRectDouble().location());
+    m_visualViewportInDocument = FloatPoint(rootFrameViewport->visibleContentRectDouble().location());
 
     m_anchorNode.clear();
     m_anchorNodeBounds = LayoutRect();
@@ -127,17 +129,19 @@ void RotationViewportAnchor::setAnchor()
     // Normalize by the size of the outer rect
     m_normalizedVisualViewportOffset.scale(1.0 / outerViewRect.width(), 1.0 / outerViewRect.height());
 
-    FloatSize anchorOffset(innerViewRect.size());
+    FloatPoint anchorOffset(innerViewRect.size());
     anchorOffset.scale(m_anchorInInnerViewCoords.width(), m_anchorInInnerViewCoords.height());
-    const FloatPoint anchorPoint = FloatPoint(innerViewRect.location()) + anchorOffset;
 
-    Node* node = findNonEmptyAnchorNode(flooredIntPoint(anchorPoint), innerViewRect, m_rootFrameView->frame().eventHandler());
+    const FloatPoint anchorPointInContents =
+        m_rootFrameView->rootFrameToContents(m_visualViewport->viewportToRootFrame(anchorOffset));
+
+    Node* node = findNonEmptyAnchorNode(flooredIntPoint(anchorPointInContents), innerViewRect, m_rootFrameView->frame().eventHandler());
     if (!node)
         return;
 
     m_anchorNode = node;
     m_anchorNodeBounds = node->boundingBox();
-    m_anchorInNodeCoords = anchorPoint - FloatPoint(m_anchorNodeBounds.location());
+    m_anchorInNodeCoords = anchorPointInContents - FloatPoint(m_anchorNodeBounds.location());
     m_anchorInNodeCoords.scale(1.f / m_anchorNodeBounds.width(), 1.f / m_anchorNodeBounds.height());
 }
 
@@ -154,16 +158,23 @@ void RotationViewportAnchor::restoreToAnchor()
 
     computeOrigins(visualViewportSize, mainFrameOrigin, visualViewportOrigin);
 
-    m_rootFrameView->layoutViewportScrollableArea()->setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
+    layoutViewport().setScrollPosition(mainFrameOrigin, ProgrammaticScroll);
 
     // Set scale before location, since location can be clamped on setting scale.
     m_visualViewport->setScale(newPageScaleFactor);
     m_visualViewport->setLocation(visualViewportOrigin);
 }
 
+ScrollableArea& RotationViewportAnchor::layoutViewport() const
+{
+    RootFrameViewport* rootFrameViewport = m_rootFrameView->getRootFrameViewport();
+    DCHECK(rootFrameViewport);
+    return rootFrameViewport->layoutViewport();
+}
+
 void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& visualViewportOffset) const
 {
-    IntSize outerSize = m_rootFrameView->layoutViewportScrollableArea()->visibleContentRect().size();
+    IntSize outerSize = layoutViewport().visibleContentRect().size();
 
     // Compute the viewport origins in CSS pixels relative to the document.
     FloatSize absVisualViewportOffset = m_normalizedVisualViewportOffset;
@@ -177,7 +188,7 @@ void RotationViewportAnchor::computeOrigins(const FloatSize& innerSize, IntPoint
 
     moveToEncloseRect(outerRect, innerRect);
 
-    outerRect.setLocation(m_rootFrameView->layoutViewportScrollableArea()->clampScrollPosition(outerRect.location()));
+    outerRect.setLocation(layoutViewport().clampScrollPosition(outerRect.location()));
 
     moveIntoRect(innerRect, outerRect);
 
@@ -194,10 +205,14 @@ FloatPoint RotationViewportAnchor::getInnerOrigin(const FloatSize& innerSize) co
     if (m_anchorNodeBounds == currentNodeBounds)
         return m_visualViewportInDocument;
 
+    RootFrameViewport* rootFrameViewport = m_rootFrameView->getRootFrameViewport();
+    const LayoutRect currentNodeBoundsInLayoutViewport =
+        rootFrameViewport->rootContentsToLayoutViewportContents(*m_rootFrameView.get(), currentNodeBounds);
+
     // Compute the new anchor point relative to the node position
-    FloatSize anchorOffsetFromNode(currentNodeBounds.size());
+    FloatSize anchorOffsetFromNode(currentNodeBoundsInLayoutViewport.size());
     anchorOffsetFromNode.scale(m_anchorInNodeCoords.width(), m_anchorInNodeCoords.height());
-    FloatPoint anchorPoint = FloatPoint(currentNodeBounds.location()) + anchorOffsetFromNode;
+    FloatPoint anchorPoint = FloatPoint(currentNodeBoundsInLayoutViewport.location()) + anchorOffsetFromNode;
 
     // Compute the new origin point relative to the new anchor point
     FloatSize anchorOffsetFromOrigin = innerSize;

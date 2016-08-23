@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class FrameView;
 class LayoutRect;
 
 // ScrollableArea for the root frame's viewport. This class ties together the
@@ -32,6 +33,15 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void setLayoutViewport(ScrollableArea&);
+    ScrollableArea& layoutViewport() const;
+
+    // Convert from the root content document's coordinate space, into the
+    // coordinate space of the layout viewport's content. In the normal case,
+    // this will be a no-op since the root FrameView is the layout viewport and
+    // so the root content is the layout viewport's content but if the page
+    // sets a custom root scroller via document.rootScroller, another element
+    // may be the layout viewport.
+    LayoutRect rootContentsToLayoutViewportContents(FrameView& rootFrameView, const LayoutRect&) const;
 
     void restoreToAnchor(const DoublePoint&);
 
@@ -96,7 +106,6 @@ private:
     void updateScrollAnimator();
 
     ScrollableArea& visualViewport() const { ASSERT(m_visualViewport); return *m_visualViewport; }
-    ScrollableArea& layoutViewport() const { ASSERT(m_layoutViewport); return *m_layoutViewport; }
 
     Member<ScrollableArea> m_visualViewport;
     Member<ScrollableArea> m_layoutViewport;

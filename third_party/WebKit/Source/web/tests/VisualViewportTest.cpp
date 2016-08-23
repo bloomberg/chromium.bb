@@ -1898,4 +1898,37 @@ TEST_P(ParameterizedVisualViewportTest, ResizeAnchoringWithRootScroller)
     RuntimeEnabledFeatures::setSetRootScrollerEnabled(wasRootScrollerEnabled);
 }
 
+// Ensure that resize anchoring as happens when the device is rotated affects
+// the scrollable area that's currently set as the root scroller.
+TEST_P(ParameterizedVisualViewportTest, RotationAnchoringWithRootScroller)
+{
+    bool wasRootScrollerEnabled =
+        RuntimeEnabledFeatures::setRootScrollerEnabled();
+    RuntimeEnabledFeatures::setSetRootScrollerEnabled(true);
+
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+
+    registerMockedHttpURLLoad("root-scroller-div.html");
+    navigateTo(m_baseURL + "root-scroller-div.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    Element* scroller = frame()->document()->getElementById("rootScroller");
+    NonThrowableExceptionState nonThrow;
+    frame()->document()->setRootScroller(scroller, nonThrow);
+    webViewImpl()->updateAllLifecyclePhases();
+
+    scroller->setScrollTop(800);
+
+    webViewImpl()->resize(IntSize(600, 800));
+
+    EXPECT_POINT_EQ(
+        DoublePoint(),
+        frameView.layoutViewportScrollableArea()->scrollPositionDouble());
+    EXPECT_EQ(600, scroller->scrollTop());
+
+    RuntimeEnabledFeatures::setSetRootScrollerEnabled(wasRootScrollerEnabled);
+}
+
 } // namespace

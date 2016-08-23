@@ -23,6 +23,31 @@ void RootFrameViewport::setLayoutViewport(ScrollableArea& newLayoutViewport)
     m_layoutViewport = &newLayoutViewport;
 }
 
+ScrollableArea& RootFrameViewport::layoutViewport() const
+{
+    DCHECK(m_layoutViewport);
+    return *m_layoutViewport;
+}
+
+LayoutRect RootFrameViewport::rootContentsToLayoutViewportContents(FrameView& rootFrameView, const LayoutRect& rect) const
+{
+    LayoutRect ret(rect);
+
+    // If the root FrameView is the layout viewport then coordinates in the
+    // root FrameView's content space are already in the layout viewport's
+    // content space.
+    if (rootFrameView.layoutViewportScrollableArea() == &layoutViewport())
+        return ret;
+
+    // Make the given rect relative to the top of the layout viewport's content
+    // by adding the scroll position.
+    // TODO(bokan): This will have to be revisited if we ever remove the
+    // restriction that a root scroller must be exactly screen filling.
+    ret.moveBy(LayoutPoint(layoutViewport().scrollPositionDouble()));
+
+    return ret;
+}
+
 void RootFrameViewport::restoreToAnchor(const DoublePoint& targetPosition)
 {
     // Clamp the scroll offset of each viewport now so that we force any invalid

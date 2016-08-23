@@ -16,6 +16,7 @@ namespace blink {
 class FrameView;
 class Node;
 class PageScaleConstraintsSet;
+class ScrollableArea;
 class VisualViewport;
 
 // The rotation anchor provides a way to anchor a viewport origin to a DOM node.
@@ -39,6 +40,7 @@ private:
     FloatPoint getInnerOrigin(const FloatSize& innerSize) const;
 
     void computeOrigins(const FloatSize& innerSize, IntPoint& mainFrameOffset, FloatPoint& visualViewportOffset) const;
+    ScrollableArea& layoutViewport() const;
 
     Member<FrameView> m_rootFrameView;
     Member<VisualViewport> m_visualViewport;
