@@ -347,6 +347,11 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     categories_list->Append(std::move(category_entry));
   }
 
+  const std::string& status =
+      ntp_snippets_service_->snippets_fetcher()->last_status();
+  if (!status.empty())
+    SendString("hosts-status", "Finished: " + status);
+
   base::DictionaryValue result;
   result.Set("list", std::move(categories_list));
   web_ui()->CallJavascriptFunctionUnsafe(
