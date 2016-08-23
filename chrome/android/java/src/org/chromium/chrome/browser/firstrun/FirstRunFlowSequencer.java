@@ -239,7 +239,9 @@ public abstract class FirstRunFlowSequencer  {
 
         final boolean baseFreComplete = FirstRunStatus.getFirstRunFlowComplete(context);
         if (!baseFreComplete) {
-            if (forLightweightFre) {
+            if (forLightweightFre
+                    && CommandLine.getInstance().hasSwitch(
+                               ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
                 if (!FirstRunStatus.shouldSkipWelcomePage(context)
                         && !FirstRunStatus.getLightweightFirstRunFlowComplete(context)) {
                     return createLightweightFirstRunIntent(context, fromChromeIcon);

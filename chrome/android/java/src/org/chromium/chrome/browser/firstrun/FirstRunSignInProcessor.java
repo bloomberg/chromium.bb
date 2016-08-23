@@ -68,10 +68,12 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        // Force trigger the FRE if Chrome is started via Chrome icon or via intent from GSA.
-        // Otherwise, skip signin.
+        // Force trigger the FRE if the Lightweight FRE is disabled or Chrome is started via Chrome
+        // icon or via intent from GSA. Otherwise, skip signin.
         if (!firstRunFlowComplete) {
-            if (TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
+            if (!CommandLine.getInstance().hasSwitch(
+                        ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)
+                    || TextUtils.equals(activity.getIntent().getAction(), Intent.ACTION_MAIN)
                     || IntentHandler.determineExternalIntentSource(
                                activity.getPackageName(), activity.getIntent())
                             == ExternalAppId.GSA) {

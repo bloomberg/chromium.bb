@@ -20,6 +20,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -204,14 +205,17 @@ public class ChromeLauncherActivity extends Activity
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {
             boolean checkedFre = false;
-            // Launch the First Run Experience for VIEW Intents with URLs before launching
-            // ChromeTabbedActivity if necessary.
-            if (getIntent() != null && getIntent().getAction() == Intent.ACTION_VIEW
-                    && IntentHandler.getUrlFromIntent(getIntent()) != null) {
-                if (launchFirstRunExperience(true)) {
-                    return;
+            if (CommandLine.getInstance().hasSwitch(
+                        ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
+                // Launch the First Run Experience for VIEW Intents with URLs before launching
+                // ChromeTabbedActivity if necessary.
+                if (getIntent() != null && getIntent().getAction() == Intent.ACTION_VIEW
+                        && IntentHandler.getUrlFromIntent(getIntent()) != null) {
+                    if (launchFirstRunExperience(true)) {
+                        return;
+                    }
+                    checkedFre = true;
                 }
-                checkedFre = true;
             }
             launchTabbedMode(checkedFre);
             finish();
@@ -520,48 +524,51 @@ public class ChromeLauncherActivity extends Activity
         if (freIntent == null) return false;
 
         if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
-            boolean isTabbedModeActive = false;
-            boolean isLightweightFreActive = false;
-            boolean isGenericFreActive = false;
-            List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-            for (WeakReference<Activity> weakActivity : activities) {
-                Activity activity = weakActivity.get();
-                if (activity == null) {
-                    continue;
+            if (CommandLine.getInstance().hasSwitch(
+                        ChromeSwitches.ENABLE_LIGHTWEIGHT_FIRST_RUN_EXPERIENCE)) {
+                boolean isTabbedModeActive = false;
+                boolean isLightweightFreActive = false;
+                boolean isGenericFreActive = false;
+                List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+                for (WeakReference<Activity> weakActivity : activities) {
+                    Activity activity = weakActivity.get();
+                    if (activity == null) {
+                        continue;
+                    }
+
+                    if (activity instanceof ChromeTabbedActivity) {
+                        isTabbedModeActive = true;
+                        continue;
+                    }
+
+                    if (activity instanceof LightweightFirstRunActivity) {
+                        isLightweightFreActive = true;
+                        // A Generic or a new Lightweight First Run Experience will be launched
+                        // below, so finish the old Lightweight First Run Experience.
+                        activity.setResult(Activity.RESULT_CANCELED);
+                        activity.finish();
+                        continue;
+                    }
+
+                    if (activity instanceof FirstRunActivity) {
+                        isGenericFreActive = true;
+                        continue;
+                    }
                 }
 
-                if (activity instanceof ChromeTabbedActivity) {
-                    isTabbedModeActive = true;
-                    continue;
+                if (forTabbedMode) {
+                    if (isTabbedModeActive || isLightweightFreActive || !showLightweightFre) {
+                        // Lets ChromeTabbedActivity checks and launches the Generic First Run
+                        // Experience.
+                        launchTabbedMode(false);
+                        finish();
+                        return true;
+                    }
+                } else if (isGenericFreActive) {
+                    // Launch the Generic First Run Experience if it is active previously.
+                    freIntent = FirstRunFlowSequencer.createGenericFirstRunIntent(
+                            this, TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN));
                 }
-
-                if (activity instanceof LightweightFirstRunActivity) {
-                    isLightweightFreActive = true;
-                    // A Generic or a new Lightweight First Run Experience will be launched below,
-                    // so finish the old Lightweight First Run Experience.
-                    activity.setResult(Activity.RESULT_CANCELED);
-                    activity.finish();
-                    continue;
-                }
-
-                if (activity instanceof FirstRunActivity) {
-                    isGenericFreActive = true;
-                    continue;
-                }
-            }
-
-            if (forTabbedMode) {
-                if (isTabbedModeActive || isLightweightFreActive || !showLightweightFre) {
-                    // Lets ChromeTabbedActivity checks and launches the Generic First Run
-                    // Experience.
-                    launchTabbedMode(false);
-                    finish();
-                    return true;
-                }
-            } else if (isGenericFreActive) {
-                // Launch the Generic First Run Experience if it is active previously.
-                freIntent = FirstRunFlowSequencer.createGenericFirstRunIntent(
-                        this, TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN));
             }
             startActivityForResult(freIntent, FIRST_RUN_EXPERIENCE_REQUEST_CODE);
         } else {
