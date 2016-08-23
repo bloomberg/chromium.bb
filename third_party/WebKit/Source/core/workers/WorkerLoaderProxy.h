@@ -64,8 +64,7 @@ public:
     virtual void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
 
     // Posts callbacks from loading code to the WorkerGlobalScope.
-    // Returns true if the task was posted successfully.
-    virtual bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
+    virtual void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy final : public ThreadSafeRefCounted<WorkerLoaderProxy> {
@@ -78,7 +77,7 @@ public:
     ~WorkerLoaderProxy();
 
     void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+    void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
 
     // Notification from the provider that it can no longer be
     // accessed. An implementation of WorkerLoaderProxyProvider is

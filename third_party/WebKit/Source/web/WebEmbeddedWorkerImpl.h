@@ -94,7 +94,7 @@ private:
 
     // WorkerLoaderProxyProvider
     void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+    void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
 
     WebEmbeddedWorkerStartData m_workerStartData;
 

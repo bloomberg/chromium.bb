@@ -262,13 +262,11 @@ void WebEmbeddedWorkerImpl::postTaskToLoader(const WebTraceLocation& location, s
     m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
 
-bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate || !m_workerThread)
-        return false;
-
+        return;
     m_workerThread->postTask(location, std::move(task));
-    return !m_workerThread->terminated();
 }
 
 void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()

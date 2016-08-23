@@ -322,11 +322,10 @@ private:
         document().postTask(location, std::move(task));
     }
 
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
+    void postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task) override
     {
         ASSERT(m_workerThread);
         m_workerThread->postTask(location, std::move(task));
-        return true;
     }
 
     RefPtr<SecurityOrigin> m_securityOrigin;

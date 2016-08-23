@@ -278,10 +278,9 @@ void WebSharedWorkerImpl::postTaskToLoader(const WebTraceLocation& location, std
     m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
 
-bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void WebSharedWorkerImpl::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     m_workerThread->postTask(location, std::move(task));
-    return true;
 }
 
 void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)

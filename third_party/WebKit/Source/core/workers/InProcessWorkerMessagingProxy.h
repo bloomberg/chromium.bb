@@ -105,7 +105,7 @@ private:
     // These methods are called on different threads to schedule loading
     // requests and to send callbacks back to WorkerGlobalScope.
     void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+    void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
 
     // Returns true if this is called on the parent context thread.
     bool isParentContextThread() const;

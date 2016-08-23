@@ -43,10 +43,9 @@ public:
         NOTIMPLEMENTED();
     }
 
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
+    void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
     {
         NOTIMPLEMENTED();
-        return false;
     }
 };
 

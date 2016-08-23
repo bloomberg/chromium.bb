@@ -30,17 +30,15 @@ void WorkerLoaderProxy::postTaskToLoader(const WebTraceLocation& location, std::
     MutexLocker locker(m_lock);
     if (!m_loaderProxyProvider)
         return;
-
     m_loaderProxyProvider->postTaskToLoader(location, std::move(task));
 }
 
-bool WorkerLoaderProxy::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
+void WorkerLoaderProxy::postTaskToWorkerGlobalScope(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     MutexLocker locker(m_lock);
     if (!m_loaderProxyProvider)
-        return false;
-
-    return m_loaderProxyProvider->postTaskToWorkerGlobalScope(location, std::move(task));
+        return;
+    m_loaderProxyProvider->postTaskToWorkerGlobalScope(location, std::move(task));
 }
 
 } // namespace blink

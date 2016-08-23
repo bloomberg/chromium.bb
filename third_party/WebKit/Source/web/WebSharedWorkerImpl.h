@@ -132,7 +132,7 @@ private:
 
     // WorkerLoaderProxyProvider
     void postTaskToLoader(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
+    void postTaskToWorkerGlobalScope(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override;
 
     // 'shadow page' - created to proxy loading requests from the worker.
     Persistent<ExecutionContext> m_loadingDocument;
