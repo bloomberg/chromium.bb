@@ -111,6 +111,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   void DispatchTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) override {}
   void DispatchDeviceListsComplete() override {}
+  void DispatchStylusStateChanged(StylusState stylus_state) override {}
 
  private:
   base::Callback<void(const TouchEventParams& params)> callback_;

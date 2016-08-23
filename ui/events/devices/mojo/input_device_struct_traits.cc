@@ -66,6 +66,36 @@ bool StructTraits<ui::mojom::InputDevice, ui::InputDevice>::Read(
   return true;
 }
 
+ui::mojom::StylusState
+EnumTraits<ui::mojom::StylusState, ui::StylusState>::ToMojom(
+    ui::StylusState type) {
+  switch (type) {
+    case ui::StylusState::REMOVED:
+      return ui::mojom::StylusState::REMOVED;
+    case ui::StylusState::INSERTED:
+      return ui::mojom::StylusState::INSERTED;
+  }
+  NOTREACHED();
+  return ui::mojom::StylusState::INSERTED;
+}
+
+bool EnumTraits<ui::mojom::StylusState, ui::StylusState>::FromMojom(
+    ui::mojom::StylusState type,
+    ui::StylusState* output) {
+  switch (type) {
+    case ui::mojom::StylusState::REMOVED:
+      *output = ui::StylusState::REMOVED;
+      break;
+    case ui::mojom::StylusState::INSERTED:
+      *output = ui::StylusState::INSERTED;
+      break;
+    default:
+      // Who knows what values might come over the wire, fail if invalid.
+      return false;
+  }
+  return true;
+}
+
 bool StructTraits<ui::mojom::TouchscreenDevice, ui::TouchscreenDevice>::Read(
     ui::mojom::TouchscreenDeviceDataView data,
     ui::TouchscreenDevice* out) {

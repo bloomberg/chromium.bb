@@ -81,6 +81,9 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   void DispatchDeviceListsComplete() override {
     event_factory_evdev_->DispatchDeviceListsComplete();
   }
+  void DispatchStylusStateChanged(StylusState stylus_state) override {
+    event_factory_evdev_->DispatchStylusStateChanged(stylus_state);
+  }
 
  private:
   EventFactoryEvdev* event_factory_evdev_;

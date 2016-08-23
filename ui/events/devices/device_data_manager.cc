@@ -12,10 +12,9 @@
 #include "ui/gfx/geometry/point3_f.h"
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS(method_name, observer_method)      \
-  void DeviceDataManager::method_name() {                   \
-    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_, \
-                      observer_method());                   \
+#define NOTIFY_OBSERVERS(method_decl, observer_call)                        \
+  void DeviceDataManager::method_decl {                                     \
+    FOR_EACH_OBSERVER(InputDeviceEventObserver, observers_, observer_call); \
   }
 
 namespace ui {
@@ -221,19 +220,26 @@ void DeviceDataManager::OnDeviceListsComplete() {
   }
 }
 
-NOTIFY_OBSERVERS(NotifyObserversTouchscreenDeviceConfigurationChanged,
-                 OnTouchscreenDeviceConfigurationChanged);
+void DeviceDataManager::OnStylusStateChanged(StylusState state) {
+  NotifyObserversStylusStateChanged(state);
+}
 
-NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged,
-                 OnKeyboardDeviceConfigurationChanged);
+NOTIFY_OBSERVERS(NotifyObserversTouchscreenDeviceConfigurationChanged(),
+                 OnTouchscreenDeviceConfigurationChanged());
 
-NOTIFY_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged,
-                 OnMouseDeviceConfigurationChanged);
+NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                 OnKeyboardDeviceConfigurationChanged());
 
-NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged,
-                 OnTouchpadDeviceConfigurationChanged);
+NOTIFY_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged(),
+                 OnMouseDeviceConfigurationChanged());
 
-NOTIFY_OBSERVERS(NotifyObserversDeviceListsComplete, OnDeviceListsComplete);
+NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                 OnTouchpadDeviceConfigurationChanged());
+
+NOTIFY_OBSERVERS(NotifyObserversDeviceListsComplete(), OnDeviceListsComplete());
+
+NOTIFY_OBSERVERS(NotifyObserversStylusStateChanged(StylusState state),
+                 OnStylusStateChanged(state));
 
 void DeviceDataManager::AddObserver(InputDeviceEventObserver* observer) {
   observers_.AddObserver(observer);

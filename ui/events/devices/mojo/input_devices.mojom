@@ -23,6 +23,9 @@ struct InputDevice {
   uint16 product_id;
 };
 
+// Corresponds to ui::StylusState.
+enum StylusState { REMOVED, INSERTED };
+
 // Corresponds to ui::TouchscreenDevice.
 struct TouchscreenDevice {
   // Base class.

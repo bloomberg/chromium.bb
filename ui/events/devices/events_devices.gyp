@@ -32,6 +32,7 @@
         'input_device_manager.cc',
         'input_device_manager.h',
         'input_device_event_observer.h',
+        'stylus_state.h',
         'touchscreen_device.cc',
         'touchscreen_device.h',
       ],

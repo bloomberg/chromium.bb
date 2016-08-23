@@ -29,6 +29,9 @@ interface InputDeviceObserverMojo {
       array<ui.mojom.TouchscreenDevice> touchscreen_devices,
       array<ui.mojom.InputDevice> mouse_devices,
       array<ui.mojom.InputDevice> touchpad_devices);
+
+  // Is called when a stylus is removed or inserted into the device.
+  OnStylusStateChanged(StylusState state);
 };
 
 // Sends updates about input-devices to observers.

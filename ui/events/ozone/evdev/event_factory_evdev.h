@@ -36,6 +36,7 @@ class InputDeviceFactoryEvdev;
 class InputDeviceFactoryEvdevProxy;
 class SystemInputInjector;
 enum class DomCode;
+enum class StylusState;
 
 #if !defined(USE_EVDEV)
 #error Missing dependency on ui/events/ozone:events_ozone_evdev
@@ -79,6 +80,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices);
   void DispatchTouchpadDevicesUpdated(const std::vector<InputDevice>& devices);
   void DispatchDeviceListsComplete();
+  void DispatchStylusStateChanged(StylusState stylus_state);
 
  protected:
   // DeviceEventObserver overrides:

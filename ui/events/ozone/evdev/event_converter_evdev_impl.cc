@@ -9,6 +9,7 @@
 #include <stddef.h>
 
 #include "base/trace_event/trace_event.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -22,6 +23,9 @@ namespace {
 // Values for EV_KEY.
 const int kKeyReleaseValue = 0;
 const int kKeyRepeatValue = 2;
+
+// Values for the EV_SW code.
+const int kSwitchStylusInserted = 15;
 
 }  // namespace
 
@@ -128,6 +132,13 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
           OnLostSync();
         else if (input.code == SYN_REPORT)
           FlushEvents(input);
+        break;
+      case EV_SW:
+        if (input.code == kSwitchStylusInserted) {
+          dispatcher_->DispatchStylusStateChanged(
+              input.value ? ui::StylusState::INSERTED
+                          : ui::StylusState::REMOVED);
+        }
         break;
     }
   }

@@ -9,6 +9,8 @@
 
 namespace ui {
 
+enum class StylusState;
+
 // DeviceDataManager observer used to announce input hotplug events.
 class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
  public:
@@ -19,6 +21,7 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
   virtual void OnMouseDeviceConfigurationChanged() {}
   virtual void OnTouchpadDeviceConfigurationChanged() {}
   virtual void OnDeviceListsComplete() {}
+  virtual void OnStylusStateChanged(StylusState state) {}
 
  protected:
   InputDeviceEventObserver() {}

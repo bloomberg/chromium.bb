@@ -19,6 +19,8 @@
 
 namespace ui {
 
+enum class StylusState;
+
 struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
   KeyEventParams(int device_id,
                  unsigned int code,
@@ -163,6 +165,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   virtual void DispatchTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) = 0;
   virtual void DispatchDeviceListsComplete() = 0;
+  virtual void DispatchStylusStateChanged(StylusState stylus_state) = 0;
 };
 
 }  // namespace ui

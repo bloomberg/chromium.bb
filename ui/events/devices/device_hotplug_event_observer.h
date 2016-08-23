@@ -12,6 +12,7 @@
 namespace ui {
 
 struct InputDevice;
+enum class StylusState;
 struct TouchscreenDevice;
 
 // Listener for specific input device hotplug events.
@@ -42,6 +43,10 @@ class EVENTS_DEVICES_EXPORT DeviceHotplugEventObserver {
   // On completion of the initial startup scan. This means all of the above
   // OnDevicesUpdated() methods have been called with a complete list.
   virtual void OnDeviceListsComplete() = 0;
+
+  // The stylus was removed or inserted into the device; |state| contains the
+  // new stylus state.
+  virtual void OnStylusStateChanged(StylusState state) = 0;
 };
 
 }  // namespace ui

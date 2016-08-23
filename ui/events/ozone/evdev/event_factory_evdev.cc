@@ -117,6 +117,12 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
                               event_factory_evdev_));
   }
 
+  void DispatchStylusStateChanged(StylusState stylus_state) override {
+    ui_thread_runner_->PostTask(
+        FROM_HERE, base::Bind(&EventFactoryEvdev::DispatchStylusStateChanged,
+                              event_factory_evdev_, stylus_state));
+  }
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;
   base::WeakPtr<EventFactoryEvdev> event_factory_evdev_;
@@ -357,6 +363,12 @@ void EventFactoryEvdev::DispatchDeviceListsComplete() {
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnDeviceListsComplete();
 }
+
+void EventFactoryEvdev::DispatchStylusStateChanged(StylusState stylus_state) {
+  TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchStylusStateChanged");
+  DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
+  observer->OnStylusStateChanged(stylus_state);
+};
 
 void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::INPUT)

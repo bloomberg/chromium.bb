@@ -117,4 +117,9 @@ void InputDeviceClient::OnDeviceListsComplete(
   }
 }
 
+void InputDeviceClient::OnStylusStateChanged(StylusState state) {
+  FOR_EACH_OBSERVER(ui::InputDeviceEventObserver, observers_,
+                    OnStylusStateChanged(state));
+}
+
 }  // namespace ui

@@ -94,6 +94,12 @@ void InputDeviceServer::OnDeviceListsComplete() {
   });
 }
 
+void InputDeviceServer::OnStylusStateChanged(StylusState state) {
+  observers_.ForAllPtrs([state](mojom::InputDeviceObserverMojo* observer) {
+    observer->OnStylusStateChanged(state);
+  });
+}
+
 void InputDeviceServer::SendDeviceListsComplete(
     mojom::InputDeviceObserverMojo* observer) {
   DCHECK(manager_->AreDeviceListsComplete());

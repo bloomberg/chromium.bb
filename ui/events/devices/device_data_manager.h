@@ -82,6 +82,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void OnTouchpadDevicesUpdated(
       const std::vector<InputDevice>& devices) override;
   void OnDeviceListsComplete() override;
+  void OnStylusStateChanged(StylusState state) override;
 
  private:
   // Information related to a touchscreen device.
@@ -105,6 +106,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void NotifyObserversMouseDeviceConfigurationChanged();
   void NotifyObserversTouchpadDeviceConfigurationChanged();
   void NotifyObserversDeviceListsComplete();
+  void NotifyObserversStylusStateChanged(StylusState stylus_state);
 
   std::vector<TouchscreenDevice> touchscreen_devices_;
   std::vector<InputDevice> keyboard_devices_;

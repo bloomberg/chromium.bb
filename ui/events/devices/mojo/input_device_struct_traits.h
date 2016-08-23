@@ -9,6 +9,7 @@
 
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/mojo/input_devices.mojom.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -46,6 +47,12 @@ struct StructTraits<ui::mojom::InputDevice, ui::InputDevice> {
   }
 
   static bool Read(ui::mojom::InputDeviceDataView data, ui::InputDevice* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::StylusState, ui::StylusState> {
+  static ui::mojom::StylusState ToMojom(ui::StylusState type);
+  static bool FromMojom(ui::mojom::StylusState type, ui::StylusState* output);
 };
 
 template <>

@@ -50,6 +50,7 @@ class InputDeviceServer
   void OnMouseDeviceConfigurationChanged() override;
   void OnTouchpadDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
+  void OnStylusStateChanged(StylusState state) override;
 
  private:
   // Sends the current state of all input-devices to an observer.
