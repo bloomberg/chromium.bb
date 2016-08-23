@@ -9,7 +9,7 @@ Polymer({
     showSidebarFooter: Boolean,
 
     // The id of the currently selected page.
-    selectedPage_: {type: String, value: 'history', observer: 'unselectAll'},
+    selectedPage_: {type: String, observer: 'unselectAll'},
 
     // Whether domain-grouped history is enabled.
     grouped_: {type: Boolean, reflectToAttribute: true},
@@ -35,7 +35,7 @@ Polymer({
       }
     },
 
-   /** @type {!QueryResult} */
+    /** @type {!QueryResult} */
     queryResult_: {
       type: Object,
       value: function() {
@@ -55,6 +55,13 @@ Polymer({
 
     // True if the window is narrow enough for the page to have a drawer.
     hasDrawer_: Boolean,
+
+    isUserSignedIn_: {
+      type: Boolean,
+      // Updated on synced-device-manager attach by chrome.sending
+      // 'otherDevicesInitialized'.
+      value: loadTimeData.getBoolean('isUserSignedIn'),
+    },
   },
 
   observers: [
@@ -76,6 +83,7 @@ Polymer({
     'delete-selected': 'deleteSelected',
     'search-domain': 'searchDomain_',
     'history-close-drawer': 'closeDrawer_',
+    'history-view-changed': 'recordHistoryPageView_',
   },
 
   /** @override */
@@ -140,9 +148,7 @@ Polymer({
     toolbar.count = 0;
   },
 
-  deleteSelected: function() {
-    this.$.history.deleteSelectedWithPrompt();
-  },
+  deleteSelected: function() { this.$.history.deleteSelectedWithPrompt(); },
 
   /**
    * @param {HistoryQuery} info An object containing information about the
@@ -161,9 +167,7 @@ Polymer({
   /**
    * Focuses the search bar in the toolbar.
    */
-  focusToolbarSearchField: function() {
-    this.$.toolbar.showSearchField();
-  },
+  focusToolbarSearchField: function() { this.$.toolbar.showSearchField(); },
 
   /**
    * Fired when the user presses 'More from this site'.
@@ -248,11 +252,7 @@ Polymer({
    * @param {boolean} isUserSignedIn
    */
   updateSignInState: function(isUserSignedIn) {
-    var syncedDeviceManagerElem =
-      /** @type {HistorySyncedDeviceManagerElement} */this
-          .$$('history-synced-device-manager');
-    if (syncedDeviceManagerElem)
-      syncedDeviceManagerElem.updateSignInState(isUserSignedIn);
+    this.isUserSignedIn_ = isUserSignedIn;
   },
 
   /**
@@ -280,9 +280,7 @@ Polymer({
    * @param {string} page
    * @private
    */
-  routeDataChanged_: function(page) {
-    this.selectedPage_ = page;
-  },
+  routeDataChanged_: function(page) { this.selectedPage_ = page; },
 
   /**
    * @param {string} selectedPage
@@ -290,6 +288,7 @@ Polymer({
    */
   selectedPageChanged_: function(selectedPage) {
     this.set('routeData_.page', selectedPage);
+    this.recordHistoryPageView_();
   },
 
   /**
@@ -302,14 +301,41 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSelectedPage_: function(selectedPage, items) {
-    return selectedPage;
-  },
+  getSelectedPage_: function(selectedPage, items) { return selectedPage; },
 
   /** @private */
   closeDrawer_: function() {
     var drawer = this.$$('#drawer');
     if (drawer)
       drawer.close();
+  },
+
+  /** @private */
+  recordHistoryPageView_: function() {
+    var histogramValue = HistoryPageViewHistogram.END;
+    switch (this.selectedPage_) {
+      case 'syncedTabs':
+        histogramValue = this.isUserSignedIn_ ?
+            HistoryPageViewHistogram.SYNCED_TABS :
+            HistoryPageViewHistogram.SIGNIN_PROMO;
+        break;
+      default:
+        switch (this.queryState_.range) {
+          case HistoryRange.ALL_TIME:
+            histogramValue = HistoryPageViewHistogram.HISTORY;
+            break;
+          case HistoryRange.WEEK:
+            histogramValue = HistoryPageViewHistogram.GROUPED_WEEK;
+            break;
+          case HistoryRange.MONTH:
+            histogramValue = HistoryPageViewHistogram.GROUPED_MONTH;
+            break;
+        }
+        break;
+    }
+
+    md_history.BrowserService.getInstance().recordHistogram(
+      'History.HistoryPageView', histogramValue, HistoryPageViewHistogram.END
+    );
   },
 });

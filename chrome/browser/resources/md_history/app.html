@@ -88,12 +88,13 @@
           items="{{items}}">
         <history-list-container id="history" query-state="{{queryState_}}"
             query-result="[[queryResult_]]" grouped="[[grouped_]]"
-            path="history">
+            grouped-range="{{queryState_.range}}" path="history">
         </history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
           <history-synced-device-manager id="synced-devices"
               session-list="[[queryResult_.sessionList]]"
-              search-term=[[queryState_.searchTerm]]
+              search-term="[[queryState_.searchTerm]]"
+              sign-in-state="[[isUserSignedIn_]]"
               path="syncedTabs">
           </history-synced-device-manager>
         </template>

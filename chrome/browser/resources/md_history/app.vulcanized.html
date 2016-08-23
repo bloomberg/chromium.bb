@@ -3650,7 +3650,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <iron-pages id="content" attr-for-selected="id" selected="[[selectedPage_]]">
       <history-list id="infinite-list" querying="[[queryState.querying]]" searched-term="[[queryResult.info.term]]"></history-list>
       <template is="dom-if" if="[[grouped]]">
-        <history-grouped-list id="grouped-list" range="[[queryState.range]]" query-start-time="[[queryResult.info.queryStartTime]]" query-end-time="[[queryResult.info.queryEndTime]]" searched-term="[[queryResult.info.term]]">
+        <history-grouped-list id="grouped-list" range="[[groupedRange]]" query-start-time="[[queryResult.info.queryStartTime]]" query-end-time="[[queryResult.info.queryEndTime]]" searched-term="[[queryResult.info.term]]">
         </history-grouped-list>
       </template>
     </iron-pages>
@@ -3830,11 +3830,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </history-synced-device-card>
       </template>
     </div>
-    <div id="no-synced-tabs" class="centered-message" hidden="[[!showNoSyncedMessage(signInState_, syncedDevices_.length,
+    <div id="no-synced-tabs" class="centered-message" hidden="[[!showNoSyncedMessage(signInState, syncedDevices_.length,
                                        guestSession_)]]">
       [[noSyncedTabsMessage(fetchingSyncedTabs_)]]
     </div>
-    <div id="sign-in-guide" hidden="[[!showSignInGuide(signInState_, guestSession_)]]">
+    <div id="sign-in-guide" hidden="[[!showSignInGuide(signInState, guestSession_)]]">
       <div id="illustration"></div>
       <div id="sign-in-promo">$i18n{signInPromo}</div>
       <div id="sign-in-promo-desc">$i18n{signInPromoDesc}</div>
@@ -3927,7 +3927,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <iron-selector id="menu" selected="{{selectedPage}}" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
+    <iron-selector id="menu" selected="[[selectedPage]]" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
       <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
         $i18n{historyMenuItem}
         <paper-ripple></paper-ripple>
@@ -4008,10 +4008,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <history-side-bar id="content-side-bar" selected-page="[[selectedPage_]]" route="[[route_]]" show-footer="[[showSidebarFooter]]" hidden$="[[hasDrawer_]]">
       </history-side-bar>
       <iron-pages id="content" attr-for-selected="path" fallback-selection="history" selected="[[getSelectedPage_(selectedPage_, items)]]" items="{{items}}">
-        <history-list-container id="history" query-state="{{queryState_}}" query-result="[[queryResult_]]" grouped="[[grouped_]]" path="history">
+        <history-list-container id="history" query-state="{{queryState_}}" query-result="[[queryResult_]]" grouped="[[grouped_]]" grouped-range="{{queryState_.range}}" path="history">
         </history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">
-          <history-synced-device-manager id="synced-devices" session-list="[[queryResult_.sessionList]]" search-term="[[queryState_.searchTerm]]" path="syncedTabs">
+          <history-synced-device-manager id="synced-devices" session-list="[[queryResult_.sessionList]]" search-term="[[queryState_.searchTerm]]" sign-in-state="[[isUserSignedIn_]]" path="syncedTabs">
           </history-synced-device-manager>
         </template>
       </iron-pages>

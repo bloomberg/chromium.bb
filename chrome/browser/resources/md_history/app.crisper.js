@@ -6606,6 +6606,9 @@ cr.define('md_history', function() {
     openClearBrowsingData: function() {
       chrome.send('clearBrowsingData');
     },
+    recordHistogram: function(histogram, value, max) {
+      chrome.send('metricsHandler:recordInHistogram', [ histogram, value, max ]);
+    },
     recordAction: function(actionDesc) {
       chrome.send('metricsHandler:recordAction', [ actionDesc ]);
     },
@@ -8150,10 +8153,13 @@ Polymer({
   properties: {
     selectedPage_: String,
     grouped: Boolean,
+    groupedRange: {
+      type: Number,
+      observer: 'groupedRangeChanged_'
+    },
     queryState: Object,
     queryResult: Object
   },
-  observers: [ 'groupedRangeChanged_(queryState.range)' ],
   listeners: {
     'history-list-scrolled': 'closeMenu_',
     'load-more-history': 'loadMoreHistory_',
@@ -8185,7 +8191,7 @@ Polymer({
       var lastVisit = this.queryResult.results.slice(-1)[0];
       lastVisitTime = lastVisit ? lastVisit.time : 0;
     }
-    var maxResults = queryState.range == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
+    var maxResults = this.groupedRange == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
     chrome.send('queryHistory', [ queryState.searchTerm, queryState.groupedOffset, queryState.range, lastVisitTime, maxResults ]);
   },
   historyDeleted: function() {
@@ -8205,9 +8211,11 @@ Polymer({
       dialog.showModal();
     });
   },
-  groupedRangeChanged_: function(range) {
-    this.selectedPage_ = this.queryState.range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
+  groupedRangeChanged_: function(range, oldRange) {
+    this.selectedPage_ = range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
+    if (oldRange == undefined) return;
     this.queryHistory(false);
+    this.fire('history-view-changed');
   },
   loadMoreHistory_: function() {
     this.queryHistory(true);
@@ -8340,9 +8348,9 @@ Polymer({
         return [];
       }
     },
-    signInState_: {
+    signInState: {
       type: Boolean,
-      value: loadTimeData.getBoolean('isUserSignedIn')
+      observer: 'signInStateChanged_'
     },
     guestSession_: {
       type: Boolean,
@@ -8457,10 +8465,9 @@ Polymer({
     this.fetchingSyncedTabs_ = false;
     this.clearDisplayedSyncedDevices_();
   },
-  updateSignInState: function(isUserSignedIn) {
-    if (this.signInState_ == isUserSignedIn) return;
-    this.signInState_ = isUserSignedIn;
-    if (!isUserSignedIn) {
+  signInStateChanged_: function() {
+    this.fire('history-view-changed');
+    if (!this.signInState) {
       this.clearDisplayedSyncedDevices_();
       return;
     }
@@ -8498,6 +8505,7 @@ Polymer({
     this.fire('history-close-drawer');
   },
   onClearBrowsingDataTap_: function(e) {
+    md_history.BrowserService.getInstance().recordAction('HistoryPage_InitClearBrowsingData');
     md_history.BrowserService.getInstance().openClearBrowsingData();
     e.preventDefault();
   },
@@ -8515,7 +8523,6 @@ Polymer({
     showSidebarFooter: Boolean,
     selectedPage_: {
       type: String,
-      value: 'history',
       observer: 'unselectAll'
     },
     grouped_: {
@@ -8553,7 +8560,11 @@ Polymer({
     },
     routeData_: Object,
     queryParams_: Object,
-    hasDrawer_: Boolean
+    hasDrawer_: Boolean,
+    isUserSignedIn_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isUserSignedIn')
+    }
   },
   observers: [ 'routeDataChanged_(routeData_.page)', 'selectedPageChanged_(selectedPage_)', 'searchTermChanged_(queryState_.searchTerm)', 'searchQueryParamChanged_(queryParams_.q)' ],
   listeners: {
@@ -8562,7 +8573,8 @@ Polymer({
     'unselect-all': 'unselectAll',
     'delete-selected': 'deleteSelected',
     'search-domain': 'searchDomain_',
-    'history-close-drawer': 'closeDrawer_'
+    'history-close-drawer': 'closeDrawer_',
+    'history-view-changed': 'recordHistoryPageView_'
   },
   ready: function() {
     this.grouped_ = loadTimeData.getBoolean('groupByDomain');
@@ -8650,8 +8662,7 @@ Polymer({
     this.$.history.historyDeleted();
   },
   updateSignInState: function(isUserSignedIn) {
-    var syncedDeviceManagerElem = this.$$('history-synced-device-manager');
-    if (syncedDeviceManagerElem) syncedDeviceManagerElem.updateSignInState(isUserSignedIn);
+    this.isUserSignedIn_ = isUserSignedIn;
   },
   syncedTabsSelected_: function(selectedPage) {
     return selectedPage == 'syncedTabs';
@@ -8664,6 +8675,7 @@ Polymer({
   },
   selectedPageChanged_: function(selectedPage) {
     this.set('routeData_.page', selectedPage);
+    this.recordHistoryPageView_();
   },
   getSelectedPage_: function(selectedPage, items) {
     return selectedPage;
@@ -8671,5 +8683,30 @@ Polymer({
   closeDrawer_: function() {
     var drawer = this.$$('#drawer');
     if (drawer) drawer.close();
+  },
+  recordHistoryPageView_: function() {
+    var histogramValue = HistoryPageViewHistogram.END;
+    switch (this.selectedPage_) {
+     case 'syncedTabs':
+      histogramValue = this.isUserSignedIn_ ? HistoryPageViewHistogram.SYNCED_TABS : HistoryPageViewHistogram.SIGNIN_PROMO;
+      break;
+
+     default:
+      switch (this.queryState_.range) {
+       case HistoryRange.ALL_TIME:
+        histogramValue = HistoryPageViewHistogram.HISTORY;
+        break;
+
+       case HistoryRange.WEEK:
+        histogramValue = HistoryPageViewHistogram.GROUPED_WEEK;
+        break;
+
+       case HistoryRange.MONTH:
+        histogramValue = HistoryPageViewHistogram.GROUPED_MONTH;
+        break;
+      }
+      break;
+    }
+    md_history.BrowserService.getInstance().recordHistogram('History.HistoryPageView', histogramValue, HistoryPageViewHistogram.END);
   }
 });

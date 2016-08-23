@@ -40,9 +40,9 @@ Polymer({
     },
 
     /** @private */
-    signInState_: {
+    signInState: {
       type: Boolean,
-      value: loadTimeData.getBoolean('isUserSignedIn'),
+      observer: 'signInStateChanged_',
     },
 
     /** @private */
@@ -243,18 +243,12 @@ Polymer({
    * Get called when user's sign in state changes, this will affect UI of synced
    * tabs page. Sign in promo gets displayed when user is signed out, and
    * different messages are shown when there are no synced tabs.
-   * @param {boolean} isUserSignedIn
    */
-  updateSignInState: function(isUserSignedIn) {
-    // If user's sign in state didn't change, then don't change message or
-    // update UI.
-    if (this.signInState_ == isUserSignedIn)
-      return;
-
-    this.signInState_ = isUserSignedIn;
+  signInStateChanged_: function() {
+    this.fire('history-view-changed');
 
     // User signed out, clear synced device list and show the sign in promo.
-    if (!isUserSignedIn) {
+    if (!this.signInState) {
       this.clearDisplayedSyncedDevices_();
       return;
     }

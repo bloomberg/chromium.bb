@@ -12,16 +12,15 @@ Polymer({
     // Whether domain-grouped history is enabled.
     grouped: Boolean,
 
+    /** @type {HistoryRange} */
+    groupedRange: {type: Number, observer: 'groupedRangeChanged_'},
+
     /** @type {!QueryState} */
     queryState: Object,
 
     /** @type {!QueryResult} */
     queryResult: Object,
   },
-
-  observers: [
-    'groupedRangeChanged_(queryState.range)',
-  ],
 
   listeners: {
     'history-list-scrolled': 'closeMenu_',
@@ -80,7 +79,7 @@ Polymer({
     }
 
     var maxResults =
-      queryState.range == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
+      this.groupedRange == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
     chrome.send('queryHistory', [
       queryState.searchTerm, queryState.groupedOffset, queryState.range,
       lastVisitTime, maxResults
@@ -123,11 +122,15 @@ Polymer({
    * @param {HistoryRange} range
    * @private
    */
-  groupedRangeChanged_: function(range) {
-    this.selectedPage_ = this.queryState.range == HistoryRange.ALL_TIME ?
+  groupedRangeChanged_: function(range, oldRange) {
+    this.selectedPage_ = range == HistoryRange.ALL_TIME ?
       'infinite-list' : 'grouped-list';
 
+    if (oldRange == undefined)
+      return;
+
     this.queryHistory(false);
+    this.fire('history-view-changed');
   },
 
   /** @private */

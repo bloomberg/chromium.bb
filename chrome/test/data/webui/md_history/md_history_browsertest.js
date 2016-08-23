@@ -33,6 +33,7 @@ MaterialHistoryBrowserTest.prototype = {
     'history_grouped_list_test.js',
     'history_item_test.js',
     'history_list_test.js',
+    'history_metrics_test.js',
     'history_overflow_menu_test.js',
     'history_routing_test.js',
     'history_supervised_user_test.js',
@@ -76,6 +77,11 @@ TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
 
 TEST_F('MaterialHistoryBrowserTest', 'HistoryListTest', function() {
   md_history.history_list_test.registerTests();
+  mocha.run();
+});
+
+TEST_F('MaterialHistoryBrowserTest', 'Metrics', function() {
+  md_history.history_metrics_test.registerTests();
   mocha.run();
 });
 

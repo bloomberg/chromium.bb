@@ -18449,6 +18449,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.HistoryPageView" enum="HistoryPageView">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The page of the MD History page shown to the user. Logged each time the user
+    loads the MD History page or switches pages.
+  </summary>
+</histogram>
+
 <histogram name="History.HistoryServiceInitTime" units="ms">
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -81395,6 +81403,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="27" label="RECOVERY_EVENT_FAILED_COMMIT">
     Failed sql::Recovery::Recovered().
   </int>
+</enum>
+
+<enum name="HistoryPageView" type="int">
+  <int value="0" label="History"/>
+  <int value="1" label="Grouped Week"/>
+  <int value="2" label="Grouped Month"/>
+  <int value="3" label="Synced Tabs"/>
+  <int value="4" label="Signin Promo"/>
 </enum>
 
 <enum name="HistoryTopSitesRecoveryEnum" type="int">

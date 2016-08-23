@@ -6,26 +6,20 @@ Polymer({
   is: 'history-side-bar',
 
   properties: {
-    selectedPage: {
-      type: String,
-      notify: true
-    },
+    selectedPage: {type: String, notify: true},
 
     route: Object,
 
     showFooter: Boolean,
 
     // If true, the sidebar is contained within an app-drawer.
-    drawer: {
-      type: Boolean,
-      reflectToAttribute: true
-    },
+    drawer: {type: Boolean, reflectToAttribute: true},
   },
 
-  /** @private */
-  onSelectorActivate_: function() {
-    this.fire('history-close-drawer');
-  },
+  /**
+   * @private
+   */
+  onSelectorActivate_: function() { this.fire('history-close-drawer'); },
 
   /**
    * Relocates the user to the clear browsing data section of the settings page.
@@ -33,6 +27,8 @@ Polymer({
    * @private
    */
   onClearBrowsingDataTap_: function(e) {
+    md_history.BrowserService.getInstance().recordAction(
+        'HistoryPage_InitClearBrowsingData');
     md_history.BrowserService.getInstance().openClearBrowsingData();
     e.preventDefault();
   },
@@ -41,7 +37,5 @@ Polymer({
    * @param {Object} route
    * @private
    */
-  getQueryString_: function(route) {
-    return window.location.search;
-  }
+  getQueryString_: function(route) { return window.location.search; }
 });

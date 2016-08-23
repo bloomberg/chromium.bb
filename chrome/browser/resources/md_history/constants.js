@@ -21,6 +21,21 @@ var BROWSING_GAP_TIME = 15 * 60 * 1000;
 var TITLE_MAX_LENGTH = 300;
 
 /**
+ * Histogram buckets for UMA tracking of which view is being shown to the user.
+ * Keep this in sync with the HistoryPageView enum in histograms.xml.
+ * This enum is append-only.
+ * @enum {number}
+ */
+var HistoryPageViewHistogram = {
+  HISTORY: 0,
+  GROUPED_WEEK: 1,
+  GROUPED_MONTH: 2,
+  SYNCED_TABS: 3,
+  SIGNIN_PROMO: 4,
+  END: 5,  // Should always be last.
+};
+
+/**
  * @enum {number}
  */
 var HistoryRange = {

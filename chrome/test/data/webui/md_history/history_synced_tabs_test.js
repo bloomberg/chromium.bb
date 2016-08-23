@@ -53,7 +53,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       setup(function() {
         element = document.createElement('history-synced-device-manager');
-        element.updateSignInState(true);
+        element.signInState = true;
         element.searchTerm = '';
         replaceBody(element);
       });
@@ -268,10 +268,10 @@ cr.define('md_history.history_synced_tabs_test', function() {
       });
 
       test('show sign in promo', function() {
-        element.updateSignInState(false);
+        element.signInState = false;
         return flush().then(function() {
           assertFalse(element.$['sign-in-guide'].hidden);
-          element.updateSignInState(true);
+          element.signInState = true;
           return flush();
         }).then(function() {
           assertTrue(element.$['sign-in-guide'].hidden);
@@ -280,7 +280,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
       test('no synced tabs message', function() {
         // When user is not logged in, there is no synced tabs.
-        element.signInState_ = false;
+        element.signInState = false;
         element.syncedDevices_ = [];
         return flush().then(function() {
           assertTrue(element.$['no-synced-tabs'].hidden);
@@ -288,7 +288,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           var cards = getCards(element);
           assertEquals(0, cards.length);
 
-          element.updateSignInState(true);
+          element.signInState = true;
 
           return flush();
         }).then(function() {
@@ -319,7 +319,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
           // If there are any synced tabs, hide the 'no synced tabs' message.
           assertTrue(element.$['no-synced-tabs'].hidden);
 
-          element.updateSignInState(false);
+          element.signInState = false;
           return flush();
         }).then(function() {
           // When user signs out, don't show the message.

@@ -81,6 +81,15 @@ cr.define('md_history', function() {
     },
 
     /**
+     * @param {string} histogram
+     * @param {number} value
+     * @param {number} max
+     */
+    recordHistogram: function(histogram, value, max) {
+      chrome.send('metricsHandler:recordInHistogram', [histogram, value, max]);
+    },
+
+    /**
     * Record an action in UMA.
     * @param {string} actionDesc The name of the action to be logged.
     */
