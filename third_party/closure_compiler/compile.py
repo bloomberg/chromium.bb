@@ -223,15 +223,15 @@ class Checker(object):
 
     processed_runner_args = ["--%s" % arg for arg in runner_args or []]
     processed_runner_args += ["--compiler-args-file=%s" % args_file]
-    return_code, stderr = self._run_jar(self._runner_jar, processed_runner_args)
+    _, stderr = self._run_jar(self._runner_jar, processed_runner_args)
 
     errors = stderr.strip().split("\n\n")
     maybe_summary = errors.pop()
 
-    if return_code == 0:
+    if re.search(".*error.*warning.*typed", maybe_summary):
       self._log_debug("Summary: %s" % maybe_summary)
     else:
-      # Running the jar failed. Bail.
+      # Not a summary. Running the jar failed. Bail.
       self._log_error(stderr)
       self._nuke_temp_files()
       sys.exit(1)
