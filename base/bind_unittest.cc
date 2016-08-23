@@ -341,52 +341,18 @@ class BindTest : public ::testing::Test {
 
 StrictMock<NoRef>* BindTest::static_func_mock_ptr;
 
-// Sanity check that we can instantiate a callback for each arity.
-TEST_F(BindTest, ArityTest) {
-  Callback<int()> c0 = Bind(&Sum, 32, 16, 8, 4, 2, 1);
-  EXPECT_EQ(63, c0.Run());
+TEST_F(BindTest, BasicTest) {
+  Callback<int(int, int, int)> cb = Bind(&Sum, 32, 16, 8);
+  EXPECT_EQ(92, cb.Run(13, 12, 11));
 
-  Callback<int(int)> c1 = Bind(&Sum, 32, 16, 8, 4, 2);
-  EXPECT_EQ(75, c1.Run(13));
+  Callback<int(int, int, int, int, int, int)> c1 = Bind(&Sum);
+  EXPECT_EQ(69, c1.Run(14, 13, 12, 11, 10, 9));
 
-  Callback<int(int,int)> c2 = Bind(&Sum, 32, 16, 8, 4);
-  EXPECT_EQ(85, c2.Run(13, 12));
+  Callback<int(int, int, int)> c2 = Bind(c1, 32, 16, 8);
+  EXPECT_EQ(86, c2.Run(11, 10, 9));
 
-  Callback<int(int,int,int)> c3 = Bind(&Sum, 32, 16, 8);
-  EXPECT_EQ(92, c3.Run(13, 12, 11));
-
-  Callback<int(int,int,int,int)> c4 = Bind(&Sum, 32, 16);
-  EXPECT_EQ(94, c4.Run(13, 12, 11, 10));
-
-  Callback<int(int,int,int,int,int)> c5 = Bind(&Sum, 32);
-  EXPECT_EQ(87, c5.Run(13, 12, 11, 10, 9));
-
-  Callback<int(int,int,int,int,int,int)> c6 = Bind(&Sum);
-  EXPECT_EQ(69, c6.Run(13, 12, 11, 10, 9, 14));
-}
-
-// Test the Currying ability of the Callback system.
-TEST_F(BindTest, CurryingTest) {
-  Callback<int(int,int,int,int,int,int)> c6 = Bind(&Sum);
-  EXPECT_EQ(69, c6.Run(13, 12, 11, 10, 9, 14));
-
-  Callback<int(int,int,int,int,int)> c5 = Bind(c6, 32);
-  EXPECT_EQ(87, c5.Run(13, 12, 11, 10, 9));
-
-  Callback<int(int,int,int,int)> c4 = Bind(c5, 16);
-  EXPECT_EQ(94, c4.Run(13, 12, 11, 10));
-
-  Callback<int(int,int,int)> c3 = Bind(c4, 8);
-  EXPECT_EQ(92, c3.Run(13, 12, 11));
-
-  Callback<int(int,int)> c2 = Bind(c3, 4);
-  EXPECT_EQ(85, c2.Run(13, 12));
-
-  Callback<int(int)> c1 = Bind(c2, 2);
-  EXPECT_EQ(75, c1.Run(13));
-
-  Callback<int()> c0 = Bind(c1, 1);
-  EXPECT_EQ(63, c0.Run());
+  Callback<int()> c3 = Bind(c2, 4, 2, 1);
+  EXPECT_EQ(63, c3.Run());
 }
 
 // Test that currying the rvalue result of another Bind() works correctly.
@@ -798,7 +764,6 @@ struct CustomDeleter {
 
 using MoveOnlyTypesToTest =
     ::testing::Types<std::unique_ptr<DeleteCounter>,
-                     std::unique_ptr<DeleteCounter>,
                      std::unique_ptr<DeleteCounter, CustomDeleter>>;
 TYPED_TEST_CASE(BindMoveOnlyTypeTest, MoveOnlyTypesToTest);
 
