@@ -1030,7 +1030,7 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
 
   switch (plane) {
-    case kYPlane:
+    case kYPlane:  // and kARGBPlane:
     case kAPlane:
       return gfx::Size(1, 1);
 
