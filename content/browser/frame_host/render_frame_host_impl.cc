@@ -1894,7 +1894,19 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
       if (manager)
         manager->OnLocationChanges(params);
     }
-    // TODO(aboxhall): send location change events to web contents observers too
+
+    // Send the updates to the automation extension API.
+    std::vector<AXLocationChangeNotificationDetails> details;
+    details.reserve(params.size());
+    for (size_t i = 0; i < params.size(); ++i) {
+      const AccessibilityHostMsg_LocationChangeParams& param = params[i];
+      AXLocationChangeNotificationDetails detail;
+      detail.id = param.id;
+      detail.ax_tree_id = GetAXTreeID();
+      detail.new_location = param.new_location;
+      details.push_back(detail);
+    }
+    delegate_->AccessibilityLocationChangesReceived(details);
   }
 }
 

@@ -685,6 +685,8 @@ void AutomationInternalCustomBindings::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvent, OnAccessibilityEvent)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChange,
+                        OnAccessibilityLocationChange)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -1124,6 +1126,21 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
                     CreateV8String(isolate, ToString(params.event_type)));
   args->Set(0U, event_params);
   context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
+}
+
+void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
+    const ExtensionMsg_AccessibilityLocationChangeParams& params) {
+  int tree_id = params.tree_id;
+  auto iter = tree_id_to_tree_cache_map_.find(tree_id);
+  if (iter == tree_id_to_tree_cache_map_.end())
+    return;
+  TreeCache* cache = iter->second;
+  ui::AXNode* node = cache->tree.GetFromId(params.id);
+  if (!node)
+    return;
+  node->SetLocation(params.new_location.offset_container_id,
+                    params.new_location.bounds,
+                    params.new_location.transform.get());
 }
 
 void AutomationInternalCustomBindings::OnNodeDataWillChange(

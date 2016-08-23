@@ -736,6 +736,7 @@
             '../content/content.gyp:content',
             '../ipc/ipc.gyp:ipc',
             '../media/media.gyp:media',
+            '../skia/skia.gyp:skia',
           ],
           'sources': [
             'browser/media/cast_browser_cdm_factory.cc',

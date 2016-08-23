@@ -395,7 +395,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     if (!container_transform.isIdentity())
       new_location.transform = base::WrapUnique(
           new gfx::Transform(container_transform));
-    if (iter != locations_.end() && iter->second != new_location) {
+    if (iter->second != new_location) {
       AccessibilityHostMsg_LocationChangeParams message;
       message.id = id;
       message.new_location = new_location;

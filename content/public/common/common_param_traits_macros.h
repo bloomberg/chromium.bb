@@ -26,12 +26,14 @@
 #include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
+#include "ui/gfx/transform.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -277,5 +279,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::AXIntListAttribute,
                           ui::AX_INT_LIST_ATTRIBUTE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::AXStringAttribute, ui::AX_STRING_ATTRIBUTE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::AXTextAffinity, ui::AX_TEXT_AFFINITY_LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
+  IPC_STRUCT_TRAITS_MEMBER(offset_container_id)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+  IPC_STRUCT_TRAITS_MEMBER(transform)
+IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_

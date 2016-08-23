@@ -457,6 +457,8 @@ class CONTENT_EXPORT WebContentsImpl
   AccessibilityMode GetAccessibilityMode() const override;
   void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) override;
+  void AccessibilityLocationChangesReceived(
+      const std::vector<AXLocationChangeNotificationDetails>& details) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;

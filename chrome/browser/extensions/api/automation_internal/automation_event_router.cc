@@ -88,6 +88,23 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
   }
 }
 
+void AutomationEventRouter::DispatchAccessibilityLocationChange(
+    const ExtensionMsg_AccessibilityLocationChangeParams& params) {
+  for (const auto& listener : listeners_) {
+    // Skip listeners that don't want to listen to this tree.
+    if (!listener.desktop &&
+        listener.tree_ids.find(params.tree_id) == listener.tree_ids.end()) {
+      continue;
+    }
+
+    content::RenderProcessHost* rph =
+        content::RenderProcessHost::FromID(listener.process_id);
+    rph->Send(new ExtensionMsg_AccessibilityLocationChange(
+        listener.routing_id,
+        params));
+  }
+}
+
 void AutomationEventRouter::DispatchTreeDestroyedEvent(
     int tree_id,
     content::BrowserContext* browser_context) {

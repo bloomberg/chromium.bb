@@ -17,4 +17,15 @@ AXEventNotificationDetails::AXEventNotificationDetails(
 
 AXEventNotificationDetails::~AXEventNotificationDetails() {}
 
+AXLocationChangeNotificationDetails::AXLocationChangeNotificationDetails()
+    : id(-1),
+      ax_tree_id(-1) {
+}
+
+AXLocationChangeNotificationDetails::AXLocationChangeNotificationDetails(
+    const AXLocationChangeNotificationDetails& other) = default;
+
+AXLocationChangeNotificationDetails::~AXLocationChangeNotificationDetails() {}
+
+
 }  // namespace content

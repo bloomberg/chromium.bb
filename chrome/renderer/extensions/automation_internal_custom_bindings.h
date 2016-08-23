@@ -14,6 +14,7 @@
 #include "v8/include/v8.h"
 
 struct ExtensionMsg_AccessibilityEventParams;
+struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
 
@@ -146,6 +147,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   // Handle accessibility events from the browser process.
   void OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
                             bool is_active_profile);
+  void OnAccessibilityLocationChange(
+      const ExtensionMsg_AccessibilityLocationChangeParams& params);
 
   void UpdateOverallTreeChangeObserverFilter();
 

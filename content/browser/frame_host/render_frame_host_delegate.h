@@ -41,6 +41,7 @@ class RenderFrameHost;
 class WakeLockServiceContext;
 class WebContents;
 struct AXEventNotificationDetails;
+struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct TransitionLayerData;
@@ -142,9 +143,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual AccessibilityMode GetAccessibilityMode() const;
 
-  // Invoked when an accessibility event is received from the renderer.
+  // Forward accessibility messages to other potential listeners like
+  // the automation extension API.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
+  virtual void AccessibilityLocationChangesReceived(
+      const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
   // Find a guest RenderFrameHost by its parent |render_frame_host| and
   // |browser_plugin_instance_id|.

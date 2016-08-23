@@ -33,6 +33,7 @@ class RenderWidgetHost;
 class WebContents;
 class WebContentsImpl;
 struct AXEventNotificationDetails;
+struct AXLocationChangeNotificationDetails;
 struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
@@ -449,6 +450,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when an accessibility event is received from the renderer process.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
+
+  // Invoked when an accessibility location change is received from the
+  // renderer process.
+  virtual void AccessibilityLocationChangesReceived(
+      const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
   // Invoked when theme color is changed to |theme_color|.
   virtual void DidChangeThemeColor(SkColor theme_color) {}

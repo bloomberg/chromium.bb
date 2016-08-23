@@ -2368,6 +2368,13 @@ void WebContentsImpl::AccessibilityEventReceived(
       WebContentsObserver, observers_, AccessibilityEventReceived(details));
 }
 
+void WebContentsImpl::AccessibilityLocationChangesReceived(
+    const std::vector<AXLocationChangeNotificationDetails>& details) {
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    AccessibilityLocationChangesReceived(details));
+}
+
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
     RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id) {

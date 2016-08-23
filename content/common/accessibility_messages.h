@@ -72,12 +72,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::AXContentTreeUpdate)
   IPC_STRUCT_TRAITS_MEMBER(nodes)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
-  IPC_STRUCT_TRAITS_MEMBER(offset_container_id)
-  IPC_STRUCT_TRAITS_MEMBER(bounds)
-  IPC_STRUCT_TRAITS_MEMBER(transform)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   // The tree update.
   IPC_STRUCT_MEMBER(content::AXContentTreeUpdate, update)

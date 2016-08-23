@@ -23,6 +23,7 @@ class BrowserContext;
 }  // namespace content
 
 struct ExtensionMsg_AccessibilityEventParams;
+struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
 struct AutomationListener;
@@ -50,6 +51,9 @@ class AutomationEventRouter : public content::NotificationObserver {
 
   void DispatchAccessibilityEvent(
       const ExtensionMsg_AccessibilityEventParams& params);
+
+  void DispatchAccessibilityLocationChange(
+      const ExtensionMsg_AccessibilityLocationChangeParams& params);
 
   // Notify all automation extensions that an accessibility tree was
   // destroyed. If |browser_context| is null,
