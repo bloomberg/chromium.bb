@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.graphics.Canvas;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -107,7 +108,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             assert viewHolder instanceof NewTabPageViewHolder;
 
             ((NewTabPageViewHolder) viewHolder).updateViewStateForDismiss(dX);
+
+            // The super implementation performs animation and elevation, but only the animation is
+            // needed.
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            ViewCompat.setElevation(viewHolder.itemView, 0f);
         }
     }
 
