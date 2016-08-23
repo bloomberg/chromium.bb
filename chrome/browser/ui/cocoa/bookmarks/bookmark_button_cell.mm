@@ -32,8 +32,8 @@ int HierarchyButtonLeftPadding() {
 }
 
 const int kIconTextSpacer = 4;
-const int kTextRightPadding = 1;
-const int kIconLeftPadding = 1;
+const int kTextRightPadding = 4;
+const int kIconLeftPadding = 4;
 
 const int kDefaultFontSize = 12;
 
@@ -355,7 +355,7 @@ const int kDefaultFontSize = 12;
           kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
     } else {
       // Make buttons without visible titles 20pts wide (18 plus padding).
-      cellSize.width = 18;
+      cellSize.width += kIconLeftPadding;
     }
   }
 
@@ -373,9 +373,7 @@ const int kDefaultFontSize = 12;
   // left edge, but only if there's a visible title.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     imageRect.origin.y -= 1;
-    if ([[self visibleTitle] length] > 0) {
-      imageRect.origin.x += kIconLeftPadding;
-    }
+    imageRect.origin.x = kIconLeftPadding;
   }
   return imageRect;
 }
@@ -443,8 +441,8 @@ const int kDefaultFontSize = 12;
   // In Material Design on Retina, and not in a folder menu, nudge the hover
   // background by 1px.
   const CGFloat kLineWidth = [controlView cr_lineWidth];
-  if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
-      ![self isFolderButtonCell] && kLineWidth < 1) {
+  if ([self isMaterialDesignButtonType] && ![self isFolderButtonCell] &&
+      kLineWidth < 1) {
     return -kLineWidth;
   }
   return 0.0;

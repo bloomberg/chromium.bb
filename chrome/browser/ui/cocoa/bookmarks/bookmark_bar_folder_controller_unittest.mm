@@ -23,6 +23,7 @@
 #include "testing/platform_test.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkModel;
@@ -1321,7 +1322,11 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_CGFLOAT_EQ(scrollerWidth, buttonWidth);
   CGFloat visibleWidth = NSWidth(visibleFrame);
   EXPECT_CGFLOAT_EQ(visibleWidth - widthDelta, buttonWidth);
-  EXPECT_LT(scrollerWidth, NSWidth([folderView frame]));
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    EXPECT_CGFLOAT_EQ(scrollerWidth, NSWidth([folderView frame]));
+  } else {
+    EXPECT_LT(scrollerWidth, NSWidth([folderView frame]));
+  }
 
   // Add a wider bookmark and make sure the button widths match.
   int reallyWideButtonNumber = folder->child_count();

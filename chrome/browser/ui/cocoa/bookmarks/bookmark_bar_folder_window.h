@@ -19,6 +19,8 @@
 // Content view for the above window.  "Stock" other than the drawing
 // of rounded corners.  Only used in the nib.
 @interface BookmarkBarFolderWindowContentView : NSView
+// Returns the folder window's background color (Material Design only).
++ (NSColor*)backgroundColor;
 @end
 
 // Scroll view that contains the main view (where the buttons go).

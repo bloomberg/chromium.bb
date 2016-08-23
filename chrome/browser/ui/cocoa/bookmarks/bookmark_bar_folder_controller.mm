@@ -332,6 +332,17 @@ CGFloat BookmarkBottomVerticalPadding() {
   NSRect windowFrame = [[self window] frame];
   NSRect scrollViewFrame = [scrollView_ frame];
   padding_ = NSWidth(windowFrame) - NSWidth(scrollViewFrame);
+  // In Material Design, each menu row spans the entire width of the menu.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    scrollViewFrame.size.width += padding_;
+    scrollViewFrame.origin.x = 0;
+    // If we leave the scrollview's vertical position and height as is, it will
+    // cover the menu's rounded corners and we'll get a rectangular menu.
+    scrollViewFrame.origin.y += bookmarks::BookmarkVerticalPadding();
+    scrollViewFrame.size.height -= 2 * bookmarks::BookmarkVerticalPadding();
+    [scrollView_ setFrame:scrollViewFrame];
+    padding_ = 0;
+  }
   verticalScrollArrowHeight_ = NSHeight([scrollUpArrowView_ frame]);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -390,7 +401,7 @@ CGFloat BookmarkBottomVerticalPadding() {
                                                image:image
                                       menuController:menuController];
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
+    [cell setTag:kMaterialMenuButtonTypeWithLimitedClickFeedback];
   } else {
     [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
   }
@@ -442,6 +453,11 @@ CGFloat BookmarkBottomVerticalPadding() {
                                autorelease];
   DCHECK(button);
 
+  // Folder menu buttons have a flat background color in Material Design.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    [button setBackgroundColor:
+        [BookmarkBarFolderWindowContentView backgroundColor]];
+  }
   [button setCell:cell];
   [button setDelegate:self];
   if (node) {
@@ -535,8 +551,11 @@ CGFloat BookmarkBottomVerticalPadding() {
         [parentButton_ window],
         [[parentButton_ superview] convertPoint:NSZeroPoint toView:nil]);
     newWindowTopLeft = NSMakePoint(
-        buttonBottomLeftInScreen.x + bookmarks::kBookmarkBarButtonOffset,
+        buttonBottomLeftInScreen.x,
         bookmarkBarBottomLeftInScreen.y + bookmarks::kBookmarkBarMenuOffset);
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
+      newWindowTopLeft.y += bookmarks::kBookmarkBarButtonOffset;
+    }
     // Make sure the window is on-screen; if not, push left or right. It is
     // intentional that top level folders "push left" or "push right" slightly
     // different than subfolders.
@@ -864,6 +883,15 @@ CGFloat BookmarkBottomVerticalPadding() {
   [window setFrame:windowFrame display:NO];
 
   NSRect folderFrame = NSMakeRect(0, 0, windowWidth, height);
+  // Each menu button is 24pt tall but its highlight is only 20pt - effectively
+  // each menu button includes 4pts of vertical padding. This wasn't a problem
+  // pre-Material, but now that the |scrollView_| is shorter we have an extra
+  // 4pt of padding pushing the topmost item beyond the top of the
+  // |scrollView_|. Scoot the |folderView_| down by this padding to avoid
+  // clipping the topmost item.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    folderFrame.origin.y -= bookmarks::BookmarkVerticalPadding();
+  }
   [folderView_ setFrame:folderFrame];
 
   // For some reason, when opening a "large" bookmark folder (containing 12 or

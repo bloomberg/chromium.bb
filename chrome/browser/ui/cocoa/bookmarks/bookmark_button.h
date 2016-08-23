@@ -214,10 +214,12 @@ class BookmarkNode;
   BOOL dragPending_;
   BOOL acceptsTrackIn_;
   NSTrackingArea* area_;
+  NSColor* backgroundColor_;
 }
 
 @property(assign, nonatomic) NSObject<BookmarkButtonDelegate>* delegate;
 @property(assign, nonatomic) BOOL acceptsTrackIn;
+@property(retain, nonatomic) NSColor* backgroundColor;
 
 // Return the bookmark node associated with this button, or NULL.
 - (const bookmarks::BookmarkNode*)bookmarkNode;

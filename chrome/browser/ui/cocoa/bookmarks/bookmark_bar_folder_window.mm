@@ -9,8 +9,16 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using bookmarks::kBookmarkBarMenuCornerRadius;
+
+namespace {
+
+// Material Design bookmark folder window background white.
+const CGFloat kMDFolderWindowBackgroundColor = 237. / 255.;
+
+}  // namespace
 
 @implementation BookmarkBarFolderWindow
 
@@ -45,26 +53,39 @@ using bookmarks::kBookmarkBarMenuCornerRadius;
 
 @implementation BookmarkBarFolderWindowContentView
 
++ (NSColor*)backgroundColor {
+  DCHECK(ui::MaterialDesignController::IsModeMaterial());
+  static NSColor* backgroundColor =
+      [[NSColor colorWithGenericGamma22White:kMDFolderWindowBackgroundColor
+                                       alpha:1.0] retain];
+  return backgroundColor;
+}
+
 - (void)drawRect:(NSRect)rect {
   // Like NSMenus, only the bottom corners are rounded.
   NSBezierPath* bezier =
       [NSBezierPath bezierPathWithRoundedRect:[self bounds]
                                       xRadius:kBookmarkBarMenuCornerRadius
                                       yRadius:kBookmarkBarMenuCornerRadius];
-  NSColor* startColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
-  NSColor* midColor =
-      [startColor gtm_colorAdjustedFor:GTMColorationLightMidtone faded:YES];
-  NSColor* endColor =
-      [startColor gtm_colorAdjustedFor:GTMColorationLightPenumbra faded:YES];
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    [[BookmarkBarFolderWindowContentView backgroundColor] set];
+    [bezier fill];
+  } else {
+    NSColor* startColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
+    NSColor* midColor =
+        [startColor gtm_colorAdjustedFor:GTMColorationLightMidtone faded:YES];
+    NSColor* endColor =
+        [startColor gtm_colorAdjustedFor:GTMColorationLightPenumbra faded:YES];
 
-  base::scoped_nsobject<NSGradient> gradient(
-      [[NSGradient alloc] initWithColorsAndLocations:startColor, 0.0,
-                                                     midColor, 0.25,
-                                                     endColor, 0.5,
-                                                     midColor, 0.75,
-                                                     startColor, 1.0,
-                                                     nil]);
-  [gradient drawInBezierPath:bezier angle:0.0];
+    base::scoped_nsobject<NSGradient> gradient(
+        [[NSGradient alloc] initWithColorsAndLocations:startColor, 0.0,
+                                                       midColor, 0.25,
+                                                       endColor, 0.5,
+                                                       midColor, 0.75,
+                                                       startColor, 1.0,
+                                                       nil]);
+    [gradient drawInBezierPath:bezier angle:0.0];
+  }
 }
 
 @end

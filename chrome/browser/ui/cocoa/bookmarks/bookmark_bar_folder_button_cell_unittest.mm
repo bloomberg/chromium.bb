@@ -66,7 +66,7 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
   float cell_width_with_title = ([cell cellSize]).width;
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    EXPECT_GT(icon_x_without_title, icon_x_with_title);
+    EXPECT_EQ(icon_x_without_title, icon_x_with_title);
   } else {
     EXPECT_LT(icon_x_without_title, icon_x_with_title);
   }

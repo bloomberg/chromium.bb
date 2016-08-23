@@ -269,14 +269,14 @@ CGFloat BookmarkLeftMargin() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 2.0;
   }
-  return 10.0;
+  return 12.0;
 }
 
 CGFloat BookmarkRightMargin() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 2.0;
   }
-  return 10.0;
+  return 12.0;
 }
 
 }  // namespace bookmarks
@@ -1240,7 +1240,10 @@ CGFloat BookmarkRightMargin() {
 // too small.  For "FBL" it is 2 pixels too small.
 // For a bookmark named "SFGateFooWoo", it is just fine.
 - (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
-  CGFloat desired = [cell cellSize].width + 2;
+  CGFloat desired = [cell cellSize].width;
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    desired += 2;
+  }
   return std::min(desired, bookmarks::kDefaultBookmarkWidth);
 }
 
