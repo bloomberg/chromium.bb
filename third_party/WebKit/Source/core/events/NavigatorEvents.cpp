@@ -46,4 +46,9 @@ long NavigatorEvents::maxTouchPoints(Navigator& navigator)
     return 0;
 }
 
+bool NavigatorEvents::pointerEnabled(Navigator& navigator)
+{
+    return false;
+}
+
 } // namespace blink

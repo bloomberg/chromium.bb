@@ -79411,6 +79411,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1513" label="RadioNameMatchingStrict"/>
   <int value="1514" label="RadioNameMatchingASCIICaseless"/>
   <int value="1515" label="RadioNameMatchingCaseFolding"/>
+  <int value="1516" label="NavigatorPointerEnabled"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
