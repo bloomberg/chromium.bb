@@ -5,6 +5,7 @@
 #include "content/browser/webui/url_data_manager_backend.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -57,7 +58,7 @@ const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: ";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
-static const char kNetworkErrorKey[] = "netError";
+const char kNetworkErrorKey[] = "netError";
 
 bool SchemeIsInSchemes(const std::string& scheme,
                        const std::vector<std::string>& schemes) {
@@ -258,7 +259,7 @@ class URLRequestChromeJob : public net::URLRequestJob {
   bool is_gzipped_;
 
   // The backend is owned by net::URLRequestContext and always outlives us.
-  URLDataManagerBackend* backend_;
+  URLDataManagerBackend* const backend_;
 
   base::WeakPtrFactory<URLRequestChromeJob> weak_factory_;
 
@@ -277,6 +278,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       deny_xframe_options_(true),
       send_content_type_header_(false),
       is_incognito_(is_incognito),
+      is_gzipped_(false),
       backend_(backend),
       weak_factory_(this) {
   DCHECK(backend);
@@ -386,7 +388,7 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
     if (pending_buf_.get()) {
       CHECK(pending_buf_->data());
       int result = CompleteRead(pending_buf_.get(), pending_buf_size_);
-      pending_buf_ = NULL;
+      pending_buf_ = nullptr;
       ReadRawDataComplete(result);
     }
   } else {
@@ -554,7 +556,7 @@ class ChromeProtocolHandler
 
  private:
   // These members are owned by ProfileIOData, which owns this ProtocolHandler.
-  content::ResourceContext* const resource_context_;
+  ResourceContext* const resource_context_;
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
@@ -574,17 +576,15 @@ URLDataManagerBackend::URLDataManagerBackend()
 }
 
 URLDataManagerBackend::~URLDataManagerBackend() {
-  for (DataSourceMap::iterator i = data_sources_.begin();
-       i != data_sources_.end(); ++i) {
-    i->second->backend_ = NULL;
-  }
+  for (const auto& i : data_sources_)
+    i.second->backend_ = nullptr;
   data_sources_.clear();
 }
 
 // static
 std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerBackend::CreateProtocolHandler(
-    content::ResourceContext* resource_context,
+    ResourceContext* resource_context,
     bool is_incognito,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
@@ -599,7 +599,7 @@ void URLDataManagerBackend::AddDataSource(
   if (i != data_sources_.end()) {
     if (!source->source()->ShouldReplaceExistingSource())
       return;
-    i->second->backend_ = NULL;
+    i->second->backend_ = nullptr;
   }
   data_sources_[source->source_name()] = source;
   source->backend_ = this;
@@ -676,7 +676,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   if (!target_message_loop) {
     job->MimeTypeAvailable(source->source()->GetMimeType(path));
     // Eliminate potentially dangling pointer to avoid future use.
-    job = NULL;
+    job = nullptr;
 
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
@@ -718,7 +718,7 @@ URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
     return i->second.get();
 
   // No matches found, so give up.
-  return NULL;
+  return nullptr;
 }
 
 void URLDataManagerBackend::CallStartRequest(
@@ -733,7 +733,7 @@ void URLDataManagerBackend::CallStartRequest(
     // Make the request fail if its initiating renderer is no longer valid.
     // This can happen when the IO thread posts this task just before the
     // renderer shuts down.
-    source->SendResponse(request_id, NULL);
+    source->SendResponse(request_id, nullptr);
     return;
   }
   source->source()->StartDataRequest(
@@ -773,8 +773,7 @@ class DevToolsJobFactory
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |is_incognito| should be set for incognito profiles.
-  DevToolsJobFactory(content::ResourceContext* resource_context,
-                     bool is_incognito);
+  DevToolsJobFactory(ResourceContext* resource_context, bool is_incognito);
   ~DevToolsJobFactory() override;
 
   net::URLRequestJob* MaybeCreateJob(
@@ -784,7 +783,7 @@ class DevToolsJobFactory
  private:
   // |resource_context_| and |network_delegate_| are owned by ProfileIOData,
   // which owns this ProtocolHandler.
-  content::ResourceContext* const resource_context_;
+  ResourceContext* const resource_context_;
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
@@ -792,11 +791,9 @@ class DevToolsJobFactory
   DISALLOW_COPY_AND_ASSIGN(DevToolsJobFactory);
 };
 
-DevToolsJobFactory::DevToolsJobFactory(
-    content::ResourceContext* resource_context,
-    bool is_incognito)
-    : resource_context_(resource_context),
-      is_incognito_(is_incognito) {
+DevToolsJobFactory::DevToolsJobFactory(ResourceContext* resource_context,
+                                       bool is_incognito)
+    : resource_context_(resource_context), is_incognito_(is_incognito) {
   DCHECK(resource_context_);
 }
 
@@ -812,9 +809,9 @@ DevToolsJobFactory::MaybeCreateJob(
 
 }  // namespace
 
-net::URLRequestJobFactory::ProtocolHandler*
-CreateDevToolsProtocolHandler(content::ResourceContext* resource_context,
-                              bool is_incognito) {
+net::URLRequestJobFactory::ProtocolHandler* CreateDevToolsProtocolHandler(
+    ResourceContext* resource_context,
+    bool is_incognito) {
   return new DevToolsJobFactory(resource_context, is_incognito);
 }
 
