@@ -40,6 +40,8 @@ public:
         // Compare the keyIds of 2 different MapEntries. Assume that |a| and |b|
         // are not null, but the keyId() may be. KeyIds are compared byte
         // by byte.
+        DCHECK(a);
+        DCHECK(b);
 
         // Handle null cases first (which shouldn't happen).
         //    |aKeyId|    |bKeyId|     result
@@ -56,7 +58,8 @@ public:
             return result < 0;
 
         // KeyIds are equal to the shared length, so the shorter string is <.
-        return a->keyId()->byteLength() <= b->keyId()->byteLength();
+        DCHECK_NE(a->keyId()->byteLength(), b->keyId()->byteLength());
+        return a->keyId()->byteLength() < b->keyId()->byteLength();
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -117,14 +120,12 @@ void MediaKeyStatusMap::clear()
 
 void MediaKeyStatusMap::addEntry(WebData keyId, const String& status)
 {
-    m_entries.append(MapEntry::create(keyId, status));
-
-    // No need to do any sorting for the first entry.
-    if (m_entries.size() == 1)
-        return;
-
-    // Sort the entries.
-    std::sort(m_entries.begin(), m_entries.end(), MapEntry::compareLessThan);
+    // Insert new entry into sorted list.
+    MapEntry* entry = MapEntry::create(keyId, status);
+    size_t index = 0;
+    while (index < m_entries.size() && MapEntry::compareLessThan(m_entries[index], entry))
+        ++index;
+    m_entries.insert(index, entry);
 }
 
 const MediaKeyStatusMap::MapEntry& MediaKeyStatusMap::at(size_t index) const
