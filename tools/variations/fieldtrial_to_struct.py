@@ -34,32 +34,39 @@ def _LoadFieldTrialConfig(filename):
   """
   return _FieldTrialConfigToDescription(_Load(filename))
 
+def _CreateGroup(group_data):
+  group = {'name': group_data['group_name']}
+  params_data = group_data.get('params')
+  if (params_data):
+    group['params'] = [{'key': param, 'value': params_data[param]}
+                          for param in sorted(params_data.keys())];
+  enable_features_data = group_data.get('enable_features')
+  if enable_features_data:
+    group['enable_features'] = enable_features_data
+  disable_features_data = group_data.get('disable_features')
+  if disable_features_data:
+    group['disable_features'] = disable_features_data
+  return group
+
+def _CreateTrial(trial_name, groups):
+  return {
+    'name': trial_name,
+    'groups': [_CreateGroup(group) for group in groups],
+  }
+
 def _FieldTrialConfigToDescription(config):
-  element = {'groups': []}
-  for study in sorted(config.keys()):
-    group_data = config[study][0]
-    group = {
-      'study': study,
-      'group_name': group_data['group_name']
+  return {
+    'elements': {
+      'kFieldTrialConfig': {
+        'trials': [_CreateTrial(trial_name, config[trial_name])
+                      for trial_name in sorted(config.keys())]
+      }
     }
-    params_data = group_data.get('params')
-    if (params_data):
-      params = []
-      for param in sorted(params_data.keys()):
-        params.append({'key': param, 'value': params_data[param]})
-      group['params'] = params
-    enable_features_data = group_data.get('enable_features')
-    if enable_features_data:
-      group['enable_features'] = enable_features_data
-    disable_features_data = group_data.get('disable_features')
-    if disable_features_data:
-      group['disable_features'] = disable_features_data
-    element['groups'].append(group)
-  return {'elements': {'kFieldTrialConfig': element}}
+  }
 
 def main(arguments):
   parser = optparse.OptionParser(
-      description='Generates an C++ array of struct from a JSON description.',
+      description='Generates a struct from a JSON description.',
       usage='usage: %prog [option] -s schema description')
   parser.add_option('-b', '--destbase',
       help='base directory of generated files.')

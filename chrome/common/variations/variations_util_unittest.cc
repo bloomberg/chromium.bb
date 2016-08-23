@@ -50,7 +50,7 @@ TEST_F(VariationsUtilTest, AssociateParamsFromString) {
   EXPECT_EQ("/", params["a"]);
 }
 
-TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameStudy) {
+TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameTrial) {
   const std::string kTrialName = "AssociateVariationParams";
   const std::string kVariationsString =
       "AssociateVariationParams.A:a/10/b/test,AssociateVariationParams.A:a/x";
@@ -58,32 +58,39 @@ TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameStudy) {
 }
 
 TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
-  const FieldTrialGroupParams array_kFieldTrialConfig_params[] = {{"x", "1"},
-                                                                  {"y", "2"}};
-
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups[] = {
-      {"TestStudy1", "TestGroup1", array_kFieldTrialConfig_params, 2, NULL, 0,
-       NULL, 0},
-      {"TestStudy2", "TestGroup2", NULL, 0, NULL, 0, NULL, 0}};
-
+  const FieldTrialTestingGroupParams array_kFieldTrialConfig_params_0[] =
+      {{"x", "1"}, {"y", "2"}};
+  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_0[] = {
+      {"TestGroup1", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
+  };
+  const FieldTrialTestingGroupParams array_kFieldTrialConfig_params_1[] =
+      {{"x", "3"}, {"y", "4"}};
+  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_1[] = {
+      {"TestGroup2", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
+      {"TestGroup2-2", array_kFieldTrialConfig_params_1, 2, NULL, 0, NULL, 0},
+  };
+  const FieldTrialTestingTrial array_kFieldTrialConfig_studies[] = {
+      {"TestTrial1", array_kFieldTrialConfig_groups_0, 1},
+      {"TestTrial2", array_kFieldTrialConfig_groups_1, 2},
+  };
   const FieldTrialTestingConfig kConfig = {
-      array_kFieldTrialConfig_groups, 2,
+      array_kFieldTrialConfig_studies, 2
   };
 
   base::FeatureList feature_list;
   AssociateParamsFromFieldTrialConfig(kConfig, &feature_list);
 
-  EXPECT_EQ("1", variations::GetVariationParamValue("TestStudy1", "x"));
-  EXPECT_EQ("2", variations::GetVariationParamValue("TestStudy1", "y"));
+  EXPECT_EQ("1", variations::GetVariationParamValue("TestTrial1", "x"));
+  EXPECT_EQ("2", variations::GetVariationParamValue("TestTrial1", "y"));
 
   std::map<std::string, std::string> params;
-  EXPECT_TRUE(variations::GetVariationParams("TestStudy1", &params));
+  EXPECT_TRUE(variations::GetVariationParams("TestTrial1", &params));
   EXPECT_EQ(2U, params.size());
   EXPECT_EQ("1", params["x"]);
   EXPECT_EQ("2", params["y"]);
 
-  EXPECT_EQ("TestGroup1", base::FieldTrialList::FindFullName("TestStudy1"));
-  EXPECT_EQ("TestGroup2", base::FieldTrialList::FindFullName("TestStudy2"));
+  EXPECT_EQ("TestGroup1", base::FieldTrialList::FindFullName("TestTrial1"));
+  EXPECT_EQ("TestGroup2", base::FieldTrialList::FindFullName("TestTrial2"));
 }
 
 TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
@@ -95,12 +102,21 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const char* enable_features[] = {"A", "B"};
   const char* disable_features[] = {"C", "D"};
 
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups[] = {
-      {"TestStudy1", "TestGroup1", NULL, 0, enable_features, 2, NULL, 0},
-      {"TestStudy2", "TestGroup2", NULL, 0, NULL, 0, disable_features, 2}};
+  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_0[] = {
+      {"TestGroup1", NULL, 0, enable_features, 2, NULL, 0},
+  };
+  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_1[] = {
+      {"TestGroup2", NULL, 0, NULL, 0, disable_features, 2},
+      {"TestGroup2-2", NULL, 0, NULL, 0, NULL, 0},
+  };
+
+  const FieldTrialTestingTrial array_kFieldTrialConfig_studies[] = {
+      {"TestTrial1", array_kFieldTrialConfig_groups_0, 1},
+      {"TestTrial2", array_kFieldTrialConfig_groups_1, 2},
+  };
 
   const FieldTrialTestingConfig kConfig = {
-      array_kFieldTrialConfig_groups, 2,
+      array_kFieldTrialConfig_studies, 2
   };
 
   base::FeatureList::ClearInstanceForTesting();
@@ -110,15 +126,15 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
 
   // Check the resulting feature and field trial states. Trials should not be
   // active until their associated features are queried.
-  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("TestStudy1"));
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("TestTrial1"));
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeatureA));
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFeatureB));
-  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestStudy1"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestTrial1"));
 
-  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("TestStudy2"));
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("TestTrial2"));
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFeatureC));
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFeatureD));
-  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestStudy2"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("TestTrial2"));
 }
 
 }  // namespace chrome_variations

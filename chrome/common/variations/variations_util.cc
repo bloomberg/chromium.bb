@@ -27,6 +27,39 @@ std::string EscapeValue(const std::string& value) {
                  net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 }
 
+void AssociateParamsFromGroup(const std::string& trial_name,
+                              const FieldTrialTestingGroup& group,
+                              base::FeatureList* feature_list) {
+  if (group.params_size != 0) {
+    std::map<std::string, std::string> params;
+    for (size_t i = 0; i < group.params_size; ++i) {
+      const FieldTrialTestingGroupParams& param = group.params[i];
+      params[param.key] = param.value;
+    }
+    variations::AssociateVariationParams(trial_name, group.name, params);
+  }
+  base::FieldTrial* trial =
+      base::FieldTrialList::CreateFieldTrial(trial_name, group.name);
+
+  if (!trial) {
+    DLOG(WARNING) << "Field trial config trial skipped: " << trial_name
+                  << "." << group.name
+                  << " (it is overridden from chrome://flags)";
+    return;
+  }
+
+  for (size_t i = 0; i < group.enable_features_size; ++i) {
+    feature_list->RegisterFieldTrialOverride(
+        group.enable_features[i], base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        trial);
+  }
+  for (size_t i = 0; i < group.disable_features_size; ++i) {
+    feature_list->RegisterFieldTrialOverride(
+        group.disable_features[i],
+        base::FeatureList::OVERRIDE_DISABLE_FEATURE, trial);
+  }
+}
+
 } // namespace
 
 bool AssociateParamsFromString(const std::string& varations_string) {
@@ -45,7 +78,7 @@ bool AssociateParamsFromString(const std::string& varations_string) {
     std::vector<std::string> group_parts = base::SplitString(
         experiment[0], ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (group_parts.size() != 2) {
-      DLOG(ERROR) << "Study and group name should be separated by '.'";
+      DLOG(ERROR) << "Trial and group name should be separated by '.'";
       return false;
     }
 
@@ -60,7 +93,7 @@ bool AssociateParamsFromString(const std::string& varations_string) {
     auto trial_group = std::make_pair(trial, group);
     if (trial_groups.find(trial_group) != trial_groups.end()) {
       DLOG(ERROR) << base::StringPrintf(
-          "A (study, group) pair listed more than once. (%s, %s)",
+          "A (trial, group) pair listed more than once. (%s, %s)",
           trial.c_str(), group.c_str());
       return false;
     }
@@ -78,36 +111,12 @@ bool AssociateParamsFromString(const std::string& varations_string) {
 
 void AssociateParamsFromFieldTrialConfig(const FieldTrialTestingConfig& config,
                                          base::FeatureList* feature_list) {
-  for (size_t i = 0; i < config.groups_size; ++i) {
-    const FieldTrialTestingGroup& group = config.groups[i];
-    if (group.params_size != 0) {
-      std::map<std::string, std::string> params;
-      for (size_t j = 0; j < group.params_size; ++j) {
-        const FieldTrialGroupParams& param = group.params[j];
-        params[param.key] = param.value;
-      }
-      variations::AssociateVariationParams(group.study, group.group_name,
-                                           params);
-    }
-    base::FieldTrial* trial =
-        base::FieldTrialList::CreateFieldTrial(group.study, group.group_name);
-
-    if (!trial) {
-      DLOG(WARNING) << "Field trial config study skipped: " << group.study
-                    << "." << group.group_name
-                    << " (it is overridden from chrome://flags)";
-      continue;
-    }
-
-    for (size_t j = 0; j < group.enable_features_size; ++j) {
-      feature_list->RegisterFieldTrialOverride(
-          group.enable_features[j], base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          trial);
-    }
-    for (size_t j = 0; j < group.disable_features_size; ++j) {
-      feature_list->RegisterFieldTrialOverride(
-          group.disable_features[j],
-          base::FeatureList::OVERRIDE_DISABLE_FEATURE, trial);
+  for (size_t i = 0; i < config.trials_size; ++i) {
+    const FieldTrialTestingTrial& trial = config.trials[i];
+    if (trial.groups_size > 0) {
+      AssociateParamsFromGroup(trial.name, trial.groups[0], feature_list);
+    } else {
+      DLOG(ERROR) << "Unexpected empty trial: " << trial.name;
     }
   }
 }

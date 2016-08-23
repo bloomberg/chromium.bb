@@ -7,62 +7,106 @@
 //   test_config.json
 // DO NOT EDIT.
 
-#include "test_ouput.h"
+#include "test_output.h"
 
 
+const char* const array_kFieldTrialConfig_enable_features_1[] = {
+      "X",
+};
+const FieldTrialTestingGroup array_kFieldTrialConfig_groups_1[] = {
+    {
+      "TestGroup3",
+      NULL,
+      0,
+      array_kFieldTrialConfig_enable_features_1,
+      1,
+      NULL,
+      0,
+    },
+};
+const char* const array_kFieldTrialConfig_disable_features_0[] = {
+      "F",
+};
 const char* const array_kFieldTrialConfig_enable_features_0[] = {
-    "X",
+      "D",
+      "E",
+};
+const FieldTrialTestingGroupParams array_kFieldTrialConfig_params_0[] = {
+      {
+        "x",
+        "3",
+      },
+      {
+        "y",
+        "4",
+      },
 };
 const char* const array_kFieldTrialConfig_disable_features[] = {
-    "C",
+      "C",
 };
 const char* const array_kFieldTrialConfig_enable_features[] = {
-    "A",
-    "B",
+      "A",
+      "B",
 };
-const FieldTrialGroupParams array_kFieldTrialConfig_params[] = {
+const FieldTrialTestingGroupParams array_kFieldTrialConfig_params[] = {
+      {
+        "x",
+        "1",
+      },
+      {
+        "y",
+        "2",
+      },
+};
+const FieldTrialTestingGroup array_kFieldTrialConfig_groups_0[] = {
     {
-      "x",
-      "1",
+      "TestGroup2",
+      array_kFieldTrialConfig_params,
+      2,
+      array_kFieldTrialConfig_enable_features,
+      2,
+      array_kFieldTrialConfig_disable_features,
+      1,
     },
     {
-      "y",
-      "2",
+      "TestGroup2-2",
+      array_kFieldTrialConfig_params_0,
+      2,
+      array_kFieldTrialConfig_enable_features_0,
+      2,
+      array_kFieldTrialConfig_disable_features_0,
+      1,
     },
 };
 const FieldTrialTestingGroup array_kFieldTrialConfig_groups[] = {
+    {
+      "TestGroup1",
+      NULL,
+      0,
+      NULL,
+      0,
+      NULL,
+      0,
+    },
+};
+const FieldTrialTestingTrial array_kFieldTrialConfig_trials[] = {
   {
-    "TestStudy1",
-    "TestGroup1",
-    NULL,
-    0,
-    NULL,
-    0,
-    NULL,
-    0,
-  },
-  {
-    "TestStudy2",
-    "TestGroup2",
-    array_kFieldTrialConfig_params,
-    2,
-    array_kFieldTrialConfig_enable_features,
-    2,
-    array_kFieldTrialConfig_disable_features,
+    "TestTrial1",
+    array_kFieldTrialConfig_groups,
     1,
   },
   {
-    "TestStudy3",
-    "TestGroup3",
-    NULL,
-    0,
-    array_kFieldTrialConfig_enable_features_0,
+    "TestTrial2",
+    array_kFieldTrialConfig_groups_0,
+    2,
+  },
+  {
+    "TestTrial3",
+    array_kFieldTrialConfig_groups_1,
     1,
-    NULL,
-    0,
   },
 };
 const FieldTrialTestingConfig kFieldTrialConfig = {
-  array_kFieldTrialConfig_groups,
+  array_kFieldTrialConfig_trials,
   3,
 };

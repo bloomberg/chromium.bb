@@ -12,7 +12,7 @@ class FieldTrialToStruct(unittest.TestCase):
 
   def test_FieldTrialToDescription(self):
     config = {
-      'Study1': [
+      'Trial1': [
         {
           'group_name': 'Group1',
           'params': {
@@ -21,30 +21,51 @@ class FieldTrialToStruct(unittest.TestCase):
           },
           'enable_features': ['A', 'B'],
           'disable_features': ['C']
+        },
+        {
+          'group_name': 'Group2',
+          'params': {
+            'x': '3',
+            'y': '4'
+          },
+          'enable_features': ['D', 'E'],
+          'disable_features': ['F']
         }
       ],
-      'Study2': [{'group_name': 'OtherGroup'}]
+      'Trial2': [{'group_name': 'OtherGroup'}]
     }
     result = fieldtrial_to_struct._FieldTrialConfigToDescription(config)
     expected = {
       'elements': {
         'kFieldTrialConfig': {
-          'groups': [
+          'trials': [
             {
-              'study': 'Study1',
-              'group_name': 'Group1',
-              'params': [
-                {'key': 'x', 'value': '1'},
-                {'key': 'y', 'value': '2'}
+              'name': 'Trial1',
+              'groups': [
+                {
+                  'name': 'Group1',
+                  'params': [
+                    {'key': 'x', 'value': '1'},
+                    {'key': 'y', 'value': '2'}
+                  ],
+                  'enable_features': ['A', 'B'],
+                  'disable_features': ['C']
+                },
+                {
+                  'name': 'Group2',
+                  'params': [
+                    {'key': 'x', 'value': '3'},
+                    {'key': 'y', 'value': '4'}
+                  ],
+                  'enable_features': ['D', 'E'],
+                  'disable_features': ['F']
+                },
               ],
-             'enable_features': ['A',
-                                 'B'],
-             'disable_features': ['C']
             },
             {
-              'study': 'Study2',
-              'group_name': 'OtherGroup'
-            }
+              'name': 'Trial2',
+              'groups': [{'name': 'OtherGroup'}]
+            },
           ]
         }
       }
@@ -55,14 +76,14 @@ class FieldTrialToStruct(unittest.TestCase):
   def test_FieldTrialToStructMain(self):
     schema = (
         '../../chrome/common/variations/fieldtrial_testing_config_schema.json')
-    test_ouput_filename = 'test_ouput'
+    test_output_filename = 'test_output'
     fieldtrial_to_struct.main([
       '--schema=' + schema,
-      '--output=' + test_ouput_filename,
+      '--output=' + test_output_filename,
       '--year=2015',
       'unittest_data/test_config.json'
     ])
-    header_filename = test_ouput_filename + '.h'
+    header_filename = test_output_filename + '.h'
     with open(header_filename, 'r') as header:
       test_header = header.read()
       with open('unittest_data/expected_output.h', 'r') as expected:
@@ -70,7 +91,7 @@ class FieldTrialToStruct(unittest.TestCase):
         self.assertEqual(expected_header, test_header)
     os.unlink(header_filename)
 
-    cc_filename = test_ouput_filename + '.cc'
+    cc_filename = test_output_filename + '.cc'
     with open(cc_filename, 'r') as cc:
       test_cc = cc.read()
       with open('unittest_data/expected_output.cc', 'r') as expected:
