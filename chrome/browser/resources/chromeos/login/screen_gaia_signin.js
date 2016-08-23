@@ -859,7 +859,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         this.email = credentials.email;
         chrome.send('authenticateUser',
                     [credentials.email,
-                     credentials.password]);
+                     credentials.password,
+                     false]);
       } else if (credentials.authCode) {
         if (credentials.hasOwnProperty('authCodeOnly') &&
             credentials.authCodeOnly) {

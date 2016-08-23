@@ -1325,7 +1325,8 @@ cr.define('login', function() {
         if (!password)
           return false;
         Oobe.disableSigninUI();
-        chrome.send('authenticateUser', [this.user.username, password]);
+        chrome.send('authenticateUser', [this.user.username, password,
+                                         this.isPinShown()]);
       } else {
         console.error('Activating user pod with invalid authentication type: ' +
             this.authType);

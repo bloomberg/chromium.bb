@@ -116,9 +116,9 @@ class DeviceIDTest : public OobeBaseTest,
   void SignInOffline(const std::string& user_id, const std::string& password) {
     WaitForSigninScreen();
 
-    JS().ExecuteAsync(
-        base::StringPrintf("chrome.send('authenticateUser', ['%s', '%s'])",
-                           user_id.c_str(), password.c_str()));
+    JS().ExecuteAsync(base::StringPrintf(
+        "chrome.send('authenticateUser', ['%s', '%s', false])", user_id.c_str(),
+        password.c_str()));
     WaitForSessionStart();
   }
 

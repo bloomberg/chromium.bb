@@ -17,6 +17,7 @@ UserContext::UserContext(const UserContext& other)
       access_token_(other.access_token_),
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
+      is_using_pin_(other.is_using_pin_),
       auth_flow_(other.auth_flow_),
       user_type_(other.user_type_),
       public_session_locale_(other.public_session_locale_),
@@ -93,6 +94,10 @@ bool UserContext::IsUsingOAuth() const {
   return is_using_oauth_;
 }
 
+bool UserContext::IsUsingPin() const {
+  return is_using_pin_;
+}
+
 UserContext::AuthFlow UserContext::GetAuthFlow() const {
   return auth_flow_;
 }
@@ -148,6 +153,10 @@ void UserContext::SetUserIDHash(const std::string& user_id_hash) {
 
 void UserContext::SetIsUsingOAuth(bool is_using_oauth) {
   is_using_oauth_ = is_using_oauth;
+}
+
+void UserContext::SetIsUsingPin(bool is_using_pin) {
+  is_using_pin_ = is_using_pin;
 }
 
 void UserContext::SetAuthFlow(AuthFlow auth_flow) {

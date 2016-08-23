@@ -51370,6 +51370,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>How long it takes the swap ack to return after a swap.</summary>
 </histogram>
 
+<histogram name="ScreenLocker.AuthenticationFailure" enum="UnlockType">
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    What type of authentication was attempted when the user failed to unlock the
+    lock screen.
+  </summary>
+</histogram>
+
+<histogram name="ScreenLocker.AuthenticationSuccess" enum="UnlockType">
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    What type of authentication was attempted when the user successfully
+    unlocked the lock screen.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.AdvertisedWithSecureScheme" enum="BooleanHttps">
   <obsolete>
     Experiment complete, histogram gathering code removed.
@@ -95720,6 +95736,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Group not reported"/>
   <int value="2" label="Trial was disabled"/>
   <int value="3" label="Group not reported and trial was disabled"/>
+</enum>
+
+<enum name="UnlockType" type="int">
+  <int value="0" label="Password"/>
+  <int value="1" label="Pin"/>
 </enum>
 
 <enum name="UpdateEngineAttemptResult" type="int">

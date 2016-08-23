@@ -341,7 +341,8 @@ class SigninScreenHandler
   // WebUI message handlers.
   void HandleGetUsers();
   void HandleAuthenticateUser(const AccountId& account_id,
-                              const std::string& password);
+                              const std::string& password,
+                              bool authenticated_by_pin);
   void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchIncognito();
   void HandleLaunchPublicSession(const AccountId& account_id,

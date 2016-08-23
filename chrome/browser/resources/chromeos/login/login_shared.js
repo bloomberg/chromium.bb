@@ -335,7 +335,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.authenticateForTesting = function(username, password) {
     Oobe.disableSigninUI();
-    chrome.send('authenticateUser', [username, password]);
+    chrome.send('authenticateUser', [username, password, false]);
   };
 
   /**

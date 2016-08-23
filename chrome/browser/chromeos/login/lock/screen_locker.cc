@@ -136,10 +136,6 @@ ScreenLocker* ScreenLocker::screen_locker_ = NULL;
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
     : users_(users),
-      locked_(false),
-      start_time_(base::Time::Now()),
-      auth_status_consumer_(NULL),
-      incorrect_passwords_count_(0),
       weak_factory_(this) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
@@ -189,6 +185,11 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationFailureTime", delta);
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "ScreenLocker.AuthenticationFailure",
+      is_pin_attempt_ ? UnlockType::AUTH_PIN : UnlockType::AUTH_PASSWORD,
+      UnlockType::AUTH_COUNT);
+
   EnableInput();
   // Don't enable signout button here as we're showing
   // MessageBubble.
@@ -212,6 +213,11 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
     VLOG(1) << "Authentication success: " << delta.InSecondsF() << " second(s)";
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "ScreenLocker.AuthenticationSuccess",
+      is_pin_attempt_ ? UnlockType::AUTH_PIN : UnlockType::AUTH_PASSWORD,
+      UnlockType::AUTH_COUNT);
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
@@ -283,6 +289,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   authentication_start_time_ = base::Time::Now();
   delegate_->SetInputEnabled(false);
   delegate_->OnAuthenticate();
+  is_pin_attempt_ = user_context.IsUsingPin();
 
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
@@ -293,7 +300,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     // otherwise we will timeout PIN if the user enters their account password
     // incorrectly more than a few times.
     int dummy_value;
-    if (base::StringToInt(pin, &dummy_value)) {
+    if (is_pin_attempt_ && base::StringToInt(pin, &dummy_value)) {
       chromeos::PinStorage* pin_storage =
           chromeos::PinStorageFactory::GetForUser(user);
       if (pin_storage && pin_storage->TryAuthenticatePin(pin)) {

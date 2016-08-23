@@ -1059,14 +1059,21 @@ void SigninScreenHandler::UpdateAddButtonStatus() {
 }
 
 void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
-                                                 const std::string& password) {
+                                                 const std::string& password,
+                                                 bool authenticated_by_pin) {
   if (!delegate_)
     return;
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
+  chromeos::PinStorage* pin_storage =
+    chromeos::PinStorageFactory::GetForAccountId(account_id);
+  // If pin storage is unavailable, authenticated by PIN must be false.
+  DCHECK(!pin_storage || pin_storage->IsPinAuthenticationAvailable() ||
+         !authenticated_by_pin);
 
   UserContext user_context(account_id);
   user_context.SetKey(Key(password));
+  user_context.SetIsUsingPin(authenticated_by_pin);
   delegate_->Login(user_context, SigninSpecifics());
 
   HidePinKeyboardIfNeeded(account_id);
