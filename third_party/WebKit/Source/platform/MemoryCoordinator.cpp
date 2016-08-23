@@ -36,10 +36,10 @@ void MemoryCoordinator::unregisterClient(MemoryCoordinatorClient* client)
     m_clients.remove(client);
 }
 
-void MemoryCoordinator::purgeMemory()
+void MemoryCoordinator::prepareToSuspend()
 {
     for (auto& client : m_clients)
-        client->purgeMemory();
+        client->prepareToSuspend();
     WTF::Partitions::decommitFreeableMemory();
 }
 

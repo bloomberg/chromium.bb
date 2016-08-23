@@ -13,9 +13,9 @@ void WebMemoryCoordinator::onMemoryPressure(WebMemoryPressureLevel pressureLevel
     MemoryCoordinator::instance().onMemoryPressure(pressureLevel);
 }
 
-void WebMemoryCoordinator::purgeMemory()
+void WebMemoryCoordinator::prepareToSuspend()
 {
-    MemoryCoordinator::instance().purgeMemory();
+    MemoryCoordinator::instance().prepareToSuspend();
 }
 
 } // namespace blink

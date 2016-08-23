@@ -17,8 +17,8 @@ public:
     // gone.
     BLINK_PLATFORM_EXPORT static void onMemoryPressure(WebMemoryPressureLevel);
 
-    // Called when Blink should purge caches.
-    BLINK_PLATFORM_EXPORT static void purgeMemory();
+    // Called when Blink is going to be suspended.
+    BLINK_PLATFORM_EXPORT static void prepareToSuspend();
 };
 
 } // namespace blink

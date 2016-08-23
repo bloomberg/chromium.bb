@@ -16,8 +16,10 @@ class PLATFORM_EXPORT MemoryCoordinatorClient : public GarbageCollectedMixin {
 public:
     virtual ~MemoryCoordinatorClient() { }
 
-    // Called when MemoryCoordinator is asked to purge memory.
-    virtual void purgeMemory() { }
+    // Called when MemoryCoordinator is asked to prepare for suspending
+    // the renderer. Clients should purge discardable memory as much as
+    // possible.
+    virtual void prepareToSuspend() { }
 
     // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
     // gone.
@@ -34,7 +36,7 @@ public:
     void registerClient(MemoryCoordinatorClient*);
     void unregisterClient(MemoryCoordinatorClient*);
 
-    void purgeMemory();
+    void prepareToSuspend();
 
     // TODO(bashi): Deprecating. Remove this when MemoryPressureListener is
     // gone.
