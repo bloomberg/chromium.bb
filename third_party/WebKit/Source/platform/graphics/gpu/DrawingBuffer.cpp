@@ -261,9 +261,7 @@ std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap()
     return Platform::current()->allocateSharedBitmap(m_size);
 }
 
-bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
-    bool useSharedMemory)
+bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox, std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback)
 {
     bool forceGpuResult = false;
     return prepareTextureMailboxInternal(outMailbox, outReleaseCallback, forceGpuResult);

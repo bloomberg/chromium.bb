@@ -185,10 +185,7 @@ bool TextureLayer::Update() {
   if (client_) {
     TextureMailbox mailbox;
     std::unique_ptr<SingleReleaseCallback> release_callback;
-    if (client_->PrepareTextureMailbox(
-            &mailbox,
-            &release_callback,
-            layer_tree_host()->UsingSharedMemoryResources())) {
+    if (client_->PrepareTextureMailbox(&mailbox, &release_callback)) {
       // Already within a commit, no need to do another one immediately.
       bool requires_commit = false;
       bool allow_mailbox_reuse = false;

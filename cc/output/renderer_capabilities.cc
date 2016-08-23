@@ -7,12 +7,9 @@
 namespace cc {
 
 RendererCapabilities::RendererCapabilities(ResourceFormat best_texture_format,
-                                           int max_texture_size,
-                                           bool using_shared_memory_resources)
+                                           int max_texture_size)
     : best_texture_format(best_texture_format),
-      max_texture_size(max_texture_size),
-      using_shared_memory_resources(using_shared_memory_resources) {
-}
+      max_texture_size(max_texture_size) {}
 
 RendererCapabilities::RendererCapabilities() = default;
 RendererCapabilities::~RendererCapabilities() = default;

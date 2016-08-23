@@ -112,6 +112,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DPro
     , m_size(size)
 {
     DCHECK(m_contextProvider);
+    DCHECK(!m_contextProvider->isSoftwareRendering());
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     startRecording();
@@ -762,8 +763,7 @@ bool Canvas2DLayerBridge::restoreSurface()
 
 bool Canvas2DLayerBridge::PrepareTextureMailbox(
     cc::TextureMailbox* outMailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
-    bool useSharedMemory)
+    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback)
 {
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
@@ -779,18 +779,6 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
     // hibernation
     if ((isHibernating() || m_softwareRenderingWhileHidden) && isHidden())
         return false;
-
-    // TODO(danakj): This means the compositor has dropped to software
-    // compositing. Our context should already be lost if cc can't make a
-    // context that it can use (each time it tries it loses our context).
-    // But checkSurfaceValid() returns true even tho there is a GL error
-    // sometimes.. so not sure if just checking for a GL error is right here
-    // or what.
-    if (useSharedMemory) {
-        // Since we're going to software compositing, this class will soon be
-        // destroyed for software mode canvas.
-        return false;
-    }
 
     // If the context is lost, we don't know if we should be producing GPU or
     // software frames, until we get a new context, since the compositor will

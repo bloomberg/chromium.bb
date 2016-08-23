@@ -237,7 +237,6 @@ class CC_EXPORT LayerTreeHost {
 
   virtual gfx::Size GetUIResourceSize(UIResourceId id) const;
 
-  bool UsingSharedMemoryResources();
   int id() const { return id_; }
 
   // Returns the id of the benchmark on success, 0 otherwise.

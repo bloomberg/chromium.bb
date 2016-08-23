@@ -182,16 +182,23 @@ protected:
         bridge->flush();
     }
 
-    void prepareMailboxSoftwareTest()
+    void prepareMailboxWhenContextIsLost()
     {
         FakeGLES2Interface gl;
         std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider = wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
 
+        // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we don't
+        // do this before calling it the first time when the context is lost.
+        bridge->prepareSurfaceForPaintingIfNeeded();
+
+        // When the context is lost we are not sure if we should be producing GL frames for the
+        // compositor still or not, so fail to generate frames.
+        gl.setIsContextLost(true);
+
         cc::TextureMailbox textureMailbox;
         std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-        bool useSharedMemory = true;
-        EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
+        EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
     }
 
     void prepareMailboxAndLoseResourceTest()
@@ -205,8 +212,7 @@ protected:
 
             cc::TextureMailbox textureMailbox;
             std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-            bool useSharedMemory = false;
-            EXPECT_TRUE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
+            EXPECT_TRUE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
 
             bool lostResource = true;
             releaseCallback->Run(gpu::SyncToken(), lostResource);
@@ -219,11 +225,10 @@ protected:
 
             cc::TextureMailbox textureMailbox;
             std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-            bool useSharedMemory = false;
 
             {
                 Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
-                bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory);
+                bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback);
                 // |bridge| goes out of scope and would normally be destroyed, but object is kept alive by self references.
             }
 
@@ -271,9 +276,9 @@ TEST_F(Canvas2DLayerBridgeTest, NoDrawOnContextLost)
     noDrawOnContextLostTest();
 }
 
-TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxSoftware)
+TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhenContextIsLost)
 {
-    prepareMailboxSoftwareTest();
+    prepareMailboxWhenContextIsLost();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxAndLoseResource)
@@ -1005,8 +1010,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
     // Test prepareMailbox while hibernating
     cc::TextureMailbox textureMailbox;
     std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-    bool useSharedMemory = false;
-    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
+    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope
@@ -1054,8 +1058,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
     // Test prepareMailbox while background rendering
     cc::TextureMailbox textureMailbox;
     std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-    bool useSharedMemory = false;
-    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory));
+    EXPECT_FALSE(bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback));
     EXPECT_TRUE(bridge->checkSurfaceValid());
 
     // Tear down the bridge on the thread so that 'bridge' can go out of scope

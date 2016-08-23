@@ -16,9 +16,10 @@ struct RendererCapabilitiesImpl {
   // Capabilities copied to main thread.
   ResourceFormat best_texture_format = RGBA_8888;
   int max_texture_size = 0;
-  bool using_shared_memory_resources = false;
 
-  RendererCapabilities MainThreadCapabilities() const;
+  RendererCapabilities MainThreadCapabilities() const {
+    return RendererCapabilities(best_texture_format, max_texture_size);
+  }
 };
 
 }  // namespace cc

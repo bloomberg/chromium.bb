@@ -91,8 +91,7 @@ public:
     // cc::TextureLayerClient implementation.
     bool PrepareTextureMailbox(
         cc::TextureMailbox* outMailbox,
-        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
-        bool useSharedMemory) override;
+        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
 
     // Callback for mailboxes given to the compositor from PrepareTextureMailbox.
     void mailboxReleased(const gpu::Mailbox&, const gpu::SyncToken&,

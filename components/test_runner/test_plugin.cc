@@ -307,8 +307,7 @@ static void ReleaseSharedMemory(std::unique_ptr<cc::SharedBitmap> bitmap,
 
 bool TestPlugin::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
-    bool use_shared_memory) {
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!mailbox_changed_)
     return false;
   *mailbox = texture_mailbox_;

@@ -163,7 +163,7 @@ class ReflectorImplTest : public testing::Test {
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
     cc::TextureMailbox mailbox;
     std::unique_ptr<cc::SingleReleaseCallback> release;
-    if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release, false)) {
+    if (mirroring_layer_->PrepareTextureMailbox(&mailbox, &release)) {
       release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();

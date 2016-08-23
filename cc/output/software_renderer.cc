@@ -63,7 +63,6 @@ SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
     capabilities_.best_texture_format =
         resource_provider_->best_texture_format();
   }
-  capabilities_.using_shared_memory_resources = true;
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}

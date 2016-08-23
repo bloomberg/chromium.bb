@@ -822,8 +822,7 @@ size_t Layer::GetApproximateUnsharedMemoryUsage() const {
 
 bool Layer::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
-    std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
-    bool use_shared_memory) {
+    std::unique_ptr<cc::SingleReleaseCallback>* release_callback) {
   if (!mailbox_release_callback_)
     return false;
   *mailbox = mailbox_;

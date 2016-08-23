@@ -27,8 +27,6 @@ DelegatingRenderer::DelegatingRenderer(OutputSurface* output_surface,
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
-  capabilities_.using_shared_memory_resources =
-      !output_surface_->context_provider();
 }
 
 DelegatingRenderer::~DelegatingRenderer() = default;

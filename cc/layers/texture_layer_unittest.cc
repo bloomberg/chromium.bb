@@ -103,8 +103,7 @@ class FakeTextureLayerClient : public TextureLayerClient {
 
   bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
-      std::unique_ptr<SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) override {
+      std::unique_ptr<SingleReleaseCallback>* release_callback) override {
     if (!mailbox_changed_)
       return false;
 
@@ -1052,8 +1051,7 @@ class TextureLayerNoExtraCommitForMailboxTest
   // TextureLayerClient implementation.
   bool PrepareTextureMailbox(
       TextureMailbox* texture_mailbox,
-      std::unique_ptr<SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) override {
+      std::unique_ptr<SingleReleaseCallback>* release_callback) override {
     if (layer_tree_host()->source_frame_number() == 1) {
       // Once this has been committed, the mailbox will be released.
       *texture_mailbox = TextureMailbox();
@@ -1131,8 +1129,7 @@ class TextureLayerChangeInvisibleMailboxTest
   // TextureLayerClient implementation.
   bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
-      std::unique_ptr<SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) override {
+      std::unique_ptr<SingleReleaseCallback>* release_callback) override {
     ++prepare_called_;
     if (!mailbox_changed_)
       return false;
@@ -1251,8 +1248,7 @@ class TextureLayerReleaseResourcesBase
   // TextureLayerClient implementation.
   bool PrepareTextureMailbox(
       TextureMailbox* mailbox,
-      std::unique_ptr<SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) override {
+      std::unique_ptr<SingleReleaseCallback>* release_callback) override {
     *mailbox = TextureMailbox(MailboxFromChar('1'), SyncTokenFromUInt(1),
                               GL_TEXTURE_2D);
     *release_callback = SingleReleaseCallback::Create(

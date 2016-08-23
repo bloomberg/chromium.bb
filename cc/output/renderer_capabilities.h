@@ -13,8 +13,7 @@ namespace cc {
 // Represents the set of capabilities that a particular Renderer has.
 struct CC_EXPORT RendererCapabilities {
   RendererCapabilities(ResourceFormat best_texture_format,
-                       int max_texture_size,
-                       bool using_shared_memory_resources);
+                       int max_texture_size);
 
   RendererCapabilities();
   ~RendererCapabilities();
@@ -22,7 +21,6 @@ struct CC_EXPORT RendererCapabilities {
   // Duplicate any modification to this list to RendererCapabilitiesImpl.
   ResourceFormat best_texture_format;
   int max_texture_size;
-  bool using_shared_memory_resources;
 };
 
 }  // namespace cc

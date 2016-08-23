@@ -95,8 +95,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   // cc::TextureLayerClient methods:
   bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
-      std::unique_ptr<cc::SingleReleaseCallback>* release_callback,
-      bool use_shared_memory) override;
+      std::unique_ptr<cc::SingleReleaseCallback>* release_callback) override;
 
  private:
   TestPlugin(blink::WebFrame* frame,

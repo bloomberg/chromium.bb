@@ -209,8 +209,7 @@ public:
     // cc::TextureLayerClient implementation.
     bool PrepareTextureMailbox(
         cc::TextureMailbox* outMailbox,
-        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
-        bool useSharedMemory) override;
+        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
 
     // Returns a StaticBitmapImage backed by a texture containing the/ current contents of
     // the front buffer. This is done without any pixel copies. The texture in the ImageBitmap

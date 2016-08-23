@@ -749,10 +749,6 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       layer_tree_->property_trees());
 }
 
-bool LayerTreeHost::UsingSharedMemoryResources() {
-  return GetRendererCapabilities().using_shared_memory_resources;
-}
-
 bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   TRACE_EVENT1("cc", "LayerTreeHost::DoUpdateLayers", "source_frame_number",
                source_frame_number());
