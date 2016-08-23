@@ -53,6 +53,7 @@ namespace offline_pages {
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       page_model_(nullptr),
+      snapshots_enabled_(false),
       delegate_(new DefaultDelegate()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -81,53 +82,62 @@ void RecentTabHelper::LazyInitialize() {
 
   // TODO(dimich): When we have BackgroundOffliner, avoid capturing prerenderer
   // WebContents with its origin as well.
-  never_do_snapshots_ = tab_id_.empty() ||
-                        web_contents()->GetBrowserContext()->IsOffTheRecord();
+  snapshots_enabled_ = page_model_ &&
+                       !tab_id_.empty() &&
+                       !web_contents()->GetBrowserContext()->IsOffTheRecord();
+
+  if (!snapshots_enabled_)
+    snapshot_controller_->Stop();
 }
 
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
   // Initialize lazily. It needs TabAndroid for initization, which is also a
   // TabHelper - so can't initialize in constructor because of uncertain order
   // of creation of TabHelpers.
   if (!snapshot_controller_)
     LazyInitialize();
 
-  if (navigation_handle->IsInMainFrame() &&
-      navigation_handle->HasCommitted()) {
-    // Cancel tasks in flight that relate to the previous page.
-    weak_ptr_factory_.InvalidateWeakPtrs();
+  if (!snapshots_enabled_)
+    return;
 
-    // New navigation, new snapshot session.
-    snapshot_url_ = GURL();
-    GURL last_committed_url = web_contents()->GetLastCommittedURL();
+  // Cancel tasks in flight that relate to the previous page.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
-    // Check for conditions that would cause us not to snapshot.
-    bool can_save = !navigation_handle->IsErrorPage() &&
-                    OfflinePageModel::CanSaveURL(last_committed_url);
+  // New navigation, new snapshot session.
+  snapshot_url_ = GURL();
+  GURL last_committed_url = web_contents()->GetLastCommittedURL();
 
-    // We only want to record UMA if the page is not Off The Record.
-    if (!never_do_snapshots_)
-      UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
+  // Check for conditions that would cause us not to snapshot.
+  bool can_save = !navigation_handle->IsErrorPage() &&
+                  OfflinePageModel::CanSaveURL(last_committed_url);
 
-    // Always reset so that posted tasks get cancelled.
-    snapshot_controller_->Reset();
+  UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
 
-    if (never_do_snapshots_ || !can_save)
-      snapshot_controller_->Stop();
-    else
-      snapshot_url_ = last_committed_url;
-  }
+  // Always reset so that posted tasks get cancelled.
+  snapshot_controller_->Reset();
+
+  if (!can_save)
+    snapshot_controller_->Stop();
+  else
+    snapshot_url_ = last_committed_url;
 }
 
 void RecentTabHelper::DocumentAvailableInMainFrame() {
+  if (!snapshots_enabled_)
+    return;
   snapshot_controller_->DocumentAvailableInMainFrame();
 }
 
 void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
   // TODO(dimich): Figure out when this can fire before DidFinishNavigate().
   // See bug 628716 for more info.
-  if (!snapshot_controller_)
+  if (!snapshots_enabled_)
     return;
   snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
@@ -139,6 +149,8 @@ void RecentTabHelper::DocumentOnLoadCompletedInMainFrame() {
 // Along the chain, the original URL is passed and compared, to detect
 // possible navigation and cancel snapshot in that case.
 void RecentTabHelper::StartSnapshot() {
+  if (!snapshots_enabled_)
+    return;
   // Remove previously captured pages for this tab.
   page_model_->GetOfflineIdsForClientId(
     client_id(),

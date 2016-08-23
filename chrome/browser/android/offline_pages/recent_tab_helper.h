@@ -72,8 +72,8 @@ class RecentTabHelper
 
   // Page model is a service, no ownership.
   OfflinePageModel* page_model_;
-  // If true, never make snapshots off the attached WebContents.
-  bool never_do_snapshots_;
+  // If false, never make snapshots off the attached WebContents.
+  bool snapshots_enabled_;
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
 
