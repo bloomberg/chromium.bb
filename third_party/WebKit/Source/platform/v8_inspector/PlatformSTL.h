@@ -308,4 +308,10 @@ inline static int snprintf(char *buffer, size_t n, const char *format, ...)
 } // namespace std
 #endif // (_WIN32) && defined( _MSC_VER ) && (_MSC_VER < 1900)
 
+#ifdef __sun
+namespace std {
+using ::snprintf;
+} // namespace std
+#endif // __sun
+
 #endif // PlatformSTL_h
