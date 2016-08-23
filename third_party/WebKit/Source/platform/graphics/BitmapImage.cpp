@@ -606,7 +606,7 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
         // Note that we don't need to special-case cAnimationLoopOnce here
         // because it is 0 (see comments on its declaration in ImageAnimation.h).
         if ((repetitionCount(true) != cAnimationLoopInfinite && m_repetitionsComplete > m_repetitionCount)
-            || (m_animationPolicy == ImageAnimationPolicyAnimateOnce && m_repetitionsComplete > 0)) {
+            || m_animationPolicy == ImageAnimationPolicyAnimateOnce) {
             m_animationFinished = true;
             m_desiredFrameStartTime = 0;
             --m_currentFrame;
