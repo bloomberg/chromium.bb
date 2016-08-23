@@ -2,12 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("sfntly") {
+declare_args() {
+  # Flip to true to build sfntly sample programs.
+  build_sfntly_samples = false
+}
+
+config("sfntly_common_config") {
+  defines = [ "SFNTLY_NO_EXCEPTION" ]
+  include_dirs = [ "src/cpp/src" ]
+}
+
+source_set("sfntly_chromium") {
   sources = [
     "src/cpp/src/sample/chromium/font_subsetter.cc",
     "src/cpp/src/sample/chromium/font_subsetter.h",
     "src/cpp/src/sample/chromium/subsetter_impl.cc",
     "src/cpp/src/sample/chromium/subsetter_impl.h",
+  ]
+
+  # This is the equivalent to the following in sfntly.gyp.
+  # 'msvs_disabled_warnings': [ 4267 ],
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  configs += [ ":sfntly_common_config" ]
+  deps = [
+    "//third_party/icu:icuuc",
+  ]
+}
+
+static_library("sfntly") {
+  sources = [
     "src/cpp/src/sfntly/data/byte_array.cc",
     "src/cpp/src/sfntly/data/byte_array.h",
     "src/cpp/src/sfntly/data/font_data.cc",
@@ -37,8 +62,10 @@ static_library("sfntly") {
     "src/cpp/src/sfntly/port/file_input_stream.cc",
     "src/cpp/src/sfntly/port/file_input_stream.h",
     "src/cpp/src/sfntly/port/input_stream.h",
+    "src/cpp/src/sfntly/port/java_iterator.h",
     "src/cpp/src/sfntly/port/lock.cc",
     "src/cpp/src/sfntly/port/lock.h",
+    "src/cpp/src/sfntly/port/logging.h",
     "src/cpp/src/sfntly/port/memory_input_stream.cc",
     "src/cpp/src/sfntly/port/memory_input_stream.h",
     "src/cpp/src/sfntly/port/memory_output_stream.cc",
@@ -119,15 +146,122 @@ static_library("sfntly") {
     "src/cpp/src/sfntly/tag.h",
   ]
 
-  defines = [ "SFNTLY_NO_EXCEPTION" ]
-  include_dirs = [ "src/cpp/src" ]
-
   # This is the equivalent to the following in sfntly.gyp.
   # 'msvs_disabled_warnings': [ 4267 ],
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
+  configs += [ ":sfntly_common_config" ]
   deps = [
+    ":sfntly_chromium",
     "//third_party/icu:icuuc",
   ]
+}
+
+if (build_sfntly_samples) {
+  source_set("sfntly_subtly") {
+    sources = [
+      "src/cpp/src/sample/subtly/character_predicate.cc",
+      "src/cpp/src/sample/subtly/character_predicate.h",
+      "src/cpp/src/sample/subtly/font_assembler.cc",
+      "src/cpp/src/sample/subtly/font_assembler.h",
+      "src/cpp/src/sample/subtly/font_info.cc",
+      "src/cpp/src/sample/subtly/font_info.h",
+      "src/cpp/src/sample/subtly/merger.cc",
+      "src/cpp/src/sample/subtly/merger.h",
+      "src/cpp/src/sample/subtly/stats.cc",
+      "src/cpp/src/sample/subtly/stats.h",
+      "src/cpp/src/sample/subtly/subsetter.cc",
+      "src/cpp/src/sample/subtly/subsetter.h",
+      "src/cpp/src/sample/subtly/utils.cc",
+      "src/cpp/src/sample/subtly/utils.h",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    include_dirs = [ "src/cpp/src/sample" ]
+  }
+
+  source_set("sfntly_tools") {
+    sources = [
+      "src/cpp/src/sfntly/tools/subsetter/glyph_table_subsetter.cc",
+      "src/cpp/src/sfntly/tools/subsetter/glyph_table_subsetter.h",
+      "src/cpp/src/sfntly/tools/subsetter/subsetter.cc",
+      "src/cpp/src/sfntly/tools/subsetter/subsetter.h",
+      "src/cpp/src/sfntly/tools/subsetter/table_subsetter.h",
+      "src/cpp/src/sfntly/tools/subsetter/table_subsetter_impl.cc",
+      "src/cpp/src/sfntly/tools/subsetter/table_subsetter_impl.h",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      "//third_party/icu:icuuc",
+    ]
+  }
+
+  executable("sfntly_chrome_subsetter") {
+    sources = [
+      "src/cpp/src/sample/chromium/chrome_subsetter.cc",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      ":sfntly",
+    ]
+  }
+
+  executable("sfntly_subsetter") {
+    sources = [
+      "src/cpp/src/sample/subsetter/main.cc",
+      "src/cpp/src/sample/subsetter/subset_util.cc",
+      "src/cpp/src/sample/subsetter/subset_util.h",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      ":sfntly",
+      ":sfntly_subtly",
+      ":sfntly_tools",
+    ]
+  }
+
+  executable("sfntly_subtly_debug") {
+    sources = [
+      "src/cpp/src/sample/subtly/debug_main.cc",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      ":sfntly",
+      ":sfntly_subtly",
+    ]
+    include_dirs = [ "src/cpp/src/sample" ]
+  }
+
+  executable("sfntly_subtly_merger") {
+    sources = [
+      "src/cpp/src/sample/subtly/merger_main.cc",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      ":sfntly",
+      ":sfntly_subtly",
+    ]
+    include_dirs = [ "src/cpp/src/sample" ]
+  }
+
+  executable("sfntly_subtly_subsetter") {
+    sources = [
+      "src/cpp/src/sample/subtly/subsetter_main.cc",
+    ]
+
+    configs += [ ":sfntly_common_config" ]
+    deps = [
+      ":sfntly",
+      ":sfntly_subtly",
+    ]
+    include_dirs = [ "src/cpp/src/sample" ]
+  }
+
+  # TODO(thestig): Get sfntly_unittests to build.
 }
