@@ -9,9 +9,11 @@
 Polymer({
   is: 'settings-menu',
 
+  behaviors: [settings.RouteObserverBehavior],
+
   properties: {
     /** @private */
-    advancedOpened_: Boolean,
+    aboutSelected_: Boolean,
 
     /**
      * Dictionary defining page visibility.
@@ -40,6 +42,28 @@ Polymer({
 
     this.fire('toggle-advanced-page',
               settings.Route.ADVANCED.contains(settings.getCurrentRoute()));
+  },
+
+  /**
+   * @param {!settings.Route} newRoute
+   */
+  currentRouteChanged: function(newRoute) {
+    // Make the three menus mutually exclusive.
+    if (settings.Route.ABOUT.contains(newRoute)) {
+      this.aboutSelected_ = true;
+      this.$.advancedMenu.selected = null;
+      this.$.basicMenu.selected = null;
+    } else if (settings.Route.ADVANCED.contains(newRoute)) {
+      this.aboutSelected_ = false;
+      // For routes from URL entry, we need to set selected.
+      this.$.advancedMenu.selected = newRoute.path;
+      this.$.basicMenu.selected = null;
+    } else if (settings.Route.BASIC.contains(newRoute)) {
+      this.aboutSelected_ = false;
+      this.$.advancedMenu.selected = null;
+      // For routes from URL entry, we need to set selected.
+      this.$.basicMenu.selected = newRoute.path;
+    }
   },
 
   /**
