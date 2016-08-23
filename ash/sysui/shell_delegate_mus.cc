@@ -12,7 +12,6 @@
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/sysui/app_list_presenter_mus.h"
 #include "ash/sysui/context_menu_mus.h"
-#include "ash/sysui/pointer_watcher_delegate_mus.h"
 #include "ash/sysui/shelf_delegate_mus.h"
 #include "ash/sysui/user_wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
@@ -199,11 +198,6 @@ MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
 std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
-}
-
-std::unique_ptr<PointerWatcherDelegate>
-ShellDelegateMus::CreatePointerWatcherDelegate() {
-  return base::WrapUnique(new PointerWatcherDelegateMus);
 }
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(WmShelf* wm_shelf,

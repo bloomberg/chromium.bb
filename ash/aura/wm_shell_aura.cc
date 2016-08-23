@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/aura/pointer_watcher_adapter.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
@@ -55,12 +56,20 @@ WmShellAura::~WmShellAura() {
   WmShell::Set(nullptr);
 }
 
+void WmShellAura::CreatePointerWatcherAdapter() {
+  // Must occur after Shell has installed its early pre-target handlers (for
+  // example, WindowModalityController).
+  pointer_watcher_adapter_.reset(new PointerWatcherAdapter);
+}
+
 void WmShellAura::Shutdown() {
   if (added_activation_observer_)
     Shell::GetInstance()->activation_client()->RemoveObserver(this);
 
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+
+  pointer_watcher_adapter_.reset();
 
   WmShell::Shutdown();
 }
@@ -248,11 +257,11 @@ void WmShellAura::RemoveDisplayObserver(WmDisplayObserver* observer) {
 
 void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher,
                                     bool wants_moves) {
-  Shell::GetInstance()->AddPointerWatcher(watcher, wants_moves);
+  pointer_watcher_adapter_->AddPointerWatcher(watcher, wants_moves);
 }
 
 void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  Shell::GetInstance()->RemovePointerWatcher(watcher);
+  pointer_watcher_adapter_->RemovePointerWatcher(watcher);
 }
 
 bool WmShellAura::IsTouchDown() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -12,18 +12,16 @@
 
 namespace ash {
 
-using PointerWatcherDelegateAuraTest = test::AshTestBase;
+using PointerWatcherAdapterTest = test::AshTestBase;
 
 // Records calls to OnPointerEventObserved() in |pointer_event_count_| and
 // calls to OnMouseCaptureChanged() to |capture_changed_count_|.
 class TestPointerWatcher : public views::PointerWatcher {
  public:
   explicit TestPointerWatcher(bool wants_moves) {
-    Shell::GetInstance()->AddPointerWatcher(this, wants_moves);
+    WmShell::Get()->AddPointerWatcher(this, wants_moves);
   }
-  ~TestPointerWatcher() override {
-    Shell::GetInstance()->RemovePointerWatcher(this);
-  }
+  ~TestPointerWatcher() override { WmShell::Get()->RemovePointerWatcher(this); }
 
   void ClearCounts() { pointer_event_count_ = capture_changed_count_ = 0; }
 
@@ -75,7 +73,7 @@ class TestHelper {
   DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
 
-TEST_F(PointerWatcherDelegateAuraTest, MouseEvents) {
+TEST_F(PointerWatcherAdapterTest, MouseEvents) {
   TestHelper helper;
 
   // Move: only the move PointerWatcher should get the event.
@@ -115,7 +113,7 @@ TEST_F(PointerWatcherDelegateAuraTest, MouseEvents) {
   helper.ExpectCallCount(0, 1, 0, 1);
 }
 
-TEST_F(PointerWatcherDelegateAuraTest, TouchEvents) {
+TEST_F(PointerWatcherAdapterTest, TouchEvents) {
   TestHelper helper;
 
   // Press: both.

@@ -58,7 +58,6 @@ class UserActivityPowerManagerNotifier;
 }
 namespace views {
 class NonClientFrameView;
-class PointerWatcher;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -102,7 +101,6 @@ class MagnificationController;
 class MouseCursorEventFilter;
 class OverlayEventFilter;
 class PartialMagnificationController;
-class PointerWatcherDelegate;
 class PowerButtonController;
 class PowerEventObserver;
 class ProjectingObserver;
@@ -255,9 +253,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
-
-  void AddPointerWatcher(views::PointerWatcher* watcher, bool wants_moves);
-  void RemovePointerWatcher(views::PointerWatcher* watcher);
 
 #if defined(OS_CHROMEOS)
   // Test if MaximizeModeWindowManager is not enabled, and if
@@ -502,7 +497,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       accelerator_controller_delegate_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
-  std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<DragDropController> drag_drop_controller_;

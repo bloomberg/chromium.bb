@@ -16,7 +16,6 @@
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/default_user_wallpaper_delegate.h"
-#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/shell.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
@@ -259,11 +258,6 @@ ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
 
 std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
   return base::MakeUnique<PaletteDelegateImpl>();
-}
-
-std::unique_ptr<ash::PointerWatcherDelegate>
-ShellDelegateImpl::CreatePointerWatcherDelegate() {
-  return base::WrapUnique(new PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(WmShelf* wm_shelf,

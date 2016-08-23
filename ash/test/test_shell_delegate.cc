@@ -17,7 +17,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
-#include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
@@ -189,11 +188,6 @@ MediaDelegate* TestShellDelegate::CreateMediaDelegate() {
 
 std::unique_ptr<PaletteDelegate> TestShellDelegate::CreatePaletteDelegate() {
   return nullptr;
-}
-
-std::unique_ptr<PointerWatcherDelegate>
-TestShellDelegate::CreatePointerWatcherDelegate() {
-  return base::WrapUnique(new PointerWatcherDelegateAura);
 }
 
 ui::MenuModel* TestShellDelegate::CreateContextMenu(WmShelf* wm_shelf,

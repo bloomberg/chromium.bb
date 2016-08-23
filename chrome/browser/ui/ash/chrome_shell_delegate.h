@@ -52,8 +52,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   ash::NewWindowDelegate* CreateNewWindowDelegate() override;
   ash::MediaDelegate* CreateMediaDelegate() override;
   std::unique_ptr<ash::PaletteDelegate> CreatePaletteDelegate() override;
-  std::unique_ptr<ash::PointerWatcherDelegate> CreatePointerWatcherDelegate()
-      override;
   ui::MenuModel* CreateContextMenu(ash::WmShelf* wm_shelf,
                                    const ash::ShelfItem* item) override;
   ash::GPUSupport* CreateGPUSupport() override;

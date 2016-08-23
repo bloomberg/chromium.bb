@@ -19,7 +19,6 @@
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/login_status.h"
-#include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -415,15 +414,6 @@ void Shell::ShutdownShelf() {
   }
 }
 
-void Shell::AddPointerWatcher(views::PointerWatcher* watcher,
-                              bool wants_moves) {
-  pointer_watcher_delegate_->AddPointerWatcher(watcher, wants_moves);
-}
-
-void Shell::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  pointer_watcher_delegate_->RemovePointerWatcher(watcher);
-}
-
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
   return !(
@@ -669,7 +659,6 @@ Shell::~Shell() {
   window_tree_host_manager_.reset();
   focus_client_.reset();
   screen_position_controller_.reset();
-  pointer_watcher_delegate_.reset();
 
   keyboard::KeyboardController::ResetInstance(nullptr);
 
@@ -907,8 +896,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());
-  pointer_watcher_delegate_ =
-      wm_shell_->delegate()->CreatePointerWatcherDelegate();
+  wm_shell_->CreatePointerWatcherAdapter();
 
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(activation_client_));

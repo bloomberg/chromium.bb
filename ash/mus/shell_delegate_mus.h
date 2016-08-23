@@ -47,8 +47,6 @@ class ShellDelegateMus : public ShellDelegate {
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
-  std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
-      override;
   ui::MenuModel* CreateContextMenu(WmShelf* wm_shelf,
                                    const ShelfItem* item) override;
   GPUSupport* CreateGPUSupport() override;

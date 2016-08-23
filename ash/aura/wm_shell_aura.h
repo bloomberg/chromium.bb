@@ -17,6 +17,8 @@
 
 namespace ash {
 
+class PointerWatcherAdapter;
+
 class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer {
@@ -25,6 +27,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   ~WmShellAura() override;
 
   static WmShellAura* Get();
+
+  void CreatePointerWatcherAdapter();
 
   // WmShell:
   void Shutdown() override;
@@ -92,6 +96,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void OnDisplayConfigurationChanged() override;
 
   WmLookupAura wm_lookup_;
+  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
+
   bool added_activation_observer_ = false;
   base::ObserverList<WmActivationObserver> activation_observers_;
 
