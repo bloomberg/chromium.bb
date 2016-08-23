@@ -238,9 +238,11 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   files_to_register->Share(
       kAndroidICUDataDescriptor,
       base::i18n::GetIcuDataFileHandle(&regions[kAndroidICUDataDescriptor]));
+#endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   // Android WebView runs in single process, ensure that we never get here
   // when running in single process mode.

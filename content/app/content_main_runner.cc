@@ -471,6 +471,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // OS_ANDROID
 
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
+    ALLOW_UNUSED_LOCAL(g_fds);
 
     // On Android,
     // - setlocale() is not supported.
@@ -678,7 +679,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     RegisterPathProvider();
     RegisterContentSchemes(true);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
     int icudata_fd = g_fds->MaybeGet(kAndroidICUDataDescriptor);
     if (icudata_fd != -1) {
       auto icudata_region = g_fds->GetRegion(kAndroidICUDataDescriptor);
@@ -689,7 +690,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #else
     CHECK(base::i18n::InitializeICU());
-#endif  // OS_ANDROID
+#endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
     base::StatisticsRecorder::Initialize();
 
