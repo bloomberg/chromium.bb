@@ -89,15 +89,6 @@ class ASH_EXPORT Shelf {
   // Cycles the window focus linearly over the current shelf items.
   void CycleWindowLinear(CycleDirection direction);
 
-  // Returns true if the shelf is showing a context menu.
-  bool IsShowingMenu() const;
-
-  // TODO(jamescook): Migrate this to ShelfWidget.
-  bool IsShowingOverflowBubble() const;
-
-  // TODO(jamescook): Migrate to ShelfWidget::IsShelfVisible().
-  bool IsVisible() const;
-
   AppListButton* GetAppListButton() const;
 
   // Launch a 0-indexed shelf item in the shelf.

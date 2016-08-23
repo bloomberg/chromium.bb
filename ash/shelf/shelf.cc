@@ -136,18 +136,6 @@ void Shelf::CycleWindowLinear(CycleDirection direction) {
     ActivateShelfItem(item_index);
 }
 
-bool Shelf::IsShowingMenu() const {
-  return shelf_view_->IsShowingMenu();
-}
-
-bool Shelf::IsShowingOverflowBubble() const {
-  return shelf_view_->IsShowingOverflowBubble();
-}
-
-bool Shelf::IsVisible() const {
-  return shelf_view_->visible();
-}
-
 AppListButton* Shelf::GetAppListButton() const {
   return shelf_view_->GetAppListButton();
 }

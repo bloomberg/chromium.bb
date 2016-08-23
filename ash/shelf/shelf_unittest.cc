@@ -108,6 +108,7 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
 }
 
 TEST_F(ShelfTest, ShowOverflowBubble) {
+  ShelfWidget* shelf_widget = shelf()->shelf_widget();
   ShelfID first_item_id = shelf_model()->next_id();
 
   // Add platform app button until overflow.
@@ -124,14 +125,14 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
 
   // Shows overflow bubble.
   test_api()->ShowOverflowBubble();
-  EXPECT_TRUE(shelf()->IsShowingOverflowBubble());
+  EXPECT_TRUE(shelf_widget->IsShowingOverflowBubble());
 
   // Removes the first item in main shelf view.
   shelf_model()->RemoveItemAt(shelf_model()->ItemIndexByID(first_item_id));
 
   // Waits for all transitions to finish and there should be no crash.
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf()->IsShowingOverflowBubble());
+  EXPECT_FALSE(shelf_widget->IsShowingOverflowBubble());
 }
 
 }  // namespace ash

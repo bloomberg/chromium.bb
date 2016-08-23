@@ -17,6 +17,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_util.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -2197,7 +2198,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
   chrome::NewTab(browser());
 
   // No overflow yet.
-  EXPECT_FALSE(shelf_->IsShowingOverflowBubble());
+  EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 
   ash::test::ShelfViewTestAPI test(
       ash::test::ShelfTestAPI(shelf_).shelf_view());
@@ -2213,13 +2214,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
 
   // Now show overflow bubble.
   test.ShowOverflowBubble();
-  EXPECT_TRUE(shelf_->IsShowingOverflowBubble());
+  EXPECT_TRUE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 
   // Unpin first pinned app and there should be no crash.
   controller_->UnpinAppWithID(std::string("fake_app_0"));
 
   test.RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_->IsShowingOverflowBubble());
+  EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
 }
 
 // Check that a windowed V1 application can navigate away from its domain, but

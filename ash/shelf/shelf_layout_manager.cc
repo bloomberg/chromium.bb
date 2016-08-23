@@ -905,11 +905,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       shelf_widget_->status_area_widget()->ShouldShowShelf())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_widget_->shelf() && shelf_widget_->shelf()->IsShowingMenu())
+  if (shelf_widget_->IsShowingContextMenu())
     return SHELF_AUTO_HIDE_SHOWN;
 
-  if (shelf_widget_->shelf() &&
-      shelf_widget_->shelf()->IsShowingOverflowBubble())
+  if (shelf_widget_->IsShowingOverflowBubble())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->IsActive() ||

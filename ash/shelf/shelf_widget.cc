@@ -458,6 +458,14 @@ void ShelfWidget::SetShelfVisibility(bool visible) {
     shelf_view_->SetVisible(visible);
 }
 
+bool ShelfWidget::IsShowingContextMenu() const {
+  return shelf_view_ && shelf_view_->IsShowingMenu();
+}
+
+bool ShelfWidget::IsShowingOverflowBubble() const {
+  return shelf_view_ && shelf_view_->IsShowingOverflowBubble();
+}
+
 void ShelfWidget::SetFocusCycler(FocusCycler* focus_cycler) {
   delegate_view_->set_focus_cycler(focus_cycler);
   if (focus_cycler)

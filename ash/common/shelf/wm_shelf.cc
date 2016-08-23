@@ -106,7 +106,7 @@ bool WmShelf::IsDimmed() const {
 }
 
 bool WmShelf::IsVisible() const {
-  return shelf_->IsVisible();
+  return shelf_->shelf_widget()->IsShelfVisible();
 }
 
 void WmShelf::UpdateVisibilityState() {
