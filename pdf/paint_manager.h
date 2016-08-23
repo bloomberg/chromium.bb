@@ -33,13 +33,9 @@ class PaintManager {
   // it should be flushed to the screen immediately or when the rest of the
   // plugin viewport is ready.
   struct ReadyRect {
-    pp::Point offset;
-    pp::Rect rect;
-    pp::ImageData image_data;
-    bool flush_now;
-
-    ReadyRect(const pp::Rect& r, const pp::ImageData& i, bool f)
-        : rect(r), image_data(i), flush_now(f) {}
+    ReadyRect();
+    ReadyRect(const pp::Rect& r, const pp::ImageData& i, bool f);
+    ReadyRect(const ReadyRect& that);
 
     operator PaintAggregator::ReadyRect() const {
       PaintAggregator::ReadyRect rv;
@@ -48,6 +44,11 @@ class PaintManager {
       rv.image_data = image_data;
       return rv;
     }
+
+    pp::Point offset;
+    pp::Rect rect;
+    pp::ImageData image_data;
+    bool flush_now;
   };
   class Client {
    public:
@@ -72,6 +73,7 @@ class PaintManager {
     virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
                          std::vector<ReadyRect>* ready,
                          std::vector<pp::Rect>* pending) = 0;
+
    protected:
     // You shouldn't be doing deleting through this interface.
     virtual ~Client() {}

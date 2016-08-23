@@ -87,7 +87,7 @@ class PDFiumEngine : public PDFEngine,
   pp::Rect GetPageBoundsRect(int index) override;
   pp::Rect GetPageContentsRect(int index) override;
   pp::Rect GetPageScreenRect(int page_index) const override;
-  int GetVerticalScrollbarYPosition() override { return position_.y(); }
+  int GetVerticalScrollbarYPosition() override;
   void SetGrayscale(bool grayscale) override;
   void OnCallback(int id) override;
   int GetCharCount(int page_index) override;

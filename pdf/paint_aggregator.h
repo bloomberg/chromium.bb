@@ -9,7 +9,6 @@
 
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/rect.h"
-#include "ppapi/cpp/rect.h"
 
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence. You can use this manually
@@ -31,6 +30,7 @@ class PaintAggregator {
 
   struct PaintUpdate {
     PaintUpdate();
+    PaintUpdate(const PaintUpdate& that);
     ~PaintUpdate();
 
     // True if there is a scroll applied. This indicates that the scroll delta

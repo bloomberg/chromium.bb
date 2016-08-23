@@ -43,6 +43,10 @@ config("find_bad_constructs") {
       "-plugin-arg-find-bad-constructs",
       "-Xclang",
       "follow-macro-expansion",
+      "-Xclang",
+      "-plugin-arg-find-bad-constructs",
+      "-Xclang",
+      "enforce-in-pdf",
     ]
 
     if ((is_linux || is_android) && !is_chromecast) {

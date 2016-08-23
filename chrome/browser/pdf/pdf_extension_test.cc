@@ -297,8 +297,7 @@ class DisablePluginHelper : public content::DownloadManager::Observer,
                             public content::NotificationObserver {
  public:
   DisablePluginHelper() {}
-
-  virtual ~DisablePluginHelper() {}
+  ~DisablePluginHelper() override {}
 
   void DisablePlugin(Profile* profile) {
     registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,

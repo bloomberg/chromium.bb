@@ -18,6 +18,7 @@ namespace chrome_pdf {
 class PDFiumRange {
  public:
   PDFiumRange(PDFiumPage* page, int char_index, int char_count);
+  PDFiumRange(const PDFiumRange& that);
   ~PDFiumRange();
 
   // Update how many characters are in the selection.  Could be negative if

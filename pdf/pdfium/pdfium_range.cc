@@ -17,8 +17,9 @@ PDFiumRange::PDFiumRange(PDFiumPage* page, int char_index, int char_count)
       cached_screen_rects_zoom_(0) {
 }
 
-PDFiumRange::~PDFiumRange() {
-}
+PDFiumRange::PDFiumRange(const PDFiumRange& that) = default;
+
+PDFiumRange::~PDFiumRange() = default;
 
 void PDFiumRange::SetCharCount(int char_count) {
   char_count_ = char_count;

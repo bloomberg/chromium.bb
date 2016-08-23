@@ -34,11 +34,11 @@ bool IsNegative(int32_t num) {
 // therefore be treated as an invalidation.
 // ----------------------------------------------------------------------------
 
-PaintAggregator::PaintUpdate::PaintUpdate() {
-}
+PaintAggregator::PaintUpdate::PaintUpdate() = default;
 
-PaintAggregator::PaintUpdate::~PaintUpdate() {
-}
+PaintAggregator::PaintUpdate::PaintUpdate(const PaintUpdate& that) = default;
+
+PaintAggregator::PaintUpdate::~PaintUpdate() = default;
 
 PaintAggregator::InternalPaintUpdate::InternalPaintUpdate() :
     synthesized_scroll_damage_rect_(false) {

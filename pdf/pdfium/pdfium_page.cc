@@ -82,14 +82,15 @@ PDFiumPage::PDFiumPage(PDFiumEngine* engine,
                        const pp::Rect& r,
                        bool available)
     : engine_(engine),
-      page_(NULL),
-      text_page_(NULL),
+      page_(nullptr),
+      text_page_(nullptr),
       index_(i),
       loading_count_(0),
       rect_(r),
       calculated_links_(false),
-      available_(available) {
-}
+      available_(available) {}
+
+PDFiumPage::PDFiumPage(const PDFiumPage& that) = default;
 
 PDFiumPage::~PDFiumPage() {
   DCHECK_EQ(0, loading_count_);
@@ -102,7 +103,7 @@ void PDFiumPage::Unload() {
 
   if (text_page_) {
     FPDFText_ClosePage(text_page_);
-    text_page_ = NULL;
+    text_page_ = nullptr;
   }
 
   if (page_) {
@@ -110,14 +111,14 @@ void PDFiumPage::Unload() {
       FORM_OnBeforeClosePage(page_, engine_->form());
     }
     FPDF_ClosePage(page_);
-    page_ = NULL;
+    page_ = nullptr;
   }
 }
 
 FPDF_PAGE PDFiumPage::GetPage() {
   ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
   if (!available_)
-    return NULL;
+    return nullptr;
   if (!page_) {
     ScopedLoadCounter scoped_load(this);
     page_ = FPDF_LoadPage(engine_->doc(), index_);
@@ -131,7 +132,7 @@ FPDF_PAGE PDFiumPage::GetPage() {
 FPDF_PAGE PDFiumPage::GetPrintPage() {
   ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
   if (!available_)
-    return NULL;
+    return nullptr;
   if (!page_) {
     ScopedLoadCounter scoped_load(this);
     page_ = FPDF_LoadPage(engine_->doc(), index_);
@@ -146,13 +147,13 @@ void PDFiumPage::ClosePrintPage() {
 
   if (page_) {
     FPDF_ClosePage(page_);
-    page_ = NULL;
+    page_ = nullptr;
   }
 }
 
 FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   if (!available_)
-    return NULL;
+    return nullptr;
   if (!text_page_) {
     ScopedLoadCounter scoped_load(this);
     text_page_ = FPDFText_LoadPage(GetPage());
@@ -319,7 +320,7 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(
       case PDFACTION_URI: {
           if (target) {
             size_t buffer_size =
-                FPDFAction_GetURIPath(engine_->doc(), action, NULL, 0);
+                FPDFAction_GetURIPath(engine_->doc(), action, nullptr, 0);
             if (buffer_size > 0) {
               PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
                   &target->url, buffer_size, true);
@@ -403,7 +404,7 @@ void PDFiumPage::CalculateLinks() {
   int count = FPDFLink_CountWebLinks(links);
   for (int i = 0; i < count; ++i) {
     base::string16 url;
-    int url_length = FPDFLink_GetURL(links, i, NULL, 0);
+    int url_length = FPDFLink_GetURL(links, i, nullptr, 0);
     if (url_length > 0) {
       PDFiumAPIStringBufferAdapter<base::string16> api_string_adapter(
           &url, url_length, true);
@@ -497,10 +498,10 @@ PDFiumPage::ScopedLoadCounter::~ScopedLoadCounter() {
   page_->loading_count_--;
 }
 
-PDFiumPage::Link::Link() {
-}
+PDFiumPage::Link::Link() = default;
 
-PDFiumPage::Link::~Link() {
-}
+PDFiumPage::Link::Link(const Link& that) = default;
+
+PDFiumPage::Link::~Link() = default;
 
 }  // namespace chrome_pdf

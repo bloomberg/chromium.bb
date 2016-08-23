@@ -25,6 +25,7 @@ class PDFiumPage {
              int i,
              const pp::Rect& r,
              bool available);
+  PDFiumPage(const PDFiumPage& that);
   ~PDFiumPage();
 
   // Unloads the PDFium data for this page from memory.
@@ -123,6 +124,7 @@ class PDFiumPage {
 
   struct Link {
     Link();
+    Link(const Link& that);
     ~Link();
 
     std::string url;
