@@ -16,6 +16,7 @@ if (!is_android) {
       "battery_monitor_impl.h",
       "battery_status_manager_chromeos.cc",
       "battery_status_manager_default.cc",
+      "battery_status_manager_linux-inl.h",
       "battery_status_manager_linux.cc",
       "battery_status_manager_linux.h",
       "battery_status_manager_mac.cc",

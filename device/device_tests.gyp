@@ -192,7 +192,11 @@
             ['exclude', '^hid/'],
           ],
         }],
-        ['use_dbus==0', {
+        ['OS=="linux" and use_dbus==1', {
+          'dependencies': [
+            '../dbus/dbus.gyp:dbus_test_support',
+          ],
+        }, {  # OS != "linux" or use_dbus==0
           'sources!': [
             'battery/battery_status_manager_linux_unittest.cc',
           ],

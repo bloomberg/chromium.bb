@@ -7,96 +7,122 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/property.h"
 #include "dbus/values_util.h"
-#include "device/battery/battery_status_manager.h"
+#include "device/battery/battery_status_manager_linux-inl.h"
 
 namespace device {
-
 namespace {
-
-const char kUPowerServiceName[] = "org.freedesktop.UPower";
-const char kUPowerDeviceName[] = "org.freedesktop.UPower.Device";
-const char kUPowerPath[] = "/org/freedesktop/UPower";
-const char kUPowerDeviceSignalChanged[] = "Changed";
-const char kUPowerEnumerateDevices[] = "EnumerateDevices";
 const char kBatteryNotifierThreadName[] = "BatteryStatusNotifier";
 
-// UPowerDeviceType reflects the possible UPower.Device.Type values,
-// see upower.freedesktop.org/docs/Device.html#Device:Type.
-enum UPowerDeviceType {
-  UPOWER_DEVICE_TYPE_UNKNOWN = 0,
-  UPOWER_DEVICE_TYPE_LINE_POWER = 1,
-  UPOWER_DEVICE_TYPE_BATTERY = 2,
-  UPOWER_DEVICE_TYPE_UPS = 3,
-  UPOWER_DEVICE_TYPE_MONITOR = 4,
-  UPOWER_DEVICE_TYPE_MOUSE = 5,
-  UPOWER_DEVICE_TYPE_KEYBOARD = 6,
-  UPOWER_DEVICE_TYPE_PDA = 7,
-  UPOWER_DEVICE_TYPE_PHONE = 8,
+class UPowerProperties : public dbus::PropertySet {
+ public:
+  UPowerProperties(dbus::ObjectProxy* object_proxy,
+                   const PropertyChangedCallback callback);
+  ~UPowerProperties() override;
+
+  base::Version daemon_version();
+
+ private:
+  dbus::Property<std::string> daemon_version_;
+
+  DISALLOW_COPY_AND_ASSIGN(UPowerProperties);
 };
 
-typedef std::vector<dbus::ObjectPath> PathsVector;
-
-double GetPropertyAsDouble(const base::DictionaryValue& dictionary,
-                           const std::string& property_name,
-                           double default_value) {
-  double value = default_value;
-  return dictionary.GetDouble(property_name, &value) ? value : default_value;
+UPowerProperties::UPowerProperties(dbus::ObjectProxy* object_proxy,
+                                   const PropertyChangedCallback callback)
+    : dbus::PropertySet(object_proxy, kUPowerInterfaceName, callback) {
+  RegisterProperty(kUPowerPropertyDaemonVersion, &daemon_version_);
 }
 
-bool GetPropertyAsBoolean(const base::DictionaryValue& dictionary,
-                          const std::string& property_name,
-                          bool default_value) {
-  bool value = default_value;
-  return dictionary.GetBoolean(property_name, &value) ? value : default_value;
+UPowerProperties::~UPowerProperties() {}
+
+base::Version UPowerProperties::daemon_version() {
+  return (daemon_version_.is_valid() || daemon_version_.GetAndBlock())
+             ? base::Version(daemon_version_.value())
+             : base::Version();
 }
 
-std::unique_ptr<base::DictionaryValue> GetPropertiesAsDictionary(
-    dbus::ObjectProxy* proxy) {
-  dbus::MethodCall method_call(dbus::kPropertiesInterface,
-                               dbus::kPropertiesGetAll);
-  dbus::MessageWriter builder(&method_call);
-  builder.AppendString(kUPowerDeviceName);
+class UPowerObject {
+ public:
+  typedef dbus::PropertySet::PropertyChangedCallback PropertyChangedCallback;
 
-  std::unique_ptr<dbus::Response> response(proxy->CallMethodAndBlock(
+  UPowerObject(dbus::Bus* dbus,
+               const PropertyChangedCallback property_changed_callback);
+  ~UPowerObject();
+
+  std::vector<dbus::ObjectPath> EnumerateDevices();
+  dbus::ObjectPath GetDisplayDevice();
+
+  dbus::ObjectProxy* proxy() { return proxy_; }
+  UPowerProperties* properties() { return properties_.get(); }
+
+ private:
+  dbus::Bus* dbus_;           // Owned by the BatteryStatusNotificationThread.
+  dbus::ObjectProxy* proxy_;  // Owned by the dbus.
+  std::unique_ptr<UPowerProperties> properties_;
+
+  DISALLOW_COPY_AND_ASSIGN(UPowerObject);
+};
+
+UPowerObject::UPowerObject(
+    dbus::Bus* dbus,
+    const PropertyChangedCallback property_changed_callback)
+    : dbus_(dbus),
+      proxy_(dbus_->GetObjectProxy(kUPowerServiceName,
+                                   dbus::ObjectPath(kUPowerPath))),
+      properties_(new UPowerProperties(proxy_, property_changed_callback)) {}
+
+UPowerObject::~UPowerObject() {
+  properties_.reset();  // before the proxy is deleted.
+  dbus_->RemoveObjectProxy(kUPowerServiceName, proxy_->object_path(),
+                           base::Bind(&base::DoNothing));
+}
+
+std::vector<dbus::ObjectPath> UPowerObject::EnumerateDevices() {
+  std::vector<dbus::ObjectPath> paths;
+  dbus::MethodCall method_call(kUPowerServiceName,
+                               kUPowerMethodEnumerateDevices);
+  std::unique_ptr<dbus::Response> response(proxy_->CallMethodAndBlock(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+
   if (response) {
     dbus::MessageReader reader(response.get());
-    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-    base::DictionaryValue* dictionary_value = NULL;
-    if (value && value->GetAsDictionary(&dictionary_value)) {
-      ignore_result(value.release());
-      return std::unique_ptr<base::DictionaryValue>(dictionary_value);
-    }
-  }
-  return std::unique_ptr<base::DictionaryValue>();
-}
-
-std::unique_ptr<PathsVector> GetPowerSourcesPaths(dbus::ObjectProxy* proxy) {
-  std::unique_ptr<PathsVector> paths(new PathsVector());
-  if (!proxy)
-    return paths;
-
-  dbus::MethodCall method_call(kUPowerServiceName, kUPowerEnumerateDevices);
-  std::unique_ptr<dbus::Response> response(proxy->CallMethodAndBlock(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
-
-  if (response) {
-    dbus::MessageReader reader(response.get());
-    reader.PopArrayOfObjectPaths(paths.get());
+    reader.PopArrayOfObjectPaths(&paths);
   }
   return paths;
+}
+
+dbus::ObjectPath UPowerObject::GetDisplayDevice() {
+  dbus::ObjectPath display_device_path;
+  if (!proxy_)
+    return display_device_path;
+
+  dbus::MethodCall method_call(kUPowerServiceName,
+                               kUPowerMethodGetDisplayDevice);
+  std::unique_ptr<dbus::Response> response(proxy_->CallMethodAndBlock(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+
+  if (response) {
+    dbus::MessageReader reader(response.get());
+    reader.PopObjectPath(&display_device_path);
+  }
+  return display_device_path;
 }
 
 void UpdateNumberBatteriesHistogram(int count) {
@@ -104,15 +130,187 @@ void UpdateNumberBatteriesHistogram(int count) {
       "BatteryStatus.NumberBatteriesLinux", count, 1, 5, 6);
 }
 
+class BatteryProperties : public dbus::PropertySet {
+ public:
+  BatteryProperties(dbus::ObjectProxy* object_proxy,
+                    const PropertyChangedCallback callback);
+  ~BatteryProperties() override;
+
+  void ConnectSignals() override;
+
+  void Invalidate();
+
+  bool is_present(bool default_value = false);
+  double percentage(double default_value = 100);
+  uint32_t state(uint32_t default_value = UPOWER_DEVICE_STATE_UNKNOWN);
+  int64_t time_to_empty(int64_t default_value = 0);
+  int64_t time_to_full(int64_t default_value = 0);
+  uint32_t type(uint32_t default_value = UPOWER_DEVICE_TYPE_UNKNOWN);
+
+ private:
+  bool connected_ = false;
+  dbus::Property<bool> is_present_;
+  dbus::Property<double> percentage_;
+  dbus::Property<uint32_t> state_;
+  dbus::Property<int64_t> time_to_empty_;
+  dbus::Property<int64_t> time_to_full_;
+  dbus::Property<uint32_t> type_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatteryProperties);
+};
+
+BatteryProperties::BatteryProperties(dbus::ObjectProxy* object_proxy,
+                                     const PropertyChangedCallback callback)
+    : dbus::PropertySet(object_proxy, kUPowerDeviceInterfaceName, callback) {
+  RegisterProperty(kUPowerDevicePropertyIsPresent, &is_present_);
+  RegisterProperty(kUPowerDevicePropertyPercentage, &percentage_);
+  RegisterProperty(kUPowerDevicePropertyState, &state_);
+  RegisterProperty(kUPowerDevicePropertyTimeToEmpty, &time_to_empty_);
+  RegisterProperty(kUPowerDevicePropertyTimeToFull, &time_to_full_);
+  RegisterProperty(kUPowerDevicePropertyType, &type_);
+}
+
+BatteryProperties::~BatteryProperties() {}
+
+void BatteryProperties::ConnectSignals() {
+  if (!connected_) {
+    connected_ = true;
+    dbus::PropertySet::ConnectSignals();
+  }
+}
+
+void BatteryProperties::Invalidate() {
+  is_present_.set_valid(false);
+  percentage_.set_valid(false);
+  state_.set_valid(false);
+  time_to_empty_.set_valid(false);
+  time_to_full_.set_valid(false);
+  type_.set_valid(false);
+}
+
+bool BatteryProperties::is_present(bool default_value) {
+  return (is_present_.is_valid() || is_present_.GetAndBlock())
+             ? is_present_.value()
+             : default_value;
+}
+
+double BatteryProperties::percentage(double default_value) {
+  return (percentage_.is_valid() || percentage_.GetAndBlock())
+             ? percentage_.value()
+             : default_value;
+}
+
+uint32_t BatteryProperties::state(uint32_t default_value) {
+  return (state_.is_valid() || state_.GetAndBlock()) ? state_.value()
+                                                     : default_value;
+}
+
+int64_t BatteryProperties::time_to_empty(int64_t default_value) {
+  return (time_to_empty_.is_valid() || time_to_empty_.GetAndBlock())
+             ? time_to_empty_.value()
+             : default_value;
+}
+
+int64_t BatteryProperties::time_to_full(int64_t default_value) {
+  return (time_to_full_.is_valid() || time_to_full_.GetAndBlock())
+             ? time_to_full_.value()
+             : default_value;
+}
+
+uint32_t BatteryProperties::type(uint32_t default_value) {
+  return (type_.is_valid() || type_.GetAndBlock()) ? type_.value()
+                                                   : default_value;
+}
+
+class BatteryObject {
+ public:
+  typedef dbus::PropertySet::PropertyChangedCallback PropertyChangedCallback;
+
+  BatteryObject(dbus::Bus* dbus,
+                const dbus::ObjectPath& device_path,
+                const PropertyChangedCallback& property_changed_callback);
+  ~BatteryObject();
+
+  bool IsValid();
+
+  dbus::ObjectProxy* proxy() { return proxy_; }
+  BatteryProperties* properties() { return properties_.get(); }
+
+ private:
+  dbus::Bus* dbus_;           // Owned by the BatteryStatusNotificationThread,
+  dbus::ObjectProxy* proxy_;  // Owned by the dbus.
+  std::unique_ptr<BatteryProperties> properties_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatteryObject);
+};
+
+BatteryObject::BatteryObject(
+    dbus::Bus* dbus,
+    const dbus::ObjectPath& device_path,
+    const PropertyChangedCallback& property_changed_callback)
+    : dbus_(dbus),
+      proxy_(dbus_->GetObjectProxy(kUPowerServiceName, device_path)),
+      properties_(new BatteryProperties(proxy_, property_changed_callback)) {}
+
+BatteryObject::~BatteryObject() {
+  properties_.reset();  // before the proxy is deleted.
+  dbus_->RemoveObjectProxy(kUPowerServiceName, proxy_->object_path(),
+                           base::Bind(&base::DoNothing));
+}
+
+bool BatteryObject::IsValid() {
+  return properties_->is_present() &&
+         properties_->type() == UPOWER_DEVICE_TYPE_BATTERY;
+}
+
+BatteryStatus ComputeWebBatteryStatus(BatteryProperties* properties) {
+  BatteryStatus status;
+  uint32_t state = properties->state();
+  status.charging = state != UPOWER_DEVICE_STATE_DISCHARGING &&
+                    state != UPOWER_DEVICE_STATE_EMPTY;
+  // Convert percentage to a value between 0 and 1 with 2 digits of precision.
+  // This is to bring it in line with other platforms like Mac and Android where
+  // we report level with 1% granularity. It also serves the purpose of reducing
+  // the possibility of fingerprinting and triggers less level change events on
+  // the blink side.
+  // TODO(timvolodine): consider moving this rounding to the blink side.
+  status.level = round(properties->percentage()) / 100.f;
+
+  switch (state) {
+    case UPOWER_DEVICE_STATE_CHARGING: {
+      int64_t time_to_full = properties->time_to_full();
+      status.charging_time = (time_to_full > 0)
+                                 ? time_to_full
+                                 : std::numeric_limits<double>::infinity();
+      break;
+    }
+    case UPOWER_DEVICE_STATE_DISCHARGING: {
+      int64_t time_to_empty = properties->time_to_empty();
+      // Set dischargingTime if it's available. Otherwise leave the default
+      // value which is +infinity.
+      if (time_to_empty > 0)
+        status.discharging_time = time_to_empty;
+      status.charging_time = std::numeric_limits<double>::infinity();
+      break;
+    }
+    case UPOWER_DEVICE_STATE_FULL: {
+      break;
+    }
+    default: { status.charging_time = std::numeric_limits<double>::infinity(); }
+  }
+  return status;
+}
+
+}  // namespace
+
 // Class that represents a dedicated thread which communicates with DBus to
 // obtain battery information and receives battery change notifications.
-class BatteryStatusNotificationThread : public base::Thread {
+class BatteryStatusManagerLinux::BatteryStatusNotificationThread
+    : public base::Thread {
  public:
   BatteryStatusNotificationThread(
       const BatteryStatusService::BatteryUpdateCallback& callback)
-      : base::Thread(kBatteryNotifierThreadName),
-        callback_(callback),
-        battery_proxy_(NULL) {}
+      : base::Thread(kBatteryNotifierThreadName), callback_(callback) {}
 
   ~BatteryStatusNotificationThread() override {
     // Make sure to shutdown the dbus connection if it is still open in the very
@@ -129,70 +327,36 @@ class BatteryStatusNotificationThread : public base::Thread {
   void StartListening() {
     DCHECK(OnWatcherThread());
 
-    if (system_bus_.get())
+    if (upower_)
       return;
 
-    InitDBus();
-    dbus::ObjectProxy* power_proxy =
-        system_bus_->GetObjectProxy(kUPowerServiceName,
-                                    dbus::ObjectPath(kUPowerPath));
-    std::unique_ptr<PathsVector> device_paths =
-        GetPowerSourcesPaths(power_proxy);
-    int num_batteries = 0;
+    if (!system_bus_)
+      InitDBus();
 
-    for (size_t i = 0; i < device_paths->size(); ++i) {
-      const dbus::ObjectPath& device_path = device_paths->at(i);
-      dbus::ObjectProxy* device_proxy = system_bus_->GetObjectProxy(
-          kUPowerServiceName, device_path);
-      std::unique_ptr<base::DictionaryValue> dictionary =
-          GetPropertiesAsDictionary(device_proxy);
-
-      if (!dictionary)
-        continue;
-
-      bool is_present = GetPropertyAsBoolean(*dictionary, "IsPresent", false);
-      uint32_t type = static_cast<uint32_t>(
-          GetPropertyAsDouble(*dictionary, "Type", UPOWER_DEVICE_TYPE_UNKNOWN));
-
-      if (!is_present || type != UPOWER_DEVICE_TYPE_BATTERY) {
-        system_bus_->RemoveObjectProxy(kUPowerServiceName,
-                                       device_path,
-                                       base::Bind(&base::DoNothing));
-        continue;
-      }
-
-      if (battery_proxy_) {
-        // TODO(timvolodine): add support for multiple batteries. Currently we
-        // only collect information from the first battery we encounter
-        // (crbug.com/400780).
-        LOG(WARNING) << "multiple batteries found, "
-                     << "using status data of the first battery only.";
-      } else {
-        battery_proxy_ = device_proxy;
-      }
-      num_batteries++;
-    }
-
-    UpdateNumberBatteriesHistogram(num_batteries);
-
-    if (!battery_proxy_) {
-      callback_.Run(BatteryStatus());
-      return;
-    }
-
-    battery_proxy_->ConnectToSignal(
-        kUPowerDeviceName,
-        kUPowerDeviceSignalChanged,
-        base::Bind(&BatteryStatusNotificationThread::BatteryChanged,
+    upower_.reset(new UPowerObject(system_bus_.get(),
+                                   UPowerObject::PropertyChangedCallback()));
+    upower_->proxy()->ConnectToSignal(
+        kUPowerServiceName, kUPowerSignalDeviceAdded,
+        base::Bind(&BatteryStatusNotificationThread::DeviceAdded,
                    base::Unretained(this)),
         base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
                    base::Unretained(this)));
+    upower_->proxy()->ConnectToSignal(
+        kUPowerServiceName, kUPowerSignalDeviceRemoved,
+        base::Bind(&BatteryStatusNotificationThread::DeviceRemoved,
+                   base::Unretained(this)),
+        base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
+                   base::Unretained(this)));
+
+    FindBatteryDevice();
   }
 
   void StopListening() {
     DCHECK(OnWatcherThread());
     ShutdownDBusConnection();
   }
+
+  void SetDBusForTesting(dbus::Bus* bus) { system_bus_ = bus; }
 
  private:
   bool OnWatcherThread() {
@@ -208,11 +372,95 @@ class BatteryStatusNotificationThread : public base::Thread {
     system_bus_ = new dbus::Bus(options);
   }
 
+  bool IsDaemonVersionBelow_0_99() {
+    base::Version daemon_version = upower_->properties()->daemon_version();
+    return daemon_version.IsValid() &&
+        daemon_version.CompareTo(base::Version("0.99")) < 0;
+  }
+
+  void FindBatteryDevice() {
+    // Move the currently watched battery_ device to a stack-local variable such
+    // that we can enumerate all devices (once more):
+    // first testing the display device, then testing all devices from
+    // EnumerateDevices. We will monitor the first battery device we find.
+    // - That may be the same device we did monitor on entering this method;
+    //   then we'll use the same BatteryObject instance, that was moved to
+    //   current - see UseCurrentOrCreateBattery().
+    // - Or it may be a new device; then the previously monitored BatteryObject
+    //   instance (if any) is released on leaving this function.
+    // - Or we may not find a battery device; then on leaving this function
+    //   battery_ will be nullptr and the previously monitored BatteryObject
+    //   instance (if any) is no longer a battery and will be released.
+    std::unique_ptr<BatteryObject> current = std::move(battery_);
+    auto UseCurrentOrCreateBattery =
+        [&current, this](const dbus::ObjectPath& device_path) {
+          if (current && current->proxy()->object_path() == device_path)
+            return std::move(current);
+          else
+            return CreateBattery(device_path);
+        };
+
+    dbus::ObjectPath display_device_path = upower_->GetDisplayDevice();
+    if (display_device_path.IsValid()) {
+      std::unique_ptr<BatteryObject> battery =
+          UseCurrentOrCreateBattery(display_device_path);
+      if (battery->IsValid())
+        battery_ = std::move(battery);
+    }
+
+    if (!battery_) {
+      int num_batteries = 0;
+      for (const auto& device_path : upower_->EnumerateDevices()) {
+        std::unique_ptr<BatteryObject> battery =
+            UseCurrentOrCreateBattery(device_path);
+
+        if (!battery->IsValid())
+          continue;
+
+        if (battery_) {
+          // TODO(timvolodine): add support for multiple batteries. Currently we
+          // only collect information from the first battery we encounter
+          // (crbug.com/400780).
+          LOG(WARNING) << "multiple batteries found, "
+                       << "using status data of the first battery only.";
+        } else {
+          battery_ = std::move(battery);
+        }
+        num_batteries++;
+      }
+
+      UpdateNumberBatteriesHistogram(num_batteries);
+    }
+
+    if (battery_) {
+      battery_->properties()->ConnectSignals();
+      NotifyBatteryStatus();
+    } else {
+      callback_.Run(BatteryStatus());
+      return;
+    }
+
+    if (IsDaemonVersionBelow_0_99()) {
+      // UPower Version 0.99 replaced the Changed signal with the
+      // PropertyChanged signal. For older versions we need to listen
+      // to the Changed signal.
+      battery_->proxy()->ConnectToSignal(
+          kUPowerDeviceInterfaceName, kUPowerDeviceSignalChanged,
+          base::Bind(&BatteryStatusNotificationThread::BatteryChanged,
+                     base::Unretained(this)),
+          base::Bind(&BatteryStatusNotificationThread::OnSignalConnected,
+                     base::Unretained(this)));
+    }
+  }
+
   void ShutdownDBusConnection() {
     DCHECK(OnWatcherThread());
 
     if (!system_bus_.get())
       return;
+
+    battery_.reset();  // before the system_bus_ is shut down.
+    upower_.reset();
 
     // Shutdown DBus connection later because there may be pending tasks on
     // this thread.
@@ -220,152 +468,153 @@ class BatteryStatusNotificationThread : public base::Thread {
                              base::Bind(&dbus::Bus::ShutdownAndBlock,
                                         system_bus_));
     system_bus_ = NULL;
-    battery_proxy_ = NULL;
   }
 
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
-                         bool success) {
-    DCHECK(OnWatcherThread());
+                         bool success) {}
 
-    if (interface_name != kUPowerDeviceName ||
-        signal_name != kUPowerDeviceSignalChanged) {
+  std::unique_ptr<BatteryObject> CreateBattery(
+      const dbus::ObjectPath& device_path) {
+    std::unique_ptr<BatteryObject> battery(new BatteryObject(
+        system_bus_.get(), device_path,
+        base::Bind(&BatteryStatusNotificationThread::BatteryPropertyChanged,
+                   base::Unretained(this))));
+    return battery;
+  }
+
+  void DeviceAdded(dbus::Signal* signal /* unused */) {
+    // Re-iterate all devices to see if we need to monitor the added battery
+    // instead of the currently monitored battery.
+    FindBatteryDevice();
+  }
+
+  void DeviceRemoved(dbus::Signal* signal) {
+    if (!battery_)
       return;
+
+    // UPower specifies that the DeviceRemoved signal has an object-path as
+    // argument, however IRL that signal was observed with a string argument,
+    // so cover both cases (argument as string, as object-path and neither of
+    // these) and call FindBatteryDevice() if either we couldn't get the
+    // argument or the removed device-path is the battery_.
+    dbus::MessageReader reader(signal);
+    dbus::ObjectPath removed_device_path;
+    switch (reader.GetDataType()) {
+      case dbus::Message::DataType::STRING: {
+        std::string removed_device_path_string;
+        if (reader.PopString(&removed_device_path_string))
+          removed_device_path = dbus::ObjectPath(removed_device_path_string);
+        break;
+      }
+
+      case dbus::Message::DataType::OBJECT_PATH:
+        reader.PopObjectPath(&removed_device_path);
+        break;
+
+      default:
+        break;
     }
 
-    if (!system_bus_.get())
-      return;
+    if (!removed_device_path.IsValid() ||
+        battery_->proxy()->object_path() == removed_device_path)
+      FindBatteryDevice();
+  }
 
-    if (success) {
-      BatteryChanged(NULL);
-    } else {
-      // Failed to register for "Changed" signal, execute callback with the
-      // default values.
-      callback_.Run(BatteryStatus());
-    }
+  void BatteryPropertyChanged(const std::string& property_name) {
+    NotifyBatteryStatus();
   }
 
   void BatteryChanged(dbus::Signal* signal /* unsused */) {
+    DCHECK(battery_);
+    battery_->properties()->Invalidate();
+    NotifyBatteryStatus();
+  }
+
+  void NotifyBatteryStatus() {
     DCHECK(OnWatcherThread());
 
-    if (!system_bus_.get())
+    if (!system_bus_.get() || !battery_ || notifying_battery_status_)
       return;
 
-    std::unique_ptr<base::DictionaryValue> dictionary =
-        GetPropertiesAsDictionary(battery_proxy_);
-    if (dictionary)
-      callback_.Run(ComputeWebBatteryStatus(*dictionary));
-    else
-      callback_.Run(BatteryStatus());
+    // If the system uses a UPower daemon older than version 0.99
+    // (see IsDaemonVersionBelow_0_99), then we are notified about changed
+    // battery_ properties through the 'Changed' signal of the battery_
+    // device (see BatteryChanged()). That is implemented to invalidate all
+    // battery_ properties (so they are re-fetched from the dbus). Getting
+    // the new property-value triggers a callback to BatteryPropertyChanged().
+    // notifying_battery_status_ is set to avoid recursion and computing the
+    // status too often.
+    notifying_battery_status_ = true;
+    callback_.Run(ComputeWebBatteryStatus(battery_->properties()));
+    notifying_battery_status_ = false;
   }
 
   BatteryStatusService::BatteryUpdateCallback callback_;
   scoped_refptr<dbus::Bus> system_bus_;
-  dbus::ObjectProxy* battery_proxy_;  // owned by the bus
+  std::unique_ptr<UPowerObject> upower_;
+  std::unique_ptr<BatteryObject> battery_;
+  bool notifying_battery_status_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BatteryStatusNotificationThread);
 };
 
-// Creates a notification thread and delegates Start/Stop calls to it.
-class BatteryStatusManagerLinux : public BatteryStatusManager {
- public:
-  explicit BatteryStatusManagerLinux(
-      const BatteryStatusService::BatteryUpdateCallback& callback)
-      : callback_(callback) {}
+BatteryStatusManagerLinux::BatteryStatusManagerLinux(
+    const BatteryStatusService::BatteryUpdateCallback& callback)
+    : callback_(callback) {}
 
-  ~BatteryStatusManagerLinux() override {}
+BatteryStatusManagerLinux::~BatteryStatusManagerLinux() {}
 
- private:
-  // BatteryStatusManager:
-  bool StartListeningBatteryChange() override {
-    if (!StartNotifierThreadIfNecessary())
-      return false;
+bool BatteryStatusManagerLinux::StartListeningBatteryChange() {
+  if (!StartNotifierThreadIfNecessary())
+    return false;
 
-    notifier_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&BatteryStatusNotificationThread::StartListening,
-                   base::Unretained(notifier_thread_.get())));
+  notifier_thread_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StartListening,
+                            base::Unretained(notifier_thread_.get())));
+  return true;
+}
+
+void BatteryStatusManagerLinux::StopListeningBatteryChange() {
+  if (!notifier_thread_)
+    return;
+
+  notifier_thread_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StopListening,
+                            base::Unretained(notifier_thread_.get())));
+}
+
+bool BatteryStatusManagerLinux::StartNotifierThreadIfNecessary() {
+  if (notifier_thread_)
     return true;
+
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  notifier_thread_.reset(new BatteryStatusNotificationThread(callback_));
+  if (!notifier_thread_->StartWithOptions(thread_options)) {
+    notifier_thread_.reset();
+    LOG(ERROR) << "Could not start the " << kBatteryNotifierThreadName
+               << " thread";
+    return false;
   }
+  return true;
+}
 
-  void StopListeningBatteryChange() override {
-    if (!notifier_thread_)
-      return;
+base::Thread* BatteryStatusManagerLinux::GetNotifierThreadForTesting() {
+  return notifier_thread_.get();
+}
 
-    notifier_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&BatteryStatusNotificationThread::StopListening,
-                   base::Unretained(notifier_thread_.get())));
-  }
-
-  // Starts the notifier thread if not already started and returns true on
-  // success.
-  bool StartNotifierThreadIfNecessary() {
-    if (notifier_thread_)
-      return true;
-
-    base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-    notifier_thread_.reset(new BatteryStatusNotificationThread(callback_));
-    if (!notifier_thread_->StartWithOptions(thread_options)) {
-      notifier_thread_.reset();
-      LOG(ERROR) << "Could not start the " << kBatteryNotifierThreadName
-                 << " thread";
-      return false;
-    }
-    return true;
-  }
-
-  BatteryStatusService::BatteryUpdateCallback callback_;
-  std::unique_ptr<BatteryStatusNotificationThread> notifier_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerLinux);
-};
-
-}  // namespace
-
-BatteryStatus ComputeWebBatteryStatus(const base::DictionaryValue& dictionary) {
-  BatteryStatus status;
-  if (!dictionary.HasKey("State"))
-    return status;
-
-  uint32_t state = static_cast<uint32_t>(
-      GetPropertyAsDouble(dictionary, "State", UPOWER_DEVICE_STATE_UNKNOWN));
-  status.charging = state != UPOWER_DEVICE_STATE_DISCHARGING &&
-                    state != UPOWER_DEVICE_STATE_EMPTY;
-  double percentage = GetPropertyAsDouble(dictionary, "Percentage", 100);
-  // Convert percentage to a value between 0 and 1 with 2 digits of precision.
-  // This is to bring it in line with other platforms like Mac and Android where
-  // we report level with 1% granularity. It also serves the purpose of reducing
-  // the possibility of fingerprinting and triggers less level change events on
-  // the blink side.
-  // TODO(timvolodine): consider moving this rounding to the blink side.
-  status.level = round(percentage) / 100.f;
-
-  switch (state) {
-    case UPOWER_DEVICE_STATE_CHARGING : {
-      double time_to_full = GetPropertyAsDouble(dictionary, "TimeToFull", 0);
-      status.charging_time =
-          (time_to_full > 0) ? time_to_full
-                             : std::numeric_limits<double>::infinity();
-      break;
-    }
-    case UPOWER_DEVICE_STATE_DISCHARGING : {
-      double time_to_empty = GetPropertyAsDouble(dictionary, "TimeToEmpty", 0);
-      // Set dischargingTime if it's available. Otherwise leave the default
-      // value which is +infinity.
-      if (time_to_empty > 0)
-        status.discharging_time = time_to_empty;
-      status.charging_time = std::numeric_limits<double>::infinity();
-      break;
-    }
-    case UPOWER_DEVICE_STATE_FULL : {
-      break;
-    }
-    default: {
-      status.charging_time = std::numeric_limits<double>::infinity();
-    }
-  }
-  return status;
+// static
+std::unique_ptr<BatteryStatusManagerLinux>
+BatteryStatusManagerLinux::CreateForTesting(
+    const BatteryStatusService::BatteryUpdateCallback& callback,
+    dbus::Bus* bus) {
+  std::unique_ptr<BatteryStatusManagerLinux> manager(
+      new BatteryStatusManagerLinux(callback));
+  if (manager->StartNotifierThreadIfNecessary())
+    manager->notifier_thread_->SetDBusForTesting(bus);
+  else
+    manager.reset();
+  return manager;
 }
 
 // static

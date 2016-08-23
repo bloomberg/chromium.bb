@@ -14,7 +14,6 @@ if (is_mac) {
 }
 
 is_linux_without_udev = is_linux && !use_udev
-is_linux_without_dbus = is_linux && !use_dbus
 
 test("device_unittests") {
   sources = [
@@ -86,8 +85,9 @@ test("device_unittests") {
     "//url",
   ]
 
-  if (!is_linux_without_dbus && !is_chromeos) {
+  if (is_linux && !is_chromeos && use_dbus) {
     sources += [ "battery/battery_status_manager_linux_unittest.cc" ]
+    deps += [ "//dbus:test_support" ]
   }
 
   # HID and Serial:
