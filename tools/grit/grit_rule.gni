@@ -85,13 +85,9 @@ import("//build/config/ui.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 
 declare_args() {
-  # Enables used resource whitelist generation. Set for official builds only
-  # as a large amount of build output is generated.
-  enable_resource_whitelist_generation = is_android && is_official_build
+  # Enables used resource whitelist generation.
+  enable_resource_whitelist_generation = false
 }
-
-assert(!enable_resource_whitelist_generation || is_android,
-       "resource whitelist generation only works on android")
 
 grit_defines = []
 

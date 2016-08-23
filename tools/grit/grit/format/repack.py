@@ -27,16 +27,13 @@ def main(argv):
   parser.add_option('--whitelist', action='store', dest='whitelist',
                     default=None, help='Full path to the whitelist used to'
                     'filter output pak file resource IDs')
-  parser.add_option('--suppress-removed-key-output', action='store_true')
   options, file_paths = parser.parse_args(argv)
 
   if len(file_paths) < 2:
     parser.error('Please specify output and at least one input filenames')
 
-  grit.format.data_pack.RePack(
-      file_paths[0], file_paths[1:],
-      whitelist_file=options.whitelist,
-      suppress_removed_key_output=options.suppress_removed_key_output)
+  grit.format.data_pack.RePack(file_paths[0], file_paths[1:],
+                               whitelist_file=options.whitelist)
 
 if '__main__' == __name__:
   main(sys.argv[1:])
