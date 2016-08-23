@@ -107,7 +107,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       int browser_plugin_instance_id,
       const cc::SurfaceId& id,
       const cc::SurfaceSequence& sequence);
-  void UpdateWebLayer(blink::WebLayer* layer);
+  void UpdateWebLayer(std::unique_ptr<blink::WebLayer> layer);
 
   int host_routing_id_;
 
