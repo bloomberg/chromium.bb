@@ -103,9 +103,9 @@ TEST_F(UsbFilterTest, MatchInterfaceProtocolNegative) {
   ASSERT_FALSE(filter.Matches(android_phone_));
 }
 
-TEST_F(UsbFilterTest, MatchAnyEmptyListNegative) {
+TEST_F(UsbFilterTest, MatchAnyEmptyList) {
   std::vector<UsbDeviceFilter> filters;
-  ASSERT_FALSE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
+  ASSERT_TRUE(UsbDeviceFilter::MatchesAny(android_phone_, filters));
 }
 
 TEST_F(UsbFilterTest, MatchesAnyVendorId) {

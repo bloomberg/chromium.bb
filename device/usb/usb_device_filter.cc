@@ -117,6 +117,9 @@ std::unique_ptr<base::Value> UsbDeviceFilter::ToValue() const {
 // static
 bool UsbDeviceFilter::MatchesAny(scoped_refptr<UsbDevice> device,
                                  const std::vector<UsbDeviceFilter>& filters) {
+  if (filters.empty())
+    return true;
+
   for (std::vector<UsbDeviceFilter>::const_iterator i = filters.begin();
        i != filters.end();
        ++i) {

@@ -65,7 +65,12 @@ std::unique_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
 
 bool UsbPrinterManifestData::SupportsDevice(
     const scoped_refptr<device::UsbDevice>& device) const {
-  return UsbDeviceFilter::MatchesAny(device, filters_);
+  for (const auto& filter : filters_) {
+    if (filter.Matches(device))
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace extensions

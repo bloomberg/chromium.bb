@@ -126,9 +126,8 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   // device::UsbService::Observer implementation:
   void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
-    if (!(filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_))) {
+    if (!UsbDeviceFilter::MatchesAny(device, filters_))
       return;
-    }
 
     std::unique_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
     device->CheckUsbAccess(

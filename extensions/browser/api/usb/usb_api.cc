@@ -595,7 +595,7 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
   for (const scoped_refptr<UsbDevice>& device : devices) {
-    if ((filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) &&
+    if (UsbDeviceFilter::MatchesAny(device, filters_) &&
         HasDevicePermission(device)) {
       Device api_device;
       guid_map->GetApiDevice(device, &api_device);
