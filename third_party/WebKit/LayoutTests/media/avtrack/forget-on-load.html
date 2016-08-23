@@ -7,27 +7,24 @@
         <script src="../media-file.js"></script>
     </head>
     <body>
-        <div id="log"></div>
         <script>
             async_test(function(t)
             {
-                var e = document.createElement("video");
-                e.src = findMediaFile("video", "../content/test");
+                var video = document.createElement("video");
+                video.src = findMediaFile("video", "../content/test");
 
-                e.addEventListener("loadedmetadata", t.step_func(function()
+                video.addEventListener("loadedmetadata", t.step_func_done(function()
                 {
 
-                    assert_equals(e.audioTracks.length, 1, "audioTracks.length");
-                    assert_equals(e.videoTracks.length, 1, "videoTracks.length");
-                    assert_equals(e.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex");
+                    assert_equals(video.audioTracks.length, 1, "audioTracks.length");
+                    assert_equals(video.videoTracks.length, 1, "videoTracks.length");
+                    assert_equals(video.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex");
 
-                    e.load();
+                    video.load();
 
-                    assert_equals(e.audioTracks.length, 0, "audioTracks.length");
-                    assert_equals(e.videoTracks.length, 0, "videoTracks.length");
-                    assert_equals(e.videoTracks.selectedIndex, -1, "videoTracks.selectedIndex");
-
-                    t.done();
+                    assert_equals(video.audioTracks.length, 0, "audioTracks.length");
+                    assert_equals(video.videoTracks.length, 0, "videoTracks.length");
+                    assert_equals(video.videoTracks.selectedIndex, -1, "videoTracks.selectedIndex");
                 }));
             });
         </script>

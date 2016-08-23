@@ -7,28 +7,25 @@
         <script src="../media-file.js"></script>
     </head>
     <body>
-        <div id="log"></div>
         <script>
             async_test(function(t)
             {
-                var e = document.createElement('video');
-                e.src = findMediaFile('video', '../content/test');
+                var video = document.createElement('video');
+                video.src = findMediaFile('video', '../content/test');
 
-                e.addEventListener('loadedmetadata', t.step_func(function()
+                video.addEventListener('loadedmetadata', t.step_func_done(function()
                 {
-                    e.audioTracks.foo = 'foo';
-                    e.audioTracks[0].bar = 'bar';
-                    e.videoTracks.baz = 'baz';
-                    e.videoTracks[0].qux = 'qux';
+                    video.audioTracks.foo = 'foo';
+                    video.audioTracks[0].bar = 'bar';
+                    video.videoTracks.baz = 'baz';
+                    video.videoTracks[0].qux = 'qux';
 
                     gc();
 
-                    assert_equals(e.audioTracks.foo, 'foo');
-                    assert_equals(e.audioTracks[0].bar, 'bar');
-                    assert_equals(e.videoTracks.baz, 'baz');
-                    assert_equals(e.videoTracks[0].qux, 'qux');
-
-                    t.done();
+                    assert_equals(video.audioTracks.foo, 'foo');
+                    assert_equals(video.audioTracks[0].bar, 'bar');
+                    assert_equals(video.videoTracks.baz, 'baz');
+                    assert_equals(video.videoTracks[0].qux, 'qux');
                 }));
             });
         </script>

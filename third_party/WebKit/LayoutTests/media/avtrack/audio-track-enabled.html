@@ -7,30 +7,28 @@
         <script src="../media-file.js"></script>
     </head>
     <body>
-        <div id="log"></div>
         <script>
             async_test(function(t)
             {
-                var e = document.createElement("audio");
-                e.src = findMediaFile("audio", "../content/test");
+                var audio = document.createElement("audio");
+                audio.src = findMediaFile("audio", "../content/test");
 
-                e.onloadedmetadata = t.step_func(function()
+                audio.onloadedmetadata = t.step_func(function()
                 {
-                    assert_equals(e.audioTracks.length, 1, "audioTracks.length");
-                    assert_true(e.audioTracks[0].enabled, "audioTrack.enabled (initial)");
-                    e.audioTracks[0].enabled = false;
-                    assert_false(e.audioTracks[0].enabled, "audioTrack.enabled (first setter)");
+                    assert_equals(audio.audioTracks.length, 1, "audioTracks.length");
+                    assert_true(audio.audioTracks[0].enabled, "audioTrack.enabled (initial)");
+                    audio.audioTracks[0].enabled = false;
+                    assert_false(audio.audioTracks[0].enabled, "audioTrack.enabled (first setter)");
 
-                    e.audioTracks.onchange = t.step_func(function()
+                    audio.audioTracks.onchange = t.step_func(function()
                     {
-                        assert_false(e.audioTracks[0].enabled, "audioTrack.enabled (first change event)");
-                        e.audioTracks[0].enabled = true;
-                        assert_true(e.audioTracks[0].enabled, "audioTrack.enabled (second setter)");
+                        assert_false(audio.audioTracks[0].enabled, "audioTrack.enabled (first change event)");
+                        audio.audioTracks[0].enabled = true;
+                        assert_true(audio.audioTracks[0].enabled, "audioTrack.enabled (second setter)");
 
-                        e.audioTracks.onchange = t.step_func(function()
+                        audio.audioTracks.onchange = t.step_func_done(function()
                         {
-                            assert_true(e.audioTracks[0].enabled, "audioTrack.enabled (second change event)");
-                            t.done();
+                            assert_true(audio.audioTracks[0].enabled, "audioTrack.enabled (second change event)");
                         });
                     });
                 });

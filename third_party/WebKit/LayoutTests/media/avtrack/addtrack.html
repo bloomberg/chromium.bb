@@ -7,7 +7,6 @@
         <script src="../media-file.js"></script>
     </head>
     <body>
-        <div id="log"></div>
         <script>
             function addtrack_test(tagName, src, label)
             {
@@ -29,30 +28,28 @@
 
                 async_test(function(t)
                 {
-                    var e = document.createElement(tagName);
-                    e.src = src;
+                    var media = document.createElement(tagName);
+                    media.src = src;
 
                     var expectedEvents = ["addtrack"];
                     var actualAudioEvents = [];
                     var actualVideoEvents = [];
-                    setupTrackListHandlers(t, e.audioTracks, actualAudioEvents, "audioTracks events");
-                    setupTrackListHandlers(t, e.videoTracks, actualVideoEvents, "videoTracks events");
+                    setupTrackListHandlers(t, media.audioTracks, actualAudioEvents, "audioTracks events");
+                    setupTrackListHandlers(t, media.videoTracks, actualVideoEvents, "videoTracks events");
 
-                    e.load();
+                    media.load();
 
-                    e.addEventListener("loadedmetadata", t.step_func(function()
+                    media.addEventListener("loadedmetadata", t.step_func_done(function()
                     {
                         assert_array_equals(actualAudioEvents, expectedEvents);
 
-                        if (e.videoTracks.length > 0) {
+                        if (media.videoTracks.length > 0) {
                             assert_equals(label, "audio-video");
                             assert_array_equals(actualVideoEvents, expectedEvents);
                         } else {
                             assert_equals(label, "audio-only");
                             assert_equals(actualVideoEvents.length, 0);
                         }
-
-                        t.done();
                     }));
                 }, tagName + " : " + label);
             }
