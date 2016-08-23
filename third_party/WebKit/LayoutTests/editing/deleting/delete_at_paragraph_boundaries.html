@@ -84,4 +84,22 @@
             '</div>',
         ].join('')),
         'Deleting when a selection starts in a blank line created by a BR element and extends to the end of the document.');
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p><p>^<br></p><p>B</p><p>|<br></p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<div>',
+                    '<p>A</p><p>|<br></p>',
+                '</div>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in a blank line created by a block with a BR placeholder in it and extends to the end of the document.');
 </script>
