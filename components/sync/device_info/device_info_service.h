@@ -180,9 +180,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
 
-  // Should always be last member.
-  base::WeakPtrFactory<DeviceInfoService> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoService);
 };
 

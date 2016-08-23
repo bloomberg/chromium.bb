@@ -14,6 +14,7 @@
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/sync_merge_result.h"
+#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
@@ -44,7 +45,7 @@ bool NonBlockingDataTypeController::ShouldLoadModelBeforeConfigure() const {
 
 void NonBlockingDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(BelongsToUIThread());
   DCHECK(!model_load_callback.is_null());
   model_load_callback_ = model_load_callback;
 
@@ -58,32 +59,23 @@ void NonBlockingDataTypeController::LoadModels(
 
   state_ = MODEL_STARTING;
 
+  // Callback that posts back to the UI thread.
+  syncer_v2::ModelTypeChangeProcessor::StartCallback callback =
+      syncer::BindToTaskRunner(
+          ui_thread(),
+          base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
+
   // Start the type processor on the model thread.
   if (!RunOnModelThread(
           FROM_HERE,
-          base::Bind(&NonBlockingDataTypeController::LoadModelsOnModelThread,
-                     this))) {
+          base::Bind(&syncer_v2::ModelTypeService::OnSyncStarting,
+                     sync_client_->GetModelTypeServiceForType(type()),
+                     base::Unretained(this), callback))) {
     LoadModelsDone(
         UNRECOVERABLE_ERROR,
         syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to post model Start", type()));
   }
-}
-
-void NonBlockingDataTypeController::LoadModelsOnModelThread() {
-  syncer_v2::ModelTypeService* model_type_service =
-      sync_client_->GetModelTypeServiceForType(type());
-  if (!model_type_service) {
-    LOG(WARNING) << "ModelTypeService destroyed before "
-                    "ModelTypeController was started.";
-    // TODO(gangwu): Add SyncError and then call start_callback with it. Also
-    // set an error state to |state_|.
-    return;
-  }
-
-  model_type_service->OnSyncStarting(
-      this,
-      base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
 }
 
 void NonBlockingDataTypeController::LoadModelsDone(
@@ -111,15 +103,6 @@ void NonBlockingDataTypeController::LoadModelsDone(
 }
 
 void NonBlockingDataTypeController::OnProcessorStarted(
-    syncer::SyncError error,
-    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
-  RunOnUIThread(
-      FROM_HERE,
-      base::Bind(&NonBlockingDataTypeController::OnProcessorStartedOnUIThread,
-                 this, error, base::Passed(std::move(activation_context))));
-}
-
-void NonBlockingDataTypeController::OnProcessorStartedOnUIThread(
     syncer::SyncError error,
     std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
   DCHECK(BelongsToUIThread());
@@ -173,7 +156,7 @@ void NonBlockingDataTypeController::DeactivateDataType(
 }
 
 void NonBlockingDataTypeController::Stop() {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
+  DCHECK(BelongsToUIThread());
 
   if (state() == NOT_RUNNING)
     return;
@@ -187,18 +170,11 @@ void NonBlockingDataTypeController::Stop() {
       (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
     RunOnModelThread(
         FROM_HERE,
-        base::Bind(&NonBlockingDataTypeController::DisableSyncOnModelThread,
-                   this));
+        base::Bind(&syncer_v2::ModelTypeService::DisableSync,
+                   sync_client_->GetModelTypeServiceForType(type())));
   }
 
   state_ = NOT_RUNNING;
-}
-
-void NonBlockingDataTypeController::DisableSyncOnModelThread() {
-  syncer_v2::ModelTypeService* model_type_service =
-      sync_client_->GetModelTypeServiceForType(type());
-  DCHECK(model_type_service);
-  model_type_service->DisableSync();
 }
 
 std::string NonBlockingDataTypeController::name() const {

@@ -327,16 +327,17 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   }
 }
 
-syncer_v2::ModelTypeService* IOSChromeSyncClient::GetModelTypeServiceForType(
-    syncer::ModelType type) {
+base::WeakPtr<syncer_v2::ModelTypeService>
+IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
                  browser_state_)
-          ->GetDeviceInfoService();
+          ->GetDeviceInfoService()
+          ->AsWeakPtr();
     default:
       NOTREACHED();
-      return nullptr;
+      return base::WeakPtr<syncer_v2::ModelTypeService>();
   }
 }
 

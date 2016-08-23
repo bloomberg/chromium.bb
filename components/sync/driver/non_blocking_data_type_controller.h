@@ -89,25 +89,11 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // The error indicates whether the loading completed successfully.
   void LoadModelsDone(ConfigureResult result, const syncer::SyncError& error);
 
-  // Callback passed to the processor to be invoked when the processor has
-  // started. This is called on the model thread.
+  // The function will do the real work when OnProcessorStarted got called. This
+  // is called on the UI thread.
   void OnProcessorStarted(
       syncer::SyncError error,
       std::unique_ptr<syncer_v2::ActivationContext> activation_context);
-
-  // The function will do the real work when OnProcessorStarted got called. This
-  // is called on the UI thread.
-  void OnProcessorStartedOnUIThread(
-      syncer::SyncError error,
-      std::unique_ptr<syncer_v2::ActivationContext> activation_context);
-
-  // The function LoadModels() will call this function to do some works which
-  // need to be done on model thread.
-  void LoadModelsOnModelThread();
-
-  // Stop() posts call to DisableSyncOnModelThread to model thread when it
-  // decides sync metadata should be cleared.
-  void DisableSyncOnModelThread();
 
   // Model Type for this controller
   syncer::ModelType model_type_;

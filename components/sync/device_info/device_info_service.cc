@@ -52,8 +52,7 @@ DeviceInfoService::DeviceInfoService(
     const StoreFactoryFunction& callback,
     const ChangeProcessorFactory& change_processor_factory)
     : ModelTypeService(change_processor_factory, syncer::DEVICE_INFO),
-      local_device_info_provider_(local_device_info_provider),
-      weak_factory_(this) {
+      local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 
   // This is not threadsafe, but presuably the provider initializes on the same
@@ -66,8 +65,8 @@ DeviceInfoService::DeviceInfoService(
             &DeviceInfoService::OnProviderInitialized, base::Unretained(this)));
   }
 
-  callback.Run(base::Bind(&DeviceInfoService::OnStoreCreated,
-                          weak_factory_.GetWeakPtr()));
+  callback.Run(
+      base::Bind(&DeviceInfoService::OnStoreCreated, base::AsWeakPtr(this)));
 }
 
 DeviceInfoService::~DeviceInfoService() {}
@@ -323,8 +322,8 @@ void DeviceInfoService::OnStoreCreated(Result result,
                                        std::unique_ptr<ModelTypeStore> store) {
   if (result == Result::SUCCESS) {
     std::swap(store_, store);
-    store_->ReadAllData(base::Bind(&DeviceInfoService::OnReadAllData,
-                                   weak_factory_.GetWeakPtr()));
+    store_->ReadAllData(
+        base::Bind(&DeviceInfoService::OnReadAllData, base::AsWeakPtr(this)));
   } else {
     ReportStartupErrorToSync("ModelTypeStore creation failed.");
     // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
@@ -360,7 +359,7 @@ void DeviceInfoService::OnReadAllData(Result result,
 void DeviceInfoService::LoadMetadataIfReady() {
   if (has_data_loaded_ && has_provider_initialized_) {
     store_->ReadAllMetadata(base::Bind(&DeviceInfoService::OnReadAllMetadata,
-                                       weak_factory_.GetWeakPtr()));
+                                       base::AsWeakPtr(this)));
   }
 }
 
@@ -499,7 +498,7 @@ void DeviceInfoService::CommitAndNotify(
       ->TransferChanges(store_.get(), batch.get());
   store_->CommitWriteBatch(
       std::move(batch),
-      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
+      base::Bind(&DeviceInfoService::OnCommit, base::AsWeakPtr(this)));
   if (should_notify) {
     NotifyObservers();
   }
