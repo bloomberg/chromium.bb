@@ -1303,14 +1303,14 @@ void QuicStreamFactory::MaybeDisableQuic(QuicChromiumClientSession* session) {
   if (num_timeouts_with_open_streams_ > max_timeouts_with_open_streams_) {
     max_timeouts_with_open_streams_ = num_timeouts_with_open_streams_;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicStreamFactory.TimeoutsWithOpenStreams",
-                                num_timeouts_with_open_streams_, 0, 20, 10);
+                                num_timeouts_with_open_streams_, 1, 20, 10);
   }
 
   if (num_public_resets_post_handshake_ > max_public_resets_post_handshake_) {
     max_public_resets_post_handshake_ = num_public_resets_post_handshake_;
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Net.QuicStreamFactory.PublicResetsPostHandshake",
-        num_public_resets_post_handshake_, 0, 20, 10);
+        num_public_resets_post_handshake_, 1, 20, 10);
   }
 
   MaybeDisableQuic(port);

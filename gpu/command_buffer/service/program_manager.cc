@@ -1333,7 +1333,7 @@ bool Program::Link(ShaderManager* manager,
           "GPU.ProgramCache.BinaryCacheMissTime",
           static_cast<base::HistogramBase::Sample>(
               (TimeTicks::Now() - before_time).InMicroseconds()),
-          0,
+          1,
           static_cast<base::HistogramBase::Sample>(
               TimeDelta::FromSeconds(10).InMicroseconds()),
           50);
@@ -1342,7 +1342,7 @@ bool Program::Link(ShaderManager* manager,
           "GPU.ProgramCache.BinaryCacheHitTime",
           static_cast<base::HistogramBase::Sample>(
               (TimeTicks::Now() - before_time).InMicroseconds()),
-          0,
+          1,
           static_cast<base::HistogramBase::Sample>(
               TimeDelta::FromSeconds(1).InMicroseconds()),
           50);

@@ -147,10 +147,10 @@ RtcDataChannelHandler::RtcDataChannelHandler(
     IncrementCounter(CHANNEL_NEGOTIATED);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmits",
-                              channel->maxRetransmits(), 0,
+                              channel->maxRetransmits(), 1,
                               std::numeric_limits<unsigned short>::max(), 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmitTime",
-                              channel->maxRetransmitTime(), 0,
+                              channel->maxRetransmitTime(), 1,
                               std::numeric_limits<unsigned short>::max(), 50);
 }
 

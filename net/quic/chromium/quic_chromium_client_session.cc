@@ -329,11 +329,11 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (GetSSLInfo(&ssl_info) && ssl_info.cert.get()) {
     if (!port_selected) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
-                                  round_trip_handshakes, 0, 3, 4);
+                                  round_trip_handshakes, 1, 3, 4);
       if (require_confirmation_) {
         UMA_HISTOGRAM_CUSTOM_COUNTS(
             "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTPS",
-            round_trip_handshakes, 0, 3, 4);
+            round_trip_handshakes, 1, 3, 4);
       }
     }
   }
@@ -352,7 +352,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
           static_cast<base::HistogramBase::Sample>(
               100 * wait_time.InMicroseconds() / stats.min_rtt_us);
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicServerInfo.WaitForDataReadyToRtt",
-                                  wait_to_rtt, 0, kMaxWaitToRtt, 50);
+                                  wait_to_rtt, 1, kMaxWaitToRtt, 50);
     }
   }
 
@@ -376,10 +376,10 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
         100 * stats.max_time_reordering_us / stats.min_rtt_us);
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTime", reordering,
-                              0, kMaxReordering, 50);
+                              1, kMaxReordering, 50);
   if (stats.min_rtt_us > 100 * 1000) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTimeLongRtt",
-                                reordering, 0, kMaxReordering, 50);
+                                reordering, 1, kMaxReordering, 50);
   }
   UMA_HISTOGRAM_COUNTS(
       "Net.QuicSession.MaxReordering",

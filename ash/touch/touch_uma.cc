@@ -113,10 +113,10 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
   position.set_y(std::min(bounds.height() - 1, std::max(0, position.y())));
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Ash.TouchPositionX", position.x() / bucket_size_x, 0,
+      "Ash.TouchPositionX", position.x() / bucket_size_x, 1,
       kBucketCountForLocation, kBucketCountForLocation + 1);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Ash.TouchPositionY", position.y() / bucket_size_y, 0,
+      "Ash.TouchPositionY", position.y() / bucket_size_y, 1,
       kBucketCountForLocation, kBucketCountForLocation + 1);
 
   if (event.type() == ui::ET_TOUCH_PRESSED) {

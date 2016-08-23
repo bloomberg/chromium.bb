@@ -23,7 +23,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   switch (type) {
     case RECORD_MEMORY_STATS_TAB_DISCARDED: {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Memory.Stats.Win.MemoryLoad",
-                                  mem_status.dwMemoryLoad, 0, 100, 101);
+                                  mem_status.dwMemoryLoad, 1, 100, 101);
       UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.TotalPhys2",
                                     mem_status.ullTotalPhys / kMBytes);
       UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.Stats.Win.AvailPhys2",

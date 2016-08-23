@@ -121,7 +121,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
   if (auto_update_enabled_) {
     DCHECK(UpgradeDetector::GetInstance()->is_outdated_install());
     UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerReinstall",
-                                g_num_ignored_bubbles, 0, kMaxIgnored,
+                                g_num_ignored_bubbles, 1, kMaxIgnored,
                                 kNumIgnoredBuckets);
     content::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
@@ -132,7 +132,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
   } else {
     DCHECK(UpgradeDetector::GetInstance()->is_outdated_install_no_au());
     UMA_HISTOGRAM_CUSTOM_COUNTS("OutdatedUpgradeBubble.NumLaterPerEnableAU",
-                                g_num_ignored_bubbles, 0, kMaxIgnored,
+                                g_num_ignored_bubbles, 1, kMaxIgnored,
                                 kNumIgnoredBuckets);
     content::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.EnableAU"));

@@ -179,7 +179,7 @@ Time X11EventSource::UpdateLastSeenServerTime() {
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.Latency.X11EventSource.UpdateServerTime",
-      (base::TimeTicks::Now() - start).InMicroseconds(), 0,
+      (base::TimeTicks::Now() - start).InMicroseconds(), 1,
       base::TimeDelta::FromMilliseconds(1).InMicroseconds(), 50);
   return last_seen_server_time_;
 }

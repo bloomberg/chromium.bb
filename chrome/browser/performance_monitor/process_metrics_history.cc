@@ -85,7 +85,7 @@ void ProcessMetricsHistory::SampleMetrics() {
 void ProcessMetricsHistory::RunPerformanceTriggers() {
   // We scale up to the equivalent of 64 CPU cores fully loaded. More than this
   // doesn't really matter, as we're already in a terrible place.
-  const int kHistogramMin = 0;
+  const int kHistogramMin = 1;
   const int kHistogramMax = 6400;
   const int kHistogramBucketCount = 50;
 

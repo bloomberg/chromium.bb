@@ -244,7 +244,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   has_server_side_suggestions_ = false;
   has_client_side_suggestions_ = false;
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "NewTabPage.NumberOfTiles", number_of_tiles_, 0, kNumMostVisited,
+      "NewTabPage.NumberOfTiles", number_of_tiles_, 1, kNumMostVisited,
       kNumMostVisited + 1);
   number_of_tiles_ = 0;
   has_emitted_ = true;

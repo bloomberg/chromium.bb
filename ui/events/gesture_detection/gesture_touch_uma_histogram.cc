@@ -38,7 +38,7 @@ void GestureTouchUMAHistogram::RecordTouchEvent(const MotionEvent& event) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "Event.TouchMaxDistance",
           static_cast<int>(sqrt(max_distance_from_start_squared_)),
-          0,
+          1,
           1500,
           50);
 

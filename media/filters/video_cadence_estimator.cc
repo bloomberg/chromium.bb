@@ -31,7 +31,7 @@ const double kConstantFPSFactor = 0.45;
 static void HistogramCadenceChangeCount(int cadence_changes) {
   const int kCadenceChangeMax = 10;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Media.VideoRenderer.CadenceChanges",
-                              cadence_changes, 0, kCadenceChangeMax,
+                              cadence_changes, 1, kCadenceChangeMax,
                               kCadenceChangeMax);
 }
 

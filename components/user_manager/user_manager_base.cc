@@ -1042,7 +1042,7 @@ void UserManagerBase::SendGaiaUserLoginMetrics(const AccountId& account_id) {
       account_id != AccountId::FromUserEmail(last_email) &&
       time_to_login.InSeconds() <= kLogoutToLoginDelayMaxSec) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("UserManager.LogoutToLoginDelay",
-                                time_to_login.InSeconds(), 0,
+                                time_to_login.InSeconds(), 1,
                                 kLogoutToLoginDelayMaxSec, 50);
   }
 }

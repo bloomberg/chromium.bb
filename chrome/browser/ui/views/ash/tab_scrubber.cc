@@ -261,7 +261,7 @@ void TabScrubber::FinishScrub(bool activate) {
       int distance =
           std::abs(
               highlighted_tab_ - browser_->tab_strip_model()->active_index());
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 0, 20, 21);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 1, 20, 21);
       browser_->tab_strip_model()->ActivateTabAt(highlighted_tab_, true);
     }
     tab_strip->RemoveObserver(this);

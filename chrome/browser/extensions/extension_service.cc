@@ -382,7 +382,7 @@ ExtensionService::ExtensionService(Profile* profile,
 
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
-                              install_directory_.value().length(), 0, 500, 100);
+                              install_directory_.value().length(), 1, 500, 100);
 }
 
 extensions::PendingExtensionManager*

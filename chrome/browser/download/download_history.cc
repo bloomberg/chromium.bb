@@ -357,7 +357,7 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.HistorySize2",
                               history_size_,
-                              0/*min*/,
+                              1/*min*/,
                               (1 << 23)/*max*/,
                               (1 << 7)/*num_buckets*/);
   ++history_size_;

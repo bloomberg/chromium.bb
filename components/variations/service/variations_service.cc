@@ -560,7 +560,7 @@ void VariationsService::DoActualFetch() {
   if (!last_request_started_time_.is_null())
     time_since_last_fetch = now - last_request_started_time_;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.TimeSinceLastFetchAttempt",
-                              time_since_last_fetch.InMinutes(), 0,
+                              time_since_last_fetch.InMinutes(), 1,
                               base::TimeDelta::FromDays(7).InMinutes(), 50);
   UMA_HISTOGRAM_COUNTS_100("Variations.RequestCount", request_count_);
   ++request_count_;

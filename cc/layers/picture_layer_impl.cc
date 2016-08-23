@@ -1271,7 +1271,7 @@ void PictureLayerImpl::UpdateIdealScales() {
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.IdealContentsScale",
-                              ideal_contents_scale_, 0, 10000, 50);
+                              ideal_contents_scale_, 1, 10000, 50);
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(

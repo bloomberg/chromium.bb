@@ -53,7 +53,7 @@ using crx_file::CrxFile;
 // fail to install. To see if this is happening, see how long the
 // path to the temp unpack directory is. See crbug.com/69693 .
 #define PATH_LENGTH_HISTOGRAM(name, path) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, path.value().length(), 0, 500, 100)
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, path.value().length(), 1, 500, 100)
 
 // Record a rate (kB per second) at which extensions are unpacked.
 // Range from 1kB/s to 100mB/s.

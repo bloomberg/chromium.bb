@@ -58,7 +58,7 @@ void RecordPeerCount(size_t count) {
   // 8k is the maximum number of file descriptors allowed in Chrome.
   UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.ConnectedPeers",
                               static_cast<int32_t>(count),
-                              0 /* min */,
+                              1 /* min */,
                               8000 /* max */,
                               50 /* bucket count */);
 }
@@ -69,7 +69,7 @@ void RecordPendingChildCount(size_t count) {
   // 8k is the maximum number of file descriptors allowed in Chrome.
   UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.PendingChildren",
                               static_cast<int32_t>(count),
-                              0 /* min */,
+                              1 /* min */,
                               8000 /* max */,
                               50 /* bucket count */);
 }

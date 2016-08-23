@@ -62,7 +62,7 @@ void RecordUmaResponseCode(int code) {
 }
 
 void RecordUmaAccessPoints(int count) {
-  const int min = 0;
+  const int min = 1;
   const int max = 20;
   const int buckets = 21;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Geolocation.NetworkLocationRequest.AccessPoints",

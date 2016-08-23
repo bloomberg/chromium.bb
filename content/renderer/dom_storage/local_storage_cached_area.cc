@@ -295,7 +295,7 @@ void LocalStorageCachedArea::EnsureLoaded() {
   // above what we see in practice, since histograms can't change.
   UMA_HISTOGRAM_CUSTOM_COUNTS("LocalStorage.MojoSizeInKB",
                               local_storage_size_kb,
-                              0, 6 * 1024, 50);
+                              1, 6 * 1024, 50);
   if (local_storage_size_kb < 100) {
     UMA_HISTOGRAM_TIMES("LocalStorage.MojoTimeToPrimeForUnder100KB",
                         time_to_prime);

@@ -698,7 +698,7 @@ void CrxInstaller::CompleteInstall() {
   // exceeds a small constant.  See crbug.com/69693 .
   UMA_HISTOGRAM_CUSTOM_COUNTS(
     "Extensions.CrxInstallDirPathLength",
-        install_directory_.value().length(), 0, 500, 100);
+        install_directory_.value().length(), 1, 500, 100);
 
   ExtensionAssetsManager* assets_manager =
       ExtensionAssetsManager::GetInstance();

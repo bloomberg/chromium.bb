@@ -186,7 +186,7 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Variations.HeaderConstructionTime",
-      (base::TimeTicks::Now() - before_time).InMicroseconds(), 0,
+      (base::TimeTicks::Now() - before_time).InMicroseconds(), 1,
       base::TimeDelta::FromSeconds(1).InMicroseconds(), 50);
 
   variation_ids_cache_initialized_ = true;
