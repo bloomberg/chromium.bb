@@ -11,6 +11,7 @@
     unsigned long imageHeight;
     unsigned long imageWidth;
     FocusMode focusMode;
+    sequence<Point2D> pointsOfInterest;
     // TODO(mcasas): Implement all other PhotoSettings fields
     // https://crbug.com/518807
 };

@@ -15,6 +15,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -248,6 +249,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private int mFocusMode = AndroidFocusMode.CONTINUOUS;
     private int mPhotoWidth = 0;
     private int mPhotoHeight = 0;
+    private MeteringRectangle mAreaOfInterest;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -317,12 +319,19 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
 
+        if (mAreaOfInterest != null) {
+            MeteringRectangle[] array = {mAreaOfInterest};
+            Log.d(TAG, "Area of interest (set) %s", mAreaOfInterest.toString());
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
+        }
+
         // SENSOR_EXPOSURE_TIME ?
         if (!mCropRect.isEmpty()) {
             previewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
         }
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
+        // TODO(mcasas): Hold on to this Surface and release() it when not needed.
         surfaceList.add(imageReader.getSurface());
 
         mPreviewRequest = previewRequestBuilder.build();
@@ -614,7 +623,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public void setPhotoOptions(int zoom, int focusMode, int width, int height) {
+    public void setPhotoOptions(
+            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -634,6 +644,36 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
+
+        // Upon new |zoom| configuration, clear up the previous |mAreaOfInterest| if any.
+        if (mAreaOfInterest != null && !mAreaOfInterest.getRect().isEmpty() && zoom > 0) {
+            mAreaOfInterest = null;
+        }
+        // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
+        if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) > 0
+                && pointsOfInterest2D.length > 0) {
+            assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
+            assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
+            assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
+            // Calculate a Rect of 1/8 the |visibleRect| dimensions, and center it w.r.t. |canvas|.
+            final Rect visibleRect = (mCropRect.isEmpty()) ? canvas : mCropRect;
+            int centerX = Math.round(pointsOfInterest2D[0] * visibleRect.width());
+            int centerY = Math.round(pointsOfInterest2D[1] * visibleRect.height());
+            if (visibleRect.equals(mCropRect)) {
+                centerX += (canvas.width() - visibleRect.width()) / 2;
+                centerY += (canvas.height() - visibleRect.height()) / 2;
+            }
+            final int regionWidth = visibleRect.width() / 8;
+            final int regionHeight = visibleRect.height() / 8;
+
+            mAreaOfInterest = new MeteringRectangle(Math.max(0, centerX - regionWidth / 2),
+                    Math.max(0, centerY - regionHeight / 2), regionWidth, regionHeight,
+                    MeteringRectangle.METERING_WEIGHT_MAX);
+
+            Log.d(TAG, "Calculating (%.2fx%.2f) wrt to %s (canvas being %s)", pointsOfInterest2D[0],
+                    pointsOfInterest2D[1], visibleRect.toString(), canvas.toString());
+            Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
+        }
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());
         mainHandler.removeCallbacks(mRestartCapture);
@@ -668,6 +708,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         imageReader.setOnImageAvailableListener(photoReaderListener, backgroundHandler);
 
         final List<Surface> surfaceList = new ArrayList<Surface>(1);
+        // TODO(mcasas): Hold on to this Surface and release() it when not needed.
         surfaceList.add(imageReader.getSurface());
 
         CaptureRequest.Builder photoRequestBuilder = null;
@@ -695,6 +736,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.d(TAG, "triggering auto focus (maybe?)");
             photoRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        }
+
+        if (mAreaOfInterest != null) {
+            MeteringRectangle[] array = {mAreaOfInterest};
+            Log.d(TAG, "Area of interest (set) %s", mAreaOfInterest.toString());
+            photoRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
         }
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();

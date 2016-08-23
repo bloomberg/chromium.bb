@@ -53,9 +53,14 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract PhotoCapabilities getPhotoCapabilities();
 
-    // |zoom| should be ignored if 0.
+    /**
+    * @param zoom Zoom level, should be ignored if 0.
+    * @param pointsOfInterest2D 2D normlized oints of interest, marshalled with
+    * x coordinate first followed by the y coordinate.
+    */
     @CalledByNative
-    public abstract void setPhotoOptions(int zoom, int focusMode, int width, int height);
+    public abstract void setPhotoOptions(
+            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);

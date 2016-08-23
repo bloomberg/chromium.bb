@@ -26,6 +26,13 @@ struct PhotoCapabilities {
   FocusMode focus_mode;
 };
 
+// Equivalent to idl Point2D.
+// TODO(mcasas): use gfx::mojom::PointF after https://crbug.com/640049.
+struct Point2D {
+  float x;
+  float y;
+};
+
 // Equivalent to idl PhotoSettings,
 // https://w3c.github.io/mediacapture-image/index.html#photosettings
 struct PhotoSettings {
@@ -38,6 +45,7 @@ struct PhotoSettings {
   uint32 height;
   bool has_focus_mode;
   FocusMode focus_mode;
+  array<Point2D> points_of_interest;
 };
 
 // This is a mojo move-only equivalent of a Blob, i.e. MIME type and Data.

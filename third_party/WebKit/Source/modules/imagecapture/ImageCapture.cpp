@@ -135,6 +135,14 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
         else
             settings->has_focus_mode = false;
     }
+    if (photoSettings.hasPointsOfInterest()) {
+        for (const auto& point : photoSettings.pointsOfInterest()) {
+            auto mojoPoint = media::mojom::blink::Point2D::New();
+            mojoPoint->x = point.x();
+            mojoPoint->y = point.y();
+            settings->points_of_interest.append(std::move(mojoPoint));
+        }
+    }
 
     m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), convertToBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;

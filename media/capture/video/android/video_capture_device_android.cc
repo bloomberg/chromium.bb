@@ -17,6 +17,7 @@
 #include "media/capture/video/android/photo_capabilities.h"
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/geometry/point_f.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -486,8 +487,17 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
     }
   }
 
-  Java_VideoCapture_setPhotoOptions(
-      env, j_capture_, zoom, static_cast<int>(focus_mode), width, height);
+  std::vector<float> points_of_interest_marshalled;
+  for (const auto& point : settings->points_of_interest) {
+    points_of_interest_marshalled.push_back(point->x);
+    points_of_interest_marshalled.push_back(point->y);
+  }
+  ScopedJavaLocalRef<jfloatArray> points_of_interest =
+      base::android::ToJavaFloatArray(env, points_of_interest_marshalled);
+
+  Java_VideoCapture_setPhotoOptions(env, j_capture_, zoom,
+                                    static_cast<int>(focus_mode), width, height,
+                                    points_of_interest);
 
   callback.Run(true);
 }

@@ -23,7 +23,10 @@ async_test(function(t) {
   const optionsDict = { zoom : 7,
                         imageWidth : 1080,
                         imageHeight : 100,
-                        focusMode : "continuous" };
+                        focusMode : "single-shot",
+                        pointsOfInterest : [{x : 0.1, y : 0.2},
+                                            {x : 0.3, y : 0.4}]
+                      };
   mockImageCaptureReady
     .then(mock => {
       theMock = mock;
@@ -46,6 +49,19 @@ async_test(function(t) {
       assert_equals(optionsDict.focusMode,
                     focusModeNames[theMock.options().focus_mode],
                     'focusMode value');
+      assert_equals(optionsDict.pointsOfInterest.length,
+                    theMock.options().points_of_interest.length,
+                    'amount of points of interest');
+      for (i = 0; i < optionsDict.pointsOfInterest.length; i++) {
+          assert_approx_equals(optionsDict.pointsOfInterest[i].x,
+                              theMock.options().points_of_interest[i].x,
+                              0.001,
+                              'pointsOfInterest\'s x');
+          assert_approx_equals(optionsDict.pointsOfInterest[i].y,
+                               theMock.options().points_of_interest[i].y,
+                               0.001,
+                               'pointsOfInterest\' y');
+      }
       t.done();
     })
     .catch(error => {

@@ -6,6 +6,7 @@ package org.chromium.media;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Build;
@@ -14,6 +15,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +40,7 @@ public abstract class VideoCaptureCamera
     private long mPhotoTakenCallbackId = 0;
     private int mPhotoWidth = 0;
     private int mPhotoHeight = 0;
+    private android.hardware.Camera.Area mAreaOfInterest;
 
     protected android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
@@ -355,7 +358,8 @@ public abstract class VideoCaptureCamera
     }
 
     @Override
-    public void setPhotoOptions(int zoom, int focusMode, int width, int height) {
+    public void setPhotoOptions(
+            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -380,6 +384,37 @@ public abstract class VideoCaptureCamera
         }
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
+
+        // Upon new |zoom| configuration, clear up the previous |mAreaOfInterest| if any.
+        if (mAreaOfInterest != null && !mAreaOfInterest.rect.isEmpty() && zoom > 0) {
+            mAreaOfInterest = null;
+        }
+
+        // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
+        if (parameters.getMaxNumMeteringAreas() > 0 && pointsOfInterest2D.length > 0) {
+            assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
+            assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
+            assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
+            // Calculate a Rect of 1/8 the canvas, which is fixed to Rect(-1000, -1000, 1000, 1000),
+            // see https://developer.android.com/reference/android/hardware/Camera.Area.html
+            final int centerX = Math.round(pointsOfInterest2D[0] * 2000) - 1000;
+            final int centerY = Math.round(pointsOfInterest2D[1] * 2000) - 1000;
+            final int regionWidth = 2000 / 8;
+            final int regionHeight = 2000 / 8;
+            final int weight = 1000;
+
+            mAreaOfInterest = new android.hardware.Camera.Area(
+                    new Rect(Math.max(-1000, centerX - regionWidth / 2),
+                            Math.max(-1000, centerY - regionHeight / 2),
+                            Math.min(1000, centerX + regionWidth / 2),
+                            Math.min(1000, centerY + regionHeight / 2)),
+                    weight);
+
+            Log.d(TAG, "Area of interest %s", mAreaOfInterest.rect.toString());
+        }
+        if (mAreaOfInterest != null) {
+            parameters.setFocusAreas(Arrays.asList(mAreaOfInterest));
+        }
 
         mCamera.setParameters(parameters);
 
