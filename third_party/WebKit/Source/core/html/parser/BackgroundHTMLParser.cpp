@@ -112,6 +112,7 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_decoder(std::move(config->decoder))
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_tokenizedChunkQueue(config->tokenizedChunkQueue.release())
+    , m_pendingCSPMetaTokenIndex(HTMLDocumentParser::TokenizedChunk::noPendingToken)
     , m_startingScript(false)
     , m_lastBytesReceivedTime(0.0)
     , m_shouldCoalesceChunks(config->shouldCoalesceChunks)
@@ -252,7 +253,8 @@ void BackgroundHTMLParser::pumpTokenizer()
             CompactHTMLToken token(m_token.get(), position);
 
             bool shouldEvaluateForDocumentWrite = false;
-            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads, &m_viewportDescription, &shouldEvaluateForDocumentWrite);
+            bool isCSPMetaTag = false;
+            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads, &m_viewportDescription, &isCSPMetaTag, &shouldEvaluateForDocumentWrite);
 
             simulatedToken = m_treeBuilderSimulator.simulate(token, m_tokenizer.get());
 
@@ -264,6 +266,9 @@ void BackgroundHTMLParser::pumpTokenizer()
             }
 
             m_pendingTokens->append(token);
+            if (isCSPMetaTag) {
+                m_pendingCSPMetaTokenIndex = m_pendingTokens->size() - 1;
+            }
             if (shouldEvaluateForDocumentWrite) {
                 m_likelyDocumentWriteScriptIndices.append(m_pendingTokens->size() - 1);
             }
@@ -324,7 +329,9 @@ bool BackgroundHTMLParser::queueChunkForMainThread()
     chunk->tokens = std::move(m_pendingTokens);
     chunk->startingScript = m_startingScript;
     chunk->likelyDocumentWriteScriptIndices.swap(m_likelyDocumentWriteScriptIndices);
+    chunk->pendingCSPMetaTokenIndex = m_pendingCSPMetaTokenIndex;
     m_startingScript = false;
+    m_pendingCSPMetaTokenIndex = HTMLDocumentParser::TokenizedChunk::noPendingToken;
 
     bool isEmpty = m_tokenizedChunkQueue->enqueue(std::move(chunk));
 

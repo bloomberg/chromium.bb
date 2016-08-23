@@ -113,6 +113,12 @@ public:
         bool startingScript;
         // Indices into |tokens|.
         Vector<int> likelyDocumentWriteScriptIndices;
+        // Index into |tokens| of the last <meta> csp tag in |tokens|. Preloads
+        // will be deferred until this token is parsed. Will be
+        // noPendingToken if there are no csp tokens.
+        int pendingCSPMetaTokenIndex;
+
+        static constexpr int noPendingToken = -1;
     };
     void notifyPendingTokenizedChunks();
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
@@ -186,7 +192,8 @@ private:
 
     std::unique_ptr<HTMLPreloadScanner> createPreloadScanner();
 
-    int preloadInsertion(const SegmentedString& source);
+    void fetchQueuedPreloads();
+
     void evaluateAndPreloadScriptForDocumentWrite(const String& source);
 
     // Temporary enum for the ParseHTMLOnMainThread experiment. This is used to
@@ -234,6 +241,15 @@ private:
     Vector<String> m_queuedDocumentWriteScripts;
     RefPtr<TokenizedChunkQueue> m_tokenizedChunkQueue;
     std::unique_ptr<DocumentWriteEvaluator> m_evaluator;
+
+    // If this is non-null, then there is a meta CSP token somewhere in the
+    // speculation buffer. Preloads will be deferred until a token matching this
+    // pointer is parsed and the CSP policy is applied. Note that this pointer
+    // tracks the *last* meta token in the speculation buffer, so it
+    // overestimates how long to defer preloads. This is for simplicity, as the
+    // alternative would require keeping track of token positions of preload
+    // requests.
+    CompactHTMLToken* m_pendingCSPMetaToken;
 
     bool m_shouldUseThreading;
     bool m_endWasDelayed;

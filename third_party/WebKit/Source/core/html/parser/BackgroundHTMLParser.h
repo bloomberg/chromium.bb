@@ -131,6 +131,10 @@ private:
     std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
     RefPtr<TokenizedChunkQueue> m_tokenizedChunkQueue;
 
+    // Index into |m_pendingTokens| of the last <meta> csp token found. Will be
+    // |TokenizedChunk::noPendingToken| if none have been found.
+    int m_pendingCSPMetaTokenIndex;
+
     bool m_startingScript;
     double m_lastBytesReceivedTime;
     bool m_shouldCoalesceChunks;

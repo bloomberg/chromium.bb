@@ -120,6 +120,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_preloader(HTMLResourcePreloader::create(document))
     , m_tokenizedChunkQueue(TokenizedChunkQueue::create())
     , m_evaluator(DocumentWriteEvaluator::create(document))
+    , m_pendingCSPMetaToken(nullptr)
     , m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
@@ -314,11 +315,20 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks()
         m_triedLoadingLinkHeaders = true;
     }
 
-    if (!document()->documentElement()) {
+    // Defer preloads if any of the chunks contains a <meta> csp tag.
+    for (auto& chunk : pendingChunks) {
+        if (chunk->pendingCSPMetaTokenIndex != TokenizedChunk::noPendingToken) {
+            m_pendingCSPMetaToken = &chunk->tokens->at(chunk->pendingCSPMetaTokenIndex);
+        }
+    }
+
+    if (m_pendingCSPMetaToken || !document()->documentElement()) {
         PreloadRequestStream linkRelPreloads;
         for (auto& chunk : pendingChunks) {
             for (auto& request : chunk->preloads) {
-                if (request->isLinkRelPreload())
+                // Link rel preloads don't need to wait for AppCache but they
+                // should probably wait for CSP.
+                if (!m_pendingCSPMetaToken && request->isLinkRelPreload())
                     linkRelPreloads.append(std::move(request));
                 else
                     m_queuedPreloads.append(std::move(request));
@@ -419,6 +429,8 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(std::unique_ptr<Tokeni
     discardedTokenCountHistogram.count(discardedTokenCount);
 
     m_speculations.clear();
+    m_pendingCSPMetaToken = nullptr;
+    m_queuedPreloads.clear();
 
     std::unique_ptr<BackgroundHTMLParser::Checkpoint> checkpoint = wrapUnique(new BackgroundHTMLParser::Checkpoint);
     checkpoint->parser = m_weakFactory.createWeakPtr();
@@ -488,6 +500,13 @@ size_t HTMLDocumentParser::processTokenizedChunkFromBackgroundParser(std::unique
 
         if (isStopped())
             break;
+
+        // Preloads were queued if there was a <meta> csp token in a tokenized
+        // chunk.
+        if (m_pendingCSPMetaToken && it == m_pendingCSPMetaToken) {
+            m_pendingCSPMetaToken = nullptr;
+            fetchQueuedPreloads();
+        }
 
         if (isWaitingForScripts()) {
             ASSERT(it + 1 == tokens->end()); // The </script> is assumed to be the last token of this bunch.
@@ -1099,14 +1118,7 @@ void HTMLDocumentParser::documentElementAvailable()
 {
     TRACE_EVENT0("blink,loader", "HTMLDocumentParser::documentElementAvailable");
     DCHECK(document()->documentElement());
-    if (!m_queuedPreloads.isEmpty())
-        m_preloader->takeAndPreload(m_queuedPreloads);
-
-    for (const String& scriptSource : m_queuedDocumentWriteScripts) {
-        evaluateAndPreloadScriptForDocumentWrite(scriptSource);
-    }
-
-    m_queuedDocumentWriteScripts.clear();
+    fetchQueuedPreloads();
 }
 
 std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner()
@@ -1116,6 +1128,21 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner()
         document()->url(),
         CachedDocumentParameters::create(document()),
         MediaValuesCached::MediaValuesCachedData(*document()));
+}
+
+void HTMLDocumentParser::fetchQueuedPreloads()
+{
+    if (m_pendingCSPMetaToken || !document()->documentElement())
+        return;
+
+    if (!m_queuedPreloads.isEmpty())
+        m_preloader->takeAndPreload(m_queuedPreloads);
+
+    for (const String& scriptSource : m_queuedDocumentWriteScripts) {
+        evaluateAndPreloadScriptForDocumentWrite(scriptSource);
+    }
+
+    m_queuedDocumentWriteScripts.clear();
 }
 
 void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(const String& source)

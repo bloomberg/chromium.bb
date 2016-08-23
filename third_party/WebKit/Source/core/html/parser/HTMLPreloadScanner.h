@@ -80,8 +80,8 @@ public:
     TokenPreloadScanner(const KURL& documentURL, std::unique_ptr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
     ~TokenPreloadScanner();
 
-    void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
-    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* likelyDocumentWriteScript);
+    void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* isCSPMetaTag);
+    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* isCSPMetaTag, bool* likelyDocumentWriteScript);
 
     void setPredictedBaseElementURL(const KURL& url) { m_predictedBaseElementURL = url; }
 
@@ -97,17 +97,16 @@ private:
     bool shouldEvaluateForDocumentWrite(const HTMLToken::DataVector& source) { return false; }
 
     template <typename Token>
-    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* likelyDocumentWriteScript);
+    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* isCSPMetaTag, bool* likelyDocumentWriteScript);
 
     template<typename Token>
     void updatePredictedBaseURL(const Token&);
 
     struct Checkpoint {
-        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool inScript, bool isCSPEnabled, size_t templateCount)
+        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool inScript, size_t templateCount)
             : predictedBaseElementURL(predictedBaseElementURL)
             , inStyle(inStyle)
             , inScript(inScript)
-            , isCSPEnabled(isCSPEnabled)
             , templateCount(templateCount)
         {
         }
@@ -115,7 +114,6 @@ private:
         KURL predictedBaseElementURL;
         bool inStyle;
         bool inScript;
-        bool isCSPEnabled;
         size_t templateCount;
     };
 
@@ -138,7 +136,6 @@ private:
     bool m_inStyle;
     bool m_inPicture;
     bool m_inScript;
-    bool m_isCSPEnabled;
     PictureData m_pictureData;
     size_t m_templateCount;
     std::unique_ptr<CachedDocumentParameters> m_documentParameters;
