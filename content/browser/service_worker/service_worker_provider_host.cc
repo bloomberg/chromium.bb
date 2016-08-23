@@ -103,10 +103,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   if (controlling_version_.get())
     controlling_version_->RemoveControllee(this);
 
-  for (auto& key_registration : matching_registrations_) {
-    DecreaseProcessReference(key_registration.second->pattern());
-    key_registration.second->RemoveListener(this);
-  }
+  RemoveAllMatchingRegistrations();
 
   for (const GURL& pattern : associated_patterns_)
     DecreaseProcessReference(pattern);
@@ -182,6 +179,8 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   DCHECK(!url.has_ref());
   document_url_ = url;
+  if (IsProviderForClient())
+    SyncMatchingRegistrations();
 }
 
 void ServiceWorkerProviderHost::SetTopmostFrameUrl(const GURL& url) {
@@ -302,19 +301,6 @@ void ServiceWorkerProviderHost::RemoveMatchingRegistration(
   DecreaseProcessReference(registration->pattern());
   registration->RemoveListener(this);
   matching_registrations_.erase(key);
-}
-
-void ServiceWorkerProviderHost::AddAllMatchingRegistrations() {
-  DCHECK(context_);
-  const std::map<int64_t, ServiceWorkerRegistration*>& registrations =
-      context_->GetLiveRegistrations();
-  for (const auto& key_registration : registrations) {
-    ServiceWorkerRegistration* registration = key_registration.second;
-    if (!registration->is_uninstalled() &&
-        ServiceWorkerUtils::ScopeMatches(registration->pattern(),
-                                         document_url_))
-      AddMatchingRegistration(registration);
-  }
 }
 
 ServiceWorkerRegistration*
@@ -597,6 +583,28 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
   DCHECK(IsProviderForClient());
   dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
       render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
+}
+
+void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
+  DCHECK(context_);
+  RemoveAllMatchingRegistrations();
+  const auto& registrations = context_->GetLiveRegistrations();
+  for (const auto& key_registration : registrations) {
+    ServiceWorkerRegistration* registration = key_registration.second;
+    if (!registration->is_uninstalled() &&
+        ServiceWorkerUtils::ScopeMatches(registration->pattern(),
+                                         document_url_))
+      AddMatchingRegistration(registration);
+  }
+}
+
+void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
+  for (const auto& it : matching_registrations_) {
+    ServiceWorkerRegistration* registration = it.second.get();
+    DecreaseProcessReference(registration->pattern());
+    registration->RemoveListener(this);
+  }
+  matching_registrations_.clear();
 }
 
 void ServiceWorkerProviderHost::IncreaseProcessReference(

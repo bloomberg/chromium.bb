@@ -71,9 +71,6 @@ void FinalizeHandlerInitialization(
     if (ServiceWorkerUtils::IsMainResourceType(resource_type)) {
       provider_host->SetDocumentUrl(net::SimplifyUrlForRequest(request->url()));
       provider_host->SetTopmostFrameUrl(request->first_party_for_cookies());
-      // A page load with skip_service_worker should be triggered by
-      // shift-reload, so retain all live matching registrations.
-      provider_host->AddAllMatchingRegistrations();
     }
     return;
   }

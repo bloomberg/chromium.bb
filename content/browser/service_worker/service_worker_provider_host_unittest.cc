@@ -49,6 +49,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         GURL("https://www.example.com/"), 1L, context_->AsWeakPtr());
     registration2_ = new ServiceWorkerRegistration(
         GURL("https://www.example.com/example"), 2L, context_->AsWeakPtr());
+    registration3_ = new ServiceWorkerRegistration(
+        GURL("https://other.example.com/"), 3L, context_->AsWeakPtr());
 
     // Prepare provider hosts (for the same process).
     std::unique_ptr<ServiceWorkerProviderHost> host1(
@@ -87,6 +89,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerContextCore* context_;
   scoped_refptr<ServiceWorkerRegistration> registration1_;
   scoped_refptr<ServiceWorkerRegistration> registration2_;
+  scoped_refptr<ServiceWorkerRegistration> registration3_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host1_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host2_;
   GURL script_url_;
@@ -99,29 +102,32 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProviderHostTest, PotentialRegistration_ProcessStatus) {
-  provider_host1_->AddMatchingRegistration(registration1_.get());
+  // Matching registrations have already been set by SetDocumentUrl.
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
+
+  // Different matching registrations have already been added.
+  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
 
   // Adding the same registration twice has no effect.
   provider_host1_->AddMatchingRegistration(registration1_.get());
   ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
 
-  // Different matching registrations can be added.
-  provider_host1_->AddMatchingRegistration(registration2_.get());
-  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
-
   // Removing a matching registration will decrease the process refs for its
   // pattern.
   provider_host1_->RemoveMatchingRegistration(registration1_.get());
+  ASSERT_TRUE(PatternHasProcessToRun(registration1_->pattern()));
+  provider_host2_->RemoveMatchingRegistration(registration1_.get());
   ASSERT_FALSE(PatternHasProcessToRun(registration1_->pattern()));
 
-  // Multiple provider hosts could add the same matching registration.
-  // The process refs will become 0 after all provider hosts removed them.
-  provider_host2_->AddMatchingRegistration(registration2_.get());
-  provider_host1_->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));
-  provider_host2_->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_FALSE(PatternHasProcessToRun(registration2_->pattern()));
+  // Matching registration will be removed when moving out of scope
+  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));   // host1,2
+  ASSERT_FALSE(PatternHasProcessToRun(registration3_->pattern()));  // no host
+  provider_host1_->SetDocumentUrl(GURL("https://other.example.com/"));
+  ASSERT_TRUE(PatternHasProcessToRun(registration2_->pattern()));  // host2
+  ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));  // host1
+  provider_host2_->SetDocumentUrl(GURL("https://other.example.com/"));
+  ASSERT_FALSE(PatternHasProcessToRun(registration2_->pattern()));  // no host
+  ASSERT_TRUE(PatternHasProcessToRun(registration3_->pattern()));   // host1,2
 }
 
 TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
@@ -138,17 +144,26 @@ TEST_F(ServiceWorkerProviderHostTest, AssociatedRegistration_ProcessStatus) {
 }
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
-  provider_host1_->AddMatchingRegistration(registration1_.get());
-  provider_host1_->AddMatchingRegistration(registration2_.get());
-
   // Match registration should return the longest matching one.
-  ASSERT_EQ(provider_host1_->MatchRegistration(), registration2_);
+  ASSERT_EQ(registration2_, provider_host1_->MatchRegistration());
   provider_host1_->RemoveMatchingRegistration(registration2_.get());
-  ASSERT_EQ(provider_host1_->MatchRegistration(), registration1_);
+  ASSERT_EQ(registration1_, provider_host1_->MatchRegistration());
 
   // Should return nullptr after removing all matching registrations.
   provider_host1_->RemoveMatchingRegistration(registration1_.get());
-  ASSERT_EQ(provider_host1_->MatchRegistration(), nullptr);
+  ASSERT_EQ(nullptr, provider_host1_->MatchRegistration());
+
+  // SetDocumentUrl sets all of matching registrations
+  provider_host1_->SetDocumentUrl(GURL("https://www.example.com/example1"));
+  ASSERT_EQ(registration2_, provider_host1_->MatchRegistration());
+  provider_host1_->RemoveMatchingRegistration(registration2_.get());
+  ASSERT_EQ(registration1_, provider_host1_->MatchRegistration());
+
+  // SetDocumentUrl with another origin also updates matching registrations
+  provider_host1_->SetDocumentUrl(GURL("https://other.example.com/example"));
+  ASSERT_EQ(registration3_, provider_host1_->MatchRegistration());
+  provider_host1_->RemoveMatchingRegistration(registration3_.get());
+  ASSERT_EQ(nullptr, provider_host1_->MatchRegistration());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
