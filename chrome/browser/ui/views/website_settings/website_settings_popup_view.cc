@@ -434,7 +434,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     const security_state::SecurityStateModel::SecurityInfo& security_info)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      web_contents_(web_contents),
       header_(nullptr),
       separator_(nullptr),
       site_settings_view_(nullptr),
@@ -490,9 +489,12 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 
 void WebsiteSettingsPopupView::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host == web_contents_->GetMainFrame()) {
+  if (render_frame_host == web_contents()->GetMainFrame())
     GetWidget()->Close();
-  }
+}
+
+void WebsiteSettingsPopupView::WebContentsDestroyed() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(
@@ -610,7 +612,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
     info.type = CONTENT_SETTINGS_TYPE_COOKIES;
     info.setting = CONTENT_SETTING_ALLOW;
     info.is_incognito =
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->IsOffTheRecord();
     views::ImageView* icon = new views::ImageView();
     const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
@@ -669,7 +671,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
   for (const auto& permission : permission_info_list) {
     layout->StartRow(1, content_column);
     PermissionSelectorView* selector = new PermissionSelectorView(
-        web_contents_ ? web_contents_->GetURL() : GURL::EmptyGURL(),
+        web_contents() ? web_contents()->GetVisibleURL() : GURL::EmptyGURL(),
         permission);
     selector->AddObserver(this);
     layout->AddView(selector,
@@ -741,7 +743,7 @@ views::View* WebsiteSettingsPopupView::CreateSiteSettingsView() {
   site_data_content_ = new views::View();
   views::View* site_data_section = CreateSection(
       l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA),
-      site_data_content_, NULL);
+      site_data_content_, nullptr);
   pane->AddChildView(site_data_section);
 
   return pane;
@@ -791,19 +793,21 @@ views::View* WebsiteSettingsPopupView::CreateSection(
 
 
 void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
+  if (web_contents() == nullptr || web_contents()->IsBeingDestroyed())
+    return;
+
   if (source == cookie_dialog_link_) {
     // Count how often the Collected Cookies dialog is opened.
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_COOKIES_DIALOG_OPENED);
 
-    if (web_contents_ != NULL)
-      new CollectedCookiesViews(web_contents_);
+    new CollectedCookiesViews(web_contents());
   } else if (source == site_settings_link_) {
     // TODO(palmer): This opens the general Content Settings pane, which is OK
     // for now. But on Android, it opens a page specific to a given origin that
     // shows all of the settings for that origin. If/when that's available on
     // desktop we should link to that here, too.
-    web_contents_->OpenURL(content::OpenURLParams(
+    web_contents()->OpenURL(content::OpenURLParams(
         GURL(chrome::kChromeUIContentSettingsURL), content::Referrer(),
         NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
     presenter_->RecordWebsiteSettingsAction(
@@ -825,9 +829,9 @@ void WebsiteSettingsPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
         anchor_widget() ? anchor_widget()->GetNativeWindow() : nullptr;
     presenter_->RecordWebsiteSettingsAction(
         WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-    ShowCertificateViewerByID(web_contents_, parent, cert_id_);
+    ShowCertificateViewerByID(web_contents(), parent, cert_id_);
   } else {
     DevToolsWindow::OpenDevToolsWindow(
-        web_contents_, DevToolsToggleAction::ShowSecurityPanel());
+        web_contents(), DevToolsToggleAction::ShowSecurityPanel());
   }
 }

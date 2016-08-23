@@ -85,6 +85,7 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void WebContentsDestroyed() override;
 
   // PermissionSelectorViewObserver implementation.
   void OnPermissionChanged(
@@ -140,10 +141,6 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
 
   // Whether DevTools is disabled for the relevant profile.
   bool is_devtools_disabled_;
-
-  // The web contents of the current tab. The popup can't live longer than a
-  // tab.
-  content::WebContents* web_contents_;
 
   // The presenter that controls the Website Settings UI.
   std::unique_ptr<WebsiteSettings> presenter_;
