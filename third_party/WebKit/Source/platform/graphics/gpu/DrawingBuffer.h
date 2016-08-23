@@ -212,10 +212,6 @@ public:
         std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
         bool useSharedMemory) override;
 
-    // Callbacks for mailboxes given to the compositor from PrepareTextureMailbox.
-    void gpuMailboxReleased(const gpu::Mailbox&, const gpu::SyncToken&, bool lostResource);
-    void softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap>, const IntSize&, const gpu::SyncToken&, bool lostResource);
-
     // Returns a StaticBitmapImage backed by a texture containing the/ current contents of
     // the front buffer. This is done without any pixel copies. The texture in the ImageBitmap
     // is from the active ContextProvider on the DrawingBuffer.
@@ -288,6 +284,15 @@ private:
     private:
         WTF_MAKE_NONCOPYABLE(MailboxInfo);
     };
+
+    bool prepareTextureMailboxInternal(
+        cc::TextureMailbox* outMailbox,
+        std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
+        bool forceGpuResult);
+
+    // Callbacks for mailboxes given to the compositor from PrepareTextureMailbox.
+    void gpuMailboxReleased(const gpu::Mailbox&, const gpu::SyncToken&, bool lostResource);
+    void softwareMailboxReleased(std::unique_ptr<cc::SharedBitmap>, const IntSize&, const gpu::SyncToken&, bool lostResource);
 
     // The texture parameters to use for a texture that will be backed by a
     // CHROMIUM_image.
@@ -388,6 +393,7 @@ private:
     const bool m_discardFramebufferSupported;
     const bool m_wantAlphaChannel;
     const bool m_premultipliedAlpha;
+    const bool m_softwareRendering;
     bool m_hasImplicitStencilBuffer = false;
     bool m_storageTextureSupported = false;
     struct FrontBufferInfo {

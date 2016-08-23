@@ -54,6 +54,10 @@ public:
     virtual GrContext* grContext() = 0;
     virtual gpu::Capabilities getCapabilities() = 0;
 
+    // Returns true if the context is driven by software emulation of GL. In
+    // this scenario, the compositor would not be using GPU.
+    virtual bool isSoftwareRendering() const = 0;
+
     virtual void setLostContextCallback(WebClosure) = 0;
     virtual void setErrorMessageCallback(WebFunction<void(const char* msg, int32_t id)>) = 0;
 };

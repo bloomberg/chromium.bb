@@ -90,17 +90,6 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     return fromSkSp(surface);
 }
 
-PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
-{
-    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-    if (!contextProvider)
-        return nullptr;
-    RefPtr<Canvas2DLayerBridge> layerBridge;
-    layerBridge = adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), size, msaaSampleCount, opacityMode, accelerationMode));
-    return layerBridge.release();
-}
-
 Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
     : m_contextProvider(std::move(contextProvider))
     , m_logger(wrapUnique(new Logger))
@@ -802,6 +791,12 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
         // destroyed for software mode canvas.
         return false;
     }
+
+    // If the context is lost, we don't know if we should be producing GPU or
+    // software frames, until we get a new context, since the compositor will
+    // be trying to get a new context and may change modes.
+    if (m_contextProvider->contextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+        return false;
 
     RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
     if (!image || !image->getTexture())

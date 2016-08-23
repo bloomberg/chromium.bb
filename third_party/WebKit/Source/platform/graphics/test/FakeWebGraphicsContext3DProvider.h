@@ -25,9 +25,14 @@ public:
         return m_grContext.get();
     }
 
-    gpu::Capabilities getCapabilities()
+    gpu::Capabilities getCapabilities() override
     {
         return gpu::Capabilities();
+    }
+
+    bool isSoftwareRendering() const override
+    {
+        return false;
     }
 
     gpu::gles2::GLES2Interface* contextGL() override

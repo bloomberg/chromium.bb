@@ -65,6 +65,7 @@ class ImageBuffer;
 class ImageBufferSurface;
 class ImageData;
 class IntSize;
+class WebGraphicsContext3DProvider;
 
 class CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext;
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext RenderingContext;
@@ -148,8 +149,6 @@ public:
     bool hasImageBuffer() const { return m_imageBuffer.get(); }
     void discardImageBuffer();
 
-    bool shouldAccelerate(const IntSize&) const;
-
     bool shouldBeDirectComposited() const;
 
     void prepareSurfaceForPaintingIfNeeded() const;
@@ -220,6 +219,8 @@ private:
     using ContextFactoryVector = Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
     static ContextFactoryVector& renderingContextFactories();
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
+
+    bool shouldAccelerate(const IntSize&, const WebGraphicsContext3DProvider* sharedMainThreadContextProvider) const;
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) override;

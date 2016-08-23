@@ -23,7 +23,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
     : public NON_EXPORTED_BASE(blink::WebGraphicsContext3DProvider) {
  public:
   explicit WebGraphicsContext3DProviderImpl(
-      scoped_refptr<ContextProviderCommandBuffer> provider);
+      scoped_refptr<ContextProviderCommandBuffer> provider,
+      bool software_rendering);
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
@@ -31,6 +32,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   gpu::gles2::GLES2Interface* contextGL() override;
   GrContext* grContext() override;
   gpu::Capabilities getCapabilities() override;
+  bool isSoftwareRendering() const override;
   void setLostContextCallback(blink::WebClosure) override;
   void setErrorMessageCallback(
       blink::WebFunction<void(const char*, int32_t)>) override;
@@ -41,6 +43,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
 
  private:
   scoped_refptr<ContextProviderCommandBuffer> provider_;
+  const bool software_rendering_;
 };
 
 }  // namespace content

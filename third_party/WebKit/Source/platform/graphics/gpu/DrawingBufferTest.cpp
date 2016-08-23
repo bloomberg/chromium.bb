@@ -249,13 +249,12 @@ public:
     }
 
     gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
+    bool isSoftwareRendering() const override { return false; }
+
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }
     bool bindToCurrentThread() override { return false; }
-    gpu::Capabilities getCapabilities()
-    {
-        return gpu::Capabilities();
-    }
+    gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
     void setLostContextCallback(WebClosure) {}
     void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
 

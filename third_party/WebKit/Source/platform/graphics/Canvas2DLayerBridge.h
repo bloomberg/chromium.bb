@@ -85,8 +85,7 @@ public:
         ForceAccelerationForTesting,
     };
 
-    static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
-
+    Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
     ~Canvas2DLayerBridge() override;
 
     // cc::TextureLayerClient implementation.
@@ -189,7 +188,6 @@ private:
         MailboxInfo();
     };
 
-    Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
     gpu::gles2::GLES2Interface* contextGL();
     void startRecording();
     void skipQueuedDrawCommands();

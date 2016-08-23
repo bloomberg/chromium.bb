@@ -680,15 +680,6 @@ WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
       WebSecurityOriginToGURL(origin)));
 }
 
-bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  scoped_refptr<gpu::GpuChannelHost> host = thread->EstablishGpuChannelSync();
-  if (!host)
-    return false;
-
-  return !host->gpu_info().software_rendering;
-}
-
 bool RendererBlinkPlatformImpl::isThreadedCompositingEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   // thread can be NULL in tests.
@@ -1085,6 +1076,8 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     share_context = share_provider_impl->context_provider();
   }
 
+  bool is_software_rendering = gpu_channel_host->gpu_info().software_rendering;
+
   // This is an offscreen context, which doesn't use the default frame buffer,
   // so don't request any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
@@ -1116,18 +1109,35 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
           GURL(top_document_web_url), automatic_flushes, support_locking,
           gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
-  return new WebGraphicsContext3DProviderImpl(std::move(provider));
+  return new WebGraphicsContext3DProviderImpl(std::move(provider),
+                                              is_software_rendering);
 }
 
 //------------------------------------------------------------------------------
 
 blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
+  auto* thread = RenderThreadImpl::current();
+
   scoped_refptr<ContextProviderCommandBuffer> provider =
-      RenderThreadImpl::current()->SharedMainThreadContextProvider();
+      thread->SharedMainThreadContextProvider();
   if (!provider)
     return nullptr;
-  return new WebGraphicsContext3DProviderImpl(std::move(provider));
+
+  scoped_refptr<gpu::GpuChannelHost> host = thread->EstablishGpuChannelSync();
+  // This shouldn't normally fail because we just got |provider|. But the
+  // channel can become lost on the IO thread since then. It is important that
+  // this happens after getting |provider|. In the case that this GpuChannelHost
+  // is not the same one backing |provider|, the context behind the |provider|
+  // will be already lost/dead on arrival, so the value we get for
+  // |is_software_rendering| will never be wrong.
+  if (!host)
+    return nullptr;
+
+  bool is_software_rendering = host->gpu_info().software_rendering;
+
+  return new WebGraphicsContext3DProviderImpl(std::move(provider),
+                                              is_software_rendering);
 }
 
 //------------------------------------------------------------------------------

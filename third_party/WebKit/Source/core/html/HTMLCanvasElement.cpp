@@ -742,7 +742,7 @@ bool HTMLCanvasElement::originClean() const
     return m_originClean;
 }
 
-bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
+bool HTMLCanvasElement::shouldAccelerate(const IntSize& size, const WebGraphicsContext3DProvider* sharedMainThreadContextProvider) const
 {
     if (m_context && !m_context->is2d())
         return false;
@@ -759,7 +759,11 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (layoutBox() && !layoutBox()->hasAcceleratedCompositing())
         return false;
 
-    int canvasPixelCount = size.width() * size.height();
+    CheckedNumeric<int> checkedCanvasPixelCount = size.width();
+    checkedCanvasPixelCount *= size.height();
+    if (!checkedCanvasPixelCount.IsValid())
+        return false;
+    int canvasPixelCount = checkedCanvasPixelCount.ValueOrDie();
 
     if (RuntimeEnabledFeatures::displayList2dCanvasEnabled()) {
 #if 0
@@ -781,7 +785,7 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
     if (!settings || canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
         return false;
 
-    if (!Platform::current()->canAccelerate2dCanvas())
+    if (sharedMainThreadContextProvider->isSoftwareRendering())
         return false;
 
     // When GPU allocated memory runs low (due to having created too many
@@ -833,10 +837,13 @@ std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(
         return wrapUnique(new AcceleratedImageBufferSurface(deviceSize, opacityMode));
     }
 
-    if (shouldAccelerate(deviceSize)) {
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!contextProvider) {
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Accelerated2DCanvasGPUContextLost);
+    } else if (shouldAccelerate(deviceSize, contextProvider.get())) {
         if (document().settings())
             *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
+        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new Canvas2DImageBufferSurface(std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
             return surface;

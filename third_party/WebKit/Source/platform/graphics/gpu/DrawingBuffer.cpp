@@ -154,6 +154,7 @@ DrawingBuffer::DrawingBuffer(
     , m_discardFramebufferSupported(discardFramebufferSupported)
     , m_wantAlphaChannel(wantAlphaChannel)
     , m_premultipliedAlpha(premultipliedAlpha)
+    , m_softwareRendering(m_contextProvider->isSoftwareRendering())
     , m_wantDepth(wantDepth)
     , m_wantStencil(wantStencil)
 {
@@ -264,6 +265,15 @@ bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox,
     std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
     bool useSharedMemory)
 {
+    bool forceGpuResult = false;
+    return prepareTextureMailboxInternal(outMailbox, outReleaseCallback, forceGpuResult);
+}
+
+bool DrawingBuffer::prepareTextureMailboxInternal(
+    cc::TextureMailbox* outMailbox,
+    std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback,
+    bool forceGpuResult)
+{
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
         // 1. WebGL draws something.
@@ -276,6 +286,12 @@ bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox,
     if (!m_contentsChanged)
         return false;
 
+    // If the context is lost, we don't know if we should be producing GPU or
+    // software frames, until we get a new context, since the compositor will
+    // be trying to get a new context and may change modes.
+    if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+        return false;
+
     TRACE_EVENT0("blink,rail", "DrawingBuffer::prepareMailbox");
 
     if (m_newMailboxCallback)
@@ -285,7 +301,7 @@ bool DrawingBuffer::PrepareTextureMailbox(cc::TextureMailbox* outMailbox,
     if (m_antiAliasingMode != None)
         commit();
 
-    if (useSharedMemory) {
+    if (m_softwareRendering && !forceGpuResult) {
         std::unique_ptr<cc::SharedBitmap> bitmap = createOrRecycleBitmap();
         if (!bitmap)
             return false;
@@ -405,10 +421,11 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage()
 
     cc::TextureMailbox textureMailbox;
     std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
-    bool useSharedMemory = false;
     bool success = false;
-    if (grContext)
-        success = PrepareTextureMailbox(&textureMailbox, &releaseCallback, useSharedMemory);
+    if (grContext) {
+        bool forceGpuResult = true;
+        success = prepareTextureMailboxInternal(&textureMailbox, &releaseCallback, forceGpuResult);
+    }
     if (!success) {
         // If we can't get a mailbox, return an transparent black ImageBitmap.
         // The only situation this could happen is when two or more calls to transferToImageBitmap are made back-to-back, or when the context gets lost.
