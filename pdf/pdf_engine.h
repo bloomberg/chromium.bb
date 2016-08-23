@@ -282,7 +282,7 @@ class PDFEngine {
   // document at page |index|.
   virtual void AppendPage(PDFEngine* engine, int index) = 0;
 
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
   // Allow client to set scroll positions in document coordinates. Note that
   // this is meant for cases where the device scale factor changes, and not for
   // general scrolling - the engine will not repaint due to this.

@@ -587,7 +587,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   FPDF_FORMFILLINFO::FFI_SetTextFieldFocus = Form_SetTextFieldFocus;
   FPDF_FORMFILLINFO::FFI_DoURIAction = Form_DoURIAction;
   FPDF_FORMFILLINFO::FFI_DoGoToAction = Form_DoGoToAction;
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
   FPDF_FORMFILLINFO::version = 2;
   FPDF_FORMFILLINFO::FFI_EmailTo = Form_EmailTo;
   FPDF_FORMFILLINFO::FFI_DisplayCaret = Form_DisplayCaret;
@@ -604,7 +604,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   FPDF_FORMFILLINFO::FFI_OpenFile = Form_OpenFile;
   FPDF_FORMFILLINFO::FFI_GotoURL = Form_GotoURL;
   FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
-#endif  // defined(PDF_USE_XFA)
+#endif  // defined(PDF_ENABLE_XFA)
   IPDF_JSPLATFORM::version = 3;
   IPDF_JSPLATFORM::app_alert = Form_Alert;
   IPDF_JSPLATFORM::app_beep = Form_Beep;
@@ -635,7 +635,7 @@ PDFiumEngine::~PDFiumEngine() {
   if (doc_) {
     FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
 
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
     // XFA may require |form_| to outlive |doc_|, so shut down in that order.
     FPDF_CloseDocument(doc_);
     FPDFDOC_ExitFormFillEnvironment(form_);
@@ -650,7 +650,7 @@ PDFiumEngine::~PDFiumEngine() {
   base::STLDeleteElements(&pages_);
 }
 
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
 
 void PDFiumEngine::Form_EmailTo(FPDF_FORMFILLINFO* param,
                                 FPDF_FILEHANDLER* file_handler,
@@ -832,7 +832,7 @@ int PDFiumEngine::Form_GetLanguage(FPDF_FORMFILLINFO* param,
   return 0;
 }
 
-#endif  // defined(PDF_USE_XFA)
+#endif  // defined(PDF_ENABLE_XFA)
 
 int PDFiumEngine::GetBlock(void* param, unsigned long position,
                            unsigned char* buffer, unsigned long size) {
@@ -1013,7 +1013,7 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   client_->Invalidate(GetPageScreenRect(index));
 }
 
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
 void PDFiumEngine::SetScrollPosition(const pp::Point& position) {
   position_ = position;
 }
@@ -1125,7 +1125,7 @@ void PDFiumEngine::FinishLoadingDocument() {
 void PDFiumEngine::UnsupportedFeature(int type) {
   std::string feature;
   switch (type) {
-#if !defined(PDF_USE_XFA)
+#if !defined(PDF_ENABLE_XFA)
     case FPDF_UNSP_DOC_XFAFORM:
       feature = "XFA";
       break;
@@ -1568,7 +1568,7 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
       mouse_down_state_.Set(PDFiumPage::NONSELECTABLE_AREA, target);
       bool is_valid_control = (form_type == FPDF_FORMFIELD_TEXTFIELD ||
                                form_type == FPDF_FORMFIELD_COMBOBOX);
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
       is_valid_control |= (form_type == FPDF_FORMFIELD_XFA);
 #endif
       client_->FormTextFieldFocusChange(is_valid_control);
@@ -2532,7 +2532,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
 
     form_ = FPDFDOC_InitFormFillEnvironment(
         doc_, static_cast<FPDF_FORMFILLINFO*>(this));
-#if defined(PDF_USE_XFA)
+#if defined(PDF_ENABLE_XFA)
     FPDF_LoadXFA(doc_);
 #endif
 
