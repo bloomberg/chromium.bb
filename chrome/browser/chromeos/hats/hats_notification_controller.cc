@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
 #include "ash/common/system/system_notifier.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/prefs/pref_service.h"
@@ -71,6 +73,12 @@ bool IsGoogleUser(std::string username) {
   return username.find("@google.com") != std::string::npos;
 }
 
+// Returns true if the |kForceHappinessTrackingSystem| flag is enabled.
+bool IsTestingEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kForceHappinessTrackingSystem);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -116,7 +124,7 @@ HatsNotificationController::~HatsNotificationController() {
 }
 
 void HatsNotificationController::Initialize(bool is_new_device) {
-  if (is_new_device) {
+  if (is_new_device && !IsTestingEnabled()) {
     // This device has been chosen for a survey, but it is too new. Instead
     // of showing the user the survey, just mark it as completed.
     UpdateLastInteractionTime();
@@ -130,10 +138,13 @@ void HatsNotificationController::Initialize(bool is_new_device) {
 
 // static
 bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
+  if (IsTestingEnabled())
+    return true;
+
   // Do not show the survey if the HaTS feature is disabled for the device. This
   // flag is controlled by finch and is enabled only when the device has been
   // selected for the survey.
-  if (!base::FeatureList::IsEnabled(features::kHappininessTrackingSystem))
+  if (!base::FeatureList::IsEnabled(features::kHappinessTrackingSystem))
     return false;
 
   // Do not show survey if this is a guest session.

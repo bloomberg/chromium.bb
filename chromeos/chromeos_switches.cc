@@ -320,6 +320,11 @@ const char kGuestWallpaperLarge[] = "guest-wallpaper-large";
 // JPEG file).
 const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 
+// Force enables the Happiness Tracking System for the device. This ignores
+// user profile check and time limits and shows the notification every time
+// for any type of user. Should be used only for testing.
+const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
+
 // If true, the Chromebook has a keyboard with a diamond key.
 const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 

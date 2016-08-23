@@ -104,6 +104,7 @@ CHROMEOS_EXPORT extern const char kGoldenScreenshotsDir[];
 CHROMEOS_EXPORT extern const char kGuestSession[];
 CHROMEOS_EXPORT extern const char kGuestWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kGuestWallpaperSmall[];
+CHROMEOS_EXPORT extern const char kForceHappinessTrackingSystem[];
 CHROMEOS_EXPORT extern const char kHasChromeOSDiamondKey[];
 CHROMEOS_EXPORT extern const char kHomedir[];
 CHROMEOS_EXPORT extern const char kHostPairingOobe[];

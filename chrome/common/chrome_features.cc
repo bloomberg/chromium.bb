@@ -65,9 +65,9 @@ const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined (OS_CHROMEOS)
-// Enables or disables the Happininess Tracking System for the device.
-const base::Feature kHappininessTrackingSystem {
-    "HappininessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for the device.
+const base::Feature kHappinessTrackingSystem {
+    "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
