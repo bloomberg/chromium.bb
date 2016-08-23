@@ -147,7 +147,10 @@ TEST_F(GamepadProviderTest, UserGesture) {
 
 // Crashes. http://crbug.com/106163
 // crbug.com/147549
+// Flaky on MSAN: http://crbug.com/640086
 #if defined(OS_ANDROID)
+#define MAYBE_Sanitization DISABLED_Sanitization
+#elif defined(MEMORY_SANITIZER)
 #define MAYBE_Sanitization DISABLED_Sanitization
 #else
 #define MAYBE_Sanitization Sanitization
