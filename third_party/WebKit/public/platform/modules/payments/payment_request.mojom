@@ -130,10 +130,11 @@ enum PaymentComplete {
 };
 
 interface PaymentRequest {
-  SetClient(PaymentRequestClient client);
-  Show(array<PaymentMethodData> methodData,
+  Init(PaymentRequestClient client,
+       array<PaymentMethodData> methodData,
        PaymentDetails details,
        PaymentOptions options);
+  Show();
   UpdateWith(PaymentDetails details);
   Abort();
   Complete(PaymentComplete result);

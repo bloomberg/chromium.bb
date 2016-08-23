@@ -379,17 +379,13 @@ PaymentRequest::~PaymentRequest()
 
 ScriptPromise PaymentRequest::show(ScriptState* scriptState)
 {
-    if (m_showResolver)
+    if (!m_paymentProvider.is_bound() || m_showResolver)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Already called show() once"));
 
     if (!scriptState->domWindow() || !scriptState->domWindow()->frame())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Cannot show the payment request"));
 
-    DCHECK(!m_paymentProvider.is_bound());
-    scriptState->domWindow()->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_paymentProvider));
-    m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this), mojom::blink::PaymentErrorReason::UNKNOWN)));
-    m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
-    m_paymentProvider->Show(mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(m_methodData), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options));
+    m_paymentProvider->Show();
 
     m_showResolver = ScriptPromiseResolver::create(scriptState);
     return m_showResolver->promise();
@@ -477,7 +473,6 @@ void PaymentRequest::onUpdatePaymentDetailsFailure(const String& error)
 
 DEFINE_TRACE(PaymentRequest)
 {
-    visitor->trace(m_details);
     visitor->trace(m_options);
     visitor->trace(m_shippingAddress);
     visitor->trace(m_showResolver);
@@ -500,7 +495,8 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<Paymen
     , m_clientBinding(this)
     , m_completeTimer(this, &PaymentRequest::onCompleteTimeout)
 {
-    validateAndConvertPaymentMethodData(methodData, &m_methodData, exceptionState);
+    Vector<MethodData> validatedMethodData;
+    validateAndConvertPaymentMethodData(methodData, &validatedMethodData, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -517,10 +513,13 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<Paymen
     validatePaymentDetails(details, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_details = details;
 
     if (m_options.requestShipping())
         m_shippingOption = getSelectedShippingOption(details);
+
+    scriptState->domWindow()->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_paymentProvider));
+    m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this), mojom::blink::PaymentErrorReason::UNKNOWN)));
+    m_paymentProvider->Init(m_clientBinding.CreateInterfacePtrAndBind(), mojo::WTFArray<mojom::blink::PaymentMethodDataPtr>::From(validatedMethodData), mojom::blink::PaymentDetails::From(details), mojom::blink::PaymentOptions::From(m_options));
 }
 
 void PaymentRequest::contextDestroyed()

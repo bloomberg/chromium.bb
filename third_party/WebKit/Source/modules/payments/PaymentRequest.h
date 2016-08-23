@@ -97,8 +97,6 @@ private:
     // Clears the promise resolvers and closes the Mojo connection.
     void clearResolversAndCloseMojoConnection();
 
-    Vector<MethodData> m_methodData;
-    PaymentDetails m_details;
     PaymentOptions m_options;
     Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;

@@ -159,6 +159,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
 
+    /** True if any of the requested payment methods are supported. */
+    private boolean mArePaymentMethodsSupported;
+
+    /** True if show() was called. */
+    private boolean mIsShowing;
+
     /**
      * Builds the PaymentRequest service implementation.
      *
@@ -204,22 +210,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     /**
-     * Called by the renderer to provide an endpoint for callbacks.
+     * Called by the merchant website to initialize the payment request data.
      */
     @Override
-    public void setClient(PaymentRequestClient client) {
-        assert mClient == null;
-        if (client == null) return;
+    public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
+            PaymentDetails details, PaymentOptions options) {
+        if (mClient != null || client == null) return;
         mClient = client;
-    }
-
-    /**
-     * Called by the merchant website to show the payment request to the user.
-     */
-    @Override
-    public void show(PaymentMethodData[] methodData, PaymentDetails details,
-            PaymentOptions options) {
-        if (mClient == null) return;
 
         if (mMethodData != null) {
             disconnectFromClientWithDebugMessage("PaymentRequest.show() called more than once.");
@@ -238,14 +235,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
-        if (!getMatchingPaymentInstruments()) {
-            disconnectFromClientWithDebugMessage("Requested payment methods are not supported",
-                    PaymentErrorReason.NOT_SUPPORTED);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD);
-            return;
-        }
+        getMatchingPaymentInstruments();
 
         boolean requestShipping = options != null && options.requestShipping;
         boolean requestPayerPhone = options != null && options.requestPayerPhone;
@@ -341,9 +331,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mCardEditor.setEditorView(mUI.getCardEditorView());
         if (mContactEditor != null) mContactEditor.setEditorView(mUI.getEditorView());
 
-        recordSuccessFunnelHistograms("Shown");
         PaymentRequestMetrics.recordRequestedInformationHistogram(requestPayerEmail,
                 requestPayerPhone, requestShipping);
+    }
+
+    /**
+     * Called by the merchant website to show the payment request to the user.
+     */
+    @Override
+    public void show() {
+        if (mClient == null || mIsShowing) return;
+
+        mIsShowing = true;
+        if (disconnectIfNoPaymentMethodsSupported()) return;
+
+        mUI.show();
+        recordSuccessFunnelHistograms("Shown");
     }
 
     private static Map<String, JSONObject> getValidatedMethodData(
@@ -383,16 +386,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         return result;
     }
 
-    /**
-     * Queries the installed payment apps for their instruments that merchant supports.
-     *
-     * @return True if any of the requested payment methods are supported.
-     */
-    private boolean getMatchingPaymentInstruments() {
+    /** Queries the installed payment apps for their instruments that merchant supports. */
+    private void getMatchingPaymentInstruments() {
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
         mPendingAutofillInstruments = new ArrayList<>();
-        boolean arePaymentMethodsSupported = false;
 
         Map<PaymentApp, JSONObject> queryApps = new HashMap<>();
         for (int i = 0; i < mApps.size(); i++) {
@@ -402,7 +400,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             if (appMethods.isEmpty()) {
                 mPendingApps.remove(app);
             } else {
-                arePaymentMethodsSupported = true;
+                mArePaymentMethodsSupported = true;
                 mMerchantSupportsAutofillPaymentInstruments |= app instanceof AutofillPaymentApp;
                 queryApps.put(app, mMethodData.get(appMethods.iterator().next()));
             }
@@ -414,8 +412,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (Map.Entry<PaymentApp, JSONObject> q : queryApps.entrySet()) {
             q.getKey().getInstruments(q.getValue(), this);
         }
-
-        return arePaymentMethodsSupported;
     }
 
     /**
@@ -882,17 +878,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // Some payment apps still have not responded. Continue waiting for them.
         if (!mPendingApps.isEmpty()) return;
 
-        if (mPendingInstruments.isEmpty() && !mMerchantSupportsAutofillPaymentInstruments) {
-            // All payment apps have responded, but none of them have instruments. It's possible to
-            // add credit cards, but the merchant does not support them either. The payment request
-            // must be rejected.
-            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
-                    PaymentErrorReason.NOT_SUPPORTED);
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
-            recordAbortReasonHistogram(
-                    PaymentRequestMetrics.ABORT_REASON_NO_MATCHING_PAYMENT_METHOD);
-            return;
-        }
+        if (disconnectIfNoPaymentMethodsSupported()) return;
 
         // List order:
         // > Non-autofill instruments.
@@ -919,10 +905,37 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 selection, mPendingInstruments);
 
         mPendingInstruments.clear();
-        mPendingInstruments = null;
 
         // UI has requested the full list of payment instruments. Provide it now.
         if (mPaymentInformationCallback != null) providePaymentInformation();
+    }
+
+    /**
+     * If no payment methods are supported, disconnect from the client and return true.
+     *
+     * @return True if no payment methods are supported
+     */
+    private boolean disconnectIfNoPaymentMethodsSupported() {
+        boolean waitingForPaymentApps = !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty();
+        boolean foundPaymentMethods =
+                mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
+
+        if (!mArePaymentMethodsSupported
+                || (mIsShowing && !waitingForPaymentApps && !foundPaymentMethods
+                           && !mMerchantSupportsAutofillPaymentInstruments)) {
+            // All payment apps have responded, but none of them have instruments. It's possible to
+            // add credit cards, but the merchant does not support them either. The payment request
+            // must be rejected.
+            disconnectFromClientWithDebugMessage("Requested payment methods have no instruments",
+                    PaymentErrorReason.NOT_SUPPORTED);
+            recordAbortReasonHistogram(mArePaymentMethodsSupported
+                            ? PaymentRequestMetrics.ABORT_REASON_NO_MATCHING_PAYMENT_METHOD
+                            : PaymentRequestMetrics.ABORT_REASON_NO_SUPPORTED_PAYMENT_METHOD);
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            return true;
+        }
+
+        return false;
     }
 
     /**

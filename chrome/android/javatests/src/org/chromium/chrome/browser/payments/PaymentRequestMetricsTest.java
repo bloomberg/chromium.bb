@@ -246,7 +246,8 @@ public class PaymentRequestMetricsTest extends PaymentRequestTestBase {
      */
     private void assertOnlySpecificAbortMetricLogged(int abortReason) {
         for (int i = 0; i < PaymentRequestMetrics.ABORT_REASON_MAX; ++i) {
-            assertEquals((i == abortReason ? 1 : 0),
+            assertEquals(String.format("Found %d instead of %d", i, abortReason),
+                    (i == abortReason ? 1 : 0),
                     RecordHistogram.getHistogramValueCountForTesting(
                             "PaymentRequest.CheckoutFunnel.Aborted", i));
         }

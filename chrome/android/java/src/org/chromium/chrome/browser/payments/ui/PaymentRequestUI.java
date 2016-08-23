@@ -307,7 +307,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private boolean mIsInitialLayoutComplete;
 
     /**
-     * Builds and shows the UI for PaymentRequest.
+     * Builds the UI for PaymentRequest.
      *
      * @param activity        The activity on top of which the UI should be displayed.
      * @param client          The consumer of the PaymentRequest UI.
@@ -400,8 +400,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         dialogWindow.setGravity(Gravity.CENTER);
         dialogWindow.setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         dialogWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mDialog.show();
+    }
 
+    /**
+     * Shows the PaymentRequest UI.
+     */
+    public void show() {
+        mDialog.show();
         mClient.getDefaultPaymentInformation(new Callback<PaymentInformation>() {
             @Override
             public void onResult(PaymentInformation result) {

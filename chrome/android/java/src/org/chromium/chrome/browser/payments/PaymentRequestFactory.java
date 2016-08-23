@@ -33,17 +33,21 @@ public class PaymentRequestFactory implements ImplementationFactory<PaymentReque
      * Necessary because Mojo does not handle null returned from createImpl().
      */
     private static final class InvalidPaymentRequest implements PaymentRequest {
+        private PaymentRequestClient mClient;
+
         @Override
-        public void setClient(PaymentRequestClient client) {
-            if (client != null) {
-                client.onError(PaymentErrorReason.USER_CANCEL);
-                client.close();
-            }
+        public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
+                PaymentDetails details, PaymentOptions options) {
+            mClient = client;
         }
 
         @Override
-        public void show(PaymentMethodData[] methodData, PaymentDetails details,
-                PaymentOptions options) {}
+        public void show() {
+            if (mClient != null) {
+                mClient.onError(PaymentErrorReason.USER_CANCEL);
+                mClient.close();
+            }
+        }
 
         @Override
         public void updateWith(PaymentDetails details) {}

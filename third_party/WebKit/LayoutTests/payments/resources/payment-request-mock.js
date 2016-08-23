@@ -27,7 +27,7 @@ let paymentRequestMock = loadMojoModules(
       this.paymentRequestRouter_.setIncomingReceiver(this.paymentRequestStub_);
     }
 
-    setClient(client) {
+    init(client, supportedMethods, details, options) {
       this.client_ = client;
       if (this.pendingResponse_) {
         let response = this.pendingResponse_;
@@ -36,7 +36,7 @@ let paymentRequestMock = loadMojoModules(
       }
     }
 
-    show(supportedMethods, details, options, stringifiedData) {
+    show() {
     }
 
     updateWith(details) {

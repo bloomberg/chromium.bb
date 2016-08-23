@@ -222,6 +222,20 @@ TEST(PaymentRequestTest, CannotCallShowTwice)
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
 }
 
+TEST(PaymentRequestTest, CannotShowAfterAborted)
+{
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+    request->show(scope.getScriptState());
+    request->abort(scope.getScriptState());
+    static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(true);
+
+    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall());
+}
+
 TEST(PaymentRequestTest, RejectShowPromiseOnErrorPaymentMethodNotSupported)
 {
     V8TestingScope scope;

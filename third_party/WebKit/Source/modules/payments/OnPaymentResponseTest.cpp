@@ -59,7 +59,7 @@ TEST(OnPaymentResponseTest, RejectMissingAddress)
 
 // If the merchant requests an email address, but the browser does not provide
 // it, reject the show() promise.
-TEST(PaymentRequestTest, RejectMissingEmail)
+TEST(OnPaymentResponseTest, RejectMissingEmail)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -77,7 +77,7 @@ TEST(PaymentRequestTest, RejectMissingEmail)
 
 // If the merchant requests a phone number, but the browser does not provide it,
 // reject the show() promise.
-TEST(PaymentRequestTest, RejectMissingPhone)
+TEST(OnPaymentResponseTest, RejectMissingPhone)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -138,7 +138,7 @@ TEST(OnPaymentResponseTest, RejectEmptyAddress)
 
 // If the merchant requests an email, but the browser provides an empty string
 // for email, reject the show() promise.
-TEST(PaymentRequestTest, RejectEmptyEmail)
+TEST(OnPaymentResponseTest, RejectEmptyEmail)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -157,7 +157,7 @@ TEST(PaymentRequestTest, RejectEmptyEmail)
 
 // If the merchant requests a phone number, but the browser provides an empty
 // string for the phone number, reject the show() promise.
-TEST(PaymentRequestTest, RejectEmptyPhone)
+TEST(OnPaymentResponseTest, RejectEmptyPhone)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -217,7 +217,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedShippingOption)
 
 // If the merchant does not request an email, but the browser provides it,
 // reject the show() promise.
-TEST(PaymentRequestTest, RejectNotRequestedEmail)
+TEST(OnPaymentResponseTest, RejectNotRequestedEmail)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -236,7 +236,7 @@ TEST(PaymentRequestTest, RejectNotRequestedEmail)
 
 // If the merchant does not request a phone number, but the browser provides it,
 // reject the show() promise.
-TEST(PaymentRequestTest, RejectNotRequestedPhone)
+TEST(OnPaymentResponseTest, RejectNotRequestedPhone)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -331,7 +331,7 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation)
 
 // If the merchant requests an email address, the resolved show() promise should
 // contain an email address.
-TEST(PaymentRequestTest, CanRequestEmail)
+TEST(OnPaymentResponseTest, CanRequestEmail)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -354,7 +354,7 @@ TEST(PaymentRequestTest, CanRequestEmail)
 
 // If the merchant requests a phone number, the resolved show() promise should
 // contain a phone number.
-TEST(PaymentRequestTest, CanRequestPhone)
+TEST(OnPaymentResponseTest, CanRequestPhone)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -400,7 +400,7 @@ TEST(OnPaymentResponseTest, ShippingInformationNotRequired)
 
 // If the merchant does not request a phone number, the resolved show() promise
 // should contain null phone number.
-TEST(PaymentRequestTest, PhoneNotRequred)
+TEST(OnPaymentResponseTest, PhoneNotRequred)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
@@ -423,7 +423,7 @@ TEST(PaymentRequestTest, PhoneNotRequred)
 
 // If the merchant does not request an email address, the resolved show()
 // promise should contain null email address.
-TEST(PaymentRequestTest, EmailNotRequired)
+TEST(OnPaymentResponseTest, EmailNotRequired)
 {
     V8TestingScope scope;
     PaymentRequestMockFunctionScope funcs(scope.getScriptState());
