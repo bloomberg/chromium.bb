@@ -23,6 +23,8 @@ _EXCLUDED_PATHS = (
     r".+[\\\/]pnacl_shim\.c$",
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
+    r".*vulcanized.html$",
+    r".*crisper.js$",
 )
 
 

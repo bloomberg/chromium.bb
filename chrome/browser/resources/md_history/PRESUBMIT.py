@@ -11,6 +11,8 @@ def CheckChangeOnUpload(input_api, output_api):
   def _is_md_history_file(path):
     return (path.startswith('chrome/browser/resources/md_history') and
             (not path.endswith('externs.js')) and
+            (not path.endswith('app.crisper.js')) and
+            (not path.endswith('app.vulcanized.html')) and
             (path.endswith('js') or path.endswith('html')))
 
   def _affects_file(filename, paths):
