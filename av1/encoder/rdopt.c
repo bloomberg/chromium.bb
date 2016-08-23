@@ -3898,61 +3898,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   rd_cost->rdcost = RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
 }
 
-// This function is designed to apply a bias or adjustment to an rd value based
-// on the relative variance of the source and reconstruction.
-#define LOW_VAR_THRESH 16
-#define VLOW_ADJ_MAX 25
-#define VHIGH_ADJ_MAX 8
-static void rd_variance_adjustment(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                   BLOCK_SIZE bsize, int64_t *this_rd,
-                                   MV_REFERENCE_FRAME ref_frame,
-                                   unsigned int source_variance) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  unsigned int recon_variance;
-  unsigned int absvar_diff = 0;
-  int64_t var_error = 0;
-  int64_t var_factor = 0;
-
-  if (*this_rd == INT64_MAX) return;
-
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    recon_variance = av1_high_get_sby_perpixel_variance(cpi, &xd->plane[0].dst,
-                                                        bsize, xd->bd);
-  } else {
-    recon_variance =
-        av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-  }
-#else
-  recon_variance = av1_get_sby_perpixel_variance(cpi, &xd->plane[0].dst, bsize);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
-  if ((source_variance + recon_variance) > LOW_VAR_THRESH) {
-    absvar_diff = (source_variance > recon_variance)
-                      ? (source_variance - recon_variance)
-                      : (recon_variance - source_variance);
-
-    var_error = ((int64_t)200 * source_variance * recon_variance) /
-                (((int64_t)source_variance * source_variance) +
-                 ((int64_t)recon_variance * recon_variance));
-    var_error = 100 - var_error;
-  }
-
-  // Source variance above a threshold and ref frame is intra.
-  // This case is targeted mainly at discouraging intra modes that give rise
-  // to a predictor with a low spatial complexity compared to the source.
-  if ((source_variance > LOW_VAR_THRESH) && (ref_frame == INTRA_FRAME) &&
-      (source_variance > recon_variance)) {
-    var_factor = AOMMIN(absvar_diff, AOMMIN(VLOW_ADJ_MAX, var_error));
-    // A second possible case of interest is where the source variance
-    // is very low and we wish to discourage false texture or motion trails.
-  } else if ((source_variance < (LOW_VAR_THRESH >> 1)) &&
-             (recon_variance > source_variance)) {
-    var_factor = AOMMIN(absvar_diff, AOMMIN(VHIGH_ADJ_MAX, var_error));
-  }
-  *this_rd += (*this_rd * var_factor) / 100;
-}
-
 // Do we have an internal image edge (e.g. formatting bars).
 int av1_internal_image_edge(const AV1_COMP *cpi) {
   return (cpi->oxcf.pass == 2) &&
@@ -4847,11 +4792,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       this_rd = RDCOST(x->rdmult, x->rddiv, rate2, distortion2);
 #endif  // CONFIG_MOTION_VAR
     }
-
-    // Apply an adjustment to the rd value based on the similarity of the
-    // source variance and reconstructed variance.
-    rd_variance_adjustment(cpi, x, bsize, &this_rd, ref_frame,
-                           x->source_variance);
 
     if (ref_frame == INTRA_FRAME) {
       // Keep record of best intra rd
