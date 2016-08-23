@@ -93,12 +93,12 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
         prerender_manager->AddPrerenderOnCellularFromExternalRequest(
             url, referrer,
             web_contents->GetController().GetDefaultSessionStorageNamespace(),
-            gfx::Rect(top, left, bottom, right));
+            gfx::Rect(left, top, right - left, bottom - top));
   } else {
     prerender_handle_ = prerender_manager->AddPrerenderFromExternalRequest(
         url, referrer,
         web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        gfx::Rect(top, left, bottom, right));
+        gfx::Rect(left, top, right - left, bottom - top));
   }
 
   return !!prerender_handle_;
