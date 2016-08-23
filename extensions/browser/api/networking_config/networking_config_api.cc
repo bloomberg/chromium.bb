@@ -53,7 +53,7 @@ NetworkingConfigSetNetworkFilterFunction::Run() {
 
     std::string hex_ssid;
     if (ni.ssid.get()) {
-      auto ssid_field = ni.ssid.get();
+      auto* ssid_field = ni.ssid.get();
       hex_ssid = base::HexEncode(ssid_field->c_str(), ssid_field->size());
     }
     if (ni.hex_ssid.get())

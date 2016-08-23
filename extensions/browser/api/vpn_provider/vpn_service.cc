@@ -368,7 +368,7 @@ void VpnService::NetworkListChanged() {
   NetworkStateHandler::NetworkStateList network_list;
   network_state_handler_->GetVisibleNetworkListByType(NetworkTypePattern::VPN(),
                                                       &network_list);
-  for (auto& iter : network_list) {
+  for (auto* iter : network_list) {
     if (service_path_to_configuration_map_.find(iter->path()) !=
         service_path_to_configuration_map_.end()) {
       continue;
@@ -533,7 +533,7 @@ void VpnService::DestroyConfigurationsForExtension(
     }
   }
 
-  for (auto& iter : to_be_destroyed) {
+  for (auto* iter : to_be_destroyed) {
     DestroyConfiguration(extension->id(),             // Extension ID
                          iter->configuration_name(),  // Configuration name
                          base::Bind(base::DoNothing),
