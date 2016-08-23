@@ -22,7 +22,8 @@ def main():
   options = browser_test_runner.TestRunOptions()
   config = project_config.ProjectConfig(
       top_level_dir=os.path.dirname(__file__),
-      benchmark_dirs=[os.path.join(os.path.dirname(__file__), 'browser_tests')])
+      benchmark_dirs=[os.path.join(os.path.dirname(__file__), 'browser_tests')],
+      default_chrome_root=CHROMIUM_SRC_DIR)
   return browser_test_runner.Run(config, options, sys.argv[1:])
 
 
