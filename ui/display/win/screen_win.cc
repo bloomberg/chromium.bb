@@ -253,25 +253,35 @@ gfx::Point ScreenWin::DIPToClientPoint(HWND hwnd, const gfx::Point& dip_point) {
 
 // static
 gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
-  float scale_factor = hwnd ?
-      GetScaleFactorForHWND(hwnd) :
-      GetScreenWinDisplayVia(
-          &ScreenWin::GetScreenWinDisplayNearestScreenRect, pixel_bounds).
-              display().device_scale_factor();
+  const ScreenWinDisplay screen_win_display = hwnd
+      ? GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestHWND, hwnd)
+      : GetScreenWinDisplayVia(
+            &ScreenWin::GetScreenWinDisplayNearestScreenRect, pixel_bounds);
+  float scale_factor = screen_win_display.display().device_scale_factor();
   gfx::Rect dip_rect = ScaleToEnclosingRect(pixel_bounds, 1.0f / scale_factor);
-  dip_rect.set_origin(ScreenToDIPPoint(pixel_bounds.origin()));
+  const display::Display display = screen_win_display.display();
+  dip_rect.set_origin(ScalePointRelative(
+      screen_win_display.pixel_bounds().origin(),
+      display.bounds().origin(),
+      1.0f / scale_factor,
+      pixel_bounds.origin()));
   return dip_rect;
 }
 
 // static
 gfx::Rect ScreenWin::DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds) {
-  float scale_factor = hwnd ?
-      GetScaleFactorForHWND(hwnd) :
-      GetScreenWinDisplayVia(
-          &ScreenWin::GetScreenWinDisplayNearestDIPRect, dip_bounds).display().
-              device_scale_factor();
+  const ScreenWinDisplay screen_win_display = hwnd
+      ? GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestHWND, hwnd)
+      : GetScreenWinDisplayVia(
+            &ScreenWin::GetScreenWinDisplayNearestDIPRect, dip_bounds);
+  float scale_factor = screen_win_display.display().device_scale_factor();
   gfx::Rect screen_rect = ScaleToEnclosingRect(dip_bounds, scale_factor);
-  screen_rect.set_origin(DIPToScreenPoint(dip_bounds.origin()));
+  const display::Display display = screen_win_display.display();
+  screen_rect.set_origin(ScalePointRelative(
+      display.bounds().origin(),
+      screen_win_display.pixel_bounds().origin(),
+      scale_factor,
+      dip_bounds.origin()));
   return screen_rect;
 }
 
@@ -519,11 +529,11 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
   for (const auto& screen_win_display : screen_win_displays_) {
     display::Display display = screen_win_display.display();
     gfx::Rect dip_bounds = display.bounds();
+    if (dip_rect.Intersects(dip_bounds))
+      return screen_win_display;
     int64_t distance_squared = SquaredDistanceBetweenRects(dip_rect,
                                                            dip_bounds);
-    if (distance_squared == 0) {
-      return screen_win_display;
-    } else if (distance_squared < closest_distance_squared) {
+    if (distance_squared < closest_distance_squared) {
       closest_distance_squared = distance_squared;
       closest_screen_win_display = screen_win_display;
     }
