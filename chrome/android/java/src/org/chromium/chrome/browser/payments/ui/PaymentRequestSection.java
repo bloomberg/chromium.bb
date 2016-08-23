@@ -563,6 +563,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             mBreakdownLayout.removeAllViews();
             if (cart.getContents() == null) return;
 
+            int maximumDescriptionWidthPx =
+                    ((View) mBreakdownLayout.getParent()).getWidth() * 2 / 3;
+
             // Update the breakdown, using one row per {@link LineItem}.
             int numItems = cart.getContents().size();
             mBreakdownLayout.setRowCount(numItems);
@@ -573,6 +576,11 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 ApiCompatibilityUtils.setTextAppearance(
                         description, R.style.PaymentsUiSectionDescriptiveTextEndAligned);
                 description.setText(item.getLabel());
+                description.setEllipsize(TruncateAt.END);
+                description.setMaxLines(2);
+                if (maximumDescriptionWidthPx > 0) {
+                    description.setMaxWidth(maximumDescriptionWidthPx);
+                }
 
                 TextView amount = new TextView(context);
                 ApiCompatibilityUtils.setTextAppearance(
