@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build_overrides/build.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/clang/clang.gni")
@@ -132,15 +133,15 @@ static_library("options_sources") {
   configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
 
   if (is_asan) {
-    sources += [ "//build/sanitizers/asan_suppressions.cc" ]
+    sources += [ asan_suppressions_file ]
   }
 
   if (is_lsan) {
-    sources += [ "//build/sanitizers/lsan_suppressions.cc" ]
+    sources += [ lsan_suppressions_file ]
   }
 
   if (is_tsan) {
-    sources += [ "//build/sanitizers/tsan_suppressions.cc" ]
+    sources += [ tsan_suppressions_file ]
   }
 }
 
