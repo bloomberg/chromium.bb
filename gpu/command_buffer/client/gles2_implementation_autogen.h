@@ -215,6 +215,8 @@ void DetachShader(GLuint program, GLuint shader) override;
 
 void Disable(GLenum cap) override;
 
+void DisableVertexAttribArray(GLuint index) override;
+
 void DrawArrays(GLenum mode, GLint first, GLsizei count) override;
 
 void DrawElements(GLenum mode,
@@ -230,6 +232,8 @@ void DrawRangeElements(GLenum mode,
                        const void* indices) override;
 
 void Enable(GLenum cap) override;
+
+void EnableVertexAttribArray(GLuint index) override;
 
 GLsync FenceSync(GLenum condition, GLbitfield flags) override;
 
@@ -415,6 +419,14 @@ void GetUniformIndices(GLuint program,
                        GLuint* indices) override;
 
 GLint GetUniformLocation(GLuint program, const char* name) override;
+
+void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) override;
+
+void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) override;
+
+void GetVertexAttribIiv(GLuint index, GLenum pname, GLint* params) override;
+
+void GetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params) override;
 
 void GetVertexAttribPointerv(GLuint index,
                              GLenum pname,

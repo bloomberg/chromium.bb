@@ -2338,7 +2338,6 @@ _PEPPER_INTERFACES = [
 # gl_test_func: GL function that is expected to be called when testing.
 # cmd_args:     The arguments to use for the command. This overrides generating
 #               them based on the GL function arguments.
-# gen_cmd:      Whether or not this function geneates a command. Default = True.
 # data_transfer_methods: Array of methods that are used for transfering the
 #               pointer data.  Possible values: 'immediate', 'shm', 'bucket'.
 #               The default is 'immediate' if the command has one pointer
@@ -2349,8 +2348,6 @@ _PEPPER_INTERFACES = [
 #               taking cmd_args override into consideration.
 # impl_func:    Whether or not to generate the GLES2Implementation part of this
 #               command.
-# impl_decl:    Whether or not to generate the GLES2Implementation declaration
-#               for this command.
 # internal:     If true, this is an internal command only, not exposed to the
 #               client.
 # needs_size:   If True a data_size field is added to the command.
@@ -2478,7 +2475,8 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'BufferData': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'trace_level': 2,
@@ -2570,7 +2568,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
     'trace_level': 2,
   },
   'CopyBufferSubData': {
@@ -2580,14 +2577,12 @@ _FUNCTION_INFO = {
     'type': 'StateSet',
     'state': 'CoverageModulationCHROMIUM',
     'decoder_func': 'glCoverageModulationNV',
-    'chromium': True,
     'extension': 'CHROMIUM_framebuffer_mixed_samples',
     'extension_flag': 'chromium_framebuffer_mixed_samples',
   },
   'CreateAndConsumeTextureCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
     'trace_level': 2,
   },
   'CreateAndConsumeTextureINTERNAL': {
@@ -2606,11 +2601,9 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],
     'decoder_func': 'DoEnableFeatureCHROMIUM',
-    'expectation': False,
     'cmd_args': 'GLuint bucket_id, GLint* result',
     'result': ['GLint'],
     'extension': 'GL_CHROMIUM_enable_feature',
-    'chromium': True,
     'pepper_interface': 'ChromiumEnableFeature',
   },
   'CompileShader': {'decoder_func': 'DoCompileShader', 'unit_test': False},
@@ -2659,44 +2652,31 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'CreateImageCHROMIUM': {
-    'type': 'Manual',
+    'type': 'NoCommand',
     'cmd_args':
         'ClientBuffer buffer, GLsizei width, GLsizei height, '
         'GLenum internalformat',
     'result': ['GLuint'],
-    'client_test': False,
-    'gen_cmd': False,
-    'expectation': False,
     'extension': "CHROMIUM_image",
-    'chromium': True,
     'trace_level': 1,
   },
   'DestroyImageCHROMIUM': {
-    'type': 'Manual',
-    'client_test': False,
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_image",
-    'chromium': True,
     'trace_level': 1,
   },
   'CreateGpuMemoryBufferImageCHROMIUM': {
-    'type': 'Manual',
+    'type': 'NoCommand',
     'cmd_args':
         'GLsizei width, GLsizei height, GLenum internalformat, GLenum usage',
     'result': ['GLuint'],
-    'client_test': False,
-    'gen_cmd': False,
-    'expectation': False,
     'extension': "CHROMIUM_gpu_memory_buffer_image",
-    'chromium': True,
     'trace_level': 1,
   },
   'DescheduleUntilFinishedCHROMIUM': {
     'type': 'Custom',
     'decoder_func': 'DoDescheduleUntilFinishedCHROMIUM',
-    'unit_test': False,
     'extension': "CHROMIUM_deschedule",
-    'chromium': True,
     'trace_level': 1,
   },
   'CreateProgram': {
@@ -2845,16 +2825,18 @@ _FUNCTION_INFO = {
   },
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
-    'impl_decl': False,
+    'impl_func': False,
   },
   'DrawArrays': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count',
     'defer_draws': True,
     'trace_level': 2,
   },
   'DrawElements': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
                 'GLenumIndexType type, GLuint index_offset',
     'client_test': False,
@@ -2862,8 +2844,7 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'DrawRangeElements': {
-    'type': 'Manual',
-    'gen_cmd': 'False',
+    'type': 'NoCommand',
     'unsafe': True,
   },
   'Enable': {
@@ -2873,7 +2854,7 @@ _FUNCTION_INFO = {
   },
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
-    'impl_decl': False,
+    'impl_func': False,
   },
   'FenceSync': {
     'type': 'Create',
@@ -2908,7 +2889,6 @@ _FUNCTION_INFO = {
   'FramebufferTexture2DMultisampleEXT': {
     'decoder_func': 'DoFramebufferTexture2DMultisample',
     'gl_test_func': 'glFramebufferTexture2DMultisampleEXT',
-    'expectation': False,
     'unit_test': False,
     'extension': 'EXT_multisampled_render_to_texture',
     'extension_flag': 'multisampled_render_to_texture',
@@ -2932,11 +2912,8 @@ _FUNCTION_INFO = {
     'resource_types': 'Buffers',
   },
   'GenMailboxCHROMIUM': {
-    'type': 'Manual',
-    'gen_cmd': 'False',
-    'impl_func': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
   },
   'GenFramebuffers': {
     'type': 'GENn',
@@ -3091,9 +3068,8 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLint>'],
   },
   'GetGraphicsResetStatusKHR': {
+    'type': 'NoCommand',
     'extension': True,
-    'client_test': False,
-    'gen_cmd': False,
     'trace_level': 1,
   },
   'GetInteger64v': {
@@ -3143,7 +3119,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': True,
-    'chromium': True,
     'impl_func': False,
   },
   'GetProgramiv': {
@@ -3154,10 +3129,8 @@ _FUNCTION_INFO = {
   },
   'GetProgramInfoCHROMIUM': {
     'type': 'Custom',
-    'expectation': False,
     'impl_func': False,
     'extension': 'CHROMIUM_get_multiple',
-    'chromium': True,
     'client_test': False,
     'cmd_args': 'GLidProgram program, uint32_t bucket_id',
     'result': [
@@ -3225,9 +3198,7 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLenumStringType name, uint32_t bucket_id',
   },
   'GetStringi': {
-    'type': 'Custom',
-    'client_test': False,
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'unsafe': True,
   },
   'GetSynciv': {
@@ -3265,10 +3236,8 @@ _FUNCTION_INFO = {
   },
   'GetUniformBlocksCHROMIUM': {
     'type': 'Custom',
-    'expectation': False,
     'impl_func': False,
     'extension': True,
-    'chromium': True,
     'client_test': False,
     'cmd_args': 'GLidProgram program, uint32_t bucket_id',
     'result': ['uint32_t'],
@@ -3276,10 +3245,8 @@ _FUNCTION_INFO = {
   },
   'GetUniformsES3CHROMIUM': {
     'type': 'Custom',
-    'expectation': False,
     'impl_func': False,
     'extension': True,
-    'chromium': True,
     'client_test': False,
     'cmd_args': 'GLidProgram program, uint32_t bucket_id',
     'result': ['uint32_t'],
@@ -3300,10 +3267,8 @@ _FUNCTION_INFO = {
   },
   'GetTransformFeedbackVaryingsCHROMIUM': {
     'type': 'Custom',
-    'expectation': False,
     'impl_func': False,
     'extension': True,
-    'chromium': True,
     'client_test': False,
     'cmd_args': 'GLidProgram program, uint32_t bucket_id',
     'result': ['uint32_t'],
@@ -3344,7 +3309,7 @@ _FUNCTION_INFO = {
   'GetVertexAttribfv': {
     'type': 'GETn',
     'result': ['SizedResult<GLfloat>'],
-    'impl_decl': False,
+    'impl_func': False,
     'decoder_func': 'DoGetVertexAttribfv',
     'expectation': False,
     'client_test': False,
@@ -3352,7 +3317,7 @@ _FUNCTION_INFO = {
   'GetVertexAttribiv': {
     'type': 'GETn',
     'result': ['SizedResult<GLint>'],
-    'impl_decl': False,
+    'impl_func': False,
     'decoder_func': 'DoGetVertexAttribiv',
     'expectation': False,
     'client_test': False,
@@ -3360,7 +3325,7 @@ _FUNCTION_INFO = {
   'GetVertexAttribIiv': {
     'type': 'GETn',
     'result': ['SizedResult<GLint>'],
-    'impl_decl': False,
+    'impl_func': False,
     'decoder_func': 'DoGetVertexAttribIiv',
     'expectation': False,
     'client_test': False,
@@ -3369,7 +3334,7 @@ _FUNCTION_INFO = {
   'GetVertexAttribIuiv': {
     'type': 'GETn',
     'result': ['SizedResult<GLuint>'],
-    'impl_decl': False,
+    'impl_func': False,
     'decoder_func': 'DoGetVertexAttribIuiv',
     'expectation': False,
     'client_test': False,
@@ -3455,8 +3420,8 @@ _FUNCTION_INFO = {
     'unsafe': True,
   },
   'GetLastFlushIdCHROMIUM': {
-    'gen_cmd': False,
-    'impl_func': 'False',
+    'type': 'NoCommand',
+    'impl_func': False,
     'result': ['GLuint'],
     'extension': True,
   },
@@ -3466,25 +3431,19 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'MapBufferCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_pixel_transfer_buffer_object",
-    'chromium': True,
-    'client_test': False,
     'trace_level': 1,
   },
   'MapBufferSubDataCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': 'CHROMIUM_map_sub',
-    'chromium': True,
-    'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
     'trace_level': 1,
   },
   'MapTexSubImage2DCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_sub_image",
-    'chromium': True,
-    'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
     'trace_level': 1,
   },
@@ -3504,14 +3463,15 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'unsafe': True,
   },
-  'PixelStorei': {'type': 'Manual'},
+  'PixelStorei': {
+    'type': 'Custom',
+    'impl_func': False,
+  },
   'PostSubBufferCHROMIUM': {
-      'type': 'Custom',
-      'impl_func': False,
-      'unit_test': False,
-      'client_test': False,
-      'extension': True,
-      'chromium': True,
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'extension': True,
   },
   'ProduceTextureCHROMIUM': {
     'decoder_func': 'DoProduceTextureCHROMIUM',
@@ -3521,7 +3481,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
     'trace_level': 1,
   },
   'ProduceTextureDirectCHROMIUM': {
@@ -3532,7 +3491,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
     'trace_level': 1,
   },
   'RenderbufferStorage': {
@@ -3546,7 +3504,6 @@ _FUNCTION_INFO = {
         '// GL_CHROMIUM_framebuffer_multisample\n',
     'decoder_func': 'DoRenderbufferStorageMultisampleCHROMIUM',
     'gl_test_func': 'glRenderbufferStorageMultisampleCHROMIUM',
-    'expectation': False,
     'unit_test': False,
     'extension': 'chromium_framebuffer_multisample',
     'extension_flag': 'chromium_framebuffer_multisample',
@@ -3559,7 +3516,6 @@ _FUNCTION_INFO = {
         '// GL_EXT_multisampled_render_to_texture\n',
     'decoder_func': 'DoRenderbufferStorageMultisampleEXT',
     'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
-    'expectation': False,
     'unit_test': False,
     'extension': 'EXT_multisampled_render_to_texture',
     'extension_flag': 'multisampled_render_to_texture',
@@ -3678,13 +3634,15 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'TexImage2D': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'trace_level': 2,
   },
   'TexImage3D': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'unsafe': True,
@@ -3725,7 +3683,8 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'TexSubImage2D': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'trace_level': 2,
@@ -3736,7 +3695,8 @@ _FUNCTION_INFO = {
                 'const void* pixels, GLboolean internal'
   },
   'TexSubImage3D': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'trace_level': 2,
@@ -3925,17 +3885,13 @@ _FUNCTION_INFO = {
     'unsafe': True,
   },
   'UnmapBufferCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_pixel_transfer_buffer_object",
-    'chromium': True,
-    'client_test': False,
     'trace_level': 1,
   },
   'UnmapBufferSubDataCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': 'CHROMIUM_map_sub',
-    'chromium': True,
-    'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
     'trace_level': 1,
   },
@@ -3945,10 +3901,8 @@ _FUNCTION_INFO = {
     'trace_level': 1,
   },
   'UnmapTexSubImage2DCHROMIUM': {
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_sub_image",
-    'chromium': True,
-    'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
     'trace_level': 1,
   },
@@ -4002,7 +3956,8 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoVertexAttribI4uiv',
   },
   'VertexAttribIPointer': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
                 'GLenumVertexAttribIType type, GLsizei stride, '
                 'GLuint offset',
@@ -4010,7 +3965,8 @@ _FUNCTION_INFO = {
     'unsafe': True,
   },
   'VertexAttribPointer': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
                 'GLenumVertexAttribType type, GLboolean normalized, '
                 'GLsizei stride, GLuint offset',
@@ -4035,9 +3991,7 @@ _FUNCTION_INFO = {
   'ResizeCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,
-    'unit_test': False,
     'extension': True,
-    'chromium': True,
     'trace_level': 1,
   },
   'GetRequestableExtensionsCHROMIUM': {
@@ -4045,7 +3999,6 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'cmd_args': 'uint32_t bucket_id',
     'extension': True,
-    'chromium': True,
   },
   'RequestExtensionCHROMIUM': {
     'type': 'Custom',
@@ -4053,27 +4006,23 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'uint32_t bucket_id',
     'extension': 'CHROMIUM_request_extension',
-    'chromium': True,
   },
   'CopyTextureCHROMIUM': {
     'decoder_func': 'DoCopyTextureCHROMIUM',
     'unit_test': False,
     'extension': "CHROMIUM_copy_texture",
-    'chromium': True,
     'trace_level': 2,
   },
   'CopySubTextureCHROMIUM': {
     'decoder_func': 'DoCopySubTextureCHROMIUM',
     'unit_test': False,
     'extension': "CHROMIUM_copy_texture",
-    'chromium': True,
     'trace_level': 2,
   },
   'CompressedCopyTextureCHROMIUM': {
     'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
     'unit_test': False,
     'extension': 'CHROMIUM_copy_compressed_texture',
-    'chromium': True,
   },
   'TexStorage2DEXT': {
     'unit_test': False,
@@ -4083,11 +4032,11 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'DrawArraysInstancedANGLE': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count, '
                 'GLsizei primcount',
     'extension': 'ANGLE_instanced_arrays',
-    'unit_test': False,
     'pepper_interface': 'InstancedArrays',
     'defer_draws': True,
     'trace_level': 2,
@@ -4105,21 +4054,21 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'DrawElementsInstancedANGLE': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
                 'GLenumIndexType type, GLuint index_offset, GLsizei primcount',
     'extension': 'ANGLE_instanced_arrays',
-    'unit_test': False,
     'client_test': False,
     'pepper_interface': 'InstancedArrays',
     'defer_draws': True,
     'trace_level': 2,
   },
   'VertexAttribDivisorANGLE': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLuint index, GLuint divisor',
     'extension': 'ANGLE_instanced_arrays',
-    'unit_test': False,
     'pepper_interface': 'InstancedArrays',
   },
   'GenQueriesEXT': {
@@ -4142,13 +4091,13 @@ _FUNCTION_INFO = {
     'extension': "occlusion_query_EXT",
   },
   'IsQueryEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
   'BeginQueryEXT': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumQueryTarget target, GLidQuery id, void* sync_data',
     'data_transfer_methods': ['shm'],
     'gl_test_func': 'glBeginQuery',
@@ -4161,7 +4110,8 @@ _FUNCTION_INFO = {
     'unsafe': True,
   },
   'EndQueryEXT': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLenumQueryTarget target, GLuint submit_count',
     'gl_test_func': 'glEndnQuery',
     'client_test': False,
@@ -4177,18 +4127,17 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFlushDriverCachesCHROMIUM',
     'unit_test': False,
     'extension': True,
-    'chromium': True,
     'trace_level': 1,
   },
   'GetQueryivEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'gl_test_func': 'glGetQueryiv',
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
   'QueryCounterEXT' : {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'cmd_args': 'GLidQuery id, GLenumQueryTarget target, '
                 'void* sync_data, GLuint submit_count',
     'data_transfer_methods': ['shm'],
@@ -4196,37 +4145,33 @@ _FUNCTION_INFO = {
     'extension': "disjoint_timer_query_EXT",
   },
   'GetQueryObjectivEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjectiv',
     'extension': "disjoint_timer_query_EXT",
   },
   'GetQueryObjectuivEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjectuiv',
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
   'GetQueryObjecti64vEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjecti64v',
     'extension': "disjoint_timer_query_EXT",
   },
   'GetQueryObjectui64vEXT': {
-    'gen_cmd': False,
-    'client_test': False,
+    'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjectui64v',
     'extension': "disjoint_timer_query_EXT",
   },
   'SetDisjointValueSyncCHROMIUM': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'data_transfer_methods': ['shm'],
     'client_test': False,
     'cmd_args': 'void* sync_data',
     'extension': True,
-    'chromium': True,
   },
   'BindFragDataLocationEXT': {
     'type': 'GLchar',
@@ -4303,7 +4248,6 @@ _FUNCTION_INFO = {
     'extension': 'OES_vertex_array_object',
     'gl_test_func': 'glIsVertexArrayOES',
     'decoder_func': 'DoIsVertexArrayOES',
-    'expectation': False,
     'unit_test': False,
     'pepper_interface': 'VertexArrayObject',
   },
@@ -4311,34 +4255,23 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindTexImage2DCHROMIUM',
     'unit_test': False,
     'extension': "CHROMIUM_image",
-    'chromium': True,
   },
   'ReleaseTexImage2DCHROMIUM': {
     'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
     'unit_test': False,
     'extension': "CHROMIUM_image",
-    'chromium': True,
   },
   'ShallowFinishCHROMIUM': {
-    'impl_func': False,
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': True,
-    'chromium': True,
-    'client_test': False,
   },
   'ShallowFlushCHROMIUM': {
-    'impl_func': False,
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_miscellaneous",
-    'chromium': True,
-    'client_test': False,
   },
   'OrderingBarrierCHROMIUM': {
-    'impl_func': False,
-    'gen_cmd': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_miscellaneous",
-    'chromium': True,
-    'client_test': False,
   },
   'TraceBeginCHROMIUM': {
     'type': 'Custom',
@@ -4346,7 +4279,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLuint category_bucket_id, GLuint name_bucket_id',
     'extension': 'CHROMIUM_trace_marker',
-    'chromium': True,
   },
   'TraceEndCHROMIUM': {
     'impl_func': False,
@@ -4354,7 +4286,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoTraceEndCHROMIUM',
     'unit_test': False,
     'extension': 'CHROMIUM_trace_marker',
-    'chromium': True,
   },
   'DiscardFramebufferEXT': {
     'type': 'PUTn',
@@ -4370,7 +4301,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoLoseContextCHROMIUM',
     'unit_test': False,
     'extension': 'CHROMIUM_lose_context',
-    'chromium': True,
     'trace_level': 1,
   },
   'InsertFenceSyncCHROMIUM': {
@@ -4378,29 +4308,19 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'cmd_args': 'GLuint64 release_count',
     'extension': "CHROMIUM_sync_point",
-    'chromium': True,
     'trace_level': 1,
   },
   'GenSyncTokenCHROMIUM': {
-    'type': 'Manual',
-    'gen_cmd': False,
-    'impl_func': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_sync_point",
-    'chromium': True,
   },
   'GenUnverifiedSyncTokenCHROMIUM': {
-    'type': 'Manual',
-    'gen_cmd': False,
-    'impl_func': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_sync_point",
-    'chromium': True,
   },
   'VerifySyncTokensCHROMIUM' : {
-    'type': 'Manual',
-    'gen_cmd': False,
-    'impl_func': False,
+    'type': 'NoCommand',
     'extension': "CHROMIUM_sync_point",
-    'chromium': True,
   },
   'WaitSyncTokenCHROMIUM': {
     'type': 'Custom',
@@ -4410,22 +4330,16 @@ _FUNCTION_INFO = {
                 'GLuint64 release_count',
     'client_test': False,
     'extension': "CHROMIUM_sync_point",
-    'chromium': True,
   },
   'DiscardBackbufferCHROMIUM': {
     'type': 'Custom',
-    'impl_func': True,
     'extension': True,
-    'chromium': True,
     'trace_level': 2,
   },
   'ScheduleOverlayPlaneCHROMIUM': {
     'type': 'Custom',
-    'impl_func': True,
-    'unit_test': False,
     'client_test': False,
     'extension': 'CHROMIUM_schedule_overlay_plane',
-    'chromium': True,
   },
   'ScheduleCALayerSharedStateCHROMIUM': {
     'type': 'Custom',
@@ -4434,7 +4348,6 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLfloat opacity, GLboolean is_clipped, '
                 'GLint sorting_context_id, GLuint shm_id, GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
-    'chromium': True,
   },
   'ScheduleCALayerCHROMIUM': {
     'type': 'Custom',
@@ -4444,7 +4357,6 @@ _FUNCTION_INFO = {
                 'GLuint edge_aa_mask, GLuint filter, GLuint shm_id, '
                 'GLuint shm_offset',
     'extension': 'CHROMIUM_schedule_ca_layer',
-    'chromium': True,
   },
   'ScheduleCALayerInUseQueryCHROMIUM': {
     'type': 'PUTn',
@@ -4452,7 +4364,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoScheduleCALayerInUseQueryCHROMIUM',
     'cmd_args': 'GLsizei count, const GLuint* textures',
     'extension': 'CHROMIUM_schedule_ca_layer',
-    'chromium': True,
     'unit_test': False,
   },
   'CommitOverlayPlanesCHROMIUM': {
@@ -4461,7 +4372,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': 'CHROMIUM_commit_overlay_planes',
-    'chromium': True,
   },
   'MatrixLoadfCHROMIUM': {
     'type': 'PUT',
@@ -4469,21 +4379,18 @@ _FUNCTION_INFO = {
     'data_type': 'GLfloat',
     'decoder_func': 'DoMatrixLoadfCHROMIUM',
     'gl_test_func': 'glMatrixLoadfEXT',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'MatrixLoadIdentityCHROMIUM': {
     'decoder_func': 'DoMatrixLoadIdentityCHROMIUM',
     'gl_test_func': 'glMatrixLoadIdentityEXT',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'GenPathsCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLuint first_client_id, GLsizei range',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
@@ -4491,8 +4398,6 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'cmd_args': 'GLuint first_client_id, GLsizei range',
     'impl_func': False,
-    'unit_test': False,
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
@@ -4500,26 +4405,23 @@ _FUNCTION_INFO = {
     'type': 'Is',
     'decoder_func': 'DoIsPathCHROMIUM',
     'gl_test_func': 'glIsPathNV',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathCommandsCHROMIUM': {
-    'type': 'Manual',
+    'type': 'Custom',
+    'impl_func': False,
     'immediate': False,
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathParameterfCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'PathParameteriCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
@@ -4527,79 +4429,66 @@ _FUNCTION_INFO = {
     'type': 'StateSet',
     'state': 'PathStencilFuncCHROMIUM',
     'decoder_func': 'glPathStencilFuncNV',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilFillPathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilStrokePathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverFillPathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverStrokePathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverFillPathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverStrokePathCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilFillPathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilStrokePathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverFillPathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'CoverStrokePathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverFillPathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
   'StencilThenCoverStrokePathInstancedCHROMIUM': {
     'type': 'Custom',
-    'chromium': True,
     'extension': 'CHROMIUM_path_rendering',
     'extension_flag': 'chromium_path_rendering',
   },
@@ -5129,7 +5018,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
 
   def WriteValidUnitTest(self, func, f, test, *extras):
     """Writes a valid unit test for the service implementation."""
-    if func.GetInfo('expectation') == False:
+    if not func.GetInfo('expectation', True):
       test = self._remove_expected_call_re.sub('', test)
     name = func.name
     arg_strings = [
@@ -5269,12 +5158,10 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationDeclaration(self, func, f):
     """Writes the GLES2 Implemention declaration."""
-    impl_decl = func.GetInfo('impl_decl')
-    if impl_decl == None or impl_decl == True:
-      f.write("%s %s(%s) override;\n" %
-                 (func.return_type, func.original_name,
-                  func.MakeTypedOriginalArgString("")))
-      f.write("\n")
+    f.write("%s %s(%s) override;\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    f.write("\n")
 
   def WriteGLES2CLibImplementation(self, func, f):
     f.write("%s GL_APIENTRY GLES2%s(%s) {\n" %
@@ -5333,13 +5220,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2Implementation(self, func, f):
     """Writes the GLES2 Implemention."""
-    impl_func = func.GetInfo('impl_func')
-    impl_decl = func.GetInfo('impl_decl')
-    gen_cmd = func.GetInfo('gen_cmd')
-    if (func.can_auto_generate and
-        (impl_func == None or impl_func == True) and
-        (impl_decl == None or impl_decl == True) and
-        (gen_cmd == None or gen_cmd == True)):
+    impl_func = func.GetInfo('impl_func', True)
+    if func.can_auto_generate and impl_func:
       f.write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -5380,9 +5262,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Writes the GLES2 Implemention unit test."""
-    client_test = func.GetInfo('client_test')
-    if (func.can_auto_generate and
-        (client_test == None or client_test == True)):
+    client_test = func.GetInfo('client_test', True)
+    if func.can_auto_generate and client_test:
       code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
@@ -5791,49 +5672,14 @@ class CustomHandler(TypeHandler):
     f.write("\n")
 
 
-class ManualHandler(CustomHandler):
-  """Handler for commands who's handlers must be written by hand."""
-
-  def WriteServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteBucketServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteServiceUnitTest(self, func, f, *extras):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateServiceUnitTest(self, func, f, *extras):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateServiceImplementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
-
-  def WriteImmediateFormatTest(self, func, f):
-    """Overrriden from TypeHandler."""
-    pass
+class NoCommandHandler(CustomHandler):
+  """Handler for functions that don't use commands"""
 
   def WriteGLES2Implementation(self, func, f):
-    """Overrriden from TypeHandler."""
-    if func.GetInfo('impl_func'):
-      super(ManualHandler, self).WriteGLES2Implementation(func, f)
+    pass
 
-  def WriteGLES2ImplementationHeader(self, func, f):
-    """Overrriden from TypeHandler."""
-    f.write("%s %s(%s) override;\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    f.write("\n")
-
-  def WriteImmediateCmdGetTotalSize(self, func, f):
-    """Overrriden from TypeHandler."""
-    # TODO: Move this data to _FUNCTION_INFO?
-    CustomHandler.WriteImmediateCmdGetTotalSize(self, func, f)
+  def WriteGLES2ImplementationUnitTest(self, func, f):
+    pass
 
 
 class DataHandler(TypeHandler):
@@ -6047,13 +5893,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteGLES2Implementation(self, func, f):
     """Writes the GLES2 Implemention."""
 
-    impl_func = func.GetInfo('impl_func')
-    impl_decl = func.GetInfo('impl_decl')
-
-    if (func.can_auto_generate and
-          (impl_func == None or impl_func == True) and
-          (impl_decl == None or impl_decl == True)):
-
+    impl_func = func.GetInfo('impl_func', True)
+    if func.can_auto_generate and impl_func:
       f.write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -6083,8 +5924,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Overrriden from TypeHandler."""
-    client_test = func.GetInfo('client_test')
-    if client_test == False:
+    client_test = func.GetInfo('client_test', True)
+    if not client_test:
       return
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
@@ -6689,8 +6530,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    impl_decl = func.GetInfo('impl_decl')
-    if impl_decl == None or impl_decl == True:
+    impl_func = func.GetInfo('impl_func', True)
+    if impl_func:
       args = {
           'return_type': func.return_type,
           'name': func.original_name,
@@ -6929,8 +6770,8 @@ class GETnHandler(TypeHandler):
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    impl_decl = func.GetInfo('impl_decl')
-    if impl_decl == None or impl_decl == True:
+    impl_func = func.GetInfo('impl_func', True)
+    if impl_func:
       f.write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
                   func.MakeTypedOriginalArgString("")))
@@ -7304,8 +7145,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Writes the GLES2 Implemention unit test."""
-    client_test = func.GetInfo('client_test')
-    if (client_test != None and client_test != True):
+    client_test = func.GetInfo('client_test', True)
+    if not client_test:
       return;
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
@@ -8472,8 +8313,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
-    impl_func = func.GetInfo('impl_func')
-    if impl_func == None or impl_func == True:
+    impl_func = func.GetInfo('impl_func', True)
+    if impl_func:
       error_value = func.GetInfo("error_value") or "GL_FALSE"
       f.write("%s GLES2Implementation::%s(%s) {\n" %
                  (func.return_type, func.original_name,
@@ -8509,8 +8350,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 
   def WriteGLES2ImplementationUnitTest(self, func, f):
     """Overrriden from TypeHandler."""
-    client_test = func.GetInfo('client_test')
-    if client_test == None or client_test == True:
+    client_test = func.GetInfo('client_test', True)
+    if client_test:
       code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
   struct Cmds {
@@ -9473,7 +9314,7 @@ class Function(object):
     'GLchar': GLcharHandler(),
     'GLcharN': GLcharNHandler(),
     'Is': IsHandler(),
-    'Manual': ManualHandler(),
+    'NoCommand': NoCommandHandler(),
     'PUT': PUTHandler(),
     'PUTn': PUTnHandler(),
     'PUTSTR': PUTSTRHandler(),
@@ -9595,16 +9436,12 @@ class Function(object):
             not self.IsUnsafe())
 
   def InPepperInterface(self, interface):
-    if self.GetInfo('internal'):
-      return False
     ext = self.GetInfo('pepper_interface')
     if not interface.GetName():
       return self.IsCoreGLFunction()
     return ext == interface.GetName()
 
   def InAnyPepperExtension(self):
-    if self.GetInfo('internal'):
-      return False
     return self.IsCoreGLFunction() or self.GetInfo('pepper_interface')
 
   def GetErrorReturnString(self):
@@ -10215,14 +10052,15 @@ class GLGenerator(object):
             func_info[k] = parsed_func_info[k]
 
         f = Function(func_name, func_info)
-        self.original_functions.append(f)
+        if not f.GetInfo('internal'):
+          self.original_functions.append(f)
 
         #for arg in f.GetOriginalArgs():
         #  if not isinstance(arg, EnumArgument) and arg.type == 'GLenum':
         #    self.Log("%s uses bare GLenum %s." % (func_name, arg.name))
 
-        gen_cmd = f.GetInfo('gen_cmd')
-        if gen_cmd == True or gen_cmd == None:
+        func_type = f.GetInfo('type')
+        if func_type != 'NoCommand':
           if f.type_handler.NeedsDataTransferFunction(f):
             methods = f.GetDataTransferMethods()
             if 'immediate' in methods:
@@ -10283,10 +10121,7 @@ class GLGenerator(object):
         f.write("#define %s %s\n" % (enum, enum_defines[enum]))
       f.write('\n')
       for func in self.functions:
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          func.WriteStruct(f)
+        func.WriteStruct(f)
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
 
@@ -10294,10 +10129,7 @@ class GLGenerator(object):
     """Writes the command buffer doc version of the commands"""
     with CHeaderWriter(filename) as f:
       for func in self.functions:
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          func.WriteDocs(f)
+        func.WriteDocs(f)
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
 
@@ -10307,20 +10139,14 @@ class GLGenerator(object):
                "// It is included by gles2_cmd_format_test.cc\n\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.functions:
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          func.WriteFormatTest(f)
+        func.WriteFormatTest(f)
     self.generated_cpp_filenames.append(filename)
 
   def WriteCmdHelperHeader(self, filename):
     """Writes the gles2 command helper."""
     with CHeaderWriter(filename) as f:
       for func in self.functions:
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          func.WriteCmdHelper(f)
+        func.WriteCmdHelper(f)
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceContextStateHeader(self, filename):
@@ -10675,10 +10501,7 @@ bool ClientContextState::SetCapabilityState(
     comment = "// It is included by gles2_cmd_decoder.cc\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.functions:
-        if True:
-        #gen_cmd = func.GetInfo('gen_cmd')
-        #if gen_cmd == True or gen_cmd == None:
-          func.WriteServiceImplementation(f)
+        func.WriteServiceImplementation(f)
 
       f.write("""
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
@@ -10761,13 +10584,10 @@ namespace gles2 {
           if func.GetInfo('extension_flag'):
             continue
 
-          if True:
-          #gen_cmd = func.GetInfo('gen_cmd')
-          #if gen_cmd == True or gen_cmd == None:
-            if func.GetInfo('unit_test') != False:
-              func.WriteServiceUnitTest(f, {
-                'test_name': test_name
-              })
+          if func.GetInfo('unit_test') != False:
+            func.WriteServiceUnitTest(f, {
+              'test_name': test_name
+            })
       self.generated_cpp_filenames.append(filename)
 
     comment = "// It is included by gles2_cmd_decoder_unittest_base.cc\n"
@@ -10885,8 +10705,6 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
     comment = "// This file contains Chromium-specific GLES2 declarations.\n\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2Header(f)
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
@@ -10896,8 +10714,6 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
     comment = "// These functions emulate GLES2 over command buffers.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2CLibImplementation(f)
       f.write("""
 namespace gles2 {
@@ -10905,8 +10721,6 @@ namespace gles2 {
 extern const NameToFunc g_gles2_function_table[] = {
 """)
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         f.write(
             '  { "gl%s", reinterpret_cast<GLES2FunctionPointer>(gl%s), },\n' %
             (func.name, func.name))
@@ -10923,8 +10737,6 @@ extern const NameToFunc g_gles2_function_table[] = {
                "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2InterfaceHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10933,8 +10745,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_interface_stub.h.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2InterfaceStub(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10943,8 +10753,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_interface_stub.cc.\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2InterfaceStubImpl(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10955,8 +10763,6 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2ImplementationHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10967,8 +10773,6 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2Implementation(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10977,8 +10781,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_trace_implementation.h\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2TraceImplementationHeader(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10987,8 +10789,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     comment = "// This file is included by gles2_trace_implementation.cc\n"
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2TraceImplementation(f)
     self.generated_cpp_filenames.append(filename)
 
@@ -10999,8 +10799,6 @@ extern const NameToFunc g_gles2_function_table[] = {
        "// GL api functions.\n")
     with CHeaderWriter(filename, comment) as f:
       for func in self.original_functions:
-        if func.GetInfo('internal'):
-          continue
         func.WriteGLES2ImplementationUnitTest(f)
     self.generated_cpp_filenames.append(filename)
 
