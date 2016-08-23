@@ -2087,12 +2087,4 @@ bool LayoutBlockFlow::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const
     return LayoutBlock::paintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
-PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    if (containsFloats())
-        paintInvalidationState.paintingLayer().setNeedsPaintPhaseFloat();
-
-    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
-}
-
 } // namespace blink

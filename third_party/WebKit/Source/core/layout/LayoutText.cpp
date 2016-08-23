@@ -1751,13 +1751,14 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
 
 void LayoutText::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const
 {
-    LayoutObject::invalidateDisplayItemClients(invalidationReason);
+    ObjectPaintInvalidator paintInvalidator(*this);
+    paintInvalidator.invalidateDisplayItemClient(*this, invalidationReason);
 
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        invalidateDisplayItemClient(*box, invalidationReason);
+        paintInvalidator.invalidateDisplayItemClient(*box, invalidationReason);
         if (box->truncation() != cNoTruncation) {
             if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
-                invalidateDisplayItemClient(*ellipsisBox, invalidationReason);
+                paintInvalidator.invalidateDisplayItemClient(*ellipsisBox, invalidationReason);
         }
     }
 }

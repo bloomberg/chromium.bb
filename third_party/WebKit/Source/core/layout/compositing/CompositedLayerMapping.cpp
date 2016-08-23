@@ -49,6 +49,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
@@ -677,7 +678,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& graphi
         if (layers[i].offsetFromLayoutObjectSet && layers[i].offsetFromLayoutObject != newOffsetFromLayoutObject) {
             // It is ok to issue paint invalidation here, because all of the geometry needed to correctly invalidate paint is computed by this point.
             DisablePaintInvalidationStateAsserts disabler;
-            layers[i].paintLayer->layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
+            ObjectPaintInvalidator(*layers[i].paintLayer->layoutObject()).invalidatePaintIncludingNonCompositingDescendants();
 
             TRACE_LAYER_INVALIDATION(layers[i].paintLayer, InspectorLayerInvalidationTrackingEvent::SquashingLayerGeometryWasUpdated);
             layersNeedingPaintInvalidation.append(layers[i].paintLayer);

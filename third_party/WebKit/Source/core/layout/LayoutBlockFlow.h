@@ -297,6 +297,9 @@ public:
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type = FloatingObject::FloatLeftRight) const;
 
+    bool hasOverhangingFloats() const { return parent() && containsFloats() && lowestFloatLogicalBottom() > logicalHeight(); }
+    bool isOverhangingFloat(const FloatingObject& floatObject) const { return logicalBottomForFloat(floatObject) > logicalHeight(); }
+
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
 #endif
@@ -342,7 +345,7 @@ protected:
 
     bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
-    PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
+    void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
     Node* nodeForHitTest() const final;
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
@@ -371,16 +374,11 @@ private:
 
     LayoutUnit getClearDelta(LayoutBox* child, LayoutUnit yPos);
 
-    bool hasOverhangingFloats() { return parent() && containsFloats() && lowestFloatLogicalBottom() > logicalHeight(); }
     bool hasOverhangingFloat(LayoutBox*);
     void addIntrudingFloats(LayoutBlockFlow* prev, LayoutUnit xoffset, LayoutUnit yoffset);
     void addOverhangingFloats(LayoutBlockFlow* child, bool makeChildPaintOtherFloats);
-    bool isOverhangingFloat(const FloatingObject& floatObject) const { return logicalBottomForFloat(floatObject) > logicalHeight(); }
 
     bool hitTestFloats(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset);
-
-    void invalidatePaintForOverhangingFloats(bool paintAllDescendants) final;
-    void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
     void clearFloats(EClear);
 

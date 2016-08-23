@@ -36,6 +36,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
@@ -156,7 +157,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
         // status.
         DisableCompositingQueryAsserts compositingDisabler;
         DisablePaintInvalidationStateAsserts paintDisabler;
-        invalidatePaintIncludingNonCompositingDescendants();
+        ObjectPaintInvalidator(*this).invalidatePaintIncludingNonCompositingDescendants();
     }
 
     FloatStateForStyleChange::setWasFloating(this, isFloating());
@@ -253,7 +254,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         bool newStyleIsFixedPosition = style()->position() == FixedPosition;
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
-            invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationStyleChange);
+            ObjectPaintInvalidator(*this).invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationStyleChange);
     }
 
     // The used style for body background may change due to computed style change
@@ -413,40 +414,6 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
 
     newPaintInvalidationState.updateForChildren(reason);
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
-}
-
-void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const LayoutObject& object) const
-{
-    // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
-    // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-
-    // https://bugs.webkit.org/show_bug.cgi?id=61159 describes an unreproducible crash here,
-    // so assert but check that the layer is composited.
-    ASSERT(compositingState() != NotComposited);
-
-    // FIXME: generalize accessors to backing GraphicsLayers so that this code is squashing-agnostic.
-    if (layer()->groupedMapping()) {
-        LayoutRect paintInvalidationRect = r;
-        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
-            // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
-            squashingLayer->setNeedsDisplayInRect(enclosingIntRect(paintInvalidationRect), invalidationReason, object);
-        }
-    } else if (object.compositedScrollsWithRespectTo(*this)) {
-        layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
-    } else if (usesCompositedScrolling()) {
-        if (layer()->compositedLayerMapping()->shouldPaintBackgroundOntoScrollingContentsLayer()) {
-            // TODO(flackr): Get a correct rect in the context of the scrolling contents layer to update
-            // rather than updating the entire rect.
-            const LayoutRect& scrollingContentsRect = toLayoutBox(this)->layoutOverflowRect();
-            layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(scrollingContentsRect, invalidationReason, object);
-            layer()->setNeedsRepaint();
-            invalidateDisplayItemClient(*layer()->compositedLayerMapping()->scrollingContentsLayer(), invalidationReason);
-        }
-        layer()->compositedLayerMapping()->setNonScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
-    } else {
-        // Otherwise invalidate everything.
-        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason, object);
-    }
 }
 
 void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, IncludeBlockVisualOverflowOrNot includeBlockOverflows) const

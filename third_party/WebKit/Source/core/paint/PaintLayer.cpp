@@ -70,6 +70,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintTiming.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1253,7 +1254,7 @@ void PaintLayer::removeOnlyThisLayerAfterStyleChange()
             // so need paint invalidation. CompositingUpdate can't see this layer (which has been
             // removed) so won't do this for us.
             DisablePaintInvalidationStateAsserts disabler;
-            layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
+            ObjectPaintInvalidator(*layoutObject()).invalidatePaintIncludingNonCompositingDescendants();
             layoutObject()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
             didSetPaintInvalidation = true;
         }
@@ -1312,7 +1313,7 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange()
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !layoutObject()->isLayoutView() && layoutObject()->isRooted() && layoutObject()->styleRef().isStacked()) {
         const LayoutBoxModelObject& previousPaintInvalidationContainer = layoutObject()->parent()->containerForPaintInvalidation();
         if (!previousPaintInvalidationContainer.styleRef().isStackingContext()) {
-            layoutObject()->invalidatePaintIncludingNonSelfPaintingLayerDescendants(previousPaintInvalidationContainer);
+            ObjectPaintInvalidator(*layoutObject()).invalidatePaintIncludingNonSelfPaintingLayerDescendants(previousPaintInvalidationContainer);
             // Set needsRepaint along the original compositingContainer chain.
             layoutObject()->parent()->enclosingLayer()->setNeedsRepaint();
             didSetPaintInvalidation = true;

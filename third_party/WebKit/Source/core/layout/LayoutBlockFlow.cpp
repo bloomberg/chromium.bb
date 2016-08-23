@@ -797,8 +797,8 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child, BlockChildrenLayoutInfo
     // If the child moved, we have to invalidate its paint as well as any floating/positioned
     // descendants. An exception is if we need a layout. In this case, we know we're going to
     // invalidate our paint (and the child) anyway.
-    if (!selfNeedsLayout() && (childOffset.width() || childOffset.height()))
-        child.invalidatePaintForOverhangingFloats(true);
+    if (!selfNeedsLayout() && (childOffset.width() || childOffset.height()) && child.isLayoutBlockFlow())
+        BlockFlowPaintInvalidator(toLayoutBlockFlow(child)).invalidatePaintForOverhangingFloats();
 
     if (paginated) {
         // Keep track of the break-after value of the child, so that it can be joined with the
@@ -2764,54 +2764,6 @@ void LayoutBlockFlow::childBecameNonInline(LayoutObject*)
     // |this| may be dead here
 }
 
-void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
-{
-    // Invalidate paint of any overhanging floats (if we know we're the one to paint them).
-    // Otherwise, bail out.
-    if (!hasOverhangingFloats())
-        return;
-
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator end = floatingObjectSet.end();
-    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        const FloatingObject& floatingObject = *it->get();
-        // Only issue paint invaldiations for the object if it is overhanging, is not in its own layer, and
-        // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
-        // condition is replaced with being a descendant of us.
-        if (isOverhangingFloat(floatingObject)
-            && !floatingObject.layoutObject()->hasSelfPaintingLayer()
-            && (floatingObject.shouldPaint() || (paintAllDescendants && floatingObject.layoutObject()->isDescendantOf(this)))) {
-
-            LayoutBox* floatingLayoutBox = floatingObject.layoutObject();
-            floatingLayoutBox->setShouldDoFullPaintInvalidation();
-            floatingLayoutBox->invalidatePaintForOverhangingFloats(false);
-        }
-    }
-}
-
-void LayoutBlockFlow::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const
-{
-    LayoutBlock::invalidateDisplayItemClients(invalidationReason);
-
-    // If the block is a continuation or containing block of an inline continuation, invalidate the
-    // start object of the continuations if it has focus ring because change of continuation may change
-    // the shape of the focus ring.
-    if (!isAnonymous())
-        return;
-
-    LayoutObject* startOfContinuations = nullptr;
-    if (LayoutInline* inlineElementContinuation = this->inlineElementContinuation()) {
-        // This block is an anonymous block continuation.
-        startOfContinuations = inlineElementContinuation->node()->layoutObject();
-    } else if (LayoutObject* firstChild = this->firstChild()) {
-        // This block is the anonymous containing block of an inline element continuation.
-        if (firstChild->isElementContinuation())
-            startOfContinuations = firstChild->node()->layoutObject();
-    }
-    if (startOfContinuations && startOfContinuations->styleRef().outlineStyleIsAuto())
-        startOfContinuations->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*startOfContinuations, invalidationReason);
-}
-
 void LayoutBlockFlow::clearFloats(EClear clear)
 {
     positionNewFloats();
@@ -3794,9 +3746,17 @@ void LayoutBlockFlow::addOutlineRects(Vector<LayoutRect>& rects, const LayoutPoi
         inlineElementContinuation->addOutlineRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()), includeBlockOverflows);
 }
 
-PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
+PaintInvalidationReason LayoutBlockFlow::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    return BlockFlowPaintInvalidator(*this, context).invalidatePaintIfNeeded();
+    if (containsFloats())
+        paintInvalidationState.paintingLayer().setNeedsPaintPhaseFloat();
+
+    return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
+}
+
+void LayoutBlockFlow::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const
+{
+    BlockFlowPaintInvalidator(*this).invalidateDisplayItemClients(invalidationReason);
 }
 
 } // namespace blink

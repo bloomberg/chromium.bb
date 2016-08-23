@@ -34,6 +34,7 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded()
         if (!child->isTableSection())
             continue;
         LayoutTableSection* section = toLayoutTableSection(child);
+        ObjectPaintInvalidator sectionInvalidator(*section);
         if (!hasColChangedBackground && !section->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
             continue;
         for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
@@ -44,7 +45,7 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded()
                 // Table cells paint container's background on the container's backing instead of its own (if any),
                 // so we must invalidate it by the containers.
                 if (section->backgroundChangedSinceLastPaintInvalidation()) {
-                    section->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
+                    sectionInvalidator.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
                     invalidated = true;
                 } else if (hasColChangedBackground) {
                     LayoutTable::ColAndColGroup colAndColGroup = m_table.colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
@@ -52,12 +53,12 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded()
                     LayoutTableCol* columnGroup = colAndColGroup.colgroup;
                     if ((columnGroup && columnGroup->backgroundChangedSinceLastPaintInvalidation())
                         || (column && column->backgroundChangedSinceLastPaintInvalidation())) {
-                        section->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
+                        sectionInvalidator.slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
                         invalidated = true;
                     }
                 }
                 if ((!invalidated || row->hasSelfPaintingLayer()) && row->backgroundChangedSinceLastPaintInvalidation())
-                    row->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
+                    ObjectPaintInvalidator(*row).slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*cell, PaintInvalidationStyleChange);
             }
         }
     }

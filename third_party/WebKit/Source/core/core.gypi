@@ -4271,6 +4271,7 @@
             'paint/LayoutObjectDrawingRecorderTest.cpp',
             'paint/NinePieceImageGridTest.cpp',
             'paint/FirstMeaningfulPaintDetectorTest.cpp',
+            'paint/ObjectPaintInvalidatorTest.cpp',
             'paint/PaintControllerPaintTest.cpp',
             'paint/PaintControllerPaintTest.h',
             'paint/PaintInfoTest.cpp',

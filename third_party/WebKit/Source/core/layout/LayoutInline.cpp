@@ -1362,10 +1362,11 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
 
 void LayoutInline::invalidateDisplayItemClients(PaintInvalidationReason invalidationReason) const
 {
-    LayoutBoxModelObject::invalidateDisplayItemClients(invalidationReason);
+    ObjectPaintInvalidator paintInvalidator(*this);
+    paintInvalidator.invalidateDisplayItemClient(*this, invalidationReason);
 
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        invalidateDisplayItemClient(*box, invalidationReason);
+        paintInvalidator.invalidateDisplayItemClient(*box, invalidationReason);
 }
 
 } // namespace blink

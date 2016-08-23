@@ -5,22 +5,68 @@
 #ifndef ObjectPaintInvalidator_h
 #define ObjectPaintInvalidator_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 
 namespace blink {
 
+class DisplayItemClient;
+class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutRect;
 struct PaintInvalidatorContext;
 
-class ObjectPaintInvalidator {
+class CORE_EXPORT ObjectPaintInvalidator {
     STACK_ALLOCATED();
 public:
-    ObjectPaintInvalidator(const LayoutObject& object, const PaintInvalidatorContext& context)
-        : m_object(object), m_context(context) { }
+    ObjectPaintInvalidator(const LayoutObject& object)
+        : m_object(object) { }
 
     static void objectWillBeDestroyed(const LayoutObject&);
+
+    // This calls paintingLayer() which walks up the tree.
+    // If possible, use the faster PaintInvalidatorContext.paintingLayer.setNeedsRepaint().
+    void slowSetPaintingLayerNeedsRepaint();
+
+    // TODO(wangxianzhu): Change the call sites to use the faster version if possible.
+    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& client, PaintInvalidationReason reason)
+    {
+        slowSetPaintingLayerNeedsRepaint();
+        invalidateDisplayItemClient(client, reason);
+    }
+
+    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationReason);
+
+    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
+
+    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
+    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
+
+    // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
+    // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
+    // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
+    void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
+
+    // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
+    void invalidatePaintRectangle(const LayoutRect&);
+
+    void invalidatePaintIncludingNonCompositingDescendants();
+    void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
+
+private:
+    void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
+    void setBackingNeedsPaintInvalidationInRect(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
+
+protected:
+    const LayoutObject& m_object;
+};
+
+class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
+public:
+    ObjectPaintInvalidatorWithContext(const LayoutObject& object, const PaintInvalidatorContext& context)
+        : ObjectPaintInvalidator(object), m_context(context) { }
 
     PaintInvalidationReason invalidatePaintIfNeeded() { return invalidatePaintIfNeededWithComputedReason(computePaintInvalidationReason()); }
 
@@ -42,8 +88,17 @@ private:
     // This is the default choice when generating an invalidation, as it is always correct, albeit it may force some extra painting.
     void fullyInvalidatePaint(PaintInvalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds);
 
-    const LayoutObject& m_object;
     const PaintInvalidatorContext& m_context;
+};
+
+// TODO(crbug.com/457415): We should not allow paint invalidation out of paint invalidation state.
+class DisablePaintInvalidationStateAsserts {
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
+public:
+    DisablePaintInvalidationStateAsserts();
+private:
+    AutoReset<bool> m_disabler;
 };
 
 } // namespace blink

@@ -8,6 +8,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 
 #include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
@@ -442,7 +443,7 @@ public:
 
     void slowSetPaintingLayerNeedsRepaint()
     {
-        m_layoutObject->slowSetPaintingLayerNeedsRepaint();
+        ObjectPaintInvalidator(*m_layoutObject).slowSetPaintingLayerNeedsRepaint();
     }
 
     struct LineLayoutItemHash {

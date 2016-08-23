@@ -34,7 +34,7 @@ void BoxPaintInvalidator::boxWillBeDestroyed(const LayoutBox& box)
 
 bool BoxPaintInvalidator::incrementallyInvalidatePaint()
 {
-    bool result = ObjectPaintInvalidator(m_box, m_context).incrementallyInvalidatePaint();
+    bool result = ObjectPaintInvalidatorWithContext(m_box, m_context).incrementallyInvalidatePaint();
 
     bool hasBoxDecorations = m_box.styleRef().hasBoxDecorations();
     if (!m_box.styleRef().hasBackground() && !hasBoxDecorations)
@@ -46,11 +46,12 @@ bool BoxPaintInvalidator::incrementallyInvalidatePaint()
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = m_box.size();
 
-    // If border m_box size didn't change, ObjectPaintInvalidator::incrementallyInvalidatePaint() is good.
+    // If border m_box size didn't change, ObjectPaintInvalidatorWithContext::incrementallyInvalidatePaint() is good.
     if (oldBorderBoxSize == newBorderBoxSize)
         return result;
 
-    // If size of the paint invalidation rect equals to size of border box, ObjectPaintInvalidator::incrementallyInvalidatePaint()
+    // If size of the paint invalidation rect equals to size of border box,
+    // ObjectPaintInvalidatorWithContext::incrementallyInvalidatePaint()
     // is good for boxes having background without box decorations.
     DCHECK(oldBounds.location() == newBounds.location()); // Otherwise we won't do incremental invalidation.
     if (!hasBoxDecorations
@@ -89,23 +90,24 @@ void BoxPaintInvalidator::invalidatePaintRectClippedByOldAndNewBounds(const Layo
     if (rect.isEmpty())
         return;
 
+    ObjectPaintInvalidator objectPaintInvalidator(m_box);
     LayoutRect rectClippedByOldBounds = intersection(rect, m_context.oldBounds);
     LayoutRect rectClippedByNewBounds = intersection(rect, m_context.newBounds);
     // Invalidate only once if the clipped rects equal.
     if (rectClippedByOldBounds == rectClippedByNewBounds) {
-        m_box.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
+        objectPaintInvalidator.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
         return;
     }
     // Invalidate the bigger one if one contains another. Otherwise invalidate both.
     if (!rectClippedByNewBounds.contains(rectClippedByOldBounds))
-        m_box.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
+        objectPaintInvalidator.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
     if (!rectClippedByOldBounds.contains(rectClippedByNewBounds))
-        m_box.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
+        objectPaintInvalidator.invalidatePaintUsingContainer(*m_context.paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
 }
 
 PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
 {
-    PaintInvalidationReason reason = ObjectPaintInvalidator(m_box, m_context).computePaintInvalidationReason();
+    PaintInvalidationReason reason = ObjectPaintInvalidatorWithContext(m_box, m_context).computePaintInvalidationReason();
 
     if (isImmediateFullPaintInvalidationReason(reason) || reason == PaintInvalidationNone)
         return reason;
@@ -203,9 +205,9 @@ PaintInvalidationReason BoxPaintInvalidator::invalidatePaintIfNeeded()
         }
         // Though we have done our own version of incremental invalidation, we still need to call
         // ObjectPaintInvalidator with PaintInvalidationNone to do any other required operations.
-        reason = std::max(reason, ObjectPaintInvalidator(m_box, m_context).invalidatePaintIfNeededWithComputedReason(PaintInvalidationNone));
+        reason = std::max(reason, ObjectPaintInvalidatorWithContext(m_box, m_context).invalidatePaintIfNeededWithComputedReason(PaintInvalidationNone));
     } else {
-        reason = ObjectPaintInvalidator(m_box, m_context).invalidatePaintIfNeededWithComputedReason(reason);
+        reason = ObjectPaintInvalidatorWithContext(m_box, m_context).invalidatePaintIfNeededWithComputedReason(reason);
     }
 
     if (PaintLayerScrollableArea* area = m_box.getScrollableArea())

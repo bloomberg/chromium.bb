@@ -2195,10 +2195,6 @@ void LayoutBox::inflateVisualRectForReflectionAndFilter(LayoutRect& paintInvalid
         paintInvalidationRect = layer()->mapLayoutRectForFilter(paintInvalidationRect);
 }
 
-void LayoutBox::invalidatePaintForOverhangingFloats(bool)
-{
-}
-
 void LayoutBox::updateLogicalWidth()
 {
     LogicalExtentComputedValues computedValues;

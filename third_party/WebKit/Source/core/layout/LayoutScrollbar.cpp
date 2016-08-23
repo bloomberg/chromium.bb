@@ -31,6 +31,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -361,7 +362,7 @@ int LayoutScrollbar::minimumThumbLength() const
 void LayoutScrollbar::invalidateDisplayItemClientsOfScrollbarParts()
 {
     for (auto& part : m_parts)
-        part.value->invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationScroll);
+        ObjectPaintInvalidator(*part.value).invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationScroll);
 }
 
 } // namespace blink

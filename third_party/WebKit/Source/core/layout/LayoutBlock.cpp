@@ -51,6 +51,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/Page.h"
 #include "core/paint/BlockPainter.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -941,7 +942,7 @@ void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState c
                     // This valid because we need to invalidate based on the current status.
                     DisableCompositingQueryAsserts compositingDisabler;
                     if (!positionedObject->isPaintInvalidationContainer())
-                        positionedObject->invalidatePaintIncludingNonCompositingDescendants();
+                        ObjectPaintInvalidator(*positionedObject).invalidatePaintIncludingNonCompositingDescendants();
                 }
             }
 

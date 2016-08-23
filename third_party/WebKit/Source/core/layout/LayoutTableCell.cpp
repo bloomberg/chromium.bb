@@ -30,6 +30,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/SubtreeLayoutScope.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/TableCellPainter.h"
 #include "core/style/CollapsedBorderValue.h"
 #include "platform/geometry/FloatQuad.h"
@@ -964,7 +965,7 @@ void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& bo
     // If collapsed borders changed, invalidate the cell's display item client on the table's backing.
     // TODO(crbug.com/451090#c5): Need a way to invalidate/repaint the borders only.
     if (changed)
-        table()->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationStyleChange);
+        ObjectPaintInvalidator(*table()).slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(*this, PaintInvalidationStyleChange);
 
     addBorderStyle(borderValues, newValues.startBorder);
     addBorderStyle(borderValues, newValues.endBorder);

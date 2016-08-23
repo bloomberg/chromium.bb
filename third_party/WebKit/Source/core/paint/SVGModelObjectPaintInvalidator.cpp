@@ -11,7 +11,8 @@ namespace blink {
 
 PaintInvalidationReason SVGModelObjectPaintInvalidator::invalidatePaintIfNeeded()
 {
-    PaintInvalidationReason reason = ObjectPaintInvalidator(m_object, m_context).computePaintInvalidationReason();
+    ObjectPaintInvalidatorWithContext objectPaintInvalidator(m_object, m_context);
+    PaintInvalidationReason reason = objectPaintInvalidator.computePaintInvalidationReason();
 
     // Disable incremental invalidation for SVG objects to prevent under-
     // invalidation. Unlike boxes, it is non-trivial (and rare) for SVG objects
@@ -19,7 +20,7 @@ PaintInvalidationReason SVGModelObjectPaintInvalidator::invalidatePaintIfNeeded(
     if (reason == PaintInvalidationIncremental && m_context.oldBounds != m_context.newBounds)
         reason = PaintInvalidationFull;
 
-    return ObjectPaintInvalidator(m_object, m_context).invalidatePaintIfNeededWithComputedReason(reason);
+    return objectPaintInvalidator.invalidatePaintIfNeededWithComputedReason(reason);
 }
 
 } // namespace blink

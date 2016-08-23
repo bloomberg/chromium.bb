@@ -53,6 +53,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
+#include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/Histogram.h"
 #include "platform/JSONValues.h"
@@ -562,7 +563,7 @@ void PaintLayerCompositor::paintInvalidationOnCompositingChange(PaintLayer* laye
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
 
-    layer->layoutObject()->invalidatePaintIncludingNonCompositingDescendants();
+    ObjectPaintInvalidator(*layer->layoutObject()).invalidatePaintIncludingNonCompositingDescendants();
 }
 
 void PaintLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)

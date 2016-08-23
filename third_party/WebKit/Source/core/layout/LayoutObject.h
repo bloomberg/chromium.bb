@@ -1106,19 +1106,12 @@ public:
 
     bool isPaintInvalidationContainer() const;
 
-    // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
-    // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
-    // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
-    void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
-
     // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
 
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
-    void invalidatePaintIncludingNonCompositingDescendants();
-    void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
 
     // Returns true if the object itself will not generate any effective painted output no matter what
@@ -1299,7 +1292,9 @@ public:
     // The previous paint invalidation rect, in the the space of the paint invalidation container (*not* the graphics layer that paints
     // this object).
     LayoutRect previousPaintInvalidationRectIncludingCompositedScrolling(const LayoutBoxModelObject& paintInvalidationContainer) const;
-    LayoutSize previousPaintInvalidationRectSize() const { return previousPaintInvalidationRect().size(); }
+
+    // The returned rect does *not* account for composited scrolling.
+    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
 
     // Called when the previous paint invalidation rect(s) is no longer valid.
     virtual void clearPreviousPaintInvalidationRects();
@@ -1354,26 +1349,6 @@ public:
 
     virtual LayoutRect viewRect() const;
 
-    // TODO(wangxianzhu): Change the call sites to use the faster version if possible.
-    void slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const DisplayItemClient& client, PaintInvalidationReason reason) const
-    {
-        slowSetPaintingLayerNeedsRepaint();
-        invalidateDisplayItemClient(client, reason);
-    }
-
-    // This calls paintingLayer() which walks up the tree.
-    // If possible, use the faster paintInvalidationState.paintingLayer().setNeedsRepaint().
-    void slowSetPaintingLayerNeedsRepaint() const;
-
-    // Sets painting layer needsRepaint, then calls invaldiateDisplayItemClient().
-    // Should use this version when PaintInvalidationState is available.
-    void setPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(const PaintInvalidationState&, const DisplayItemClient&, PaintInvalidationReason) const;
-
-    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
-    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason) const;
-
-    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(PaintInvalidationReason) const;
-
     // New version to replace the above old version.
     virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const;
 
@@ -1383,8 +1358,6 @@ public:
     // parts which are invalidated separately (e.g. scrollbars).
     // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
     virtual void invalidateDisplayItemClients(PaintInvalidationReason) const;
-
-    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
 
     virtual bool hasNonCompositedScrollbars() const { return false; }
 
@@ -1402,6 +1375,7 @@ public:
         void setPreviousPaintInvalidationRect(const LayoutRect& r) { m_layoutObject.setPreviousPaintInvalidationRect(r); }
         void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& p) { m_layoutObject.setPreviousPositionFromPaintInvalidationBacking(p); }
         void setPreviousBackgroundObscured(bool b) { m_layoutObject.setPreviousBackgroundObscured(b); }
+        void clearPreviousPaintInvalidationRects() { m_layoutObject.clearPreviousPaintInvalidationRects(); }
 
     protected:
         friend class PaintPropertyTreeBuilder;
@@ -1621,9 +1595,6 @@ private:
     inline void invalidateContainerPreferredLogicalWidths();
 
     void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
-
-    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
-    void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
 
     LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
 
@@ -1961,17 +1932,6 @@ public:
 
     static bool canModifyLayoutTreeStateInAnyState();
 
-private:
-    AutoReset<bool> m_disabler;
-};
-
-// FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
-// Remove this once we fix the bug.
-class DisablePaintInvalidationStateAsserts {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(DisablePaintInvalidationStateAsserts);
-public:
-    DisablePaintInvalidationStateAsserts();
 private:
     AutoReset<bool> m_disabler;
 };
