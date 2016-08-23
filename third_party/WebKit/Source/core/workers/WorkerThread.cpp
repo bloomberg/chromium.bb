@@ -331,6 +331,24 @@ PlatformThreadId WorkerThread::platformThreadId()
     return workerBackingThread().backingThread().platformThread().threadId();
 }
 
+bool WorkerThread::isForciblyTerminated()
+{
+    MutexLocker lock(m_threadStateMutex);
+    switch (m_exitCode) {
+    case ExitCode::NotTerminated:
+    case ExitCode::GracefullyTerminated:
+        return false;
+    case ExitCode::SyncForciblyTerminated:
+    case ExitCode::AsyncForciblyTerminated:
+        return true;
+    case ExitCode::LastEnum:
+        NOTREACHED() << static_cast<int>(m_exitCode);
+        return false;
+    }
+    NOTREACHED() << static_cast<int>(m_exitCode);
+    return false;
+}
+
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : m_forceTerminationDelayInMs(kForceTerminationDelayInMs)
     , m_inspectorTaskRunner(wrapUnique(new InspectorTaskRunner()))

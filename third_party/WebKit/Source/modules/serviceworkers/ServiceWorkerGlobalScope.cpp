@@ -186,8 +186,12 @@ void ServiceWorkerGlobalScope::dispatchExtendableEvent(Event* event, WaitUntilOb
 
     observer->willDispatchEvent();
     dispatchEvent(event);
-    if (thread()->terminated())
+
+    // Check if the worker thread is forcibly terminated during the event
+    // because of timeout etc.
+    if (thread()->isForciblyTerminated())
         m_hadErrorInTopLevelEventHandler = true;
+
     observer->didDispatchEvent(m_hadErrorInTopLevelEventHandler);
 }
 

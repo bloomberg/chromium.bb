@@ -150,6 +150,8 @@ public:
 
     ExitCode getExitCode();
 
+    bool isForciblyTerminated();
+
     void waitForShutdownForTesting() { m_shutdownEvent->wait(); }
 
 protected:
