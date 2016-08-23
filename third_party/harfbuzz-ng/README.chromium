@@ -21,3 +21,5 @@ and bump the version numbers in README.chromium.
 
 Applied a local fix for an infinite recursion crash in hb-coretext on OS X 10.9,
 skipping the font cascade list reconfiguration on this OS version.
+
+Updated said local fix to not reconfigure the cascade list for the emoji font.
