@@ -15,16 +15,11 @@
 Polymer({
   is: 'settings-internet-detail-page',
 
-  behaviors: [CrPolicyNetworkBehavior],
+  behaviors: [CrPolicyNetworkBehavior, settings.RouteObserverBehavior],
 
   properties: {
-    /**
-     * The network GUID to display details for.
-     */
-    guid: {
-      type: String,
-      value: '',
-    },
+    /** The network GUID to display details for. */
+    guid: String,
 
     /**
      * The current properties for the network matching |guid|.
@@ -95,48 +90,48 @@ Polymer({
     networkingPrivate: {type: Object},
   },
 
-  observers: [
-    'guidChanged_(guid, networkingPrivate)',
-  ],
-
   /**
    * Listener function for chrome.networkingPrivate.onNetworksChanged event.
-   * @type {function(!Array<string>)}
+   * @type {?function(!Array<string>)}
    * @private
    */
-  networksChangedListener_: function() {},
+  networksChangedListener_: null,
 
-  /** @override */
-  attached: function() {
-    this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
-    this.networkingPrivate.onNetworksChanged.addListener(
-        this.networksChangedListener_);
-  },
-
-  /** @override */
-  ready: function() {
-    if (!this.guid)
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @protected
+   */
+  currentRouteChanged: function(route) {
+    if (route != settings.Route.NETWORK_DETAIL) {
+      if (this.networksChangedListener_) {
+        this.networkingPrivate.onNetworksChanged.removeListener(
+            this.networksChangedListener_);
+        this.networksChangedListener_ = null;
+      }
+      return;
+    }
+    if (!this.networksChangedListener_) {
+      this.networksChangedListener_ = this.onNetworksChangedEvent_.bind(this);
+      this.networkingPrivate.onNetworksChanged.addListener(
+          this.networksChangedListener_);
+    }
+    let queryParams = settings.getQueryParameters();
+    this.guid = queryParams.get('guid') || '';
+    if (!this.guid) {
+      console.error('No guid specified for page:' + route);
       this.close_();
-  },
-
-  /** @override */
-  detached: function() {
-    this.networkingPrivate.onNetworksChanged.removeListener(
-        this.networksChangedListener_);
+    }
+    this.getNetworkDetails_();
   },
 
   /** @private */
   close_: function() {
     // Delay navigating until the next render frame to allow other subpages to
     // load first.
-    setTimeout(function() { settings.navigateTo(settings.Route.INTERNET) });
-  },
-
-  /** @private */
-  guidChanged_: function() {
-    if (!this.guid)
-      this.close_();
-    this.getNetworkDetails_();
+    setTimeout(function() {
+      settings.navigateTo(settings.Route.INTERNET);
+    });
   },
 
   /** @private */
@@ -195,8 +190,7 @@ Polymer({
    * @private
    */
   getNetworkDetails_: function() {
-    if (!this.guid)
-      return;
+    assert(!!this.guid);
     this.networkingPrivate.getManagedProperties(
         this.guid, this.getPropertiesCallback_.bind(this));
   },
@@ -211,6 +205,7 @@ Polymer({
     if (!properties) {
       // If |properties| becomes null (i.e. the network is no longer visible),
       // close the page.
+      console.error('Network no longer exists: ' + this.guid);
       this.close_();
     }
   },
@@ -221,8 +216,7 @@ Polymer({
    * @private
    */
   setNetworkProperties_: function(onc) {
-    if (!this.guid)
-      return;
+    assert(!!this.guid);
     this.networkingPrivate.setProperties(this.guid, onc, function() {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties

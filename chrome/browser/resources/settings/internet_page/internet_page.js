@@ -11,11 +11,6 @@ Polymer({
   is: 'settings-internet-page',
 
   properties: {
-    /** The network GUID for the detail subpage. */
-    detailGuid: {
-      type: String,
-    },
-
     /** The network type for the known networks subpage. */
     knownNetworksType: {
       type: String,
@@ -42,8 +37,9 @@ Polymer({
    * @private
    */
   onShowDetail_: function(event) {
-    this.detailGuid = event.detail.GUID;
-    settings.navigateTo(settings.Route.NETWORK_DETAIL);
+    settings.navigateTo(
+        settings.Route.NETWORK_DETAIL,
+        new URLSearchParams('guid=' + event.detail.GUID));
   },
 
   /**
