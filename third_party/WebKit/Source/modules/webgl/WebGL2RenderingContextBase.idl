@@ -288,8 +288,12 @@ typedef long long      GLint64;
     const GLenum MAX_CLIENT_WAIT_TIMEOUT_WEBGL                 = 0x9247;
 
     /* Buffer objects */
+    void bufferData(GLenum target, ArrayBufferView srcData, GLenum usage, GLuint srcOffset, optional GLuint length = 0);
+    void bufferSubData(GLenum target, GLintptr dstByteOffset, ArrayBufferView srcData, GLuint srcOffset, optional GLuint length = 0);
     void copyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
-    void getBufferSubData(GLenum target, GLintptr offset, ArrayBuffer? returnedData);
+    void getBufferSubData(GLenum target, GLintptr srcByteOffset, ArrayBufferView dstData, optional GLuint dstOffset = 0, optional GLuint length = 0);
+    // TODO(zmo): Obsolete, remove after WebGL2 conformance tests are updated.
+    void getBufferSubData(GLenum target, GLintptr srcByteOffset, ArrayBuffer? dstData);
 
     /* Framebuffer objects */
     void blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);

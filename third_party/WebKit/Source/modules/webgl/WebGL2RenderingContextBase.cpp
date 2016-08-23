@@ -41,6 +41,62 @@ GLsync syncObjectOrZero(const WebGLSync* object)
     return object ? object->object() : nullptr;
 }
 
+size_t getViewTypeSize(WTF::ArrayBufferView::ViewType viewType)
+{
+    switch (viewType) {
+    case WTF::ArrayBufferView::TypeInt8:
+    case WTF::ArrayBufferView::TypeUint8:
+    case WTF::ArrayBufferView::TypeUint8Clamped:
+        return 1;
+    case WTF::ArrayBufferView::TypeInt16:
+    case WTF::ArrayBufferView::TypeUint16:
+        return 2;
+    case WTF::ArrayBufferView::TypeInt32:
+    case WTF::ArrayBufferView::TypeUint32:
+    case WTF::ArrayBufferView::TypeFloat32:
+        return 4;
+    case WTF::ArrayBufferView::TypeFloat64:
+        return 8;
+    case WTF::ArrayBufferView::TypeDataView:
+        return 1;
+    default:
+        NOTREACHED();
+        return 0;
+    }
+}
+
+bool validateSubSourceAndGetData(DOMArrayBufferView* view, GLuint subOffset, GLuint subLength, void** outBaseAddress, long long* outByteLength)
+{
+    // This is guaranteed to be non-null by DOM.
+    DCHECK(view);
+
+    size_t typeSize = getViewTypeSize(view->type());
+    DCHECK_GE(8u, typeSize);
+    long long byteLength = 0;
+    if (subLength) {
+        // type size is at most 8, so no overflow.
+        byteLength = subLength * typeSize;
+    }
+    long long byteOffset = 0;
+    if (subOffset) {
+        // type size is at most 8, so no overflow.
+        byteOffset = subOffset * typeSize;
+    }
+    CheckedInt<long long> total = byteOffset;
+    total += byteLength;
+    if (!total.isValid() || total.value() > view->byteLength()) {
+        return false;
+    }
+    if (!byteLength) {
+        byteLength = view->byteLength() - byteOffset;
+    }
+    uint8_t* data = static_cast<uint8_t*>(view->baseAddress());
+    data += byteOffset;
+    *outBaseAddress = data;
+    *outByteLength = byteLength;
+    return true;
+}
+
 } // namespace
 
 // These enums are from manual pages for glTexStorage2D/glTexStorage3D.
@@ -183,6 +239,57 @@ void WebGL2RenderingContextBase::initializeNewContext()
     WebGLRenderingContextBase::initializeNewContext();
 }
 
+void WebGL2RenderingContextBase::bufferData(GLenum target, DOMArrayBufferView* srcData, GLenum usage, GLuint srcOffset, GLuint length)
+{
+    if (isContextLost())
+        return;
+    void* subBaseAddress = nullptr;
+    long long subByteLength = 0;
+    if (!validateSubSourceAndGetData(srcData, srcOffset, length, &subBaseAddress, &subByteLength)) {
+        synthesizeGLError(GL_INVALID_VALUE, "bufferData", "srcOffset + length too large");
+        return;
+    }
+    bufferDataImpl(target, subByteLength, subBaseAddress, usage);
+}
+
+void WebGL2RenderingContextBase::bufferData(GLenum target, long long size, GLenum usage)
+{
+    WebGLRenderingContextBase::bufferData(target, size, usage);
+}
+
+void WebGL2RenderingContextBase::bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage)
+{
+    WebGLRenderingContextBase::bufferData(target, data, usage);
+}
+
+void WebGL2RenderingContextBase::bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage)
+{
+    WebGLRenderingContextBase::bufferData(target, data, usage);
+}
+
+void WebGL2RenderingContextBase::bufferSubData(GLenum target, GLintptr dstByteOffset, DOMArrayBufferView* srcData, GLuint srcOffset, GLuint length)
+{
+    if (isContextLost())
+        return;
+    void* subBaseAddress = nullptr;
+    long long subByteLength = 0;
+    if (!validateSubSourceAndGetData(srcData, srcOffset, length, &subBaseAddress, &subByteLength)) {
+        synthesizeGLError(GL_INVALID_VALUE, "bufferSubData", "srcOffset + length too large");
+        return;
+    }
+    bufferSubDataImpl(target, dstByteOffset, subByteLength, subBaseAddress);
+}
+
+void WebGL2RenderingContextBase::bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data)
+{
+    WebGLRenderingContextBase::bufferSubData(target, offset, data);
+}
+
+void WebGL2RenderingContextBase::bufferSubData(GLenum target, long long offset, const FlexibleArrayBufferView& data)
+{
+    WebGLRenderingContextBase::bufferSubData(target, offset, data);
+}
+
 void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum writeTarget, long long readOffset, long long writeOffset, long long size)
 {
     if (isContextLost())
@@ -219,35 +326,59 @@ void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum wri
     contextGL()->CopyBufferSubData(readTarget, writeTarget, static_cast<GLintptr>(readOffset), static_cast<GLintptr>(writeOffset), static_cast<GLsizeiptr>(size));
 }
 
-void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long offset, DOMArrayBuffer* returnedData)
+void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long srcByteOffset, DOMArrayBufferView* dstData, GLuint dstOffset, GLuint length)
 {
+    const char* funcName = "getBufferSubData";
     if (isContextLost())
         return;
-
-    if (!returnedData) {
-        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "ArrayBuffer cannot be null");
+    if (!validateValueFitNonNegInt32(funcName, "srcByteOffset", srcByteOffset)) {
         return;
     }
-
-    if (!validateValueFitNonNegInt32("getBufferSubData", "offset", offset)) {
-        return;
-    }
-
-    WebGLBuffer* buffer = validateBufferDataTarget("getBufferSubData", target);
+    WebGLBuffer* buffer = validateBufferDataTarget(funcName, target);
     if (!buffer)
         return;
-    if (offset + returnedData->byteLength() > buffer->getSize()) {
-        synthesizeGLError(GL_INVALID_VALUE, "getBufferSubData", "buffer overflow");
+    void* subBaseAddress = nullptr;
+    long long subByteLength = 0;
+    if (!validateSubSourceAndGetData(dstData, dstOffset, length, &subBaseAddress, &subByteLength)) {
+        synthesizeGLError(GL_INVALID_VALUE, funcName, "buffer overflow");
         return;
     }
 
-    void* mappedData = contextGL()->MapBufferRange(target, static_cast<GLintptr>(offset), returnedData->byteLength(), GL_MAP_READ_BIT);
+    void* mappedData = contextGL()->MapBufferRange(target, static_cast<GLintptr>(srcByteOffset), subByteLength, GL_MAP_READ_BIT);
 
     if (!mappedData)
         return;
 
-    memcpy(returnedData->data(), mappedData, returnedData->byteLength());
+    memcpy(subBaseAddress, mappedData, subByteLength);
 
+    contextGL()->UnmapBuffer(target);
+}
+
+void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long srcByteOffset, DOMArrayBuffer* dstData)
+{
+    const char* funcName = "getBufferSubData";
+    if (isContextLost())
+        return;
+
+    if (!dstData) {
+        synthesizeGLError(GL_INVALID_VALUE, funcName, "ArrayBuffer can not be null");
+        return;
+    }
+    if (!validateValueFitNonNegInt32(funcName, "srcByteOffset", srcByteOffset)) {
+        return;
+    }
+    WebGLBuffer* buffer = validateBufferDataTarget(funcName, target);
+    if (!buffer)
+        return;
+    if (srcByteOffset + dstData->byteLength() > buffer->getSize()) {
+        synthesizeGLError(GL_INVALID_VALUE, funcName, "buffer overflow");
+        return;
+    }
+
+    void* mappedData = contextGL()->MapBufferRange(target, static_cast<GLintptr>(srcByteOffset), dstData->byteLength(), GL_MAP_READ_BIT);
+    if (!mappedData)
+        return;
+    memcpy(dstData->data(), mappedData, dstData->byteLength());
     contextGL()->UnmapBuffer(target);
 }
 

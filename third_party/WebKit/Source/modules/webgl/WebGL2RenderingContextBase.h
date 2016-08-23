@@ -28,8 +28,20 @@ public:
     ~WebGL2RenderingContextBase() override;
 
     /* Buffer objects */
+    void bufferData(GLenum, DOMArrayBufferView*, GLenum, GLuint, GLuint);
+    void bufferSubData(GLenum, GLintptr, DOMArrayBufferView*, GLuint, GLuint);
+    // Have to re-declare/re-define the following buffer{Sub}Data functions from base class.
+    // This is because the above buffer{Sub}Data() hides the name from base class.
+    void bufferData(GLenum target, long long size, GLenum usage);
+    void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
+    void bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage);
+    void bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data);
+    void bufferSubData(GLenum target, long long offset, const FlexibleArrayBufferView& data);
+
     void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
-    void getBufferSubData(GLenum target, long long offset, DOMArrayBuffer* returnedData);
+    void getBufferSubData(GLenum, long long, DOMArrayBufferView*, GLuint, GLuint);
+    // TODO(zmo): Obsolete, remove after WebGL2 conformance tests are updated.
+    void getBufferSubData(GLenum, long long, DOMArrayBuffer*);
 
     /* Framebuffer objects */
     bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);
