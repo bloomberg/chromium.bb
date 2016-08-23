@@ -14,5 +14,5 @@ public interface DesktopViewFactory {
      * Creates an uninitialized implementation specific desktop view. Initializing and adding the
      * view should done separately.
      */
-    AbstractDesktopView createDesktopView(Desktop desktop, Client client);
+    DesktopView createDesktopView(Desktop desktop, Client client);
 }

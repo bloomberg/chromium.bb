@@ -174,13 +174,13 @@ public class TouchInputStrategy implements InputStrategyInterface {
     public void injectCursorMoveEvent(int x, int y) {}
 
     @Override
-    public AbstractDesktopView.InputFeedbackType getShortPressFeedbackType() {
-        return AbstractDesktopView.InputFeedbackType.NONE;
+    public DesktopView.InputFeedbackType getShortPressFeedbackType() {
+        return DesktopView.InputFeedbackType.NONE;
     }
 
     @Override
-    public AbstractDesktopView.InputFeedbackType getLongPressFeedbackType() {
-        return AbstractDesktopView.InputFeedbackType.LARGE_ANIMATION;
+    public DesktopView.InputFeedbackType getLongPressFeedbackType() {
+        return DesktopView.InputFeedbackType.LARGE_ANIMATION;
     }
 
     @Override

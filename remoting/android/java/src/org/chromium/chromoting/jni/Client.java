@@ -9,9 +9,9 @@ import android.content.Context;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chromoting.AbstractDesktopView;
 import org.chromium.chromoting.CapabilityManager;
 import org.chromium.chromoting.Desktop;
+import org.chromium.chromoting.DesktopView;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.Preconditions;
@@ -54,10 +54,10 @@ public class Client implements InputStub {
     }
 
     /**
-     * Creates an implementation specific {@link AbstractDesktopView} using the
+     * Creates an implementation specific {@link DesktopView} using the
      * {@link DesktopViewFactory} set by {@link Client#setDesktopViewFactory(DesktopViewFactory)}.
      */
-    public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
+    public DesktopView createDesktopView(Desktop desktop, Client client) {
         Preconditions.notNull(mDesktopViewFactory);
         return mDesktopViewFactory.createDesktopView(desktop, client);
     }

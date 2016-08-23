@@ -21,7 +21,7 @@ import android.view.ViewConfiguration;
 public class TouchInputHandler {
     private static final float EPSILON = 0.001f;
 
-    private final AbstractDesktopView mViewer;
+    private final DesktopView mViewer;
     private final Context mContext;
     private final RenderData mRenderData;
     private final DesktopCanvas mDesktopCanvas;
@@ -165,13 +165,13 @@ public class TouchInputHandler {
         }
 
         @Override
-        public AbstractDesktopView.InputFeedbackType getShortPressFeedbackType() {
-            return AbstractDesktopView.InputFeedbackType.NONE;
+        public DesktopView.InputFeedbackType getShortPressFeedbackType() {
+            return DesktopView.InputFeedbackType.NONE;
         }
 
         @Override
-        public AbstractDesktopView.InputFeedbackType getLongPressFeedbackType() {
-            return AbstractDesktopView.InputFeedbackType.NONE;
+        public DesktopView.InputFeedbackType getLongPressFeedbackType() {
+            return DesktopView.InputFeedbackType.NONE;
         }
 
         @Override
@@ -180,7 +180,7 @@ public class TouchInputHandler {
         }
     }
 
-    public TouchInputHandler(AbstractDesktopView viewer, Context context, RenderData renderData) {
+    public TouchInputHandler(DesktopView viewer, Context context, RenderData renderData) {
         mViewer = viewer;
         mContext = context;
         mRenderData = renderData;
@@ -243,7 +243,7 @@ public class TouchInputHandler {
                 });
     }
 
-    private void attachViewEvents(AbstractDesktopView viewer) {
+    private void attachViewEvents(DesktopView viewer) {
         viewer.onTouch().add(new Event.ParameterRunnable<TouchEventParameter>() {
             @Override
             public void run(TouchEventParameter parameter) {

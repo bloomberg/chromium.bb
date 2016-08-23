@@ -19,7 +19,7 @@ import org.chromium.chromoting.jni.Client;
  * The abstract class for viewing and interacting with a specific remote host. Handles logic
  * for touch input and render data.
  */
-public abstract class AbstractDesktopView extends SurfaceView {
+public abstract class DesktopView extends SurfaceView {
     /** Used to define the animation feedback shown when a user touches the screen. */
     public enum InputFeedbackType { NONE, SMALL_ANIMATION, LARGE_ANIMATION }
 
@@ -38,15 +38,15 @@ public abstract class AbstractDesktopView extends SurfaceView {
     protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
 
-    protected final int mSmallFeedbackPixelRadius;
-    protected final int mLargeFeedbackPixelRadius;
+    private final int mSmallFeedbackPixelRadius;
+    private final int mLargeFeedbackPixelRadius;
 
     /** The parent Desktop activity. */
     private final Desktop mDesktop;
 
     private final Event.Raisable<TouchEventParameter> mOnTouch = new Event.Raisable<>();
 
-    public AbstractDesktopView(Desktop desktop, Client client) {
+    public DesktopView(Desktop desktop, Client client) {
         super(desktop);
         Preconditions.notNull(desktop);
         Preconditions.notNull(client);

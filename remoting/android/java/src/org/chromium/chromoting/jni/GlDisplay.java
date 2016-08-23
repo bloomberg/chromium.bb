@@ -8,8 +8,8 @@ import android.view.Surface;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chromoting.AbstractDesktopView;
 import org.chromium.chromoting.Desktop;
+import org.chromium.chromoting.DesktopView;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
 import org.chromium.chromoting.GlDesktopView;
@@ -150,7 +150,7 @@ public class GlDisplay {
     private void initializeClient(Client client) {
         client.setDesktopViewFactory(new DesktopViewFactory() {
             @Override
-            public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
+            public DesktopView createDesktopView(Desktop desktop, Client client) {
                 return new GlDesktopView(GlDisplay.this, desktop, client);
             }
         });

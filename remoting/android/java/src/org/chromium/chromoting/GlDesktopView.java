@@ -14,7 +14,7 @@ import org.chromium.chromoting.jni.GlDisplay;
  * The user interface for viewing and interacting with a specific remote host. Uses OpenGL to draw
  * the desktop and cursor. Should be used entirely on the UI thread.
  */
-public class GlDesktopView extends AbstractDesktopView implements SurfaceHolder.Callback {
+public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback {
     private final GlDisplay mDisplay;
 
     private Object mOnHostSizeChangedListenerKey;

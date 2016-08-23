@@ -139,13 +139,13 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
     }
 
     @Override
-    public AbstractDesktopView.InputFeedbackType getShortPressFeedbackType() {
-        return AbstractDesktopView.InputFeedbackType.SMALL_ANIMATION;
+    public DesktopView.InputFeedbackType getShortPressFeedbackType() {
+        return DesktopView.InputFeedbackType.SMALL_ANIMATION;
     }
 
     @Override
-    public AbstractDesktopView.InputFeedbackType getLongPressFeedbackType() {
-        return AbstractDesktopView.InputFeedbackType.LARGE_ANIMATION;
+    public DesktopView.InputFeedbackType getLongPressFeedbackType() {
+        return DesktopView.InputFeedbackType.LARGE_ANIMATION;
     }
 
     @Override

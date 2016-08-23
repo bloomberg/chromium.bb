@@ -59,7 +59,7 @@ public final class InputMonitor
 
     private Rect mPanGestureBounds;
 
-    InputMonitor(AbstractDesktopView view, Context context) {
+    InputMonitor(DesktopView view, Context context) {
         mOnTap = new Event.Raisable<>();
         mOnPressAndHold = new Event.Raisable<>();
         mOnTouchEvent = new Event.Raisable<>();

@@ -18,7 +18,7 @@ public class DesktopCanvas {
      */
     private static final float MAX_ZOOM_FACTOR = 100.0f;
 
-    private final AbstractDesktopView mViewer;
+    private final DesktopView mViewer;
     private final RenderData mRenderData;
 
     /**
@@ -34,7 +34,7 @@ public class DesktopCanvas {
      */
     private Rect mSystemUiOffsetPixels = new Rect();
 
-    public DesktopCanvas(AbstractDesktopView viewer, RenderData renderData) {
+    public DesktopCanvas(DesktopView viewer, RenderData renderData) {
         mViewer = viewer;
         mRenderData = renderData;
     }
