@@ -326,36 +326,33 @@ InputEvent::InputType TypingCommand::inputType() const
     }
 }
 
-void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
+// TODO(xiaochengh): Move it to SpellChecker.cpp and do necessary cleanup.
+void SpellChecker::markMisspellingsAfterTypingCommand(TypingCommand* cmd)
 {
-    LocalFrame* frame = document().frame();
-    if (!frame)
+    if (!isSpellCheckingEnabled())
+        return;
+    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
         return;
 
-    if (!frame->spellChecker().isSpellCheckingEnabled())
-        return;
-    if (!SpellChecker::isSpellCheckingEnabledFor(endingSelection()))
-        return;
-
-    frame->spellChecker().cancelCheck();
+    cancelCheck();
 
     // Take a look at the selection that results after typing and determine whether we need to spellcheck.
     // Since the word containing the current selection is never marked, this does a check to
     // see if typing made a new word that is not in the current selection. Basically, you
     // get this by being at the end of a word and typing a space.
-    VisiblePosition start = createVisiblePosition(endingSelection().start(), endingSelection().affinity());
+    VisiblePosition start = createVisiblePosition(cmd->endingSelection().start(), cmd->endingSelection().affinity());
     VisiblePosition previous = previousPositionOf(start);
 
     VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
 
-    if (commandType == InsertParagraphSeparator) {
+    if (cmd->commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
         VisiblePosition p2 = nextWordPosition(start);
         VisibleSelection words(p1, endOfWord(p2));
-        frame->spellChecker().markMisspellingsAfterLineBreak(words);
+        markMisspellingsAfterLineBreak(words);
     } else if (previous.isNotNull()) {
         VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
         if (p1.deepEquivalent() != p2.deepEquivalent())
-            frame->spellChecker().markMisspellingsAfterTypingToWord(p1, endingSelection());
+            markMisspellingsAfterTypingToWord(p1, cmd->endingSelection());
     }
 }
 
@@ -369,7 +366,8 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
     updateCommandTypeOfOpenCommand(commandTypeForAddedTyping);
 
     // The old spellchecking code requires that checking be done first, to prevent issues like that in 6864072, where <doesn't> is marked as misspelled.
-    markMisspellingsAfterTyping(commandTypeForAddedTyping);
+    // TODO(xiaochengh): Move the following line to SpellChecker::markMisspellingsAfterApplyingCommand()
+    frame->spellChecker().markMisspellingsAfterTypingCommand(this);
     frame->editor().appliedEditing(this);
 }
 

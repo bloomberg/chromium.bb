@@ -77,6 +77,7 @@ public:
     void deleteSelection(bool smartDelete, EditingState*);
     void setCompositionType(TextCompositionType type) { m_compositionType = type; }
 
+    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
     TextCompositionType compositionType() const { return m_compositionType; }
     // |TypingCommand| may contain multiple |InsertTextCommand|, should return |textDataForInputEvent()| of the last one.
     String textDataForInputEvent() const final;
@@ -111,12 +112,10 @@ private:
     static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*, LocalFrame*);
 
     void updatePreservesTypingStyle(ETypingCommand);
-    void markMisspellingsAfterTyping(ETypingCommand);
     void typingAddedToOpenCommand(ETypingCommand);
     bool makeEditableRootEmpty(EditingState*);
 
     void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
-    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
 
     ETypingCommand m_commandType;
     String m_textToInsert;

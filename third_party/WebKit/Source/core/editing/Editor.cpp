@@ -699,16 +699,17 @@ static void dispatchEditableContentChangedEvents(Element* startRoot, Element* en
         endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
 }
 
-void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
+// TODO(xiaochengh): move this function to SpellChecker.cpp
+void SpellChecker::markMisspellingsAfterApplyingCommand(CompositeEditCommand* cmd)
 {
     // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
     // created in |Editor::replaceSelectionWithFragment()|.
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
     if (cmd->inputType() != InputEvent::InputType::Paste)
         return;
-    if (!spellChecker().isSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled())
         return;
-    if (!SpellChecker::isSpellCheckingEnabledFor(cmd->endingSelection()))
+    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
         return;
     DCHECK(cmd->isReplaceSelectionCommand());
     const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
@@ -716,7 +717,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
         return;
     // Patch crrev.com/2241293006 assumes the following equality. Revert if it fails.
     DCHECK_EQ(cmd->endingSelection().rootEditableElement(), rootEditableElementOf(insertedRange.startPosition()));
-    spellChecker().chunkAndMarkAllMisspellingsAndBadGrammar(insertedRange);
+    markMisspellingsAfterReplaceSelectionCommand(insertedRange);
 }
 
 void Editor::appliedEditing(CompositeEditCommand* cmd)
@@ -724,8 +725,8 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
     EventQueueScope scope;
     frame().document()->updateStyleAndLayout();
 
-    // Request spell checking after pasting before any further DOM change.
-    requestSpellcheckingAfterApplyingCommand(cmd);
+    // Request spell checking before any further DOM change.
+    spellChecker().markMisspellingsAfterApplyingCommand(cmd);
 
     EditCommandComposition* composition = cmd->composition();
     DCHECK(composition);

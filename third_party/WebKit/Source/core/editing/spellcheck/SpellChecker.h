@@ -35,6 +35,7 @@
 
 namespace blink {
 
+class CompositeEditCommand;
 class LocalFrame;
 class SpellCheckerClient;
 class SpellCheckRequest;
@@ -42,6 +43,7 @@ class SpellCheckRequester;
 class TextCheckerClient;
 class TextCheckingParagraph;
 struct TextCheckingResult;
+class TypingCommand;
 
 class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
     WTF_MAKE_NONCOPYABLE(SpellChecker);
@@ -59,6 +61,8 @@ public:
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
     static bool isSpellCheckingEnabledFor(const VisibleSelection&);
+    void markMisspellingsAfterApplyingCommand(CompositeEditCommand*);
+    void markMisspellingsAfterTypingCommand(TypingCommand*);
     void markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection);
     void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
     void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
@@ -78,7 +82,7 @@ public:
     bool selectionStartHasSpellingMarkerFor(int from, int length) const;
     void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
     void cancelCheck();
-    void chunkAndMarkAllMisspellingsAndBadGrammar(const EphemeralRange&);
+    void markMisspellingsAfterReplaceSelectionCommand(const EphemeralRange&);
     void requestTextChecking(const Element&);
 
     // Exposed for testing only
