@@ -248,7 +248,8 @@
       'Linux remote_run Tester': 'swarming_gn_release_bot',
       'Linux V8 API Stability': 'gn_release_bot',
       'Mac deterministic': 'gn_release_bot_mac_strip',
-      'Mojo ChromiumOS': 'swarming_chromeos_gn_release_bot',
+      # TODO(mojo): Make 'Mojo ChromiumOS' release+dcheck; see crbug.com/594674
+      'Mojo ChromiumOS': 'swarming_chromeos_gn_ozone_debug_bot',
       'Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gn_release_trybot_x86',
@@ -1638,6 +1639,10 @@
 
     'swarming_chromeos_gn_debug_bot': [
       'swarming', 'chromeos_with_codecs', 'gn', 'debug_bot',
+    ],
+
+    'swarming_chromeos_gn_ozone_debug_bot': [
+      'swarming', 'chromeos_with_codecs', 'gn', 'ozone', 'debug_bot',
     ],
 
     'swarming_chromeos_gn_debug_trybot': [
