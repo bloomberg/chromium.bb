@@ -197,15 +197,15 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
     const std::vector<std::string> app_ids = arc_prefs->GetAppIds();
     for (const auto& app_id : app_ids) {
-      if (!arc::ShouldShowInLauncher(app_id))
-        continue;
-
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
           arc_prefs->GetApp(app_id);
       if (!app_info) {
         NOTREACHED();
         continue;
       }
+
+      if (!app_info->launchable || !app_info->showInLauncher)
+        continue;
 
       std::unique_ptr<AppSearchProvider::App> app(new AppSearchProvider::App(
           this, app_id, app_info->name, app_info->last_launch_time,
@@ -285,7 +285,6 @@ void AppSearchProvider::Start(bool /*is_voice_query*/,
 
 void AppSearchProvider::Stop() {
 }
-
 
 void AppSearchProvider::RefreshApps() {
   apps_.clear();
