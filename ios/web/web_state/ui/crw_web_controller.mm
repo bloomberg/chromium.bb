@@ -2516,9 +2516,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 #pragma mark -
 
-- (void)evaluateUserJavaScript:(NSString*)script {
+- (void)executeUserJavaScript:(NSString*)script
+            completionHandler:(web::JavaScriptResultBlock)completion {
   [self setUserInteractionRegistered:YES];
-  web::ExecuteJavaScript(_webView, script, nil);
+  [self executeJavaScript:script completionHandler:completion];
+}
+
+// DEPRECATED. TODO(crbug.com/595761): Remove this API.
+- (void)evaluateUserJavaScript:(NSString*)script {
+  [self executeUserJavaScript:script completionHandler:nil];
 }
 
 - (BOOL)respondToMessage:(base::DictionaryValue*)message
