@@ -112,66 +112,6 @@ base::LazyInstance<Static> g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
 // May override |g_lazy_instance| for a test.
 ExtensionAPI* g_shared_instance_for_test = NULL;
 
-// If it exists and does not already specify a namespace, then the value stored
-// with key |key| in |schema| will be updated to |schema_namespace| + "." +
-// |schema[key]|.
-void MaybePrefixFieldWithNamespace(const std::string& schema_namespace,
-                                   base::DictionaryValue* schema,
-                                   const std::string& key) {
-  if (!schema->HasKey(key))
-    return;
-
-  std::string old_id;
-  CHECK(schema->GetString(key, &old_id));
-  if (old_id.find(".") == std::string::npos)
-    schema->SetString(key, schema_namespace + "." + old_id);
-}
-
-// Modify all "$ref" keys anywhere in |schema| to be prefxied by
-// |schema_namespace| if they do not already specify a namespace.
-void PrefixRefsWithNamespace(const std::string& schema_namespace,
-                             base::Value* value) {
-  base::ListValue* list = NULL;
-  base::DictionaryValue* dict = NULL;
-  if (value->GetAsList(&list)) {
-    for (const auto& i : *list) {
-      PrefixRefsWithNamespace(schema_namespace, i.get());
-    }
-  } else if (value->GetAsDictionary(&dict)) {
-    MaybePrefixFieldWithNamespace(schema_namespace, dict, "$ref");
-    for (base::DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
-      base::Value* value = NULL;
-      CHECK(dict->GetWithoutPathExpansion(i.key(), &value));
-      PrefixRefsWithNamespace(schema_namespace, value);
-    }
-  }
-}
-
-// Modify all objects in the "types" section of the schema to be prefixed by
-// |schema_namespace| if they do not already specify a namespace.
-void PrefixTypesWithNamespace(const std::string& schema_namespace,
-                              base::DictionaryValue* schema) {
-  if (!schema->HasKey("types"))
-    return;
-
-  // Add the namespace to all of the types defined in this schema
-  base::ListValue *types = NULL;
-  CHECK(schema->GetList("types", &types));
-  for (size_t i = 0; i < types->GetSize(); ++i) {
-    base::DictionaryValue *type = NULL;
-    CHECK(types->GetDictionary(i, &type));
-    MaybePrefixFieldWithNamespace(schema_namespace, type, "id");
-    MaybePrefixFieldWithNamespace(schema_namespace, type, "customBindings");
-  }
-}
-
-// Modify the schema so that all types are fully qualified.
-void PrefixWithNamespace(const std::string& schema_namespace,
-                         base::DictionaryValue* schema) {
-  PrefixTypesWithNamespace(schema_namespace, schema);
-  PrefixRefsWithNamespace(schema_namespace, schema);
-}
-
 }  // namespace
 
 // static
@@ -232,7 +172,6 @@ void ExtensionAPI::LoadSchema(const std::string& name,
       CHECK(schema);
     }
     CHECK(schema->GetString("namespace", &schema_namespace));
-    PrefixWithNamespace(schema_namespace, schema.get());
     schemas_[schema_namespace] = std::move(schema);
   }
 }

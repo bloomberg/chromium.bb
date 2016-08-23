@@ -8,6 +8,7 @@ from model import Platforms
 from schema_util import CapitalizeFirstLetter
 from schema_util import JsFunctionNameToClassName
 
+import collections
 import copy
 import json
 import os
@@ -36,6 +37,41 @@ def _RemoveUnneededFields(schema):
   _RemoveKey(ret, "nodoc", bool)
   _RemoveKey(ret, "noinline_doc", bool)
   return ret
+
+def _PrefixSchemaWithNamespace(schema):
+  """Modifies |schema| in place to prefix all types and references with a
+  namespace, if they aren't already qualified. That is, in the tabs API, this
+  will turn type Tab into tabs.Tab, but will leave the fully-qualified
+  windows.Window as-is.
+  """
+  assert isinstance(schema, dict), "Schema is unexpected type"
+  namespace = schema['namespace']
+  def prefix(obj, key, mandatory):
+    if not key in obj:
+      assert not mandatory, (
+             'Required key "%s" is not present in object.' % key)
+      return
+    assert type(obj[key]) in [str, unicode]
+    if obj[key].find('.') == -1:
+      obj[key] = '%s.%s' % (namespace, obj[key])
+
+  if 'types' in schema:
+    assert isinstance(schema['types'], list)
+    for t in schema['types']:
+      assert isinstance(t, dict), "Type entry is unexpected type"
+      prefix(t, 'id', True)
+      prefix(t, 'customBindings', False)
+
+  def prefix_refs(val):
+    if type(val) is list:
+      for sub_val in val:
+        prefix_refs(sub_val)
+    elif type(val) is dict or type(val) is collections.OrderedDict:
+      prefix(val, '$ref', False)
+      for key, sub_val in val.items():
+        prefix_refs(sub_val)
+  prefix_refs(schema)
+  return schema
 
 
 class CppBundleGenerator(object):
@@ -291,7 +327,8 @@ class _SchemasCCGenerator(object):
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
-      json_content = json.dumps([_RemoveUnneededFields(api)],
+      json_content = json.dumps([_PrefixSchemaWithNamespace(
+                                     _RemoveUnneededFields(api))],
                                 separators=(',', ':'))
       # Escape all double-quotes and backslashes. For this to output a valid
       # JSON C string, we need to escape \ and ". Note that some schemas are

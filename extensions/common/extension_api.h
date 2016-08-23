@@ -127,7 +127,6 @@ class ExtensionAPI {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, TypesHaveNamespace);
   friend struct base::DefaultSingletonTraits<ExtensionAPI>;
 
   void InitDefaultConfiguration();

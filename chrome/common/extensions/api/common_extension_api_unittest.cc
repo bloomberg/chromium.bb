@@ -672,64 +672,93 @@ static void GetDictionaryFromList(const base::DictionaryValue* schema,
   EXPECT_TRUE(list->GetDictionary(list_index, out));
 }
 
+static const base::DictionaryValue* GetDictChecked(
+    const base::DictionaryValue* dict,
+    const std::string& key) {
+  const base::DictionaryValue* out = nullptr;
+  CHECK(dict->GetDictionary(key, &out)) << key;
+  return out;
+}
+
+static std::string GetStringChecked(const base::DictionaryValue* dict,
+                                    const std::string& key) {
+  std::string out;
+  CHECK(dict->GetString(key, &out)) << key;
+  return out;
+}
+
 TEST(ExtensionAPITest, TypesHaveNamespace) {
-  base::FilePath manifest_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
-  manifest_path = manifest_path.AppendASCII("extensions")
-      .AppendASCII("extension_api_unittest")
-      .AppendASCII("types_have_namespace.json");
+  std::unique_ptr<ExtensionAPI> api(
+      ExtensionAPI::CreateWithDefaultConfiguration());
 
-  std::string manifest_str;
-  ASSERT_TRUE(base::ReadFileToString(manifest_path, &manifest_str))
-      << "Failed to load: " << manifest_path.value();
+  // Returns the dictionary that has |key|: |value|.
+  auto get_dict_from_list = [](
+      const base::ListValue* list, const std::string& key,
+      const std::string& value) -> const base::DictionaryValue* {
+    const base::DictionaryValue* ret = nullptr;
+    for (const auto& val : *list) {
+      const base::DictionaryValue* dict = nullptr;
+      if (!val->GetAsDictionary(&dict))
+        continue;
+      std::string str;
+      if (dict->GetString(key, &str) && str == value) {
+        ret = dict;
+        break;
+      }
+    }
+    return ret;
+  };
 
-  TestExtensionAPI api;
-  api.add_fake_schema("test.foo");
-  api.LoadSchema("test.foo", manifest_str);
+  const base::DictionaryValue* schema = api->GetSchema("sessions");
+  ASSERT_TRUE(schema);
 
-  const base::DictionaryValue* schema = api.GetSchema("test.foo");
+  const base::ListValue* types = nullptr;
+  ASSERT_TRUE(schema->GetList("types", &types));
+  {
+    const base::DictionaryValue* session_type =
+        get_dict_from_list(types, "id", "sessions.Session");
+    ASSERT_TRUE(session_type);
+    const base::DictionaryValue* props =
+        GetDictChecked(session_type, "properties");
+    const base::DictionaryValue* tab = GetDictChecked(props, "tab");
+    EXPECT_EQ("tabs.Tab", GetStringChecked(tab, "$ref"));
+    const base::DictionaryValue* window = GetDictChecked(props, "window");
+    EXPECT_EQ("windows.Window", GetStringChecked(window, "$ref"));
+  }
+  {
+    const base::DictionaryValue* device_type =
+        get_dict_from_list(types, "id", "sessions.Device");
+    ASSERT_TRUE(device_type);
+    const base::DictionaryValue* props =
+        GetDictChecked(device_type, "properties");
+    const base::DictionaryValue* sessions = GetDictChecked(props, "sessions");
+    const base::DictionaryValue* items = GetDictChecked(sessions, "items");
+    EXPECT_EQ("sessions.Session", GetStringChecked(items, "$ref"));
+  }
+  const base::ListValue* functions = nullptr;
+  ASSERT_TRUE(schema->GetList("functions", &functions));
+  {
+    const base::DictionaryValue* get_recently_closed =
+        get_dict_from_list(functions, "name", "getRecentlyClosed");
+    ASSERT_TRUE(get_recently_closed);
+    const base::ListValue* parameters = nullptr;
+    ASSERT_TRUE(get_recently_closed->GetList("parameters", &parameters));
+    const base::DictionaryValue* filter =
+        get_dict_from_list(parameters, "name", "filter");
+    ASSERT_TRUE(filter);
+    EXPECT_EQ("sessions.Filter", GetStringChecked(filter, "$ref"));
+  }
 
-  const base::DictionaryValue* dict;
-  const base::DictionaryValue* sub_dict;
-  std::string type;
-
-  GetDictionaryFromList(schema, "types", 0, &dict);
-  EXPECT_TRUE(dict->GetString("id", &type));
-  EXPECT_EQ("test.foo.TestType", type);
-  EXPECT_TRUE(dict->GetString("customBindings", &type));
-  EXPECT_EQ("test.foo.TestType", type);
-  EXPECT_TRUE(dict->GetDictionary("properties", &sub_dict));
-  const base::DictionaryValue* property;
-  EXPECT_TRUE(sub_dict->GetDictionary("foo", &property));
-  EXPECT_TRUE(property->GetString("$ref", &type));
-  EXPECT_EQ("test.foo.OtherType", type);
-  EXPECT_TRUE(sub_dict->GetDictionary("bar", &property));
-  EXPECT_TRUE(property->GetString("$ref", &type));
-  EXPECT_EQ("fully.qualified.Type", type);
-
-  GetDictionaryFromList(schema, "functions", 0, &dict);
-  GetDictionaryFromList(dict, "parameters", 0, &sub_dict);
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("test.foo.TestType", type);
-  EXPECT_TRUE(dict->GetDictionary("returns", &sub_dict));
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("fully.qualified.Type", type);
-
-  GetDictionaryFromList(schema, "functions", 1, &dict);
-  GetDictionaryFromList(dict, "parameters", 0, &sub_dict);
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("fully.qualified.Type", type);
-  EXPECT_TRUE(dict->GetDictionary("returns", &sub_dict));
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("test.foo.TestType", type);
-
-  GetDictionaryFromList(schema, "events", 0, &dict);
-  GetDictionaryFromList(dict, "parameters", 0, &sub_dict);
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("test.foo.TestType", type);
-  GetDictionaryFromList(dict, "parameters", 1, &sub_dict);
-  EXPECT_TRUE(sub_dict->GetString("$ref", &type));
-  EXPECT_EQ("fully.qualified.Type", type);
+  schema = api->GetSchema("types");
+  ASSERT_TRUE(schema);
+  ASSERT_TRUE(schema->GetList("types", &types));
+  {
+    const base::DictionaryValue* chrome_setting =
+        get_dict_from_list(types, "id", "types.ChromeSetting");
+    ASSERT_TRUE(chrome_setting);
+    EXPECT_EQ("types.ChromeSetting",
+              GetStringChecked(chrome_setting, "customBindings"));
+  }
 }
 
 // Tests API availability with an empty manifest.
