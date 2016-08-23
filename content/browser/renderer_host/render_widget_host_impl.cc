@@ -443,9 +443,18 @@ bool RenderWidgetHostImpl::IsLoading() const {
 }
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
-  // Only process messages if the RenderWidget is alive.
-  if (!renderer_initialized())
-    return false;
+  // Only process most messages if the RenderWidget is alive.
+  if (!renderer_initialized()) {
+    // SetNeedsBeginFrame messages are only sent by the renderer once and so
+    // should never be dropped.
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
+                          OnSetNeedsBeginFrames)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
 
   if (owner_delegate_ && owner_delegate_->OnMessageReceived(msg))
     return true;
