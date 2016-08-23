@@ -178,6 +178,7 @@ void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
   swiftshader.version = version;
   swiftshader.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
   swiftshader.supports_group_policy_enable_component_updates = true;
+  swiftshader.requires_network_encryption = false;
   if (!cus->RegisterComponent(swiftshader)) {
     NOTREACHED() << "SwiftShader component registration fail";
   }
