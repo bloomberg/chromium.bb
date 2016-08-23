@@ -1665,6 +1665,7 @@ source_set("net_fuzzer_test_support") {
   testonly = true
 
   sources = [
+    "base/fuzzer_test_support.cc",
     "socket/fuzzed_socket.cc",
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
