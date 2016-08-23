@@ -148,8 +148,6 @@ public:
 
     PlatformThreadId platformThreadId();
 
-    ExitCode getExitCode();
-
     bool isForciblyTerminated();
 
     void waitForShutdownForTesting() { m_shutdownEvent->wait(); }
@@ -202,6 +200,8 @@ private:
     void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
     void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void performDebuggerTaskDontWaitOnWorkerThread();
+
+    ExitCode getExitCodeForTesting();
 
     // Accessed only on the main thread.
     bool m_started = false;

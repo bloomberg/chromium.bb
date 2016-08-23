@@ -669,7 +669,7 @@ void WorkerThread::performDebuggerTaskDontWaitOnWorkerThread()
         (*task)();
 }
 
-WorkerThread::ExitCode WorkerThread::getExitCode()
+WorkerThread::ExitCode WorkerThread::getExitCodeForTesting()
 {
     MutexLocker lock(m_threadStateMutex);
     return m_exitCode;
