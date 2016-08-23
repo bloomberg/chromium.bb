@@ -1498,6 +1498,9 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
     case sync_ui_util::UNRECOVERABLE_ERROR:
       button_out = &sync_error_signin_again_button_;
       break;
+    case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
+      button_out = nullptr;
+      break;
     case sync_ui_util::AUTH_ERROR:
       button_out = &sync_error_signin_button_;
       break;
@@ -1512,13 +1515,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
     default:
       NOTREACHED();
   }
-  return CreateSyncErrorView(content_string_id, button_string_id, button_out);
-}
 
-views::View* ProfileChooserView::CreateSyncErrorView(
-    const int content_string_id,
-    const int button_string_id,
-    views::LabelButton** button_out) {
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
   views::BoxLayout* layout = new views::BoxLayout(
@@ -1557,20 +1554,24 @@ views::View* ProfileChooserView::CreateSyncErrorView(
   content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   vertical_view->AddChildView(content_label);
 
-  // Adds a padding row between error title/content and the button.
-  SizedContainer* padding =
-      new SizedContainer(gfx::Size(0, views::kRelatedControlVerticalSpacing));
-  vertical_view->AddChildView(padding);
+  // Adds an action button if an action exists.
+  if (button_string_id) {
+    // If the button string is specified, then the button itself needs to be
+    // already initialized.
+    DCHECK(button_out);
+    // Adds a padding row between error title/content and the button.
+    SizedContainer* padding =
+        new SizedContainer(gfx::Size(0, views::kRelatedControlVerticalSpacing));
+    vertical_view->AddChildView(padding);
 
-  // Adds an action button.
-  *button_out = views::MdTextButton::CreateSecondaryUiBlueButton(
-      this, l10n_util::GetStringUTF16(button_string_id));
-  vertical_view->AddChildView(*button_out);
+    *button_out = views::MdTextButton::CreateSecondaryUiBlueButton(
+        this, l10n_util::GetStringUTF16(button_string_id));
+    vertical_view->AddChildView(*button_out);
+    view->SetBorder(views::Border::CreateEmptyBorder(
+      0, 0, views::kRelatedControlSmallVerticalSpacing, 0));
+  }
 
   view->AddChildView(vertical_view);
-  view->SetBorder(views::Border::CreateEmptyBorder(
-      0, 0, views::kRelatedControlSmallVerticalSpacing, 0));
-
   return view;
 }
 

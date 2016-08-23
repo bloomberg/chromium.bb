@@ -987,9 +987,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 // Builds a header for signin and sync error surfacing on the user menu.
 - (NSView*)buildSyncErrorViewIfNeeded;
-- (NSView*)buildSyncErrorViewWithContent:(int)contentStringId
-                          buttonStringId:(int)buttonStringId
-                            buttonAction:(SEL)buttonAction;
 
 // Builds a tutorial card to introduce an upgrade user to the new avatar menu if
 // needed. |tutorial_shown| indicates if the tutorial has already been shown in
@@ -1892,6 +1889,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     case sync_ui_util::UNRECOVERABLE_ERROR:
       buttonAction = @selector(showSignoutSigninView:);
       break;
+    case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
+      buttonAction = nil;
+      break;
     case sync_ui_util::AUTH_ERROR:
       buttonAction = @selector(showAccountReauthenticationView:);
       break;
@@ -1906,32 +1906,30 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     default:
       NOTREACHED();
   }
-  return [self buildSyncErrorViewWithContent:contentStringId
-                              buttonStringId:buttonStringId
-                                buttonAction:buttonAction];
-}
 
-- (NSView*)buildSyncErrorViewWithContent:(int)contentStringId
-                          buttonStringId:(int)buttonStringId
-                            buttonAction:(SEL)buttonAction {
   base::scoped_nsobject<NSView> container(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, GetFixedMenuWidth(), 0)]);
   CGFloat iconSize = 20.0;
   CGFloat xOffset = kHorizontalSpacing + iconSize + 12.0;
   CGFloat availableWidth = GetFixedMenuWidth() - xOffset - kHorizontalSpacing;
-  CGFloat yOffset = 20.0;
+  CGFloat yOffset = 16.0;
 
   // Adds an action button for resolving the error at the bottom.
-  base::scoped_nsobject<NSButton> resolveErrorButton(
-      [[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
-  [resolveErrorButton setTitle:l10n_util::GetNSString(buttonStringId)];
-  [resolveErrorButton setTarget:self];
-  [resolveErrorButton setAction:buttonAction];
-  [resolveErrorButton setAlignment:NSCenterTextAlignment];
-  [resolveErrorButton sizeToFit];
-  [resolveErrorButton setFrameOrigin:NSMakePoint(xOffset, yOffset)];
-  [container addSubview:resolveErrorButton];
-  yOffset = NSMaxY([resolveErrorButton frame]) + kVerticalSpacing;
+  if (buttonStringId) {
+    // If the button string is specified, then the button action needs to be
+    // already initialized for the button to be constructed.
+    DCHECK(buttonAction);
+    base::scoped_nsobject<NSButton> resolveErrorButton(
+        [[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
+    [resolveErrorButton setTitle:l10n_util::GetNSString(buttonStringId)];
+    [resolveErrorButton setTarget:self];
+    [resolveErrorButton setAction:buttonAction];
+    [resolveErrorButton setAlignment:NSCenterTextAlignment];
+    [resolveErrorButton sizeToFit];
+    [resolveErrorButton setFrameOrigin:NSMakePoint(xOffset, yOffset + 4.0)];
+    [container addSubview:resolveErrorButton];
+    yOffset = NSMaxY([resolveErrorButton frame]) + kVerticalSpacing;
+  }
 
   // Adds the error message content.
   NSTextField* contentLabel =

@@ -34,6 +34,7 @@ enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.
   MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
   UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
+  SUPERVISED_USER_AUTH_ERROR,        // Auth token error for supervised users.
   AUTH_ERROR,                        // Authentication error.
   UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
   PASSPHRASE_ERROR                   // Sync passphrase error.

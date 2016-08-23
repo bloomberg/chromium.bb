@@ -213,9 +213,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // Creates a header for signin and sync error surfacing for the user menu.
   views::View* CreateSyncErrorViewIfNeeded();
-  views::View* CreateSyncErrorView(const int content_string_id,
-                                   const int button_string_id,
-                                   views::LabelButton** button_out);
 
   // Create a view that shows various options for an upgrade user who is not
   // the same person as the currently signed in user.

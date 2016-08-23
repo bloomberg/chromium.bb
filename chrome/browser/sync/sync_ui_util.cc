@@ -437,6 +437,15 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
   SigninErrorController* signin_error_controller =
       SigninErrorControllerFactory::GetForProfile(profile);
   if (signin_error_controller && signin_error_controller->HasError()) {
+    if (profile->IsSupervised()) {
+      // For a supervised user, no direct action can be taken to resolve an
+      // auth token error.
+      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SUPERVISED_SIGNIN_MESSAGE;
+      *button_string_id = 0;
+      return SUPERVISED_USER_AUTH_ERROR;
+    }
+    // For a non-supervised user, the user can reauth to resolve the signin
+    // error.
     *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE;
     *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;
     return AUTH_ERROR;
