@@ -190,11 +190,11 @@ void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
   // Measure the time spent waiting for init and the type that triggered it.
   // We could measure the time spent deferred on a per-datatype basis, but
   // for now this is probably sufficient.
+  UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
+                            ModelTypeToHistogramInt(type),
+                            syncer::MODEL_TYPE_COUNT);
   if (!start_up_time_.is_null()) {
     RecordTimeDeferred();
-    UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
-                              ModelTypeToHistogramInt(type),
-                              syncer::MODEL_TYPE_COUNT);
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                               TRIGGER_DATA_TYPE_REQUEST, MAX_TRIGGER_VALUE);
   }
