@@ -109,8 +109,7 @@ def WriteDataPack(resources, output_file, encoding):
     file.write(content)
 
 
-def RePack(output_file, input_files, whitelist_file=None,
-           suppress_removed_key_output=False):
+def RePack(output_file, input_files, whitelist_file=None):
   """Write a new data pack file by combining input pack files.
 
   Args:
@@ -119,8 +118,6 @@ def RePack(output_file, input_files, whitelist_file=None,
       whitelist_file: path to the file that contains the list of resource IDs
                       that should be kept in the output file or None to include
                       all resources.
-      suppress_removed_key_output: allows the caller to suppress the output from
-                                   RePackFromDataPackStrings.
 
   Raises:
       KeyError: if there are duplicate keys or resource encoding is
@@ -131,20 +128,17 @@ def RePack(output_file, input_files, whitelist_file=None,
   if whitelist_file:
     whitelist = util.ReadFile(whitelist_file, util.RAW_TEXT).strip().split('\n')
     whitelist = set(map(int, whitelist))
-  resources, encoding = RePackFromDataPackStrings(
-      input_data_packs, whitelist, suppress_removed_key_output)
+  resources, encoding = RePackFromDataPackStrings(input_data_packs, whitelist)
   WriteDataPack(resources, output_file, encoding)
 
 
-def RePackFromDataPackStrings(inputs, whitelist,
-                              suppress_removed_key_output=False):
+def RePackFromDataPackStrings(inputs, whitelist):
   """Returns a data pack string that combines the resources from inputs.
 
   Args:
       inputs: a list of data pack strings that need to be combined.
       whitelist: a list of resource IDs that should be kept in the output string
                  or None to include all resources.
-      suppress_removed_key_output: Do not print removed keys.
 
   Returns:
       DataPackContents: a tuple containing the new combined data pack and its
@@ -176,9 +170,8 @@ def RePackFromDataPackStrings(inputs, whitelist,
       resources.update(whitelisted_resources)
       removed_keys = [key for key in content.resources.keys()
                       if key not in whitelist]
-      if not suppress_removed_key_output:
-        for key in removed_keys:
-          print 'RePackFromDataPackStrings Removed Key:', key
+      for key in removed_keys:
+        print 'RePackFromDataPackStrings Removed Key:', key
     else:
       resources.update(content.resources)
 

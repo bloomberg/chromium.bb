@@ -6,7 +6,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//tools/grit/repack.gni")
-import("//tools/grit/grit_rule.gni")
 
 # Arguments:
 #
@@ -119,10 +118,6 @@ template("_repack_one_locale") {
       ]
     }
 
-    if (enable_resource_whitelist_generation) {
-      repack_whitelist = "$root_gen_dir/chrome/resource_whitelist.txt"
-      deps += [ "//chrome:resource_whitelist" ]
-    }
     output = invoker.output
   }
 }
