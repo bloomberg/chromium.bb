@@ -18,6 +18,12 @@ NGConstraintSpace::NGConstraintSpace(NGLogicalSize container_size) {
   block_fragmentation_type_ = FragmentNone;
 }
 
+NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
+                                     NGLogicalSize container_size)
+    : NGConstraintSpace(container_size) {
+  exclusions_ = other.exclusions_;
+}
+
 NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
   bool fixedInline = false, fixedBlock = false;
   // XXX for orthogonal writing mode this is not right

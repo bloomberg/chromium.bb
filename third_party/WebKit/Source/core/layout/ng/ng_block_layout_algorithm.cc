@@ -23,12 +23,18 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
     const NGConstraintSpace& constraintSpace) {
   LayoutUnit inlineSize =
       computeInlineSizeForFragment(constraintSpace, *m_style);
+  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
+  LayoutUnit blockSize =
+      computeBlockSizeForFragment(constraintSpace, *m_style, LayoutUnit(-1));
+  NGConstraintSpace constraint_space_for_children(
+      constraintSpace, NGLogicalSize(inlineSize, blockSize));
 
   HeapVector<Member<const NGFragmentBase>> childFragments;
   LayoutUnit contentSize;
   for (NGBox box : m_boxIterator) {
-    NGBoxMargins childMargins = computeMargins(constraintSpace, *box.style());
-    NGFragment* fragment = box.layout(constraintSpace);
+    NGBoxMargins childMargins =
+        computeMargins(constraint_space_for_children, *box.style());
+    NGFragment* fragment = box.layout(constraint_space_for_children);
     // TODO(layout-ng): Support auto margins
     fragment->setOffset(childMargins.inlineStart,
                         contentSize + childMargins.blockStart);
@@ -37,7 +43,8 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
     childFragments.append(fragment);
   }
 
-  LayoutUnit blockSize =
+  // Recompute the block-axis size now that we know our content size.
+  blockSize =
       computeBlockSizeForFragment(constraintSpace, *m_style, contentSize);
   NGFragment* returnFragment =
       new NGFragment(inlineSize, blockSize, inlineSize, blockSize,

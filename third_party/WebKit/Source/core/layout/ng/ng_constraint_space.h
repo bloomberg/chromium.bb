@@ -53,6 +53,10 @@ class CORE_EXPORT NGConstraintSpace {
   NGConstraintSpace(NGLogicalSize container_size);
   virtual ~NGConstraintSpace() {}
 
+  // Constructs a new constraint space based on an old one with a new size but
+  // the same exclusions.
+  NGConstraintSpace(const NGConstraintSpace&, NGLogicalSize container_size);
+
   // Constructs Layout NG constraint space from legacy layout object.
   static NGConstraintSpace fromLayoutObject(const LayoutBox&);
 

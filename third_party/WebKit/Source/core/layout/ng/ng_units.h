@@ -12,6 +12,10 @@ namespace blink {
 class LayoutUnit;
 
 struct NGLogicalSize {
+  NGLogicalSize() {}
+  NGLogicalSize(LayoutUnit inlineSize, LayoutUnit blockSize)
+      : inlineSize(inlineSize), blockSize(blockSize) {}
+
   LayoutUnit inlineSize;
   LayoutUnit blockSize;
 };
