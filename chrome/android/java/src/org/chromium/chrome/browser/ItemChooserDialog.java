@@ -162,35 +162,48 @@ public class ItemChooserDialog {
                     R.color.default_text_color);
         }
 
+        @Override
+        public boolean isEmpty() {
+            boolean isEmpty = super.isEmpty();
+            if (isEmpty) {
+                assert mKeyToItemMap.isEmpty();
+                assert mDisabledEntries.isEmpty();
+                assert mItemDescriptionMap.isEmpty();
+            } else {
+                assert !mKeyToItemMap.isEmpty();
+                assert !mItemDescriptionMap.isEmpty();
+            }
+            return isEmpty;
+        }
+
         public void addOrUpdate(ItemChooserRow item) {
-            if (mKeyToItemMap.containsKey(item.mKey)) {
-                // TODO(ortuno): Update description.
-                // https://crbug.com/634366
+            ItemChooserRow oldItem = mKeyToItemMap.get(item.mKey);
+            if (oldItem != null) {
+                if (oldItem.equals(item)) {
+                    // No need to update anything.
+                    return;
+                }
+                if (!oldItem.mDescription.equals(item.mDescription)) {
+                    removeFromDescriptionsMap(oldItem.mDescription);
+                    oldItem.mDescription = item.mDescription;
+                    addToDescriptionsMap(oldItem.mDescription);
+                }
+                notifyDataSetChanged();
                 return;
             }
             ItemChooserRow result = mKeyToItemMap.put(item.mKey, item);
             assert result == null;
 
-            String description = item.mDescription;
-            int count = mItemDescriptionMap.containsKey(description)
-                    ? mItemDescriptionMap.get(description) : 0;
-            mItemDescriptionMap.put(description, count + 1);
+            addToDescriptionsMap(item.mDescription);
             add(item);
         }
 
         @Override
         public void remove(ItemChooserRow item) {
-            mKeyToItemMap.remove(item.mKey);
-            String description = item.mDescription;
-            if (mItemDescriptionMap.containsKey(description)) {
-                int count = mItemDescriptionMap.get(description);
-                if (count == 1) {
-                    mItemDescriptionMap.remove(description);
-                } else {
-                    mItemDescriptionMap.put(description, count - 1);
-                }
-            }
-            super.remove(item);
+            ItemChooserRow oldItem = mKeyToItemMap.remove(item.mKey);
+            if (oldItem == null) return;
+            removeFromDescriptionsMap(oldItem.mDescription);
+            super.remove(oldItem);
         }
 
         @Override
@@ -290,6 +303,25 @@ public class ItemChooserDialog {
             mSelectedItem = position;
             mConfirmButton.setEnabled(true);
             mItemAdapter.notifyDataSetChanged();
+        }
+
+        private void addToDescriptionsMap(String description) {
+            int count = mItemDescriptionMap.containsKey(description)
+                    ? mItemDescriptionMap.get(description)
+                    : 0;
+            mItemDescriptionMap.put(description, count + 1);
+        }
+
+        private void removeFromDescriptionsMap(String description) {
+            if (!mItemDescriptionMap.containsKey(description)) {
+                return;
+            }
+            int count = mItemDescriptionMap.get(description);
+            if (count == 1) {
+                mItemDescriptionMap.remove(description);
+            } else {
+                mItemDescriptionMap.put(description, count - 1);
+            }
         }
     }
 
