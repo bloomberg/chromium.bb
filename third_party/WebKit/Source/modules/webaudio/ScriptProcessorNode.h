@@ -38,6 +38,7 @@ namespace blink {
 
 class BaseAudioContext;
 class AudioBuffer;
+class WaitableEvent;
 
 // ScriptProcessorNode is an AudioNode which allows for arbitrary synthesis or processing directly using JavaScript.
 // The API allows for a variable number of inputs and outputs, although it must have at least one input or output.
@@ -67,6 +68,7 @@ private:
     double latencyTime() const override;
 
     void fireProcessEvent(unsigned);
+    void fireProcessEventForOfflineAudioContext(unsigned, WaitableEvent*);
 
     // Double buffering
     unsigned doubleBufferIndex() const { return m_doubleBufferIndex; }

@@ -32,6 +32,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioProcessingEvent.h"
 #include "modules/webaudio/BaseAudioContext.h"
+#include "platform/WaitableEvent.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -162,10 +163,34 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
             // The best we can do is clear out the buffer ourself here.
             outputBuffer->zero();
         } else if (context()->getExecutionContext()) {
-            // Fire the event on the main thread with the appropriate buffer
-            // index.
-            context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-                createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, PassRefPtr<ScriptProcessorHandler>(this), m_doubleBufferIndex));
+            // With the realtime context, execute the script code asynchronously
+            // and do not wait.
+            if (context()->hasRealtimeConstraint()) {
+                // Fire the event on the main thread with the appropriate buffer
+                // index.
+                context()->getExecutionContext()->postTask(
+                    BLINK_FROM_HERE,
+                    createCrossThreadTask(
+                        &ScriptProcessorHandler::fireProcessEvent,
+                        crossThreadUnretained(this),
+                        m_doubleBufferIndex));
+            } else {
+                // If this node is in the offline audio context, use the
+                // waitable event to synchronize to the offline rendering thread.
+                std::unique_ptr<WaitableEvent> waitableEvent = wrapUnique(new WaitableEvent());
+
+                context()->getExecutionContext()->postTask(
+                    BLINK_FROM_HERE,
+                    createCrossThreadTask(
+                        &ScriptProcessorHandler::fireProcessEventForOfflineAudioContext,
+                        crossThreadUnretained(this),
+                        m_doubleBufferIndex,
+                        crossThreadUnretained(waitableEvent.get())));
+
+                // Okay to block the offline audio rendering thread since it is
+                // not the actual audio device thread.
+                waitableEvent->wait();
+            }
         }
 
         swapBuffers();
@@ -198,6 +223,35 @@ void ScriptProcessorHandler::fireProcessEvent(unsigned doubleBufferIndex)
         // Call the JavaScript event handler which will do the audio processing.
         node()->dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer, playbackTime));
     }
+}
+
+void ScriptProcessorHandler::fireProcessEventForOfflineAudioContext(
+    unsigned doubleBufferIndex, WaitableEvent* waitableEvent)
+{
+    DCHECK(isMainThread());
+
+    DCHECK_LT(doubleBufferIndex, 2u);
+    if (doubleBufferIndex > 1) {
+        waitableEvent->signal();
+        return;
+    }
+
+    AudioBuffer* inputBuffer = m_inputBuffers[doubleBufferIndex].get();
+    AudioBuffer* outputBuffer = m_outputBuffers[doubleBufferIndex].get();
+    DCHECK(outputBuffer);
+    if (!outputBuffer) {
+        waitableEvent->signal();
+        return;
+    }
+
+    if (node() && context() && context()->getExecutionContext()) {
+        // We do not need a process lock here because the offline render thread
+        // is locked by the waitable event.
+        double playbackTime = (context()->currentSampleFrame() + m_bufferSize) / static_cast<double>(context()->sampleRate());
+        node()->dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer, playbackTime));
+    }
+
+    waitableEvent->signal();
 }
 
 double ScriptProcessorHandler::tailTime() const
