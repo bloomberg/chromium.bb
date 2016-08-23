@@ -193,6 +193,15 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         loadUrlFromUrlBar(mUrlBar);
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     ViewGroup getContainer() {
         return (ViewGroup) findViewById(R.id.container);
     }
