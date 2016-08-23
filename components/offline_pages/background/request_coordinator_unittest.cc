@@ -606,6 +606,40 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   EXPECT_TRUE(OfflinerWasCanceled());
 }
 
+// This tests that canceling a request will result in TryNextRequest() getting
+// called.
+TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // Ensure the start processing request stops before the completion callback.
+  EnableOfflinerCallback(false);
+
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+
+  // Let all the async parts of the start processing pipeline run to completion.
+  PumpLoop();
+
+  // Remove the request while it is processing.
+  std::vector<int64_t> request_ids{kRequestId1};
+  coordinator()->RemoveRequests(request_ids);
+
+  // Let the async callbacks in the cancel run.
+  PumpLoop();
+
+  // Since offliner was started, it will have seen cancel call.
+  EXPECT_TRUE(OfflinerWasCanceled());
+}
+
 TEST_F(RequestCoordinatorTest, WatchdogTimeout) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(

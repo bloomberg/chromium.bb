@@ -58,7 +58,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<RequestQueue> queue,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
-      is_canceled_(false),
+      is_stopped_(false),
       offliner_(nullptr),
       policy_(std::move(policy)),
       factory_(std::move(factory)),
@@ -112,19 +112,65 @@ void RequestCoordinator::GetQueuedRequestsCallback(
   callback.Run(requests);
 }
 
+void RequestCoordinator::StopPrerendering() {
+  if (offliner_ && is_busy_) {
+    offliner_->Cancel();
+    // Find current request and mark attempt aborted.
+    active_request_->MarkAttemptAborted();
+    queue_->UpdateRequest(*(active_request_.get()),
+                          base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     active_request_->client_id()));
+  }
+
+  // Stopping offliner means it will not call callback.
+  last_offlining_status_ =
+      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED;
+
+  if (active_request_) {
+    RecordOfflinerResultUMA(active_request_->client_id(),
+                            last_offlining_status_);
+    active_request_.reset();
+  }
+
+}
+
+bool RequestCoordinator::CancelActiveRequestIfItMatches(
+    const std::vector<int64_t>& request_ids) {
+  // If we have a request in progress and need to cancel it, call the
+  // pre-renderer to cancel.  TODO Make sure we remove any page created by the
+  // prerenderer if it doesn't get the cancel in time.
+  if (active_request_ != nullptr) {
+    if (request_ids.end() != std::find(request_ids.begin(), request_ids.end(),
+                                       active_request_->request_id())) {
+      StopPrerendering();
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void RequestCoordinator::RemoveRequests(
     const std::vector<int64_t>& request_ids) {
+  bool canceled = CancelActiveRequestIfItMatches(request_ids);
   queue_->RemoveRequests(request_ids,
                          base::Bind(&RequestCoordinator::RemoveRequestsCallback,
                                     weak_ptr_factory_.GetWeakPtr()));
+  if (canceled)
+    TryNextRequest();
 }
 
 void RequestCoordinator::PauseRequests(
     const std::vector<int64_t>& request_ids) {
+  bool canceled = CancelActiveRequestIfItMatches(request_ids);
   queue_->ChangeRequestsState(
       request_ids, SavePageRequest::RequestState::PAUSED,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  if (canceled)
+    TryNextRequest();
 }
 
 void RequestCoordinator::ResumeRequests(
@@ -172,21 +218,8 @@ void RequestCoordinator::RemoveRequestsCallback(
 }
 
 void RequestCoordinator::StopProcessing() {
-  is_canceled_ = true;
-  if (offliner_ && is_busy_) {
-    // TODO(dougarnett): Find current request and mark attempt aborted.
-    offliner_->Cancel();
-  }
-
-  // Stopping offliner means it will not call callback.
-  last_offlining_status_ =
-      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED;
-
-  if (active_request_) {
-    RecordOfflinerResultUMA(active_request_->client_id(),
-                            last_offlining_status_);
-    active_request_.reset();
-  }
+  is_stopped_ = true;
+  StopPrerendering();
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
@@ -204,7 +237,7 @@ bool RequestCoordinator::StartProcessing(
   // budget.
   operation_start_time_ = base::Time::Now();
 
-  is_canceled_ = false;
+  is_stopped_ = false;
   scheduler_callback_ = callback;
 
   TryNextRequest();
@@ -252,7 +285,7 @@ void RequestCoordinator::RequestQueueEmpty() {
 void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   // Check that offlining didn't get cancelled while performing some async
   // steps.
-  if (is_canceled_)
+  if (is_stopped_)
     return;
 
   GetOffliner();
@@ -264,11 +297,11 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
 
   DCHECK(!is_busy_);
   is_busy_ = true;
-  active_request_.reset(new SavePageRequest(request));
 
   // Prepare an updated request to attempt.
   SavePageRequest updated_request(request);
   updated_request.MarkAttemptStarted(base::Time::Now());
+  active_request_.reset(new SavePageRequest(updated_request));
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(

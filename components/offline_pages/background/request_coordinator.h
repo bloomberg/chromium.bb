@@ -138,7 +138,7 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
   // Tracks whether the last offlining attempt got canceled.  This is reset by
   // the next StartProcessing() call.
   bool is_canceled() {
-    return is_canceled_;
+    return is_stopped_;
   }
 
   OfflineEventLogger* GetLogger() {
@@ -174,6 +174,9 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
   // Callback from the request picker when no more requests are in the queue.
   void RequestQueueEmpty();
 
+  // Cancels an in progress pre-rendering, and updates state appropriately.
+  void StopPrerendering();
+
   void SendRequestToOffliner(const SavePageRequest& request);
 
   // Called by the offliner when an offlining request is completed. (and by
@@ -182,6 +185,9 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
                             Offliner::RequestStatus status);
 
   void TryNextRequest();
+
+  // If there is an active request in the list, cancel that request.
+  bool CancelActiveRequestIfItMatches(const std::vector<int64_t>& request_ids);
 
   // Returns the appropriate offliner to use, getting a new one from the factory
   // if needed.
@@ -202,7 +208,7 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
   // use.
   bool is_busy_;
   // True if the current request has been canceled.
-  bool is_canceled_;
+  bool is_stopped_;
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
   base::Time operation_start_time_;
