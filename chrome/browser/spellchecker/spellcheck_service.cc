@@ -187,7 +187,7 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   std::vector<SpellCheckBDictLanguage> bdict_languages;
 
-  for (const auto& hunspell_dictionary : hunspell_dictionaries_) {
+  for (const auto* hunspell_dictionary : hunspell_dictionaries_) {
     bdict_languages.push_back(SpellCheckBDictLanguage());
     bdict_languages.back().language = hunspell_dictionary->GetLanguage();
     bdict_languages.back().file =
