@@ -76,7 +76,8 @@ public:
     // sets |success| to true.
     FloatRect localToVisualRectInAncestorSpace(const FloatRect&,
         const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState, bool& success);
+        const PropertyTreeState& ancestorState,
+        bool& success);
 
     // Maps from a rect in |localTransformSpace| to its transformed rect in |ancestorSpace|. This is computed
     // by multiplying the rect by the combined transform between |localTransformState| and |ancestorState|,
@@ -91,7 +92,8 @@ public:
     // sets |success| to true.
     FloatRect localToAncestorRect(const FloatRect&,
         const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState, bool& success);
+        const PropertyTreeState& ancestorState,
+        bool& success);
 
     // Maps from a rect in |ancestorSpace| to its transformed rect in |localTransformSpace|. This is computed
     // by multiplying the rect by the inverse combined transform between |localTransformState| and |ancestorState|,
@@ -102,11 +104,17 @@ public:
     // sets |success| to true.
     FloatRect ancestorToLocalRect(const FloatRect&,
         const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState, bool& success);
+        const PropertyTreeState& ancestorState,
+        bool& success);
 
 private:
-    // Used by mapToVisualRectInDestinationSpace() and mapRectToDestinationSpace() after fast mapping
-    // (assuming destination is an ancestor of source) failed.
+    // Used by mapToVisualRectInDestinationSpace() after fast mapping (assuming destination is an ancestor of source) failed.
+    FloatRect slowMapToVisualRectInDestinationSpace(const FloatRect&,
+        const PropertyTreeState& sourceState,
+        const PropertyTreeState& destinationState,
+        bool& success);
+
+    // Used by mapRectToDestinationSpace() after fast mapping (assuming destination is an ancestor of source) failed.
     FloatRect slowMapRectToDestinationSpace(const FloatRect&,
         const PropertyTreeState& sourceState,
         const PropertyTreeState& destinationState,
@@ -116,13 +124,15 @@ private:
     // equal to or a descendant of |ancestorState.transform|.
     const TransformationMatrix& localToAncestorMatrix(
         const TransformPaintPropertyNode* localTransformNode,
-        const PropertyTreeState& ancestorState, bool& success);
+        const PropertyTreeState& ancestorState,
+        bool& success);
 
     // Returns the "clip visual rect" between |localTransformState| and |ancestorState|. See above for the definition
     // of "clip visual rect".
-    const FloatRect& localToAncestorClipRect(
+    FloatRect localToAncestorClipRect(
         const PropertyTreeState& localTransformState,
-        const PropertyTreeState& ancestorState);
+        const PropertyTreeState& ancestorState,
+        bool& success);
 
     // Returns the precomputed data if already set, or adds and memoizes a new PrecomputedDataForAncestor otherwise.
     PrecomputedDataForAncestor& getPrecomputedDataForAncestor(const PropertyTreeState&);

@@ -390,4 +390,54 @@ TEST_F(GeometryMapperTest, SiblingTransforms)
     EXPECT_RECT_EQ(expected, result);
 }
 
+TEST_F(GeometryMapperTest, SiblingTransformsWithClip)
+{
+    // These transforms are siblings. Thus mapping from one to the other requires going through the root.
+    TransformationMatrix rotateTransform1;
+    rotateTransform1.rotate(45);
+    RefPtr<TransformPaintPropertyNode> transform1 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform1, FloatPoint3D());
+
+    TransformationMatrix rotateTransform2;
+    rotateTransform2.rotate(-45);
+    RefPtr<TransformPaintPropertyNode> transform2 = TransformPaintPropertyNode::create(rootPropertyTreeState().transform, rotateTransform2, FloatPoint3D());
+
+    RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(rootPropertyTreeState().clip, transform2.get(), FloatRoundedRect(10, 10, 70, 70));
+
+    PropertyTreeState transform1State = rootPropertyTreeState();
+    transform1State.transform = transform1;
+    PropertyTreeState transform2AndClipState = rootPropertyTreeState();
+    transform2AndClipState.transform = transform2;
+    transform2AndClipState.clip = clip;
+
+    bool success;
+    FloatRect input(0, 0, 100, 100);
+
+    // Test map from transform1State to transform2AndClipState.
+    FloatRect expected = rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
+
+    // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to destination.
+    FloatRect result = geometryMapper->mapToVisualRectInDestinationSpace(input, transform1State, transform2AndClipState, success);
+    // Fails, because the clip of the destination state is not an ancestor of the clip of the source state.
+    EXPECT_FALSE(success);
+
+    // mapRectToDestinationSpace ignores clip.
+    result = geometryMapper->mapRectToDestinationSpace(input, transform1State, transform2AndClipState, success);
+    EXPECT_TRUE(success);
+    EXPECT_RECT_EQ(expected, result);
+
+    // Test map from transform2AndClipState to transform1State.
+    FloatRect expectedUnclipped = rotateTransform1.inverse().mapRect(rotateTransform2.mapRect(input));
+    FloatRect expectedClipped = rotateTransform1.inverse().mapRect(rotateTransform2.mapRect(FloatRect(10, 10, 70, 70)));
+
+    // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to destination.
+    result = geometryMapper->mapToVisualRectInDestinationSpace(input, transform2AndClipState, transform1State, success);
+    EXPECT_TRUE(success);
+    EXPECT_RECT_EQ(expectedClipped, result);
+
+    // mapRectToDestinationSpace ignores clip.
+    result = geometryMapper->mapRectToDestinationSpace(input, transform2AndClipState, transform1State, success);
+    EXPECT_TRUE(success);
+    EXPECT_RECT_EQ(expectedUnclipped, result);
+}
+
 } // namespace blink
