@@ -7,7 +7,6 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "services/ui/common/mus_common_export.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 
 namespace gfx {
@@ -21,44 +20,42 @@ namespace mojo {
 
 #if defined(USE_OZONE)
 template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<ui::mojom::NativePixmapHandlePtr, gfx::NativePixmapHandle> {
+struct TypeConverter<ui::mojom::NativePixmapHandlePtr,
+                     gfx::NativePixmapHandle> {
   static ui::mojom::NativePixmapHandlePtr Convert(
       const gfx::NativePixmapHandle& handle);
 };
 
 template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<gfx::NativePixmapHandle, ui::mojom::NativePixmapHandlePtr> {
+struct TypeConverter<gfx::NativePixmapHandle,
+                     ui::mojom::NativePixmapHandlePtr> {
   static gfx::NativePixmapHandle Convert(
       const ui::mojom::NativePixmapHandlePtr& handle);
 };
 #endif
 
 template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId> {
+struct TypeConverter<ui::mojom::GpuMemoryBufferIdPtr, gfx::GpuMemoryBufferId> {
   static ui::mojom::GpuMemoryBufferIdPtr Convert(
       const gfx::GpuMemoryBufferId& id);
 };
 
 template <>
-struct MUS_COMMON_EXPORT
-    TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr> {
+struct TypeConverter<gfx::GpuMemoryBufferId, ui::mojom::GpuMemoryBufferIdPtr> {
   static gfx::GpuMemoryBufferId Convert(
       const ui::mojom::GpuMemoryBufferIdPtr& id);
 };
 
 template <>
-struct MUS_COMMON_EXPORT TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr,
-                                       gfx::GpuMemoryBufferHandle> {
+struct TypeConverter<ui::mojom::GpuMemoryBufferHandlePtr,
+                     gfx::GpuMemoryBufferHandle> {
   static ui::mojom::GpuMemoryBufferHandlePtr Convert(
       const gfx::GpuMemoryBufferHandle& handle);
 };
 
 template <>
-struct MUS_COMMON_EXPORT TypeConverter<gfx::GpuMemoryBufferHandle,
-                                       ui::mojom::GpuMemoryBufferHandlePtr> {
+struct TypeConverter<gfx::GpuMemoryBufferHandle,
+                     ui::mojom::GpuMemoryBufferHandlePtr> {
   static gfx::GpuMemoryBufferHandle Convert(
       const ui::mojom::GpuMemoryBufferHandlePtr& handle);
 };

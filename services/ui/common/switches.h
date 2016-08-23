@@ -5,14 +5,13 @@
 #ifndef SERVICES_UI_COMMON_SWITCHES_H_
 #define SERVICES_UI_COMMON_SWITCHES_H_
 
-#include "services/ui/common/mus_common_export.h"
 
 namespace ui {
 namespace switches {
 
 // All args in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
-extern const char MUS_COMMON_EXPORT kUseTestConfig[];
+extern const char kUseTestConfig[];
 
 }  // namespace switches
 }  // namespace ui

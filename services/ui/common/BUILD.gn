@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 import("//services/shell/public/service_manifest.gni")
 import("//testing/test.gni")
 
-component("mus_common") {
+source_set("mus_common") {
   sources = [
     "event_matcher_util.cc",
     "event_matcher_util.h",
@@ -14,15 +14,12 @@ component("mus_common") {
     "generic_shared_memory_id_generator.h",
     "gpu_type_converters.cc",
     "gpu_type_converters.h",
-    "mus_common_export.h",
     "switches.cc",
     "switches.h",
     "transient_window_utils.h",
     "types.h",
     "util.h",
   ]
-
-  defines = [ "MUS_COMMON_IMPLEMENTATION" ]
 
   deps = [
     "//gpu/command_buffer/client",
