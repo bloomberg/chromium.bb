@@ -31,6 +31,7 @@ using HostSet = std::set<std::string>;
 
 class ContentSubresourceFilterDriver;
 class SubresourceFilterClient;
+enum class ActivationState;
 
 // Controls the activation of subresource filtering for each page load in a
 // WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
@@ -52,13 +53,17 @@ class ContentSubresourceFilterDriverFactory
       std::unique_ptr<SubresourceFilterClient> client);
   ~ContentSubresourceFilterDriverFactory() override;
 
-  void OnMainResourceMatchedSafeBrowsingBlacklist(
-      const GURL& url,
-      const std::vector<GURL>& redirect_urls,
-      safe_browsing::ThreatPatternType threat_type);
-  const HostSet& activation_set() const { return activate_on_hosts_; }
+  ContentSubresourceFilterDriver* DriverFromFrameHost(
+      content::RenderFrameHost* render_frame_host);
+
+  bool IsWhitelisted(const GURL& url) const;
+  bool IsBlacklisted(const GURL& url) const;
+
+  // Returns true if the subresource filtering should be active for the |url|.
   bool ShouldActivateForURL(const GURL& url) const;
-  const HostSet& whitelisted_set() const { return whitelisted_hosts_; }
+
+  // Adds the host of the |url| to the set of hosts for which Subresource
+  // Filtering should be active for the lifetime of this WebContents.
   void AddHostOfURLToActivationSet(const GURL& url);
 
   // Whitelists the host of |url|, so that page loads with the main-frame
@@ -66,18 +71,36 @@ class ContentSubresourceFilterDriverFactory
   // filtering for the lifetime of this WebContents.
   void AddHostOfURLToWhitelistSet(const GURL& url);
 
+  // Called when Safe Browsing detects that the |url| corresponding to the load
+  // of the main frame belongs to the blacklist with |threat_type|. If the
+  // blacklist is the Safe Browsing Social Engineering ads landing, then |url|
+  // and |redirects| are saved.
+  void OnMainResourceMatchedSafeBrowsingBlacklist(
+      const GURL& url,
+      const std::vector<GURL>& redirect_urls,
+      safe_browsing::ThreatPatternType threat_type);
+
   // Reloads the page and inserts the url to the whitelist.
   void OnReloadRequested();
-
-  ContentSubresourceFilterDriver* DriverFromFrameHost(
-      content::RenderFrameHost* render_frame_host);
 
   // Checks if all preconditions are fulfilled and if so, activates filtering
   // for the given |render_frame_host|. |url| is used to check web site specific
   // preconditions and should be the web URL of the page where caller is
   // intended to activate the Safe Browsing Subresource Filter.
-  void ActivateForFrameHostIfNeeded(content::RenderFrameHost* render_frame_host,
-                                    const GURL& url);
+  // TODO(melandory) While due to crbug.com/621856 we cannot yet get rid of
+  // SubresourceFilterNavigationThrottle, it would still make sense to change
+  // its semantics so that its only responsibility is to emulate
+  // DidRedirectNavigation and ReadyToCommitNavigation for us before we get
+  // these from WebContentsObserver for free. Then, the throttle would no longer
+  // contain any subresource filter specific logic, and those pieces of logic
+  // would all be moved into here.
+  void ReadyToCommitMainFrameNavigation(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url);
+
+  const HostSet& activation_set() const { return activate_on_hosts_; }
+  const HostSet& whitelisted_set() const { return whitelisted_hosts_; }
+  ActivationState activation_state() { return activation_state_; }
 
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
@@ -106,11 +129,13 @@ class ContentSubresourceFilterDriverFactory
       bool is_iframe_srcdoc) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
 
-  // Sends the current maximum activation state to the given |render_frame_host|
-  // and prompts the user if needed.
-  void SendActivationStateAndPromptUser(
-      content::RenderFrameHost* render_frame_host);
+  // Checks pre-conditions and sets UI visibility accordingly.
+  void PromptUserIfNeeded(content::RenderFrameHost* render_frame_host);
 
   static const char kWebContentsUserDataKey[];
 
@@ -119,6 +144,8 @@ class ContentSubresourceFilterDriverFactory
 
   HostSet activate_on_hosts_;
   HostSet whitelisted_hosts_;
+
+  ActivationState activation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };

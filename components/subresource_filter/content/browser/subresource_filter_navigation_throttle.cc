@@ -52,8 +52,8 @@ SubresourceFilterNavigationThrottle::WillProcessResponse() {
 
   ContentSubresourceFilterDriverFactory::FromWebContents(
       navigation_handle()->GetWebContents())
-      ->ActivateForFrameHostIfNeeded(navigation_handle()->GetRenderFrameHost(),
-                                     initial_url_);
+      ->ReadyToCommitMainFrameNavigation(
+          navigation_handle()->GetRenderFrameHost(), initial_url_);
 
   return NavigationThrottle::PROCEED;
 }

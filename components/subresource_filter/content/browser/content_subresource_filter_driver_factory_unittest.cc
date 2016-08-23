@@ -13,10 +13,18 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace {
+
+const char kExampleUrlWithParams[] = "https://example.com/soceng?q=engsoc";
+const char kTestUrl[] = "https://test.com";
+const char kExampleUrl[] = "https://example.com";
+
+}  // namespace
 namespace subresource_filter {
 
 class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
@@ -60,11 +68,13 @@ class ContentSubresourceFilterDriverFactoryTest
         web_contents(), base::WrapUnique(client()));
     driver_ = new MockSubresourceFilterDriver(main_rfh());
     SetDriverForFrameHostForTesting(main_rfh(), driver());
-  }
-
-  void SendActivationStateAndPromptUser(
-      content::RenderFrameHost* render_frame_host) {
-    factory()->SendActivationStateAndPromptUser(render_frame_host);
+    // Add a subframe.
+    content::RenderFrameHostTester* rfh_tester =
+        content::RenderFrameHostTester::For(main_rfh());
+    rfh_tester->InitializeRenderFrameIfNeeded();
+    subframe_rfh_ = rfh_tester->AppendChild("Child");
+    subframe_driver_ = new MockSubresourceFilterDriver(subframe_rfh());
+    SetDriverForFrameHostForTesting(subframe_rfh(), subframe_driver());
   }
 
   void SetDriverForFrameHostForTesting(
@@ -82,10 +92,66 @@ class ContentSubresourceFilterDriverFactoryTest
   MockSubresourceFilterClient* client() { return client_; }
   MockSubresourceFilterDriver* driver() { return driver_; }
 
+  MockSubresourceFilterDriver* subframe_driver() { return subframe_driver_; }
+  content::RenderFrameHost* subframe_rfh() { return subframe_rfh_; }
+
+  void BlacklistURLWithRedirects(const GURL& url,
+                                 const std::vector<GURL>& redirects) {
+    factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
+        url, redirects,
+        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+  }
+
+  void ActivateAndExpectForFrameHostForUrl(MockSubresourceFilterDriver* driver,
+                                           content::RenderFrameHost* rfh,
+                                           const GURL& url,
+                                           bool should_activate) {
+    EXPECT_CALL(*driver, ActivateForProvisionalLoad(::testing::_))
+        .Times(should_activate);
+    factory()->ReadyToCommitMainFrameNavigation(rfh, url);
+    ::testing::Mock::VerifyAndClearExpectations(driver);
+  }
+
+  void NavigateToUrlAndExpectActivationAndPromptSubFrame(const GURL& url,
+                                                         bool should_activate) {
+    EXPECT_CALL(*subframe_driver(), ActivateForProvisionalLoad(::testing::_))
+        .Times(should_activate);
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
+
+    factory()->DidStartProvisionalLoadForFrame(
+        subframe_rfh(), url /* validated_url */, false /* is_error_page */,
+        false /* is_iframe_srcdoc */);
+    factory()->DidCommitProvisionalLoadForFrame(
+        subframe_rfh(), url, ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME);
+    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ::testing::Mock::VerifyAndClearExpectations(client());
+  }
+
+  void NavigateToUrlAndExpectActivationAndPrompt(
+      const GURL& url,
+      bool should_activate,
+      ActivationState expected_activation_state) {
+    EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_))
+        .Times(should_activate);
+    EXPECT_CALL(*client(),
+                ToggleNotificationVisibility(expected_activation_state ==
+                                             ActivationState::ENABLED));
+    content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+    EXPECT_EQ(expected_activation_state, factory()->activation_state());
+    ::testing::Mock::VerifyAndClearExpectations(driver());
+    ::testing::Mock::VerifyAndClearExpectations(client());
+
+    NavigateToUrlAndExpectActivationAndPromptSubFrame(GURL(kExampleUrl),
+                                                      should_activate);
+  }
+
  private:
   // Owned by the factory.
   MockSubresourceFilterClient* client_;
   MockSubresourceFilterDriver* driver_;
+
+  content::RenderFrameHost* subframe_rfh_;
+  MockSubresourceFilterDriver* subframe_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryTest);
 };
@@ -102,12 +168,10 @@ class ContentSubresourceFilterDriverFactoryThreatTypeTest
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitEmptyRedirects) {
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
-      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
   EXPECT_EQ(1U, factory()->activation_set().size());
 
-  EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("https://example.com")));
+  EXPECT_TRUE(factory()->ShouldActivateForURL(GURL(kExampleUrl)));
   EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("http://example.com")));
   EXPECT_TRUE(
       factory()->ShouldActivateForURL(GURL("http://example.com/42?q=42!")));
@@ -126,11 +190,9 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
   redirects.push_back(GURL("https://example1.com"));
   redirects.push_back(GURL("https://example2.com"));
   redirects.push_back(GURL("https://example3.com"));
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      GURL("https://example.com/engsoc/q=soceng"), redirects,
-      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), redirects);
   EXPECT_EQ(4U, factory()->activation_set().size());
-  EXPECT_TRUE(factory()->ShouldActivateForURL(GURL("https://example.com")));
+  EXPECT_TRUE(factory()->ShouldActivateForURL(GURL(kExampleUrl)));
 
   for (const auto& redirect : redirects) {
     EXPECT_TRUE(factory()->ShouldActivateForURL(redirect));
@@ -152,22 +214,12 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeNoSites);
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
-  factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
-  ::testing::Mock::VerifyAndClearExpectations(driver());
-  ::testing::Mock::VerifyAndClearExpectations(client());
-
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
-      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
-  factory()->ActivateForFrameHostIfNeeded(main_rfh(),
-                                          GURL("https://example.com"));
-  ::testing::Mock::VerifyAndClearExpectations(driver());
-  ::testing::Mock::VerifyAndClearExpectations(client());
+  ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(), GURL(kTestUrl),
+                                      false /* should_activate */);
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
+  ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(),
+                                      GURL("https://not-example.com"),
+                                      false /* should_activate */);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
@@ -176,21 +228,11 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeActivationList);
 
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      GURL("https://example.com/soceng?q=engsoc"), std::vector<GURL>(),
-      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(0);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
-  factory()->ActivateForFrameHostIfNeeded(main_rfh(), GURL("https://test.com"));
-  ::testing::Mock::VerifyAndClearExpectations(driver());
-
-  EXPECT_CALL(*driver(), ActivateForProvisionalLoad(::testing::_)).Times(1);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
-  factory()->ActivateForFrameHostIfNeeded(main_rfh(),
-                                          GURL("https://example.com"));
-  ::testing::Mock::VerifyAndClearExpectations(driver());
-  ::testing::Mock::VerifyAndClearExpectations(client());
+  BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
+  ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(), GURL(kTestUrl),
+                                      false /* should_activate */);
+  ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(), GURL(kExampleUrl),
+                                      true /* should_activate */);
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
@@ -219,60 +261,65 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
-       ActivationPromptNotShownWhenExperimentDisabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
-  SendActivationStateAndPromptUser(main_rfh());
-  ::testing::Mock::VerifyAndClearExpectations(client());
-}
-
-TEST_F(ContentSubresourceFilterDriverFactoryTest,
-       ActivationPromptNotShownWhenExperimentDryRun) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
-      kActivationScopeActivationList);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
-  SendActivationStateAndPromptUser(main_rfh());
-  ::testing::Mock::VerifyAndClearExpectations(client());
-}
-
-TEST_F(ContentSubresourceFilterDriverFactoryTest,
-       ActivationPromptShownWhenExperimentEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
-  SendActivationStateAndPromptUser(main_rfh());
-  ::testing::Mock::VerifyAndClearExpectations(client());
-}
-
-TEST_F(ContentSubresourceFilterDriverFactoryTest,
        ActivationPromptNotShownForNonMainFrames) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeActivationList);
-  // Add a subframe.
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->InitializeRenderFrameIfNeeded();
-  content::RenderFrameHost* subframe_rfh = rfh_tester->AppendChild("Child");
+  NavigateToUrlAndExpectActivationAndPromptSubFrame(GURL(kExampleUrl),
+                                                    false /* should_prompt */);
+}
 
-  MockSubresourceFilterDriver* subframe_driver =
-      new MockSubresourceFilterDriver(subframe_rfh);
-  SetDriverForFrameHostForTesting(subframe_rfh, subframe_driver);
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeAllSitesStateDryRun) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
+      kActivationScopeAllSites);
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            true /* should_activate */,
+                                            ActivationState::DRYRUN);
+  factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            false /* should_activate */,
+                                            ActivationState::DISABLED);
+}
 
-  EXPECT_CALL(*subframe_driver, ActivateForProvisionalLoad(::testing::_))
-      .Times(1);
-  EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(0);
-  SendActivationStateAndPromptUser(subframe_rfh);
-  ::testing::Mock::VerifyAndClearExpectations(client());
-  ::testing::Mock::VerifyAndClearExpectations(subframe_driver);
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeAllSitesStateEnabled) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeAllSites);
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            true /* should_activate */,
+                                            ActivationState::ENABLED);
+  factory()->AddHostOfURLToWhitelistSet(GURL(kExampleUrlWithParams));
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            false /* should_activate */,
+                                            ActivationState::DISABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeNoSites) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
+      kActivationScopeNoSites);
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            false /* should_activate */,
+                                            ActivationState::DISABLED);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       DidStartProvisionalLoadScopeActivationList) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDisabled,
+      kActivationScopeActivationList);
+  NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
+                                            false /* should_activate */,
+                                            ActivationState::DISABLED);
 }
 
 INSTANTIATE_TEST_CASE_P(
