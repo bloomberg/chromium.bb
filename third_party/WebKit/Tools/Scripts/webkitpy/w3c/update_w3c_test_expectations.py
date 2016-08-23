@@ -292,7 +292,9 @@ class W3CExpectationsLineAdder(object):
             self._host.executive.run_command([
                 'python',
                 webkit_patch,
-                'rebaseline-from-try-jobs', '-v'
+                'rebaseline-cl',
+                '--verbose',
+                '--no-trigger-jobs',
             ] + tests_to_rebaseline)
         return tests_results
 

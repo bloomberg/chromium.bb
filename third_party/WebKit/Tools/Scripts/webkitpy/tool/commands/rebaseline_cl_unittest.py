@@ -47,7 +47,7 @@ class RebaselineCLTest(BaseTestCase):
                 "specifiers": ["Win7", "Release"],
                 "is_try_builder": True,
             },
-            "MOCK Try Mac": {
+            "MOCK Try Linux": {
                 "port_name": "test-mac-mac10.10",
                 "specifiers": ["Mac10.10", "Release"],
                 "is_try_builder": True,
@@ -67,6 +67,7 @@ class RebaselineCLTest(BaseTestCase):
             'optimize': True,
             'results_directory': None,
             'verbose': False,
+            'trigger_jobs': False,
         }
         options.update(kwargs)
         return optparse.Values(dict(**options))
@@ -132,6 +133,39 @@ class RebaselineCLTest(BaseTestCase):
              '  fast/dom/prototype-taco.html: MOCK Try Win (5000)\n'
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'))
+
+    def test_execute_with_trigger_jobs_option(self):
+        oc = OutputCapture()
+        try:
+            oc.capture_output()
+            self.command.execute(self.command_options(issue=11112222, trigger_jobs=True), [], self.tool)
+        finally:
+            _, _, logs = oc.restore_output()
+        # A message is printed showing that some try jobs are triggered.
+        self.assertMultiLineEqual(
+            logs,
+            ('Triggering try jobs for: MOCK Try Linux\n'
+             'Tests to rebaseline:\n'
+             '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-taco.html: MOCK Try Win (5000)\n'
+             'Rebaselining fast/dom/prototype-inheritance.html\n'
+             'Rebaselining fast/dom/prototype-taco.html\n'
+             'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))
+        # The first executive call, before the rebaseline calls, is triggering try jobs.
+        self.assertEqual(
+            self.tool.executive.calls,
+            [
+                ['git', 'cl', 'try', '-b', 'MOCK Try Linux'],
+                [
+                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'png',
+                     'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
+                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt',
+                     'fast/dom/prototype-inheritance.html'],
+                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt',
+                     'fast/dom/prototype-taco.html']
+                ]
+            ])
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""

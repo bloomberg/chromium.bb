@@ -15,10 +15,10 @@ from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
+from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
-
 
 _log = logging.getLogger(__name__)
 
@@ -26,11 +26,11 @@ _log = logging.getLogger(__name__)
 class RebaselineCL(AbstractParallelRebaselineCommand):
     name = "rebaseline-cl"
     help_text = "Fetches new baselines for a CL from test runs on try bots."
-    long_help = ("By default, this command will check the latest try results "
-                 "and download new baselines for any tests that have been "
-                 "changed in the given CL that have failed and have new "
-                 "baselines. After downloading, the baselines for different "
-                 "platforms should be optimized (conslidated).")
+    long_help = ("By default, this command will check the latest try job results "
+                 "for all platforms, and start try jobs for platforms with no "
+                 "try jobs. Then, new baselines are downloaded for any tests "
+                 "that are being rebaselined. After downloading, the baselines "
+                 "for different platforms will be optimized (consolidated).")
     show_in_main_help = True
 
     def __init__(self):
@@ -44,6 +44,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             optparse.make_option(
                 '--only-changed-tests', action='store_true', default=False,
                 help='Only download new baselines for tests that are changed in the CL.'),
+            optparse.make_option(
+                '--no-trigger-jobs', dest='trigger_jobs', action='store_false', default=True,
+                help='Do not trigger any try jobs.'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
@@ -53,10 +56,13 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         issue_number = self._get_issue_number(options)
         if not issue_number:
             return
+
+        builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
+        if options.trigger_jobs:
+            self.trigger_jobs_for_missing_builds(builds)
+
         if args:
             test_prefix_list = {}
-            try_jobs = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
-            builds = [Build(j.builder_name, j.build_number) for j in try_jobs]
             for test in args:
                 test_prefix_list[test] = {b: BASELINE_SUFFIX_LIST for b in builds}
         else:
@@ -84,6 +90,18 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         # Pass in a current working directory inside of the repo so
         # that this command can be called from outside of the repo.
         return Git(cwd=self._tool.filesystem.dirname(self._tool.path()))
+
+    def trigger_jobs_for_missing_builds(self, builds):
+        builders_with_builds = {b.builder_name for b in builds}
+        builders_without_builds = set(self._try_bots()) - builders_with_builds
+        if not builders_without_builds:
+            return
+        _log.info('Triggering try jobs for: %s', ', '.join(sorted(builders_without_builds)))
+        git_cl = GitCL(self._tool.executive)
+        command = ['try']
+        for builder in sorted(builders_without_builds):
+            command += ['-b', builder]
+        git_cl.run(command)
 
     def _test_prefix_list(self, issue_number, only_changed_tests):
         """Returns a collection of test, builder and file extensions to get new baselines for.
