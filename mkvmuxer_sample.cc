@@ -32,7 +32,7 @@
 namespace {
 
 void Usage() {
-  printf("Usage: sample_muxer -i input -o output [options]\n");
+  printf("Usage: mkvmuxer_sample -i input -o output [options]\n");
   printf("\n");
   printf("Main options:\n");
   printf("  -h | -?                     show help\n");
@@ -333,7 +333,7 @@ int main(int argc, char* argv[]) {
   // Set SegmentInfo element attributes
   mkvmuxer::SegmentInfo* const info = muxer_segment.GetSegmentInfo();
   info->set_timecode_scale(timeCodeScale);
-  info->set_writing_app("sample_muxer");
+  info->set_writing_app("mkvmuxer_sample");
 
   const mkvparser::Tags* const tags = parser_segment->GetTags();
   if (copy_tags && tags) {

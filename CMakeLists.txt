@@ -183,21 +183,21 @@ endif ()
 
 include_directories("${LIBWEBM_SRC_DIR}")
 
-# Sample (mkvparser) section.
-add_executable(sample
-               "${LIBWEBM_SRC_DIR}/sample.cc")
-target_link_libraries(sample LINK_PUBLIC webm)
+# mkvparser_sample section.
+add_executable(mkvparser_sample
+               "${LIBWEBM_SRC_DIR}/mkvparser_sample.cc")
+target_link_libraries(mkvparser_sample LINK_PUBLIC webm)
 
-# Sample muxer section.
-add_executable(sample_muxer
-               "${LIBWEBM_SRC_DIR}/sample_muxer.cc"
+# mkvmuxer_sample section.
+add_executable(mkvmuxer_sample
+               "${LIBWEBM_SRC_DIR}/mkvmuxer_sample.cc"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.cc"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.h"
                "${LIBWEBM_SRC_DIR}/webvtt/vttreader.cc"
                "${LIBWEBM_SRC_DIR}/webvtt/vttreader.h"
                "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
                "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
-target_link_libraries(sample_muxer LINK_PUBLIC webm)
+target_link_libraries(mkvmuxer_sample LINK_PUBLIC webm)
 
 # Dumpvtt section.
 add_executable(dumpvtt
