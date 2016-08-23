@@ -55,7 +55,6 @@ class KeyboardEvent;
 class MouseEvent;
 class LayoutObject;
 class ComputedStyle;
-class TouchEvent;
 
 class ClickHandlingState final : public EventDispatchHandlingState {
 public:
@@ -87,7 +86,6 @@ public:
     virtual void handleKeypressEvent(KeyboardEvent*);
     virtual void handleKeyupEvent(KeyboardEvent*);
     virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*);
-    virtual void handleTouchEvent(TouchEvent*);
     virtual void forwardEvent(Event*);
     virtual bool shouldSubmitImplicitly(Event*);
     virtual HTMLFormElement* formForSubmission() const;
@@ -97,7 +95,6 @@ public:
     virtual void handleBlurEvent();
     virtual void handleDOMActivateEvent(Event*);
     virtual void accessKeyAction(bool sendMouseEvents);
-    virtual bool hasTouchEventHandler() const;
     virtual void blur();
     void dispatchSimulatedClickIfActive(KeyboardEvent*) const;
 

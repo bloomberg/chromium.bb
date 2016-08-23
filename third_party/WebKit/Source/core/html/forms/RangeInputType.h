@@ -59,8 +59,6 @@ private:
     StepRange createStepRange(AnyStepHandling) const override;
     bool isSteppable() const override;
     void handleMouseDownEvent(MouseEvent*) override;
-    void handleTouchEvent(TouchEvent*) override;
-    bool hasTouchEventHandler() const override;
     void handleKeydownEvent(KeyboardEvent*) override;
     LayoutObject* createLayoutObject(const ComputedStyle&) const override;
     void createShadowSubtree() override;

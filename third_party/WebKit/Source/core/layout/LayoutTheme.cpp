@@ -210,6 +210,12 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
         return adjustMenuListStyle(style, e);
     case MenulistButtonPart:
         return adjustMenuListButtonStyle(style, e);
+    case SliderHorizontalPart:
+    case SliderVerticalPart:
+    case MediaFullScreenVolumeSliderPart:
+    case MediaSliderPart:
+    case MediaVolumeSliderPart:
+        return adjustSliderContainerStyle(style, e);
     case SliderThumbHorizontalPart:
     case SliderThumbVerticalPart:
         return adjustSliderThumbStyle(style);
@@ -625,6 +631,19 @@ bool LayoutTheme::shouldHaveSpinButton(HTMLInputElement* inputElement) const
 
 void LayoutTheme::adjustMenuListButtonStyle(ComputedStyle&, Element*) const
 {
+}
+
+void LayoutTheme::adjustSliderContainerStyle(ComputedStyle& style, Element* e) const
+{
+    if (e->shadowPseudoId() == "-webkit-media-slider-container" || e->shadowPseudoId() == "-webkit-slider-container") {
+        if (style.appearance() == SliderVerticalPart) {
+            style.setTouchAction(TouchActionPanX);
+            style.setAppearance(NoControlPart);
+        } else {
+            style.setTouchAction(TouchActionPanY);
+            style.setAppearance(NoControlPart);
+        }
+    }
 }
 
 void LayoutTheme::adjustSliderThumbStyle(ComputedStyle& style) const

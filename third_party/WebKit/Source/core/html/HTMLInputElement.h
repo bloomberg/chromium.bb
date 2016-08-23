@@ -287,7 +287,6 @@ private:
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) final;
     void didMoveToNewDocument(Document& oldDocument) final;
-    void removeAllEventListeners() final;
 
     bool hasCustomFocusLogic() const final;
     bool isKeyboardFocusable() const final;
@@ -357,7 +356,6 @@ private:
     void requiredAttributeChanged() final;
     void disabledAttributeChanged() final;
 
-    void updateTouchEventHandlerRegistry();
     void initializeTypeInParsing();
     void updateType();
 
@@ -395,7 +393,6 @@ private:
     unsigned m_parsingInProgress : 1;
     unsigned m_valueAttributeWasUpdatedAfterParsing : 1;
     unsigned m_canReceiveDroppedFiles : 1;
-    unsigned m_hasTouchEventHandler : 1;
     unsigned m_shouldRevealPassword : 1;
     unsigned m_needsToUpdateViewValue : 1;
     unsigned m_isPlaceholderVisible : 1;

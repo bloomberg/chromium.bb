@@ -36,13 +36,10 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/Touch.h"
-#include "core/dom/TouchList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/events/TouchEvent.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"
@@ -168,29 +165,6 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
     thumb->dragFrom(event->absoluteLocation());
 }
 
-void RangeInputType::handleTouchEvent(TouchEvent* event)
-{
-    if (element().isDisabledOrReadOnly())
-        return;
-
-    if (event->type() == EventTypeNames::touchend) {
-        element().dispatchFormControlChangeEvent();
-        event->setDefaultHandled();
-        return;
-    }
-
-    TouchList* touches = event->targetTouches();
-    if (touches->length() == 1) {
-        sliderThumbElement()->setPositionFromPoint(touches->item(0)->absoluteLocation());
-        event->setDefaultHandled();
-    }
-}
-
-bool RangeInputType::hasTouchEventHandler() const
-{
-    return true;
-}
-
 void RangeInputType::handleKeydownEvent(KeyboardEvent* event)
 {
     if (element().isDisabledOrReadOnly())
@@ -262,6 +236,7 @@ void RangeInputType::createShadowSubtree()
     track->appendChild(SliderThumbElement::create(document));
     HTMLElement* container = SliderContainerElement::create(document);
     container->appendChild(track);
+    container->setAttribute(styleAttr, "-webkit-appearance:inherit");
     element().userAgentShadowRoot()->appendChild(container);
 }
 

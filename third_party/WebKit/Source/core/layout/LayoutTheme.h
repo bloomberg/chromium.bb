@@ -213,6 +213,7 @@ protected:
 
     virtual void adjustMenuListStyle(ComputedStyle&, Element*) const;
     virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const;
+    virtual void adjustSliderContainerStyle(ComputedStyle&, Element*) const;
     virtual void adjustSliderThumbStyle(ComputedStyle&) const;
     virtual void adjustSearchFieldStyle(ComputedStyle&) const;
     virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const;

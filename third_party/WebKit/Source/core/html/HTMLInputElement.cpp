@@ -47,9 +47,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/events/TouchEvent.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -113,7 +111,6 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_parsingInProgress(createdByParser)
     , m_valueAttributeWasUpdatedAfterParsing(false)
     , m_canReceiveDroppedFiles(false)
-    , m_hasTouchEventHandler(false)
     , m_shouldRevealPassword(false)
     , m_needsToUpdateViewValue(true)
     , m_isPlaceholderVisible(false)
@@ -401,25 +398,6 @@ void HTMLInputElement::setType(const AtomicString& type)
     setAttribute(typeAttr, type);
 }
 
-void HTMLInputElement::updateTouchEventHandlerRegistry()
-{
-    DCHECK(m_inputTypeView);
-
-    bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
-    if (hasTouchEventHandler == !!m_hasTouchEventHandler)
-        return;
-    // If the Document is being or has been stopped, don't register any handlers.
-    if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
-        EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
-        // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
-        if (hasTouchEventHandler)
-            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchStartOrMoveEventBlocking);
-        else
-            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchStartOrMoveEventBlocking);
-        m_hasTouchEventHandler = hasTouchEventHandler;
-    }
-}
-
 void HTMLInputElement::initializeTypeInParsing()
 {
     DCHECK(m_parsingInProgress);
@@ -430,8 +408,6 @@ void HTMLInputElement::initializeTypeInParsing()
     m_inputType = InputType::create(*this, newTypeName);
     m_inputTypeView = m_inputType->createView();
     ensureUserAgentShadowRoot();
-
-    updateTouchEventHandlerRegistry();
 
     setNeedsWillValidateCheck();
 
@@ -464,8 +440,6 @@ void HTMLInputElement::updateType()
     m_inputType = newType;
     m_inputTypeView = m_inputType->createView();
     m_inputTypeView->createShadowSubtree();
-
-    updateTouchEventHandlerRegistry();
 
     setNeedsWillValidateCheck();
 
@@ -1161,12 +1135,6 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
             return;
     }
 
-    if (evt->isTouchEvent() && m_inputTypeView->hasTouchEventHandler()) {
-        m_inputTypeView->handleTouchEvent(toTouchEvent(evt));
-        if (evt->defaultHandled())
-            return;
-    }
-
     if (evt->isKeyboardEvent() && evt->type() == EventTypeNames::keydown) {
         m_inputTypeView->handleKeydownEvent(toKeyboardEvent(evt));
         if (evt->defaultHandled())
@@ -1506,15 +1474,7 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
     if (type() == InputTypeNames::radio)
         treeScope().radioButtonGroupScope().removeButton(this);
 
-    updateTouchEventHandlerRegistry();
-
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
-}
-
-void HTMLInputElement::removeAllEventListeners()
-{
-    HTMLTextFormControlElement::removeAllEventListeners();
-    m_hasTouchEventHandler = false;
 }
 
 bool HTMLInputElement::recalcWillValidate() const

@@ -75,10 +75,6 @@ void InputTypeView::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*)
 {
 }
 
-void InputTypeView::handleTouchEvent(TouchEvent*)
-{
-}
-
 void InputTypeView::handleDOMActivateEvent(Event*)
 {
 }
@@ -224,11 +220,6 @@ void InputTypeView::didSetValue(const String&, bool)
 void InputTypeView::subtreeHasChanged()
 {
     NOTREACHED();
-}
-
-bool InputTypeView::hasTouchEventHandler() const
-{
-    return false;
 }
 
 void InputTypeView::listAttributeTargetChanged()
