@@ -16,39 +16,11 @@
       <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_IMPORTER_JS" file="file_manager/foreground/js/elements_importer.js" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/background/js/background.js" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_BACKGROUND_JS" file="file_manager/background/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
 
       <!-- Common Scripts. -->
+      <include name="IDR_FILE_MANAGER_BACKGROUND_COMMON_JS" file="file_manager/background/js/background_common_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ANALYTICS_JS" file="../webui/resources/js/analytics.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ERROR_UTIL_JS" file="file_manager/common/js/error_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/common/js/async_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_COMMON_JS" file="file_manager/common/js/progress_center_common.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_UTIL_JS" file="file_manager/common/js/util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_COMMON_JS" file="file_manager/common/js/volume_manager_common.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMPORTER_COMMON_JS" file="file_manager/common/js/importer_common.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_METRICS_BASE_JS" file="file_manager/common/js/metrics_base.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_METRICS_JS" file="file_manager/common/js/metrics.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_METRICS_EVENTS_JS" file="file_manager/common/js/metrics_events.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_LRU_CACHE_JS" file="file_manager/common/js/lru_cache.js" flattenhtml="false" type="BINDATA" />
-
-      <!-- Scripts working in background page. -->
-      <include name="IDR_FILE_MANAGER_DEVICE_APP_WINDOW_WRAPPER_JS" file="file_manager/background/js/app_window_wrapper.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_DEVICE_BACKGROUND_BASE_JS" file="file_manager/background/js/background_base.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_DEVICE_HANDLER_JS" file="file_manager/background/js/device_handler.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_DRIVE_SYNC_HANDLER_JS" file="file_manager/background/js/drive_sync_handler.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_DUPLICATE_FINDER_JS" file="file_manager/background/js/duplicate_finder.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_FILE_OPERATION_HANDLER_JS" file="file_manager/background/js/file_operation_handler.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_FILE_OPERATION_MANAGER_JS" file="file_manager/background/js/file_operation_manager.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_FILE_OPERATION_UTIL_JS" file="file_manager/background/js/file_operation_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_IMPORT_HISTORY_JS" file="file_manager/background/js/import_history.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_LAUNCHER_SEARCH_JS" file="file_manager/background/js/launcher_search.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_TASK_QUEUE_JS" file="file_manager/background/js/task_queue.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_MEDIA_IMPORT_HANDLER_JS" file="file_manager/background/js/media_import_handler.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_MEDIA_SCANNER_JS" file="file_manager/background/js/media_scanner.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_PROGRESS_CENTER_JS" file="file_manager/background/js/progress_center.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_TEST_UTIL_JS" file="file_manager/background/js/test_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_TEST_UTIL_BASE_JS" file="file_manager/background/js/test_util_base.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_JS" file="file_manager/background/js/volume_manager.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Polymer elements -->
       <include name="IDR_FILE_MANAGER_ELEMENTS_ELEMENTS_BUNDLE_HTML" file="file_manager/foreground/elements/elements_bundle.html" type="BINDATA" />
@@ -81,9 +53,6 @@
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOOLTIP_HTML" file="file_manager/foreground/elements/files_tooltip.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOOLTIP_JS" file="file_manager/foreground/elements/files_tooltip.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_ICONS_HTML" file="file_manager/foreground/elements/icons.html" type="BINDATA" />
-
-      <!-- Scripts referred by the gallery app. -->
-      <include name="IDR_FILE_MANAGER_FILE_TYPE_JS" file="file_manager/common/js/file_type.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Scripts required by the metadata parser worker. -->
       <include name="IDR_FILE_MANAGER_UTIL" file="file_manager/common/js/util.js" type="BINDATA" />
@@ -167,9 +136,7 @@
       <include name="IDR_VIDEO_PLAYER_MANIFEST" file="video_player/manifest.json" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER" file="video_player/video_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_JS" file="video_player/js/video_player_scripts.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_VIDEO_PLAYER_BKGND_JS" file="video_player/js/background.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_VIDEO_PLAYER_TEST_UTIL_JS" file="video_player/js/test_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_VIDEO_PLAYER_ERROR_UTIL_JS" file="video_player/js/error_util.js" flattenhtml="false" type="BINDATA" />
+      <include name="IDR_VIDEO_PLAYER_BACKGROUND_JS" file="video_player/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_FAVICON_16" file="video_player/images/icon/video-player-favicon-16.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_32" file="video_player/images/icon/video-player-32.png" type="BINDATA" />
       <include name="IDR_VIDEO_PLAYER_ICON_48" file="video_player/images/icon/video-player-48.png" type="BINDATA" />
@@ -181,7 +148,7 @@
 
       <!-- AudioPlayer.app pages and scripts. -->
       <include name="IDR_AUDIO_PLAYER_MANIFEST" file="audio_player/manifest.json" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_BKGND_JS" file="audio_player/js/background.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_AUDIO_PLAYER_BACKGROUND_JS" file="audio_player/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_CSS" file="audio_player/elements/audio_player.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_HTML" file="audio_player/elements/audio_player.html" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_AUDIO_PLAYER_JS" file="audio_player/elements/audio_player.js" type="BINDATA" />
@@ -195,8 +162,6 @@
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_TRACK_LIST_HTML" file="audio_player/elements/track_list.html" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ELEMENTS_TRACK_LIST_JS" file="audio_player/elements/track_list.js" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_METADATA_WORKER_JS" file="audio_player/js/metadata_worker.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_ERROR_UTIL_JS" file="audio_player/js/error_util.js" flattenhtml="false" type="BINDATA" />
-      <include name="IDR_AUDIO_PLAYER_TEST_UTIL_JS" file="audio_player/js/test_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER" file="audio_player/audio_player.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_JS" file="audio_player/js/audio_player_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AUDIO_PLAYER_ICON_FAVICON_16" file="audio_player/icons/audio-player-favicon-16.png" type="BINDATA" />
@@ -212,8 +177,7 @@
       <include name="IDR_GALLERY_MANIFEST" file="gallery/manifest.json" type="BINDATA" />
       <include name="IDR_GALLERY" file="gallery/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_JS" file="gallery/js/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_GALLERY_BKGND_JS" file="gallery/js/background.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_GALLERY_TEST_UTIL_JS" file="gallery/js/test_util.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_GALLERY_BACKGROUND_JS" file="gallery/js/background_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GALLERY_METADATA_WORKER_JS" file="gallery/js/metadata_worker.js" flattenhtml="true" type="BINDATA" />
 
       <!-- Custom cursors (which grit cannot inline). -->
@@ -223,13 +187,8 @@
       <!-- Image loader extension manifest and scripts. -->
       <if expr="image_loader_extension">
         <include name="IDR_IMAGE_LOADER_MANIFEST" file="image_loader/manifest.json" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_IMAGE_LOADER_JS" file="image_loader/image_loader.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_CACHE_JS" file="image_loader/cache.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_SCHEDULER_JS" file="image_loader/scheduler.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_REQUEST_JS" file="image_loader/request.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
-        <include name="IDR_IMAGE_LOADER_PIEX_LOADER_JS" file="image_loader/piex_loader.js" flattenhtml="true" type="BINDATA" />
         <!-- Internal resources. -->
         <if expr="not _google_chrome">
           <include name="IDR_IMAGE_LOADER_PIEX_LOADER_PNACL" file="image_loader/piex/piex.pexe.txt" type="BINDATA" />

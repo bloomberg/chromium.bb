@@ -64,20 +64,8 @@
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
         "chrome://resources/js/load_time_data.js",
-        // util.js and async_util.js should be included before volume_manager.js.
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_base.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_events.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/app_window_wrapper.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_base.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util_base.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
-        "js/test_util.js",
-        "js/background.js"
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_common_scripts.js",
+        "js/background_scripts.js"
       ]
     },
     "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' blob: filesystem: chrome://resources 'unsafe-inline'; img-src 'self' blob: filesystem: chrome://resources chrome://theme data: https://*.googleusercontent.com chrome://extension-icon; media-src 'self' blob: filesystem:; object-src 'self' blob: filesystem:; font-src chrome://resources;"

@@ -21,20 +21,9 @@
   "content_security_policy": "default-src 'none'; script-src 'self' blob: filesystem: chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' blob: filesystem:; frame-src 'self' blob: filesystem:; img-src 'self' blob: filesystem: data:; media-src 'self' blob: filesystem:; connect-src 'self' blob: filesystem: https://www.googledrive.com https://www.google-analytics.com https://lh3.googleusercontent.com",
   "background": {
     "scripts": [
-      "chrome://resources/js/assert.js",
       "chrome://resources/js/analytics.js",
-      "cache.js",
-      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
-      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_base.js",
-      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics.js",
-      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_events.js",
-      "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/metadata/image_orientation.js",
-      "image_loader.js",
-      "piex_loader.js",
-      "request.js",
-      "scheduler.js",
-      // Entry point.
-      "background.js"
+      "chrome://resources/js/assert.js",
+      "background_scripts.js"
     ],
     "persistent": false
   },
