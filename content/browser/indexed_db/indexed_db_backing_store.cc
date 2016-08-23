@@ -905,10 +905,10 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
 
   const int64_t kMaxJsonLength = 4096;
   int64_t file_size = 0;
-  if (!GetFileSize(info_path, &file_size) || file_size > kMaxJsonLength)
+  if (!GetFileSize(info_path, &file_size))
     return false;
-  if (!file_size) {
-    NOTREACHED();
+  if (!file_size || file_size > kMaxJsonLength) {
+    base::DeleteFile(info_path, false);
     return false;
   }
 
@@ -921,7 +921,8 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
       base::JSONReader reader;
       std::unique_ptr<base::DictionaryValue> val(
           base::DictionaryValue::From(reader.ReadToValue(input_js)));
-      success = val->GetString("message", message);
+      if (val)
+        success = val->GetString("message", message);
     }
     file.Close();
   }
@@ -4314,7 +4315,7 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
     scoped_refptr<BlobWriteCallback> callback) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBBackingStore::Transaction::WriteNewBlobs",
                         this);
-  DCHECK_GT(new_files_to_write->size(), 0UL);
+  DCHECK(!new_files_to_write->empty());
   DCHECK_GT(database_id_, 0);
   for (auto& blob_entry_iter : *new_blob_entries) {
     // Add the new blob-table entry for each blob to the main transaction, or
@@ -4427,13 +4428,13 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
     std::vector<std::unique_ptr<storage::BlobDataHandle>>* handles) {
-  DCHECK_GT(object_store_data_key.size(), 0UL);
+  DCHECK(!object_store_data_key.empty());
   if (database_id_ < 0)
     database_id_ = database_id;
   DCHECK_EQ(database_id_, database_id);
 
   const auto& it = blob_change_map_.find(object_store_data_key);
-  BlobChangeRecord* record = NULL;
+  BlobChangeRecord* record = nullptr;
   if (it == blob_change_map_.end()) {
     std::unique_ptr<BlobChangeRecord> new_record =
         base::MakeUnique<BlobChangeRecord>(object_store_data_key,

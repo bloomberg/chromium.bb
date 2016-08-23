@@ -39,6 +39,12 @@ namespace content {
 
 namespace {
 
+// Write |content| to |file|. Returns true on success.
+bool WriteFile(const base::FilePath& file, base::StringPiece content) {
+  int write_size = base::WriteFile(file, content.data(), content.length());
+  return write_size >= 0 && write_size == static_cast<int>(content.length());
+}
+
 class Comparator : public LevelDBComparator {
  public:
   int Compare(const base::StringPiece& a,
@@ -51,6 +57,7 @@ class Comparator : public LevelDBComparator {
 class DefaultLevelDBFactory : public LevelDBFactory {
  public:
   DefaultLevelDBFactory() {}
+
   leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                               const LevelDBComparator* comparator,
                               std::unique_ptr<LevelDBDatabase>* db,
@@ -296,12 +303,12 @@ class IndexedDBBackingStoreTest : public testing::Test {
     if (backing_store_->writes().size() != reads.size())
       return false;
     std::set<int64_t> ids;
-    for (size_t i = 0; i < backing_store_->writes().size(); ++i)
-      ids.insert(backing_store_->writes()[i].key());
+    for (const auto& write : backing_store_->writes())
+      ids.insert(write.key());
     if (ids.size() != backing_store_->writes().size())
       return false;
-    for (size_t i = 0; i < reads.size(); ++i) {
-      if (ids.count(reads[i].key()) != 1)
+    for (const auto& read : reads) {
+      if (ids.count(read.key()) != 1)
         return false;
     }
     return true;
@@ -340,7 +347,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
  protected:
   // Must be initialized before url_request_context_getter_
-  content::TestBrowserThreadBundle thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -559,7 +566,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       EXPECT_TRUE(callback->called);
       EXPECT_TRUE(callback->succeeded);
       EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
-      EXPECT_EQ(2UL, backing_store_->removals().size());
+      ASSERT_EQ(2UL, backing_store_->removals().size());
       EXPECT_EQ(backing_store_->writes()[1].key(),
                 backing_store_->removals()[0]);
       EXPECT_EQ(backing_store_->writes()[2].key(),
@@ -1051,10 +1058,101 @@ TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
 
   std::vector<base::string16> names = backing_store_->GetDatabaseNames(&s);
   EXPECT_TRUE(s.ok());
-  EXPECT_EQ(names.size(), 1ULL);
-  EXPECT_EQ(names[0], db1_name);
+  ASSERT_EQ(1U, names.size());
+  EXPECT_EQ(db1_name, names[0]);
 }
 
 }  // namespace
+
+// Not in the anonymous namespace to friend IndexedDBBackingStore.
+TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
+  // No |path_base|.
+  std::string message;
+  EXPECT_FALSE(IndexedDBBackingStore::ReadCorruptionInfo(base::FilePath(),
+                                                         Origin(), &message));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  const base::FilePath path_base = temp_dir_.path();
+  const Origin origin(GURL("http://www.google.com/"));
+  ASSERT_FALSE(path_base.empty());
+  ASSERT_TRUE(PathIsWritable(path_base));
+
+  // File not found.
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  const base::FilePath info_path =
+      path_base.AppendASCII("http_www.google.com_0.indexeddb.leveldb")
+          .AppendASCII("corruption_info.json");
+  ASSERT_TRUE(CreateDirectory(info_path.DirName()));
+
+  // Empty file.
+  std::string dummy_data;
+  ASSERT_TRUE(WriteFile(info_path, dummy_data));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // File size > 4 KB.
+  dummy_data.resize(5000, 'c');
+  ASSERT_TRUE(WriteFile(info_path, dummy_data));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // Random string.
+  ASSERT_TRUE(WriteFile(info_path, "foo bar"));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // Not a dictionary.
+  ASSERT_TRUE(WriteFile(info_path, "[]"));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // Empty dictionary.
+  ASSERT_TRUE(WriteFile(info_path, "{}"));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // Dictionary, no message key.
+  ASSERT_TRUE(WriteFile(info_path, "{\"foo\":\"bar\"}"));
+  EXPECT_FALSE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_TRUE(message.empty());
+  message.clear();
+
+  // Dictionary, message key.
+  ASSERT_TRUE(WriteFile(info_path, "{\"message\":\"bar\"}"));
+  EXPECT_TRUE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_EQ("bar", message);
+  message.clear();
+
+  // Dictionary, message key and more.
+  ASSERT_TRUE(WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
+  EXPECT_TRUE(
+      IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
+  EXPECT_FALSE(PathExists(info_path));
+  EXPECT_EQ("foo", message);
+}
 
 }  // namespace content
