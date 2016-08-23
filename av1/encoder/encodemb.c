@@ -735,38 +735,11 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   l = &ctx->tl[plane][blk_row];
 
   if (x->quant_fp) {
-    // Encoding process for rtc mode
-    if (x->skip_txfm[0] == SKIP_TXFM_AC_DC && plane == 0) {
-      // skip forward transform
-      p->eobs[block] = 0;
-      *a = *l = 0;
-      return;
-    } else {
-      av1_xform_quant_fp(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                         tx_size);
-    }
+    av1_xform_quant_fp(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                       tx_size);
   } else {
-    if (max_txsize_lookup[plane_bsize] == tx_size) {
-      int txfm_blk_index =
-          (plane << 2) + (block >> (tx_size_1d_in_unit_log2[tx_size] << 1));
-      if (x->skip_txfm[txfm_blk_index] == SKIP_TXFM_NONE) {
-        // full forward transform and quantization
-        av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                        tx_size);
-      } else if (x->skip_txfm[txfm_blk_index] == SKIP_TXFM_AC_ONLY) {
-        // fast path forward transform and quantization
-        av1_xform_quant_dc(x, plane, block, blk_row, blk_col, plane_bsize,
-                           tx_size);
-      } else {
-        // skip forward transform
-        p->eobs[block] = 0;
-        *a = *l = 0;
-        return;
-      }
-    } else {
-      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size);
-    }
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                    tx_size);
   }
 
   if (x->optimize) {

@@ -244,16 +244,12 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   // Note our transform coeffs are 8 times an orthogonal transform.
   // Hence quantizer step is also 8 times. To get effective quantizer
   // we need to divide by 8 before sending to modeling function.
-  int i;
+  int plane;
+  const int ref = xd->mi[0]->mbmi.ref_frame[0];
+
   int64_t rate_sum = 0;
   int64_t dist_sum = 0;
-  const int ref = xd->mi[0]->mbmi.ref_frame[0];
-  unsigned int sse;
-  unsigned int sum_sse = 0;
   int64_t total_sse = 0;
-  int skip_flag = 1;
-  int rate;
-  int64_t dist;
   const int dequant_shift =
 #if CONFIG_AOM_HIGHBITDEPTH
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 :
@@ -262,45 +258,27 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   x->pred_sse[ref] = 0;
 
-  for (i = 0; i < MAX_MB_PLANE; ++i) {
-    struct macroblock_plane *const p = &x->plane[i];
-    struct macroblockd_plane *const pd = &xd->plane[i];
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    struct macroblock_plane *const p = &x->plane[plane];
+    struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
-    const TX_SIZE max_tx_size = max_txsize_lookup[bs];
-    const BLOCK_SIZE unit_size = txsize_to_bsize[max_tx_size];
-    int bw = 1 << (b_width_log2_lookup[bs] - b_width_log2_lookup[unit_size]);
-    int bh = 1 << (b_height_log2_lookup[bs] - b_width_log2_lookup[unit_size]);
-    int idx, idy;
-    int lw = b_width_log2_lookup[unit_size] + 2;
-    int lh = b_height_log2_lookup[unit_size] + 2;
 
-    sum_sse = 0;
+    unsigned int sse;
+    int rate;
+    int64_t dist;
 
-    for (idy = 0; idy < bh; ++idy) {
-      for (idx = 0; idx < bw; ++idx) {
-        uint8_t *src = p->src.buf + (idy * p->src.stride << lh) + (idx << lw);
-        uint8_t *dst = pd->dst.buf + (idy * pd->dst.stride << lh) + (idx << lh);
-        int block_idx = (idy << 1) + idx;
-        int low_err_skip = 0;
+    // TODO(geza): Write direct sse functions that do not compute
+    // variance as well.
+    cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
+                       &sse);
 
-        cpi->fn_ptr[unit_size].vf(src, p->src.stride, dst, pd->dst.stride,
-                                  &sse);
-        x->bsse[(i << 2) + block_idx] = sse;
-        sum_sse += sse;
+    if (plane == 0) x->pred_sse[ref] = sse;
 
-        x->skip_txfm[(i << 2) + block_idx] = SKIP_TXFM_NONE;
-
-        if (skip_flag && !low_err_skip) skip_flag = 0;
-
-        if (i == 0) x->pred_sse[ref] += sse;
-      }
-    }
-
-    total_sse += sum_sse;
+    total_sse += sse;
 
     // Fast approximate the modelling function.
     if (cpi->sf.simple_model_rd_from_var) {
-      const int64_t square_error = sum_sse;
+      const int64_t square_error = sse;
       const int quantizer = (pd->dequant[1] >> dequant_shift);
       const int64_t rate_temp =
           (quantizer < 120)
@@ -310,7 +288,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
       rate = (int)rate_temp;
       dist = (square_error * quantizer) >> 8;
     } else {
-      av1_model_rd_from_var_lapndz(sum_sse, num_pels_log2_lookup[bs],
+      av1_model_rd_from_var_lapndz(sse, num_pels_log2_lookup[bs],
                                    pd->dequant[1] >> dequant_shift, &rate,
                                    &dist);
     }
@@ -318,7 +296,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     dist_sum += dist;
   }
 
-  *skip_txfm_sb = skip_flag;
+  *skip_txfm_sb = total_sse == 0;
   *skip_sse_sb = total_sse << 4;
   *out_rate_sum = (int)rate_sum;
   *out_dist_sum = dist_sum << 4;
@@ -526,46 +504,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_encode_block_intra(plane, block, blk_row, blk_col, plane_bsize, tx_size,
                            &b_args);
     dist_block(x, plane, block, tx_size, &dist, &sse);
-  } else if (max_txsize_lookup[plane_bsize] == tx_size) {
-    if (x->skip_txfm[(plane << 2) +
-                     (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))] ==
-        SKIP_TXFM_NONE) {
-      // full forward transform and quantization
-      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size);
-      dist_block(x, plane, block, tx_size, &dist, &sse);
-    } else if (x->skip_txfm[(plane << 2) +
-                            (block >> (tx_size_1d_in_unit_log2[tx_size] *
-                                       2))] == SKIP_TXFM_AC_ONLY) {
-      // compute DC coefficient
-      tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
-      tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
-      av1_xform_quant_dc(x, plane, block, blk_row, blk_col, plane_bsize,
-                         tx_size);
-      sse = x->bsse[(plane << 2) +
-                    (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))]
-            << 4;
-      dist = sse;
-      if (x->plane[plane].eobs[block]) {
-        const int64_t orig_sse = (int64_t)coeff[0] * coeff[0];
-        const int64_t resd_sse = coeff[0] - dqcoeff[0];
-        int64_t dc_correct = orig_sse - resd_sse * resd_sse;
-#if CONFIG_AOM_HIGHBITDEPTH
-        dc_correct >>= ((xd->bd - 8) * 2);
-#endif
-        if (tx_size != TX_32X32) dc_correct >>= 2;
-
-        dist = AOMMAX(0, sse - dc_correct);
-      }
-    } else {
-      // SKIP_TXFM_AC_DC
-      // skip forward transform
-      x->plane[plane].eobs[block] = 0;
-      sse = x->bsse[(plane << 2) +
-                    (block >> (tx_size_1d_in_unit_log2[tx_size] * 2))]
-            << 4;
-      dist = sse;
-    }
   } else {
     // full forward transform and quantization
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
@@ -1601,7 +1539,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const PREDICTION_MODE L = av1_left_block_mode(xd->mi[0], left_mi, 0);
 
   bmode_costs = cpi->y_mode_costs[A][L];
-  memset(x->skip_txfm, SKIP_TXFM_NONE, sizeof(x->skip_txfm));
 #if CONFIG_EXT_INTRA
   memset(directional_mode_skip_mask, 0,
          sizeof(directional_mode_skip_mask[0]) * INTRA_MODES);
@@ -2024,8 +1961,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   palette_mode_info.palette_size[1] = 0;
   pmi->palette_size[1] = 0;
 #endif  // CONFIG_PALETTE
-
-  memset(x->skip_txfm, SKIP_TXFM_NONE, sizeof(x->skip_txfm));
 
   for (mode = DC_PRED; mode <= TM_PRED; ++mode) {
     if (!(cpi->sf.intra_uv_mode_mask[max_tx_size] & (1 << mode))) continue;
@@ -3477,8 +3412,6 @@ static int64_t handle_inter_mode(
   uint8_t *tmp_dst[MAX_MB_PLANE];
   int tmp_dst_stride[MAX_MB_PLANE];
   InterpFilter assign_filter = SWITCHABLE;
-  uint8_t skip_txfm[MAX_MB_PLANE << 2] = { 0 };
-  int64_t bsse[MAX_MB_PLANE << 2] = { 0 };
 
   int bsl = mi_width_log2_lookup[bsize];
   int pred_filter_search =
@@ -3672,8 +3605,6 @@ static int64_t handle_inter_mode(
   model_rd_for_sb(cpi, bsize, x, xd, &tmp_rate, &tmp_dist, &skip_txfm_sb,
                   &skip_sse_sb);
   rd = RDCOST(x->rdmult, x->rddiv, rs + tmp_rate, tmp_dist);
-  memcpy(skip_txfm, x->skip_txfm, sizeof(skip_txfm));
-  memcpy(bsse, x->bsse, sizeof(bsse));
 
   if (assign_filter == SWITCHABLE) {
     // do interp_filter search
@@ -3698,8 +3629,6 @@ static int64_t handle_inter_mode(
           best_filter = mbmi->interp_filter;
           skip_txfm_sb = tmp_skip_sb;
           skip_sse_sb = tmp_skip_sse;
-          memcpy(skip_txfm, x->skip_txfm, sizeof(skip_txfm));
-          memcpy(bsse, x->bsse, sizeof(bsse));
           best_in_temp = !best_in_temp;
           if (best_in_temp) {
             restore_dst_buf(xd, orig_dst, orig_dst_stride);
@@ -3739,12 +3668,6 @@ static int64_t handle_inter_mode(
 
   if (!is_comp_pred) single_filter[this_mode][refs[0]] = mbmi->interp_filter;
 
-  if (cpi->sf.adaptive_mode_search)
-    if (is_comp_pred)
-      if (single_skippable[this_mode][refs[0]] &&
-          single_skippable[this_mode][refs[1]])
-        memset(skip_txfm, SKIP_TXFM_AC_DC, sizeof(skip_txfm));
-
   if (cpi->sf.use_rd_breakout && ref_best_rd < INT64_MAX) {
     // if current pred_error modeled rd is substantially more than the best
     // so far, do not bother doing full rd
@@ -3758,9 +3681,6 @@ static int64_t handle_inter_mode(
 #if CONFIG_MOTION_VAR
   rate2_nocoeff = *rate2;
 #endif  // CONFIG_MOTION_VAR
-
-  memcpy(x->skip_txfm, skip_txfm, sizeof(skip_txfm));
-  memcpy(x->bsse, bsse, sizeof(bsse));
 
 #if CONFIG_MOTION_VAR
   rd = INT64_MAX;
@@ -4619,7 +4539,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (ref_frame == INTRA_FRAME) {
       TX_SIZE uv_tx;
       struct macroblockd_plane *const pd = &xd->plane[1];
-      memset(x->skip_txfm, 0, sizeof(x->skip_txfm));
 #if CONFIG_EXT_INTRA
       if (is_directional_mode(mbmi->mode)) {
         int rate_dummy;
@@ -5744,7 +5663,6 @@ void av1_rd_pick_inter_mode_sub8x8(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // If even the 'Y' rd value of split is higher than best so far
         // then dont bother looking at UV
         av1_build_inter_predictors_sbuv(&x->e_mbd, mi_row, mi_col, BLOCK_8X8);
-        memset(x->skip_txfm, SKIP_TXFM_NONE, sizeof(x->skip_txfm));
         if (!super_block_uvrd(cpi, x, &rate_uv, &distortion_uv, &uv_skippable,
                               &uv_sse, BLOCK_8X8, tmp_best_rdu))
           continue;

@@ -2879,7 +2879,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       cm->use_prev_frame_mvs ? cm->prev_mip + cm->mi_stride + 1 : NULL;
 
   x->quant_fp = cpi->sf.use_quant_fp;
-  av1_zero(x->skip_txfm);
 
   {
     struct aom_usec_timer emr_timer;
@@ -3059,8 +3058,6 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int seg_skip =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   int w, h;
-
-  memset(x->skip_txfm, 0, sizeof(x->skip_txfm));
 
   x->use_lp32x32fdct = cpi->sf.use_lp32x32fdct;
 
