@@ -41,8 +41,8 @@ async_test(function() {
 
             assert_equals(track.regions.length, 1);
 
-            region = textTrackDisplayElement(video, 'region');
-            var container = textTrackDisplayElement(video, 'region-container');
+            region = textTrackRegionElement(video);
+            var container = textTrackRegionContainerElement(video);
 
             video.onseeked = this.step_func(function() {
                 var totalVisibleLines = 0;

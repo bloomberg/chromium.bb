@@ -88,10 +88,20 @@ function textTrackCueElementByIndex(parentElement, cueIndex) {
     return displayElement;
 }
 
+function textTrackRegionElement(parentElement)
+{
+    var containerElement = textTrackContainerElement(parentElement);
+    return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-region");
+}
+
+function textTrackRegionContainerElement(parentElement)
+{
+    var containerElement = textTrackContainerElement(parentElement);
+    return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-region-container");
+}
+
 // TODO(srirama.m): Phase out the uses of this function and
 // replace with more specific functions at each call site.
-// For ex: textTrackDisplayElement(video, 'region') => textTrackRegionElement(video) and
-// textTrackDisplayElement(video, 'region-container') => textTrackRegionContainerElement(video).
 function textTrackDisplayElement(parentElement, id, cueNumber)
 {
     var containerElement = textTrackContainerElement(parentElement);
