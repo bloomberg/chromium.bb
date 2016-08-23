@@ -490,7 +490,7 @@ TEST_F(CredentialManagerTest,
   // Notify the browser that the user signed in.
   const int request_id = 0;
   ExpectPromiseResolved(request_id);
-  const bool zero_click = false;
+  const bool zero_click = true;
   credential_manager_->SignedIn(request_id, GURL("http://foo.com/login"),
                                 GetTestWebCredential1(zero_click));
 

@@ -412,6 +412,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
   EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
   EXPECT_TRUE(new_form.federation_origin.unique());
   EXPECT_EQ(form_.icon_url, new_form.icon_url);
+  EXPECT_FALSE(form_.skip_zero_click);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
@@ -444,6 +445,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
   EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
   EXPECT_EQ(form_.federation_origin, new_form.federation_origin);
   EXPECT_EQ(form_.icon_url, new_form.icon_url);
+  EXPECT_FALSE(form_.skip_zero_click);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
@@ -475,10 +477,6 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
 }
 
 TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwriteZeroClick) {
-  // Set the global zero click flag on, and populate the PasswordStore with a
-  // form that's set to skip zero click.
-  client_->set_zero_click_enabled(true);
-  client_->set_first_run_seen(true);
   form_.skip_zero_click = true;
   store_->AddLogin(form_);
   RunAllPendingTasks();
@@ -501,10 +499,6 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwriteZeroClick) {
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerFederatedStoreOverwriteZeroClick) {
-  // Set the global zero click flag on, and populate the PasswordStore with a
-  // form that's set to skip zero click.
-  client_->set_zero_click_enabled(true);
-  client_->set_first_run_seen(true);
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
   form_.password_value = base::string16();
   form_.skip_zero_click = true;

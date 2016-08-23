@@ -80,7 +80,7 @@ PasswordForm::PasswordForm()
       type(TYPE_MANUAL),
       times_used(0),
       generation_upload_status(NO_SIGNAL_SENT),
-      skip_zero_click(true),
+      skip_zero_click(false),
       layout(Layout::LAYOUT_OTHER),
       was_parsed_using_autofill_predictions(false),
       is_public_suffix_match(false),
@@ -89,8 +89,7 @@ PasswordForm::PasswordForm()
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
 
-PasswordForm::~PasswordForm() {
-}
+PasswordForm::~PasswordForm() = default;
 
 bool PasswordForm::IsPossibleChangePasswordForm() const {
   return !new_password_element.empty() &&

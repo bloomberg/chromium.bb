@@ -2903,6 +2903,35 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   EXPECT_EQ(autofill::PasswordForm::TYPE_API, new_credentials.type);
 }
 
+TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
+  saved_match()->skip_zero_click = true;
+  psl_saved_match()->skip_zero_click = true;
+  SimulateMatchingPhase(form_manager(), RESULT_SAVED_MATCH | RESULT_PSL_MATCH);
+  EXPECT_EQ(1u, form_manager()->best_matches().size());
+
+  // User submits a credentials with an old username and a new password.
+  PasswordForm credentials(*observed_form());
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = ASCIIToUTF16("new_password");
+  credentials.preferred = true;
+  form_manager()->ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Trigger saving to exercise some special case handling during updating.
+  PasswordForm new_credentials;
+  std::vector<autofill::PasswordForm> credentials_to_update;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
+      .WillOnce(testing::DoAll(SaveArg<0>(&new_credentials),
+                               SaveArgPointee<2>(&credentials_to_update)));
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(_, false, _, _, true));
+  form_manager()->Save();
+
+  EXPECT_TRUE(new_credentials.skip_zero_click);
+  ASSERT_EQ(1u, credentials_to_update.size());
+  EXPECT_TRUE(credentials_to_update[0].skip_zero_click);
+}
+
 TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
   PasswordForm federated(*saved_match());
   federated.password_value.clear();
