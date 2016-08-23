@@ -678,7 +678,7 @@ InspectorTest.hideInspectorView = function()
 
 InspectorTest.mainFrame = function()
 {
-    return InspectorTest.mainTarget.resourceTreeModel.mainFrame;
+    return WebInspector.ResourceTreeModel.fromTarget(InspectorTest.mainTarget).mainFrame;
 }
 
 InspectorTest.StringOutputStream = function(callback)
@@ -895,7 +895,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.consoleModel = target.consoleModel;
         InspectorTest.networkManager = WebInspector.NetworkManager.fromTarget(target);
         InspectorTest.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(target);
-        InspectorTest.resourceTreeModel = target.resourceTreeModel;
+        InspectorTest.resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(target);
         InspectorTest.networkLog = WebInspector.NetworkLog.fromTarget(target);
         InspectorTest.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
