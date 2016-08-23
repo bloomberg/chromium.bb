@@ -60,6 +60,7 @@ class AutofillAssistantTest : public testing::Test {
 
   void EnableAutofillCreditCardAssist() {
     scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardAssist);
+    autofill_client_.set_is_context_secure(true);
   }
 
   // Returns an initialized FormStructure with credit card form data. To be
@@ -129,6 +130,24 @@ TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn) {
 
   // With valid input, the function extracts the credit card form properly.
   form_structures.push_back(form_structure.get());
+  EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+}
+
+// Tests that with the feature enabled and proper input,
+// CanShowCreditCardAssist() behaves as expected for secure vs insecure
+// contexts.
+TEST_F(AutofillAssistantTest, CanShowCreditCardAssist_FeatureOn_NotSecure) {
+  EnableAutofillCreditCardAssist();
+  std::unique_ptr<FormStructure> form_structure = CreateValidCreditCardForm();
+  std::vector<FormStructure*> form_structures;
+  form_structures.push_back(form_structure.get());
+
+  // Cannot be shown if the context is not secure.
+  autofill_client_.set_is_context_secure(false);
+  EXPECT_FALSE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
+
+  // Can be shown if the context is secure.
+  autofill_client_.set_is_context_secure(true);
   EXPECT_TRUE(autofill_assistant_.CanShowCreditCardAssist(form_structures));
 }
 
