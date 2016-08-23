@@ -18,18 +18,6 @@
 
 namespace ui {
 
-namespace {
-
-void PostTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
-              const tracked_objects::Location& from_here,
-              const gpu::GpuChannelEstablishedCallback& callback,
-              scoped_refptr<gpu::GpuChannelHost> established_channel_host) {
-  runner->PostTask(from_here,
-                   base::Bind(callback, std::move(established_channel_host)));
-}
-
-}  // namespace
-
 GpuService::GpuService(shell::Connector* connector,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -37,9 +25,7 @@ GpuService::GpuService(shell::Connector* connector,
       connector_(connector),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager),
-      is_establishing_(false),
-      establishing_condition_(&lock_) {
+      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
   if (!io_task_runner_) {
@@ -53,6 +39,9 @@ GpuService::GpuService(shell::Connector* connector,
 
 GpuService::~GpuService() {
   DCHECK(IsMainThread());
+  for (const auto& callback : establish_callbacks_)
+    callback.Run(nullptr);
+  shutdown_event_.Signal();
   if (gpu_channel_)
     gpu_channel_->DestroyChannel();
 }
@@ -66,45 +55,40 @@ std::unique_ptr<GpuService> GpuService::Create(
 
 void GpuService::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
-  base::AutoLock auto_lock(lock_);
-  auto runner = base::ThreadTaskRunnerHandle::Get();
-  scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannelLocked();
+  DCHECK(IsMainThread());
+  scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
   if (channel) {
-    PostTask(runner, FROM_HERE, callback, std::move(channel));
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(callback, std::move(channel)));
     return;
   }
-  establish_callbacks_.push_back(
-      base::Bind(PostTask, runner, FROM_HERE, callback));
-  if (!is_establishing_) {
-    is_establishing_ = true;
-    main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&GpuService::EstablishGpuChannelOnMainThread,
-                              base::Unretained(this)));
-  }
+  establish_callbacks_.push_back(callback);
+  if (gpu_service_)
+    return;
+
+  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
+  gpu_service_->EstablishGpuChannel(
+      base::Bind(&GpuService::OnEstablishedGpuChannel, base::Unretained(this)));
 }
 
 scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
-  base::AutoLock auto_lock(lock_);
-  if (GetGpuChannelLocked())
+  DCHECK(IsMainThread());
+  if (GetGpuChannel())
     return gpu_channel_;
 
-  if (IsMainThread()) {
-    is_establishing_ = true;
-    EstablishGpuChannelOnMainThreadSyncLocked();
-  } else {
-    if (!is_establishing_) {
-      // Create an establishing gpu channel task, if there isn't one.
-      is_establishing_ = true;
-      main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&GpuService::EstablishGpuChannelOnMainThread,
-                                base::Unretained(this)));
-    }
+  int client_id = 0;
+  mojo::ScopedMessagePipeHandle channel_handle;
+  gpu::GPUInfo gpu_info;
+  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
 
-    // Wait until the pending establishing task is finished.
-    do {
-      establishing_condition_.Wait();
-    } while (is_establishing_);
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
+  if (!gpu_service_->EstablishGpuChannel(&client_id, &channel_handle,
+                                         &gpu_info)) {
+    DLOG(WARNING)
+        << "Channel encountered error while establishing gpu channel.";
+    return nullptr;
   }
+  OnEstablishedGpuChannel(client_id, std::move(channel_handle), gpu_info);
   return gpu_channel_;
 }
 
@@ -112,94 +96,32 @@ gpu::GpuMemoryBufferManager* GpuService::GetGpuMemoryBufferManager() {
   return gpu_memory_buffer_manager_.get();
 }
 
-scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannelLocked() {
+scoped_refptr<gpu::GpuChannelHost> GpuService::GetGpuChannel() {
+  DCHECK(IsMainThread());
   if (gpu_channel_ && gpu_channel_->IsLost()) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&gpu::GpuChannelHost::DestroyChannel, gpu_channel_));
+    gpu_channel_->DestroyChannel();
     gpu_channel_ = nullptr;
   }
   return gpu_channel_;
 }
 
-void GpuService::EstablishGpuChannelOnMainThread() {
-  base::AutoLock auto_lock(lock_);
-  DCHECK(IsMainThread());
-
-  // In GpuService::EstablishGpuChannelOnMainThreadSyncLocked(), we use the sync
-  // mojo EstablishGpuChannel call, after that call the gpu_service_ will be
-  // reset immediatelly. So gpu_service_ should be always null here.
-  DCHECK(!gpu_service_);
-
-  // is_establishing_ is false, it means GpuService::EstablishGpuChannelSync()
-  // has been used, and we don't need try to establish a new GPU channel
-  // anymore.
-  if (!is_establishing_)
-    return;
-
-  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
-  const bool locked = false;
-  gpu_service_->EstablishGpuChannel(
-      base::Bind(&GpuService::EstablishGpuChannelOnMainThreadDone,
-                 base::Unretained(this), locked));
-}
-
-void GpuService::EstablishGpuChannelOnMainThreadSyncLocked() {
-  DCHECK(IsMainThread());
-  DCHECK(is_establishing_);
-
-  // In browser process, EstablishGpuChannelSync() is only used by testing &
-  // GpuProcessTransportFactory::GetGLHelper(). For GetGLHelper(), it expects
-  // the gpu channel has been established, so it should not reach here.
-  // For testing, the  asyc method should not be used.
-  // In renderer process, we only use EstablishGpuChannelSync().
-  // So the gpu_service_ should be null here.
-  DCHECK(!gpu_service_);
-
-  int client_id = 0;
-  mojo::ScopedMessagePipeHandle channel_handle;
-  gpu::GPUInfo gpu_info;
-  connector_->ConnectToInterface("mojo:ui", &gpu_service_);
-  {
-    base::AutoUnlock auto_unlock(lock_);
-    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-    if (!gpu_service_->EstablishGpuChannel(&client_id, &channel_handle,
-                                           &gpu_info)) {
-      DLOG(WARNING)
-          << "Channel encountered error while establishing gpu channel.";
-      return;
-    }
-  }
-  const bool locked = true;
-  EstablishGpuChannelOnMainThreadDone(locked, client_id,
-                                      std::move(channel_handle), gpu_info);
-}
-
-void GpuService::EstablishGpuChannelOnMainThreadDone(
-    bool locked,
+void GpuService::OnEstablishedGpuChannel(
     int client_id,
     mojo::ScopedMessagePipeHandle channel_handle,
     const gpu::GPUInfo& gpu_info) {
   DCHECK(IsMainThread());
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel;
+  DCHECK(gpu_service_.get());
+  DCHECK(!gpu_channel_);
+
   if (client_id) {
     // TODO(penghuang): Get the real gpu info from mus.
-    gpu_channel = gpu::GpuChannelHost::Create(
+    gpu_channel_ = gpu::GpuChannelHost::Create(
         this, client_id, gpu::GPUInfo(),
         IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
         gpu_memory_buffer_manager_.get());
   }
 
-  auto auto_lock = base::WrapUnique<base::AutoLock>(
-      locked ? nullptr : new base::AutoLock(lock_));
-  DCHECK(is_establishing_);
-  DCHECK(!gpu_channel_);
-
-  is_establishing_ = false;
-  gpu_channel_ = gpu_channel;
-  establishing_condition_.Broadcast();
   gpu_service_.reset();
-
   for (const auto& i : establish_callbacks_)
     i.Run(gpu_channel_);
   establish_callbacks_.clear();

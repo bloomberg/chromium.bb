@@ -53,14 +53,11 @@ class GpuService : public gpu::GpuChannelHostFactory,
   GpuService(shell::Connector* connector,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  scoped_refptr<gpu::GpuChannelHost> GetGpuChannelLocked();
-  void EstablishGpuChannelOnMainThread();
+  scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
   void EstablishGpuChannelOnMainThreadSyncLocked();
-  void EstablishGpuChannelOnMainThreadDone(
-      bool locked,
-      int client_id,
-      mojo::ScopedMessagePipeHandle channel_handle,
-      const gpu::GPUInfo& gpu_info);
+  void OnEstablishedGpuChannel(int client_id,
+                               mojo::ScopedMessagePipeHandle channel_handle,
+                               const gpu::GPUInfo& gpu_info);
 
   // gpu::GpuChannelHostFactory overrides:
   bool IsMainThread() override;
@@ -75,13 +72,9 @@ class GpuService : public gpu::GpuChannelHostFactory,
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<MojoGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
-  // Lock for |gpu_channel_|, |establish_callbacks_| & |is_establishing_|.
-  base::Lock lock_;
-  bool is_establishing_;
   ui::mojom::GpuServicePtr gpu_service_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::vector<gpu::GpuChannelEstablishedCallback> establish_callbacks_;
-  base::ConditionVariable establishing_condition_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuService);
 };
