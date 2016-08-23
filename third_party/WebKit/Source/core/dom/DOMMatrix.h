@@ -47,6 +47,8 @@ public:
     DOMMatrix* scale3dSelf(double scale, double ox = 0, double oy = 0, double oz = 0);
     DOMMatrix* scaleNonUniformSelf(double sx, double sy = 1, double sz = 1,
         double ox = 0, double oy = 0, double oz = 0);
+    DOMMatrix* skewXSelf(double sx = 0);
+    DOMMatrix* skewYSelf(double sy = 0);
 
 private:
     DOMMatrix(const TransformationMatrix&, bool is2D = true);

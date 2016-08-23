@@ -74,6 +74,16 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy, double sz,
     return DOMMatrix::create(this)->scaleNonUniformSelf(sx, sy, sz, ox, oy, oz);
 }
 
+DOMMatrix* DOMMatrixReadOnly::skewX(double sx)
+{
+    return DOMMatrix::create(this)->skewXSelf(sx);
+}
+
+DOMMatrix* DOMMatrixReadOnly::skewY(double sy)
+{
+    return DOMMatrix::create(this)->skewYSelf(sy);
+}
+
 DOMMatrix* DOMMatrixReadOnly::flipX()
 {
     DOMMatrix* flipX = DOMMatrix::create(this);

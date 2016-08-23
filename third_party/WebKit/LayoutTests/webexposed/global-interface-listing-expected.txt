@@ -995,6 +995,8 @@ interface DOMMatrix : DOMMatrixReadOnly
     method scale3dSelf
     method scaleNonUniformSelf
     method scaleSelf
+    method skewXSelf
+    method skewYSelf
     method translateSelf
     setter a
     setter b
@@ -1051,6 +1053,8 @@ interface DOMMatrixReadOnly
     method scale
     method scale3d
     method scaleNonUniform
+    method skewX
+    method skewY
     method toFloat32Array
     method toFloat64Array
     method translate

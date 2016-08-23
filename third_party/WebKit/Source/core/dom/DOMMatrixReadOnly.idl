@@ -57,6 +57,8 @@
                               optional unrestricted double originY = 0,
                               optional unrestricted double originZ = 0);
     DOMMatrix multiply(DOMMatrix other);
+    DOMMatrix skewX(optional unrestricted double sx = 0);
+    DOMMatrix skewY(optional unrestricted double sy = 0);
     DOMMatrix flipX();
     DOMMatrix flipY();
 

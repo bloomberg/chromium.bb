@@ -55,6 +55,8 @@ public:
     DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
     DOMMatrix* scaleNonUniform(double sx, double sy = 1, double sz = 1,
         double ox = 0, double oy = 0, double oz = 0);
+    DOMMatrix* skewX(double sx);
+    DOMMatrix* skewY(double sy);
     DOMMatrix* flipX();
     DOMMatrix* flipY();
 

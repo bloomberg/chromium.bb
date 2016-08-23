@@ -106,4 +106,16 @@ DOMMatrix* DOMMatrix::scaleNonUniformSelf(double sx, double sy, double sz,
     return this;
 }
 
+DOMMatrix* DOMMatrix::skewXSelf(double sx)
+{
+    m_matrix->skewX(sx);
+    return this;
+}
+
+DOMMatrix* DOMMatrix::skewYSelf(double sy)
+{
+    m_matrix->skewY(sy);
+    return this;
+}
+
 } // namespace blink
