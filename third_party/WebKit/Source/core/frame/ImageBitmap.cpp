@@ -226,12 +226,11 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
     // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
     if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && imageFormat == PremultiplyAlpha) || colorSpaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
         std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
-            ImageDecoder::determineImageType(*(image->data())),
+            image->data(), true,
             parsedOptions.premultiplyAlpha ? ImageDecoder::AlphaPremultiplied : ImageDecoder::AlphaNotPremultiplied,
             colorSpaceOp));
         if (!decoder)
             return nullptr;
-        decoder->setData(image->data(), true);
         skiaImage = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
         if (!skiaImage)
             return nullptr;

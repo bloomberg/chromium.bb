@@ -35,15 +35,14 @@ static void mixImages(const char* fileName, size_t bytesForFirstFrame, size_t la
     RefPtr<SharedBuffer> file = readFile(fileName);
     ASSERT_NE(file, nullptr);
 
-    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(ImageDecoder::determineImageType(*file.get()), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
-    ASSERT_TRUE(decoder.get());
-
     RefPtr<SharedBuffer> partialFile = SharedBuffer::create(file->data(), bytesForFirstFrame);
-    decoder->setData(*partialFile.get(), false);
+    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(partialFile, false,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
+    ASSERT_NE(decoder, nullptr);
     RefPtr<SkImage> partialImage = decoder->createFrameAtIndex(0);
 
     RefPtr<SharedBuffer> almostCompleteFile = SharedBuffer::create(file->data(), file->size() - 1);
-    decoder->setData(*almostCompleteFile.get(), false);
+    decoder->setData(almostCompleteFile, false);
     RefPtr<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
 
     imageWithMoreData->preroll();
@@ -82,33 +81,36 @@ TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco)
 
 TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature)
 {
-    struct {
-        const char* m_file;
-        ImageDecoder::SniffResult m_expectedResult;
-    } tests[] = {
-        { "/LayoutTests/fast/images/resources/animated.gif", ImageDecoder::SniffResult::GIF },
-        { "/LayoutTests/fast/images/resources/mu.png", ImageDecoder::SniffResult::PNG },
-        { "/LayoutTests/fast/images/resources/2-dht.jpg", ImageDecoder::SniffResult::JPEG },
-        { "/LayoutTests/fast/images/resources/webp-animated.webp", ImageDecoder::SniffResult::WEBP },
-        { "/LayoutTests/fast/images/resources/lenna.bmp", ImageDecoder::SniffResult::BMP },
-        { "/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", ImageDecoder::SniffResult::ICO },
+    const char* testFiles[] = {
+        "/LayoutTests/fast/images/resources/animated.gif",
+        "/LayoutTests/fast/images/resources/mu.png",
+        "/LayoutTests/fast/images/resources/2-dht.jpg",
+        "/LayoutTests/fast/images/resources/webp-animated.webp",
+        "/LayoutTests/fast/images/resources/lenna.bmp",
+        "/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico",
     };
 
-    for (size_t i = 0; i < SK_ARRAY_COUNT(tests); ++i) {
-        RefPtr<SharedBuffer> fileBuffer = readFile(tests[i].m_file);
+    for (size_t i = 0; i < SK_ARRAY_COUNT(testFiles); ++i) {
+        RefPtr<SharedBuffer> fileBuffer = readFile(testFiles[i]);
         ASSERT_NE(fileBuffer, nullptr);
         // We need contiguous data, which SharedBuffer doesn't guarantee.
         sk_sp<SkData> skData = fileBuffer->getAsSkData();
-        ASSERT_EQ(skData->size(), fileBuffer->size());
+        EXPECT_EQ(skData->size(), fileBuffer->size());
         const char* data = reinterpret_cast<const char*>(skData->bytes());
 
-        // Truncated signature (only 1 byte)
+        // Truncated signature (only 1 byte).  Decoder instantiation should fail.
         RefPtr<SharedBuffer> buffer = SharedBuffer::create<size_t>(data, 1u);
-        ASSERT_EQ(ImageDecoder::determineImageType(*buffer), ImageDecoder::SniffResult::InsufficientData);
+        EXPECT_FALSE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
+        EXPECT_EQ(nullptr, DeferredImageDecoder::create(buffer, false,
+            ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
 
         // Append the rest of the data.  We should be able to sniff the signature now, even if segmented.
         buffer->append<size_t>(data + 1, skData->size() - 1);
-        ASSERT_EQ(ImageDecoder::determineImageType(*buffer), tests[i].m_expectedResult);
+        EXPECT_TRUE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
+        std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(buffer, false,
+            ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
+        ASSERT_NE(decoder, nullptr);
+        EXPECT_TRUE(String(testFiles[i]).endsWith(decoder->filenameExtension()));
     }
 }
 

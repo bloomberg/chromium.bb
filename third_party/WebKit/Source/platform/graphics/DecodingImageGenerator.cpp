@@ -120,24 +120,20 @@ bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo, void
 
 SkImageGenerator* DecodingImageGenerator::create(SkData* data)
 {
+    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(sk_ref_sp(data));
     // We just need the size of the image, so we have to temporarily create an ImageDecoder. Since
     // we only need the size, it doesn't really matter about premul or not, or gamma settings.
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(static_cast<const char*>(data->data()), data->size()),
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(segmentReader, true,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
-    if (!decoder)
-        return 0;
-
-    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(sk_ref_sp(data));
-    decoder->setData(segmentReader.get(), true);
-    if (!decoder->isSizeAvailable())
-        return 0;
+    if (!decoder || !decoder->isSizeAvailable())
+        return nullptr;
 
     const IntSize size = decoder->size();
     const SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
 
     RefPtr<ImageFrameGenerator> frame = ImageFrameGenerator::create(SkISize::Make(size.width(), size.height()), false);
     if (!frame)
-        return 0;
+        return nullptr;
 
     return new DecodingImageGenerator(frame, info, segmentReader.release(), true, 0);
 }

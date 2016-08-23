@@ -175,7 +175,7 @@ protected:
 
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 {
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(1, image->width());
@@ -202,7 +202,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     RefPtr<SharedBuffer> partialData = SharedBuffer::create(m_data->data(), m_data->size() - 10);
 
     // Received only half the file.
-    m_lazyDecoder->setData(*partialData, false);
+    m_lazyDecoder->setData(partialData, false);
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     SkPictureRecorder recorder;
@@ -211,7 +211,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
     // Fully received the file and draw the SkPicture again.
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     tempCanvas = recorder.beginRecording(100, 100, 0, 0);
@@ -232,7 +232,7 @@ static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(1, image->width());
@@ -260,7 +260,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
 {
     m_status = ImageFrame::FramePartial;
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
@@ -270,7 +270,7 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
 
     m_status = ImageFrame::FrameComplete;
     m_data->append(" ", 1u);
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
 
@@ -287,7 +287,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameCount = 1;
     m_frameDuration = 10;
     m_status = ImageFrame::FramePartial;
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
 
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
@@ -299,7 +299,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameDuration = 20;
     m_status = ImageFrame::FrameComplete;
     m_data->append(" ", 1u);
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
 
     image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
@@ -313,7 +313,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameCount = 3;
     m_frameDuration = 30;
     m_status = ImageFrame::FrameComplete;
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
@@ -327,7 +327,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
 TEST_F(DeferredImageDecoderTest, decodedSize)
 {
     m_decodedSize = IntSize(22, 33);
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     RefPtr<SkImage> image = m_lazyDecoder->createFrameAtIndex(0);
     ASSERT_TRUE(image);
     EXPECT_EQ(m_decodedSize.width(), image->width());
@@ -348,22 +348,20 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
 TEST_F(DeferredImageDecoderTest, smallerFrameCount)
 {
     m_frameCount = 1;
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
     EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
     m_frameCount = 2;
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
     EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
     m_frameCount = 0;
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
 }
 
 TEST_F(DeferredImageDecoderTest, frameOpacity)
 {
-    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(ImageDecoder::determineImageType(*m_data),
+    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::create(m_data, true,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
-    std::unique_ptr<DeferredImageDecoder> decoder = DeferredImageDecoder::createForTesting(std::move(actualDecoder));
-    decoder->setData(*m_data, true);
 
     SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);
 
@@ -399,10 +397,10 @@ TEST_F(DeferredImageDecoderTest, respectActualDecoderSizeOnCreate)
     m_data = SharedBuffer::create(animatedGIF, sizeof(animatedGIF));
     m_frameCount = 2;
     forceFirstFrameToBeEmpty();
-    m_lazyDecoder->setData(*m_data, false);
+    m_lazyDecoder->setData(m_data, false);
     m_lazyDecoder->createFrameAtIndex(0);
     m_lazyDecoder->createFrameAtIndex(1);
-    m_lazyDecoder->setData(*m_data, true);
+    m_lazyDecoder->setData(m_data, true);
     // Clears only the first frame (0 bytes). If DeferredImageDecoder doesn't
     // check with the actual decoder it reports 4 bytes instead.
     size_t frameBytesCleared = m_lazyDecoder->clearCacheExceptFrame(1);
@@ -413,7 +411,7 @@ TEST_F(DeferredImageDecoderTest, data)
 {
     RefPtr<SharedBuffer> originalData = SharedBuffer::create(m_data->data(), m_data->size());
     EXPECT_EQ(originalData->size(), m_data->size());
-    m_lazyDecoder->setData(*originalData, false);
+    m_lazyDecoder->setData(originalData, false);
     RefPtr<SharedBuffer> newData = m_lazyDecoder->data();
     EXPECT_EQ(originalData->size(), newData->size());
     EXPECT_EQ(0, std::memcmp(originalData->data(), newData->data(), newData->size()));

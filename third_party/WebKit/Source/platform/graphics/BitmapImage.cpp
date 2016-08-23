@@ -198,9 +198,9 @@ Image::SizeAvailability BitmapImage::setData(PassRefPtr<SharedBuffer> data, bool
     if (!length)
         return SizeAvailable;
 
-    // If ImageSource::setData() returns Invalid, we know that this is a decode error.
+    // If ImageSource::setData() fails, we know that this is a decode error.
     // Report size available so that it gets registered as such in ImageResource.
-    if (m_source.setData(*data, allDataReceived) == ImageDecoder::SniffResult::Invalid)
+    if (!m_source.setData(data, allDataReceived))
         return SizeAvailable;
 
     return dataChanged(allDataReceived);

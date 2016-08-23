@@ -232,10 +232,9 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied;
     if (colorSpaceConversionOption == "none")
         colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(ImageDecoder::determineImageType(*sharedBuffer), alphaOp, colorSpaceOp));
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(sharedBuffer.release(), true, alphaOp, colorSpaceOp));
     RefPtr<SkImage> frame;
     if (decoder) {
-        decoder->setData(sharedBuffer.get(), true);
         frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
     }
     taskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, wrapCrossThreadPersistent(this), frame.release()));

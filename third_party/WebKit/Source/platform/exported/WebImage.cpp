@@ -46,12 +46,9 @@ namespace blink {
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(ImageDecoder::determineImageType(*buffer.get()), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
-    if (!decoder)
-        return WebImage();
-
-    decoder->setData(buffer.get(), true);
-    if (!decoder->isSizeAvailable())
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(buffer, true,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
+    if (!decoder || !decoder->isSizeAvailable())
         return WebImage();
 
     // Frames are arranged by decreasing size, then decreasing bit depth.
@@ -90,12 +87,9 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data)
     const size_t maxFrameCount = 8;
 
     RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
-    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(ImageDecoder::determineImageType(*buffer.get()), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
-    if (!decoder)
-        return WebVector<WebImage>();
-
-    decoder->setData(buffer.get(), true);
-    if (!decoder->isSizeAvailable())
+    std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(buffer, true,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored));
+    if (!decoder || !decoder->isSizeAvailable())
         return WebVector<WebImage>();
 
     // Frames are arranged by decreasing size, then decreasing bit depth.

@@ -160,11 +160,10 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data, size_t index, const S
         return false;
     }
 
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(data, true,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     // getYUVComponentSizes was already called and was successful, so ImageDecoder::create must succeed.
     ASSERT(decoder);
-
-    decoder->setData(data, true);
 
     std::unique_ptr<ImagePlanes> imagePlanes = wrapUnique(new ImagePlanes(planes, rowBytes));
     decoder->setImagePlanes(std::move(imagePlanes));
@@ -261,13 +260,17 @@ bool ImageFrameGenerator::decode(SegmentReader* data, bool allDataReceived, size
     // Try to create an ImageDecoder if we are not given one.
     ASSERT(decoder);
     bool newDecoder = false;
+    bool shouldCallSetData = true;
     if (!*decoder) {
         newDecoder = true;
         if (m_imageDecoderFactory)
             *decoder = m_imageDecoderFactory->create().release();
 
-        if (!*decoder)
-            *decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied).release();
+        if (!*decoder) {
+            *decoder = ImageDecoder::create(data, allDataReceived, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied).release();
+            // The newly created decoder just grabbed the data.  No need to reset it.
+            shouldCallSetData = false;
+        }
 
         if (!*decoder)
             return false;
@@ -280,7 +283,8 @@ bool ImageFrameGenerator::decode(SegmentReader* data, bool allDataReceived, size
         (*decoder)->setMemoryAllocator(allocator);
     }
 
-    (*decoder)->setData(data, allDataReceived);
+    if (shouldCallSetData)
+        (*decoder)->setData(data, allDataReceived);
     ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
 
     // For multi-frame image decoders, we need to know how many frames are
@@ -327,12 +331,12 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data, SkYUVSizeInf
     if (m_yuvDecodingFailed)
         return false;
 
-    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(ImageDecoder::determineImageType(*data), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(data, true,
+        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
     if (!decoder)
         return false;
 
     // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
-    decoder->setData(data, true);
     std::unique_ptr<ImagePlanes> dummyImagePlanes = wrapUnique(new ImagePlanes);
     decoder->setImagePlanes(std::move(dummyImagePlanes));
 

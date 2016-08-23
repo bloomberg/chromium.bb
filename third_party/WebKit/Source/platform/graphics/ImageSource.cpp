@@ -51,16 +51,21 @@ PassRefPtr<SharedBuffer> ImageSource::data()
     return m_decoder ? m_decoder->data() : nullptr;
 }
 
-ImageDecoder::SniffResult ImageSource::setData(SharedBuffer& data, bool allDataReceived)
+bool ImageSource::setData(PassRefPtr<SharedBuffer> passData, bool allDataReceived)
 {
-    ImageDecoder::SniffResult result = ImageDecoder::determineImageType(data);
-    if (!m_decoder)
-        m_decoder = DeferredImageDecoder::create(result, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+    RefPtr<SharedBuffer> data = passData;
 
-    if (m_decoder)
-        m_decoder->setData(data, allDataReceived);
+    if (m_decoder) {
+        m_decoder->setData(data.release(), allDataReceived);
+        // If the decoder is pre-instantiated, it means we've already validated the data/signature
+        // at some point.
+        return true;
+    }
 
-    return result;
+    m_decoder = DeferredImageDecoder::create(data, allDataReceived, ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
+
+    // Insufficient data is not a failure.
+    return m_decoder || !ImageDecoder::hasSufficientDataToSniffImageType(*data);
 }
 
 String ImageSource::filenameExtension() const

@@ -70,7 +70,8 @@ public:
     size_t clearCacheExceptFrame(size_t);
 
     PassRefPtr<SharedBuffer> data();
-    ImageDecoder::SniffResult setData(SharedBuffer& data, bool allDataReceived);
+    // Returns false when the decoder layer rejects the data.
+    bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     String filenameExtension() const;
 
     bool isSizeAvailable();

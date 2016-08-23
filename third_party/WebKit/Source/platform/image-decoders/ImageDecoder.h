@@ -94,37 +94,29 @@ public:
         GammaAndColorProfileIgnored
     };
 
-    enum class SniffResult {
-        JPEG,
-        PNG,
-        GIF,
-        WEBP,
-        ICO,
-        BMP,
-        InsufficientData,
-        Invalid
-    };
-
-    static SniffResult determineImageType(const char* data, size_t length);
-    static SniffResult determineImageType(const SharedBuffer&);
-    static SniffResult determineImageType(const SegmentReader&);
-
-    ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
-        : m_premultiplyAlpha(alphaOption == AlphaPremultiplied)
-        , m_ignoreGammaAndColorProfile(colorOptions == GammaAndColorProfileIgnored)
-        , m_maxDecodedBytes(maxDecodedBytes) { }
-
     virtual ~ImageDecoder() { }
 
-    // Returns a caller-owned decoder of the appropriate type.  Returns 0 if
+    // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
     // we can't sniff a supported type from the provided data (possibly
     // because there isn't enough data yet).
     // Sets m_maxDecodedBytes to Platform::maxImageDecodedBytes().
-    static std::unique_ptr<ImageDecoder> create(SniffResult, AlphaOption, GammaAndColorProfileOption);
+    static std::unique_ptr<ImageDecoder> create(PassRefPtr<SegmentReader> data, bool dataComplete,
+        AlphaOption, GammaAndColorProfileOption);
+    static std::unique_ptr<ImageDecoder> create(PassRefPtr<SharedBuffer> data, bool dataComplete,
+        AlphaOption alphaoption, GammaAndColorProfileOption colorOptions)
+    {
+        return create(SegmentReader::createFromSharedBuffer(data), dataComplete, alphaoption, colorOptions);
+    }
+
 
     virtual String filenameExtension() const = 0;
 
     bool isAllDataReceived() const { return m_isAllDataReceived; }
+
+    // Returns true if the buffer holds enough data to instantiate a decoder.
+    // This is useful for callers to determine whether a decoder instantiation
+    // failure is due to insufficient or bad data.
+    static bool hasSufficientDataToSniffImageType(const SharedBuffer&);
 
     void setData(PassRefPtr<SegmentReader> data, bool allDataReceived)
     {
@@ -282,6 +274,11 @@ public:
     virtual void setImagePlanes(std::unique_ptr<ImagePlanes>) { }
 
 protected:
+    ImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes)
+        : m_premultiplyAlpha(alphaOption == AlphaPremultiplied)
+        , m_ignoreGammaAndColorProfile(colorOptions == GammaAndColorProfileIgnored)
+        , m_maxDecodedBytes(maxDecodedBytes) { }
+
     // Calculates the most recent frame whose image data may be needed in
     // order to decode frame |frameIndex|, based on frame disposal methods
     // and |frameRectIsOpaque|, where |frameRectIsOpaque| signifies whether
@@ -334,6 +331,18 @@ protected:
     const size_t m_maxDecodedBytes;
 
 private:
+    enum class SniffResult {
+        JPEG,
+        PNG,
+        GIF,
+        WEBP,
+        ICO,
+        BMP,
+        Invalid
+    };
+
+    static SniffResult determineImageType(const char* data, size_t length);
+
     // Some code paths compute the size of the image as "width * height * 4"
     // and return it as a (signed) int.  Avoid overflow.
     static bool sizeCalculationMayOverflow(unsigned width, unsigned height)

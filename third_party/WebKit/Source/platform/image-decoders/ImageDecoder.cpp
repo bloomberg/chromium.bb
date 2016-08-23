@@ -83,42 +83,68 @@ inline bool matchesBMPSignature(const char* contents)
     return !memcmp(contents, "BM", 2);
 }
 
-std::unique_ptr<ImageDecoder> ImageDecoder::create(SniffResult sniffResult, AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
-{
-    size_t maxDecodedBytes = Platform::current() ? Platform::current()->maxDecodedImageBytes() : noDecodedImageByteLimit;
+// This needs to be updated if we ever add a matches*Signature() which requires more characters.
+static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
+std::unique_ptr<ImageDecoder> ImageDecoder::create(PassRefPtr<SegmentReader> passData, bool dataComplete,
+    AlphaOption alphaOption, GammaAndColorProfileOption colorOptions)
+{
+    RefPtr<SegmentReader> data = passData;
+
+    // We need at least kLongestSignatureLength bytes to run the signature matcher.
+    if (data->size() < kLongestSignatureLength)
+        return nullptr;
+
+    const size_t maxDecodedBytes = Platform::current()
+        ? Platform::current()->maxDecodedImageBytes()
+        : noDecodedImageByteLimit;
+
+    // Access the first kLongestSignatureLength chars to sniff the signature.
+    // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)
+    char buffer[kLongestSignatureLength];
+    const FastSharedBufferReader fastReader(data);
+    const ImageDecoder::SniffResult sniffResult = determineImageType(
+        fastReader.getConsecutiveData(0, kLongestSignatureLength, buffer), kLongestSignatureLength);
+
+    std::unique_ptr<ImageDecoder> decoder;
     switch (sniffResult) {
     case SniffResult::JPEG:
-        return wrapUnique(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        decoder.reset(new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::PNG:
-        return wrapUnique(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        decoder.reset(new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::GIF:
-        return wrapUnique(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        decoder.reset(new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::WEBP:
-        return wrapUnique(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        decoder.reset(new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::ICO:
-        return wrapUnique(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        decoder.reset(new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::BMP:
-        return wrapUnique(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
-    case SniffResult::InsufficientData:
+        decoder.reset(new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+        break;
     case SniffResult::Invalid:
-        return nullptr;
+        break;
     }
-    NOTREACHED();
-    return nullptr;
+
+    if (decoder)
+        decoder->setData(data.release(), dataComplete);
+
+    return decoder;
 }
 
-namespace {
-
-// This needs to be updated if we ever add a matches*Signature() which requires more characters.
-constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
-
-} // anonymous ns
+bool ImageDecoder::hasSufficientDataToSniffImageType(const SharedBuffer& data)
+{
+    return data.size() >= kLongestSignatureLength;
+}
 
 ImageDecoder::SniffResult ImageDecoder::determineImageType(const char* contents, size_t length)
 {
-    if (length < kLongestSignatureLength)
-        return SniffResult::InsufficientData;
+    DCHECK_GE(length, kLongestSignatureLength);
+
     if (matchesJPEGSignature(contents))
         return SniffResult::JPEG;
     if (matchesPNGSignature(contents))
@@ -132,24 +158,6 @@ ImageDecoder::SniffResult ImageDecoder::determineImageType(const char* contents,
     if (matchesBMPSignature(contents))
         return SniffResult::BMP;
     return SniffResult::Invalid;
-}
-
-ImageDecoder::SniffResult ImageDecoder::determineImageType(const SharedBuffer& data)
-{
-    // TODO(fmalita): refactor the method signature to avoid casting.
-    RefPtr<SegmentReader> reader = SegmentReader::createFromSharedBuffer(const_cast<SharedBuffer*>(&data));
-
-    return determineImageType(*reader);
-}
-
-ImageDecoder::SniffResult ImageDecoder::determineImageType(const SegmentReader& data)
-{
-    // TODO(fmalita): refactor the method signature to avoid casting.
-    const FastSharedBufferReader fastReader(const_cast<SegmentReader*>(&data));
-    char buffer[kLongestSignatureLength];
-    const size_t len = std::min(kLongestSignatureLength, data.size());
-
-    return determineImageType(fastReader.getConsecutiveData(0, len, buffer), len);
 }
 
 size_t ImageDecoder::frameCount()

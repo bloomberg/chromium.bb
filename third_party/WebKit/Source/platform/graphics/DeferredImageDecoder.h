@@ -47,7 +47,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
     USING_FAST_MALLOC(DeferredImageDecoder);
 public:
-    static std::unique_ptr<DeferredImageDecoder> create(ImageDecoder::SniffResult, ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
+    static std::unique_ptr<DeferredImageDecoder> create(PassRefPtr<SharedBuffer> data, bool dataComplete,
+        ImageDecoder::AlphaOption, ImageDecoder::GammaAndColorProfileOption);
 
     static std::unique_ptr<DeferredImageDecoder> createForTesting(std::unique_ptr<ImageDecoder>);
 
@@ -58,7 +59,7 @@ public:
     PassRefPtr<SkImage> createFrameAtIndex(size_t);
 
     PassRefPtr<SharedBuffer> data();
-    void setData(SharedBuffer& data, bool allDataReceived);
+    void setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
 
     bool isSizeAvailable();
     bool hasColorProfile() const;
@@ -84,6 +85,8 @@ private:
     void prepareLazyDecodedFrames();
 
     PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque);
+
+    void setDataInternal(PassRefPtr<SharedBuffer> data, bool allDataReceived, bool pushDataToDecoder);
 
     // Copy of the data that is passed in, used by deferred decoding.
     // Allows creating readonly snapshots that may be read in another thread.

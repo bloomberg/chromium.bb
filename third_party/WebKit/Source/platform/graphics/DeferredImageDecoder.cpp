@@ -57,14 +57,22 @@ public:
     uint32_t m_uniqueID;
 };
 
-std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(ImageDecoder::SniffResult sniffResult, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
+std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(PassRefPtr<SharedBuffer> passData,
+    bool dataComplete, ImageDecoder::AlphaOption alphaOption, ImageDecoder::GammaAndColorProfileOption colorOptions)
 {
-    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(sniffResult, alphaOption, colorOptions);
+    RefPtr<SharedBuffer> data = passData;
+
+    std::unique_ptr<ImageDecoder> actualDecoder = ImageDecoder::create(data, dataComplete, alphaOption, colorOptions);
 
     if (!actualDecoder)
         return nullptr;
 
-    return wrapUnique(new DeferredImageDecoder(std::move(actualDecoder)));
+    std::unique_ptr<DeferredImageDecoder> decoder(new DeferredImageDecoder(std::move(actualDecoder)));
+
+    // Since we've just instantiated a fresh decoder, there's no need to reset its data.
+    decoder->setDataInternal(data.release(), dataComplete, false);
+
+    return decoder;
 }
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(std::unique_ptr<ImageDecoder> actualDecoder)
@@ -133,21 +141,28 @@ PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
     return sharedBuffer.release();
 }
 
-void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
+void DeferredImageDecoder::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
+    setDataInternal(data, allDataReceived, true);
+}
+
+void DeferredImageDecoder::setDataInternal(PassRefPtr<SharedBuffer> passData, bool allDataReceived, bool pushDataToDecoder)
+{
+    RefPtr<SharedBuffer> data = passData;
     if (m_actualDecoder) {
         m_allDataReceived = allDataReceived;
-        m_actualDecoder->setData(&data, allDataReceived);
+        if (pushDataToDecoder)
+            m_actualDecoder->setData(data, allDataReceived);
         prepareLazyDecodedFrames();
     }
 
     if (m_frameGenerator) {
         if (!m_rwBuffer)
-            m_rwBuffer = wrapUnique(new SkRWBuffer(data.size()));
+            m_rwBuffer = wrapUnique(new SkRWBuffer(data->size()));
 
         const char* segment = 0;
-        for (size_t length = data.getSomeData(segment, m_rwBuffer->size());
-            length; length = data.getSomeData(segment, m_rwBuffer->size())) {
+        for (size_t length = data->getSomeData(segment, m_rwBuffer->size());
+            length; length = data->getSomeData(segment, m_rwBuffer->size())) {
             m_rwBuffer->append(segment, length);
         }
     }
