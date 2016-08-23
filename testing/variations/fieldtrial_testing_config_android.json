@@ -559,7 +559,7 @@
     ],
     "WebFontsInterventionV2": [
         {
-            "group_name": "Disabled"
+            "group_name": "Enabled-slow2g"
         }
     ],
     "WebRTC-EnableWebRtcEcdsa": [
