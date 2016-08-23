@@ -35,7 +35,7 @@ Polymer({
 
     /**
      * List of options for the drop-down menu.
-     * @type {DropdownMenuOptionList}
+     * @type {!DropdownMenuOptionList}
      */
     menuOptions: {
       type: Array,
@@ -120,7 +120,7 @@ Polymer({
    * @private
    */
   updateSelected_: function() {
-    if (!this.pref)
+    if (!this.pref || !this.menuOptions.length)
       return;
     var prefValue = this.pref.value;
     var option = this.menuOptions.find(function(menuItem) {
@@ -138,7 +138,7 @@ Polymer({
    * @private
    */
   isSelectedNotFound_: function(selected) {
-    return this.menuOptions && selected == this.notFoundValue_;
+    return this.menuOptions.length > 0 && selected == this.notFoundValue_;
   },
 
   /**
