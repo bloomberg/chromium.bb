@@ -1102,17 +1102,10 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
         m_context->paintRenderingResultsToCanvas(BackBuffer);
     }
 
-    RefPtr<SkImage> skImage;
-    RefPtr<blink::Image> image = renderingContext()->getImage();
-
-    if (image)
-        skImage = image->imageForCurrentFrame();
-    else
-        skImage = hasImageBuffer() ? buffer()->newSkImageSnapshot(hint, reason) : createTransparentImage(size())->imageForCurrentFrame();
-
-    if (skImage) {
+    RefPtr<SkImage> image = buffer()->newSkImageSnapshot(hint, reason);
+    if (image) {
         *status = NormalSourceImageStatus;
-        return StaticBitmapImage::create(skImage.release());
+        return StaticBitmapImage::create(image.release());
     }
 
     *status = InvalidSourceImageStatus;

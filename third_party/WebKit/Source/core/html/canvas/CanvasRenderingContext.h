@@ -127,7 +127,6 @@ public:
 
     // ImageBitmap-specific interface
     virtual bool paint(GraphicsContext&, const IntRect&) { return false; }
-    virtual PassRefPtr<Image> getImage() const { return nullptr; }
 
     bool wouldTaintOrigin(CanvasImageSource*, SecurityOrigin* = nullptr);
     void didMoveToNewDocument(Document*);
