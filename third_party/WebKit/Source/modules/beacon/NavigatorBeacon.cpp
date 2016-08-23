@@ -21,7 +21,7 @@
 namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : LocalFrameLifecycleObserver(navigator.frame())
+    : DOMWindowProperty(navigator.frame())
     , m_transmittedBytes(0)
 {
 }
@@ -32,7 +32,7 @@ NavigatorBeacon::~NavigatorBeacon()
 
 DEFINE_TRACE(NavigatorBeacon)
 {
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
     Supplement<Navigator>::trace(visitor);
 }
 

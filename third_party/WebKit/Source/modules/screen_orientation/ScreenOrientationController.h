@@ -5,7 +5,7 @@
 #ifndef ScreenOrientationController_h
 #define ScreenOrientationController_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -23,7 +23,7 @@ class WebScreenOrientationClient;
 class MODULES_EXPORT ScreenOrientationController final
     : public GarbageCollectedFinalized<ScreenOrientationController>
     , public Supplement<LocalFrame>
-    , public LocalFrameLifecycleObserver
+    , public DOMWindowProperty
     , public PlatformEventController {
     USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
     WTF_MAKE_NONCOPYABLE(ScreenOrientationController);
@@ -54,8 +54,8 @@ private:
     bool hasLastData() override;
     void pageVisibilityChanged() override;
 
-    // Inherited from LocalFrameLifecycleObserver.
-    void contextDestroyed() override;
+    // Inherited from DOMWindowProperty.
+    void willDestroyGlobalObjectInFrame() override;
 
     void notifyDispatcher();
 

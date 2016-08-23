@@ -5,7 +5,8 @@
 #ifndef PresentationController_h
 #define PresentationController_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationRequest.h"
@@ -16,7 +17,6 @@
 
 namespace blink {
 
-class LocalFrame;
 class PresentationConnection;
 class WebPresentationAvailabilityCallback;
 class WebPresentationConnectionClient;
@@ -28,7 +28,7 @@ enum class WebPresentationConnectionState;
 class MODULES_EXPORT PresentationController final
     : public GarbageCollectedFinalized<PresentationController>
     , public Supplement<LocalFrame>
-    , public LocalFrameLifecycleObserver
+    , public DOMWindowProperty
     , public WebPresentationController {
     USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
     WTF_MAKE_NONCOPYABLE(PresentationController);
@@ -70,8 +70,8 @@ public:
 private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
-    // Implementation of LocalFrameLifecycleObserver.
-    void contextDestroyed() override;
+    // Implementation of DOMWindowProperty.
+    void willDestroyGlobalObjectInFrame() override;
 
     // Return the connection associated with the given |connectionClient| or
     // null if it doesn't exist.

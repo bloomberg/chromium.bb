@@ -153,14 +153,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
-#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
-#include "modules/bluetooth/BluetoothSupplement.h"
-#include "modules/installedapp/InstalledAppController.h"
-#include "modules/notifications/NotificationPermissionClient.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
-#include "modules/wake_lock/ScreenWakeLock.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -215,13 +208,8 @@
 #include "public/web/WebTreeScopeType.h"
 #include "skia/ext/platform_canvas.h"
 #include "web/AssociatedURLLoader.h"
-#include "web/AudioOutputDeviceClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
-#include "web/IndexedDBClientImpl.h"
-#include "web/LocalFileSystemClient.h"
-#include "web/NavigatorContentUtilsClientImpl.h"
-#include "web/NotificationPermissionClientImpl.h"
 #include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
@@ -1476,35 +1464,6 @@ DEFINE_TRACE(WebLocalFrameImpl)
 void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 {
     m_frame = frame;
-
-    // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
-    if (!m_frame)
-        return;
-
-    if (m_client) {
-        providePushControllerTo(*m_frame, m_client->pushClient());
-        provideUserMediaTo(*m_frame, UserMediaClientImpl::create(m_client->userMediaClient()));
-    }
-
-    provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
-    provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
-    provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
-    provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));
-
-    bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
-#if OS(CHROMEOS) || OS(ANDROID) || OS(MACOSX)
-    enableWebBluetooth = true;
-#endif
-    if (enableWebBluetooth)
-        BluetoothSupplement::provideTo(*m_frame, m_client ? m_client->bluetooth() : nullptr);
-
-    ScreenOrientationController::provideTo(*m_frame, m_client ? m_client->webScreenOrientationClient() : nullptr);
-    if (RuntimeEnabledFeatures::presentationEnabled())
-        PresentationController::provideTo(*m_frame, m_client ? m_client->presentationClient() : nullptr);
-    if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
-        provideAudioOutputDeviceClientTo(*m_frame, AudioOutputDeviceClientImpl::create());
-    if (RuntimeEnabledFeatures::installedAppEnabled())
-        InstalledAppController::provideTo(*m_frame, m_client ? m_client->installedAppClient() : nullptr);
 }
 
 void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, const AtomicString& name, const AtomicString& uniqueName)

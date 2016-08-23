@@ -200,7 +200,7 @@ private:
     AtomicString m_contentType;
 };
 
-class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>, public LocalFrameLifecycleObserver, private WebURLLoaderClient {
+class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>, public DOMWindowProperty, private WebURLLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(PingLoaderImpl);
     WTF_MAKE_NONCOPYABLE(PingLoaderImpl);
 public:
@@ -236,7 +236,7 @@ private:
 };
 
 PingLoaderImpl::PingLoaderImpl(LocalFrame* frame, ResourceRequest& request, const AtomicString& initiator, StoredCredentials credentialsAllowed, bool isBeacon)
-    : LocalFrameLifecycleObserver(frame)
+    : DOMWindowProperty(frame)
     , m_timeout(this, &PingLoaderImpl::timeout)
     , m_url(request.url())
     , m_identifier(createUniqueIdentifier())
@@ -382,7 +382,7 @@ void PingLoaderImpl::didFailLoading(LocalFrame* frame)
 
 DEFINE_TRACE(PingLoaderImpl)
 {
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 void finishPingRequestInitialization(ResourceRequest& request, LocalFrame* frame, WebURLRequest::RequestContext requestContext)

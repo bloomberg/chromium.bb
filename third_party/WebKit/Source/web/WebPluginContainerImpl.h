@@ -32,7 +32,7 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Widget.h"
 #include "public/web/WebPluginContainer.h"
@@ -47,6 +47,7 @@ struct NPObject;
 namespace blink {
 
 class GestureEvent;
+class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
 class IntRect;
 class KeyboardEvent;
@@ -60,7 +61,7 @@ class Widget;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 
-class WEB_EXPORT WebPluginContainerImpl final : public PluginView, WTF_NON_EXPORTED_BASE(public WebPluginContainer), public LocalFrameLifecycleObserver {
+class WEB_EXPORT WebPluginContainerImpl final : public PluginView, WTF_NON_EXPORTED_BASE(public WebPluginContainer), public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
     USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
 public:

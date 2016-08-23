@@ -659,7 +659,7 @@ bool WebPluginContainerImpl::wantsWheelEvents()
 // Private methods -------------------------------------------------------------
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : LocalFrameLifecycleObserver(element->document().frame())
+    : DOMWindowProperty(element->document().frame())
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(nullptr)
@@ -698,7 +698,7 @@ void WebPluginContainerImpl::dispose()
 DEFINE_TRACE(WebPluginContainerImpl)
 {
     visitor->trace(m_element);
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
     PluginView::trace(visitor);
 }
 

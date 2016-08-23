@@ -28,7 +28,7 @@ PermissionController* PermissionController::from(LocalFrame& frame)
 }
 
 PermissionController::PermissionController(LocalFrame& frame, WebPermissionClient* client)
-    : LocalFrameLifecycleObserver(&frame)
+    : DOMWindowProperty(&frame)
     , m_client(client)
 {
 }
@@ -43,14 +43,14 @@ WebPermissionClient* PermissionController::client() const
     return m_client;
 }
 
-void PermissionController::contextDestroyed()
+void PermissionController::willDestroyGlobalObjectInFrame()
 {
     m_client = nullptr;
 }
 
 DEFINE_TRACE(PermissionController)
 {
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
     Supplement<LocalFrame>::trace(visitor);
 }
 

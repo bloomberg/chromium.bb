@@ -7,13 +7,14 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/FrameConsole.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/MainThreadDebugger.h"
 
 namespace blink {
 
 MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
     : WorkletGlobalScope(url, userAgent, securityOrigin, isolate)
-    , LocalFrameLifecycleObserver(frame)
+    , DOMWindowProperty(frame)
 {
 }
 

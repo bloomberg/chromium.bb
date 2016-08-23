@@ -5,7 +5,7 @@
 #ifndef NavigatorBeacon_h
 #define NavigatorBeacon_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -18,7 +18,7 @@ class ExecutionContext;
 class KURL;
 class ArrayBufferViewOrBlobOrStringOrFormData;
 
-class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>, public LocalFrameLifecycleObserver, public Supplement<Navigator> {
+class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>, public DOMWindowProperty, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 public:
     static NavigatorBeacon& from(Navigator&);

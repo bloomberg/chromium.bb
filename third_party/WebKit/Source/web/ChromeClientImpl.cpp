@@ -54,6 +54,16 @@
 #include "core/page/Page.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "modules/accessibility/AXObject.h"
+#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
+#include "modules/bluetooth/BluetoothSupplement.h"
+#include "modules/installedapp/InstalledAppController.h"
+#include "modules/mediastream/UserMediaController.h"
+#include "modules/notifications/NotificationPermissionClient.h"
+#include "modules/permissions/PermissionController.h"
+#include "modules/presentation/PresentationController.h"
+#include "modules/push_messaging/PushController.h"
+#include "modules/screen_orientation/ScreenOrientationController.h"
+#include "modules/vr/VRController.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/Histogram.h"
@@ -90,11 +100,16 @@
 #include "public/web/WebUserGestureToken.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWindowFeatures.h"
+#include "web/AudioOutputDeviceClientImpl.h"
 #include "web/ColorChooserPopupUIController.h"
 #include "web/ColorChooserUIController.h"
 #include "web/DateTimeChooserImpl.h"
 #include "web/ExternalDateTimeChooser.h"
 #include "web/ExternalPopupMenu.h"
+#include "web/IndexedDBClientImpl.h"
+#include "web/LocalFileSystemClient.h"
+#include "web/NavigatorContentUtilsClientImpl.h"
+#include "web/NotificationPermissionClientImpl.h"
 #include "web/PopupMenuImpl.h"
 #include "web/WebFileChooserCompletionImpl.h"
 #include "web/WebFrameWidgetImpl.h"
@@ -1098,6 +1113,36 @@ std::unique_ptr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(BlameC
 double ChromeClientImpl::lastFrameTimeMonotonic() const
 {
     return m_webView->lastFrameTimeMonotonic();
+}
+
+void ChromeClientImpl::installSupplements(LocalFrame& frame)
+{
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(&frame);
+    WebFrameClient* client = webFrame->client();
+    if (client) {
+        providePushControllerTo(frame, client->pushClient());
+        provideUserMediaTo(frame, UserMediaClientImpl::create(client->userMediaClient()));
+    }
+
+    provideNotificationPermissionClientTo(frame, NotificationPermissionClientImpl::create());
+    provideIndexedDBClientTo(frame, IndexedDBClientImpl::create());
+    provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
+    provideNavigatorContentUtilsTo(frame, NavigatorContentUtilsClientImpl::create(webFrame));
+
+    bool enableWebBluetooth = RuntimeEnabledFeatures::webBluetoothEnabled();
+#if OS(CHROMEOS) || OS(ANDROID) || OS(MACOSX)
+    enableWebBluetooth = true;
+#endif
+    if (enableWebBluetooth)
+        BluetoothSupplement::provideTo(frame, client ? client->bluetooth() : nullptr);
+
+    ScreenOrientationController::provideTo(frame, client ? client->webScreenOrientationClient() : nullptr);
+    if (RuntimeEnabledFeatures::presentationEnabled())
+        PresentationController::provideTo(frame, client ? client->presentationClient() : nullptr);
+    if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
+        provideAudioOutputDeviceClientTo(frame, AudioOutputDeviceClientImpl::create());
+    if (RuntimeEnabledFeatures::installedAppEnabled())
+        InstalledAppController::provideTo(frame, client ? client->installedAppClient() : nullptr);
 }
 
 } // namespace blink

@@ -32,7 +32,7 @@ InstalledAppController* InstalledAppController::from(LocalFrame& frame)
 }
 
 InstalledAppController::InstalledAppController(LocalFrame& frame, WebInstalledAppClient* client)
-    : LocalFrameLifecycleObserver(&frame)
+    : DOMWindowProperty(&frame)
     , m_client(client)
 {
 }
@@ -54,7 +54,7 @@ void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, std:
     m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
-void InstalledAppController::contextDestroyed()
+void InstalledAppController::willDestroyGlobalObjectInFrame()
 {
     m_client = nullptr;
 }
@@ -62,7 +62,7 @@ void InstalledAppController::contextDestroyed()
 DEFINE_TRACE(InstalledAppController)
 {
     Supplement<LocalFrame>::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 } // namespace blink

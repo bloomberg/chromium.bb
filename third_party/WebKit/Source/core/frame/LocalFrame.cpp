@@ -469,6 +469,7 @@ void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow)
     if (m_domWindow)
         m_domWindow->reset();
     m_domWindow = domWindow;
+    page()->chromeClient().installSupplements(*this);
 }
 
 Document* LocalFrame::document() const

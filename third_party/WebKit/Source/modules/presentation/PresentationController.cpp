@@ -13,7 +13,7 @@
 namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame, WebPresentationClient* client)
-    : LocalFrameLifecycleObserver(&frame)
+    : DOMWindowProperty(&frame)
     , m_client(client)
 {
     if (m_client)
@@ -60,7 +60,7 @@ DEFINE_TRACE(PresentationController)
     visitor->trace(m_presentation);
     visitor->trace(m_connections);
     Supplement<LocalFrame>::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
 }
 
 void PresentationController::didStartDefaultSession(WebPresentationConnectionClient* connectionClient)
@@ -131,7 +131,7 @@ void PresentationController::registerConnection(PresentationConnection* connecti
     m_connections.add(connection);
 }
 
-void PresentationController::contextDestroyed()
+void PresentationController::willDestroyGlobalObjectInFrame()
 {
     if (m_client) {
         m_client->setController(nullptr);

@@ -35,7 +35,7 @@ ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
-    : LocalFrameLifecycleObserver(&frame)
+    : DOMWindowProperty(&frame)
     , PlatformEventController(frame.page())
     , m_client(client)
     , m_dispatchEventTimer(this, &ScreenOrientationController::dispatchEventTimerFired)
@@ -196,10 +196,9 @@ bool ScreenOrientationController::hasLastData()
     return true;
 }
 
-void ScreenOrientationController::contextDestroyed()
+void ScreenOrientationController::willDestroyGlobalObjectInFrame()
 {
     m_client = nullptr;
-    LocalFrameLifecycleObserver::contextDestroyed();
 }
 
 void ScreenOrientationController::notifyDispatcher()
@@ -213,7 +212,7 @@ void ScreenOrientationController::notifyDispatcher()
 DEFINE_TRACE(ScreenOrientationController)
 {
     visitor->trace(m_orientation);
-    LocalFrameLifecycleObserver::trace(visitor);
+    DOMWindowProperty::trace(visitor);
     Supplement<LocalFrame>::trace(visitor);
     PlatformEventController::trace(visitor);
 }

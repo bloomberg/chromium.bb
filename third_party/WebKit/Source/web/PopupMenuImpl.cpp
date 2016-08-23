@@ -12,6 +12,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"

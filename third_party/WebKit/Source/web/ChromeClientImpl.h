@@ -190,6 +190,8 @@ public:
 
     void notifyPopupOpeningObservers() const;
 
+    void installSupplements(LocalFrame&) override;
+
 private:
     explicit ChromeClientImpl(WebViewImpl*);
 

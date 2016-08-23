@@ -5,7 +5,7 @@
 #ifndef PermissionController_h
 #define PermissionController_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 
@@ -16,7 +16,7 @@ class WebPermissionClient;
 class MODULES_EXPORT PermissionController final
     : public GarbageCollectedFinalized<PermissionController>
     , public Supplement<LocalFrame>
-    , public LocalFrameLifecycleObserver {
+    , public DOMWindowProperty {
     WTF_MAKE_NONCOPYABLE(PermissionController);
     USING_GARBAGE_COLLECTED_MIXIN(PermissionController);
 public:
@@ -33,8 +33,8 @@ public:
 private:
     PermissionController(LocalFrame&, WebPermissionClient*);
 
-    // Inherited from LocalFrameLifecycleObserver.
-    void contextDestroyed() override;
+    // Inherited from DOMWindowProperty.
+    void willDestroyGlobalObjectInFrame() override;
 
     WebPermissionClient* m_client;
 };

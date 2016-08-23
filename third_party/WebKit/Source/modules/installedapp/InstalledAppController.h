@@ -5,7 +5,8 @@
 #ifndef InstalledAppController_h
 #define InstalledAppController_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "public/platform/modules/installedapp/WebInstalledAppClient.h"
@@ -15,7 +16,7 @@ namespace blink {
 class WebSecurityOrigin;
 
 class MODULES_EXPORT InstalledAppController final
-    : public GarbageCollectedFinalized<InstalledAppController>, public Supplement<LocalFrame>, public LocalFrameLifecycleObserver {
+    : public GarbageCollectedFinalized<InstalledAppController>, public Supplement<LocalFrame>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
     WTF_MAKE_NONCOPYABLE(InstalledAppController);
 public:
@@ -32,8 +33,8 @@ public:
 private:
     InstalledAppController(LocalFrame&, WebInstalledAppClient*);
 
-    // Inherited from LocalFrameLifecycleObserver.
-    void contextDestroyed() override;
+    // Inherited from DOMWindowProperty.
+    void willDestroyGlobalObjectInFrame() override;
 
     WebInstalledAppClient* m_client;
 };
