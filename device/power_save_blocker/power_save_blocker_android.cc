@@ -35,8 +35,6 @@ class PowerSaveBlocker::Delegate
 
   base::android::ScopedJavaGlobalRef<jobject> java_power_save_blocker_;
 
-  ui::ViewAndroid::ScopedAnchorView anchor_view_;
-
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -59,19 +57,18 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
     return;
 
   JNIEnv* env = AttachCurrentThread();
-  anchor_view_ = view_android_->AcquireAnchorView();
-  const ScopedJavaLocalRef<jobject> popup_view = anchor_view_.view();
-  if (popup_view.is_null())
+  ScopedJavaLocalRef<jobject> delegate =
+      view_android_->GetViewAndroidDelegate().get(env);
+  if (delegate.is_null())
     return;
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
-  Java_PowerSaveBlocker_applyBlock(env, obj, popup_view);
+  Java_PowerSaveBlocker_applyBlock(env, obj, delegate);
 }
 
 void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
   Java_PowerSaveBlocker_removeBlock(AttachCurrentThread(), obj);
-  anchor_view_.Reset();
 }
 
 PowerSaveBlocker::PowerSaveBlocker(
