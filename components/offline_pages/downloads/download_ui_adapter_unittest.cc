@@ -281,4 +281,17 @@ TEST_F(DownloadUIAdapterTest, ItemUpdated) {
   EXPECT_EQ(0UL, updated_guids.size());
 }
 
+TEST_F(DownloadUIAdapterTest, NoHangingLoad) {
+  EXPECT_NE(nullptr, model->adapter);
+  EXPECT_FALSE(items_loaded);
+  // Removal of last observer causes cache unload of not-yet-loaded cache.
+  model->adapter->RemoveObserver(this);
+  // This will complete async fetch of items, but...
+  PumpLoop();
+  // items should not be loaded when there is no observers!
+  EXPECT_FALSE(items_loaded);
+  // This should not crash.
+  model->adapter->AddObserver(this);
+}
+
 }  // namespace offline_pages

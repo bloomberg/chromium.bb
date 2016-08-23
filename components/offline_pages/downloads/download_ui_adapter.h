@@ -81,6 +81,12 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
                           const ClientId& client_id) override;
 
  private:
+  enum class State {
+    NOT_LOADED,
+    LOADING,
+    LOADED
+  };
+
   struct ItemInfo {
     explicit ItemInfo(const OfflinePageItem& page);
     ~ItemInfo();
@@ -110,13 +116,14 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
   // Always valid, this class is a member of the model.
   OfflinePageModel* model_;
 
-  bool is_loaded_;
+  State state_;
 
   // The cache of UI items. The key is DownloadUIItem.guid.
   DownloadUIItems items_;
 
   // The observers.
   base::ObserverList<Observer> observers_;
+  int observers_count_;
 
   base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;
 

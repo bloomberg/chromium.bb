@@ -28,7 +28,8 @@ DownloadUIAdapter::ItemInfo::~ItemInfo() {}
 
 DownloadUIAdapter::DownloadUIAdapter(OfflinePageModel* model)
     : model_(model),
-      is_loaded_(false),
+      state_(State::NOT_LOADED),
+      observers_count_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -48,12 +49,15 @@ DownloadUIAdapter* DownloadUIAdapter::FromOfflinePageModel(
 
 void DownloadUIAdapter::AddObserver(Observer* observer) {
   DCHECK(observer);
-  if (!observers_.might_have_observers())
+  if (observers_.HasObserver(observer))
+    return;
+  if (observers_count_ == 0)
     LoadCache();
   observers_.AddObserver(observer);
+  ++observers_count_;
   // If the items are already loaded, post the notification right away.
   // Don't just invoke it from here to avoid reentrancy in the client.
-  if (is_loaded_) {
+  if (state_ == State::LOADED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&DownloadUIAdapter::NotifyItemsLoaded,
                               weak_ptr_factory_.GetWeakPtr(),
@@ -62,9 +66,13 @@ void DownloadUIAdapter::AddObserver(Observer* observer) {
 }
 
 void DownloadUIAdapter::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  if (!observers_.HasObserver(observer))
+    return;
   observers_.RemoveObserver(observer);
+  --observers_count_;
   // Once the last observer is gone, clear cached data.
-  if (!observers_.might_have_observers())
+  if (observers_count_ == 0)
     ClearCache();
 }
 
@@ -132,23 +140,32 @@ GURL DownloadUIAdapter::GetOfflineUrlByGuid(
   return GURL();
 }
 
+// Note that several LoadCache calls may be issued before the async GetAllPages
+// comes back.
 void DownloadUIAdapter::LoadCache() {
-  DCHECK(!is_loaded_);
   // TODO(dimich): Add fetching from RequestQueue as well.
-  model_->AddObserver(this);
+  state_ = State::LOADING;
   model_->GetAllPages(
       base::Bind(&DownloadUIAdapter::OnOfflinePagesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DownloadUIAdapter::ClearCache() {
-  model_->RemoveObserver(this);
+  // Once loaded, this class starts to observe the model. Only remove observer
+  // if it was added.
+  if (state_ == State::LOADED)
+    model_->RemoveObserver(this);
   items_.clear();
-  is_loaded_ = false;
+  state_ = State::NOT_LOADED;
 }
 
 void DownloadUIAdapter::OnOfflinePagesLoaded(
     const MultipleOfflinePageItemResult& pages) {
+  // If multiple observers register quickly, the cache might be already loaded
+  // by the previous LoadCache call. At the same time, if all observers already
+  // left, there is no reason to populate the cache.
+  if (state_ != State::LOADING)
+    return;
   for (const auto& page : pages) {
     if (IsVisibleInUI(page.client_id)) {
       std::string guid = page.client_id.id;
@@ -156,7 +173,8 @@ void DownloadUIAdapter::OnOfflinePagesLoaded(
       items_[guid] = base::MakeUnique<ItemInfo>(page);
     }
   }
-  is_loaded_ = true;
+  model_->AddObserver(this);
+  state_ = State::LOADED;
   FOR_EACH_OBSERVER(Observer, observers_, ItemsLoaded());
 }
 
