@@ -304,14 +304,6 @@
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   bug_86301 This test explicitly verifies PostTaskAndReply leaks the task if the originating MessageLoop has been deleted.
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvELNS0_8CopyMode*
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvELNS_8internal8CopyMode*
-   fun:_ZN4base74MessageLoopTaskRunnerTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test8TestBodyEv
-}
-{
    # Non-joinable thread doesn't clean up all state on program exit
    # very common in ui tests
    bug_16096 (WontFix)
@@ -1312,14 +1304,6 @@
    fun:_ZN5gdata15GDataFileSystem21RunTaskOnIOThreadPoolERKN4base8CallbackIFvvEEE
 }
 {
-   bug_122717_leak
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-}
-{
    bug_123307
    Memcheck:Leak
    fun:malloc
@@ -2180,15 +2164,6 @@
    fun:_ZN5blink11ImageLoader4Task3runEv
 }
 {
-   bug_386418
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIF*
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIF*
-   fun:_ZN3net16HostResolverImpl16LoopbackProbeJob*
-   fun:_ZN3net16HostResolverImpl*
-}
-{
    bug_388668
    Memcheck:Leak
    fun:_Znw*
@@ -2721,16 +2696,6 @@
    fun:_ZN7storage12QuotaManager26GetUsageAndQuotaForWebAppsERK4GURLNS_11StorageTypeERKN4base8CallbackIFvNS_15QuotaStatusCodeEllELNS5_8internal8CopyModeE1EEE
 }
 {
-   bug_562712
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN10disk_cache15SimpleEntryImpl13CloseInternalEv
-   fun:_ZN10disk_cache15SimpleEntryImpl24RunNextOperationIfNeededEv
-   fun:_ZN10disk_cache15SimpleEntryImpl5CloseEv
-}
-{
    bug_562718a
    Memcheck:Uninitialized
    fun:_ZN5blink10PaintLayer24removeFilterInfoIfNeededEv
@@ -2975,14 +2940,4 @@
    Memcheck:Leak
    ...
    fun:_ZN4base4BindIMN7content21ChromeAppCacheServiceEFvRKNS_8FilePathEPNS1_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEEEJPS2_S3_S7_SB_IS9_ESE_EEENS_8CallbackINS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESM_DpOSN_
-}
-{
-   bug_602964
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMNS_12_GLOBAL__N_121PostTaskAndReplyRelayEFvvEJNS_8internal17UnretainedWrapper*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS*
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvELNS*
-   fun:_ZN4base26PostTaskAndReplyWithResultIN3net20WifiPHYLayerProtocolES2_EEbPNS*
-   fun:_ZN7metrics22NetworkMetricsProvider25ProbeWifiPHYLayerProtocolEv
 }
