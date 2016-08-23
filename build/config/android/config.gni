@@ -32,9 +32,17 @@ if (is_android) {
     assert(defined(default_android_ndk_version))
   }
 
+  # The same version of lint should be used for building all targets,
+  # and these args ensure that the upstream version of lint is used for
+  # both upstream and downstream targets.
+  lint_android_sdk_root = "//third_party/android_tools/sdk"
+  lint_android_sdk_version = "23"
+
   if (!defined(default_android_sdk_root)) {
-    default_android_sdk_root = "//third_party/android_tools/sdk"
-    default_android_sdk_version = "23"
+    # Reuse the lint variables to ensure that the lint version gets updated
+    # when the upstream SDK version is updated.
+    default_android_sdk_root = lint_android_sdk_root
+    default_android_sdk_version = lint_android_sdk_version
     default_android_sdk_build_tools_version = "23.0.1"
   }
 
