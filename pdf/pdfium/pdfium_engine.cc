@@ -857,10 +857,10 @@ void PDFiumEngine::AddSegment(FX_DOWNLOADHINTS* param,
 bool PDFiumEngine::New(const char* url,
                        const char* headers) {
   url_ = url;
-  if (!headers)
-    headers_.clear();
-  else
+  if (headers)
     headers_ = headers;
+  else
+    headers_.clear();
   return true;
 }
 
@@ -3158,9 +3158,9 @@ void PDFiumEngine::DeviceToPage(int page_index,
                                 double* page_x,
                                 double* page_y) {
   *page_x = *page_y = 0;
-  int temp_x = static_cast<int>((device_x + position_.x())/ current_zoom_ -
+  int temp_x = static_cast<int>((device_x + position_.x()) / current_zoom_ -
       pages_[page_index]->rect().x());
-  int temp_y = static_cast<int>((device_y + position_.y())/ current_zoom_ -
+  int temp_y = static_cast<int>((device_y + position_.y()) / current_zoom_ -
       pages_[page_index]->rect().y());
   FPDF_DeviceToPage(
       pages_[page_index]->GetPage(), 0, 0,
@@ -3179,6 +3179,7 @@ int PDFiumEngine::GetVisiblePageIndex(FPDF_PAGE page) {
 void PDFiumEngine::SetCurrentPage(int index) {
   if (index == most_visible_page_ || !form_)
     return;
+
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE old_page = pages_[most_visible_page_]->GetPage();
     FORM_DoPageAAction(old_page, form_, FPDFPAGE_AACTION_CLOSE);
@@ -3360,13 +3361,22 @@ void PDFiumEngine::RotateInternal() {
   else
     resume_find_index_.Invalidate();
 
+  // Save the current page.
+  int most_visible_page = most_visible_page_;
+
   InvalidateAllPages();
 
+  // Restore find results.
   if (!current_find_text.empty()) {
     // Clear the UI.
     client_->NotifyNumberOfFindResultsChanged(0, false);
     StartFind(current_find_text, false);
   }
+
+  // Restore current page. After a rotation, the page heights have changed but
+  // the scroll position has not. Re-adjust.
+  // TODO(thestig): It would be better to also restore the position on the page.
+  client_->ScrollToPage(most_visible_page);
 }
 
 void PDFiumEngine::SetSelecting(bool selecting) {

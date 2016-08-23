@@ -71,7 +71,7 @@ class PDFEngine {
     virtual void ScrollToX(int position) = 0;
     virtual void ScrollToY(int position) = 0;
 
-    // Scroll to the specified page.
+    // Scroll to zero-based |page|.
     virtual void ScrollToPage(int page) = 0;
 
     // Navigate to the given url.

@@ -671,11 +671,11 @@ class PDFiumEngine : public PDFEngine,
   std::map<int, std::pair<int, TimerCallback> > timers_;
   int next_timer_id_;
 
-  // Holds the page index of the last page that the mouse clicked on.
+  // Holds the zero-based page index of the last page that the mouse clicked on.
   int last_page_mouse_down_;
 
-  // Holds the page index of the most visible page; refreshed by calling
-  // CalculateVisiblePages()
+  // Holds the zero-based page index of the most visible page; refreshed by
+  // calling CalculateVisiblePages()
   int most_visible_page_;
 
   // Set to true after FORM_DoDocumentJSAction/FORM_DoDocumentOpenAction have
