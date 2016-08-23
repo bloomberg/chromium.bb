@@ -21,11 +21,11 @@ async_test(function(t) {
 
         var track = document.querySelector("track");
         track.onload = t.step_func(function() {
-            assert_equals(textTrackCueElementByIndex(video, 0).innerText, "Lorem");
+            assert_equals(textTrackDisplayElement(video).innerText, "Lorem");
 
             // Captions should not be visible after Off is clicked.
             turnClosedCaptionsOff(video);
-            assert_equals(textTrackCueDisplayElement(video), null);
+            assert_equals(textTrackDisplayElement(video), null);
 
             // Remove DOM node representing the track element.
             track.remove();

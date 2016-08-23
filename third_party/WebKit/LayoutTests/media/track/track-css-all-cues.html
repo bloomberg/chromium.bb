@@ -28,7 +28,7 @@ async_test(function(t) {
     video.appendChild(track);
 
     video.onseeked = t.step_func_done(function() {
-        var cueStyle = getComputedStyle(textTrackDisplayElement(video, 'cue'));
+        var cueStyle = getComputedStyle(textTrackCueElementByIndex(video, 0).firstChild);
         assert_equals(cueStyle.color, 'rgb(128, 0, 128)');
         assert_equals(cueStyle.backgroundColor, 'rgb(0, 255, 0)');
         assert_equals(cueStyle.textDecorationLine, 'underline');

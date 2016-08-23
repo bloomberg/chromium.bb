@@ -23,7 +23,7 @@ async_test(function(t) {
         for (var i = 0; i < trackLanguages.length; i++) {
             clickTextTrackAtIndex(video, i);
             assert_equals(video.textTracks[i].mode, "showing");
-            assert_equals(textTrackCueDisplayElement(video).innerText, trackCueText[i]);
+            assert_equals(textTrackDisplayElement(video).innerText, trackCueText[i]);
             for (var j = 0; j < trackLanguages.length; j++) {
                 if (j != i)
                     assert_equals(video.textTracks[j].mode, "disabled");

@@ -32,7 +32,7 @@ async_test(function(t) {
 
     video.onseeked = t.step_func(function() {
         assert_equals(video.currentTime, seekTimes[seekTimeIndex]);
-        var cueNode = textTrackDisplayElement(video, "cue").firstElementChild;
+        var cueNode = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
         assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][0]);
         cueNode = cueNode.nextElementSibling;
         assert_equals(getComputedStyle(cueNode).color, info[seekTimeIndex][1]);

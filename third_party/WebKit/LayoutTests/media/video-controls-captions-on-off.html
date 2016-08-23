@@ -43,7 +43,7 @@ async_test(function(t) {
     }
 
     function checkCaptionsHidden() {
-        assert_equals(textTrackCueElementByIndex(video, 0), null);
+        assert_equals(textTrackDisplayElement(video), null);
     }
 
     video.src = findMediaFile("video", "content/counting");

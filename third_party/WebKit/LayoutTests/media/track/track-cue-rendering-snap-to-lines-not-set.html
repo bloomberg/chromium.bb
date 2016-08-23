@@ -19,7 +19,7 @@ async_test(function(t) {
 
     var cueDisplayContainer;
     video.oncanplaythrough = t.step_func(function() {
-        cueDisplayContainer = textTrackDisplayElement(video);
+        cueDisplayContainer = textTrackContainerElement(video);
         runNextTestCase();
     });
 
@@ -66,7 +66,7 @@ async_test(function(t) {
     function seeked() {
         var cuePosition = cueRenderingPosition[seekTimeIndex];
         for (var i = 0; i < testTrack.track.activeCues.length; ++i) {
-            cueDisplayElement = textTrackDisplayElement(video, "display", i);
+            cueDisplayElement = textTrackCueElementByIndex(video, i);
 
             assert_equals(cueDisplayElement.innerText, testTrack.track.activeCues[i].text);
             assert_equals(testTrack.track.activeCues[i].align, cuePosition[i][2]);

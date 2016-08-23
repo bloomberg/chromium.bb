@@ -35,7 +35,7 @@ async_test(function(t) {
         // Change the start time of cue #1, it should become visible.
         testTrack.track.cues[0].startTime = 0;
         assert_equals(testTrack.track.cues[0].startTime, 0);
-        assert_equals(textTrackDisplayElement(video, "display").innerText, "Lorem ipsum dolor sit amet,");
+        assert_equals(textTrackDisplayElement(video).innerText, "Lorem ipsum dolor sit amet,");
 
         // Change the cue text, getCueAsHTML() should return a new, correct fragment.
         testTrack.track.cues[0].text = "Lorem <b>ipsum</b> <u>dolor</u> <i.sit>sit</i> amet,";

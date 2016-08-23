@@ -28,7 +28,7 @@ async_test(function(t) {
 
     // RTL cues alternate with LTR cues.
     video.onseeked = t.step_func(function() {
-        var testCueDisplayBox = textTrackDisplayElement(video, "display");
+        var testCueDisplayBox = textTrackDisplayElement(video);
 
         // Jump to next cue.
         assert_equals(video.currentTime, (seekedCount / 2) + 0.25);

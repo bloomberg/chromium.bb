@@ -18,8 +18,8 @@ async_test(function(t) {
     video.src = findMediaFile("video", "../content/test");
 
     video.onseeked = t.step_func_done(function() {
-        var cueContainerElement = textTrackDisplayElement(video);
-        var cueDisplayElement = textTrackDisplayElement(video, "display", 0);
+        var cueContainerElement = textTrackContainerElement(video);
+        var cueDisplayElement = textTrackDisplayElement(video);
 
         var cueDisplayBottomPoint = cueDisplayElement.offsetTop + cueDisplayElement.offsetHeight;
         var cueContainerBottomPoint = cueContainerElement.offsetTop + cueContainerElement.offsetHeight;

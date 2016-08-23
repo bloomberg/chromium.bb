@@ -26,7 +26,7 @@ async_test(function(t) {
     video.appendChild(track);
 
     video.onseeked = t.step_func(function() {
-        var cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
+        var cueNode = textTrackCueElementByIndex(video, 0).firstChild.firstElementChild;
         assert_equals(getComputedStyle(cueNode).color, 'rgb(255, 0, 0)');
         cueNode = cueNode.nextElementSibling;
         assert_equals(getComputedStyle(cueNode).color, 'rgb(0, 128, 0)');

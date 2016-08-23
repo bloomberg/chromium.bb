@@ -28,7 +28,7 @@ async_test(function(t) {
         var red = "rgb(255, 0, 0)";
         var green = "rgb(0, 128, 0)";
 
-        var cueNode = textTrackDisplayElement(video, "cue");
+        var cueNode = textTrackCueElementByIndex(video, 0).firstChild;
         var iNode = cueNode.firstElementChild;
         var cNode = iNode.nextSibling.nextSibling;
         var bNode = cNode.nextSibling.nextSibling;

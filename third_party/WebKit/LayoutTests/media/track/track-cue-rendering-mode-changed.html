@@ -46,7 +46,7 @@ async_test(function(t) {
 
     function testCueVisibility() {
         // Only one cue should be visible.
-        testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
+        testCueDisplayBox = textTrackCueElementByIndex(video, 0);
         assert_equals(testCueDisplayBox.innerText, 'Arabic');
         assert_equals(testCueDisplayBox.nextSibling, null);
 
@@ -54,10 +54,10 @@ async_test(function(t) {
         testTrackEnglish.mode = 'showing';
 
         // Both cues shold be visible.
-        testCueDisplayBox = textTrackDisplayElement(video, 'display', 0);
+        testCueDisplayBox = textTrackCueElementByIndex(video, 0);
         assert_equals(testCueDisplayBox.innerText, 'Arabic');
 
-        testCueDisplayBox = textTrackDisplayElement(video, 'display', 1);
+        testCueDisplayBox = textTrackCueElementByIndex(video, 1);
         assert_equals(testCueDisplayBox.innerText, 'English');
     }
 });

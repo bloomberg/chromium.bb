@@ -18,7 +18,7 @@ async_test(function(t) {
     video.src = findMediaFile("video", "../content/test");
     
     video.oncanplaythrough = t.step_func_done(function() {
-        var cueDisplayElement = textTrackDisplayElement(video, "display", 0);
+        var cueDisplayElement = textTrackDisplayElement(video);
         document.body.offsetTop; // Force layout.
         assert_true(cueDisplayElement.offsetTop > (video.videoHeight * 0.75));
     });

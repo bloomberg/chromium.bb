@@ -35,13 +35,13 @@ async_test(function(t) {
             clickTextTrackAtIndex(video, 0);
             assert_equals(video.textTracks[0].mode, "showing");
             assert_equals(video.textTracks[1].mode, "hidden");
-            assert_equals(textTrackCueElementByIndex(video, 0).innerText, "Lorem");
+            assert_equals(textTrackDisplayElement(video).innerText, "Lorem");
 
             // Select track 1 and verify it is displayed.
             clickTextTrackAtIndex(video, 1);
             assert_equals(video.textTracks[0].mode, "disabled");
             assert_equals(video.textTracks[1].mode, "showing");
-            assert_equals(textTrackCueElementByIndex(video, 0).innerText, "first caption");
+            assert_equals(textTrackDisplayElement(video).innerText, "first caption");
         });
 
         video.src = findMediaFile("video", "content/test");

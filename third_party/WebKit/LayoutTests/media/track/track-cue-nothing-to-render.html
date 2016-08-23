@@ -34,7 +34,7 @@ async_test(function(t) {
         assert_equals(video.currentTime.toFixed(1), time.toFixed(1));
         if (cueText.length) {
             assert_equals(testTrack.track.activeCues[0].text, cueText);
-            assert_equals(textTrackDisplayElement(video, "display").innerText, cueText);
+            assert_equals(textTrackDisplayElement(video).innerText, cueText);
         } else {
             assert_equals(testTrack.track.activeCues.length, 0);
         }

@@ -32,7 +32,7 @@ async_test(function(t) {
     video.src = findMediaFile("video", "../content/test");
 
     function getCaptionLineHeight() {
-        var captionElement = textTrackDisplayElement(video).firstChild.firstChild;
+        var captionElement = textTrackContainerElement(video).firstChild.firstChild;
         return captionElement.getBoundingClientRect().height;
     }
 });

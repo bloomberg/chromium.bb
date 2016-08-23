@@ -73,13 +73,8 @@ function textTrackContainerElement(parentElement) {
         "-webkit-media-text-track-container");
 }
 
-function textTrackCueDisplayElement(parentElement) {
-    var containerElement = textTrackContainerElement(parentElement);
-    return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-display");
-}
-
 function textTrackCueElementByIndex(parentElement, cueIndex) {
-    var displayElement = textTrackCueDisplayElement(parentElement);
+    var displayElement = textTrackDisplayElement(parentElement);
     if (displayElement) {
         for (i = 0; i < cueIndex; i++)
             displayElement = displayElement.nextSibling;
@@ -100,35 +95,10 @@ function textTrackRegionContainerElement(parentElement)
     return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-region-container");
 }
 
-// TODO(srirama.m): Phase out the uses of this function and
-// replace with more specific functions at each call site.
-function textTrackDisplayElement(parentElement, id, cueNumber)
+function textTrackDisplayElement(parentElement)
 {
     var containerElement = textTrackContainerElement(parentElement);
-
-    if (!containerElement)
-        throw "Failed to find text track container element";
-
-    if (!id)
-        return containerElement;
-
-    var controlID = id;
-    if (controlID != 'cue')
-        controlID = "-webkit-media-text-track-" + id;
-
-    var displayElement = mediaControlsElement(containerElement.firstChild, controlID);
-    if (!displayElement)
-        throw "No text track cue with display id '" + controlID + "' is currently visible";
-
-    if (cueNumber) {
-        for (i = 0; i < cueNumber; i++)
-            displayElement = displayElement.nextSibling;
-
-        if (!displayElement)
-            throw "There are not " + cueNumber + " text track cues visible";
-    }
-
-    return displayElement;
+    return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-display");
 }
 
 function isClosedCaptionsButtonVisible(currentMediaElement)

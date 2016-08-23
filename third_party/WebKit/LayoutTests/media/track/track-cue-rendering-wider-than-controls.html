@@ -30,7 +30,7 @@ async_test(function(t) {
         var controlsContainer = mediaControlsButton(video, "panel");
         assert_true(parseFloat(getComputedStyle(controlsContainer).width) <= 800);
 
-        var cueRoot = textTrackDisplayElement(video);
+        var cueRoot = textTrackContainerElement(video);
         assert_true(parseFloat(getComputedStyle(cueRoot).width) > 800);
     });
     

@@ -21,13 +21,13 @@ async_test(function(t) {
         assert_equals(video.textTracks[1].mode, "hidden");
 
         // Verify the default track is being displayed.
-        assert_equals(textTrackCueDisplayElement(video).innerText, "Lorem");
+        assert_equals(textTrackDisplayElement(video).innerText, "Lorem");
 
         // Click the newly added track.
         clickTextTrackAtIndex(video, 1);
         assert_equals(video.textTracks[1].mode, "showing");
         assert_equals(video.textTracks[0].mode, "disabled");
-        assert_equals(textTrackCueDisplayElement(video).innerText, trackCueText);
+        assert_equals(textTrackDisplayElement(video).innerText, trackCueText);
     });
 
     video.src = findMediaFile("video", "../content/test");

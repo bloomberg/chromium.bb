@@ -18,7 +18,7 @@ async_test(function(t) {
         video.textContent = "";
 
         // Text track should not be rendered anymore.
-        assert_throws(null, function() { textTrackDisplayElement(video, "display"); });
+        assert_throws(null, function() { textTrackDisplayElement(video); });
     });
 });
 </script>
