@@ -42,10 +42,6 @@ class CONTENT_EXPORT BackgroundTracingRule {
   // Probability that we should allow a tigger to  happen.
   double trigger_chance() const { return trigger_chance_; }
 
-  bool stop_tracing_on_repeated_reactive() const {
-    return stop_tracing_on_repeated_reactive_;
-  }
-
   static std::unique_ptr<BackgroundTracingRule> CreateRuleFromDict(
       const base::DictionaryValue* dict);
 
@@ -54,7 +50,6 @@ class CONTENT_EXPORT BackgroundTracingRule {
 
   double trigger_chance_;
   int trigger_delay_;
-  bool stop_tracing_on_repeated_reactive_;
   BackgroundTracingConfigImpl::CategoryPreset category_preset_;
 };
 
