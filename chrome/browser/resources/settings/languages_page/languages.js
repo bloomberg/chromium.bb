@@ -138,8 +138,8 @@ Polymer({
         'prefs.spellcheck.dictionaries.value.*, languages)',
     'translateLanguagesPrefChanged_(' +
         'prefs.translate_blocked_languages.value.*, languages)',
-    'prospectiveUILanguageChanged_(' +
-        'prefs.intl.app_locale.value, languages)',
+    'updateRemovableLanguages_(' +
+        'prefs.intl.app_locale.value, languages.enabled)',
     // Observe Chrome OS prefs (ignored for non-Chrome OS).
     'updateRemovableLanguages_(' +
         'prefs.settings.language.preload_engines.value, ' +
@@ -211,7 +211,6 @@ Polymer({
       this.enabledLanguageSet_.add(languageState.language.code);
 
     this.set('languages.enabled', enabledLanguageStates);
-    this.updateRemovableLanguages_();
   },
 
   /**
@@ -241,11 +240,6 @@ Polymer({
           'languages.enabled.' + i + '.translateEnabled',
           !translateBlockedSet.has(translateCode));
     }
-  },
-
-  /** @private */
-  prospectiveUILanguageChanged_: function() {
-    this.updateRemovableLanguages_();
   },
 
   /**
@@ -475,12 +469,7 @@ Polymer({
     if (!CrSettingsPrefs.isInitialized)
       return;
 
-    var languageCodes =
-        this.getPref(preferredLanguagesPrefName).value.split(',');
-    if (languageCodes.indexOf(languageCode) > -1)
-      return;
-    languageCodes.push(languageCode);
-    this.languageSettingsPrivate.setLanguageList(languageCodes);
+    this.languageSettingsPrivate.enableLanguage(languageCode);
     this.disableTranslateLanguage(languageCode);
   },
 
@@ -512,13 +501,7 @@ Polymer({
     }
 
     // Remove the language from preferred languages.
-    var languageCodes =
-        this.getPref(preferredLanguagesPrefName).value.split(',');
-    var languageIndex = languageCodes.indexOf(languageCode);
-    if (languageIndex == -1)
-      return;
-    languageCodes.splice(languageIndex, 1);
-    this.languageSettingsPrivate.setLanguageList(languageCodes);
+    this.languageSettingsPrivate.disableLanguage(languageCode);
     this.enableTranslateLanguage(languageCode);
   },
 
@@ -528,10 +511,8 @@ Polymer({
    */
   canDisableLanguage: function(languageCode) {
     // Cannot disable the prospective UI language.
-    if ((cr.isChromeOS || cr.isWindows) &&
-        languageCode == this.getProspectiveUILanguage()) {
+    if (languageCode == this.getProspectiveUILanguage())
       return false;
-    }
 
     // Cannot disable the only enabled language.
     if (this.languages.enabled.length == 1)
@@ -570,13 +551,25 @@ Polymer({
         this.getPref(preferredLanguagesPrefName).value.split(',');
 
     var originalIndex = languageCodes.indexOf(languageCode);
-    var newIndex = originalIndex + offset;
-    if (originalIndex == -1 || newIndex < 0 || newIndex >= languageCodes.length)
-      return;
+    var newIndex = originalIndex;
+    var direction = Math.sign(offset);
+    var distance = Math.abs(offset);
 
-    languageCodes.splice(originalIndex, 1);
-    languageCodes.splice(newIndex, 0, languageCode);
-    this.languageSettingsPrivate.setLanguageList(languageCodes);
+    // Step over the distance to find the target index.
+    while (distance > 0) {
+      newIndex += direction;
+      if (newIndex < 0 || newIndex >= languageCodes.length)
+        return;
+
+      // Skip over non-enabled languages, since they don't appear in the list
+      // (but we don't want to remove them).
+      if (this.enabledLanguageSet_.has(languageCodes[newIndex]))
+        distance--;
+    }
+
+    languageCodes[originalIndex] = languageCodes[newIndex];
+    languageCodes[newIndex] = languageCode;
+    this.setPrefValue(preferredLanguagesPrefName, languageCodes.join(','));
   },
 
   /**

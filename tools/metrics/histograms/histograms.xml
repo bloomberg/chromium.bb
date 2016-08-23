@@ -77007,7 +77007,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1061" label="FILEMANAGERPRIVATEINTERNAL_EXECUTECUSTOMACTION"/>
   <int value="1062" label="MDNS_FORCEDISCOVERY"/>
   <int value="1063" label="LANGUAGESETTINGSPRIVATE_GETLANGUAGELIST"/>
-  <int value="1064" label="LANGUAGESETTINGSPRIVATE_SETLANGUAGELIST"/>
+  <int value="1064" label="DELETED_LANGUAGESETTINGSPRIVATE_SETLANGUAGELIST"/>
   <int value="1065"
       label="LANGUAGESETTINGSPRIVATE_GETSPELLCHECKDICTIONARYSTATUS"/>
   <int value="1066" label="LANGUAGESETTINGSPRIVATE_GETSPELLCHECKWORDS"/>
@@ -77090,6 +77090,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1142" label="QUICKUNLOCKPRIVATE_GETAVAILABLEMODES"/>
   <int value="1143" label="WEBSTOREPRIVATE_ISPENDINGCUSTODIANAPPROVAL"/>
   <int value="1144" label="TABS_DISCARD"/>
+  <int value="1145" label="LANGUAGESETTINGSPRIVATE_ENABLELANGUAGE"/>
+  <int value="1146" label="LANGUAGESETTINGSPRIVATE_DISABLELANGUAGE"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

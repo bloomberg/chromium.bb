@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,22 +64,31 @@ chrome.languageSettingsPrivate.InputMethodLists;
 
 /**
  * Gets languages available for translate, spell checking, input and locale.
- * @param {function(!Array<!chrome.languageSettingsPrivate.Language>):void} callback
+ * @param {function(!Array<!chrome.languageSettingsPrivate.Language>):void}
+ *     callback
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getLanguageList
  */
 chrome.languageSettingsPrivate.getLanguageList = function(callback) {};
 
 /**
- * Sets the accepted languages, used to decide which languages to translate,
- * generate the Accept-Language header, etc.
- * @param {!Array<string>} languageCodes
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-setLanguageList
+ * Enables a language, adding it to the Accept-Language list (used to decide
+ * which languages to translate, generate the Accept-Language header, etc.).
+ * @param {string} languageCode
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-enableLanguage
  */
-chrome.languageSettingsPrivate.setLanguageList = function(languageCodes) {};
+chrome.languageSettingsPrivate.enableLanguage = function(languageCode) {};
+
+/**
+ * Disables a language, removing it from the Accept-Language list.
+ * @param {string} languageCode
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-disableLanguage
+ */
+chrome.languageSettingsPrivate.disableLanguage = function(languageCode) {};
 
 /**
  * Gets the current status of the chosen spell check dictionaries.
- * @param {function(!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>):void} callback
+ * @param {function(!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>):void}
+ *     callback
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckDictionaryStatuses
  */
 chrome.languageSettingsPrivate.getSpellcheckDictionaryStatuses = function(callback) {};
@@ -114,7 +123,8 @@ chrome.languageSettingsPrivate.getTranslateTargetLanguage = function(callback) {
 
 /**
  * Gets all supported input methods, including third-party IMEs. Chrome OS only.
- * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void} callback
+ * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void}
+ *     callback
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getInputMethodLists
  */
 chrome.languageSettingsPrivate.getInputMethodLists = function(callback) {};
@@ -164,5 +174,3 @@ chrome.languageSettingsPrivate.onInputMethodAdded;
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onInputMethodRemoved
  */
 chrome.languageSettingsPrivate.onInputMethodRemoved;
-
-

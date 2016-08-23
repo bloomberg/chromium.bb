@@ -120,16 +120,42 @@ cr.define('settings', function() {
     },
 
     /**
-     * Sets the accepted languages, used to decide which languages to translate,
-     * generate the Accept-Language header, etc.
-     * @param {!Array<string>} languageCodes
+     * Enables a language, adding it to the Accept-Language list (used to decide
+     * which languages to translate, generate the Accept-Language header, etc.).
+     * @param {string} languageCode
      */
-    setLanguageList: function(languageCodes) {
-      var languages = languageCodes.join(',');
-      this.settingsPrefs_.set('prefs.intl.accept_languages.value', languages);
+    enableLanguage: function(languageCode) {
+      var languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
+      var languages = languageCodes.split(',');
+      if (languages.indexOf(languageCode) != -1)
+        return;
+      languages.push(languageCode);
+      languageCodes = languages.join(',');
+      this.settingsPrefs_.set(
+          'prefs.intl.accept_languages.value', languageCodes);
       if (cr.isChromeOS) {
         this.settingsPrefs_.set(
-            'prefs.settings.language.preferred_languages.value', languages);
+            'prefs.settings.language.preferred_languages.value', languageCodes);
+      }
+    },
+
+    /**
+     * Disables a language, removing it from the Accept-Language list.
+     * @param {string} languageCode
+     */
+    disableLanguage: function(languageCode) {
+      var languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
+      var languages = languageCodes.split(',');
+      var index = languages.indexOf(languageCode);
+      if (index == -1)
+        return;
+      languages.splice(index, 1);
+      languageCodes = languages.join(',');
+      this.settingsPrefs_.set(
+          'prefs.intl.accept_languages.value', languageCodes);
+      if (cr.isChromeOS) {
+        this.settingsPrefs_.set(
+            'prefs.settings.language.preferred_languages.value', languageCodes);
       }
     },
 

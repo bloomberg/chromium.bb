@@ -30,16 +30,16 @@ class LanguageSettingsPrivateGetLanguageListFunction
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateGetLanguageListFunction);
 };
 
-// Implements the languageSettingsPrivate.setLanguageList method.
-class LanguageSettingsPrivateSetLanguageListFunction
+// Implements the languageSettingsPrivate.enableLanguage method.
+class LanguageSettingsPrivateEnableLanguageFunction
     : public UIThreadExtensionFunction {
  public:
-  LanguageSettingsPrivateSetLanguageListFunction();
-  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.setLanguageList",
-                             LANGUAGESETTINGSPRIVATE_SETLANGUAGELIST)
+  LanguageSettingsPrivateEnableLanguageFunction();
+  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.enableLanguage",
+                             LANGUAGESETTINGSPRIVATE_ENABLELANGUAGE)
 
  protected:
-  ~LanguageSettingsPrivateSetLanguageListFunction() override;
+  ~LanguageSettingsPrivateEnableLanguageFunction() override;
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
@@ -47,7 +47,27 @@ class LanguageSettingsPrivateSetLanguageListFunction
  private:
   ChromeExtensionFunctionDetails chrome_details_;
 
-  DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateSetLanguageListFunction);
+  DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateEnableLanguageFunction);
+};
+
+// Implements the languageSettingsPrivate.disableLanguage method.
+class LanguageSettingsPrivateDisableLanguageFunction
+    : public UIThreadExtensionFunction {
+ public:
+  LanguageSettingsPrivateDisableLanguageFunction();
+  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.disableLanguage",
+                             LANGUAGESETTINGSPRIVATE_DISABLELANGUAGE)
+
+ protected:
+  ~LanguageSettingsPrivateDisableLanguageFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateDisableLanguageFunction);
 };
 
 // Implements the languageSettingsPrivate.getSpellcheckDictionaryStatuses

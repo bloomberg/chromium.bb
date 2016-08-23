@@ -22,12 +22,19 @@ LanguageSettingsPrivate.prototype = {
   getLanguageList: assertNotReached,
 
   /**
-   * Sets the accepted languages, used to decide which languages to translate,
-   * generate the Accept-Language header, etc.
-   * @param {!Array<string>} languageCodes
-   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-setLanguageList
+   * Enables a language, adding it to the Accept-Language list (used to decide
+   * which languages to translate, generate the Accept-Language header, etc.).
+   * @param {string} languageCode
+   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-enableLanguage
    */
-  setLanguageList: assertNotReached,
+  enableLanguage: assertNotReached,
+
+  /**
+   * Disables a language, removing it from the Accept-Language list.
+   * @param {string} languageCode
+   * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-disableLanguage
+   */
+  disableLanguage: assertNotReached,
 
   /**
    * Gets the current status of the chosen spell check dictionaries.

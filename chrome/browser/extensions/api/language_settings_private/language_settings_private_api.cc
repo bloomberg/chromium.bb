@@ -245,26 +245,70 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
   return RespondNow(OneArgument(std::move(language_list)));
 }
 
-LanguageSettingsPrivateSetLanguageListFunction::
-    LanguageSettingsPrivateSetLanguageListFunction()
-    : chrome_details_(this) {
-}
+LanguageSettingsPrivateEnableLanguageFunction::
+    LanguageSettingsPrivateEnableLanguageFunction()
+    : chrome_details_(this) {}
 
-LanguageSettingsPrivateSetLanguageListFunction::
-    ~LanguageSettingsPrivateSetLanguageListFunction() {
-}
+LanguageSettingsPrivateEnableLanguageFunction::
+    ~LanguageSettingsPrivateEnableLanguageFunction() {}
 
 ExtensionFunction::ResponseAction
-LanguageSettingsPrivateSetLanguageListFunction::Run() {
-  std::unique_ptr<language_settings_private::SetLanguageList::Params>
+LanguageSettingsPrivateEnableLanguageFunction::Run() {
+  std::unique_ptr<language_settings_private::EnableLanguage::Params>
       parameters =
-          language_settings_private::SetLanguageList::Params::Create(*args_);
+          language_settings_private::EnableLanguage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  const std::string& language_code = parameters->language_code;
 
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(
           chrome_details_.GetProfile()->GetPrefs());
-  translate_prefs->UpdateLanguageList(parameters->language_codes);
+
+  std::vector<std::string> languages;
+  translate_prefs->GetLanguageList(&languages);
+
+  if (std::find(languages.begin(), languages.end(), language_code) !=
+      languages.end()) {
+    LOG(ERROR) << "Language " << language_code << " already enabled";
+    return RespondNow(NoArguments());
+  }
+
+  languages.push_back(parameters->language_code);
+  translate_prefs->UpdateLanguageList(languages);
+
+  return RespondNow(NoArguments());
+}
+
+LanguageSettingsPrivateDisableLanguageFunction::
+    LanguageSettingsPrivateDisableLanguageFunction()
+    : chrome_details_(this) {}
+
+LanguageSettingsPrivateDisableLanguageFunction::
+    ~LanguageSettingsPrivateDisableLanguageFunction() {}
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateDisableLanguageFunction::Run() {
+  std::unique_ptr<language_settings_private::DisableLanguage::Params>
+      parameters =
+          language_settings_private::DisableLanguage::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  const std::string& language_code = parameters->language_code;
+
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(
+          chrome_details_.GetProfile()->GetPrefs());
+
+  std::vector<std::string> languages;
+  translate_prefs->GetLanguageList(&languages);
+
+  auto it = std::find(languages.begin(), languages.end(), language_code);
+  if (it == languages.end()) {
+    LOG(ERROR) << "Language " << language_code << " not enabled";
+    return RespondNow(NoArguments());
+  }
+
+  languages.erase(it);
+  translate_prefs->UpdateLanguageList(languages);
 
   return RespondNow(NoArguments());
 }

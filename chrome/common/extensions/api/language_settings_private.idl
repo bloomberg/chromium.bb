@@ -80,9 +80,12 @@ namespace languageSettingsPrivate {
     // Gets languages available for translate, spell checking, input and locale.
     static void getLanguageList(GetLanguageListCallback callback);
 
-    // Sets the accepted languages, used to decide which languages to translate,
-    // generate the Accept-Language header, etc.
-    static void setLanguageList(DOMString[] languageCodes);
+    // Enables a language, adding it to the Accept-Language list (used to decide
+    // which languages to translate, generate the Accept-Language header, etc.).
+    static void enableLanguage(DOMString languageCode);
+
+    // Disables a language, removing it from the Accept-Language list.
+    static void disableLanguage(DOMString languageCode);
 
     // Gets the current status of the chosen spell check dictionaries.
     static void getSpellcheckDictionaryStatuses(
