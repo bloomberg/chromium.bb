@@ -252,6 +252,13 @@ class V8MobileCodeSizeIgnition(_V8MemoryAndCodeSizeBenchmark):
     super(V8MobileCodeSizeIgnition, self).SetExtraBrowserOptions(options)
     v8_helper.EnableIgnition(options)
 
+  # crbug.com/639007
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
+      return True
+
   @classmethod
   def Name(cls):
     return 'top_10_mobile_memory_ignition'
@@ -263,6 +270,13 @@ class V8MobileCodeSize(_V8MemoryAndCodeSizeBenchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
   """
+
+  # crbug.com/639007
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    if (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'):
+      return True
 
   @classmethod
   def Name(cls):
