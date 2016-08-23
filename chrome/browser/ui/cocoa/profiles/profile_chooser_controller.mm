@@ -655,6 +655,30 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 @end
 
+// A custom view with a filled circular background.
+@interface BackgroundCircleView : NSView {
+ @private
+  base::scoped_nsobject<NSColor> fillColor_;
+}
+@end
+
+@implementation BackgroundCircleView
+- (id)initWithFrame:(NSRect)frameRect withFillColor:(NSColor*)fillColor {
+  if ((self = [super initWithFrame:frameRect]))
+    fillColor_.reset([fillColor retain]);
+  return self;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  [fillColor_ setFill];
+  NSBezierPath* circlePath = [NSBezierPath bezierPath];
+  [circlePath appendBezierPathWithOvalInRect:[self bounds]];
+  [circlePath fill];
+
+  [super drawRect:dirtyRect];
+}
+@end
+
 // A custom text control that turns into a textfield for editing when clicked.
 @interface EditableProfileNameButton : HoverImageButton<NSTextFieldDelegate> {
  @private
@@ -2064,24 +2088,32 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Profile badge for supervised account.
   if (browser_->profile()->IsSupervised()) {
-    base::scoped_nsobject<NSImageView> supervisedIcon(
-        [[NSImageView alloc] initWithFrame:NSZeroRect]);
-    // TODO(janeliulwq): Replace the following two profile badge icons with
-    // smaller versions of them (24 x 24) to adapt to smaller profile icons.
-    int imageId = browser_->profile()->IsChild()
-                      ? IDR_ICON_PROFILES_MENU_CHILD
-                      : IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    [supervisedIcon setImage:rb.GetNativeImageNamed(imageId).ToNSImage()];
+    // Draw a circle as the background of the badge icon.
+    constexpr int badgeSize = 24;
+    constexpr int badgeSpacing = 4;
+    NSRect badgeIconCircleFrame =
+        NSMakeRect(xOffset + kMdImageSide - badgeSize + badgeSpacing,
+                   cardYOffset + kMdImageSide - badgeSize + badgeSpacing,
+                   badgeSize, badgeSize);
+    base::scoped_nsobject<BackgroundCircleView> badgeIconWithCircle([
+        [BackgroundCircleView alloc] initWithFrame:badgeIconCircleFrame
+                                     withFillColor:GetDialogBackgroundColor()]);
+    // Add the badge icon.
+    constexpr int borderWidth = 1;
+    const int badgeIconSize = badgeSize - borderWidth * 2;
+    base::scoped_nsobject<NSImageView> badgeIconView([[NSImageView alloc]
+        initWithFrame:NSMakeRect(borderWidth, borderWidth,
+                                 badgeIconSize, badgeIconSize)]);
+    gfx::VectorIconId badgeIcon =
+        browser_->profile()->IsChild()
+            ? gfx::VectorIconId::ACCOUNT_CHILD_CIRCLE
+            : gfx::VectorIconId::SUPERVISOR_ACCOUNT_CIRCLE;
+    [badgeIconView
+        setImage:NSImageFromImageSkia(gfx::CreateVectorIcon(
+                     badgeIcon, badgeIconSize, gfx::kChromeIconGrey))];
+    [badgeIconWithCircle addSubview:badgeIconView];
 
-    NSSize size = [[supervisedIcon image] size];
-    [supervisedIcon setFrameSize:size];
-    const int badgeSpacing = 4;
-    [supervisedIcon setFrameOrigin:NSMakePoint(xOffset + kMdImageSide -
-                                                   size.width + badgeSpacing,
-                                               cardYOffset + kMdImageSide -
-                                                   size.height + badgeSpacing)];
-    [profileCard addSubview:supervisedIcon];
+    [profileCard addSubview:badgeIconWithCircle];
   }
 
   // Profile name, left-aligned to the right of profile icon.
