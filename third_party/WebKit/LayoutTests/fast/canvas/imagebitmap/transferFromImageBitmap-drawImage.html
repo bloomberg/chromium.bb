@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+function testCanvas_0f0(ctx) {
+   var colorData = ctx.getImageData(50, 50, 1, 1).data;
+   assert_equals(colorData[0], 0);
+   assert_equals(colorData[1], 255);
+   assert_equals(colorData[2], 0);
+   assert_equals(colorData[3], 255);
+}
+
+function testDrawCanvasWithImageBitamp(image) {  
+   var dstCanvas = document.createElement('canvas');
+   dstCanvas.width = dstCanvas.height = 100;
+   var dstCtx = dstCanvas.getContext('bitmaprenderer');
+   dstCtx.transferFromImageBitmap(image);
+
+   var myCanvas = document.createElement('canvas');
+   myCanvas.width = myCanvas.height = 100;
+   var myCtx = myCanvas.getContext('2d');
+   myCtx.drawImage(dstCanvas, 10, 10);
+   testCanvas_0f0(myCtx);
+}
+
+promise_test(function() {
+   var canvas = document.createElement('canvas');
+   canvas.width = canvas.height = 100;
+   var ctx = canvas.getContext('2d');
+   ctx.fillStyle = '#0f0';
+   ctx.fillRect(0, 0, 100, 100);
+   testCanvas_0f0(ctx);
+
+   return createImageBitmap(canvas).then(testDrawCanvasWithImageBitamp);
+}, 'testDrawCanvasWithImageBitamp should not return any error');
+
+</script>
