@@ -245,6 +245,20 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
   return Response::OK();
 }
 
+Response EmulationHandler::SetVisibleSize(int width, int height) {
+  if (width < 0 || height < 0)
+    return Response::InvalidParams("Width and height must be non-negative");
+
+  // Set size of frame by resizing RWHV if available.
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host)
+    return Response::ServerError("Target does not support setVisibleSize");
+
+  widget_host->GetView()->SetSize(gfx::Size(width, height));
+  return Response::OK();
+}
+
 WebContentsImpl* EmulationHandler::GetWebContents() {
   return host_ ?
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :

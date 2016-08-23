@@ -55,6 +55,8 @@ class EmulationHandler {
       const std::unique_ptr<base::DictionaryValue>& screen_orientation);
   Response ClearDeviceMetricsOverride();
 
+  Response SetVisibleSize(int width, int height);
+
  private:
   WebContentsImpl* GetWebContents();
   void UpdateTouchEventEmulationState();

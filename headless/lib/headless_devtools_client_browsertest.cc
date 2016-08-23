@@ -5,16 +5,27 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/domains/browser.h"
+#include "headless/public/domains/emulation.h"
 #include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_devtools_client.h"
+#include "headless/public/headless_devtools_target.h"
 #include "headless/test/headless_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#define EXPECT_SIZE_EQ(expected, actual)               \
+  do {                                                 \
+    EXPECT_EQ((expected).width(), (actual).width());   \
+    EXPECT_EQ((expected).height(), (actual).height()); \
+  } while (false)
 
 namespace headless {
 
@@ -211,6 +222,13 @@ class BrowserDomainCreateAndDeletePageTest
   void OnCreateTargetResult(
       std::unique_ptr<browser::CreateTargetResult> result) {
     EXPECT_EQ(2u, GetAllWebContents(browser()).size());
+
+    HeadlessWebContentsImpl* contents = HeadlessWebContentsImpl::From(
+        browser()->GetWebContentsForDevToolsAgentHostId(result->GetTargetId()));
+    EXPECT_SIZE_EQ(gfx::Size(1, 1), contents->web_contents()
+                                        ->GetRenderWidgetHostView()
+                                        ->GetViewBounds()
+                                        .size());
 
     devtools_client_->GetBrowser()->GetExperimental()->CloseTarget(
         browser::CloseTargetParams::Builder()

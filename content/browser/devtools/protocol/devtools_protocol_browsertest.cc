@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,6 +33,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/codec/png_codec.h"
+
+#define EXPECT_SIZE_EQ(expected, actual)               \
+  do {                                                 \
+    EXPECT_EQ((expected).width(), (actual).width());   \
+    EXPECT_EQ((expected).height(), (actual).height()); \
+  } while (false)
 
 using testing::ElementsAre;
 
@@ -866,6 +873,27 @@ IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
                   "iframe_navigation.html",
                   "http://a.com/devtools/navigation.html",
                   "http://b.com/devtools/control_navigations/meta_tag.html"));
+}
+
+// Setting RWHV size is not supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_EmulationSetVisibleSize DISABLED_EmulationSetVisibleSize
+#else
+#define MAYBE_EmulationSetVisibleSize EmulationSetVisibleSize
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       MAYBE_EmulationSetVisibleSize) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  gfx::Size new_size(200, 400);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetInteger("width", new_size.width());
+  params->SetInteger("height", new_size.height());
+  SendCommand("Emulation.setVisibleSize", std::move(params), true);
+  EXPECT_SIZE_EQ(new_size, (shell()->web_contents())
+                               ->GetRenderWidgetHostView()
+                               ->GetViewBounds()
+                               .size());
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
