@@ -100,6 +100,32 @@ TEST_F(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
   EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
 }
 
+// Tests that ValueResultFromWKResult converts NSDictionaries to properly
+// initialized base::DictionaryValue.
+TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
+  NSDictionary* testDictionary =
+      @{ @"Key1" : @"Value1",
+         @"Key2" : @{@"Key3" : @42} };
+
+  std::unique_ptr<base::Value> value(
+      web::ValueResultFromWKResult(testDictionary));
+  base::DictionaryValue* dictionary = nullptr;
+  value->GetAsDictionary(&dictionary);
+  EXPECT_NE(nullptr, dictionary);
+
+  std::string value1;
+  dictionary->GetString("Key1", &value1);
+  EXPECT_EQ("Value1", value1);
+
+  base::DictionaryValue const* innerDictionary = nullptr;
+  dictionary->GetDictionary("Key2", &innerDictionary);
+  EXPECT_NE(nullptr, innerDictionary);
+
+  double value3;
+  innerDictionary->GetDouble("Key3", &value3);
+  EXPECT_EQ(42, value3);
+}
+
 // Tests that a script with undefined result correctly evaluates to string.
 TEST_F(WebViewJsUtilsTest, UndefinedEvaluation) {
   EXPECT_NSEQ(@"", EvaluateJavaScript(@"{}"));

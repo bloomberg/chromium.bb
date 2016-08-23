@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -62,6 +63,16 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
   } else if (result_type == CFNullGetTypeID()) {
     result = base::Value::CreateNullValue();
     DCHECK(result->IsType(base::Value::TYPE_NULL));
+  } else if (result_type == CFDictionaryGetTypeID()) {
+    std::unique_ptr<base::DictionaryValue> dictionary =
+        base::MakeUnique<base::DictionaryValue>();
+    for (id key in wk_result) {
+      DCHECK([key respondsToSelector:@selector(UTF8String)]);
+      const std::string& path([key UTF8String]);
+      dictionary->Set(path,
+                      ValueResultFromWKResult([wk_result objectForKey:key]));
+    }
+    result = std::move(dictionary);
   } else {
     NOTREACHED();  // Convert other types as needed.
   }
