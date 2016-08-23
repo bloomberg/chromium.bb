@@ -9,11 +9,15 @@
 #include "components/exo/wm_helper.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
+#include "ui/aura/env_observer.h"
+#include "ui/events/event_handler.h"
 
 namespace exo {
 
 // A helper class for accessing WindowManager related features.
 class WMHelperMus : public WMHelper,
+                    public aura::EnvObserver,
+                    public ui::EventHandler,
                     public ui::WindowTreeClientObserver,
                     public aura::client::FocusChangeObserver {
  public:
@@ -33,6 +37,10 @@ class WMHelperMus : public WMHelper,
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsMaximizeModeWindowManagerEnabled() const override;
 
+  // Overriden from aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override {}
+  void OnHostInitialized(aura::WindowTreeHost* host) override;
+
   // Overriden from ui::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(ui::Window* gained_focus,
                                 ui::Window* lost_focus) override;
@@ -42,6 +50,14 @@ class WMHelperMus : public WMHelper,
                        aura::Window* lost_focus) override;
 
  private:
+  class EventForwarder;
+
+  ui::EventHandlerList pre_target_list_;
+  ui::EventHandlerList post_target_list_;
+
+  std::unique_ptr<EventForwarder> pre_target_event_forwarder_;
+  std::unique_ptr<EventForwarder> post_target_event_forwarder_;
+
   aura::Window* active_window_;
   aura::Window* focused_window_;
 
