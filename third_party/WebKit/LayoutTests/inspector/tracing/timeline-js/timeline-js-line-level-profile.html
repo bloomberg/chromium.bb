@@ -52,7 +52,7 @@ function test()
         ]
     };
 
-    InspectorTest.addSniffer(WebInspector.CodeMirrorTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
+    InspectorTest.addSniffer(WebInspector.SourcesTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
     InspectorTest.showScriptSource("timeline-data.js", frameRevealed);
 
     function decorationAdded(line, type, element)

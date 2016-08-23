@@ -3,7 +3,7 @@ function initialize_EditorTests()
 
 InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
 {
-    var textEditor = new WebInspector.CodeMirrorTextEditor(textEditorDelegate || new WebInspector.TextEditorDelegate());
+    var textEditor = new WebInspector.SourcesTextEditor(textEditorDelegate || new WebInspector.SourcesTextEditorDelegate());
     clientHeight = clientHeight || 100;
     textEditor.element.style.height = clientHeight + "px";
     textEditor.element.style.flex = "none";
