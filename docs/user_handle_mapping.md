@@ -78,6 +78,7 @@ For Chromium contributors that have different nicks on other domains.
 | patrick           | pjohnson        | pjohnson        |
 | peter             | beverloo        | beverloo        |
 | phajdan.jr        | phajdan-jr      | phajdan         |
+| pwnall            | pwnall          | costan          |
 | rch               | RyanHamilton    | rch             |
 | rdevlin.cronin    | rdcronin        | rdcronin        |
 | reillyg           | reillyeon       | reillyg         |
