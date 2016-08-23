@@ -705,7 +705,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
     frame().document()->updateStyleAndLayout();
 
     // Request spell checking before any further DOM change.
-    spellChecker().markMisspellingsAfterApplyingCommand(cmd);
+    spellChecker().markMisspellingsAfterApplyingCommand(*cmd);
 
     EditCommandComposition* composition = cmd->composition();
     DCHECK(composition);

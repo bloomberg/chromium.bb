@@ -317,70 +317,70 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selecti
     chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
 }
 
-void SpellChecker::markMisspellingsAfterApplyingCommand(CompositeEditCommand* cmd)
+void SpellChecker::markMisspellingsAfterApplyingCommand(const CompositeEditCommand& cmd)
 {
+    if (!isSpellCheckingEnabled())
+        return;
+    if (!isSpellCheckingEnabledFor(cmd.endingSelection()))
+        return;
+
+    // Use type-based conditioning instead of polymorphism so that all spell
+    // checking code can be encapsulated in SpellChecker.
+
+    if (cmd.isTypingCommand()) {
+        markMisspellingsAfterTypingCommand(toTypingCommand(cmd));
+        return;
+    }
+
+    if (!cmd.isReplaceSelectionCommand())
+        return;
+
     // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
     // created in |Editor::replaceSelectionWithFragment()|.
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
-    if (cmd->inputType() != InputEvent::InputType::Paste)
+    if (cmd.inputType() != InputEvent::InputType::Paste)
         return;
-    if (!isSpellCheckingEnabled())
-        return;
-    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
-        return;
-    DCHECK(cmd->isReplaceSelectionCommand());
-    const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
-    if (insertedRange.isNull())
-        return;
-    // Patch crrev.com/2241293006 assumes the following equality. Revert if it fails.
-    DCHECK_EQ(cmd->endingSelection().rootEditableElement(), rootEditableElementOf(insertedRange.startPosition()));
-    markMisspellingsAfterReplaceSelectionCommand(insertedRange);
+
+    markMisspellingsAfterReplaceSelectionCommand(toReplaceSelectionCommand(cmd));
 }
 
-void SpellChecker::markMisspellingsAfterTypingCommand(TypingCommand* cmd)
+void SpellChecker::markMisspellingsAfterTypingCommand(const TypingCommand& cmd)
 {
-    if (!isSpellCheckingEnabled())
-        return;
-    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
-        return;
-
-    cancelCheck();
+    m_spellCheckRequester->cancelCheck();
 
     // Take a look at the selection that results after typing and determine whether we need to spellcheck.
     // Since the word containing the current selection is never marked, this does a check to
     // see if typing made a new word that is not in the current selection. Basically, you
     // get this by being at the end of a word and typing a space.
-    VisiblePosition start = createVisiblePosition(cmd->endingSelection().start(), cmd->endingSelection().affinity());
+    VisiblePosition start = createVisiblePosition(cmd.endingSelection().start(), cmd.endingSelection().affinity());
     VisiblePosition previous = previousPositionOf(start);
 
-    VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
+    VisiblePosition wordStartOfPrevious = startOfWord(previous, LeftWordIfOnBoundary);
 
-    if (cmd->commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
-        VisiblePosition p2 = nextWordPosition(start);
-        VisibleSelection words(p1, endOfWord(p2));
+    if (cmd.commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
+        VisiblePosition nextWord = nextWordPosition(start);
+        VisibleSelection words(wordStartOfPrevious, endOfWord(nextWord));
         markMisspellingsAfterLineBreak(words);
-    } else if (previous.isNotNull()) {
-        VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
-        if (p1.deepEquivalent() != p2.deepEquivalent())
-            markMisspellingsAfterTypingToWord(p1, cmd->endingSelection());
+        return;
     }
+
+    if (previous.isNull())
+        return;
+    VisiblePosition currentWordStart = startOfWord(start, LeftWordIfOnBoundary);
+    if (wordStartOfPrevious.deepEquivalent() == currentWordStart.deepEquivalent())
+        return;
+    markMisspellingsAfterTypingToWord(wordStartOfPrevious);
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)
 {
-    if (!isSpellCheckingEnabled())
-        return;
-
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterLineBreak");
 
     markMisspellingsAndBadGrammar(wordSelection);
 }
 
-void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping)
+void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart)
 {
-    if (!isSpellCheckingEnabled())
-        return;
-
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
     VisibleSelection adjacentWords = VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
@@ -419,12 +419,18 @@ bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
     return false;
 }
 
-void SpellChecker::markMisspellingsAfterReplaceSelectionCommand(const EphemeralRange& insertedRange)
+void SpellChecker::markMisspellingsAfterReplaceSelectionCommand(const ReplaceSelectionCommand& cmd)
 {
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterReplaceSelectionCommand");
-    Node* node = rootEditableElementOf(insertedRange.startPosition());
+
+    const EphemeralRange& insertedRange = cmd.insertedRange();
+    if (insertedRange.isNull())
+        return;
+
+    Node* node = cmd.endingSelection().rootEditableElement();
     if (!node)
         return;
+
     EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
     TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
     chunkAndMarkAllMisspellingsAndBadGrammar(textToCheck);

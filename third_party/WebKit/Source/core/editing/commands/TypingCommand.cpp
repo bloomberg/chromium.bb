@@ -335,9 +335,6 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
     updatePreservesTypingStyle(commandTypeForAddedTyping);
     updateCommandTypeOfOpenCommand(commandTypeForAddedTyping);
 
-    // The old spellchecking code requires that checking be done first, to prevent issues like that in 6864072, where <doesn't> is marked as misspelled.
-    // TODO(xiaochengh): Move the following line to SpellChecker::markMisspellingsAfterApplyingCommand()
-    frame->spellChecker().markMisspellingsAfterTypingCommand(this);
     frame->editor().appliedEditing(this);
 }
 

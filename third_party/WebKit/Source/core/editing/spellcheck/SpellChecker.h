@@ -37,6 +37,7 @@ namespace blink {
 
 class CompositeEditCommand;
 class LocalFrame;
+class ReplaceSelectionCommand;
 class SpellCheckerClient;
 class SpellCheckRequest;
 class SpellCheckRequester;
@@ -61,10 +62,7 @@ public:
     bool isSpellCheckingEnabledInFocusedNode() const;
     bool isSpellCheckingEnabledFor(Node*) const;
     static bool isSpellCheckingEnabledFor(const VisibleSelection&);
-    void markMisspellingsAfterApplyingCommand(CompositeEditCommand*);
-    void markMisspellingsAfterTypingCommand(TypingCommand*);
-    void markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection);
-    void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart, const VisibleSelection& selectionAfterTyping);
+    void markMisspellingsAfterApplyingCommand(const CompositeEditCommand&);
     void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
     void advanceToNextMisspelling(bool startBeforeSelection = false);
     void showSpellingGuessPanel();
@@ -82,7 +80,6 @@ public:
     bool selectionStartHasSpellingMarkerFor(int from, int length) const;
     void updateMarkersForWordsAffectedByEditing(bool onlyHandleWordsContainingSelection);
     void cancelCheck();
-    void markMisspellingsAfterReplaceSelectionCommand(const EphemeralRange&);
     void requestTextChecking(const Element&);
 
     // Exposed for testing only
@@ -108,6 +105,11 @@ private:
     // Helper functions for advanceToNextMisspelling()
     Vector<TextCheckingResult> findMisspellings(const String&);
     std::pair<String, int> findFirstMisspelling(const Position&, const Position&);
+
+    void markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection);
+    void markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart);
+    void markMisspellingsAfterTypingCommand(const TypingCommand&);
+    void markMisspellingsAfterReplaceSelectionCommand(const ReplaceSelectionCommand&);
 
     void removeMarkers(const VisibleSelection&, DocumentMarker::MarkerTypes);
 
