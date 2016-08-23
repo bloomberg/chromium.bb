@@ -52,6 +52,7 @@ source_set("exo") {
     "//device/gamepad",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
+    "//services/ui/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/compositor",
@@ -59,6 +60,7 @@ source_set("exo") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/views",
+    "//ui/views/mus",
     "//ui/wm:wm",
   ]
 }

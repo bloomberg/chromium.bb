@@ -5,15 +5,39 @@
 #include "components/exo/wm_helper_mus.h"
 
 #include "ash/common/display/display_info.h"
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/aura/client/focus_client.h"
+#include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget.h"
 
 namespace exo {
+namespace {
+
+aura::Window* GetToplevelAuraWindow(ui::Window* window) {
+  DCHECK(window);
+  // We never create child ui::Window, so window->parent() should be null.
+  DCHECK(!window->parent());
+  views::Widget* widget = views::NativeWidgetMus::GetWidgetForWindow(window);
+  if (!widget)
+    return nullptr;
+  return widget->GetNativeWindow();
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperMus, public:
 
-WMHelperMus::WMHelperMus() {}
+WMHelperMus::WMHelperMus()
+    : active_window_(WMHelperMus::GetActiveWindow()),
+      focused_window_(WMHelperMus::GetFocusedWindow()) {
+  views::WindowManagerConnection::Get()->client()->AddObserver(this);
+}
 
-WMHelperMus::~WMHelperMus() {}
+WMHelperMus::~WMHelperMus() {
+  views::WindowManagerConnection::Get()->client()->RemoveObserver(this);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperMus, private:
@@ -29,13 +53,18 @@ aura::Window* WMHelperMus::GetContainer(int container_id) {
 }
 
 aura::Window* WMHelperMus::GetActiveWindow() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  ui::Window* window =
+      views::WindowManagerConnection::Get()->client()->GetFocusedWindow();
+  return window ? GetToplevelAuraWindow(window) : nullptr;
 }
 
 aura::Window* WMHelperMus::GetFocusedWindow() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  aura::Window* active_window = GetActiveWindow();
+  if (!active_window)
+    return nullptr;
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(active_window);
+  return focus_client->GetFocusedWindow();
 }
 
 ui::CursorSetType WMHelperMus::GetCursorSet() const {
@@ -66,6 +95,45 @@ void WMHelperMus::RemovePostTargetHandler(ui::EventHandler* handler) {
 bool WMHelperMus::IsMaximizeModeWindowManagerEnabled() const {
   NOTIMPLEMENTED();
   return false;
+}
+
+void WMHelperMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                           ui::Window* lost_focus) {
+  aura::Window* gained_active =
+      gained_focus ? GetToplevelAuraWindow(gained_focus) : nullptr;
+  aura::Window* lost_active =
+      lost_focus ? GetToplevelAuraWindow(lost_focus) : nullptr;
+
+  // Because NativeWidgetMus uses separate FocusClient for every toplevel
+  // window, we have to stop observering the FocusClient of the |lost_active|
+  // and start observering the FocusClient of the |gained_active|.
+  if (active_window_) {
+    aura::client::FocusClient* focus_client =
+        aura::client::GetFocusClient(active_window_);
+    focus_client->RemoveObserver(this);
+  }
+
+  active_window_ = gained_active;
+  NotifyWindowActivated(gained_active, lost_active);
+
+  aura::Window* focused_window = nullptr;
+  if (active_window_) {
+    aura::client::FocusClient* focus_client =
+        aura::client::GetFocusClient(active_window_);
+    focus_client->AddObserver(this);
+    focused_window = focus_client->GetFocusedWindow();
+  }
+
+  // OnWindowFocused() will update |focused_window_|.
+  OnWindowFocused(focused_window, focused_window_);
+}
+
+void WMHelperMus::OnWindowFocused(aura::Window* gained_focus,
+                                  aura::Window* lost_focus) {
+  if (focused_window_ != gained_focus) {
+    focused_window_ = gained_focus;
+    NotifyWindowFocused(gained_focus, lost_focus);
+  }
 }
 
 }  // namespace exo
