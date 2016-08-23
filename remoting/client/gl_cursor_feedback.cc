@@ -5,6 +5,7 @@
 #include "remoting/client/gl_cursor_feedback.h"
 
 #include <math.h>
+
 #include <array>
 
 #include "base/logging.h"
@@ -15,7 +16,29 @@
 #include "remoting/client/gl_texture_ids.h"
 
 namespace {
-const float kAnimationDurationMs = 220.f;
+
+const float kAnimationDurationMs = 300.f;
+
+// This function is for calculating the size of the feedback animation circle at
+// the moment when the animation progress is |progress|.
+// |progress|: [0, 1], indicating the progress of the animation.
+// Returns a coefficient in [0, 1]. It will be multiplied with the maximum
+// diameter of the feedback circle to get the current diameter of the feedback
+// circle.
+float GetExpansionCoefficient(float progress) {
+  DCHECK(progress >= 0 && progress <= 1);
+
+  // Decelerating expansion. This is conforming to the material design spec.
+  // More time will be spent showing the larger circle and the animation will
+  // look more rapid given the same time duration.
+  auto get_unnormalized_coeff = [](float progress) {
+    static const float kExpansionBase = 400.f;
+    return 1.f - pow(kExpansionBase, -progress);
+  };
+  static const float kExpansionNormalization = get_unnormalized_coeff(1);
+  return get_unnormalized_coeff(progress) / kExpansionNormalization;
+}
+
 }  // namespace
 
 namespace remoting {
@@ -54,12 +77,14 @@ bool GlCursorFeedback::Draw() {
     animation_start_time_ = base::TimeTicks();
     return false;
   }
-  float diameter = progress * max_diameter_;
+  float diameter = GetExpansionCoefficient(progress) * max_diameter_;
   std::array<float, 8> positions;
   FillRectangleVertexPositions(cursor_x_ - diameter / 2,
                                cursor_y_ - diameter / 2,
                                diameter, diameter, &positions);
   layer_->SetVertexPositions(positions);
+
+  // Linear fade-out.
   layer_->Draw(1.f - progress);
   return true;
 }
