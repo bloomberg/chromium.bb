@@ -7,7 +7,7 @@ function test()
 {
     /** @type {!SecurityAgent.MixedContentStatus} */
     var mixedContentStatus = { ranInsecureContent: false, displayedInsecureContent: false, ranInsecureContentStyle: SecurityAgent.SecurityState.Insecure, displayedInsecureContentStyle: SecurityAgent.SecurityState.Neutral };
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.EventTypes.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Secure, [], mixedContentStatus, true));
+    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(SecurityAgent.SecurityState.Secure, [], mixedContentStatus, true));
 
     var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     request.setBlockedReason(NetworkAgent.BlockedReason.MixedContent);
@@ -19,7 +19,7 @@ function test()
         InspectorTest.dumpDeepInnerHTML(explanations[i]);
 
     // Test that the explanations are cleared on navigation. Regression test for https://crbug.com/601944.
-    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, InspectorTest.resourceTreeModel.mainFrame);
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.MainFrameNavigated, InspectorTest.resourceTreeModel.mainFrame);
     explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
         InspectorTest.dumpDeepInnerHTML(explanations[i]);

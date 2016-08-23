@@ -34,7 +34,7 @@ function test()
         nextStep();
     }
 
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequest);
 
     function testBlockedURL(patterns, url, next)
     {

@@ -18,12 +18,12 @@ function test()
     InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
 
     // Test that the sidebar is hidden when an interstitial is shown. https://crbug.com/559150
-    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown);
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.InterstitialShown);
     InspectorTest.addResult("After interstitial is shown:");
     InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
 
     // Test that the sidebar is shown again when the interstitial is hidden. https://crbug.com/559150
-    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialHidden);
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.InterstitialHidden);
     InspectorTest.addResult("After interstitial is hidden:");
     InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._sidebarTree.element);
 

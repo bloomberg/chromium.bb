@@ -47,7 +47,7 @@ function test()
 
         var resource = new WebInspector.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
         resource._content = content;
-        target.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
+        target.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.ResourceAdded, resource);
 
         return resource;
     }

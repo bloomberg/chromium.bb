@@ -18,7 +18,7 @@ function test()
     InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._visibleView.contentElement);
 
     // Test that the panel transitions to an origin view when an interstitial is shown. https://crbug.com/559150
-    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InterstitialShown);
+    InspectorTest.mainTarget.model(WebInspector.ResourceTreeModel).dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.InterstitialShown);
     InspectorTest.addResult("After interstitial is shown:");
     InspectorTest.dumpDeepInnerHTML(WebInspector.SecurityPanel._instance()._visibleView.contentElement);
 

@@ -101,13 +101,13 @@ function test()
 
     function refreshDatabase()
     {
-        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, runObjectStoreTests);
+        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
         indexedDBModel.refreshDatabase(databaseId);
     }
 
     function runObjectStoreTests()
     {
-        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, runObjectStoreTests);
+        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
         loadValuesAndDump(false, null, 0, 2, step2)
 
         function step2()
@@ -187,11 +187,11 @@ function test()
         InspectorTest.addResult("Cleared data from objectStore");
 
         function step1() {
-            indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, step2);
+            indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, step2);
             indexedDBModel.refreshDatabase(databaseId);
         }
         function step2() {
-            indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, step2);
+            indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, step2);
             loadValuesAndDump(false, null, 0, 10, step3);
         }
 

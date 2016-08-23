@@ -39,7 +39,7 @@ function test()
         InspectorTest.completeTest();
     };
 
-    WebInspector.inspectorView._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, panelChanged);
+    WebInspector.inspectorView._tabbedPane.addEventListener(WebInspector.TabbedPane.Events.TabSelected, panelChanged);
 
     function panelChanged()
     {

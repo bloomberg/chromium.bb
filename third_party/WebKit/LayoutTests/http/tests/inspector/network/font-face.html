@@ -16,10 +16,10 @@ function test() {
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.addResult(event.type + ": " + request.name());
+        InspectorTest.addResult(event.type.toString() + ": " + request.name());
     }
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequest);
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequest);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequest);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequest);
 
     InspectorTest.evaluateInPage("createIFrame()");
 }

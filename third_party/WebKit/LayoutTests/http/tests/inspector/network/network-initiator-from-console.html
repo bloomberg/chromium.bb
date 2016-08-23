@@ -9,7 +9,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequest);
+        InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequest);
         var str = "";
         str += "var s = document.createElement(\"script\");";
         str += "s.src = \"resources/silent_script.js\";";

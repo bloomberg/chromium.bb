@@ -1,8 +1,8 @@
 Tests that a used font-face is reported and an unused font-face is not reported.
 
 
-RequestStarted: font-face.html
-RequestFinished: font-face.html
-RequestStarted: used.ttf
-RequestFinished: used.ttf
+Symbol(RequestStarted): font-face.html
+Symbol(RequestFinished): font-face.html
+Symbol(RequestStarted): used.ttf
+Symbol(RequestFinished): used.ttf
 

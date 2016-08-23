@@ -78,13 +78,13 @@ function test()
     function databaseCreated()
     {
         indexedDBModel = InspectorTest.indexedDBModel();
-        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, databaseLoaded);
+        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
         WebInspector.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
     }
 
     function databaseLoaded()
     {
-        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, databaseLoaded);
+        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
         InspectorTest.dumpIndexedDBTree();
         InspectorTest.addResult("Navigated to another security origin.");
         InspectorTest.navigate(withoutIndexedDBURL, navigatedAway);

@@ -11,7 +11,7 @@ InspectorTest.requestURLComparer = function(r1, r2)
 InspectorTest.runAfterCachedResourcesProcessed = function(callback)
 {
     if (!InspectorTest.resourceTreeModel._cachedResourcesProcessed)
-        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, callback);
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.CachedResourcesLoaded, callback);
     else
         callback();
 }
@@ -28,13 +28,13 @@ InspectorTest.runAfterResourcesAreFinished = function(resourceURLs, callback)
                 resourceURLsMap.delete(url);
         }
         if (!resourceURLsMap.size) {
-            InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
+            InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.Events.ResourceAdded, checkResources);
             callback();
         }
     }
     checkResources();
     if (resourceURLsMap.size)
-        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, checkResources);
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.ResourceAdded, checkResources);
 }
 
 InspectorTest.showResource = function(resourceURL, callback)

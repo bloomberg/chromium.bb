@@ -15,10 +15,10 @@ function test()
         // Reset resourceTreeModel.
         InspectorTest.resourceTreeModel.mainFrame._remove();
 
-        for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
-            InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
-        for (var eventName in WebInspector.SecurityOriginManager.EventTypes)
-            InspectorTest.securityOriginManager.addEventListener(WebInspector.SecurityOriginManager.EventTypes[eventName], eventHandler.bind(this, eventName));
+        for (var eventName in WebInspector.ResourceTreeModel.Events)
+            InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
+        for (var eventName in WebInspector.SecurityOriginManager.Events)
+            InspectorTest.securityOriginManager.addEventListener(WebInspector.SecurityOriginManager.Events[eventName], eventHandler.bind(this, eventName));
 
         function eventHandler(eventName, event)
         {
@@ -26,17 +26,17 @@ function test()
             case "FrameAdded":
             case "FrameDetached":
                 var frame = event.data;
-                InspectorTest.addResult("    " + eventName + " : " + frame.id);
+                InspectorTest.addResult(`    ${eventName} : ${frame.id}`);
                 break;
             case "FrameNavigated":
             case "MainFrameNavigated":
                 var frame = event.data;
-                InspectorTest.addResult("    " + eventName + " : " + frame.id + " : " + frame.loaderId);
+                InspectorTest.addResult(`    ${eventName} : ${frame.id} : ${frame.loaderId}`);
                 break;
             case "SecurityOriginAdded":
             case "SecurityOriginRemoved":
                 var securityOrigin = event.data;
-                InspectorTest.addResult("    " + eventName + " : " + securityOrigin);
+                InspectorTest.addResult(`    ${eventName} : ${securityOrigin}`);
                 break;
             default:
             }

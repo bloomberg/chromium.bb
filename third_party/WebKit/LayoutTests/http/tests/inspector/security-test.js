@@ -18,7 +18,7 @@ InspectorTest.dumpSecurityPanelSidebarOrigins = function() {
  * @param {!WebInspector.NetworkRequest} request
  */
 InspectorTest.dispatchRequestFinished = function(request) {
-    InspectorTest.networkManager.dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.RequestFinished, request);
+    InspectorTest.networkManager.dispatchEventToListeners(WebInspector.NetworkManager.Events.RequestFinished, request);
 }
 
 }

@@ -16,7 +16,7 @@ function test()
 {
     WebInspector.settingForTest("enableAsyncStackTraces").set(true);
     InspectorTest.evaluateInPage("testFunction()");
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, requestFinished);
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, requestFinished);
 
     function requestFinished(event)
     {
