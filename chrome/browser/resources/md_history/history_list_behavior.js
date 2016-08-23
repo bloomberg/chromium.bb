@@ -175,7 +175,7 @@ var HistoryListBehavior = {
       }
     }.bind(this));
 
-    if (array.length == 0)
+    if (array.length == 0 && node.currentPath.indexOf('.') != -1)
       return true;
 
     // notifySplices gives better performance than individually splicing as it

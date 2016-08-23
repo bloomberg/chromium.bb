@@ -35,6 +35,38 @@ cr.define('md_history.history_list_test', function() {
         app.queryState_.incremental = true;
       });
 
+      test('deleting single item', function(done) {
+        var listContainer = app.$.history;
+        app.historyResult(createHistoryInfo(), [
+          createHistoryEntry('2015-01-01', 'http://example.com')
+        ]);
+
+        flush().then(function() {
+          assertEquals(element.historyData_.length, 1);
+          items = polymerSelectAll(element, 'history-item');
+          MockInteractions.tap(items[0].$.checkbox);
+          assertDeepEquals([true],
+                           element.historyData_.map(i => i.selected));
+          return flush();
+        }).then(function() {
+          MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+          return listContainer.$.dialog.get();
+        }).then(function(dialog) {
+          registerMessageCallback('removeVisits', this, function() {
+            flush().then(function() {
+              deleteComplete();
+              return flush();
+            }).then(function() {
+              items = polymerSelectAll(element, 'history-item');
+              assertEquals(element.historyData_.length, 0);
+              done();
+            });
+          });
+          assertTrue(dialog.open);
+          MockInteractions.tap(listContainer.$$('.action-button'));
+        });
+      });
+
       test('cancelling selection of multiple items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         return flush().then(function() {

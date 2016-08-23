@@ -6847,7 +6847,7 @@ var HistoryListBehavior = {
         });
       }
     }.bind(this));
-    if (array.length == 0) return true;
+    if (array.length == 0 && node.currentPath.indexOf('.') != -1) return true;
     this.notifySplices(node.currentPath, splices);
     return false;
   },
