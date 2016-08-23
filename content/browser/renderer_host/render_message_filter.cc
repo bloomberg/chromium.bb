@@ -58,9 +58,6 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
-#include "media/base/audio_parameters.h"
 #include "media/base/media_log_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
@@ -127,7 +124,6 @@ RenderMessageFilter::RenderMessageFilter(
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
-    media::AudioManager* audio_manager,
     MediaInternals* media_internals,
     DOMStorageContextWrapper* dom_storage_context,
     CacheStorageContextImpl* cache_storage_context)
@@ -141,7 +137,6 @@ RenderMessageFilter::RenderMessageFilter(
       dom_storage_context_(dom_storage_context),
       gpu_process_id_(0),
       render_process_id_(render_process_id),
-      audio_manager_(audio_manager),
       media_internals_(media_internals),
       cache_storage_context_(cache_storage_context),
       weak_ptr_factory_(this) {

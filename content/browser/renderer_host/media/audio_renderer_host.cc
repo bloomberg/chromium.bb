@@ -791,17 +791,6 @@ bool AudioRendererHost::HasActiveAudio() {
   return !base::AtomicRefCountIsZero(&num_playing_streams_);
 }
 
-bool AudioRendererHost::RenderFrameHasActiveAudio(int render_frame_id) const {
-  for (AudioEntryMap::const_iterator it = audio_entries_.begin();
-       it != audio_entries_.end();
-       ++it) {
-    AudioEntry* entry = it->second;
-    if (entry->render_frame_id() == render_frame_id && entry->playing())
-      return true;
-  }
-  return false;
-}
-
 void AudioRendererHost::CheckOutputDeviceAccess(
     int render_frame_id,
     const std::string& device_id,

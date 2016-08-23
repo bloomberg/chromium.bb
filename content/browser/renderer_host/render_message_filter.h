@@ -26,8 +26,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
-#include "media/base/audio_parameters.h"
-#include "media/base/channel_layout.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -70,7 +68,6 @@ struct SyncToken;
 }
 
 namespace media {
-class AudioManager;
 struct MediaLogEvent;
 }
 
@@ -104,7 +101,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       BrowserContext* browser_context,
                       net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
-                      media::AudioManager* audio_manager,
                       MediaInternals* media_internals,
                       DOMStorageContextWrapper* dom_storage_context,
                       CacheStorageContextImpl* cache_storage_context);
@@ -245,7 +241,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   int gpu_process_id_;
   int render_process_id_;
 
-  media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
   CacheStorageContextImpl* cache_storage_context_;
 

@@ -980,8 +980,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();
-  media::AudioManager* audio_manager =
-      BrowserMainLoop::GetInstance()->audio_manager();
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
   scoped_refptr<BrowserPluginMessageFilter> bp_message_filter(
@@ -993,7 +991,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(), GetBrowserContext(), request_context.get(),
-          widget_helper_.get(), audio_manager, media_internals,
+          widget_helper_.get(), media_internals,
           storage_partition_impl_->GetDOMStorageContext(),
           storage_partition_impl_->GetCacheStorageContext()));
   AddFilter(render_message_filter.get());
@@ -1034,6 +1032,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   AddFilter(resource_message_filter_.get());
 
+  media::AudioManager* audio_manager =
+      BrowserMainLoop::GetInstance()->audio_manager();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
   // The AudioInputRendererHost and AudioRendererHost needs to be available for

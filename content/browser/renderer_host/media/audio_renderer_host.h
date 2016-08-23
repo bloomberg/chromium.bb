@@ -103,10 +103,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // be called from any thread.
   bool HasActiveAudio();
 
-  // Returns true if any streams managed by the RenderFrame identified by
-  // |render_frame_id| are actively playing. Can be called from any thread.
-  bool RenderFrameHasActiveAudio(int render_frame_id) const;
-
  private:
   friend class AudioRendererHostTest;
   friend class BrowserThread;
