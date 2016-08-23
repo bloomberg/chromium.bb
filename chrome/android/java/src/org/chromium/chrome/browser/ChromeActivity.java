@@ -1000,16 +1000,27 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
-    public void onShareMenuItemSelected(final boolean shareDirectly, boolean isIncognito) {
+    public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
         final Tab currentTab = getActivityTab();
         if (currentTab == null) return;
 
         PrintingController printingController = getChromeApplication().getPrintingController();
         if (printingController != null && !currentTab.isNativePage() && !printingController.isBusy()
                 && PrefServiceBridge.getInstance().isPrintingEnabled()) {
-            PrintShareActivity.enablePrintShareOption(this);
+            PrintShareActivity.enablePrintShareOption(this, new Runnable() {
+                @Override
+                public void run() {
+                    triggerShare(currentTab, shareDirectly, isIncognito);
+                }
+            });
+            return;
         }
 
+        triggerShare(currentTab, shareDirectly, isIncognito);
+    }
+
+    private void triggerShare(
+            final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
         final Activity mainActivity = this;
         ContentBitmapCallback callback = new ContentBitmapCallback() {
             @Override

@@ -6,16 +6,15 @@ package org.chromium.chrome.browser.printing;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +32,8 @@ import java.util.Set;
  */
 public class PrintShareActivity extends AppCompatActivity {
 
-    private static Set<Activity> sPendingShareActivities = new HashSet<>();
+    private static Set<Activity> sPendingShareActivities =
+            Collections.synchronizedSet(new HashSet<Activity>());
     private static ActivityStateListener sStateListener;
 
     /**
@@ -41,8 +42,11 @@ public class PrintShareActivity extends AppCompatActivity {
      * @param activity The activity that will be triggering the share action.  The activitiy's
      *                 state will be tracked to disable the print option when the share operation
      *                 has been completed.
+     * @param callback The callback to be triggered after the print option has been enabled.  This
+     *                 may or may not be synchronous depending on whether this will require
+     *                 interacting with the Android framework.
      */
-    public static void enablePrintShareOption(Activity activity) {
+    public static void enablePrintShareOption(final Activity activity, final Runnable callback) {
         ThreadUtils.assertOnUiThread();
 
         if (sStateListener == null) {
@@ -58,23 +62,45 @@ public class PrintShareActivity extends AppCompatActivity {
         boolean wasEmpty = sPendingShareActivities.isEmpty();
         sPendingShareActivities.add(activity);
         if (wasEmpty) {
-            activity.getPackageManager().setComponentEnabledSetting(
-                    new ComponentName(activity, PrintShareActivity.class),
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP);
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    if (sPendingShareActivities.isEmpty()) return null;
+
+                    activity.getPackageManager().setComponentEnabledSetting(
+                            new ComponentName(activity, PrintShareActivity.class),
+                            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                            PackageManager.DONT_KILL_APP);
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void result) {
+                    callback.run();
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            callback.run();
         }
     }
 
-    private static void unregisterActivity(Activity activity) {
+    private static void unregisterActivity(final Activity activity) {
         sPendingShareActivities.remove(activity);
         if (!sPendingShareActivities.isEmpty()) return;
         ApplicationStatus.unregisterActivityStateListener(sStateListener);
 
-        Context context = ContextUtils.getApplicationContext();
-        context.getPackageManager().setComponentEnabledSetting(
-                new ComponentName(context, PrintShareActivity.class),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                if (!sPendingShareActivities.isEmpty()) return null;
+
+                activity.getPackageManager().setComponentEnabledSetting(
+                        new ComponentName(activity, PrintShareActivity.class),
+                        PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                        PackageManager.DONT_KILL_APP);
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
