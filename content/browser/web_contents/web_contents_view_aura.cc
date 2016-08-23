@@ -469,6 +469,20 @@ class WebContentsViewAura::WindowObserver
       window->GetHost()->RemoveObserver(this);
   }
 
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key != aura::client::kMirroringEnabledKey)
+      return;
+    if (window->GetProperty(aura::client::kMirroringEnabledKey)) {
+      view_->web_contents_->IncrementCapturerCount(gfx::Size());
+      view_->web_contents_->UpdateWebContentsVisibility(true);
+    } else {
+      view_->web_contents_->DecrementCapturerCount();
+      view_->web_contents_->UpdateWebContentsVisibility(window->IsVisible());
+    }
+  }
+
   // Overridden WindowTreeHostObserver:
   void OnHostMoved(const aura::WindowTreeHost* host,
                    const gfx::Point& new_origin) override {

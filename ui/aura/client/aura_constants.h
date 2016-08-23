@@ -45,6 +45,10 @@ AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
 // recently used windows list.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kExcludeFromMruKey;
 
+// A property key to indicate that a window is being "mirrored" and its contents
+// should render regardless of its actual visibility state.
+AURA_EXPORT extern const aura::WindowProperty<bool>* const kMirroringEnabledKey;
+
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
