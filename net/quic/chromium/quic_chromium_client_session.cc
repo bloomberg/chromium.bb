@@ -899,6 +899,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
         UMA_HISTOGRAM_COUNTS(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
             connection()->sent_packet_manager().GetConsecutiveTlpCount());
+        UMA_HISTOGRAM_SPARSE_SLOWLY(
+            "Net.QuicSession.TimedOutWithOpenStreams.LocalPort",
+            connection()->self_address().port());
       }
     } else {
       UMA_HISTOGRAM_COUNTS(

@@ -31176,6 +31176,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.TimedOutWithOpenStreams.LocalPort">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    If a QUIC connection timed out locally with open streams, this contains the
+    local port number for the connection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TooManyOpenStream" enum="BooleanTooMany">
   <owner>rch@chromium.org</owner>
   <obsolete>
