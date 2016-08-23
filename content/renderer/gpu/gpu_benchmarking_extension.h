@@ -42,6 +42,8 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
   void PrintToSkPicture(v8::Isolate* isolate, const std::string& dirname);
+  void PrintPagesToSkPictures(v8::Isolate* isolate,
+                              const std::string& filename);
   bool GestureSourceTypeSupported(int gesture_source_type);
   bool SmoothScrollBy(gin::Arguments* args);
   bool SmoothDrag(gin::Arguments* args);

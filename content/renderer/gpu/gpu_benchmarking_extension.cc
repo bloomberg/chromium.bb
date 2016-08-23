@@ -38,13 +38,18 @@
 #include "third_party/WebKit/public/web/WebImageCache.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkPixelSerializer.h"
 #include "third_party/skia/include/core/SkStream.h"
+// Note that headers in third_party/skia/src are fragile.  This is
+// an experimental, fragile, and diagnostic-only document type.
+#include "third_party/skia/src/utils/SkMultiPictureDocument.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
 
@@ -486,6 +491,8 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("setRasterizeOnlyVisibleContent",
                  &GpuBenchmarking::SetRasterizeOnlyVisibleContent)
       .SetMethod("printToSkPicture", &GpuBenchmarking::PrintToSkPicture)
+      .SetMethod("printPagesToSkPictures",
+                 &GpuBenchmarking::PrintPagesToSkPictures)
       .SetValue("DEFAULT_INPUT", 0)
       .SetValue("TOUCH_INPUT", 1)
       .SetValue("MOUSE_INPUT", 2)
@@ -526,6 +533,45 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
     return;
 
   context.compositor()->SetRasterizeOnlyVisibleContent();
+}
+
+void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
+                                             const std::string& filename) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(true))
+    return;
+
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(filename);
+  if (!base::PathIsWritable(path.DirName())) {
+    std::string msg("Path is not writable: ");
+    msg.append(path.DirName().MaybeAsASCII());
+    isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
+        isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
+    return;
+  }
+  const int kWidth = 612;          // 8.5 inch
+  const int kHeight = 792;         // 11 inch
+  const int kMarginTop = 29;       // 0.40 inch
+  const int kMarginLeft = 29;      // 0.40 inch
+  const int kContentWidth = 555;   // 7.71 inch
+  const int kContentHeight = 735;  // 10.21 inch
+  blink::WebPrintParams params(blink::WebSize(kWidth, kHeight));
+  params.printerDPI = 72;
+  params.printScalingOption = blink::WebPrintScalingOptionSourceSize;
+  params.printContentArea =
+      blink::WebRect(kMarginLeft, kMarginTop, kContentWidth, kContentHeight);
+  SkFILEWStream wStream(path.MaybeAsASCII().c_str());
+  sk_sp<SkDocument> doc = SkMakeMultiPictureDocument(&wStream);
+  int page_count = context.web_frame()->printBegin(params);
+  for (int i = 0; i < page_count; ++i) {
+    SkCanvas* canvas =
+        doc->beginPage(SkIntToScalar(kWidth), SkIntToScalar(kHeight));
+    SkAutoCanvasRestore auto_restore(canvas, true);
+    canvas->translate(SkIntToScalar(kMarginLeft), SkIntToScalar(kMarginTop));
+    context.web_frame()->printPage(i, canvas);
+  }
+  context.web_frame()->printEnd();
+  doc->close();
 }
 
 void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
