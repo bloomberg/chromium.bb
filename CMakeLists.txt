@@ -266,17 +266,17 @@ if (ENABLE_TESTS)
   add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
   include_directories("${GTEST_SRC_DIR}/googletest/include")
 
-  add_executable(muxer_tests
-                 "${LIBWEBM_SRC_DIR}/testing/muxer_tests.cc"
+  add_executable(mkvmuxer_tests
+                 "${LIBWEBM_SRC_DIR}/testing/mkvmuxer_tests.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
-  target_link_libraries(muxer_tests LINK_PUBLIC gtest webm)
+  target_link_libraries(mkvmuxer_tests LINK_PUBLIC gtest webm)
 
-  add_executable(parser_tests
-                 "${LIBWEBM_SRC_DIR}/testing/parser_tests.cc"
+  add_executable(mkvparser_tests
+                 "${LIBWEBM_SRC_DIR}/testing/mkvparser_tests.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
-  target_link_libraries(parser_tests LINK_PUBLIC gtest webm)
+  target_link_libraries(mkvparser_tests LINK_PUBLIC gtest webm)
 
   add_executable(vp9_header_parser_tests
                  "${LIBWEBM_SRC_DIR}/common/vp9_header_parser_tests.cc"
