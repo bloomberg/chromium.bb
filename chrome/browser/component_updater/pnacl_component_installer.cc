@@ -291,6 +291,7 @@ CrxComponent PnaclComponentInstaller::GetCrxComponent() {
   pnacl_component.name = "pnacl";
   pnacl_component.installer = this;
   pnacl_component.fingerprint = current_fingerprint();
+  pnacl_component.supports_group_policy_enable_component_updates = true;
   SetPnaclHash(&pnacl_component);
 
   return pnacl_component;

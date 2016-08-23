@@ -281,7 +281,7 @@ WidevineCdmComponentInstallerTraits::WidevineCdmComponentInstallerTraits() {
 
 bool WidevineCdmComponentInstallerTraits::
     SupportsGroupPolicyEnabledComponentUpdates() const {
-  return false;
+  return true;
 }
 
 bool WidevineCdmComponentInstallerTraits::RequiresNetworkEncryption() const {

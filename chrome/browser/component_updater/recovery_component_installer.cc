@@ -232,6 +232,7 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   recovery.installer = new RecoveryComponentInstaller(version, prefs);
   recovery.version = version;
   recovery.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
+  recovery.supports_group_policy_enable_component_updates = true;
   if (!cus->RegisterComponent(recovery)) {
     NOTREACHED() << "Recovery component registration failed.";
   }

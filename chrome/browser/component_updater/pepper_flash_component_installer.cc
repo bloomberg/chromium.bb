@@ -188,7 +188,7 @@ FlashComponentInstallerTraits::FlashComponentInstallerTraits() {}
 
 bool FlashComponentInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
     const {
-  return false;
+  return true;
 }
 
 bool FlashComponentInstallerTraits::RequiresNetworkEncryption() const {
