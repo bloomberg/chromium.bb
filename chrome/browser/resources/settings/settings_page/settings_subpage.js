@@ -5,7 +5,7 @@
 /**
  * @fileoverview
  * 'settings-subpage' shows a subpage beneath a subheader. The header contains
- * the subpage title and a back icon.
+ * the subpage title, a search field and a back icon.
  */
 
 Polymer({

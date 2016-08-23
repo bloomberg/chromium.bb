@@ -17,6 +17,10 @@ Polymer({
       type: Array,
       notify: true,
     },
+
+    searchTerm: {
+      type: String,
+    },
   },
 
   listeners: {

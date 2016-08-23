@@ -30,7 +30,8 @@
       }
     </style>
 
-    <template is="dom-repeat" items="{{printers}}">
+    <template is="dom-repeat" items="{{printers}}"
+        filter="[[filterPrinter_(searchTerm)]]">
       <div id="container" class="list-item">
         <div class="name-column">
           <span class="name" id="printer-name">[[item.printerName]]</span>

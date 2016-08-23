@@ -15,6 +15,10 @@ Polymer({
       type: Array,
       notify: true,
     },
+
+    searchTerm: {
+      type: String,
+    },
   },
 
   /** @private {settings.CupsPrintersBrowserProxy} */
@@ -51,5 +55,19 @@ Polymer({
   /** @private */
   closeDropdownMenu_: function() {
     this.$$('iron-dropdown').close();
+  },
+
+  /**
+   * The filter callback function to show printers based on |searchTerm|.
+   * @param {string} searchTerm
+   * @private
+   */
+  filterPrinter_: function(searchTerm) {
+    if (!searchTerm)
+      return null;
+    return function(printer) {
+      return printer.printerName.toLowerCase().includes(
+          searchTerm.toLowerCase());
+    };
   },
 });

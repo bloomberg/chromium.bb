@@ -18,6 +18,10 @@ Polymer({
       type: Array,
       notify: true,
     },
+
+    searchTerm: {
+      type: String,
+    },
   },
 
   /** @override */

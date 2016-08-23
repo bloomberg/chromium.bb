@@ -37,8 +37,11 @@
       <template is="dom-if" route-path="/cupsPrinters">
         <settings-subpage
             associated-control="[[$$('#cupsPrinters')]]"
-            page-title="$i18n{cupsPrintersTitle}">
-          <settings-cups-printers printers="{{cupsPrinters}}">
+            page-title="$i18n{cupsPrintersTitle}"
+            search-label="$i18n{searchLabel}"
+            search-term="{{searchTerm}}">
+          <settings-cups-printers printers="{{cupsPrinters}}"
+              search-term="{{searchTerm}}">
           </settings-cups-printers>
         </settings-subpage>
       </template>
