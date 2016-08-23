@@ -103,25 +103,27 @@ void ConvertImageData(PPB_ImageData_Impl* src_image,
   DCHECK(PPB_ImageData_Impl::IsImageDataFormatSupported(src_image->format()));
   DCHECK(PPB_ImageData_Impl::IsImageDataFormatSupported(dest_image->format()));
 
-  const SkBitmap* src_bitmap = src_image->GetMappedBitmap();
-  const SkBitmap* dest_bitmap = dest_image->GetMappedBitmap();
+  SkBitmap src_bitmap(src_image->GetMappedBitmap());
+  SkBitmap dest_bitmap(dest_image->GetMappedBitmap());
+  SkAutoLockPixels src_lock(src_bitmap);
+  SkAutoLockPixels dest_lock(dest_bitmap);
   if (src_rect.width() == src_image->width() &&
       dest_rect.width() == dest_image->width()) {
     // Fast path if the full frame can be converted at once.
     SkSwapRB(
-        dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
-                               static_cast<int>(dest_rect.fTop)),
-        src_bitmap->getAddr32(static_cast<int>(src_rect.fLeft),
-                              static_cast<int>(src_rect.fTop)),
+        dest_bitmap.getAddr32(static_cast<int>(dest_rect.fLeft),
+                              static_cast<int>(dest_rect.fTop)),
+        src_bitmap.getAddr32(static_cast<int>(src_rect.fLeft),
+                             static_cast<int>(src_rect.fTop)),
         src_rect.width() * src_rect.height());
   } else {
     // Slow path where we convert line by line.
     for (int y = 0; y < src_rect.height(); y++) {
       SkSwapRB(
-          dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
-                                 static_cast<int>(dest_rect.fTop + y)),
-          src_bitmap->getAddr32(static_cast<int>(src_rect.fLeft),
-                                static_cast<int>(src_rect.fTop + y)),
+          dest_bitmap.getAddr32(static_cast<int>(dest_rect.fLeft),
+                                static_cast<int>(dest_rect.fTop + y)),
+          src_bitmap.getAddr32(static_cast<int>(src_rect.fLeft),
+                               static_cast<int>(src_rect.fTop + y)),
           src_rect.width());
     }
   }
@@ -280,7 +282,7 @@ bool PepperGraphics2DHost::ReadImageData(PP_Resource image,
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     dest_canvas->drawBitmapRect(
-        *image_data_->GetMappedBitmap(), src_irect, dest_rect, &paint);
+        image_data_->GetMappedBitmap(), src_irect, dest_rect, &paint);
   }
   return true;
 }
@@ -320,7 +322,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
                                  const gfx::Rect& paint_rect) {
   TRACE_EVENT0("pepper", "PepperGraphics2DHost::Paint");
   ImageDataAutoMapper auto_mapper(image_data_.get());
-  const SkBitmap& backing_bitmap = *image_data_->GetMappedBitmap();
+  SkBitmap backing_bitmap = image_data_->GetMappedBitmap();
 
   gfx::Rect invalidate_rect = plugin_rect;
   invalidate_rect.Intersect(paint_rect);
@@ -745,7 +747,7 @@ void PepperGraphics2DHost::ExecutePaintImageData(PPB_ImageData_Impl* image,
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     backing_canvas->drawBitmapRect(
-        *image->GetMappedBitmap(), src_irect, dest_rect, &paint);
+        image->GetMappedBitmap(), src_irect, dest_rect, &paint);
   }
 }
 

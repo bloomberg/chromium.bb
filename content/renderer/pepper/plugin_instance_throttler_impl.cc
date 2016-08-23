@@ -168,20 +168,20 @@ void PluginInstanceThrottlerImpl::Initialize(
   }
 }
 
-void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
+void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap& bitmap) {
   DCHECK(needs_representative_keyframe());
-  if (!bitmap)
-    return;
+  // Even if the bitmap is empty, count that as a boring but valid bitmap.
 
   ++frames_examined_;
 
-  // Does not make a copy, just takes a reference to the underlying pixel data.
-  last_received_frame_ = *bitmap;
+  // Does not make a deep copy, just takes a reference to the underlying pixel
+  // data. This may have lifetime issues!
+  last_received_frame_ = bitmap;
 
   if (audio_throttled_)
     audio_throttled_frame_timeout_.Reset();
 
-  double boring_score = color_utils::CalculateBoringScore(*bitmap);
+  double boring_score = color_utils::CalculateBoringScore(bitmap);
   if (boring_score <= kAcceptableFrameMaximumBoringness ||
       frames_examined_ >= kMaximumFramesToExamine) {
     EngageThrottle();

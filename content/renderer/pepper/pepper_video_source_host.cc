@@ -208,21 +208,21 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     }
 
     DCHECK(!shared_image_->IsMapped());  // New memory should not be mapped.
-    if (!shared_image_->Map() || !shared_image_->GetMappedBitmap() ||
-        !shared_image_->GetMappedBitmap()->getPixels()) {
+    if (!shared_image_->Map() || shared_image_->GetMappedBitmap().empty()) {
       shared_image_ = NULL;
       SendGetFrameErrorReply(PP_ERROR_FAILED);
       return;
     }
   }
 
-  const SkBitmap* bitmap = shared_image_->GetMappedBitmap();
-  if (!bitmap) {
+  SkBitmap bitmap(shared_image_->GetMappedBitmap());
+  if (bitmap.empty()) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
     return;
   }
 
-  uint8_t* bitmap_pixels = static_cast<uint8_t*>(bitmap->getPixels());
+  SkAutoLockPixels lock(bitmap);
+  uint8_t* bitmap_pixels = static_cast<uint8_t*>(bitmap.getPixels());
   if (!bitmap_pixels) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);
     return;
@@ -280,7 +280,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
                      frame->visible_data(media::VideoFrame::kVPlane),
                      frame->stride(media::VideoFrame::kVPlane),
                      bitmap_pixels,
-                     bitmap->rowBytes(),
+                     bitmap.rowBytes(),
                      dst_size.width(),
                      dst_size.height());
 

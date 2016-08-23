@@ -123,7 +123,7 @@ void PPB_ImageData_Impl::SetIsCandidateForReuse() {
   // Nothing to do since we don't support image data re-use in-process.
 }
 
-const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
+SkBitmap PPB_ImageData_Impl::GetMappedBitmap() const {
   return backend_->GetMappedBitmap();
 }
 
@@ -205,10 +205,18 @@ SkCanvas* ImageDataPlatformBackend::GetPlatformCanvas() {
 
 SkCanvas* ImageDataPlatformBackend::GetCanvas() { return mapped_canvas_.get(); }
 
-const SkBitmap* ImageDataPlatformBackend::GetMappedBitmap() const {
+SkBitmap ImageDataPlatformBackend::GetMappedBitmap() const {
+  SkBitmap bitmap;
   if (!mapped_canvas_)
-    return NULL;
-  return &skia::GetTopDevice(*mapped_canvas_)->accessBitmap(false);
+    return bitmap;
+
+  SkPixmap pixmap;
+  skia::GetWritablePixels(mapped_canvas_.get(), &pixmap);
+  // SkPixmap does not manage the lifetime of this pointer, so it remains
+  // valid after the object goes out of scope. It will become invalid if
+  // the canvas' backing is destroyed or a pending saveLayer() is resolved.
+  bitmap.installPixels(pixmap);
+  return bitmap;
 }
 
 // ImageDataSimpleBackend ------------------------------------------------------
@@ -270,10 +278,10 @@ SkCanvas* ImageDataSimpleBackend::GetCanvas() {
   return skia_canvas_.get();
 }
 
-const SkBitmap* ImageDataSimpleBackend::GetMappedBitmap() const {
+SkBitmap ImageDataSimpleBackend::GetMappedBitmap() const {
   if (!IsMapped())
-    return NULL;
-  return &skia_bitmap_;
+    return SkBitmap();
+  return skia_bitmap_;
 }
 
 }  // namespace content
