@@ -57083,23 +57083,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry" units="ms">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     Time from main entry to the start of the main thread's message loop. This
     stat is only recorded after 7 minutes of OS uptime to try to mitigate the
-    variance resulting from Chrome being autostarted.
+    variance resulting from Chrome being autostarted. Replaced with
+    Startup.BrowserMessageLoopStartTimeFromMainEntry2 which is recorded all the
+    time. TODO(fdoray): Deprecate this once M54 hits stable. crbug.com/634408
   </summary>
 </histogram>
 
 <histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun"
     units="ms">
-  <owner>csharp@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
   <owner>gab@chromium.org</owner>
-  <owner>jeremy@chromium.org</owner>
   <summary>
     Time from main entry to the start of the main thread's message loop on first
     run. This stat is only recorded after 7 minutes of OS uptime to try to
-    mitigate the variance resulting from Chrome being autostarted.
+    mitigate the variance resulting from Chrome being autostarted. Replaced with
+    Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2 which is recorded
+    all the time. TODO(fdoray): Deprecate this once M54 hits stable.
+    crbug.com/634408
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2"
+    units="ms">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Time from main entry to the start of the main thread's message loop on first
+    run.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry2" units="ms">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Time from main entry to the start of the main thread's message loop.
   </summary>
 </histogram>
 
@@ -57402,29 +57425,61 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.LoadTime.ExeMainToDllMain">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     Time from the main() function in chrome.exe to chrome.dll's main(). This
     stat is only recorded after 7 minutes of OS uptime to try to mitigate the
-    variance resulting from Chrome being autostarted.
+    variance resulting from Chrome being autostarted. Replaced with
+    Startup.LoadTime.ExeMainToDllMain2 which is recorded all the time.
+    TODO(fdoray): Deprecate this once M54 hits stable. crbug.com/634408
+  </summary>
+</histogram>
+
+<histogram name="Startup.LoadTime.ExeMainToDllMain2">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Time from the main() function in chrome.exe to chrome.dll's main().
   </summary>
 </histogram>
 
 <histogram name="Startup.LoadTime.ProcessCreateToDllMain">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     Time from the process creation to chrome.dll's main(). This stat is only
     recorded after 7 minutes of OS uptime to try to mitigate the variance
-    resulting from Chrome being autostarted.
+    resulting from Chrome being autostarted. Replaced with
+    Startup.LoadTime.ProcessCreateToDllMain2 which is recorded all the time.
+    TODO(fdoray): Deprecate this once M54 hits stable. crbug.com/634408
   </summary>
 </histogram>
 
+<histogram name="Startup.LoadTime.ProcessCreateToDllMain2">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>Time from the process creation to chrome.dll's main().</summary>
+</histogram>
+
 <histogram name="Startup.LoadTime.ProcessCreateToExeMain">
-  <owner>jeremy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     Time from the process creation to executing the main() function in
     chrome.exe. This stat is only recorded after 7 minutes of OS uptime to try
-    to mitigate the variance resulting from Chrome being autostarted.
+    to mitigate the variance resulting from Chrome being autostarted. Replaced
+    with Startup.LoadTime.ProcessCreateToExeMain2 which is recorded all the
+    time. TODO(fdoray): Deprecate this once M54 hits stable. crbug.com/634408
+  </summary>
+</histogram>
+
+<histogram name="Startup.LoadTime.ProcessCreateToExeMain2">
+  <owner>fdoray@chromium.org</owner>
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Time from the process creation to executing the main() function in
+    chrome.exe.
   </summary>
 </histogram>
 
@@ -102971,6 +103026,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.BrowserMessageLoopStartHardFaultCount"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTime"/>
   <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"/>
+  <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry2"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
   <affected-histogram name="Startup.BrowserWindowDisplay"/>
   <affected-histogram name="Startup.FirstWebContents.MainFrameLoad2"/>
@@ -102978,8 +103034,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.FirstWebContents.MainNavigationStart"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint2"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain"/>
+  <affected-histogram name="Startup.LoadTime.ExeMainToDllMain2"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>
+  <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain2"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain"/>
+  <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain2"/>
   <affected-histogram name="Startup.SystemUptime"/>
   <affected-histogram name="Startup.Temperature"/>
   <affected-histogram name="Startup.TimeSinceLastStartup"/>
@@ -103574,6 +103633,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry"/>
   <affected-histogram
       name="Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun"/>
+  <affected-histogram
+      name="Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2"/>
+  <affected-histogram name="Startup.BrowserMessageLoopStartTimeFromMainEntry2"/>
   <affected-histogram name="Startup.BrowserOpenTabs"/>
   <affected-histogram name="Startup.BrowserWindowDisplay"/>
   <affected-histogram name="Startup.FirstWebContents.MainFrameLoad"/>
@@ -103583,8 +103645,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint"/>
   <affected-histogram name="Startup.FirstWebContents.NonEmptyPaint2"/>
   <affected-histogram name="Startup.LoadTime.ExeMainToDllMain"/>
+  <affected-histogram name="Startup.LoadTime.ExeMainToDllMain2"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain"/>
+  <affected-histogram name="Startup.LoadTime.ProcessCreateToDllMain2"/>
   <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain"/>
+  <affected-histogram name="Startup.LoadTime.ProcessCreateToExeMain2"/>
   <affected-histogram name="Startup.SystemUptime"/>
   <affected-histogram name="Startup.TimeSinceLastStartup"/>
 </histogram_suffixes>

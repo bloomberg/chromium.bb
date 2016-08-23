@@ -608,27 +608,37 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
         process_creation_ticks, ticks);
   }
 
-  // Bail if uptime < 7 minutes, to filter out cases where Chrome may have been
-  // autostarted and the machine is under io pressure.
-  if (base::SysInfo::Uptime() < base::TimeDelta::FromMinutes(7))
-    return;
+  // TODO(fdoray): Remove histograms that are only recorded after 7 minutes of
+  // OS uptime once M54 hits stable. These histograms are kept for now to allow
+  // regressions to be caught reliably in M54, to be removed in M55.
+  // crbug.com/634408
+  const bool is_seven_minutes_after_boot =
+      base::SysInfo::Uptime() < base::TimeDelta::FromMinutes(7);
 
-  // The Startup.BrowserMessageLoopStartTime histogram exhibits instability in
-  // the field which limits its usefulness in all scenarios except when we have
-  // a very large sample size. Attempt to mitigate this with a new metric:
-  // * Measure time from main entry rather than the OS' notion of process start.
-  // * Only measure launches that occur 7 minutes after boot to try to avoid
-  //   cases where Chrome is auto-started and IO is heavily loaded.
+  // Record timing between the shared library's main() entry and the browser
+  // main message loop start.
   if (is_first_run) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
+        "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2",
         g_browser_main_entry_point_ticks.Get(), ticks);
+    if (is_seven_minutes_after_boot) {
+      UMA_HISTOGRAM_WITH_TEMPERATURE(
+          UMA_HISTOGRAM_LONG_TIMES,
+          "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
+          ticks - g_browser_main_entry_point_ticks.Get());
+    }
   } else {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry",
+        "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
         g_browser_main_entry_point_ticks.Get(), ticks);
+    if (is_seven_minutes_after_boot) {
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+          UMA_HISTOGRAM_LONG_TIMES,
+          "Startup.BrowserMessageLoopStartTimeFromMainEntry",
+          ticks - g_browser_main_entry_point_ticks.Get());
+    }
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -638,19 +648,31 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
     if (!exe_main_ticks.is_null()) {
       // Process create to chrome.exe:main().
       UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain2",
           process_creation_ticks, exe_main_ticks);
 
       // chrome.exe:main() to chrome.dll:main().
       UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
           exe_main_ticks, g_browser_main_entry_point_ticks.Get());
 
       // Process create to chrome.dll:main(). Reported as a histogram only as
       // the other two events above are sufficient for tracing purposes.
       UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
+          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
           g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
+
+      if (is_seven_minutes_after_boot) {
+        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
+            exe_main_ticks - process_creation_ticks);
+        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
+            g_browser_main_entry_point_ticks.Get() - exe_main_ticks);
+        UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+            UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
+            g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
+      }
     }
   }
 }
