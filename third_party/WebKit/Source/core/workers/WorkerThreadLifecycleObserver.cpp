@@ -17,4 +17,6 @@ WorkerThreadLifecycleObserver::WorkerThreadLifecycleObserver(WorkerThreadLifecyc
     DCHECK(isMainThread());
 }
 
+WorkerThreadLifecycleObserver::~WorkerThreadLifecycleObserver() {}
+
 } // namespace blink

@@ -336,9 +336,6 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_inspectorTaskRunner(wrapUnique(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
-    , m_terminationEvent(wrapUnique(new WaitableEvent(
-        WaitableEvent::ResetPolicy::Manual,
-        WaitableEvent::InitialState::NonSignaled)))
     , m_shutdownEvent(wrapUnique(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
@@ -389,10 +386,6 @@ void WorkerThread::terminateInternal(TerminationMode mode)
             return;
         }
         m_terminated = true;
-
-        // Signal the thread to notify that the thread's stopping.
-        if (m_terminationEvent)
-            m_terminationEvent->signal();
 
         if (!hasBeenInitialized) {
             // If the worker thread was never initialized, don't start another

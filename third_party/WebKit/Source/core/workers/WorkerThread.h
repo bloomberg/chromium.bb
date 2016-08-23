@@ -114,11 +114,6 @@ public:
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();
 
-    // Can be used to wait for this worker thread to terminate.
-    // (This is signaled on the main thread, so it's assumed to be waited on
-    // the worker context thread)
-    WaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
-
     bool isCurrentThread();
 
     WorkerLoaderProxy* workerLoaderProxy() const
@@ -238,9 +233,6 @@ private:
     Persistent<ConsoleMessageStorage> m_consoleMessageStorage;
     Persistent<WorkerOrWorkletGlobalScope> m_globalScope;
     Persistent<WorkerInspectorController> m_workerInspectorController;
-
-    // Signaled when the thread starts termination on the main thread.
-    std::unique_ptr<WaitableEvent> m_terminationEvent;
 
     // Signaled when the thread completes termination on the worker thread.
     std::unique_ptr<WaitableEvent> m_shutdownEvent;

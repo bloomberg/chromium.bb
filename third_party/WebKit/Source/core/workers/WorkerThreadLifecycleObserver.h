@@ -29,6 +29,7 @@ class WorkerThreadLifecycleContext;
 class CORE_EXPORT WorkerThreadLifecycleObserver : public LifecycleObserver<WorkerThreadLifecycleContext, WorkerThreadLifecycleObserver> {
 protected:
     explicit WorkerThreadLifecycleObserver(WorkerThreadLifecycleContext*);
+    virtual ~WorkerThreadLifecycleObserver();
 
     bool wasContextDestroyedBeforeObserverCreation() const
     {
