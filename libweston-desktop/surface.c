@@ -54,6 +54,7 @@ struct weston_desktop_surface {
 	struct weston_position buffer_move;
 	struct wl_listener surface_commit_listener;
 	struct wl_listener surface_destroy_listener;
+	struct wl_listener surface_drop_idle_inhibitor_listener;
 	struct wl_listener client_destroy_listener;
 	struct wl_list children_list;
 
@@ -130,6 +131,7 @@ weston_desktop_surface_destroy(struct weston_desktop_surface *surface)
 
 	wl_list_remove(&surface->surface_commit_listener.link);
 	wl_list_remove(&surface->surface_destroy_listener.link);
+	wl_list_remove(&surface->surface_drop_idle_inhibitor_listener.link);
 	wl_list_remove(&surface->client_destroy_listener.link);
 
 	if (!wl_list_empty(&surface->resource_list)) {
@@ -218,6 +220,20 @@ weston_desktop_surface_resource_destroy(struct wl_resource *resource)
 }
 
 static void
+weston_desktop_surface_drop_idle_inhibitor(struct wl_listener *listener,
+					   void *data)
+{
+	struct weston_desktop_surface *surface =
+		wl_container_of(listener, surface, surface_drop_idle_inhibitor_listener);
+	struct weston_desktop *desktop = surface->desktop;
+
+	printf("weston_desktop_surface_drop_idle_inhibitor\n");
+	weston_desktop_api_surface_drop_idle_inhibitor(desktop, surface);
+	// TODO: Need to call shell.c's desktop_surface_drop_idle_inhibitor
+	//shell_desktop_api.surface_drop_idle_inhibitor(surface, NULL /*data?*/);
+}
+
+static void
 weston_desktop_surface_committed(struct weston_surface *wsurface,
 				 int32_t sx, int32_t sy)
 {
@@ -277,6 +293,10 @@ weston_desktop_surface_create(struct weston_desktop *desktop,
 		weston_desktop_surface_surface_destroyed;
 	wl_signal_add(&surface->surface->destroy_signal,
 		      &surface->surface_destroy_listener);
+	surface->surface_drop_idle_inhibitor_listener.notify =
+		weston_desktop_surface_drop_idle_inhibitor;
+	wl_signal_add(&surface->surface->drop_idle_inhibitor_signal,
+		      &surface->surface_drop_idle_inhibitor_listener);
 
 	wl_list_init(&surface->client_link);
 	wl_list_init(&surface->resource_list);

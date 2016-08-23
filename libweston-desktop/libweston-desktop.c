@@ -61,6 +61,7 @@ weston_desktop_create(struct weston_compositor *compositor,
 
 	assert(api->surface_added);
 	assert(api->surface_removed);
+	/* assert(api->surface_drop_idle_inhibitor); -- optional, for now */
 
 	desktop = zalloc(sizeof(struct weston_desktop));
 	desktop->compositor = compositor;
@@ -163,6 +164,13 @@ weston_desktop_api_surface_removed(struct weston_desktop *desktop,
 	wl_list_remove(link);
 	wl_list_init(link);
 	desktop->api.surface_removed(surface, desktop->user_data);
+}
+
+void
+weston_desktop_api_surface_drop_idle_inhibitor(struct weston_desktop *desktop,
+				   struct weston_desktop_surface *surface)
+{
+	desktop->api.surface_drop_idle_inhibitor(surface, desktop->user_data);
 }
 
 void

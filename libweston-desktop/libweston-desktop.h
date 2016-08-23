@@ -59,6 +59,8 @@ struct weston_desktop_api {
 			      void *user_data);
 	void (*surface_removed)(struct weston_desktop_surface *surface,
 				void *user_data);
+	void (*surface_drop_idle_inhibitor)(struct weston_desktop_surface *surface,
+					    void *user_data);
 	void (*committed)(struct weston_desktop_surface *surface,
 			  int32_t sx, int32_t sy, void *user_data);
 	void (*show_window_menu)(struct weston_desktop_surface *surface,
