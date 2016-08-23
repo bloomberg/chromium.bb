@@ -1983,7 +1983,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         }
     }
 
-    breadth = end - start;
+    breadth = std::max(end - start, LayoutUnit());
     offset = start;
 
     if (isForColumns && !styleRef().isLeftToRightDirection() && !child.styleRef().hasStaticInlinePosition(child.isHorizontalWritingMode())) {

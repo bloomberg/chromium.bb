@@ -1161,6 +1161,7 @@ bool LayoutBox::hasOverrideContainingBlockLogicalHeight() const
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalWidth(LayoutUnit logicalWidth)
 {
+    DCHECK_GE(logicalWidth, LayoutUnit(-1));
     ensureRareData().m_overrideContainingBlockContentLogicalWidth = logicalWidth;
     ensureRareData().m_hasOverrideContainingBlockContentLogicalWidth = true;
 }
@@ -1168,6 +1169,7 @@ void LayoutBox::setOverrideContainingBlockContentLogicalWidth(LayoutUnit logical
 // TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalHeight(LayoutUnit logicalHeight)
 {
+    DCHECK_GE(logicalHeight, LayoutUnit(-1));
     ensureRareData().m_overrideContainingBlockContentLogicalHeight = logicalHeight;
     ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = true;
 }
