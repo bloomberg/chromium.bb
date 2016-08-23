@@ -10,7 +10,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/offline_pages/downloads/download_ui_adapter.h"
 
@@ -70,15 +69,14 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
   void ItemDeleted(const std::string& guid) override;
 
  private:
-  void SavePageCallback(const DownloadUIItem& item,
-                        OfflinePageModel::SavePageResult result,
-                        int64_t offline_id);
+  static void SavePageCallback(const DownloadUIItem& item,
+                               OfflinePageModel::SavePageResult result,
+                               int64_t offline_id);
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.
   DownloadUIAdapter* download_ui_adapter_;
 
-  base::WeakPtrFactory<OfflinePageDownloadBridge> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(OfflinePageDownloadBridge);
 };
 

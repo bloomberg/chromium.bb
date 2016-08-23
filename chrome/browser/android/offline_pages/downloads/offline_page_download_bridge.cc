@@ -67,8 +67,7 @@ OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     const JavaParamRef<jobject>& obj,
     DownloadUIAdapter* download_ui_adapter)
     : weak_java_ref_(env, obj),
-      download_ui_adapter_(download_ui_adapter),
-      weak_ptr_factory_(this) {
+      download_ui_adapter_(download_ui_adapter) {
   DCHECK(download_ui_adapter_);
   download_ui_adapter_->AddObserver(this);
 }
@@ -78,6 +77,18 @@ OfflinePageDownloadBridge::~OfflinePageDownloadBridge() {}
 // static
 bool OfflinePageDownloadBridge::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
+}
+
+// static
+void OfflinePageDownloadBridge::SavePageCallback(
+    const DownloadUIItem& item,
+    OfflinePageModel::SavePageResult result,
+    int64_t offline_id) {
+  OfflinePageNotificationBridge notification_bridge;
+  if (result == SavePageResult::SUCCESS)
+    notification_bridge.NotifyDownloadSuccessful(item);
+  else
+    notification_bridge.NotifyDownloadFailed(item);
 }
 
 void OfflinePageDownloadBridge::Destroy(JNIEnv* env,
@@ -160,8 +171,7 @@ void OfflinePageDownloadBridge::StartDownload(
 
   offline_page_model->SavePage(
       url, client_id, 0ul, std::move(archiver),
-      base::Bind(&OfflinePageDownloadBridge::SavePageCallback,
-                 weak_ptr_factory_.GetWeakPtr(), item));
+      base::Bind(&OfflinePageDownloadBridge::SavePageCallback, item));
 }
 
 void OfflinePageDownloadBridge::ItemsLoaded() {
@@ -197,17 +207,6 @@ void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
     return;
   Java_OfflinePageDownloadBridge_downloadItemUpdated(
       env, obj, ToJavaOfflinePageDownloadItem(env, item));
-}
-
-void OfflinePageDownloadBridge::SavePageCallback(
-    const DownloadUIItem& item,
-    OfflinePageModel::SavePageResult result,
-    int64_t offline_id) {
-  OfflinePageNotificationBridge notification_bridge;
-  if (result == SavePageResult::SUCCESS)
-    notification_bridge.NotifyDownloadSuccessful(item);
-  else
-    notification_bridge.NotifyDownloadFailed(item);
 }
 
 static jlong Init(JNIEnv* env,
