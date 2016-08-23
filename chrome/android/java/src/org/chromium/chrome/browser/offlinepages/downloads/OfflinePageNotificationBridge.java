@@ -21,16 +21,18 @@ public class OfflinePageNotificationBridge {
     * @param context Context to show notifications.
     * @param guid GUID of a request to download a page related to the notification.
     * @param url URL of the page to download.
+    * @param displayName Name to be displayed on notification.
     */
     @CalledByNative
-    public static void notifyDownloadSuccessful(Context context, String guid, String url) {
+    public static void notifyDownloadSuccessful(Context context, String guid, String url,
+            String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)
-                                            .setFileName(url)
+                                            .setFileName(displayName)
                                             .setIsResumable(false)
                                             .setIsOffTheRecord(false)
                                             .build();
@@ -43,14 +45,16 @@ public class OfflinePageNotificationBridge {
      * @param context Context to show notifications.
      * @param guid GUID of a request to download a page related to the notification.
      * @param url URL of the page to download.
+     * @param displayName Name to be displayed on notification.
      */
     @CalledByNative
-    public static void notifyDownloadFailed(Context context, String guid, String url) {
+    public static void notifyDownloadFailed(Context context, String guid, String url,
+            String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
-        DownloadInfo downloadInfo =
-                new DownloadInfo.Builder().setIsOfflinePage(true).setDownloadGuid(guid).build();
+        DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                .setIsOfflinePage(true).setDownloadGuid(guid).setFileName(displayName).build();
 
         notifier.notifyDownloadFailed(downloadInfo);
     }
@@ -61,16 +65,18 @@ public class OfflinePageNotificationBridge {
      * @param guid GUID of a request to download a page related to the notification.
      * @param url URL of the page to download.
      * @param startTime Time of the request.
+     * @param displayName Name to be displayed on notification.
      */
     @CalledByNative
     public static void notifyDownloadProgress(
-            Context context, String guid, String url, long startTime) {
+            Context context, String guid, String url, long startTime, String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)
+                                            .setFileName(displayName)
                                             .setFilePath(url)
                                             .setPercentCompleted(-1)
                                             .setIsOffTheRecord(false)
@@ -85,14 +91,15 @@ public class OfflinePageNotificationBridge {
      * Update download notification to paused.
      * @param context Context to show notifications.
      * @param guid GUID of a request to download a page related to the notification.
+     * @param displayName Name to be displayed on notification.
      */
     @CalledByNative
-    public static void notifyDownloadPaused(Context context, String guid) {
+    public static void notifyDownloadPaused(Context context, String guid, String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
-        DownloadInfo downloadInfo =
-                new DownloadInfo.Builder().setIsOfflinePage(true).setDownloadGuid(guid).build();
+        DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                .setIsOfflinePage(true).setDownloadGuid(guid).setFileName(displayName).build();
 
         notifier.notifyDownloadPaused(downloadInfo);
     }
@@ -101,15 +108,17 @@ public class OfflinePageNotificationBridge {
      * Update download notification to interrupted.
      * @param context Context to show notifications.
      * @param guid GUID of a request to download a page related to the notification.
+     * @param displayName Name to be displayed on notification.
      */
     @CalledByNative
-    public static void notifyDownloadInterrupted(Context context, String guid) {
+    public static void notifyDownloadInterrupted(Context context, String guid, String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)
+                                            .setFileName(displayName)
                                             .setIsResumable(true)
                                             .build();
 
