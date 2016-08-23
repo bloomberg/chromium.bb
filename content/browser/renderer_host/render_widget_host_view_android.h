@@ -248,7 +248,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  private:
   void RunAckCallbacks();
 
-  void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);
   void SubmitCompositorFrame(cc::CompositorFrame frame_data);
   void SendReclaimCompositorResources(uint32_t output_surface_id,
@@ -290,6 +289,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void InternalSwapCompositorFrame(uint32_t output_surface_id,
                                    cc::CompositorFrame frame);
+  void DestroyDelegatedContent();
   void OnLostResources();
 
   void ReturnResources(const cc::ReturnedResourceArray& resources);

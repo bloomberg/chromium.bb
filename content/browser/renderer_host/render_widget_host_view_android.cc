@@ -949,22 +949,38 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   ack_callbacks_.push(ack_callback);
 
   if (!has_content) {
-    delegated_frame_host_->DestroyDelegatedContent();
+    DestroyDelegatedContent();
   } else {
     cc::SurfaceFactory::DrawCallback ack_callback =
         base::Bind(&RenderWidgetHostViewAndroid::RunAckCallbacks,
                    weak_ptr_factory_.GetWeakPtr());
     delegated_frame_host_->SubmitCompositorFrame(std::move(frame),
                                                  ack_callback);
+    frame_evictor_->SwappedFrame(!host_->is_hidden());
   }
 
   if (host_->is_hidden())
     RunAckCallbacks();
-  frame_evictor_->SwappedFrame(!host_->is_hidden());
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
   OnFrameMetadataUpdated(std::move(metadata));
+}
+
+void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
+  DCHECK(!delegated_frame_host_ ||
+         delegated_frame_host_->HasDelegatedContent() ==
+             frame_evictor_->HasFrame());
+  DCHECK_EQ(locks_on_frame_count_, 0u);
+
+  if (!delegated_frame_host_)
+    return;
+
+  if (!delegated_frame_host_->HasDelegatedContent())
+    return;
+
+  frame_evictor_->DiscardedFrame();
+  delegated_frame_host_->DestroyDelegatedContent();
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
@@ -974,8 +990,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->DestroyDelegatedContent();
+  DestroyDelegatedContent();
 }
 
 void RenderWidgetHostViewAndroid::RetainFrame(uint32_t output_surface_id,
@@ -1328,10 +1343,7 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 }
 
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
-  DCHECK_EQ(locks_on_frame_count_, 0u);
-  frame_evictor_->DiscardedFrame();
-  if (delegated_frame_host_)
-    delegated_frame_host_->DestroyDelegatedContent();
+  DestroyDelegatedContent();
 }
 
 bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
@@ -1741,8 +1753,7 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
   ReleaseLocksOnSurface();
-  if (delegated_frame_host_)
-    delegated_frame_host_->DestroyDelegatedContent();
+  DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
 }
 
