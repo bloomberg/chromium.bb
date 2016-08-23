@@ -2443,13 +2443,23 @@ bool PaintLayer::childBackgroundIsKnownToBeOpaqueInRect(const LayoutRect& localR
     return false;
 }
 
+bool PaintLayer::isSelfPaintingLayerForIntrinsicOrScrollingReasons() const
+{
+    return layoutObject()->layerTypeRequired() == NormalPaintLayer
+        || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
+        || needsCompositedScrolling();
+}
+
 bool PaintLayer::shouldBeSelfPaintingLayer() const
 {
     if (layoutObject()->isLayoutPart() && toLayoutPart(layoutObject())->requiresAcceleratedCompositing())
         return true;
-    return layoutObject()->layerTypeRequired() == NormalPaintLayer
-        || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
-        || needsCompositedScrolling();
+    return isSelfPaintingLayerForIntrinsicOrScrollingReasons();
+}
+
+bool PaintLayer::isSelfPaintingOnlyBecauseIsCompositedPart() const
+{
+    return shouldBeSelfPaintingLayer() && !isSelfPaintingLayerForIntrinsicOrScrollingReasons();
 }
 
 void PaintLayer::updateSelfPaintingLayer()
