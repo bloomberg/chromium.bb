@@ -57,19 +57,20 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
 
   void AddKey(PrefetchDataMap* m, const std::string& key) const;
 
-  // Useful for debugging test.
+  static void LogResource(const ResourceRow& row) {
+    LOG(ERROR) << "\t\t" << row.resource_url << "\t" << row.resource_type
+               << "\t" << row.number_of_hits << "\t" << row.number_of_misses
+               << "\t" << row.consecutive_misses << "\t" << row.average_position
+               << "\t" << row.priority << "\t" << row.has_validators << "\t"
+               << row.always_revalidate << "\t" << row.score;
+  }
+
+  // Useful for debugging tests.
   void PrintPrefetchData(const PrefetchData& data) const {
     LOG(ERROR) << "[" << data.key_type << "," << data.primary_key
                << "," << data.last_visit.ToInternalValue() << "]";
-    for (ResourceRows::const_iterator it = data.resources.begin();
-         it != data.resources.end(); ++it) {
-      LOG(ERROR) << "\t\t" << it->resource_url << "\t" << it->resource_type
-                 << "\t" << it->number_of_hits << "\t" << it->number_of_misses
-                 << "\t" << it->consecutive_misses << "\t"
-                 << it->average_position << "\t" << it->priority << "\t"
-                 << it->has_validators << "\t" << it->always_revalidate << "\t"
-                 << it->score;
-    }
+    for (const ResourceRow& resource : data.resources)
+      LogResource(resource);
   }
 
   PrefetchDataMap test_url_data_;

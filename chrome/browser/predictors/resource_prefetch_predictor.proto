@@ -1,0 +1,62 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol buffers used for storing in SQLite.
+
+syntax = "proto2";
+
+package chrome_browser_predictors;
+
+// Required in Chrome.
+option optimize_for = LITE_RUNTIME;
+
+message Metadata {
+  optional string main_page_url = 1;
+  optional uint64 last_visit_time = 2;
+}
+
+message ResourceData {
+  // Mirrors content::ResourceType.
+  enum ResourceType {
+    RESOURCE_TYPE_MAIN_FRAME = 0;
+    RESOURCE_TYPE_SUB_FRAME = 1;
+    RESOURCE_TYPE_STYLESHEET = 2;
+    RESOURCE_TYPE_SCRIPT = 3;
+    RESOURCE_TYPE_IMAGE = 4;
+    RESOURCE_TYPE_FONT_RESOURCE = 5;
+    RESOURCE_TYPE_SUB_RESOURCE = 6;
+    RESOURCE_TYPE_OBJECT = 7;
+    RESOURCE_TYPE_MEDIA = 8;
+    RESOURCE_TYPE_WORKER = 9;
+    RESOURCE_TYPE_SHARED_WORKER = 10;
+    RESOURCE_TYPE_PREFETCH = 11;
+    RESOURCE_TYPE_FAVICON = 12;
+    RESOURCE_TYPE_XHR = 13;
+    RESOURCE_TYPE_PING = 14;
+    RESOURCE_TYPE_SERVICE_WORKER = 15;
+    RESOURCE_TYPE_CSP_REPORT = 16;
+    RESOURCE_TYPE_PLUGIN_RESOURCE = 17;
+    RESOURCE_TYPE_LAST_TYPE = 18;
+  }
+
+  // Mirrors net::RequestPriority
+  enum Priority {
+    REQUEST_PRIORITY_IDLE = 0;
+    REQUEST_PRIORITY_LOWEST = 1;
+    REQUEST_PRIORITY_LOW = 2;
+    REQUEST_PRIORITY_MEDIUM = 3;
+    REQUEST_PRIORITY_HIGHEST = 4;
+  }
+
+  optional string primary_key = 1;
+  optional string resource_url = 2;
+  optional ResourceType resource_type = 3;
+  optional uint32 number_of_hits = 4;
+  optional uint32 number_of_misses = 5;
+  optional uint32 consecutive_misses = 6;
+  optional double average_position = 7;
+  optional Priority priority = 8;
+  optional bool has_validators = 9;
+  optional bool always_revalidate = 10;
+}

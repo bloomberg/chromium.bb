@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "url/gurl.h"
@@ -24,6 +25,8 @@ class Statement;
 }
 
 namespace predictors {
+
+using chrome_browser_predictors::ResourceData;
 
 // Interface for database tables used by the ResourcePrefetchPredictor.
 // All methods except the constructor and destructor need to be called on the DB
@@ -53,6 +56,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                 bool always_revalidate);
     void UpdateScore();
     bool operator==(const ResourceRow& rhs) const;
+    static void FromProto(const ResourceData& proto, ResourceRow* row);
+    void ToProto(ResourceData* resource_data) const;
 
     // Stores the host for host based data, main frame Url for the Url based
     // data. This field is cleared for efficiency reasons and the code outside
@@ -74,10 +79,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   };
   typedef std::vector<ResourceRow> ResourceRows;
 
-  // Sorts the ResourceRows by score, descending.
-  struct ResourceRowSorter {
-    bool operator()(const ResourceRow& x, const ResourceRow& y) const;
-  };
+  // Sorts the resource rows by score, decreasing.
+  static void SortResourceRows(ResourceRows* rows);
 
   // Aggregated data for a Url or Host. Although the data differs slightly, we
   // store them in the same structure, because most of the fields are common and

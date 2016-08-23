@@ -15,46 +15,29 @@ import argparse
 import operator
 import sqlite3
 
-
-class ResourceType(object):
-  """Partially mirrors content::ResourceType."""
-  STYLESHEET = 2
-  SCRIPT = 3
-  FONT_RESOURCE = 5
+from resource_prefetch_predictor_pb2 import ResourceData
 
 
 class Entry(object):
   """Represents an entry in the predictor database."""
-  HEADER = (
-      'score,main_page_url,resource_type,number_of_hits,number_of_misses,'
-      'consecutive_misses,average_position,confidence,has_validators,'
-      'always_revalidate,resource_url')
-
   def __init__(
-      self, main_page_url, resource_url, resource_type, number_of_hits,
-      number_of_misses, consecutive_misses, average_position, priority,
-      has_validators, always_revalidate):
+      self, main_page_url, resource_url, proto_buffer):
     self.main_page_url = main_page_url
     self.resource_url = resource_url
-    self.resource_type = resource_type
-    self.number_of_hits = int(number_of_hits)
-    self.number_of_misses = int(number_of_misses)
-    self.consecutive_misses = int(consecutive_misses)
-    self.average_position = int(average_position)
-    self.priority = int(priority)
-    self.has_validators = bool(int(has_validators))
-    self.always_revalidate = bool(int(always_revalidate))
-    self.confidence = float(number_of_hits) / (
-        number_of_hits + number_of_misses)
+    self.proto = ResourceData()
+    self.proto.ParseFromString(proto_buffer)
+    self.confidence = float(self.proto.number_of_hits / (
+        self.proto.number_of_hits + self.proto.number_of_misses))
     self.score = self._Score()
 
   def _Score(self):
     """Mirrors ResourcePrefetchPredictorTables::ResourceRow::UpdateScore."""
     multiplier = 1
-    if self.resource_type in (ResourceType.STYLESHEET, ResourceType.SCRIPT,
-                              ResourceType.FONT_RESOURCE):
+    if self.proto.resource_type in (ResourceData.RESOURCE_TYPE_STYLESHEET,
+                                    ResourceData.RESOURCE_TYPE_SCRIPT,
+                                    ResourceData.RESOURCE_TYPE_FONT_RESOURCE):
       multiplier = 2
-    return multiplier * 100 - self.average_position
+    return multiplier * 100 - self.proto.average_position
 
   @classmethod
   def FromRow(cls, row):
@@ -62,11 +45,8 @@ class Entry(object):
     return Entry(*row)
 
   def __str__(self):
-    return '%f,%s,%d,%d,%d,%d,%d,%f,%d,%d,%d\t%s' % (
-        self.score, self.main_page_url, self.resource_type,
-        self.number_of_hits, self.number_of_misses, self.consecutive_misses,
-        self.average_position, self.confidence, self.priority,
-        self.has_validators, self.always_revalidate, self.resource_url)
+    return 'score: %s\nmain_page_url: %s\nconfidence: %f"\n%s' % (
+        self.score, self.main_page_url, self.confidence, self.proto)
 
 
 def FilterAndSort(entries, domain):
@@ -77,20 +57,17 @@ def FilterAndSort(entries, domain):
   result = filter(
       lambda x: ((domain is None or x.main_page_url == domain)
                  and x.confidence > .7
-                 and x.number_of_hits >= 2), entries)
+                 and x.proto.number_of_hits >= 2), entries)
   return sorted(result, key=operator.attrgetter('score'), reverse=True)
 
 
 def DatabaseStats(filename, domain):
   connection = sqlite3.connect(filename)
   c = connection.cursor()
-  query = ('SELECT main_page_url, resource_url, resource_type, number_of_hits, '
-           'number_of_misses, consecutive_misses, average_position, priority, '
-           'has_validators, always_revalidate '
+  query = ('SELECT main_page_url, resource_url, proto '
            'FROM resource_prefetch_predictor_host')
   entries = [Entry.FromRow(row) for row in c.execute(query)]
   prefetched = FilterAndSort(entries, domain)
-  print Entry.HEADER
   for x in prefetched:
     print x
 

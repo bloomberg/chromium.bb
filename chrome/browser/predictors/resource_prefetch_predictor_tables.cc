@@ -21,6 +21,8 @@ using sql::Statement;
 
 namespace {
 
+using ResourceRow = predictors::ResourcePrefetchPredictorTables::ResourceRow;
+
 const char kUrlResourceTableName[] = "resource_prefetch_predictor_url";
 const char kUrlMetadataTableName[] = "resource_prefetch_predictor_url_metadata";
 const char kHostResourceTableName[] = "resource_prefetch_predictor_host";
@@ -28,47 +30,38 @@ const char kHostMetadataTableName[] =
     "resource_prefetch_predictor_host_metadata";
 
 const char kInsertResourceTableStatementTemplate[] =
-    "INSERT INTO %s "
-    "(main_page_url, resource_url, resource_type, number_of_hits, "
-    "number_of_misses, consecutive_misses, average_position, priority, "
-    "has_validators, always_revalidate) "
-    "VALUES (?,?,?,?,?,?,?,?,?,?)";
+    "INSERT INTO %s (main_page_url, resource_url, proto) VALUES (?,?,?)";
+const char kInsertMetadataTableStatementTemplate[] =
+    "INSERT INTO %s (main_page_url, last_visit_time) VALUES (?,?)";
+const char kDeleteStatementTemplate[] = "DELETE FROM %s WHERE main_page_url=?";
 
-void BindResourceRowToStatement(
-    const predictors::ResourcePrefetchPredictorTables::ResourceRow& row,
-    const std::string& primary_key,
-    Statement* statement) {
+void BindResourceRowToStatement(const ResourceRow& row,
+                                const std::string& primary_key,
+                                Statement* statement) {
+  chrome_browser_predictors::ResourceData proto;
+  row.ToProto(&proto);
+  int size = proto.ByteSize();
+  std::vector<char> proto_buffer(size);
+  proto.SerializeToArray(&proto_buffer[0], size);
+
   statement->BindString(0, primary_key);
   statement->BindString(1, row.resource_url.spec());
-  statement->BindInt(2, static_cast<int>(row.resource_type));
-  statement->BindInt(3, row.number_of_hits);
-  statement->BindInt(4, row.number_of_misses);
-  statement->BindInt(5, row.consecutive_misses);
-  statement->BindDouble(6, row.average_position);
-  statement->BindInt(7, static_cast<int>(row.priority));
-  statement->BindInt(8, static_cast<int>(row.has_validators));
-  statement->BindInt(9, static_cast<int>(row.always_revalidate));
+  statement->BindBlob(2, &proto_buffer[0], size);
 }
 
-bool StepAndInitializeResourceRow(
-    Statement* statement,
-    predictors::ResourcePrefetchPredictorTables::ResourceRow* row) {
+bool StepAndInitializeResourceRow(Statement* statement, ResourceRow* row) {
   if (!statement->Step())
     return false;
 
+  int size = statement->ColumnByteLength(2);
+  const void* data = statement->ColumnBlob(2);
+  DCHECK(data);
+  chrome_browser_predictors::ResourceData proto;
+  proto.ParseFromArray(data, size);
+  ResourceRow::FromProto(proto, row);
+
   row->primary_key = statement->ColumnString(0);
   row->resource_url = GURL(statement->ColumnString(1));
-  row->resource_type = static_cast<content::ResourceType>(
-      statement->ColumnInt(2));
-  row->number_of_hits = statement->ColumnInt(3);
-  row->number_of_misses = statement->ColumnInt(4);
-  row->consecutive_misses = statement->ColumnInt(5);
-  row->average_position = statement->ColumnDouble(6);
-  row->priority = static_cast<net::RequestPriority>(statement->ColumnInt(7));
-  // static_cast<bool> creates a C4800 warning with Visual Studio.
-  row->has_validators = statement->ColumnInt(8) != 0;
-  row->always_revalidate = statement->ColumnInt(9) != 0;
-
   return true;
 }
 
@@ -79,7 +72,7 @@ namespace predictors {
 // static
 const size_t ResourcePrefetchPredictorTables::kMaxStringLength = 1024;
 
-ResourcePrefetchPredictorTables::ResourceRow::ResourceRow()
+ResourceRow::ResourceRow()
     : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
       number_of_hits(0),
       number_of_misses(0),
@@ -90,8 +83,7 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow()
       always_revalidate(false),
       score(0.0) {}
 
-ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
-    const ResourceRow& other)
+ResourceRow::ResourceRow(const ResourceRow& other)
     : primary_key(other.primary_key),
       resource_url(other.resource_url),
       resource_type(other.resource_type),
@@ -104,17 +96,16 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
       always_revalidate(other.always_revalidate),
       score(other.score) {}
 
-ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
-    const std::string& i_primary_key,
-    const std::string& i_resource_url,
-    content::ResourceType i_resource_type,
-    int i_number_of_hits,
-    int i_number_of_misses,
-    int i_consecutive_misses,
-    double i_average_position,
-    net::RequestPriority i_priority,
-    bool i_has_validators,
-    bool i_always_revalidate)
+ResourceRow::ResourceRow(const std::string& i_primary_key,
+                         const std::string& i_resource_url,
+                         content::ResourceType i_resource_type,
+                         int i_number_of_hits,
+                         int i_number_of_misses,
+                         int i_consecutive_misses,
+                         double i_average_position,
+                         net::RequestPriority i_priority,
+                         bool i_has_validators,
+                         bool i_always_revalidate)
     : primary_key(i_primary_key),
       resource_url(i_resource_url),
       resource_type(i_resource_type),
@@ -128,7 +119,7 @@ ResourcePrefetchPredictorTables::ResourceRow::ResourceRow(
   UpdateScore();
 }
 
-void ResourcePrefetchPredictorTables::ResourceRow::UpdateScore() {
+void ResourceRow::UpdateScore() {
   // The score is calculated so that when the rows are sorted, stylesheets,
   // scripts and fonts appear first, sorted by position(ascending) and then the
   // rest of the resources sorted by position (ascending).
@@ -148,8 +139,7 @@ void ResourcePrefetchPredictorTables::ResourceRow::UpdateScore() {
   // TODO(lizeb): Take priority into account.
 }
 
-bool ResourcePrefetchPredictorTables::ResourceRow::operator==(
-    const ResourceRow& rhs) const {
+bool ResourceRow::operator==(const ResourceRow& rhs) const {
   return primary_key == rhs.primary_key && resource_url == rhs.resource_url &&
          resource_type == rhs.resource_type &&
          number_of_hits == rhs.number_of_hits &&
@@ -160,9 +150,45 @@ bool ResourcePrefetchPredictorTables::ResourceRow::operator==(
          always_revalidate == rhs.always_revalidate && score == rhs.score;
 }
 
-bool ResourcePrefetchPredictorTables::ResourceRowSorter::operator()(
-    const ResourceRow& x, const ResourceRow& y) const {
-  return x.score > y.score;
+void ResourceRow::ToProto(ResourceData* resource_data) const {
+  using chrome_browser_predictors::ResourceData_Priority;
+  using chrome_browser_predictors::ResourceData_ResourceType;
+
+  resource_data->set_primary_key(primary_key);
+  resource_data->set_resource_url(resource_url.spec());
+  resource_data->set_resource_type(
+      static_cast<ResourceData_ResourceType>(resource_type));
+  resource_data->set_number_of_hits(number_of_hits);
+  resource_data->set_number_of_misses(number_of_misses);
+  resource_data->set_consecutive_misses(consecutive_misses);
+  resource_data->set_average_position(average_position);
+  resource_data->set_priority(static_cast<ResourceData_Priority>(priority));
+  resource_data->set_has_validators(has_validators);
+  resource_data->set_always_revalidate(always_revalidate);
+}
+
+// static
+void ResourceRow::FromProto(const ResourceData& proto, ResourceRow* row) {
+  DCHECK(proto.has_primary_key());
+  row->primary_key = proto.primary_key();
+  row->resource_url = GURL(proto.resource_url());
+  row->resource_type =
+      static_cast<content::ResourceType>(proto.resource_type());
+  row->number_of_hits = proto.number_of_hits();
+  row->number_of_misses = proto.number_of_misses();
+  row->consecutive_misses = proto.consecutive_misses();
+  row->average_position = proto.average_position();
+  row->priority = static_cast<net::RequestPriority>(proto.priority());
+  row->has_validators = proto.has_validators();
+  row->always_revalidate = proto.always_revalidate();
+}
+
+// static
+void ResourcePrefetchPredictorTables::SortResourceRows(ResourceRows* rows) {
+  std::sort(rows->begin(), rows->end(),
+            [](const ResourceRow& x, const ResourceRow& y) {
+              return x.score > y.score;
+            });
 }
 
 ResourcePrefetchPredictorTables::PrefetchData::PrefetchData(
@@ -307,12 +333,8 @@ void ResourcePrefetchPredictorTables::GetAllDataHelper(
   }
 
   // Sort each of the resource row vectors by score.
-  for (PrefetchDataMap::iterator it = data_map->begin(); it != data_map->end();
-       ++it) {
-    std::sort(it->second.resources.begin(),
-              it->second.resources.end(),
-              ResourceRowSorter());
-  }
+  for (auto& kv : *data_map)
+    SortResourceRows(&(kv.second.resources));
 
   // Read the metadata and keep track of entries that have metadata, but no
   // resource entries, so they can be deleted.
@@ -359,12 +381,12 @@ bool ResourcePrefetchPredictorTables::UpdateDataHelper(
 
   // Add the new data to the tables.
   const ResourceRows& resources = data.resources;
-  for (ResourceRows::const_iterator it = resources.begin();
-       it != resources.end(); ++it) {
+  for (const ResourceRow& resource : resources) {
     std::unique_ptr<Statement> resource_inserter(
         data.is_host() ? GetHostResourceUpdateStatement()
                        : GetUrlResourceUpdateStatement());
-    BindResourceRowToStatement(*it, data.primary_key, resource_inserter.get());
+    BindResourceRowToStatement(resource, data.primary_key,
+                               resource_inserter.get());
     if (!resource_inserter->Run())
       return false;
   }
@@ -419,7 +441,7 @@ bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
   for (const char* table_name :
        {kUrlResourceTableName, kHostResourceTableName}) {
     if (db->DoesTableExist(table_name) &&
-        !db->DoesColumnExist(table_name, "always_revalidate")) {
+        !db->DoesColumnExist(table_name, "proto")) {
       success &=
           db->Execute(base::StringPrintf("DROP TABLE %s", table_name).c_str());
     }
@@ -436,14 +458,7 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
       "CREATE TABLE %s ( "
       "main_page_url TEXT, "
       "resource_url TEXT, "
-      "resource_type INTEGER, "
-      "number_of_hits INTEGER, "
-      "number_of_misses INTEGER, "
-      "consecutive_misses INTEGER, "
-      "average_position DOUBLE, "
-      "priority INTEGER, "
-      "has_validators INTEGER, "
-      "always_revalidate INTEGER, "
+      "proto BLOB, "
       "PRIMARY KEY(main_page_url, resource_url))";
   const char* metadata_table_creator =
       "CREATE TABLE %s ( "
@@ -498,8 +513,8 @@ Statement*
     ResourcePrefetchPredictorTables::GetUrlResourceDeleteStatement() {
   return new Statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
-      base::StringPrintf("DELETE FROM %s WHERE main_page_url=?",
-                         kUrlResourceTableName).c_str()));
+      base::StringPrintf(kDeleteStatementTemplate, kUrlResourceTableName)
+          .c_str()));
 }
 
 Statement*
@@ -514,25 +529,24 @@ Statement*
     ResourcePrefetchPredictorTables::GetUrlMetadataDeleteStatement() {
   return new Statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
-      base::StringPrintf("DELETE FROM %s WHERE main_page_url=?",
-                         kUrlMetadataTableName).c_str()));
+      base::StringPrintf(kDeleteStatementTemplate, kUrlMetadataTableName)
+          .c_str()));
 }
 
 Statement*
     ResourcePrefetchPredictorTables::GetUrlMetadataUpdateStatement() {
   return new Statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      base::StringPrintf(
-          "INSERT INTO %s (main_page_url, last_visit_time) VALUES (?,?)",
-          kUrlMetadataTableName).c_str()));
+      SQL_FROM_HERE, base::StringPrintf(kInsertMetadataTableStatementTemplate,
+                                        kUrlMetadataTableName)
+                         .c_str()));
 }
 
 Statement*
     ResourcePrefetchPredictorTables::GetHostResourceDeleteStatement() {
   return new Statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
-      base::StringPrintf("DELETE FROM %s WHERE main_page_url=?",
-                         kHostResourceTableName).c_str()));
+      base::StringPrintf(kDeleteStatementTemplate, kHostResourceTableName)
+          .c_str()));
 }
 
 Statement*
@@ -547,16 +561,15 @@ Statement*
     ResourcePrefetchPredictorTables::GetHostMetadataDeleteStatement() {
   return new Statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
-      base::StringPrintf("DELETE FROM %s WHERE main_page_url=?",
-                         kHostMetadataTableName).c_str()));
+      base::StringPrintf(kDeleteStatementTemplate, kHostMetadataTableName)
+          .c_str()));
 }
 
 Statement* ResourcePrefetchPredictorTables::GetHostMetadataUpdateStatement() {
   return new Statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      base::StringPrintf(
-          "INSERT INTO %s (main_page_url, last_visit_time) VALUES (?,?)",
-          kHostMetadataTableName).c_str()));
+      SQL_FROM_HERE, base::StringPrintf(kInsertMetadataTableStatementTemplate,
+                                        kHostMetadataTableName)
+                         .c_str()));
 }
 
 }  // namespace predictors

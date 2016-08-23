@@ -312,6 +312,7 @@ split_static_library("browser") {
     }
 
     deps += [
+      ":resource_prefetch_predictor_proto",
       "//cc",
       "//chrome/app/theme:theme_resources",
       "//chrome/browser/devtools",
@@ -985,6 +986,14 @@ if (is_win) {
     if (enable_configuration_policy) {
       deps += [ "//chrome/browser/policy:path_parser" ]
     }
+  }
+}
+
+if (!is_ios) {
+  proto_library("resource_prefetch_predictor_proto") {
+    sources = [
+      "predictors/resource_prefetch_predictor.proto",
+    ]
   }
 }
 

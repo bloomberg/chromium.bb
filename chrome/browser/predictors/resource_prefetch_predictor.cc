@@ -4,7 +4,6 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 
-#include <algorithm>
 #include <map>
 #include <set>
 #include <utility>
@@ -1061,8 +1060,7 @@ void ResourcePrefetchPredictor::LearnNavigation(
     else
       ++it;
   }
-  std::sort(resources.begin(), resources.end(),
-            ResourcePrefetchPredictorTables::ResourceRowSorter());
+  ResourcePrefetchPredictorTables::SortResourceRows(&resources);
   if (resources.size() > config_.max_resources_per_entry)
     resources.resize(config_.max_resources_per_entry);
 
