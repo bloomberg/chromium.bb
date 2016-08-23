@@ -326,36 +326,6 @@ InputEvent::InputType TypingCommand::inputType() const
     }
 }
 
-// TODO(xiaochengh): Move it to SpellChecker.cpp and do necessary cleanup.
-void SpellChecker::markMisspellingsAfterTypingCommand(TypingCommand* cmd)
-{
-    if (!isSpellCheckingEnabled())
-        return;
-    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
-        return;
-
-    cancelCheck();
-
-    // Take a look at the selection that results after typing and determine whether we need to spellcheck.
-    // Since the word containing the current selection is never marked, this does a check to
-    // see if typing made a new word that is not in the current selection. Basically, you
-    // get this by being at the end of a word and typing a space.
-    VisiblePosition start = createVisiblePosition(cmd->endingSelection().start(), cmd->endingSelection().affinity());
-    VisiblePosition previous = previousPositionOf(start);
-
-    VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
-
-    if (cmd->commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
-        VisiblePosition p2 = nextWordPosition(start);
-        VisibleSelection words(p1, endOfWord(p2));
-        markMisspellingsAfterLineBreak(words);
-    } else if (previous.isNotNull()) {
-        VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
-        if (p1.deepEquivalent() != p2.deepEquivalent())
-            markMisspellingsAfterTypingToWord(p1, cmd->endingSelection());
-    }
-}
-
 void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedTyping)
 {
     LocalFrame* frame = document().frame();

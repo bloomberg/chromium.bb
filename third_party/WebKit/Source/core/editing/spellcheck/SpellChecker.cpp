@@ -36,6 +36,9 @@
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/commands/CompositeEditCommand.h"
+#include "core/editing/commands/ReplaceSelectionCommand.h"
+#include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
@@ -312,6 +315,55 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selecti
 
     TextCheckingParagraph fullParagraphToCheck(expandRangeToSentenceBoundary(range));
     chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
+}
+
+void SpellChecker::markMisspellingsAfterApplyingCommand(CompositeEditCommand* cmd)
+{
+    // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
+    // created in |Editor::replaceSelectionWithFragment()|.
+    // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
+    if (cmd->inputType() != InputEvent::InputType::Paste)
+        return;
+    if (!isSpellCheckingEnabled())
+        return;
+    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
+        return;
+    DCHECK(cmd->isReplaceSelectionCommand());
+    const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
+    if (insertedRange.isNull())
+        return;
+    // Patch crrev.com/2241293006 assumes the following equality. Revert if it fails.
+    DCHECK_EQ(cmd->endingSelection().rootEditableElement(), rootEditableElementOf(insertedRange.startPosition()));
+    markMisspellingsAfterReplaceSelectionCommand(insertedRange);
+}
+
+void SpellChecker::markMisspellingsAfterTypingCommand(TypingCommand* cmd)
+{
+    if (!isSpellCheckingEnabled())
+        return;
+    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
+        return;
+
+    cancelCheck();
+
+    // Take a look at the selection that results after typing and determine whether we need to spellcheck.
+    // Since the word containing the current selection is never marked, this does a check to
+    // see if typing made a new word that is not in the current selection. Basically, you
+    // get this by being at the end of a word and typing a space.
+    VisiblePosition start = createVisiblePosition(cmd->endingSelection().start(), cmd->endingSelection().affinity());
+    VisiblePosition previous = previousPositionOf(start);
+
+    VisiblePosition p1 = startOfWord(previous, LeftWordIfOnBoundary);
+
+    if (cmd->commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
+        VisiblePosition p2 = nextWordPosition(start);
+        VisibleSelection words(p1, endOfWord(p2));
+        markMisspellingsAfterLineBreak(words);
+    } else if (previous.isNotNull()) {
+        VisiblePosition p2 = startOfWord(start, LeftWordIfOnBoundary);
+        if (p1.deepEquivalent() != p2.deepEquivalent())
+            markMisspellingsAfterTypingToWord(p1, cmd->endingSelection());
+    }
 }
 
 void SpellChecker::markMisspellingsAfterLineBreak(const VisibleSelection& wordSelection)

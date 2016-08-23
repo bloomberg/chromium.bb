@@ -699,27 +699,6 @@ static void dispatchEditableContentChangedEvents(Element* startRoot, Element* en
         endRoot->dispatchEvent(Event::create(EventTypeNames::webkitEditableContentChanged));
 }
 
-// TODO(xiaochengh): move this function to SpellChecker.cpp
-void SpellChecker::markMisspellingsAfterApplyingCommand(CompositeEditCommand* cmd)
-{
-    // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
-    // created in |Editor::replaceSelectionWithFragment()|.
-    // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
-    if (cmd->inputType() != InputEvent::InputType::Paste)
-        return;
-    if (!isSpellCheckingEnabled())
-        return;
-    if (!isSpellCheckingEnabledFor(cmd->endingSelection()))
-        return;
-    DCHECK(cmd->isReplaceSelectionCommand());
-    const EphemeralRange& insertedRange = toReplaceSelectionCommand(cmd)->insertedRange();
-    if (insertedRange.isNull())
-        return;
-    // Patch crrev.com/2241293006 assumes the following equality. Revert if it fails.
-    DCHECK_EQ(cmd->endingSelection().rootEditableElement(), rootEditableElementOf(insertedRange.startPosition()));
-    markMisspellingsAfterReplaceSelectionCommand(insertedRange);
-}
-
 void Editor::appliedEditing(CompositeEditCommand* cmd)
 {
     EventQueueScope scope;
