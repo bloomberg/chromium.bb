@@ -862,8 +862,14 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
 }
 
 // Checks that task manager counts idle wakeups.
+// Flakily fails on Mac: http://crbug.com/639939
+#if defined(OS_MACOSX)
+#define MAYBE_IdleWakeups DISABLED_IdleWakeups
+#else
+#define MAYBE_IdleWakeups IdleWakeups
+#endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       IdleWakeups) {
+                       MAYBE_IdleWakeups) {
   ShowTaskManager();
   model()->ToggleColumnVisibility(ColumnSpecifier::IDLE_WAKEUPS);
 
