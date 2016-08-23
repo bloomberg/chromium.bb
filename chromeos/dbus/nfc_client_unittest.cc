@@ -202,6 +202,12 @@ class NfcClientTest : public testing::Test {
                                dbus::ObjectPath(kTestTagPath1)))
         .WillRepeatedly(Return(mock_tag1_proxy_.get()));
 
+    // Handle |manager_client_|'s request to register a callback
+    // for |mock_manager_proxy_|'s D-Bus service becoming available.
+    EXPECT_CALL(*mock_manager_proxy_.get(), WaitForServiceToBeAvailable(_))
+        .WillRepeatedly(
+            Invoke(this, &NfcClientTest::OnWaitForServiceToBeAvailable));
+
     // ShutdownAndBlock will be called in TearDown.
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
@@ -370,6 +376,13 @@ class NfcClientTest : public testing::Test {
   dbus::ObjectProxy::SignalCallback manager_adapter_removed_signal_callback_;
 
  private:
+  // Used to inform |manager_client_| that |mock_manager_proxy_| is ready.
+  void OnWaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+    message_loop_.task_runner()->PostTask(FROM_HERE,
+                                          base::Bind(callback, true));
+  }
+
   // Used to implement the mock proxy.
   void OnConnectToSignal(
       const std::string& interface_name,

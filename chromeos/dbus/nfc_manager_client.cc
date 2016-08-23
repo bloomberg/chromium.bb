@@ -70,7 +70,6 @@ class NfcManagerClientImpl : public NfcManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NfcManagerClientImpl::AdapterAddedConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-
     object_proxy_->ConnectToSignal(
         nfc_manager::kNfcManagerInterface,
         nfc_manager::kAdapterRemovedSignal,
@@ -84,12 +83,23 @@ class NfcManagerClientImpl : public NfcManagerClient {
         object_proxy_,
         base::Bind(&NfcManagerClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr())));
-
     properties_->ConnectSignals();
-    properties_->GetAll();
+
+    object_proxy_->WaitForServiceToBeAvailable(
+        base::Bind(&NfcManagerClientImpl::OnServiceInitiallyAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
+  // Called by |object_proxy_| when the D-Bus service initially becomes
+  // available.
+  void OnServiceInitiallyAvailable(bool service_is_available) {
+    if (service_is_available)
+      properties_->GetAll();
+    else
+      LOG(ERROR) << "Failed to wait for D-Bus service to become available";
+  }
+
   // NFC manager signal handlers.
   void OnPropertyChanged(const std::string& property_name) {
     VLOG(1) << "NFC Manager property changed: " << property_name;
@@ -97,7 +107,7 @@ class NfcManagerClientImpl : public NfcManagerClient {
                       ManagerPropertyChanged(property_name));
   }
 
-  // Called by dbus:: when an "AdapterAdded" signal is received..
+  // Called by dbus:: when an "AdapterAdded" signal is received.
   void AdapterAddedReceived(dbus::Signal* signal) {
     DCHECK(signal);
     dbus::MessageReader reader(signal);
