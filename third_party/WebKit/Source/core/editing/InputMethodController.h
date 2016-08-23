@@ -30,6 +30,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -76,8 +77,9 @@ public:
 
     PlainTextRange getSelectionOffsets() const;
     // Returns true if setting selection to specified offsets, otherwise false.
-    bool setEditableSelectionOffsets(const PlainTextRange&);
+    bool setEditableSelectionOffsets(const PlainTextRange&, FrameSelection::SetSelectionOptions = FrameSelection::CloseTyping);
     void extendSelectionAndDelete(int before, int after);
+    PlainTextRange createRangeForSelection(int start, int end, size_t textLength) const;
 
 private:
     class SelectionOffsetsScope {
@@ -108,7 +110,7 @@ private:
 
     String composingText() const;
     void selectComposition() const;
-    bool setSelectionOffsets(const PlainTextRange&);
+    bool setSelectionOffsets(const PlainTextRange&, FrameSelection::SetSelectionOptions = FrameSelection::CloseTyping);
 };
 
 } // namespace blink

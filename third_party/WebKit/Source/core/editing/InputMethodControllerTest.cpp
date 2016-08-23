@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
+#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/FrameView.h"
@@ -347,6 +348,74 @@ TEST_F(InputMethodControllerTest, SetCompositionForContentEditableWithDifferentN
     EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().utf8().data());
     EXPECT_EQ(24u, controller().getSelectionOffsets().start());
     EXPECT_EQ(24u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'>hello</div>",
+        "sample");
+
+    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+
+    Vector<CompositionUnderline> underlines0;
+    underlines0.append(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
+    Vector<CompositionUnderline> underlines2;
+    underlines2.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+
+    controller().setComposition("AB", underlines2, 2, 2);
+    // With previous composition.
+    controller().setComposition("", underlines0, 2, 2);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(4u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(4u, controller().getSelectionOffsets().end());
+
+    // Without previous composition.
+    controller().setComposition("", underlines0, -1, -1);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'></div>",
+        "sample");
+
+    Vector<CompositionUnderline> underlines;
+    underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+    controller().setComposition("hello", underlines, 5, 5);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+    EXPECT_EQ(5u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(5u, controller().getSelectionOffsets().end());
+
+    frame().editor().insertLineBreak();
+    EXPECT_STREQ("\n\n", div->innerText().utf8().data());
+    EXPECT_EQ(1u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(1u, controller().getSelectionOffsets().end());
+}
+
+TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText)
+{
+    Element* div = insertHTMLElement(
+        "<div id='sample' contenteditable='true'></div>",
+        "sample");
+
+    controller().confirmCompositionOrInsertText("hello", InputMethodController::ConfirmCompositionBehavior::KeepSelection);
+    EXPECT_STREQ("hello", div->innerText().utf8().data());
+
+    controller().setEditableSelectionOffsets(PlainTextRange(2, 2));
+    EXPECT_EQ(2u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(2u, controller().getSelectionOffsets().end());
+
+    frame().editor().insertLineBreak();
+    EXPECT_STREQ("he\nllo", div->innerText().utf8().data());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().start());
+    EXPECT_EQ(3u, controller().getSelectionOffsets().end());
 }
 
 TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing)

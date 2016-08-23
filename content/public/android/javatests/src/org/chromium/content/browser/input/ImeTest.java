@@ -190,6 +190,26 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testSetComposingTextWithEmptyText() throws Throwable {
+        commitText("hello", 1);
+        waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
+
+        setComposingText("AB", 1);
+        waitAndVerifyUpdateSelection(1, 7, 7, 5, 7);
+
+        // With previous composition.
+        setComposingText("", -3);
+        waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
+        assertTextsAroundCursor("he", "", "llo");
+
+        // Without previous composition.
+        setComposingText("", 3);
+        waitAndVerifyUpdateSelection(3, 4, 4, -1, -1);
+        assertTextsAroundCursor("hell", "", "o");
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testCommitWhileComposingText() throws Throwable {
         setComposingText("h", 1);
         waitAndVerifyUpdateSelection(0, 1, 1, 0, 1);

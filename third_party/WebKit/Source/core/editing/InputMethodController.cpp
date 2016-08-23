@@ -321,6 +321,11 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (!target)
         return;
 
+    int selectionOffsetsStart = static_cast<int>(getSelectionOffsets().start());
+    int start = selectionOffsetsStart + selectionStart;
+    int end = selectionOffsetsStart + selectionEnd;
+    PlainTextRange selectedRange = createRangeForSelection(start, end, text.length());
+
     // Dispatch an appropriate composition event to the focused node.
     // We check the composition status and choose an appropriate composition event since this
     // function is used for three purposes:
@@ -339,11 +344,13 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (text.isEmpty()) {
         if (hasComposition()) {
             confirmComposition(emptyString());
-            return;
+        } else {
+            // It's weird to call |setComposition()| with empty text outside composition, however some IME
+            // (e.g. Japanese IBus-Anthy) did this, so we simply delete selection without sending extra events.
+            TypingCommand::deleteSelection(*frame().document(), TypingCommand::PreventSpellChecking);
         }
-        // It's weird to call |setComposition()| with empty text outside composition, however some IME
-        // (e.g. Japanese IBus-Anthy) did this, so we simply delete selection without sending extra events.
-        TypingCommand::deleteSelection(*frame().document(), TypingCommand::PreventSpellChecking);
+
+        setEditableSelectionOffsets(selectedRange);
         return;
     }
 
@@ -394,31 +401,8 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (baseNode->layoutObject())
         baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
 
-    // In case of exceeding the left boundary.
-    int selectionOffsetsStart = static_cast<int>(getSelectionOffsets().start());
-    int start = std::max(selectionOffsetsStart + selectionStart, 0);
-    int end = std::max(selectionOffsetsStart + selectionEnd, start);
-
-    Element* rootEditableElement = frame().selection().rootEditableElement();
-    if (!rootEditableElement)
-        return;
-
-    // In case of exceeding the right boundary.
-    // If both |value1| and |value2| exceed right boundary,
-    // PlainTextRange(value1, value2)::createRange() will return a default
-    // value, which is [0,0]. In order to get the correct Position in that case,
-    // we should make sure |value1| is within range at least.
-    const EphemeralRange& startRange = PlainTextRange(0, start).createRange(*rootEditableElement);
-    const EphemeralRange& endRange = PlainTextRange(0, end).createRange(*rootEditableElement);
-
-    // TODO(yabinh): There should be a better way to create |startPosition| and
-    // |endPosition|. But for now, since we can't get |anchorNode| and |offset|,
-    // we can't create the 2 Position objects directly. So we use
-    // PlainTextRange::createRange as a workaround.
-    const Position& startPosition = startRange.endPosition();
-    const Position& endPosition = endRange.endPosition();
-    const EphemeralRange selectedRange(startPosition, endPosition);
-    frame().selection().setSelectedRange(selectedRange, TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
+    // We shouldn't close typing in the middle of setComposition.
+    setEditableSelectionOffsets(selectedRange, NotUserTriggered);
 
     if (underlines.isEmpty()) {
         frame().document()->markers().addCompositionMarker(m_compositionRange->startPosition(), m_compositionRange->endPosition(), Color::black, false, LayoutTheme::theme().platformDefaultCompositionBackgroundColor());
@@ -501,7 +485,7 @@ PlainTextRange InputMethodController::getSelectionOffsets() const
     return PlainTextRange::create(*editable, range);
 }
 
-bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionOffsets)
+bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionOffsets, FrameSelection::SetSelectionOptions options)
 {
     if (selectionOffsets.isNull())
         return false;
@@ -517,14 +501,46 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (range.isNull())
         return false;
 
-    return frame().selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, FrameSelection::CloseTyping);
+    return frame().selection().setSelectedRange(range, VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, options);
 }
 
-bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets)
+bool InputMethodController::setEditableSelectionOffsets(const PlainTextRange& selectionOffsets, FrameSelection::SetSelectionOptions options)
 {
     if (!editor().canEdit())
         return false;
-    return setSelectionOffsets(selectionOffsets);
+    return setSelectionOffsets(selectionOffsets, options);
+}
+
+PlainTextRange InputMethodController::createRangeForSelection(int start, int end, size_t textLength) const
+{
+    // In case of exceeding the left boundary.
+    start = std::max(start, 0);
+    end = std::max(end, start);
+
+    Element* rootEditableElement = frame().selection().rootEditableElement();
+    if (!rootEditableElement)
+        return PlainTextRange();
+    const EphemeralRange& range = EphemeralRange::rangeOfContents(*rootEditableElement);
+    if (range.isNull())
+        return PlainTextRange();
+
+    const TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter | TextIteratorEmitsCharactersBetweenAllVisiblePositions;
+    TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
+
+    int rightBoundary = 0;
+    for (; !it.atEnd(); it.advance())
+        rightBoundary += it.length();
+
+    if (hasComposition())
+        rightBoundary -= compositionRange()->text().length();
+
+    rightBoundary += textLength;
+
+    // In case of exceeding the right boundary.
+    start = std::min(start, rightBoundary);
+    end = std::min(end, rightBoundary);
+
+    return PlainTextRange(start, end);
 }
 
 void InputMethodController::extendSelectionAndDelete(int before, int after)
