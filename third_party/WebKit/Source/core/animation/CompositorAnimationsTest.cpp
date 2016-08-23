@@ -90,7 +90,7 @@ protected:
         m_compositorTiming = CompositorAnimations::CompositorTiming();
         // Make sure the CompositableTiming is really compositable, otherwise
         // most other tests will fail.
-        ASSERT(convertTimingForCompositor(m_timing, m_compositorTiming));
+        ASSERT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
 
         m_keyframeVector2 = createCompositableFloatKeyframeVector(2);
         m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
@@ -152,7 +152,6 @@ public:
         timing.iterationDuration = 1.0;
         timing.playbackRate = 1.0;
         timing.direction = Timing::PlaybackDirection::NORMAL;
-        ASSERT(m_linearTimingFunction);
         timing.timingFunction = m_linearTimingFunction;
         return timing;
     }
@@ -613,8 +612,6 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 {
-    Timing linearTiming(createCompositableTiming());
-
     AnimatableValueKeyframeVector basicFramesVector;
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 0.0).get());
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace, 1.0).get());
@@ -626,16 +623,16 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 
     basicFramesVector[0]->setEasing(m_linearTimingFunction.get());
     AnimatableValueKeyframeEffectModel* basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *basicFrames));
 
     basicFramesVector[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN));
     basicFrames = AnimatableValueKeyframeEffectModel::create(basicFramesVector);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *basicFrames));
 
     nonBasicFramesVector[0]->setEasing(m_linearTimingFunction.get());
     nonBasicFramesVector[1]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN));
     AnimatableValueKeyframeEffectModel* nonBasicFrames = AnimatableValueKeyframeEffectModel::create(nonBasicFramesVector);
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *nonBasicFrames));
 }
 
 // -----------------------------------------------------------------------
