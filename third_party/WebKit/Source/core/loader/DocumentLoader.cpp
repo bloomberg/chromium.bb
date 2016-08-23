@@ -209,6 +209,18 @@ Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& reques
     return resource;
 }
 
+void DocumentLoader::didRedirect(const KURL& oldURL, const KURL& newURL)
+{
+    timing().addRedirect(oldURL, newURL);
+
+    // If a redirection happens during a back/forward navigation, don't restore
+    // any state from the old HistoryItem.
+    // There is a provisional history item for back/forward navigation only.
+    // In the other case, clearing it is a no-op.
+    DCHECK(frameLoader());
+    frameLoader()->clearProvisionalHistoryItem();
+}
+
 void DocumentLoader::dispatchLinkHeaderPreloads(ViewportDescriptionWrapper* viewport, LinkLoader::MediaPreloadPolicy mediaPolicy)
 {
     LinkLoader::loadLinksFromHeader(response().httpHeaderField(HTTPNames::Link), response().url(), m_frame->document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources, mediaPolicy, viewport);
@@ -329,9 +341,9 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     }
 
     ASSERT(timing().fetchStart());
-    timing().addRedirect(redirectResponse.url(), requestURL);
     appendRedirect(requestURL);
-    frameLoader()->receivedMainResourceRedirect(requestURL);
+    didRedirect(redirectResponse.url(), requestURL);
+    frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
 }
 
 static bool canShowMIMEType(const String& mimeType, LocalFrame* frame)

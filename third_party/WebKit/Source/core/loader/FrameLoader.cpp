@@ -370,11 +370,8 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source);
 }
 
-void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)
+void FrameLoader::clearProvisionalHistoryItem()
 {
-    client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-
-    // If a back/forward navigation redirects, don't reuse any state from the HistoryItem.
     m_provisionalItem.clear();
 }
 

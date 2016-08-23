@@ -158,6 +158,8 @@ public:
 protected:
     DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
+    void didRedirect(const KURL& oldURL, const KURL& newURL);
+
     Vector<KURL> m_redirectChain;
 
 private:
