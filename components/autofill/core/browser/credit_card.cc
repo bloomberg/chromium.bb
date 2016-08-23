@@ -93,15 +93,6 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       expiration_year_(0),
       server_status_(OK) {}
 
-CreditCard::CreditCard(const base::string16& card_number,
-                       int expiration_month,
-                       int expiration_year)
-    : CreditCard() {
-  SetNumber(card_number);
-  SetExpirationMonth(expiration_month);
-  SetExpirationYear(expiration_year);
-}
-
 CreditCard::CreditCard(RecordType type, const std::string& server_id)
     : CreditCard() {
   DCHECK(type == MASKED_SERVER_CARD || type == FULL_SERVER_CARD);

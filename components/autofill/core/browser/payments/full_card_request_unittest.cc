@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -156,8 +158,9 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForLocalCard) {
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
-  request()->GetFullCard(CreditCard(base::ASCIIToUTF16("4111"), 12, 2050),
-                         AutofillClient::UNMASK_FOR_AUTOFILL,
+  CreditCard card;
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
   response.cvc = base::ASCIIToUTF16("123");
@@ -174,8 +177,8 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForFullServerCard) {
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
-  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 12, 2050);
-  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050");
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
@@ -196,8 +199,8 @@ TEST_F(FullCardRequestTest,
   EXPECT_CALL(*personal_data(), UpdateServerCreditCard(_)).Times(0);
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
-  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 12, 2050);
-  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12", "2050");
   full_server_card.SetServerStatus(CreditCard::EXPIRED);
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
@@ -223,8 +226,9 @@ TEST_F(FullCardRequestTest, GetFullCardPanAndCvcForExpiredFullServerCard) {
 
   base::Time::Exploded today;
   base::Time::Now().LocalExplode(&today);
-  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 12, today.year - 1);
-  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "12",
+                          base::StringPrintf("%d", today.year - 1).c_str());
   full_server_card.SetServerStatus(CreditCard::OK);
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
@@ -262,16 +266,16 @@ TEST_F(FullCardRequestTest, SecondRequestOkAfterFirstFinished) {
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS))
       .Times(2);
 
-  request()->GetFullCard(CreditCard(base::ASCIIToUTF16("4111"), 12, 2050),
-                         AutofillClient::UNMASK_FOR_AUTOFILL,
+  CreditCard card;
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
   response.cvc = base::ASCIIToUTF16("123");
   ui_delegate()->OnUnmaskResponse(response);
   ui_delegate()->OnUnmaskPromptClosed();
 
-  request()->GetFullCard(CreditCard(base::ASCIIToUTF16("4111"), 12, 2050),
-                         AutofillClient::UNMASK_FOR_AUTOFILL,
+  request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
   ui_delegate()->OnUnmaskResponse(response);
   ui_delegate()->OnUnmaskPromptClosed();
@@ -400,8 +404,8 @@ TEST_F(FullCardRequestTest, UpdateExpDateForFullServerCard) {
   EXPECT_CALL(*client(), ShowUnmaskPrompt(_, _, _));
   EXPECT_CALL(*client(), OnUnmaskVerificationResult(AutofillClient::SUCCESS));
 
-  CreditCard full_server_card(base::ASCIIToUTF16("4111"), 10, 2000);
-  full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+  CreditCard full_server_card(CreditCard::FULL_SERVER_CARD, "server_id");
+  test::SetCreditCardInfo(&full_server_card, nullptr, "4111", "10", "2000");
   request()->GetFullCard(full_server_card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
@@ -426,9 +430,11 @@ TEST_F(FullCardRequestTest, UpdateExpDateForLocalCard) {
 
   base::Time::Exploded today;
   base::Time::Now().LocalExplode(&today);
-  request()->GetFullCard(
-      CreditCard(base::ASCIIToUTF16("4111"), 12, today.year - 1),
-      AutofillClient::UNMASK_FOR_AUTOFILL, delegate()->AsWeakPtr());
+  CreditCard card;
+  test::SetCreditCardInfo(&card, nullptr, "4111", "10",
+                          base::StringPrintf("%d", today.year - 1).c_str());
+  request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
+                         delegate()->AsWeakPtr());
   CardUnmaskDelegate::UnmaskResponse response;
   response.cvc = base::ASCIIToUTF16("123");
   response.exp_month = base::ASCIIToUTF16("12");
@@ -525,8 +531,9 @@ TEST_F(FullCardRequestTest, IsGettingFullCardForLocalCard) {
 
   EXPECT_FALSE(request()->IsGettingFullCard());
 
-  request()->GetFullCard(CreditCard(base::ASCIIToUTF16("4111"), 12, 2050),
-                         AutofillClient::UNMASK_FOR_AUTOFILL,
+  CreditCard card;
+  test::SetCreditCardInfo(&card, nullptr, "4111", "12", "2050");
+  request()->GetFullCard(card, AutofillClient::UNMASK_FOR_AUTOFILL,
                          delegate()->AsWeakPtr());
 
   EXPECT_TRUE(request()->IsGettingFullCard());

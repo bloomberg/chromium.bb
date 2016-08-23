@@ -155,23 +155,24 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.clear();
     server_credit_cards_.clear();
     if (include_local_credit_card) {
-      CreditCard* credit_card =
-          new CreditCard(base::ASCIIToUTF16("4111111111111111"), 12, 24);
-      credit_card->set_guid("10000000-0000-0000-0000-000000000001");
-      local_credit_cards_.push_back(credit_card);
+      std::unique_ptr<CreditCard> credit_card(new CreditCard(
+          "10000000-0000-0000-0000-000000000001", std::string()));
+      test::SetCreditCardInfo(credit_card.get(), nullptr, "4111111111111111",
+                              "12", "24");
+      local_credit_cards_.push_back(credit_card.release());
     }
     if (include_masked_server_credit_card) {
-      CreditCard* credit_card = new CreditCard(
-          CreditCard::MASKED_SERVER_CARD, "server_id");
+      std::unique_ptr<CreditCard> credit_card(new CreditCard(
+          CreditCard::MASKED_SERVER_CARD, "server_id"));
       credit_card->set_guid("10000000-0000-0000-0000-000000000002");
       credit_card->SetTypeForMaskedCard(kDiscoverCard);
-      server_credit_cards_.push_back(credit_card);
+      server_credit_cards_.push_back(credit_card.release());
     }
     if (include_full_server_credit_card) {
-      CreditCard* credit_card = new CreditCard(
-          CreditCard::FULL_SERVER_CARD, "server_id");
+      std::unique_ptr<CreditCard> credit_card(new CreditCard(
+          CreditCard::FULL_SERVER_CARD, "server_id"));
       credit_card->set_guid("10000000-0000-0000-0000-000000000003");
-      server_credit_cards_.push_back(credit_card);
+      server_credit_cards_.push_back(credit_card.release());
     }
     Refresh();
   }

@@ -16,6 +16,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -66,14 +67,13 @@ class AutofillCounterTest : public InProcessBrowserTest {
 
   // Credit cards --------------------------------------------------------------
 
-  void AddCreditCard(const std::string& card_number,
-                     int exp_month,
-                     int exp_year) {
-    autofill::CreditCard card(
-        base::ASCIIToUTF16(card_number), exp_month, exp_year);
-    std::string id = base::GenerateGUID();
-    credit_card_ids_.push_back(id);
-    card.set_guid(id);
+  void AddCreditCard(const char* card_number,
+                     const char* exp_month,
+                     const char* exp_year) {
+    autofill::CreditCard card;
+    autofill::test::SetCreditCardInfo(&card, nullptr, card_number, exp_month,
+                                      exp_year);
+    credit_card_ids_.push_back(card.guid());
     web_data_service_->AddCreditCard(card);
   }
 
@@ -262,17 +262,17 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
   WaitForCounting();
   EXPECT_EQ(0, GetNumCreditCards());
 
-  AddCreditCard("0000-0000-0000-0000", 1, 2015);
+  AddCreditCard("0000-0000-0000-0000", "1", "2015");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(1, GetNumCreditCards());
 
-  AddCreditCard("0123-4567-8910-1112", 10, 2015);
+  AddCreditCard("0123-4567-8910-1112", "10", "2015");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(2, GetNumCreditCards());
 
-  AddCreditCard("1211-1098-7654-3210", 10, 2030);
+  AddCreditCard("1211-1098-7654-3210", "10", "2030");
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(3, GetNumCreditCards());
@@ -333,8 +333,8 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, ComplexResult) {
   AddAutocompleteSuggestion("tel", "+987654321");
   AddAutocompleteSuggestion("city", "Munich");
 
-  AddCreditCard("0000-0000-0000-0000", 1, 2015);
-  AddCreditCard("1211-1098-7654-3210", 10, 2030);
+  AddCreditCard("0000-0000-0000-0000", "1", "2015");
+  AddCreditCard("1211-1098-7654-3210", "10", "2030");
 
   AddAddress("John", "Doe", "Main Street 12345");
   AddAddress("Jane", "Smith", "Main Street 12346");
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::Time time1 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
   AddAutocompleteSuggestion("email", "example@example.com");
-  AddCreditCard("0000-0000-0000-0000", 1, 2015);
+  AddCreditCard("0000-0000-0000-0000", "1", "2015");
   AddAddress("John", "Doe", "Main Street 12345");
   WaitForDBThread();
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
   base::Time time2 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
-  AddCreditCard("0123-4567-8910-1112", 10, 2015);
+  AddCreditCard("0123-4567-8910-1112", "10", "2015");
   AddAddress("Jane", "Smith", "Main Street 12346");
   AddAddress("John", "Smith", "Side Street 47");
   WaitForDBThread();
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
   base::Time time3 = base::Time::FromTimeT(base::Time::Now().ToTimeT());
 
   AddAutocompleteSuggestion("tel", "+987654321");
-  AddCreditCard("1211-1098-7654-3210", 10, 2030);
+  AddCreditCard("1211-1098-7654-3210", "10", "2030");
   WaitForDBThread();
 
   // Test the results for different starting points.

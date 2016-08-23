@@ -796,16 +796,6 @@ TEST(CreditCardTest, LastFourDigits) {
   ASSERT_EQ(base::ASCIIToUTF16("489"), card.LastFourDigits());
 }
 
-TEST(CreditCardTest, CanBuildFromCardNumberAndExpirationDate) {
-  base::string16 card_number = base::ASCIIToUTF16("test");
-  int month = 1;
-  int year = 2999;
-  CreditCard card(card_number, month, year);
-  EXPECT_EQ(card_number, card.number());
-  EXPECT_EQ(month, card.expiration_month());
-  EXPECT_EQ(year, card.expiration_year());
-}
-
 // Verifies that a credit card should be updated.
 TEST(CreditCardTest, ShouldUpdateExpiration) {
   base::Time now = base::Time::Now();
@@ -893,8 +883,9 @@ TEST(CreditCardTest, ShouldUpdateExpiration) {
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    CreditCard card(base::ASCIIToUTF16("1234"), kTestCases[i].month,
-                    kTestCases[i].year);
+    CreditCard card;
+    card.SetExpirationMonth(kTestCases[i].month);
+    card.SetExpirationYear(kTestCases[i].year);
     card.set_record_type(kTestCases[i].record_type);
     if (card.record_type() != CreditCard::LOCAL_CARD)
       card.SetServerStatus(kTestCases[i].server_status);

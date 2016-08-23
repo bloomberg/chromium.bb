@@ -46,9 +46,6 @@ class CreditCard : public AutofillDataModel {
   };
 
   CreditCard(const std::string& guid, const std::string& origin);
-  CreditCard(const base::string16& card_number,
-             int expiration_month,
-             int expiration_year);
 
   // Creates a server card.  The type must be MASKED_SERVER_CARD or
   // FULL_SERVER_CARD.

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -621,8 +622,8 @@ MATCHER_P(CreditCardMatches, card, "") {
 // Test that autofill manager will fill the credit card form after user scans a
 // credit card.
 TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
-  CreditCard card(base::ASCIIToUTF16("test"), 1, 3000);
-  card.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Alice"));
+  CreditCard card;
+  test::SetCreditCardInfo(&card, "Alice", "4111", "1", "3000");
   EXPECT_CALL(*autofill_manager_,
       FillCreditCardForm(_, _, _, CreditCardMatches(card), base::string16()));
   external_delegate_->OnCreditCardScanned(card);

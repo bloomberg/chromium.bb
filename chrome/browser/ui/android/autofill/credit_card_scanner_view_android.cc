@@ -75,11 +75,14 @@ void CreditCardScannerViewAndroid::ScanCompleted(
     const JavaParamRef<jstring>& card_number,
     jint expiration_month,
     jint expiration_year) {
-  CreditCard card(base::android::ConvertJavaStringToUTF16(env, card_number),
-      static_cast<int>(expiration_month), static_cast<int>(expiration_year));
+  CreditCard card;
+  card.SetNumber(base::android::ConvertJavaStringToUTF16(env, card_number));
+  card.SetExpirationMonth(static_cast<int>(expiration_month));
+  card.SetExpirationYear(static_cast<int>(expiration_year));
 
   if (base::FeatureList::IsEnabled(kAutofillScanCardholderName)) {
-    card.SetRawInfo(CREDIT_CARD_NAME_FULL,
+    card.SetRawInfo(
+        CREDIT_CARD_NAME_FULL,
         base::android::ConvertJavaStringToUTF16(env, card_holder_name));
   }
 
