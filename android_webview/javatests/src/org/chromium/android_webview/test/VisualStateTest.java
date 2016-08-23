@@ -113,8 +113,8 @@ public class VisualStateTest extends AwTestBase {
     public void testVisualStateCallbackIsReceived() throws Throwable {
         AwTestContainerView testContainer = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
-        loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
+        loadDataSync(awContents, mContentsClient.getOnPageFinishedHelper(),
+                CommonResources.ABOUT_HTML, "text/html", false);
         final CallbackHelper ch = new CallbackHelper();
         final int chCount = ch.getCallCount();
         runTestOnUiThread(new Runnable() {

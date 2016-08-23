@@ -68,8 +68,9 @@ public class AwContentsTest extends AwTestBase {
     public void testCreateLoadPageDestroy() throws Throwable {
         AwTestContainerView awTestContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
-        loadUrlSync(awTestContainerView.getAwContents(),
-                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
+        loadDataSync(awTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+                CommonResources.ABOUT_HTML, "text/html", false);
+
         destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
         // It should be safe to call destroy multiple times.
         destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
@@ -149,8 +150,8 @@ public class AwContentsTest extends AwTestBase {
         AwTestContainerView awTestContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
         AwSettings awSettings = getAwSettingsOnUiThread(awTestContainerView.getAwContents());
-        loadUrlSync(awTestContainerView.getAwContents(),
-                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
+        loadDataSync(awTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(),
+                CommonResources.ABOUT_HTML, "text/html", false);
         destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
 
         // AwSettings should still be usable even after native side is destroyed.
