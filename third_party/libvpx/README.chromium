@@ -33,7 +33,7 @@ Please follow these steps to update libvpx source code:
    cd third_party/libvpx
    ./generate_gypi.sh
 
-3. Update README.chromium with Date, Branch, and Commit.
+3. Update 'Branch' in README.chromium if necessary.
 
 Tools needed to build libvpx:
 

@@ -452,6 +452,24 @@ function gen_config_files {
   rm -rf vpx_config.*
 }
 
+function update_readme {
+  local IFS=$'\n'
+  # Split git log output '<date>\n<commit hash>' on the newline to produce 2
+  # array entries.
+  local vals=($(git --no-pager log -1 --format="%cd%n%H" \
+    --date=format:"%A %B %d %Y"))
+  sed -E -i '' \
+    -e "s/^(Date:)[[:space:]]+.*$/\1 ${vals[0]}/" \
+    -e "s/^(Commit:)[[:space:]]+[a-f0-9]{40}/\1 ${vals[1]}/" \
+    ${BASE_DIR}/README.chromium
+  cat <<EOF
+
+README.chromium updated with:
+Date: ${vals[0]}
+Commit: ${vals[1]}
+EOF
+}
+
 find_duplicates
 
 echo "Create temporary directory."
@@ -595,10 +613,7 @@ gn format --in-place $BASE_DIR/BUILD.gn
 gn format --in-place $BASE_DIR/libvpx_srcs.gni
 
 cd $BASE_DIR/$LIBVPX_SRC_DIR
-echo
-echo "Update README.chromium:"
-git --no-pager log -1 --format="%cd%nCommit: %H" \
-  --date=format:"Date: %A %B %d %Y"
+update_readme
 
 cd $BASE_DIR
 
