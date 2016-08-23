@@ -231,7 +231,7 @@ public class CronetTestFramework {
 
         String sdchString = getCommandLineArg(SDCH_KEY);
         if (SDCH_ENABLE.equals(sdchString)) {
-            cronetEngineBuilder.enableSDCH(true);
+            cronetEngineBuilder.enableSdch(true);
         }
 
         // Setting this here so it isn't overridden on the command line

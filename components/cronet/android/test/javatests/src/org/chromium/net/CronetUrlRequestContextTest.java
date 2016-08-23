@@ -1317,7 +1317,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
         builder.enableHttp2(false);
         builder.enableQuic(true);
-        builder.enableSDCH(true);
+        builder.enableSdch(true);
         builder.addQuicHint("example.com", 12, 34);
         builder.setCertVerifierData("test_cert_verifier_data");
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY, 54321);

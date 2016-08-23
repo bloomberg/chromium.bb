@@ -118,7 +118,7 @@ Enabling HTTP/2, QUIC, or SDCH:
 
 - For Example:
 
-        engineBuilder.enableSPDY(true).enableQUIC(true).enableSDCH(true);
+        engineBuilder.enableHttp2(true).enableQuic(true).enableSdch(true);
 
 Controlling the cache:
 

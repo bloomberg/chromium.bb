@@ -139,7 +139,7 @@ public abstract class CronetEngine {
             enableLegacyMode(false);
             enableQuic(false);
             enableHttp2(true);
-            enableSDCH(false);
+            enableSdch(false);
             enableHttpCache(HTTP_CACHE_DISABLED, 0);
             enableNetworkQualityEstimator(false);
             enablePublicKeyPinningBypassForLocalTrustAnchors(true);
@@ -328,7 +328,7 @@ public abstract class CronetEngine {
          * @param value {@code true} to enable SDCH, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
-        public Builder enableSDCH(boolean value) {
+        public Builder enableSdch(boolean value) {
             mSdchEnabled = value;
             return this;
         }
