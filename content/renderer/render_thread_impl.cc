@@ -821,9 +821,8 @@ void RenderThreadImpl::Init(
     // https://codereview.chromium.org/2094583002/#msg52
     memory_coordinator::mojom::MemoryCoordinatorHandlePtr parent_coordinator;
     GetRemoteInterfaces()->GetInterface(mojo::GetProxy(&parent_coordinator));
-    memory_coordinator_.reset(
-        new memory_coordinator::ChildMemoryCoordinatorImpl(
-            std::move(parent_coordinator)));
+    memory_coordinator_ = memory_coordinator::CreateChildMemoryCoordinator(
+        std::move(parent_coordinator), this);
   }
 
   int num_raster_threads = 0;
@@ -2215,5 +2214,17 @@ void RenderThreadImpl::OnSyncMemoryPressure(
   blink::MemoryPressureNotificationToWorkerThreadIsolates(
       v8_memory_pressure_level);
 }
+
+// Note that this would be called only when memory_coordinator is enabled.
+// OnSyncMemoryPressure() is never called in that case.
+void RenderThreadImpl::OnTrimMemoryImmediately() {
+  if (blink::mainThreadIsolate()) {
+    blink::mainThreadIsolate()->MemoryPressureNotification(
+        v8::MemoryPressureLevel::kCritical);
+    blink::MemoryPressureNotificationToWorkerThreadIsolates(
+        v8::MemoryPressureLevel::kCritical);
+  }
+}
+
 
 }  // namespace content

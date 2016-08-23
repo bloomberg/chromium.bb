@@ -22,6 +22,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
@@ -79,10 +80,6 @@ class MessageFilter;
 
 namespace media {
 class GpuVideoAcceleratorFactories;
-}
-
-namespace memory_coordinator {
-class ChildMemoryCoordinatorImpl;
 }
 
 namespace ui {
@@ -153,6 +150,7 @@ class CONTENT_EXPORT RenderThreadImpl
       public ChildThreadImpl,
       public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
+      public memory_coordinator::ChildMemoryCoordinatorDelegate,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -453,6 +451,9 @@ class CONTENT_EXPORT RenderThreadImpl
                                   mojom::FrameHostPtr host);
 
   mojom::StoragePartitionService* GetStoragePartitionService();
+
+  // memory_coordinator::ChildMemoryCoordinatorDelegate implementation.
+  void OnTrimMemoryImmediately() override;
 
  protected:
   RenderThreadImpl(

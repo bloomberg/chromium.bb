@@ -8,6 +8,8 @@ component("child") {
   sources = [
     "child_memory_coordinator_impl.cc",
     "child_memory_coordinator_impl.h",
+    "child_memory_coordinator_impl_android.cc",
+    "child_memory_coordinator_impl_android.h",
   ]
 
   defines = [ "MEMORY_COORDINATOR_IMPLEMENTATION" ]
