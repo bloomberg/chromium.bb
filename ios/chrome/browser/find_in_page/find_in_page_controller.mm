@@ -42,11 +42,6 @@ static NSString* gSearchTerm;
 // The web view's scroll view.
 @property(nonatomic, readonly) CRWWebViewScrollViewProxy* webViewScrollView;
 
-// Sets the search term to |string|. Stored until the application quit.
-+ (void)setSearchTerm:(NSString*)string;
-// The search term, stored until the application quit.
-+ (NSString*)searchTerm;
-
 // Find in Page text field listeners.
 - (void)findBarTextFieldWillBecomeFirstResponder:(NSNotification*)note;
 - (void)findBarTextFieldDidResignFirstResponder:(NSNotification*)note;

@@ -63,6 +63,11 @@ extern NSString* const kFindBarTextFieldDidResignFirstResponderNotification;
 
 // Instructs the controller to detach itself from the web state.
 - (void)detachFromWebState;
+
+// Sets the search term to |string|. Stored until the application quit.
++ (void)setSearchTerm:(NSString*)string;
+// The search term, stored until the application quit.
++ (NSString*)searchTerm;
 @end
 
 #endif  // IOS_CHROME_BROWSER_FIND_IN_PAGE_FIND_IN_PAGE_CONTROLLER_H_
