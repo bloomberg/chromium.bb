@@ -205,19 +205,26 @@ cr.define('offlineInternals', function() {
     $('log-request-off').onclick = toggleRequestQueueLog.bind(this, false);
     $('refresh-logs').onclick = refreshLog;
     $('add-to-queue').onclick = function() {
-      var saveUrl = $('url').value;
-      browserProxy_.addToRequestQueue(saveUrl)
-        .then(function(state) {
-          if (state) {
-            $('save-url-state').textContent =
-              saveUrl + ' has been added to queue.';
-            $('url').value = '';
-            browserProxy_.getRequestQueue().then(fillRequestQueue);
-          } else {
-            $('save-url-state').textContent =
-              saveUrl + ' failed to be added to queue.';
-          }
-        });
+      var saveUrls = $('url').value.split(',');
+      var counter = saveUrls.length;
+      $('save-url-state').textContent = '';
+      for (let i = 0; i < saveUrls.length; i++) {
+        browserProxy_.addToRequestQueue(saveUrls[i])
+            .then(function(state) {
+              if (state) {
+                $('save-url-state').textContent +=
+                    saveUrls[i] + ' has been added to queue.\n';
+                $('url').value = '';
+                counter--;
+                if (counter == 0) {
+                  browserProxy_.getRequestQueue().then(fillRequestQueue);
+                }
+              } else {
+                $('save-url-state').textContent +=
+                    saveUrls[i] + ' failed to be added to queue.\n';
+              }
+            });
+      }
     };
 
     refreshAll();
