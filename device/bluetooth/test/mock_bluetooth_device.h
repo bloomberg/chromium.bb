@@ -51,7 +51,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(IsGattConnected, bool());
   MOCK_CONST_METHOD0(IsConnectable, bool());
   MOCK_CONST_METHOD0(IsConnecting, bool());
-  MOCK_CONST_METHOD0(GetUUIDs, UUIDList());
+  MOCK_CONST_METHOD0(GetUUIDs, UUIDSet());
   MOCK_CONST_METHOD0(GetInquiryRSSI, base::Optional<int8_t>());
   MOCK_CONST_METHOD0(GetInquiryTxPower, base::Optional<int8_t>());
   MOCK_CONST_METHOD0(ExpectingPinCode, bool());
@@ -114,7 +114,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   BluetoothRemoteGattService* GetMockService(
       const std::string& identifier) const;
 
-  void AddUUID(const BluetoothUUID& uuid) { uuids_.push_back(uuid); }
+  void AddUUID(const BluetoothUUID& uuid) { uuids_.insert(uuid); }
 
   void SetConnected(bool connected) { connected_ = connected; }
 
@@ -122,7 +122,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   uint32_t bluetooth_class_;
   base::Optional<std::string> name_;
   std::string address_;
-  BluetoothDevice::UUIDList uuids_;
+  BluetoothDevice::UUIDSet uuids_;
   bool connected_;
 
   ScopedVector<MockBluetoothGattService> mock_services_;

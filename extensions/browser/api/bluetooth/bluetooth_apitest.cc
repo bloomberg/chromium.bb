@@ -429,9 +429,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
       .WillRepeatedly(testing::Return(0x240A));
   EXPECT_CALL(*device1_, GetDeviceID()).WillRepeatedly(testing::Return(0x0400));
 
-  BluetoothDevice::UUIDList uuids;
-  uuids.push_back(BluetoothUUID("1105"));
-  uuids.push_back(BluetoothUUID("1106"));
+  BluetoothDevice::UUIDSet uuids;
+  uuids.insert(BluetoothUUID("1105"));
+  uuids.insert(BluetoothUUID("1106"));
 
   EXPECT_CALL(*device1_, GetUUIDs()).WillOnce(testing::Return(uuids));
 

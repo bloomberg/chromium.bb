@@ -6,7 +6,6 @@
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
@@ -15,7 +14,6 @@
 #include "jni/ChromeBluetoothDevice_jni.h"
 
 using base::android::AttachCurrentThread;
-using base::android::AppendJavaStringArrayToStringVector;
 using base::android::JavaParamRef;
 
 namespace device {
@@ -49,15 +47,6 @@ BluetoothDeviceAndroid* BluetoothDeviceAndroid::Create(
 BluetoothDeviceAndroid::~BluetoothDeviceAndroid() {
   Java_ChromeBluetoothDevice_onBluetoothDeviceAndroidDestruction(
       AttachCurrentThread(), j_device_);
-}
-
-void BluetoothDeviceAndroid::UpdateAdvertisedUUIDs(
-    jobjectArray advertised_uuids) {
-  JNIEnv* env = AttachCurrentThread();
-  std::vector<std::string> uuid_strings;
-  AppendJavaStringArrayToStringVector(env, advertised_uuids, &uuid_strings);
-
-  advertised_uuids_ = UUIDList(uuid_strings.begin(), uuid_strings.end());
 }
 
 // static
@@ -241,7 +230,7 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
     // Otherwise an existing connection was terminated.
     RecordConnectionTerminatedResult(status);
     gatt_services_.clear();
-    service_uuids_.clear();
+    device_uuids_.ClearServiceUUIDs();
     SetGattServicesDiscoveryComplete(false);
     DidDisconnectGatt();
   }
@@ -250,9 +239,10 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
 void BluetoothDeviceAndroid::OnGattServicesDiscovered(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  UpdateServiceUUIDs();
+  device_uuids_.ReplaceServiceUUIDs(gatt_services_);
   SetGattServicesDiscoveryComplete(true);
   adapter_->NotifyGattServicesDiscovered(this);
+  adapter_->NotifyDeviceChanged(this);
 }
 
 void BluetoothDeviceAndroid::CreateGattRemoteService(

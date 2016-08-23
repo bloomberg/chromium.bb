@@ -29,6 +29,7 @@ const std::string BluetoothTestBase::kTestUUIDGenericAccess = "1800";
 const std::string BluetoothTestBase::kTestUUIDGenericAttribute = "1801";
 const std::string BluetoothTestBase::kTestUUIDImmediateAlert = "1802";
 const std::string BluetoothTestBase::kTestUUIDLinkLoss = "1803";
+const std::string BluetoothTestBase::kTestUUIDHeartRate = "180d";
 
 BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 

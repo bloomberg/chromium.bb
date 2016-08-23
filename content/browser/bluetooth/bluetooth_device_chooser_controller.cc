@@ -117,9 +117,7 @@ bool MatchesFilter(const device::BluetoothDevice& device,
   }
 
   if (!filter->services.is_null()) {
-    const auto& device_uuid_list = device.GetUUIDs();
-    const std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash>
-        device_uuids(device_uuid_list.begin(), device_uuid_list.end());
+    const device::BluetoothDevice::UUIDSet& device_uuids = device.GetUUIDs();
     for (const base::Optional<BluetoothUUID>& service : filter->services) {
       if (!base::ContainsKey(device_uuids, service.value())) {
         return false;

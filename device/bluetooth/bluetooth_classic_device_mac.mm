@@ -132,8 +132,8 @@ bool BluetoothClassicDeviceMac::IsConnecting() const {
   return false;
 }
 
-BluetoothDevice::UUIDList BluetoothClassicDeviceMac::GetUUIDs() const {
-  UUIDList uuids;
+BluetoothDevice::UUIDSet BluetoothClassicDeviceMac::GetUUIDs() const {
+  UUIDSet uuids;
   for (IOBluetoothSDPServiceRecord* service_record in [device_ services]) {
     IOBluetoothSDPDataElement* service_class_data =
         [service_record getAttributeDataElement:
@@ -142,7 +142,7 @@ BluetoothDevice::UUIDList BluetoothClassicDeviceMac::GetUUIDs() const {
         kBluetoothSDPDataElementTypeDataElementSequence) {
       BluetoothUUID uuid = ExtractUuid(service_class_data);
       if (uuid.IsValid())
-        uuids.push_back(uuid);
+        uuids.insert(uuid);
     }
   }
   return uuids;

@@ -14,10 +14,10 @@ function testDeviceInfo() {
   chrome.test.assertEq('computer', devices[0].type);
 
   chrome.test.assertEq(2, devices[0].uuids.length);
-  chrome.test.assertEq('00001105-0000-1000-8000-00805f9b34fb',
-                       devices[0].uuids[0]);
-  chrome.test.assertEq('00001106-0000-1000-8000-00805f9b34fb',
-                       devices[0].uuids[1]);
+
+  let uuids = new Set(devices[0].uuids);
+  chrome.test.assertTrue(uuids.has('00001105-0000-1000-8000-00805f9b34fb'));
+  chrome.test.assertTrue(uuids.has('00001106-0000-1000-8000-00805f9b34fb'));
 
   chrome.test.assertEq('d2', devices[1].name);
   chrome.test.assertEq(0, devices[1].deviceClass);

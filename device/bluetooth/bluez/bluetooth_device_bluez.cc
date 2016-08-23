@@ -347,19 +347,18 @@ bool BluetoothDeviceBlueZ::IsConnecting() const {
   return num_connecting_calls_ > 0;
 }
 
-BluetoothDeviceBlueZ::UUIDList BluetoothDeviceBlueZ::GetUUIDs() const {
+BluetoothDevice::UUIDSet BluetoothDeviceBlueZ::GetUUIDs() const {
   bluez::BluetoothDeviceClient::Properties* properties =
       bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
           object_path_);
   DCHECK(properties);
 
-  std::vector<device::BluetoothUUID> uuids;
+  UUIDSet uuids;
   const std::vector<std::string>& dbus_uuids = properties->uuids.value();
-  for (std::vector<std::string>::const_iterator iter = dbus_uuids.begin();
-       iter != dbus_uuids.end(); ++iter) {
-    device::BluetoothUUID uuid(*iter);
+  for (const std::string& dbus_uuid : dbus_uuids) {
+    device::BluetoothUUID uuid(dbus_uuid);
     DCHECK(uuid.IsValid());
-    uuids.push_back(uuid);
+    uuids.insert(std::move(uuid));
   }
   return uuids;
 }

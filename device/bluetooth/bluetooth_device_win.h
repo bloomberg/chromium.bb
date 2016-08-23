@@ -47,7 +47,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-  UUIDList GetUUIDs() const override;
+  UUIDSet GetUUIDs() const override;
   base::Optional<int8_t> GetInquiryRSSI() const override;
   base::Optional<int8_t> GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;
@@ -149,7 +149,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   bool visible_;
 
   // The services (identified by UUIDs) that this device provides.
-  UUIDList uuids_;
+  UUIDSet uuids_;
 
   // The service records retrieved from SDP.
   ServiceRecordList service_record_list_;

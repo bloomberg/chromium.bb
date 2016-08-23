@@ -34,12 +34,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
  public:
   BluetoothLowEnergyDeviceMac(BluetoothAdapterMac* adapter,
-                              CBPeripheral* peripheral,
-                              NSDictionary* advertisement_data,
-                              int rssi);
+                              CBPeripheral* peripheral);
   ~BluetoothLowEnergyDeviceMac() override;
-
-  int GetRSSI() const;
 
   // BluetoothDevice overrides.
   std::string GetIdentifier() const override;
@@ -97,9 +93,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void DidUpdateNotificationState(CBCharacteristic* characteristic,
                                   NSError* error);
 
-  // Updates information about the device.
-  virtual void Update(NSDictionary* advertisement_data, int rssi);
-
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
 
   // Hashes and truncates the peripheral identifier to deterministically
@@ -135,9 +128,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Objective-C delegate for the CBPeripheral.
   base::scoped_nsobject<BluetoothLowEnergyPeripheralDelegate>
       peripheral_delegate_;
-
-  // RSSI value.
-  int rssi_;
 
   // Whether the device is connectable.
   bool connectable_;

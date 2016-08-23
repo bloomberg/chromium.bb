@@ -629,6 +629,8 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Discovers a device, and then again with new Service UUIDs.
+// Makes sure we don't create another device when we've found the
+// device in the past.
 TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -641,12 +643,6 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
 
-  // Check the initial UUIDs:
-  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
-                                  BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_FALSE(base::ContainsValue(device->GetUUIDs(),
-                                   BluetoothUUID(kTestUUIDImmediateAlert)));
-
   // Discover same device again with updated UUIDs:
   observer.Reset();
   SimulateLowEnergyDevice(2);
@@ -655,21 +651,12 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   EXPECT_EQ(1u, adapter_->GetDevices().size());
   EXPECT_EQ(device, observer.last_device());
 
-  // Expect only new UUIDs:
-  EXPECT_FALSE(base::ContainsValue(device->GetUUIDs(),
-                                   BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_TRUE(base::ContainsValue(device->GetUUIDs(),
-                                  BluetoothUUID(kTestUUIDImmediateAlert)));
-
   // Discover same device again with empty UUIDs:
   observer.Reset();
   SimulateLowEnergyDevice(3);
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
-
-  // Expect no UUIDs:
-  EXPECT_EQ(0u, device->GetUUIDs().size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 

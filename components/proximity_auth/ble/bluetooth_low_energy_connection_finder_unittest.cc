@@ -37,6 +37,8 @@ using testing::Return;
 using testing::StrictMock;
 using testing::SaveArg;
 
+using device::BluetoothDevice;
+
 namespace proximity_auth {
 namespace {
 
@@ -164,8 +166,7 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
   void PrepareDevice(const std::string& uuid,
                      const std::string& address,
                      bool paired) {
-    std::vector<device::BluetoothUUID> uuids;
-    uuids.push_back(device::BluetoothUUID(uuid));
+    BluetoothDevice::UUIDSet uuids = {device::BluetoothUUID(uuid)};
     ON_CALL(*device_, GetUUIDs()).WillByDefault(Return(uuids));
     ON_CALL(*device_, GetAddress()).WillByDefault(Return(address));
     ON_CALL(*device_, IsPaired()).WillByDefault(Return(paired));
@@ -238,7 +239,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   FindAndExpectStartDiscovery(connection_finder);
   ExpectRemoveObserver();
 
-  std::vector<device::BluetoothUUID> uuids;
+  BluetoothDevice::UUIDSet uuids;
   ON_CALL(*device_, GetUUIDs()).WillByDefault(Return(uuids));
   ON_CALL(*device_, IsPaired()).WillByDefault(Return(true));
   ON_CALL(*device_whitelist_, HasDeviceWithAddress(_))
@@ -344,8 +345,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   NiceMock<device::MockBluetoothDevice> other_device(
       adapter_.get(), 0, kTestRemoteDeviceName,
       kTestRemoteDeviceBluetoothAddress, false, false);
-  std::vector<device::BluetoothUUID> uuids;
-  uuids.push_back(device::BluetoothUUID(kServiceUUID));
+  BluetoothDevice::UUIDSet uuids = {device::BluetoothUUID(kServiceUUID)};
   ON_CALL(other_device, GetAddress())
       .WillByDefault(Return(kTestRemoteDeviceBluetoothAddress));
   ON_CALL(other_device, IsPaired()).WillByDefault(Return(true));

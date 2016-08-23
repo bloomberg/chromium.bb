@@ -1472,12 +1472,14 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::UUIDS) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    std::vector<BluetoothUUID> uuids = device->GetUUIDs();
+    BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
     mojo::Array<mojom::BluetoothUUIDPtr> uuid_results =
-        mojo::Array<mojom::BluetoothUUIDPtr>::New(0);
+        mojo::Array<mojom::BluetoothUUIDPtr>::New(uuids.size());
 
-    for (auto& uuid : uuids) {
-      uuid_results.push_back(mojom::BluetoothUUID::From(uuid));
+    size_t i = 0;
+    for (const auto& uuid : uuids) {
+      uuid_results[i] = mojom::BluetoothUUID::From(uuid);
+      i++;
     }
 
     btp->set_uuids(std::move(uuid_results));
@@ -1630,36 +1632,35 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
   advertising_data.push_back(std::move(local_name));
 
   // ServiceUuid
-  BluetoothDevice::UUIDList uuid_list = device->GetUUIDs();
-  if (uuid_list.size() > 0) {
+  BluetoothDevice::UUIDSet uuid_set = device->GetUUIDs();
+  if (uuid_set.size() > 0) {
     mojom::BluetoothAdvertisingDataPtr service_uuids_16 =
         mojom::BluetoothAdvertisingData::New();
-    mojo::Array<uint16_t> uuid16s;
-    for (auto& uuid : uuid_list) {
-      uuid16s.push_back(GetUUID16(uuid));
+    mojo::Array<uint16_t> uuid16s(uuid_set.size());
+    size_t i = 0;
+    for (const auto& uuid : uuid_set) {
+      uuid16s[i] = GetUUID16(uuid);
+      i++;
     }
     service_uuids_16->set_service_uuids_16(std::move(uuid16s));
     advertising_data.push_back(std::move(service_uuids_16));
   }
 
   // Service data
-  for (auto& uuid : device->GetServiceDataUUIDs()) {
-    base::BinaryValue* data = device->GetServiceData(uuid);
-    if (data->GetSize() == 0)
-      continue;
-    std::string data_str;
-    if (!data->GetAsString(&data_str))
-      continue;
-
+  for (const BluetoothUUID& uuid : device->GetServiceDataUUIDs()) {
     mojom::BluetoothAdvertisingDataPtr service_data_element =
         mojom::BluetoothAdvertisingData::New();
     mojom::BluetoothServiceDataPtr service_data =
         mojom::BluetoothServiceData::New();
 
     service_data->uuid_16bit = GetUUID16(uuid);
-    for (auto& c : data_str) {
-      service_data->data.push_back(c);
-    }
+
+    const std::vector<uint8_t>* data = device->GetServiceDataForUUID(uuid);
+    DCHECK(data != nullptr);
+
+    std::vector<uint8_t> data_copy = *data;
+    service_data->data.Swap(&data_copy);
+
     service_data_element->set_service_data(std::move(service_data));
     advertising_data.push_back(std::move(service_data_element));
   }

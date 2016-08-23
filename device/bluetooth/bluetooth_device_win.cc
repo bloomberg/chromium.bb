@@ -112,7 +112,7 @@ bool BluetoothDeviceWin::IsConnecting() const {
   return false;
 }
 
-BluetoothDevice::UUIDList BluetoothDeviceWin::GetUUIDs() const {
+BluetoothDevice::UUIDSet BluetoothDeviceWin::GetUUIDs() const {
   return uuids_;
 }
 
@@ -233,16 +233,9 @@ bool BluetoothDeviceWin::IsEqual(
   }
 
   // Checks service collection
-  typedef std::set<BluetoothUUID> UUIDSet;
   typedef base::ScopedPtrHashMap<std::string,
                                  std::unique_ptr<BluetoothServiceRecordWin>>
       ServiceRecordMap;
-
-  UUIDSet known_services;
-  for (UUIDList::const_iterator iter = uuids_.begin(); iter != uuids_.end();
-       ++iter) {
-    known_services.insert((*iter));
-  }
 
   UUIDSet new_services;
   ServiceRecordMap new_service_records;
@@ -257,14 +250,8 @@ bool BluetoothDeviceWin::IsEqual(
         std::unique_ptr<BluetoothServiceRecordWin>(service_record));
   }
 
-  UUIDSet removed_services =
-      base::STLSetDifference<UUIDSet>(known_services, new_services);
-  if (!removed_services.empty()) {
-    return false;
-  }
-  UUIDSet added_devices =
-      base::STLSetDifference<UUIDSet>(new_services, known_services);
-  if (!added_devices.empty()) {
+  // Check that no new services have been added or removed.
+  if (uuids_ != new_services) {
     return false;
   }
 
@@ -320,7 +307,7 @@ void BluetoothDeviceWin::UpdateServices(
         new BluetoothServiceRecordWin(device_state.address, (*iter)->name,
                                       (*iter)->sdp_bytes, (*iter)->gatt_uuid);
     service_record_list_.push_back(service_record);
-    uuids_.push_back(service_record->uuid());
+    uuids_.insert(service_record->uuid());
   }
 
   if (!device_state.is_bluetooth_classic())

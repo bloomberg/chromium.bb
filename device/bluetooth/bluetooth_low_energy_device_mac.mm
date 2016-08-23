@@ -23,9 +23,7 @@ using device::BluetoothLowEnergyDeviceMac;
 
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     BluetoothAdapterMac* adapter,
-    CBPeripheral* peripheral,
-    NSDictionary* advertisement_data,
-    int rssi)
+    CBPeripheral* peripheral)
     : BluetoothDeviceMac(adapter),
       peripheral_(peripheral, base::scoped_policy::RETAIN) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
@@ -35,46 +33,12 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
   [peripheral_ setDelegate:peripheral_delegate_];
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);
-  Update(advertisement_data, rssi);
 }
 
 BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
   if (IsGattConnected()) {
     GetMacAdapter()->DisconnectGatt(this);
   }
-}
-
-void BluetoothLowEnergyDeviceMac::Update(NSDictionary* advertisement_data,
-                                         int rssi) {
-  UpdateTimestamp();
-  rssi_ = rssi;
-  NSNumber* connectable =
-      [advertisement_data objectForKey:CBAdvertisementDataIsConnectable];
-  connectable_ = [connectable boolValue];
-  ClearServiceData();
-  NSDictionary* service_data =
-      [advertisement_data objectForKey:CBAdvertisementDataServiceDataKey];
-  for (CBUUID* uuid in service_data) {
-    NSData* data = [service_data objectForKey:uuid];
-    BluetoothUUID service_uuid =
-        BluetoothAdapterMac::BluetoothUUIDWithCBUUID(uuid);
-    SetServiceData(service_uuid, static_cast<const char*>([data bytes]),
-                   [data length]);
-  }
-
-  std::unordered_set<BluetoothUUID, BluetoothUUIDHash> uuid_set;
-  NSArray* service_uuids =
-      [advertisement_data objectForKey:CBAdvertisementDataServiceUUIDsKey];
-  for (CBUUID* uuid in service_uuids) {
-    uuid_set.emplace([[uuid UUIDString] UTF8String]);
-  }
-  NSArray* overflow_service_uuids = [advertisement_data
-      objectForKey:CBAdvertisementDataOverflowServiceUUIDsKey];
-  for (CBUUID* uuid in overflow_service_uuids) {
-    uuid_set.emplace([[uuid UUIDString] UTF8String]);
-  }
-
-  advertised_uuids_ = UUIDList(uuid_set.begin(), uuid_set.end());
 }
 
 std::string BluetoothLowEnergyDeviceMac::GetIdentifier() const {
@@ -117,10 +81,6 @@ base::Optional<std::string> BluetoothLowEnergyDeviceMac::GetName() const {
   if ([peripheral_ name])
     return base::SysNSStringToUTF8([peripheral_ name]);
   return base::nullopt;
-}
-
-int BluetoothLowEnergyDeviceMac::GetRSSI() const {
-  return rssi_;
 }
 
 bool BluetoothLowEnergyDeviceMac::IsPaired() const {
@@ -301,9 +261,10 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
                 ->IsDiscoveryComplete();
           }) == gatt_services_.end();
   if (discovery_complete) {
-    UpdateServiceUUIDs();
+    device_uuids_.ReplaceServiceUUIDs(gatt_services_);
     SetGattServicesDiscoveryComplete(true);
     adapter_->NotifyGattServicesDiscovered(this);
+    adapter_->NotifyDeviceChanged(this);
   }
 }
 
@@ -317,8 +278,9 @@ void BluetoothLowEnergyDeviceMac::DidModifyServices(
         gatt_services_.take_and_erase(gatt_service->GetIdentifier());
     adapter_->NotifyGattServiceRemoved(scoped_service.get());
   }
-  service_uuids_.clear();
+  device_uuids_.ClearServiceUUIDs();
   SetGattServicesDiscoveryComplete(false);
+  adapter_->NotifyDeviceChanged(this);
   [GetPeripheral() discoverServices:nil];
 }
 
@@ -399,7 +361,7 @@ void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
   GattServiceMap gatt_services_swapped;
   gatt_services_swapped.swap(gatt_services_);
   gatt_services_swapped.clear();
-  UpdateServiceUUIDs();
+  device_uuids_.ClearServiceUUIDs();
   if (create_gatt_connection_error_callbacks_.empty()) {
     // TODO(http://crbug.com/585897): Need to pass the error.
     DidDisconnectGatt();

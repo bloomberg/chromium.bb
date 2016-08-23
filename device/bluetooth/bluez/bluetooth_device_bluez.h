@@ -61,7 +61,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-  UUIDList GetUUIDs() const override;
+  UUIDSet GetUUIDs() const override;
   base::Optional<int8_t> GetInquiryRSSI() const override;
   base::Optional<int8_t> GetInquiryTxPower() const override;
   bool ExpectingPinCode() const override;

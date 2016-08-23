@@ -55,6 +55,7 @@ class BluetoothTestBase : public testing::Test {
   static const std::string kTestUUIDGenericAttribute;
   static const std::string kTestUUIDImmediateAlert;
   static const std::string kTestUUIDLinkLoss;
+  static const std::string kTestUUIDHeartRate;
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;
@@ -95,9 +96,11 @@ class BluetoothTestBase : public testing::Test {
   // Create a fake Low Energy device and discover it.
   // |device_ordinal| selects between multiple fake device data sets to produce:
   //   1: kTestDeviceName with advertised UUIDs kTestUUIDGenericAccess,
-  //      kTestUUIDGenericAttribute and address kTestDeviceAddress1.
+  //      kTestUUIDGenericAttribute, address kTestDeviceAddress1 and service
+  //      data of {kTestUUIDHeartRate: [1]}.
   //   2: kTestDeviceName with advertised UUIDs kTestUUIDImmediateAlert,
-  //      kTestUUIDLinkLoss and address kTestDeviceAddress1.
+  //      kTestUUIDLinkLoss, address kTestDeviceAddress1 and service data of
+  //      {kTestUUIDHeartRate: [2], kTestUUIDImmediateAlert: [0]}.
   //   3: kTestDeviceNameEmpty with no advertised UUIDs and address
   //      kTestDeviceAddress1.
   //   4: kTestDeviceNameEmpty with no advertised UUIDs and address

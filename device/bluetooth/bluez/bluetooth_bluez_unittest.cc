@@ -2162,10 +2162,10 @@ TEST_F(BluetoothBlueZTest, DeviceProperties) {
   // Non HID devices are always connectable.
   EXPECT_TRUE(devices[idx]->IsConnectable());
 
-  BluetoothDevice::UUIDList uuids = devices[idx]->GetUUIDs();
-  ASSERT_EQ(2U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1800"));
-  EXPECT_EQ(uuids[1], BluetoothUUID("1801"));
+  BluetoothDevice::UUIDSet uuids = devices[idx]->GetUUIDs();
+  EXPECT_EQ(2U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
 
   EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, devices[idx]->GetVendorIDSource());
   EXPECT_EQ(0x05ac, devices[idx]->GetVendorID());
@@ -2435,10 +2435,10 @@ TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
   ASSERT_EQ(bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[idx]->GetAddress());
 
-  BluetoothDevice::UUIDList uuids = devices[idx]->GetUUIDs();
+  BluetoothDevice::UUIDSet uuids = devices[idx]->GetUUIDs();
   ASSERT_EQ(2U, uuids.size());
-  ASSERT_EQ(uuids[0], BluetoothUUID("1800"));
-  ASSERT_EQ(uuids[1], BluetoothUUID("1801"));
+  ASSERT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
+  ASSERT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
@@ -2449,8 +2449,8 @@ TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
           bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
 
   std::vector<std::string> new_uuids;
-  new_uuids.push_back(uuids[0].canonical_value());
-  new_uuids.push_back(uuids[1].canonical_value());
+  new_uuids.push_back(BluetoothUUID("1800").canonical_value());
+  new_uuids.push_back(BluetoothUUID("1801").canonical_value());
   new_uuids.push_back("0000110c-0000-1000-8000-00805f9b34fb");
   new_uuids.push_back("0000110e-0000-1000-8000-00805f9b34fb");
   new_uuids.push_back("0000110a-0000-1000-8000-00805f9b34fb");
@@ -2462,12 +2462,12 @@ TEST_F(BluetoothBlueZTest, DeviceUuidsChanged) {
 
   // Fetching the value should give the new one.
   uuids = devices[idx]->GetUUIDs();
-  ASSERT_EQ(5U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1800"));
-  EXPECT_EQ(uuids[1], BluetoothUUID("1801"));
-  EXPECT_EQ(uuids[2], BluetoothUUID("110c"));
-  EXPECT_EQ(uuids[3], BluetoothUUID("110e"));
-  EXPECT_EQ(uuids[4], BluetoothUUID("110a"));
+  EXPECT_EQ(5U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1800")));
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1801")));
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110c")));
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110e")));
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("110a")));
 }
 
 TEST_F(BluetoothBlueZTest, DeviceInquiryRSSIInvalidated) {
@@ -2690,9 +2690,9 @@ TEST_F(BluetoothBlueZTest, ConnectUnpairableDevice) {
   EXPECT_TRUE(properties->trusted.value());
 
   // Verify is a HID device and is not connectable.
-  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  ASSERT_EQ(1U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1124"));
+  BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
+  EXPECT_EQ(1U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
   EXPECT_FALSE(device->IsConnectable());
 }
 
@@ -2938,9 +2938,9 @@ TEST_F(BluetoothBlueZTest, PairLegacyAutopair) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device and is connectable.
-  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  ASSERT_EQ(1U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1124"));
+  BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
+  EXPECT_EQ(1U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
@@ -2991,9 +2991,9 @@ TEST_F(BluetoothBlueZTest, PairDisplayPinCode) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device and is connectable.
-  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  ASSERT_EQ(1U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1124"));
+  BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
+  EXPECT_EQ(1U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
   EXPECT_TRUE(device->IsConnectable());
 
   // Make sure the trusted property has been set to true.
@@ -3064,9 +3064,9 @@ TEST_F(BluetoothBlueZTest, PairDisplayPasskey) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is a HID device.
-  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  ASSERT_EQ(1U, uuids.size());
-  EXPECT_EQ(uuids[0], BluetoothUUID("1124"));
+  BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
+  EXPECT_EQ(1U, uuids.size());
+  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID("1124")));
 
   // And usually not connectable.
   EXPECT_FALSE(device->IsConnectable());
@@ -3119,8 +3119,8 @@ TEST_F(BluetoothBlueZTest, PairRequestPinCode) {
   EXPECT_TRUE(device->IsPaired());
 
   // Verify is not a HID device.
-  BluetoothDevice::UUIDList uuids = device->GetUUIDs();
-  ASSERT_EQ(0U, uuids.size());
+  BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
+  EXPECT_EQ(0U, uuids.size());
 
   // Non HID devices are always connectable.
   EXPECT_TRUE(device->IsConnectable());

@@ -19,7 +19,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.location.LocationUtils;
 
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -243,18 +242,20 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
             Log.v(TAG, "onScanResult %d %s %s", callbackType, result.getDevice().getAddress(),
                     result.getDevice().getName());
 
-            HashSet<String> uuid_strings = new HashSet<>();
+            String[] uuid_strings;
             List<ParcelUuid> uuids = result.getScanRecord_getServiceUuids();
 
-            if (uuids != null) {
-                for (ParcelUuid uuid : uuids) {
-                    uuid_strings.add(uuid.toString());
+            if (uuids == null) {
+                uuid_strings = new String[] {};
+            } else {
+                uuid_strings = new String[uuids.size()];
+                for (int i = 0; i < uuids.size(); i++) {
+                    uuid_strings[i] = uuids.get(i).toString();
                 }
             }
 
             nativeCreateOrUpdateDeviceOnScan(mNativeBluetoothAdapterAndroid,
-                    result.getDevice().getAddress(), result.getDevice(),
-                    uuid_strings.toArray(new String[uuid_strings.size()]));
+                    result.getDevice().getAddress(), result.getDevice(), uuid_strings);
         }
 
         @Override
