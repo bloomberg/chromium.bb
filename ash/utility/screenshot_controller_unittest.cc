@@ -39,7 +39,7 @@ class ScreenshotControllerTest : public test::AshTestBase {
 
   void StartPartialScreenshotSession() {
     screenshot_controller()->StartPartialScreenshotSession(
-        GetScreenshotDelegate());
+        GetScreenshotDelegate(), true);
   }
 
   void StartWindowScreenshotSession() {
@@ -79,14 +79,15 @@ TEST_F(PartialScreenshotControllerTest, BasicMouse) {
 
   generator.MoveMouseTo(100, 100);
   generator.PressLeftButton();
-  EXPECT_EQ("100,100", GetStartPosition().ToString());
+  EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
 
   generator.MoveMouseTo(200, 200);
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
 
   generator.ReleaseLeftButton();
-  EXPECT_EQ("100,100 100x100", GetScreenshotDelegate()->last_rect().ToString());
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
+            GetScreenshotDelegate()->last_rect());
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
 
   RunAllPendingInMessageLoop();
@@ -153,15 +154,81 @@ TEST_F(PartialScreenshotControllerTest, BasicTouch) {
   generator.set_current_location(gfx::Point(100, 100));
   generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
-  EXPECT_EQ("100,100", GetStartPosition().ToString());
+  EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
 
   generator.MoveTouch(gfx::Point(200, 200));
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
 
   generator.ReleaseTouch();
-  EXPECT_EQ("100,100 100x100", GetScreenshotDelegate()->last_rect().ToString());
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
+            GetScreenshotDelegate()->last_rect());
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
 
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+}
+
+// Verifies that pointer events can be used to take a screenshot when
+// pointer-only move is set to true. Verifies that pointer-only mode is
+// automatically reset to false.
+TEST_F(PartialScreenshotControllerTest,
+       PointerEventsWorkWhenPointerOnlyActive) {
+  StartPartialScreenshotSession();
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  screenshot_controller()->set_pen_events_only(true);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+
+  generator.EnterPenPointerMode();
+  generator.set_current_location(gfx::Point(100, 100));
+  generator.PressLeftButton();
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
+
+  generator.MoveMouseBy(200, 200);
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(gfx::Rect(100, 100, 200, 200),
+            GetScreenshotDelegate()->last_rect());
+  EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
+  EXPECT_FALSE(screenshot_controller()->pen_events_only());
+
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsActive());
+}
+
+// Verifies that only pointer press/release events can be used to take a
+// screenshot when pointer only mode is active.
+TEST_F(PartialScreenshotControllerTest,
+       TouchMousePointerHoverIgnoredWithPointerEvents) {
+  StartPartialScreenshotSession();
+  screenshot_controller()->set_pen_events_only(true);
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.set_current_location(gfx::Point(100, 100));
+
+  // Verify touch is ignored.
+  generator.PressTouch();
+  generator.MoveTouch(gfx::Point(50, 50));
+  generator.ReleaseTouch();
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_EQ(gfx::Point(0, 0), GetStartPosition());
+
+  // Verify mouse is ignored.
+  generator.DragMouseBy(10, 10);
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_EQ(gfx::Point(0, 0), GetStartPosition());
+
+  // Verify pointer enter/exit is ignored.
+  generator.EnterPenPointerMode();
+  generator.SendMouseEnter();
+  generator.set_current_location(gfx::Point(100, 100));
+  generator.SendMouseExit();
+  generator.ExitPenPointerMode();
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_EQ(gfx::Point(0, 0), GetStartPosition());
+
+  Cancel();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsActive());
 }
@@ -174,11 +241,12 @@ TEST_F(PartialScreenshotControllerTest, TwoFingerTouch) {
   generator.set_current_location(gfx::Point(100, 100));
   generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
-  EXPECT_EQ("100,100", GetStartPosition().ToString());
+  EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
 
   generator.set_current_location(gfx::Point(200, 200));
   generator.PressTouchId(1);
-  EXPECT_EQ("100,100 100x100", GetScreenshotDelegate()->last_rect().ToString());
+  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
+            GetScreenshotDelegate()->last_rect());
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
 
   RunAllPendingInMessageLoop();
@@ -199,13 +267,13 @@ TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
 
   StartPartialScreenshotSession();
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
-  EXPECT_EQ("499,11",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
+  EXPECT_EQ(gfx::Point(499, 11),
+            aura::Env::GetInstance()->last_mouse_location());
 
   Cancel();
   EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
-  EXPECT_EQ("501,11",
-            aura::Env::GetInstance()->last_mouse_location().ToString());
+  EXPECT_EQ(gfx::Point(501, 11),
+            aura::Env::GetInstance()->last_mouse_location());
 }
 
 #if defined(OS_CHROMEOS)
@@ -246,27 +314,24 @@ TEST_F(PartialScreenshotControllerTest, LargeCursor) {
   ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
   gfx::Point cursor_location;
   event_generator.MoveMouseTo(cursor_location);
-  EXPECT_EQ(cursor_location.ToString(),
-            test_api.GetCursorLocation().ToString());
+  EXPECT_EQ(cursor_location, test_api.GetCursorLocation());
 
   StartPartialScreenshotSession();
   EXPECT_TRUE(IsActive());
 
   cursor_location += gfx::Vector2d(1, 1);
   event_generator.MoveMouseTo(cursor_location);
-  EXPECT_EQ(cursor_location.ToString(),
-            test_api.GetCursorLocation().ToString());
+  EXPECT_EQ(cursor_location, test_api.GetCursorLocation());
 
   event_generator.PressLeftButton();
   cursor_location += gfx::Vector2d(5, 5);
   event_generator.MoveMouseTo(cursor_location);
-  EXPECT_EQ(cursor_location.ToString(),
-            test_api.GetCursorLocation().ToString());
+  EXPECT_EQ(cursor_location, test_api.GetCursorLocation());
 
   event_generator.ReleaseLeftButton();
 
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
-  EXPECT_EQ("1,1 5x5", GetScreenshotDelegate()->last_rect().ToString());
+  EXPECT_EQ(gfx::Rect(1, 1, 5, 5), GetScreenshotDelegate()->last_rect());
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(IsActive());
 }

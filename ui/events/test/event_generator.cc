@@ -79,6 +79,12 @@ class TestTouchEvent : public ui::TouchEvent {
 
 const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
+void ConvertToPenPointerEvent(ui::MouseEvent* event) {
+  auto details = event->pointer_details();
+  details.pointer_type = ui::EventPointerType::POINTER_TYPE_PEN;
+  event->set_pointer_details(details);
+}
+
 }  // namespace
 
 EventGeneratorDelegate* EventGenerator::default_delegate = NULL;
@@ -166,6 +172,14 @@ void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
   Dispatch(&wheelev);
 }
 
+void EventGenerator::SendMouseEnter() {
+  gfx::Point enter_location(current_location_);
+  delegate()->ConvertPointToTarget(current_target_, &enter_location);
+  ui::MouseEvent mouseev(ui::ET_MOUSE_ENTERED, enter_location, enter_location,
+                         ui::EventTimeForNow(), flags_, 0);
+  Dispatch(&mouseev);
+}
+
 void EventGenerator::SendMouseExit() {
   gfx::Point exit_location(current_location_);
   delegate()->ConvertPointToTarget(current_target_, &exit_location);
@@ -251,6 +265,14 @@ void EventGenerator::DragMouseTo(const gfx::Point& point) {
 
 void EventGenerator::MoveMouseToCenterOf(EventTarget* window) {
   MoveMouseTo(CenterOfWindow(window));
+}
+
+void EventGenerator::EnterPenPointerMode() {
+  pen_pointer_mode_ = true;
+}
+
+void EventGenerator::ExitPenPointerMode() {
+  pen_pointer_mode_ = false;
 }
 
 void EventGenerator::PressTouch() {
@@ -623,6 +645,9 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 }
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
+  if (pen_pointer_mode_ && event->IsMouseEvent())
+    ConvertToPenPointerEvent(static_cast<ui::MouseEvent*>(event));
+
   if (async) {
     std::unique_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
     if (pending_events_.empty()) {

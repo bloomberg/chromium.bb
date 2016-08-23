@@ -170,6 +170,9 @@ class EventGenerator {
   // Moves the mouse wheel by |delta_x|, |delta_y|.
   void MoveMouseWheel(int delta_x, int delta_y);
 
+  // Generates a mouse enter event.
+  void SendMouseEnter();
+
   // Generates a mouse exit.
   void SendMouseExit();
 
@@ -219,6 +222,14 @@ class EventGenerator {
 
   // Generates events to move the mouse to the center of the window.
   void MoveMouseToCenterOf(EventTarget* window);
+
+  // Enter pen-pointer mode, which will cause any generated mouse events to have
+  // a pointer type ui::EventPointerType::POINTER_TYPE_PEN.
+  void EnterPenPointerMode();
+
+  // Exit pen-pointer mode. Generated mouse events will use the default pointer
+  // type event.
+  void ExitPenPointerMode();
 
   // Generates a touch press event.
   void PressTouch();
@@ -390,6 +401,7 @@ class EventGenerator {
   EventTarget* current_target_;
   int flags_;
   bool grab_;
+  bool pen_pointer_mode_ = false;
   std::list<std::unique_ptr<Event>> pending_events_;
   // Set to true to cause events to be posted asynchronously.
   bool async_;
