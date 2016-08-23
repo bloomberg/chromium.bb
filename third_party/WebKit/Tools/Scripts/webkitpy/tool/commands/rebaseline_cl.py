@@ -13,7 +13,7 @@ import optparse
 
 from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.rietveld import latest_try_jobs, changed_files
+from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
@@ -47,7 +47,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             self.no_optimize_option,
             self.results_directory_option,
         ])
-        self.web = Web()
+        self.rietveld = Rietveld(Web())
 
     def execute(self, options, args, tool):
         issue_number = self._get_issue_number(options)
@@ -55,7 +55,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return
         if args:
             test_prefix_list = {}
-            try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
+            try_jobs = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
             builds = [Build(j.builder_name, j.build_number) for j in try_jobs]
             for test in args:
                 test_prefix_list[test] = {b: BASELINE_SUFFIX_LIST for b in builds}
@@ -99,7 +99,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """
         builds_to_tests = self._builds_to_tests(issue_number)
         if only_changed_tests:
-            files_in_cl = changed_files(issue_number, self.web)
+            files_in_cl = self.rietveld.changed_files(issue_number)
             finder = WebKitFinder(self._tool.filesystem)
             tests_in_cl = [finder.layout_test_name(f) for f in files_in_cl]
         result = {}
@@ -115,7 +115,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def _builds_to_tests(self, issue_number):
         """Fetches a list of try bots, and for each, fetches tests with new baselines."""
         _log.debug('Getting results for Rietveld issue %d.', issue_number)
-        try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
+        try_jobs = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if not try_jobs:
             _log.debug('No try job results for builders in: %r.', self._try_bots())
         builds_to_tests = {}

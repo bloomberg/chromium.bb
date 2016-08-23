@@ -7,6 +7,7 @@ import json
 
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.net.buildbot import Build
+from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
@@ -19,7 +20,7 @@ class RebaselineCLTest(BaseTestCase):
 
     def setUp(self):
         super(RebaselineCLTest, self).setUp()
-        self.command.web = MockWeb(urls={
+        web = MockWeb(urls={
             'https://codereview.chromium.org/api/11112222': json.dumps({
                 'patchsets': [1, 2],
             }),
@@ -52,6 +53,7 @@ class RebaselineCLTest(BaseTestCase):
                 "is_try_builder": True,
             },
         })
+        self.command.rietveld = Rietveld(web)
         self.git = MockSCM()
         self.git.get_issue_number = lambda: 'None'
         self.command.git = lambda: self.git

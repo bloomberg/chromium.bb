@@ -8,7 +8,7 @@ based on layout test failures in try jobs.
 This script is used as part of the w3c test auto-import process.
 """
 
-from webkitpy.common.net import rietveld
+from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
@@ -21,7 +21,8 @@ def main(host):
     expectations_line_adder = W3CExpectationsLineAdder(host)
     issue_number = expectations_line_adder.get_issue_number()
     try_bots = expectations_line_adder.get_try_bots()
-    try_jobs = rietveld.latest_try_jobs(issue_number, try_bots, host.web)
+    rietveld = Rietveld(host.web)
+    try_jobs = rietveld.latest_try_jobs(issue_number, try_bots)
     test_expectations = {}
     if not try_jobs:
         print 'No Try Job information was collected.'
