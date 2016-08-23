@@ -377,8 +377,9 @@ RenderWidgetHostViewAndroid::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAndroid::WasResized() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->UpdateContainerSizeinDIP(GetVisibleViewportSize());
+  if (delegated_frame_host_ && content_view_core_)
+    delegated_frame_host_->UpdateContainerSizeinDIP(
+        content_view_core_->GetViewportSizeDip());
   host_->WasResized();
 }
 

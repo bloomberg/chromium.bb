@@ -241,12 +241,6 @@ void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {
     float device_scale_factor = gfx::DeviceDisplayInfo().GetDIPScale();
     gfx::Size content_size_in_dip = gfx::ConvertSizeToDIP(
         device_scale_factor, current_frame_->surface_size);
-    float top_bar_shown = current_frame_->top_controls_height *
-                          current_frame_->top_controls_shown_ratio;
-    float bottom_bar_shown = current_frame_->bottom_controls_height *
-                             current_frame_->bottom_controls_shown_ratio;
-    content_size_in_dip.set_height(
-        content_size_in_dip.height() - top_bar_shown - bottom_bar_shown);
     background_is_drawable =
         content_size_in_dip.width() < container_size_in_dip_.width() ||
         content_size_in_dip.height() < container_size_in_dip_.height();
