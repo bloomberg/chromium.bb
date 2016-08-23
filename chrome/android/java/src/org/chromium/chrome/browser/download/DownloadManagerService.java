@@ -903,7 +903,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 }
                 return;
             }
-            Toast.makeText(mContext, R.string.download_pending, Toast.LENGTH_SHORT).show();
+            DownloadUtils.showDownloadStartToast(mContext);
             if (isPendingOMADownload) {
                 // A new downloadId is generated, needs to update the OMADownloadHandler
                 // about this.

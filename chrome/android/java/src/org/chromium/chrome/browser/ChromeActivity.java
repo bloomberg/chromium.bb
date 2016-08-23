@@ -1571,9 +1571,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     new OfflinePageDownloadBridge(currentTab.getProfile());
             bridge.startDownload(currentTab);
             bridge.destroy();
-
             RecordUserAction.record("MobileMenuDownloadPage");
             DownloadUtils.recordDownloadPageMetrics(currentTab);
+            DownloadUtils.showDownloadStartToast(this);
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();

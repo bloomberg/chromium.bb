@@ -320,6 +320,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             mOfflinePageDownloadBridge.startDownload(tab);
             RecordUserAction.record("MobileToolbarDownloadPage");
             DownloadUtils.recordDownloadPageMetrics(tab);
+            DownloadUtils.showDownloadStartToast(getContext());
         }
     }
 

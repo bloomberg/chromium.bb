@@ -43,7 +43,7 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     protected boolean mIsSelectionEnabled;
     protected SelectionDelegate<E> mSelectionDelegate;
 
-    private NumberRollView mNumberRollView;
+    protected NumberRollView mNumberRollView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private int mNavigationButton;
@@ -127,7 +127,6 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
             mNumberRollView.setVisibility(View.VISIBLE);
             if (!wasSelectionEnabled) mNumberRollView.setNumber(0, false);
             mNumberRollView.setNumber(selectedItems.size(), true);
-
         } else {
             setOverflowIcon(TintedDrawable.constructTintedDrawable(getResources(),
                     R.drawable.btn_menu));
@@ -141,6 +140,11 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
 
             mNumberRollView.setVisibility(View.GONE);
             mNumberRollView.setNumber(0, false);
+        }
+
+        if (mIsSelectionEnabled && !wasSelectionEnabled) {
+            announceForAccessibility(
+                    getResources().getString(R.string.accessibility_toolbar_screen_position));
         }
     }
 

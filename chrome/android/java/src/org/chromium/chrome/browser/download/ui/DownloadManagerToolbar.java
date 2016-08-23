@@ -37,6 +37,8 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
         }
 
         super.initialize(delegate, titleResId, drawerLayout, normalGroupResId, selectedGroupResId);
+
+        mNumberRollView.setContentDescriptionString(R.plurals.accessibility_selected_items);
     }
 
     @Override
@@ -48,7 +50,17 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
     @Override
     public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
         super.onSelectionStateChange(selectedItems);
-        if (!mIsSelectionEnabled) updateTitle();
+        if (!mIsSelectionEnabled) {
+            updateTitle();
+        } else {
+            int numSelected = mSelectionDelegate.getSelectedItems().size();
+            findViewById(R.id.selection_mode_share_menu_id).setContentDescription(
+                    getResources().getQuantityString(R.plurals.accessibility_share_selected_items,
+                            numSelected, numSelected));
+            findViewById(R.id.selection_mode_delete_menu_id).setContentDescription(
+                    getResources().getQuantityString(R.plurals.accessibility_remove_selected_items,
+                            numSelected, numSelected));
+        }
     }
 
     @Override

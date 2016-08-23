@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
-import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 
@@ -59,7 +58,7 @@ public class ChromeDownloadDelegate {
             if (mPendingRequest.getDownloadGuid() != null) {
                 nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadGuid(), confirm);
                 if (confirm) {
-                    showDownloadStartNotification();
+                    DownloadUtils.showDownloadStartToast(mContext);
                 }
                 mPendingRequest = null;
                 return closeBlankTab();
@@ -483,16 +482,9 @@ public class ChromeDownloadDelegate {
     @CalledByNative
     private void onDownloadStarted(String filename, String mimeType) {
         if (!isDangerousFile(filename, mimeType)) {
-            showDownloadStartNotification();
+            DownloadUtils.showDownloadStartToast(mContext);
             closeBlankTab();
         }
-    }
-
-    /**
-     * Shows the download started notification.
-     */
-    private void showDownloadStartNotification() {
-        Toast.makeText(mContext, R.string.download_pending, Toast.LENGTH_SHORT).show();
     }
 
     /**

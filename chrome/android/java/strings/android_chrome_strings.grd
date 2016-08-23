@@ -2290,6 +2290,24 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_DRAWER_TOGGLE_BTN_CLOSE" desc="Content description for the button to close the navigation drawer.">
         Close navigation drawer
       </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_SCREEN_POSITION" desc="Accessibility announcement to inform users about a toolbar's location.">
+        Options available near top of the screen
+      </message>
+      <message name="IDS_ACCESSIBILITY_SELECTED_ITEMS" desc="Content description for a number indicating how many items are selected. [ICU Syntax]">
+        {NUM_SELECTED, plural,
+          =1 {1 item selected},
+          other {# items selected}}
+      </message>
+      <message name="IDS_ACCESSIBILITY_SHARE_SELECTED_ITEMS" desc="Content description for the button to share selected items. [ICU Syntax]">
+        {NUM_SELECTED, plural,
+          =1 {Share 1 selected item},
+          other {Share # selected items}}
+      </message>
+      <message name="IDS_ACCESSIBILITY_REMOVE_SELECTED_ITEMS" desc="Content description for the button to remove selected items. [ICU Syntax]">
+        {NUM_SELECTED, plural,
+          =1 {Remove 1 selected item},
+          other {Remove # selected items}}
+      </message>
 
       <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress.">
         Accessing video input

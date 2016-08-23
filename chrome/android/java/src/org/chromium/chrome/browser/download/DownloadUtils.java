@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.Toast;
 
 /**
  * A class containing some utility static methods.
@@ -54,5 +57,13 @@ public class DownloadUtils {
     public static void recordDownloadPageMetrics(Tab tab) {
         RecordHistogram.recordPercentageHistogram("OfflinePages.SavePage.PercentLoaded",
                 tab.getProgress());
+    }
+
+    /**
+     * Shows a "Downloading..." toast. Should be called after a download has been started.
+     * @param context The {@link Context} used to make the toast.
+     */
+    public static void showDownloadStartToast(Context context) {
+        Toast.makeText(context, R.string.download_pending, Toast.LENGTH_SHORT).show();
     }
 }
