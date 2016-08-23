@@ -39,6 +39,8 @@ const int kUseCreationDateFallbackForDays = 42;
 const char* kMaxBookmarksParamName = "bookmarks_max_count";
 const char* kMinBookmarksParamName = "bookmarks_min_count";
 const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
+const char* kUseCreationDateFallbackForDaysParamName =
+    "bookmarks_creation_date_fallback_days";
 
 base::Time GetThresholdTime() {
   std::string age_in_days_string = variations::GetVariationParamValueByFeature(
@@ -50,6 +52,19 @@ base::Time GetThresholdTime() {
     age_in_days = kMaxBookmarkAgeInDays;
   }
   return base::Time::Now() - base::TimeDelta::FromDays(age_in_days);
+}
+
+int UseCreationDateFallbackForDays() {
+  std::string days_string = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kBookmarkSuggestionsFeature,
+      kUseCreationDateFallbackForDaysParamName);
+  int days = 0;
+  if (!base::StringToInt(days_string, &days)) {
+    if (!days_string.empty())
+      LOG(WARNING) << "Failed to parse bookmark fallback days " << days_string;
+    days = kUseCreationDateFallbackForDays;
+  }
+  return days;
 }
 
 int GetMaxCount() {
@@ -104,8 +119,10 @@ BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
                            first_m54_start.ToInternalValue());
   }
   base::TimeDelta time_since_first_m54_start = now - first_m54_start;
+  // Note: Setting the fallback timeout to zero effectively turns off the
+  // fallback entirely.
   creation_date_fallback_ =
-      time_since_first_m54_start.InDays() < kUseCreationDateFallbackForDays;
+      time_since_first_m54_start.InDays() < UseCreationDateFallbackForDays();
   bookmark_model_->AddObserver(this);
   FetchBookmarks();
 }
