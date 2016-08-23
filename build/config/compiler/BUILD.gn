@@ -231,10 +231,13 @@ config("compiler") {
   # Non-Mac Posix compiler flags setup.
   # -----------------------------------
   if (is_posix && !(is_mac || is_ios)) {
-    if (enable_profiling) {
-      # Explicitly ask for frame pointers. Otherwise they are omitted when
-      # any optimization level is used (and Android debug builds use -Os).
+    if (enable_profiling || is_debug) {
+      # Explicitly ask for frame pointers, otherwise they are omitted when
+      # any optimization level is used (Android debug builds use -Os.)
+      # This prevents stack frames from working when profiling, and can cause
+      # crashes when unwinding stack frames (crbug.com/636489).
       cflags += [ "-fno-omit-frame-pointer" ]
+
       if (!is_debug) {
         cflags += [ "-g" ]
 
@@ -1286,6 +1289,13 @@ if (is_win) {
       "-fdata-sections",
       "-ffunction-sections",
     ]
+
+    if (is_debug) {
+      # Explicitly ask for frame pointers, otherwise they are omitted when
+      # any optimization level is used and can cause crashes when unwinding
+      # stack frames (crbug.com/636489).
+      common_optimize_on_cflags += [ "-fno-omit-frame-pointer" ]
+    }
 
     common_optimize_on_ldflags += [
       # Specifically tell the linker to perform optimizations.
