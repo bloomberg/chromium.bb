@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/cursor_utils.h"
@@ -28,6 +29,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -164,6 +166,19 @@ void BrowserPlugin::Attach() {
       attach_params));
 
   attached_ = true;
+
+  // Post an update event to the associated accessibility object.
+  auto* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  if (render_frame && render_frame->render_accessibility() && container()) {
+    blink::WebElement element = container()->element();
+    blink::WebAXObject ax_element = element.accessibilityObject();
+    if (!ax_element.isDetached()) {
+      render_frame->render_accessibility()->HandleAXEvent(
+          ax_element,
+          ui::AX_EVENT_CHILDREN_CHANGED);
+    }
+  }
 }
 
 void BrowserPlugin::Detach() {

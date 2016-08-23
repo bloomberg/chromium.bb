@@ -3238,6 +3238,16 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewAccessibleResource) {
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, LoadWebViewAccessibility) {
+  LoadAppWithGuest("web_view/focus_accessibility");
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
+  content::EnableAccessibilityForWebContents(web_contents);
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::EnableAccessibilityForWebContents(guest_web_contents);
+  content::WaitForAccessibilityTreeToContainNodeWithName(web_contents,
+                                                         "Guest button");
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
   LoadAppWithGuest("web_view/focus_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();

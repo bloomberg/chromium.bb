@@ -2989,7 +2989,10 @@ RenderFrameHostImpl::BrowserPluginInstanceIDToAXTreeID(
   if (!guest)
     return AXTreeIDRegistry::kNoAXTreeID;
 
+  // Create a mapping from the guest to its embedder's AX Tree ID, and
+  // explicitly update the guest to propagate that mapping immediately.
   guest->set_browser_plugin_embedder_ax_tree_id(GetAXTreeID());
+  guest->UpdateAXTreeData();
 
   return guest->GetAXTreeID();
 }
