@@ -120,6 +120,9 @@ class ServiceWorkerMetrics {
     NEW_TAB_PAGE,
     WITH_FETCH_HANDLER,
     WITHOUT_FETCH_HANDLER,
+    PLUS,
+    INBOX,
+    DOCS,
     NUM_TYPES
   };
 

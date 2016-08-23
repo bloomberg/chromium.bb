@@ -210,6 +210,13 @@ ServiceWorkerMetrics::Site ServiceWorkerMetrics::SiteFromURL(const GURL& url) {
     return ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
   }
 
+  const std::string host = url.host();
+  if (host == "plus.google.com")
+    return ServiceWorkerMetrics::Site::PLUS;
+  if (host == "inbox.google.com")
+    return ServiceWorkerMetrics::Site::INBOX;
+  if ((host == "docs.google.com") || (host == "drive.google.com"))
+    return ServiceWorkerMetrics::Site::DOCS;
   return ServiceWorkerMetrics::Site::OTHER;
 }
 
