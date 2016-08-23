@@ -2038,9 +2038,27 @@ uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorInputFormat() {
 }
 
 uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorOutputFormat() {
+  // Prefer YVU420 and NV12 because ArcGpuVideoDecodeAccelerator only supports
+  // single physical plane. Prefer YVU420 over NV12 because chrome rendering
+  // supports YV12 only.
+  static const uint32_t kPreferredFormats[] = {V4L2_PIX_FMT_YVU420,
+                                               V4L2_PIX_FMT_NV12};
+  auto preferred_formats_first = [](uint32_t a, uint32_t b) -> bool {
+    auto iter_a = std::find(std::begin(kPreferredFormats),
+                            std::end(kPreferredFormats), a);
+    auto iter_b = std::find(std::begin(kPreferredFormats),
+                            std::end(kPreferredFormats), b);
+    return iter_a < iter_b;
+  };
+
   V4L2ImageProcessor image_processor(image_processor_device_);
   std::vector<uint32_t> processor_output_formats =
       image_processor.GetSupportedOutputFormats();
+
+  // Move the preferred formats to the front.
+  std::sort(processor_output_formats.begin(), processor_output_formats.end(),
+            preferred_formats_first);
+
   for (uint32_t processor_output_format : processor_output_formats) {
     if (device_->CanCreateEGLImageFrom(processor_output_format)) {
       DVLOGF(1) << "Image processor output format=" << processor_output_format;
