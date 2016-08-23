@@ -87,12 +87,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
     protected void recordOpenSuccess() {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
-                getFilterType(), DownloadFilter.FILTER_ALL);
+                getFilterType(), DownloadFilter.FILTER_BOUNDARY);
     }
 
     protected void recordOpenFailure() {
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenFailed",
-                getFilterType(), DownloadFilter.FILTER_ALL);
+                getFilterType(), DownloadFilter.FILTER_BOUNDARY);
     }
 
     /** Wraps a {@link DownloadItem}. */
