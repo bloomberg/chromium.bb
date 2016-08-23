@@ -3,7 +3,8 @@
 <script>
 function repaintTest() {
   document.getElementsByClassName('item1')[0].style.alignSelf = 'stretch';
-  document.getElementsByClassName('item2')[0].style.alignSelf = 'stretch';
+  document.getElementsByClassName('item2')[0].style.alignSelf = 'start';
+  document.getElementsByClassName('item3')[0].style.alignSelf = 'end';
 }
 onload = runRepaintAndPixelTest;
 </script>
@@ -27,7 +28,13 @@ body {
 .item2 {
   grid-row: 1;
   grid-column: 2;
-  align-self: start;
+  align-self: center;
+  background-color: green;
+}
+.item3 {
+  grid-row: 1;
+  grid-column: 2;
+  align-self: center;
   background-color: green;
 }
 </style>
@@ -37,6 +44,9 @@ body {
     <div style="height: 50px"></div>
   </div>
   <div class="item2">
-    <div style="height: 50px"></div>
+    <div style="height: 150px"></div>
+  </div>
+  <div class="item3">
+    <div style="height: 150px"></div>
   </div>
 </div>

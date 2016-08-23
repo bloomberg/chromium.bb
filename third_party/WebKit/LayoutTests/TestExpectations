@@ -134,10 +134,6 @@ crbug.com/638931 [ Mac10.11 ] svg/custom/js-late-pattern-and-object-creation.svg
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
-crbug.com/639196 [ Win7 ] fast/repaint/align-self-change-keeping-geometry-grid.html [ Pass Failure ]
-crbug.com/639196 [ Win7 ] fast/repaint/justify-self-change-keeping-geometry.html [ Pass Failure ]
-
-
 # ====== Paint team owned tests to here ======
 
 # Run these tests with under virtual/scalefactor... only.

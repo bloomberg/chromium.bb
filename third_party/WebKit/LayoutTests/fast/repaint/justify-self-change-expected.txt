@@ -10,23 +10,28 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV class='item1'",
-          "rect": [24, 52, 52, 152],
-          "reason": "style change"
+          "rect": [0, 52, 100, 300],
+          "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV class='item1'",
-          "rect": [0, 52, 52, 152],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV class='item2'",
-          "rect": [148, 52, 52, 150],
-          "reason": "style change"
+          "object": "LayoutBlockFlow DIV class='item3'",
+          "rect": [150, 52, 50, 300],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV class='item2'",
-          "rect": [124, 52, 52, 150],
-          "reason": "style change"
+          "rect": [125, 52, 50, 300],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item3'",
+          "rect": [125, 52, 50, 300],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='item2'",
+          "rect": [100, 52, 50, 300],
+          "reason": "bounds change"
         }
       ]
     }
@@ -34,7 +39,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV class='item1'",
-      "reason": "style change"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -42,7 +47,15 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='item2'",
-      "reason": "style change"
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV class='item3'",
+      "reason": "bounds change"
     },
     {
       "object": "LayoutBlockFlow DIV",

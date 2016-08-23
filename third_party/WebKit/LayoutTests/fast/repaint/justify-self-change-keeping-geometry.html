@@ -3,7 +3,8 @@
 <script>
 function repaintTest() {
   document.getElementsByClassName('item1')[0].style.justifySelf = 'stretch';
-  document.getElementsByClassName('item2')[0].style.justifySelf = 'stretch';
+  document.getElementsByClassName('item2')[0].style.justifySelf = 'end';
+  document.getElementsByClassName('item3')[0].style.justifySelf = 'start';
 }
 onload = runRepaintAndPixelTest;
 </script>
@@ -23,17 +24,30 @@ body {
   grid-column: 1;
   justify-self: start;
   background-color: green;
-  width: 100px;
+  height: 300px;
 }
 .item2 {
   grid-row: 1;
   grid-column: 2;
-  justify-self: start;
   background-color: green;
+  justify-self: start;
+  height: 300px;
   width: 100px;
+}
+.item3 {
+  grid-row: 1;
+  grid-column: 2;
+  background-color: green;
+  justify-self: end;
+  height: 300px;
+  width: 100px;
+}
 </style>
 <p style="height: 20px">There should be no invalidations because justify-self style change causes no visual change.</p>
 <div id="container">
-  <div class="item1"></div>
+  <div class="item1">
+    <div style="width: 100px;"></div>
+  </div>
   <div class="item2"></div>
+  <div class="item3"></div>
 </div>

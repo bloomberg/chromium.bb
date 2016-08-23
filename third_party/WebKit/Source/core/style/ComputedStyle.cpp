@@ -595,9 +595,15 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || m_rareNonInheritedData->textOverflow != other.m_rareNonInheritedData->textOverflow
             || m_rareNonInheritedData->m_shapeMargin != other.m_rareNonInheritedData->m_shapeMargin
             || m_rareNonInheritedData->m_order != other.m_rareNonInheritedData->m_order
-            || m_rareNonInheritedData->m_grid.get() != other.m_rareNonInheritedData->m_grid.get()
-            || m_rareNonInheritedData->m_gridItem.get() != other.m_rareNonInheritedData->m_gridItem.get()
             || m_rareNonInheritedData->hasFilters() != other.m_rareNonInheritedData->hasFilters())
+            return true;
+
+        if (m_rareNonInheritedData->m_grid.get() != other.m_rareNonInheritedData->m_grid.get()
+            && *m_rareNonInheritedData->m_grid.get() != *other.m_rareNonInheritedData->m_grid.get())
+            return true;
+
+        if (m_rareNonInheritedData->m_gridItem.get() != other.m_rareNonInheritedData->m_gridItem.get()
+            && *m_rareNonInheritedData->m_gridItem.get() != *other.m_rareNonInheritedData->m_gridItem.get())
             return true;
 
         if (m_rareNonInheritedData->m_deprecatedFlexibleBox.get() != other.m_rareNonInheritedData->m_deprecatedFlexibleBox.get()
