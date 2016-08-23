@@ -599,7 +599,7 @@ enum ContentDistributionType {
 };
 
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).
-static const float maximumAllowedFontSize = 1000000.0f;
+static const float maximumAllowedFontSize = 10000.0f;
 
 enum TextIndentLine { TextIndentFirstLine, TextIndentEachLine };
 enum TextIndentType { TextIndentNormal, TextIndentHanging };
