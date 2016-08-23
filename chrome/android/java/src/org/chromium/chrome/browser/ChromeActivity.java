@@ -343,21 +343,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             WarmupManager.getInstance().transferViewHierarchyTo(contentParent);
             contentParent.removeView(placeHolderView);
         } else {
-            // Allow disk access for the setContentView call.
-            // On certain android configurations setContentView results in disk writes outside of
-            // our control.  So, we have to disable StrictMode to work. See crbug.com/639352.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
-            StrictMode.allowThreadDiskWrites();
+            // Allow disk access for the content view and toolbar container setup.
+            // On certain android devices this setup sequence results in disk writes outside
+            // of our control, so we have to disable StrictMode to work. See crbug.com/639352.
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
                 setContentView(R.layout.main);
+                if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
+                    ViewStub toolbarContainerStub =
+                            ((ViewStub) findViewById(R.id.control_container_stub));
+                    toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
+                    toolbarContainerStub.inflate();
+                }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
-            }
-            if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
-                ViewStub toolbarContainerStub =
-                        ((ViewStub) findViewById(R.id.control_container_stub));
-                toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                toolbarContainerStub.inflate();
             }
         }
         TraceEvent.end("onCreate->setContentView()");
