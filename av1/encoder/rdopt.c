@@ -4566,7 +4566,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_EXT_INTRA
       distortion2 = distortion_y + distortion_uv;
-      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, 0);
     } else {
 #if CONFIG_REF_MV
       int_mv backup_ref_mv[2];
