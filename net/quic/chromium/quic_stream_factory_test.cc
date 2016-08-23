@@ -321,6 +321,8 @@ class QuicStreamFactoryTestBase {
         close_sessions_on_ip_change_(false),
         disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
+        packet_reader_yield_after_duration_milliseconds_(
+            kQuicYieldAfterDurationMilliseconds),
         migrate_sessions_on_network_change_(false),
         migrate_sessions_early_(false),
         allow_server_migration_(false),
@@ -355,9 +357,11 @@ class QuicStreamFactoryTestBase {
         delay_tcp_race_, /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
-        idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, allow_server_migration_, force_hol_blocking_,
-        race_cert_verification_, QuicTagVector(),
+        idle_connection_timeout_seconds_,
+        packet_reader_yield_after_duration_milliseconds_,
+        migrate_sessions_on_network_change_, migrate_sessions_early_,
+        allow_server_migration_, force_hol_blocking_, race_cert_verification_,
+        QuicTagVector(),
         /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
@@ -619,6 +623,7 @@ class QuicStreamFactoryTestBase {
   bool close_sessions_on_ip_change_;
   bool disable_quic_on_timeout_with_open_streams_;
   int idle_connection_timeout_seconds_;
+  int packet_reader_yield_after_duration_milliseconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
   bool allow_server_migration_;

@@ -736,6 +736,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool close_sessions_on_ip_change,
     bool disable_quic_on_timeout_with_open_streams,
     int idle_connection_timeout_seconds,
+    int packet_reader_yield_after_duration_milliseconds,
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
     bool allow_server_migration,
@@ -788,7 +789,7 @@ QuicStreamFactory::QuicStreamFactory(
       delay_tcp_race_(delay_tcp_race),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
-          kQuicYieldAfterDurationMilliseconds)),
+          packet_reader_yield_after_duration_milliseconds)),
       close_sessions_on_ip_change_(close_sessions_on_ip_change),
       migrate_sessions_on_network_change_(
           migrate_sessions_on_network_change &&

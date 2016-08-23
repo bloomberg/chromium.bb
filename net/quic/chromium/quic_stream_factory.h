@@ -190,6 +190,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool close_sessions_on_ip_change,
       bool disable_quic_on_timeout_with_open_streams,
       int idle_connection_timeout_seconds,
+      int packet_reader_yield_after_duration_milliseconds,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
       bool allow_server_migration,
