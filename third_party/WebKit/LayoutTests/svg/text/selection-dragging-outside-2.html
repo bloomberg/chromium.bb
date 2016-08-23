@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>Text Selection when dragging mouse outside the SVG text element</title>
 <style>
 text {
   font: 10px Arial;
@@ -15,33 +16,27 @@ text {
     <text id="line3" x="100" y="100">Hello World. Hello, SVG.</text>
   </g>
 </svg>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="resources/SelectionTestCase.js"></script>
-<script type="text/javascript">
-function getEndPosition(id, offset, gap) {
-  var element = document.getElementById(id);
-  var endPos = element.getEndPositionOfChar(offset);
-  endPos.x += gap.x;
-  endPos.y += gap.y;
-  var absEndPos = toAbsoluteCoordinates(endPos, element);
-  return absEndPos;
-}
+<script>
+test(function() {
+  var absEndPos = getEndPosition('line3', 10, { x : 0, y : 30});
+  selectTextFromCharToPoint({ id: 'line1', offset: 7 }, absEndPos, { startElementId: "line1", start: 7, endElementId: "line3", end: 11 });
 
-var absEndPos = getEndPosition('line3', 10, { x : 0, y : 30});
-selectTextFromCharToPoint({ id: 'line1', offset: 7 }, absEndPos, { startElementId: "line1", start: "7", endElementId: "line3", end: "11" });
+  absEndPos = getEndPosition('line2', 10, { x : 0, y : 30});
+  selectTextFromCharToPoint({ id: 'line1', offset: 7 }, absEndPos, { startElementId: "line1", start: 7,  endElementId: "line2", end: 11 });
 
-absEndPos = getEndPosition('line2', 10, { x : 0, y : 30});
-selectTextFromCharToPoint({ id: 'line1', offset: 7 }, absEndPos, { startElementId: "line1", start: "7",  endElementId: "line2", end: "11" });
+  absEndPos = getEndPosition('line3', 10, { x : 0, y : 30});
+  selectTextFromCharToPoint({ id: 'line2', offset: 7 }, absEndPos, { startElementId: "line2", start: 7,  endElementId: "line3", end: 11 });
 
-absEndPos = getEndPosition('line3', 10, { x : 0, y : 30});
-selectTextFromCharToPoint({ id: 'line2', offset: 7 }, absEndPos, { startElementId: "line2", start: "7",  endElementId: "line3", end: "11" });
+  absEndPos = getEndPosition('line1', 8, { x : 0, y : -30});
+  selectTextFromCharToPoint({ id: 'line3', offset: 7 }, absEndPos, { startElementId: "line3", start: 7,  endElementId: "line1", end: 9 });
 
-absEndPos = getEndPosition('line1', 8, { x : 0, y : -30});
-selectTextFromCharToPoint({ id: 'line3', offset: 7 }, absEndPos, { startElementId: "line3", start: "7",  endElementId: "line1", end: "9" });
+  absEndPos = getEndPosition('line1', 8, { x : 0, y : -30});
+  selectTextFromCharToPoint({ id: 'line2', offset: 7 }, absEndPos, { startElementId: "line2", start: 7,  endElementId: "line1", end: 9 });
 
-absEndPos = getEndPosition('line1', 8, { x : 0, y : -30});
-selectTextFromCharToPoint({ id: 'line2', offset: 7 }, absEndPos, { startElementId: "line2", start: "7",  endElementId: "line1", end: "9" });
-
-absEndPos = getEndPosition('line2', 8, { x : 0, y : -30});
-selectTextFromCharToPoint({ id: 'line3', offset: 7 }, absEndPos, { startElementId: "line3", start: "7",  endElementId: "line2", end: "9" });
+  absEndPos = getEndPosition('line2', 8, { x : 0, y : -30});
+  selectTextFromCharToPoint({ id: 'line3', offset: 7 }, absEndPos, { startElementId: "line3", start: 7,  endElementId: "line2", end: 9 });
+});
 </script>
