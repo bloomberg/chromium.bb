@@ -234,12 +234,18 @@ void WebContentsViewAndroid::StartDragging(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
-  if (drop_data.text.is_null())
+  if (drop_data.text.is_null()) {
+    // Need to clear drag and drop state in blink.
+    OnDragEnded();
     return;
+  }
 
   gfx::NativeView native_view = GetNativeView();
-  if (!native_view)
+  if (!native_view) {
+    // Need to clear drag and drop state in blink.
+    OnDragEnded();
     return;
+  }
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jtext =

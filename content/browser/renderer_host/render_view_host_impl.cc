@@ -1010,8 +1010,11 @@ void RenderViewHostImpl::OnStartDragging(
     const gfx::Vector2d& bitmap_offset_in_dip,
     const DragEventSourceInfo& event_info) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (!view)
+  if (!view) {
+    // Need to clear drag and drop state in blink.
+    DragSourceSystemDragEnded();
     return;
+  }
 
   DropData filtered_data(drop_data);
   RenderProcessHost* process = GetProcess();
