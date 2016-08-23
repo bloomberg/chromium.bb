@@ -71,9 +71,10 @@ DoublyLinkedList<const NGExclusion> NGConstraintSpace::exclusions(
 }
 
 NGLayoutOpportunityIterator NGConstraintSpace::layoutOpportunities(
-    unsigned clear, NGExclusionFlowType avoid) const {
+    unsigned clear,
+    bool for_inline_or_bfc) const {
   // TODO(eae): Implement.
-  NGLayoutOpportunityIterator iterator(this, clear, avoid);
+  NGLayoutOpportunityIterator iterator(this, clear, for_inline_or_bfc);
   return iterator;
 }
 

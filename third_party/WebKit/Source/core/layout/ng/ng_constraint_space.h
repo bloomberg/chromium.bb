@@ -32,14 +32,6 @@ enum NGFragmentationType {
   FragmentRegion
 };
 
-enum NGExclusionFlowType {
-  ExcludeNone,
-  ExcludeInlineFlow,
-  ExcludeInlineStart,
-  ExcludeInlineEnd,
-  ExcludeInlineBoth
-};
-
 enum NGWritingMode {
   HorizontalTopBottom = 0,
   VerticalRightLeft = 1,
@@ -106,7 +98,7 @@ class CORE_EXPORT NGConstraintSpace {
 
   NGLayoutOpportunityIterator layoutOpportunities(
       unsigned clear = NGClearNone,
-      NGExclusionFlowType avoid = ExcludeNone) const;
+      bool for_inline_or_bfc = false) const;
 
   // Modifies constraint space to account for a placed fragment. Depending on
   // the shape of the fragment this will either modify the inline or block
@@ -127,9 +119,12 @@ class CORE_EXPORT NGConstraintSpace {
 
 class CORE_EXPORT NGLayoutOpportunityIterator final {
  public:
-  NGLayoutOpportunityIterator(const NGConstraintSpace* space, unsigned clear,
-                              NGExclusionFlowType avoid)
-      : constraint_space_(space), clear_(clear), avoid_(avoid) {}
+  NGLayoutOpportunityIterator(const NGConstraintSpace* space,
+                              unsigned clear,
+                              bool for_inline_or_bfc)
+      : constraint_space_(space),
+        clear_(clear),
+        for_inline_or_bfc_(for_inline_or_bfc) {}
   ~NGLayoutOpportunityIterator() {}
 
   const NGDerivedConstraintSpace* next();
@@ -137,7 +132,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
  private:
   const NGConstraintSpace* constraint_space_;
   unsigned clear_;
-  NGExclusionFlowType avoid_;
+  bool for_inline_or_bfc_;
 };
 
 }  // namespace blink
