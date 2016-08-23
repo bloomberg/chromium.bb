@@ -400,7 +400,6 @@ crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compi
 crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
 crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
-crbug.com/637860 imported/wpt/html/semantics/forms/textfieldselection/textfieldselection-setSelectionRange.html [ NeedsRebaseline ]
 
 crbug.com/636961 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 
