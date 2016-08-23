@@ -27,7 +27,6 @@
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -38,11 +37,6 @@ const char* kChildKinds[] = {
   "functions",
   "events"
 };
-
-base::StringPiece ReadFromResource(int resource_id) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      resource_id);
-}
 
 std::unique_ptr<base::ListValue> LoadSchemaList(
     const std::string& name,
@@ -240,8 +234,6 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     CHECK(schema->GetString("namespace", &schema_namespace));
     PrefixWithNamespace(schema_namespace, schema.get());
     schemas_[schema_namespace] = std::move(schema);
-    if (!extensions_client->IsAPISchemaGenerated(schema_namespace))
-      CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
   }
 }
 
@@ -256,13 +248,7 @@ void ExtensionAPI::InitDefaultConfiguration() {
   for (size_t i = 0; i < arraysize(names); ++i)
     RegisterDependencyProvider(names[i], FeatureProvider::GetByName(names[i]));
 
-  ExtensionsClient::Get()->RegisterAPISchemaResources(this);
   default_configuration_initialized_ = true;
-}
-
-void ExtensionAPI::RegisterSchemaResource(const std::string& name,
-                                          int resource_id) {
-  unloaded_schemas_[name] = resource_id;
 }
 
 void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
@@ -320,19 +306,14 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
     result = maybe_schema->second.get();
   } else {
     // Might not have loaded yet; or might just not exist.
-    UnloadedSchemaMap::iterator maybe_schema_resource =
-        unloaded_schemas_.find(api_name);
     extensions::ExtensionsClient* extensions_client =
         extensions::ExtensionsClient::Get();
     DCHECK(extensions_client);
-    if (maybe_schema_resource != unloaded_schemas_.end()) {
-      LoadSchema(maybe_schema_resource->first,
-                 ReadFromResource(maybe_schema_resource->second));
-    } else if (default_configuration_initialized_ &&
-               extensions_client->IsAPISchemaGenerated(api_name)) {
+    if (default_configuration_initialized_ &&
+        extensions_client->IsAPISchemaGenerated(api_name)) {
       LoadSchema(api_name, extensions_client->GetAPISchema(api_name));
     } else {
-      return NULL;
+      return nullptr;
     }
 
     maybe_schema = schemas_.find(api_name);
@@ -374,23 +355,17 @@ Feature* ExtensionAPI::GetFeatureDependency(const std::string& full_name) {
 std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
                                                  std::string* child_name) {
   std::string api_name_candidate = full_name;
-  extensions::ExtensionsClient* extensions_client =
-      extensions::ExtensionsClient::Get();
+  ExtensionsClient* extensions_client = ExtensionsClient::Get();
   DCHECK(extensions_client);
   while (true) {
-    if (schemas_.find(api_name_candidate) != schemas_.end() ||
-        extensions_client->IsAPISchemaGenerated(api_name_candidate) ||
-        unloaded_schemas_.find(api_name_candidate) != unloaded_schemas_.end()) {
-      std::string result = api_name_candidate;
-
+    if (IsKnownAPI(api_name_candidate, extensions_client)) {
       if (child_name) {
-        if (result.length() < full_name.length())
-          *child_name = full_name.substr(result.length() + 1);
+        if (api_name_candidate.length() < full_name.length())
+          *child_name = full_name.substr(api_name_candidate.length() + 1);
         else
           *child_name = "";
       }
-
-      return result;
+      return api_name_candidate;
     }
 
     size_t last_dot_index = api_name_candidate.rfind('.');
@@ -404,6 +379,12 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
     *child_name = "";
 
   return std::string();
+}
+
+bool ExtensionAPI::IsKnownAPI(const std::string& name,
+                              ExtensionsClient* client) {
+  return schemas_.find(name) != schemas_.end() ||
+         client->IsAPISchemaGenerated(name);
 }
 
 }  // namespace extensions

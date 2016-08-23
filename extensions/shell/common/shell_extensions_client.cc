@@ -172,10 +172,6 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
   return api::GeneratedSchemas::Get(name);
 }
 
-void ShellExtensionsClient::RegisterAPISchemaResources(
-    ExtensionAPI* api) const {
-}
-
 bool ShellExtensionsClient::ShouldSuppressFatalErrors() const {
   return true;
 }

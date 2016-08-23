@@ -28,6 +28,7 @@ class GURL;
 namespace extensions {
 
 class Extension;
+class ExtensionsClient;
 class Feature;
 
 // C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.
@@ -65,13 +66,10 @@ class ExtensionAPI {
     ExtensionAPI* original_api_;
   };
 
-  // Creates a completely clean instance. Configure using RegisterSchema() and
+  // Creates a completely clean instance. Configure using
   // RegisterDependencyProvider before use.
   ExtensionAPI();
   virtual ~ExtensionAPI();
-
-  // Add a (non-generated) API schema resource.
-  void RegisterSchemaResource(const std::string& api_name, int resource_id);
 
   // Add a FeatureProvider for APIs. The features are used to specify
   // dependencies and constraints on the availability of APIs.
@@ -134,15 +132,14 @@ class ExtensionAPI {
 
   void InitDefaultConfiguration();
 
+  // Returns true if there exists an API with |name|. Declared virtual for
+  // testing purposes.
+  virtual bool IsKnownAPI(const std::string& name, ExtensionsClient* client);
+
   bool default_configuration_initialized_;
 
   // Loads a schema.
   void LoadSchema(const std::string& name, const base::StringPiece& schema);
-
-  // Map from each API that hasn't been loaded yet to the schema which defines
-  // it. Note that there may be multiple APIs per schema.
-  typedef std::map<std::string, int> UnloadedSchemaMap;
-  UnloadedSchemaMap unloaded_schemas_;
 
   // Schemas for each namespace.
   using SchemaMap =

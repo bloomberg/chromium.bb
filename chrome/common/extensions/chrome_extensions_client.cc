@@ -252,10 +252,6 @@ base::StringPiece ChromeExtensionsClient::GetAPISchema(
   return api::GeneratedSchemas::Get(name);
 }
 
-void ChromeExtensionsClient::RegisterAPISchemaResources(
-    ExtensionAPI* api) const {
-}
-
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
   // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
   // are fixed. This would typically be:

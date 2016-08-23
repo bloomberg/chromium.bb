@@ -38,8 +38,23 @@ const char* const kTestFeatures[] = {
     "test6", "test7", "parent1", "parent2", "parent3",
 };
 
-UnittestFeatureProvider api_feature_provider;
-}
+class TestExtensionAPI : public ExtensionAPI {
+ public:
+  TestExtensionAPI() {}
+  ~TestExtensionAPI() override {}
+
+  void add_fake_schema(const std::string& name) { fake_schemas_.insert(name); }
+
+ private:
+  bool IsKnownAPI(const std::string& name, ExtensionsClient* client) override {
+    return fake_schemas_.count(name) != 0;
+  }
+
+  std::set<std::string> fake_schemas_;
+  DISALLOW_COPY_AND_ASSIGN(TestExtensionAPI);
+};
+
+}  // namespace
 
 using test_util::BuildExtension;
 
@@ -170,10 +185,10 @@ TEST(ExtensionAPITest, APIFeatures) {
   UnittestFeatureProvider api_feature_provider;
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
-    ExtensionAPI api;
+    TestExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
     for (const auto& key : kTestFeatures)
-      api.RegisterSchemaResource(key, 0);
+      api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
     bool expected = test_data[i].expect_is_available;
@@ -248,10 +263,10 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
   UnittestFeatureProvider api_feature_provider;
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
-    ExtensionAPI api;
+    TestExtensionAPI api;
     api.RegisterDependencyProvider("api", &api_feature_provider);
     for (const auto& key : kTestFeatures)
-      api.RegisterSchemaResource(key, 0);
+      api.add_fake_schema(key);
     ExtensionAPI::OverrideSharedInstanceForTest scope(&api);
 
     Feature* test_feature =
@@ -668,8 +683,8 @@ TEST(ExtensionAPITest, TypesHaveNamespace) {
   ASSERT_TRUE(base::ReadFileToString(manifest_path, &manifest_str))
       << "Failed to load: " << manifest_path.value();
 
-  ExtensionAPI api;
-  api.RegisterSchemaResource("test.foo", 0);
+  TestExtensionAPI api;
+  api.add_fake_schema("test.foo");
   api.LoadSchema("test.foo", manifest_str);
 
   const base::DictionaryValue* schema = api.GetSchema("test.foo");
