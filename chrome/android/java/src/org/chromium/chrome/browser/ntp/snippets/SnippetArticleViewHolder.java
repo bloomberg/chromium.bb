@@ -11,6 +11,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
+import android.os.StrictMode;
+import android.os.SystemClock;
 import android.support.v4.text.BidiFormatter;
 import android.text.format.DateUtils;
 import android.view.ContextMenu;
@@ -44,6 +46,7 @@ import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class that represents the view for a single card snippet.
@@ -284,13 +287,27 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
         mHeadlineTextView.setText(mArticle.mTitle);
 
-        // We format the publisher here so that having a publisher name in an RTL language doesn't
-        // mess up the formatting on an LTR device and vice versa.
-        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING,
-                BidiFormatter.getInstance().unicodeWrap(mArticle.mPublisher),
-                DateUtils.getRelativeTimeSpanString(mArticle.mPublishTimestampMilliseconds,
-                        System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS));
-        mPublisherTextView.setText(publisherAttribution);
+        // DateUtils.getRelativeTimeSpanString(...) calls through to TimeZone.getDefault(). If this
+        // has never been called before it loads the current time zone from disk. In most likelihood
+        // this will have been called previously and the current time zone will have been cached,
+        // but in some cases (eg instrumentation tests) it will cause a strict mode violation.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            long time = SystemClock.elapsedRealtime();
+            CharSequence relativeTimeSpan = DateUtils.getRelativeTimeSpanString(
+                    mArticle.mPublishTimestampMilliseconds, System.currentTimeMillis(),
+                    DateUtils.MINUTE_IN_MILLIS);
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime",
+                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+
+            // We format the publisher here so that having a publisher name in an RTL language
+            // doesn't mess up the formatting on an LTR device and vice versa.
+            String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING,
+                    BidiFormatter.getInstance().unicodeWrap(mArticle.mPublisher), relativeTimeSpan);
+            mPublisherTextView.setText(publisherAttribution);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
 
         // The favicon of the publisher should match the textview height.
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);

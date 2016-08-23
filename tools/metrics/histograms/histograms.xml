@@ -564,6 +564,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.SnippetUIBuildTime" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>peconn@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from snippet UI
+    through date formatting.
+  </summary>
+</histogram>
+
 <histogram name="Android.StrictMode.TabPersistentStore" units="ms">
   <owner>wnwen@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
