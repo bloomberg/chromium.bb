@@ -18,6 +18,9 @@
  *
  */
 
+// PassRefPtr will soon be deleted.
+// New code should instead pass ownership of the contents of a RefPtr using std::move().
+
 #ifndef WTF_PassRefPtr_h
 #define WTF_PassRefPtr_h
 

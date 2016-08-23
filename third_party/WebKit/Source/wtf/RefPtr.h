@@ -18,8 +18,6 @@
  *
  */
 
-// RefPtr and PassRefPtr are documented at http://webkit.org/coding/RefPtr.html
-
 #ifndef WTF_RefPtr_h
 #define WTF_RefPtr_h
 
