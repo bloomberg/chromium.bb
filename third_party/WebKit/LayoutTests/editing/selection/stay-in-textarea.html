@@ -15,6 +15,7 @@ var before = document.getElementById("before");
 var after = document.getElementById("after");
 var textarea = document.getElementById("textarea");
 
+textarea.focus();
 textarea.setSelectionRange(0, 2);
 var textareaSelection = internals.youngestShadowRoot(textarea).getSelection();
 var initialTextareaFocusNode = textareaSelection.focusNode;

@@ -42,6 +42,7 @@ function runNextTest()
     debug('Dragging text in ' + sourceId + ': ' + source.value);
 
     // Drag a text in the source element.
+    source.focus();
     source.setSelectionRange(0, source.value.length);
     x = source.offsetLeft + 10;
     y = source.offsetTop + source.offsetHeight / 2;

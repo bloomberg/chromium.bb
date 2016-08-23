@@ -5,6 +5,7 @@
 <script>
     function select() {
         var input = document.getElementById('inputfield');
+        input.focus();
         var range = input.setSelectionRange(0, 6);
         window.getSelection().addRange(range);
     }

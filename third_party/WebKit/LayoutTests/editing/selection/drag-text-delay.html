@@ -10,6 +10,7 @@ if (window.testRunner) {
     testRunner.dumpAsText();
 
     var text = document.getElementById("text");
+    text.focus();
     text.setSelectionRange(0, 5);
 
     var start_x = text.offsetLeft + 5;

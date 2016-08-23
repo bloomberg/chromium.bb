@@ -6,6 +6,7 @@ if (window.testRunner)
 function runTest() {
     var input = document.getElementById("input");
     input.setSelectionRange(0, 3);
+    input.focus();
     var frame = frames[0];
     frame.focus();
     frame.getSelection().collapse(frame.document.body, 0);

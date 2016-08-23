@@ -45,7 +45,6 @@ public:
     enum NeedsToCheckDirtyFlag {CheckDirtyFlag, IgnoreDirtyFlag};
     // Option of setSelectionRange.
     enum SelectionOption {
-        ChangeSelection,
         ChangeSelectionAndFocus,
         ChangeSelectionIfFocused,
         NotChangeSelection
@@ -78,7 +77,7 @@ public:
     virtual void setRangeText(const String& replacement, ExceptionState&);
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
     void setSelectionRange(int start, int end, const String& direction);
-    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent, SelectionOption = ChangeSelection);
+    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent, SelectionOption = ChangeSelectionIfFocused);
     Range* selection() const;
 
     virtual bool supportsAutocapitalize() const = 0;

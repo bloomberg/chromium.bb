@@ -8,6 +8,7 @@ description("This tests that text is copied (rather than moved) when the copy ke
 if (window.testRunner) {
     // Drag a word in the textarea
     var textarea = document.getElementById("textarea");
+    textarea.focus();
     textarea.setSelectionRange(0, 5);
     x = textarea.offsetLeft + 10;
     y = textarea.offsetTop + textarea.offsetHeight / 2;
