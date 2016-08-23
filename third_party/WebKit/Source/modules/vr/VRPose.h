@@ -6,6 +6,7 @@
 #define VRPose_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTypedArray.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "platform/heap/Handle.h"
@@ -21,7 +22,7 @@ public:
         return new VRPose();
     }
 
-    double timeStamp() const { return m_timeStamp; }
+    DOMHighResTimeStamp timestamp() const { return m_timestamp; }
     DOMFloat32Array* orientation() const { return m_orientation; }
     DOMFloat32Array* position() const { return m_position; }
     DOMFloat32Array* angularVelocity() const { return m_angularVelocity; }
@@ -36,7 +37,7 @@ public:
 private:
     VRPose();
 
-    double m_timeStamp;
+    DOMHighResTimeStamp m_timestamp;
     Member<DOMFloat32Array> m_orientation;
     Member<DOMFloat32Array> m_position;
     Member<DOMFloat32Array> m_angularVelocity;

@@ -19,7 +19,7 @@ DOMFloat32Array* mojoArrayToFloat32Array(const mojo::WTFArray<float>& vec)
 } // namespace
 
 VRPose::VRPose()
-    : m_timeStamp(0.0)
+    : m_timestamp(0.0)
 {
 }
 
@@ -28,7 +28,7 @@ void VRPose::setPose(const device::blink::VRPosePtr& state)
     if (state.is_null())
         return;
 
-    m_timeStamp = state->timestamp;
+    m_timestamp = state->timestamp;
     m_orientation = mojoArrayToFloat32Array(state->orientation);
     m_position = mojoArrayToFloat32Array(state->position);
     m_angularVelocity = mojoArrayToFloat32Array(state->angularVelocity);
