@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_DATE;
 import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_NORMAL;
 
 import android.support.v7.widget.RecyclerView;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.text.SimpleDateFormat;
@@ -25,7 +25,7 @@ import java.util.Locale;
 /**
  * Tests a DownloadHistoryAdapter that is isolated from the real bridges.
  */
-public class DownloadHistoryAdapterTest extends InstrumentationTestCase {
+public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
 
     private static class Observer extends RecyclerView.AdapterDataObserver {
         public CallbackHelper onChangedCallback = new CallbackHelper();
@@ -45,6 +45,7 @@ public class DownloadHistoryAdapterTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        loadNativeLibraryAndInitBrowserProcess();
         mBackendProvider = new StubbedProvider();
         mDownloadDelegate = mBackendProvider.getDownloadDelegate();
         mOfflineDelegate = mBackendProvider.getOfflinePageBridge();

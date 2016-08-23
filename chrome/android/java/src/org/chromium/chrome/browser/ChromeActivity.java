@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAServiceClient;
@@ -1570,6 +1571,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     new OfflinePageDownloadBridge(currentTab.getProfile());
             bridge.startDownload(currentTab);
             bridge.destroy();
+
+            RecordUserAction.record("MobileMenuDownloadPage");
+            DownloadUtils.recordDownloadPageMetrics(currentTab);
         } else if (id == R.id.reload_menu_id) {
             if (currentTab.isLoading()) {
                 currentTab.stopLoading();

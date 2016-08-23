@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.app.Activity;
 import android.content.Intent;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,5 +44,15 @@ public class DownloadUtils {
      */
     public static boolean shouldShowOffTheRecordDownloads(Intent intent) {
         return IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
+    }
+
+    /**
+     * Records metrics related to downloading a page. Should be called after a tap on the download
+     * page button.
+     * @param tab The Tab containing the page being downloaded.
+     */
+    public static void recordDownloadPageMetrics(Tab tab) {
+        RecordHistogram.recordPercentageHistogram("OfflinePages.SavePage.PercentLoaded",
+                tab.getProgress());
     }
 }

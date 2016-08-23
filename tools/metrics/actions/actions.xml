@@ -921,6 +921,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DownloadManager.Delete">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>User deleted one or more download items.</description>
+</action>
+
+<action name="Android.DownloadManager.OpenDrawer">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    User opened the navigation drawer in Chrome's download manager.
+  </description>
+</action>
+
+<action name="Android.DownloadManager.Share.Deleted">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    User tapped on the share button with only externally deleted download items
+    selected.
+  </description>
+</action>
+
 <action name="Android.LauncherShortcut.NewIncognitoTab">
   <owner>twellington@chromium.org</owner>
   <description>
@@ -9150,6 +9176,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileMenuDownloadManager">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>User pressed 'Downloads' in the app menu.</description>
+</action>
+
+<action name="MobileMenuDownloadPage">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    User pressed the download page icon in the app menu.
+  </description>
+</action>
+
 <action name="MobileMenuFeedback">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Help and Feedback' in the app menu.</description>
@@ -9564,6 +9606,13 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarBack">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileToolbarDownloadPage">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>User pressed the download page icon in the toolbar.</description>
 </action>
 
 <action name="MobileToolbarForward">

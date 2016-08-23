@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
@@ -98,8 +99,14 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         list.clear();
-        for (DownloadItem item : result) list.add(new DownloadItemWrapper(item, isOffTheRecord));
+        int[] mItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
+        for (DownloadItem item : result) {
+            DownloadItemWrapper wrapper = new DownloadItemWrapper(item, isOffTheRecord);
+            list.add(wrapper);
+            mItemCounts[wrapper.getFilterType()]++;
+        }
         filter(DownloadFilter.FILTER_ALL);
+        if (!isOffTheRecord) recordDownloadCountHistograms(mItemCounts, result.size());
     }
 
     /** Called when the user's offline page history has been gathered. */
@@ -111,6 +118,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         // TODO(ianwen): Implement a loading screen to prevent filter-changing wonkiness.
         filter(DownloadFilter.FILTER_ALL);
+
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.OfflinePage",
+                result.size());
     }
 
     /** Returns the total size of all the downloaded items. */
@@ -368,5 +378,20 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     private OfflinePageItemWrapper createOfflinePageItemWrapper(OfflinePageDownloadItem item) {
         return new OfflinePageItemWrapper(item, getOfflinePageBridge(), mParentComponent);
+    }
+
+    private void recordDownloadCountHistograms(int[] itemCounts, int totalCount) {
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Audio",
+                itemCounts[DownloadFilter.FILTER_AUDIO]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Document",
+                itemCounts[DownloadFilter.FILTER_DOCUMENT]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Image",
+                itemCounts[DownloadFilter.FILTER_IMAGE]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Other",
+                itemCounts[DownloadFilter.FILTER_OTHER]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Video",
+                itemCounts[DownloadFilter.FILTER_VIDEO]);
+        RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Total",
+                totalCount);
     }
 }

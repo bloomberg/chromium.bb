@@ -373,6 +373,69 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.DownloadManager.Filter"
+    enum="AndroidDownloadFilterType">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Recorded when the user selects a filter from the Chrome download manager
+    navigation drawer.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.InitialCount">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    The number of non-incognito download items displayed when the download UI is
+    initialized.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Item.OpenFailed"
+    enum="AndroidDownloadFilterType">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>Recorded when a download fails to open.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Item.OpenSucceeded"
+    enum="AndroidDownloadFilterType">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>Recorded when a download is opened.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Share.Count">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>The number of downloads shared at the same time.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.Share.FileTypes"
+    enum="AndroidDownloadFilterType">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Recorded when downloads are shared through the download manager. A recorded
+    value of &quot;All&quot; indicates that multiple types of downloads were
+    shared.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.SpaceUsed" units="%">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>The percentage of total storage downloads consume.</summary>
+</histogram>
+
 <histogram name="Android.IsLastSharedAppInfoRetrieved"
     enum="BooleanIsLastSharedAppInfoRetrieved">
   <owner>jaekyun@chromium.org</owner>
@@ -37496,6 +37559,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.SavePage.PercentLoaded" units="%">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    The percentage of the page load completed when the button to save an offline
+    page is pressed.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.SavePageResult" enum="OfflinePagesSavePageResult">
   <owner>jianli@chromium.org</owner>
   <summary>Result of saving an offline copy for a page.</summary>
@@ -67932,6 +68005,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="NEON support"/>
 </enum>
 
+<enum name="AndroidDownloadFilterType" type="int">
+  <int value="0" label="All"/>
+  <int value="1" label="Page"/>
+  <int value="2" label="Video"/>
+  <int value="3" label="Audio"/>
+  <int value="4" label="Image"/>
+  <int value="5" label="Document"/>
+  <int value="6" label="Other"/>
+</enum>
+
 <enum name="AndroidEvictionReason" type="int">
   <int value="0" label="TabUnusedTooLong"/>
   <int value="1" label="TabUnusedInSession"/>
@@ -97426,6 +97509,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Other" label="Measures other crash uploads."/>
   <suffix name="Renderer" label="Measures renderer crash uploads."/>
   <affected-histogram name="Tab.AndroidCrashUpload"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AndroidDownloadTypes" separator=".">
+  <suffix name="Audio"/>
+  <suffix name="Document"/>
+  <suffix name="Image"/>
+  <suffix name="OfflinePage"/>
+  <suffix name="Other"/>
+  <suffix name="Total"/>
+  <suffix name="Video"/>
+  <affected-histogram name="Android.DownloadManager.InitialCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidGetAccountsTypes">

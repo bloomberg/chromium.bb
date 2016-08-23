@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -83,6 +84,16 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
      *         action.
      */
     abstract boolean hasBeenExternallyRemoved();
+
+    protected void recordOpenSuccess() {
+        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenSucceeded",
+                getFilterType(), DownloadFilter.FILTER_ALL);
+    }
+
+    protected void recordOpenFailure() {
+        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Item.OpenFailed",
+                getFilterType(), DownloadFilter.FILTER_ALL);
+    }
 
     /** Wraps a {@link DownloadItem}. */
     static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
@@ -176,10 +187,12 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
             try {
                 context.startActivity(fileIntent);
+                recordOpenSuccess();
             } catch (ActivityNotFoundException e) {
                 // Can't launch the Intent.
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
                         Toast.LENGTH_SHORT).show();
+                recordOpenFailure();
             }
         }
 
@@ -208,6 +221,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
+        @Override
+        boolean hasBeenExternallyRemoved() {
+            return mItem.hasBeenExternallyRemoved();
+        }
+
         /** Identifies the type of file represented by the given MIME type string. */
         private static int convertMimeTypeToFilterType(String mimeType) {
             if (TextUtils.isEmpty(mimeType)) return DownloadFilter.FILTER_OTHER;
@@ -226,11 +244,6 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
             } else {
                 return DownloadFilter.FILTER_OTHER;
             }
-        }
-
-        @Override
-        boolean hasBeenExternallyRemoved() {
-            return mItem.hasBeenExternallyRemoved();
         }
     }
 
@@ -308,6 +321,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public void open() {
             mBridge.openItem(getId(), mComponent);
+            recordOpenSuccess();
         }
 
         @Override

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
@@ -27,6 +28,8 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -114,6 +117,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         DrawerLayout drawerLayout = null;
         if (!DeviceFormFactor.isLargeTablet(activity)) {
             drawerLayout = (DrawerLayout) mMainView;
+            addDrawerListener(drawerLayout);
         }
         mToolbar.initialize(mSelectionDelegate, 0, drawerLayout, R.id.normal_menu_group,
                 R.id.selection_mode_menu_group);
@@ -257,6 +261,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         if (mNativePage != null) {
             mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));
         }
+
+        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Filter", filter,
+                DownloadFilter.FILTER_BOUNDARY);
     }
 
     /**
@@ -282,6 +289,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         String intentAction;
         ArrayList<Uri> itemUris = new ArrayList<Uri>();
         StringBuilder offlinePagesString = new StringBuilder();
+        int selectedItemsFilterType = selectedItems.get(0).getFilterType();
 
         String intentMimeType = "";
         String[] intentMimeParts = {"", ""};
@@ -297,6 +305,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
                 offlinePagesString.append(wrappedItem.getUrl());
             } else {
                 itemUris.add(getUriForItem(wrappedItem));
+            }
+
+            if (selectedItemsFilterType != wrappedItem.getFilterType()) {
+                selectedItemsFilterType = DownloadFilter.FILTER_ALL;
             }
 
             String mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
@@ -340,6 +352,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         if (itemUris.size() == 0 && offlinePagesString.length() == 0) {
             Toast.makeText(mActivity, mActivity.getString(R.string.download_cant_share_deleted),
                     Toast.LENGTH_SHORT).show();
+            RecordUserAction.record("Android.DownloadManager.Share.Deleted");
             return;
         }
 
@@ -370,6 +383,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         //                    startActivityForResult() and the selection would only be cleared after
         //                    receiving an OK response. See crbug.com/638916.
         mSelectionDelegate.clearSelection();
+
+        recordShareHistograms(selectedItems.size(), selectedItemsFilterType);
     }
 
     private Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
@@ -420,5 +435,36 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
             });
         }
         mSelectionDelegate.clearSelection();
+
+        RecordUserAction.record("Android.DownloadManager.Delete");
+    }
+
+    private void addDrawerListener(DrawerLayout drawer) {
+        drawer.addDrawerListener(new DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                RecordUserAction.record("Android.DownloadManager.OpenDrawer");
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
+    }
+
+    private void recordShareHistograms(int count, int filterType) {
+        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
+                filterType, DownloadFilter.FILTER_BOUNDARY);
+
+        RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
+                count, 1, 20, 20);
     }
 }

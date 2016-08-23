@@ -1118,6 +1118,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
         } else if (id == R.id.downloads_menu_id) {
             DownloadUtils.showDownloadManager(this, currentTab);
+            RecordUserAction.record("MobileMenuDownloadManager");
         } else if (id == R.id.open_recently_closed_tab) {
             TabModel currentModel = mTabModelSelectorImpl.getCurrentModel();
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedTab();

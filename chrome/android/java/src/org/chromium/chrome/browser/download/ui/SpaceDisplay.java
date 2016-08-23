@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 
 import java.io.File;
@@ -105,6 +106,8 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         float usedGigabytes = convertBytesToGigabytes(usedBytes);
         mSpaceUsedTextView.setText(context.getResources().getString(
                 R.string.download_manager_ui_space_used, usedGigabytes));
+
+        RecordHistogram.recordPercentageHistogram("Android.DownloadManager.SpaceUsed", percentage);
     }
 
     private float convertBytesToGigabytes(long bytes) {
