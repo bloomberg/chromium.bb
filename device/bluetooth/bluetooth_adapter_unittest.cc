@@ -430,8 +430,16 @@ TEST_F(BluetoothTest, ConstructDefaultAdapter) {
     LOG(WARNING) << "Bluetooth adapter not present; skipping unit test.";
     return;
   }
-  EXPECT_GT(adapter_->GetAddress().length(), 0u);
-  EXPECT_GT(adapter_->GetName().length(), 0u);
+
+  bool expected = false;
+// MacOS returns empty for name and address if the adapter is off.
+#if defined(OS_MACOSX)
+  expected = !adapter_->IsPowered();
+#endif  // defined(OS_MACOSX)
+
+  EXPECT_EQ(expected, adapter_->GetAddress().empty());
+  EXPECT_EQ(expected, adapter_->GetName().empty());
+
   EXPECT_TRUE(adapter_->IsPresent());
   // Don't know on test machines if adapter will be powered or not, but
   // the call should be safe to make and consistent.

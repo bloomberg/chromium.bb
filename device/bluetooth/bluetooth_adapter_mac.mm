@@ -128,8 +128,8 @@ bool BluetoothAdapterMac::IsInitialized() const {
 bool BluetoothAdapterMac::IsPresent() const {
   bool is_present = !address_.empty();
   if (IsLowEnergyAvailable()) {
-    is_present = is_present || ([low_energy_central_manager_ state] ==
-                                CBCentralManagerStatePoweredOn);
+    is_present = is_present || ([low_energy_central_manager_ state] !=
+                                CBCentralManagerStateUnsupported);
   }
   return is_present;
 }
