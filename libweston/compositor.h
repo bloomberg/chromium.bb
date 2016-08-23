@@ -1071,6 +1071,7 @@ struct weston_surface {
 	struct wl_signal destroy_signal; /* callback argument: this surface */
 	struct weston_compositor *compositor;
 	struct wl_signal commit_signal;
+	struct wl_signal drop_idle_inhibitor_signal;
 
 	/** Damage in local coordinates from the client, for tex upload. */
 	pixman_region32_t damage;
