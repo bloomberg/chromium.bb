@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
+component("browser") {
+  output_name = "memory_coordinator_browser"
+
   sources = [
     "memory_coordinator.cc",
     "memory_coordinator.h",
@@ -10,6 +12,8 @@ static_library("browser") {
     "memory_monitor_win.cc",
     "memory_monitor_win.h",
   ]
+
+  defines = [ "MEMORY_COORDINATOR_IMPLEMENTATION" ]
 
   deps = [
     "//base",

@@ -10,5 +10,10 @@ mojom("interfaces") {
     "memory_coordinator.mojom",
   ]
 
+  export_class_attribute = "MEMORY_COORDINATOR_EXPORT"
+  export_define = "MEMORY_COORDINATOR_IMPLEMENTATION=1"
+  export_header =
+      "components/memory_coordinator/common/memory_coordinator_export.h"
+
   use_new_wrapper_types = false
 }

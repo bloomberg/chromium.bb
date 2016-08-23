@@ -18,7 +18,7 @@ namespace memory_coordinator {
 // ChildMemoryCoordinatorImpl is the implementation of ChildMemoryCoordinator.
 // It lives in child processes and is responsible for dispatching memory events
 // to its clients.
-class ChildMemoryCoordinatorImpl
+class MEMORY_COORDINATOR_EXPORT ChildMemoryCoordinatorImpl
     : public ClientRegistry,
       NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:

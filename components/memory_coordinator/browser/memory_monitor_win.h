@@ -6,6 +6,7 @@
 #define COMPONENTS_MEMORY_COORDINATOR_BROWSER_MEMORY_MONITOR_WIN_H_
 
 #include "components/memory_coordinator/browser/memory_monitor.h"
+#include "components/memory_coordinator/common/memory_coordinator_export.h"
 
 namespace base {
 struct SystemMemoryInfoKB;
@@ -19,7 +20,7 @@ class MemoryMonitorWinDelegate;
 // class uses a very simple heuristic to anticipate paging (critical memory
 // pressure). When the amount of memory available dips below a provided
 // threshold, it is assumed that paging is inevitable.
-class MemoryMonitorWin : public MemoryMonitor {
+class MEMORY_COORDINATOR_EXPORT MemoryMonitorWin : public MemoryMonitor {
  public:
   // Default constants governing the amount of free memory that the memory
   // manager attempts to maintain.
@@ -63,7 +64,7 @@ class MemoryMonitorWin : public MemoryMonitor {
 
 // A delegate that wraps functions used by MemoryMonitorWin. Used as a testing
 // seam.
-class MemoryMonitorWinDelegate {
+class MEMORY_COORDINATOR_EXPORT MemoryMonitorWinDelegate {
  public:
   MemoryMonitorWinDelegate() {}
   virtual ~MemoryMonitorWinDelegate() {}

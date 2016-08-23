@@ -6,6 +6,7 @@
 #define COMPONENTS_MEMORY_COORDINATOR_COMMON_MEMORY_COORDINATOR_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "components/memory_coordinator/common/memory_coordinator_export.h"
 
 // WARNING:
 // The memory coordinator is not ready for use and enabling this may cause
@@ -14,10 +15,10 @@
 namespace memory_coordinator {
 
 // Returns true when the memory coordinator is enabled.
-bool IsEnabled();
+MEMORY_COORDINATOR_EXPORT bool IsEnabled();
 
 // Enables the memory coordinator for testing.
-void EnableForTesting();
+MEMORY_COORDINATOR_EXPORT void EnableForTesting();
 
 }  // memory_coordinator
 

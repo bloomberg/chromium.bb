@@ -8,12 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/memory_coordinator/common/memory_coordinator_export.h"
 
 namespace memory_coordinator {
 
 // A simple class that monitors the amount of free memory available on a system.
 // This is an interface to facilitate dependency injection for testing.
-class MemoryMonitor {
+class MEMORY_COORDINATOR_EXPORT MemoryMonitor {
  public:
   MemoryMonitor() {}
   virtual ~MemoryMonitor() {}
@@ -30,7 +31,7 @@ class MemoryMonitor {
 };
 
 // Factory function for creating a monitor for the current platform.
-std::unique_ptr<MemoryMonitor> CreateMemoryMonitor();
+MEMORY_COORDINATOR_EXPORT std::unique_ptr<MemoryMonitor> CreateMemoryMonitor();
 
 }  // namespace memory_coordinator
 

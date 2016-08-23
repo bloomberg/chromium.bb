@@ -7,12 +7,13 @@
 
 #include "base/observer_list_threadsafe.h"
 #include "components/memory_coordinator/common/memory_coordinator_client.h"
+#include "components/memory_coordinator/common/memory_coordinator_export.h"
 
 namespace memory_coordinator {
 
 // ClientRegistry is a base class of process-specific memory coordinator
 // and provides ways to register/unregister MemoryCoordinatorClients.
-class ClientRegistry {
+class MEMORY_COORDINATOR_EXPORT ClientRegistry {
  public:
   ClientRegistry();
   virtual ~ClientRegistry();
