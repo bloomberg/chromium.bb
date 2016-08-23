@@ -20,6 +20,8 @@
 #include "base/android/application_status_listener.h"
 #endif
 
+class GURL;
+
 namespace net {
 class URLRequest;
 }
@@ -38,11 +40,15 @@ class DataUseMeasurement {
       const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
   ~DataUseMeasurement();
 
-  // Records the data use of the |request|, thus |request| must be non-null.
-  void ReportDataUseUMA(const net::URLRequest* request) const;
+  // Called right after a redirect response code was received for |request|.
+  void OnBeforeRedirect(const net::URLRequest& request,
+                        const GURL& new_location);
+
+  // Indicates that |request| has been completed or failed.
+  void OnCompleted(const net::URLRequest& request, bool started);
 
   // Returns true if the URLRequest |request| is initiated by user traffic.
-  static bool IsUserInitiatedRequest(const net::URLRequest* request);
+  static bool IsUserInitiatedRequest(const net::URLRequest& request);
 
 #if defined(OS_ANDROID)
   // This function should just be used for testing purposes. A change in
@@ -79,6 +85,9 @@ class DataUseMeasurement {
   void OnApplicationStateChange(
       base::android::ApplicationState application_state);
 #endif
+
+  // Records the data use of the |request|, thus |request| must be non-null.
+  void ReportDataUseUMA(const net::URLRequest& request) const;
 
   // A helper function used to record data use of services. It gets the size of
   // exchanged message, its direction (which is upstream or downstream) and

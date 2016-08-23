@@ -59,16 +59,28 @@ DataUseMeasurement::DataUseMeasurement(
 
 DataUseMeasurement::~DataUseMeasurement(){};
 
-void DataUseMeasurement::ReportDataUseUMA(
-    const net::URLRequest* request) const {
+void DataUseMeasurement::OnBeforeRedirect(const net::URLRequest& request,
+                                          const GURL& new_location) {
+  // Recording data use of request on redirects.
+  ReportDataUseUMA(request);
+}
 
+void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
+                                     bool started) {
+  // TODO(amohammadkhan): Verify that there is no double recording in data use
+  // of redirected requests.
+  ReportDataUseUMA(request);
+}
+
+void DataUseMeasurement::ReportDataUseUMA(
+    const net::URLRequest& request) const {
   // Counts rely on URLRequest::GetTotalReceivedBytes() and
   // URLRequest::GetTotalSentBytes(), which does not include the send path,
   // network layer overhead, TLS overhead, and DNS.
   // TODO(amohammadkhan): Make these measured bytes more in line with number of
   // bytes in lower levels.
-  int64_t total_upload_bytes = request->GetTotalSentBytes();
-  int64_t total_received_bytes = request->GetTotalReceivedBytes();
+  int64_t total_upload_bytes = request.GetTotalSentBytes();
+  int64_t total_received_bytes = request.GetTotalReceivedBytes();
   bool is_user_traffic = IsUserInitiatedRequest(request);
 
   bool is_connection_cellular =
@@ -86,7 +98,7 @@ void DataUseMeasurement::ReportDataUseUMA(
       total_received_bytes);
 
   DataUseUserData* attached_service_data = reinterpret_cast<DataUseUserData*>(
-      request->GetUserData(DataUseUserData::kUserDataKey));
+      request.GetUserData(DataUseUserData::kUserDataKey));
   DataUseUserData::ServiceName service_name =
       attached_service_data ? attached_service_data->service_name()
                             : DataUseUserData::NOT_TAGGED;
@@ -107,7 +119,7 @@ void DataUseMeasurement::ReportDataUseUMA(
 
 // static
 bool DataUseMeasurement::IsUserInitiatedRequest(
-    const net::URLRequest* request) {
+    const net::URLRequest& request) {
   // Having ResourceRequestInfo in the URL request is a sign that the request is
   // for a web content from user. For now we could add a condition to check
   // ProcessType in info is content::PROCESS_TYPE_RENDERER, but it won't be
@@ -116,7 +128,7 @@ bool DataUseMeasurement::IsUserInitiatedRequest(
   // with upcoming changes in PlzNavigate.
   // TODO(rajendrant): Verify this condition for different use cases. See
   // crbug.com/626063.
-  return content::ResourceRequestInfo::ForRequest(request) != nullptr;
+  return content::ResourceRequestInfo::ForRequest(&request) != nullptr;
 }
 
 #if defined(OS_ANDROID)

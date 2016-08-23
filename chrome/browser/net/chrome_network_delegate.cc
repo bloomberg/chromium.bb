@@ -343,8 +343,7 @@ int ChromeNetworkDelegate::OnHeadersReceived(
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
-// Recording data use of request on redirects.
-  data_use_measurement_.ReportDataUseUMA(request);
+  data_use_measurement_.OnBeforeRedirect(*request, new_location);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnBeforeRedirect(request);
   extensions_delegate_->OnBeforeRedirect(request, new_location);
@@ -373,9 +372,7 @@ void ChromeNetworkDelegate::OnNetworkBytesSent(net::URLRequest* request,
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
-  // TODO(amohammadkhan): Verify that there is no double recording in data use
-  // of redirected requests.
-  data_use_measurement_.ReportDataUseUMA(request);
+  data_use_measurement_.OnCompleted(*request, started);
   RecordNetworkErrorHistograms(request);
 
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {

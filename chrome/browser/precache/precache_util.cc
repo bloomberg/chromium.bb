@@ -69,7 +69,7 @@ void UpdatePrecacheMetricsAndState(const net::URLRequest* request,
           GURL(request->referrer()), latency, base::Time::Now(),
           request->response_info(), received_content_length,
           data_use_measurement::DataUseMeasurement::IsUserInitiatedRequest(
-              request),
+              *request),
           profile_id));
 }
 

@@ -65,7 +65,7 @@ class DataUseMeasurementTest : public testing::Test {
     request->Start();
     loop_.RunUntilIdle();
 
-    data_use_measurement_.ReportDataUseUMA(request.get());
+    data_use_measurement_.OnCompleted(*request, true);
   }
 
   // This function makes a user request and confirms that its effect is
