@@ -130,8 +130,6 @@ do_package() {
 
   # lsb implies many dependencies.
   #
-  # libcurl was for NPAPI Flash. TODO(thestig): Remove?
-  #
   # nss (bundled) is optional in LSB 4.0. Also specify a more recent version
   # for security and stability updates.
   #
@@ -155,7 +153,6 @@ do_package() {
   # TODO(thestig): Use the liberation-fonts package once its available on all
   # supported distros.
   DEPENDS="lsb >= 4.0, \
-  libcurl.so.4${EMPTY_VERSION}${PKG_ARCH}, \
   libnss3.so(NSS_3.19.1)${PKG_ARCH}, \
   libstdc++.so.6(GLIBCXX_3.4.18)${PKG_ARCH}, \
   wget, \
