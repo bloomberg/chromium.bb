@@ -49,6 +49,10 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
 LocationIconView::~LocationIconView() {
 }
 
+gfx::Size LocationIconView::GetMinimumSize() const {
+  return GetMinimumSizeForPreferredSize(GetPreferredSize());
+}
+
 bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() &&
       ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
@@ -63,6 +67,11 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
 
   suppress_mouse_released_action_ = WebsiteSettingsPopupView::IsPopupShowing();
   return true;
+}
+
+bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
+  location_bar_->GetOmniboxView()->CloseOmniboxPopup();
+  return false;
 }
 
 void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
@@ -80,11 +89,6 @@ void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
   OnClickOrTap(event);
 }
 
-bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
-  location_bar_->GetOmniboxView()->CloseOmniboxPopup();
-  return false;
-}
-
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;
@@ -97,30 +101,6 @@ bool LocationIconView::GetTooltipText(const gfx::Point& p,
   if (show_tooltip_)
     *tooltip = l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON);
   return show_tooltip_;
-}
-
-void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
-  // Do not show page info if the user has been editing the location bar or the
-  // location bar is at the NTP.
-  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
-    return;
-  ProcessLocatedEvent(event);
-}
-
-void LocationIconView::ProcessLocatedEvent(const ui::LocatedEvent& event) {
-  if (HitTestPoint(event.location()))
-    OnActivate(event);
-}
-
-gfx::Size LocationIconView::GetMinimumSize() const {
-  return GetMinimumSizeForPreferredSize(GetPreferredSize());
-}
-
-gfx::Size LocationIconView::GetMinimumSizeForLabelText(
-    const base::string16& text) const {
-  views::Label label(text, font_list());
-  return GetMinimumSizeForPreferredSize(
-      GetSizeForLabelWidth(label.GetPreferredSize().width()));
 }
 
 SkColor LocationIconView::GetTextColor() const {
@@ -151,12 +131,11 @@ bool LocationIconView::OnActivate(const ui::Event& event) {
   return true;
 }
 
-gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
-    gfx::Size size) const {
-  const int kMinCharacters = 10;
-  size.SetToMin(
-      GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
-  return size;
+gfx::Size LocationIconView::GetMinimumSizeForLabelText(
+    const base::string16& text) const {
+  views::Label label(text, font_list());
+  return GetMinimumSizeForPreferredSize(
+      GetSizeForLabelWidth(label.GetPreferredSize().width()));
 }
 
 void LocationIconView::SetBackground(bool should_show_ev) {
@@ -165,4 +144,25 @@ void LocationIconView::SetBackground(bool should_show_ev) {
     SetBackgroundImageGrid(kEvBackgroundImages);
   else
     UnsetBackgroundImageGrid();
+}
+
+void LocationIconView::ProcessLocatedEvent(const ui::LocatedEvent& event) {
+  if (HitTestPoint(event.location()))
+    OnActivate(event);
+}
+
+gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
+    gfx::Size size) const {
+  const int kMinCharacters = 10;
+  size.SetToMin(
+      GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
+  return size;
+}
+
+void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
+  // Do not show page info if the user has been editing the location bar or the
+  // location bar is at the NTP.
+  if (location_bar_->GetOmniboxView()->IsEditingOrEmpty())
+    return;
+  ProcessLocatedEvent(event);
 }
