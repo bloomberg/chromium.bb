@@ -568,6 +568,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel'], bug=635528)
     self.Fail('deqp/functional/gles3/fbomultisample.4_samples.html',
         ['linux', 'intel'], bug=635528)
+    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
+        ['linux', 'intel'], bug=640389)
 
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
