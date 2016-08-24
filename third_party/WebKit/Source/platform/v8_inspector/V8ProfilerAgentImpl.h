@@ -34,7 +34,7 @@ public:
     void disable(ErrorString*) override;
     void setSamplingInterval(ErrorString*, int) override;
     void start(ErrorString*) override;
-    void stop(ErrorString*, std::unique_ptr<protocol::Profiler::CPUProfile>*) override;
+    void stop(ErrorString*, std::unique_ptr<protocol::Profiler::Profile>*) override;
 
     void consoleProfile(const String16& title);
     void consoleProfileEnd(const String16& title);
@@ -44,7 +44,7 @@ private:
     v8::CpuProfiler* profiler();
 
     void startProfiling(const String16& title);
-    std::unique_ptr<protocol::Profiler::CPUProfile> stopProfiling(const String16& title, bool serialize);
+    std::unique_ptr<protocol::Profiler::Profile> stopProfiling(const String16& title, bool serialize);
 
     bool isRecording() const;
 

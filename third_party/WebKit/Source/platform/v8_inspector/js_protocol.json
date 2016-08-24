@@ -801,28 +801,28 @@
         "experimental": true,
         "types": [
             {
-                "id": "CPUProfileNode",
+                "id": "ProfileNode",
                 "type": "object",
-                "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
+                "description": "Profile node. Holds callsite information, execution statistics and child nodes.",
                 "properties": [
                     { "name": "id", "type": "integer", "description": "Unique id of the node." },
                     { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
-                    { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
+                    { "name": "hitCount", "type": "integer", "optional": true, "experimental": true, "description": "Number of samples where this node was on top of the call stack." },
                     { "name": "children", "type": "array", "items": { "type": "integer" }, "optional": true, "description": "Child node ids." },
                     { "name": "deoptReason", "type": "string", "optional": true, "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
                     { "name": "positionTicks", "type": "array", "items": { "$ref": "PositionTickInfo" }, "optional": true, "experimental": true, "description": "An array of source position ticks." }
                 ]
             },
             {
-                "id": "CPUProfile",
+                "id": "Profile",
                 "type": "object",
                 "description": "Profile.",
                 "properties": [
-                    { "name": "nodes", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "The list of profile nodes. First item is the root node." },
+                    { "name": "nodes", "type": "array", "items": { "$ref": "ProfileNode" }, "description": "The list of profile nodes. First item is the root node." },
                     { "name": "startTime", "type": "number", "description": "Profiling start timestamp in microseconds." },
                     { "name": "endTime", "type": "number", "description": "Profiling end timestamp in microseconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." },
-                    { "name": "timestampDeltas", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Deltas between adjacent sample timestamps in microseconds. The first delta is relative to the profile startTime." }
+                    { "name": "timeDeltas", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Time intervals between adjacent samples in microseconds. The first delta is relative to the profile startTime." }
                 ]
             },
             {
@@ -856,7 +856,7 @@
             {
                 "name": "stop",
                 "returns": [
-                    { "name": "profile", "$ref": "CPUProfile", "description": "Recorded profile." }
+                    { "name": "profile", "$ref": "Profile", "description": "Recorded profile." }
                 ]
             }
         ],
@@ -875,7 +875,7 @@
                 "parameters": [
                     { "name": "id", "type": "string" },
                     { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profileEnd()." },
-                    { "name": "profile", "$ref": "CPUProfile" },
+                    { "name": "profile", "$ref": "Profile" },
                     { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as an argument to console.profile()." }
                 ]
             }

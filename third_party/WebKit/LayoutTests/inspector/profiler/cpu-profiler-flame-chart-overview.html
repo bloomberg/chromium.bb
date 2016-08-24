@@ -932,7 +932,7 @@ function test()
     profile.startTime *= 1000;
     profile.endTime *= 1000;
     var samplingInterval = (profile.endTime - profile.startTime) / (profile.samples.length - 1);
-    profile.timestampDeltas = Array.from(new Array(profile.samples.length), (x, i) => i ? samplingInterval : 0);
+    profile.timeDeltas = [0, ...new Array(profile.samples.length - 1).fill(samplingInterval)];
     profileAndExpectations.target = () => {};
     profileAndExpectations.weakTarget = () => new WeakReference(null);
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
