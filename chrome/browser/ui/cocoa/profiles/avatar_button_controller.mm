@@ -97,10 +97,10 @@ NSImage* GetImageFromResourceID(int resourceId) {
 - (void)drawImage:(NSImage*)image
         withFrame:(NSRect)frame
            inView:(NSView*)controlView {
-  // The image used in the generic button case needs to be shifted down
-  // slightly to be centered correctly.
+  // The image used in the generic button case as well as the material-designed
+  // error icon both need to be shifted down slightly to be centered correctly.
   // TODO(noms): When the assets are fixed, remove this latter offset.
-  if (!hasError_)
+  if (!hasError_ || switches::IsMaterialDesignUserMenu())
     frame = NSOffsetRect(frame, 0, 1);
   [super drawImage:image withFrame:frame inView:controlView];
 }
