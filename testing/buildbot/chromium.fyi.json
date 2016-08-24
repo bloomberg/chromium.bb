@@ -11343,12 +11343,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "disable_outdated_build_detector_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_unittests"
       },
       {
