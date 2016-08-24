@@ -5,6 +5,7 @@
 #include "core/paint/PaintLayerPainter.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"
@@ -180,6 +181,14 @@ static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPai
     return needsRepaint;
 }
 
+static LayoutRect computeReferenceBox(const LayoutBoxModelObject& boxModelObject)
+{
+    if (boxModelObject.isLayoutInline())
+        return toLayoutInline(boxModelObject).linesBoundingBox();
+    SECURITY_DCHECK(boxModelObject.isBox());
+    return toLayoutBox(boxModelObject).borderBoxRect();
+}
+
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
@@ -253,9 +262,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             rootRelativeBoundsComputed = true;
         }
         paintingInfo.ancestorHasClipPathClipping = true;
-        FloatRect floatRootRelativeBounds(rootRelativeBounds);
+        LayoutRect referenceBox(computeReferenceBox(*m_paintLayer.layoutObject()));
+        referenceBox.moveBy(offsetFromRoot);
         clipPathClipper.emplace(
-            context, *m_paintLayer.layoutObject(), floatRootRelativeBounds, floatRootRelativeBounds, FloatPoint(offsetFromRoot));
+            context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatRect(rootRelativeBounds), FloatPoint(offsetFromRoot));
     }
 
     Optional<CompositingRecorder> compositingRecorder;
