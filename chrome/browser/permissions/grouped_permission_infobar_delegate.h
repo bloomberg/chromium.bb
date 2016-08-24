@@ -33,10 +33,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
       const std::vector<ContentSettingsType>& types);
   ~GroupedPermissionInfoBarDelegate() override;
 
-  bool ShouldShowPersistenceToggle() const;
-  bool persist() const { return persist_; }
-  void set_persist(bool persist) { persist_ = persist; }
-
   base::string16 GetMessageText() const override;
 
   int GetPermissionCount() const;
@@ -61,7 +57,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   const GURL requesting_origin_;
   const std::vector<ContentSettingsType> types_;
   std::vector<bool> accept_states_;
-  bool persist_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };
