@@ -217,6 +217,38 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
         imageResource->resetAnimation();
 }
 
+void ImageLoader::setImagePending(ImageResource* newImage)
+{
+    ImageResource* oldImage = m_image.get();
+    if (m_hasPendingLoadEvent) {
+        loadEventSender().cancelEvent(this);
+        m_hasPendingLoadEvent = false;
+    }
+
+    // Cancel error events that belong to the previous load, which is now cancelled by changing the src attribute.
+    // If newImage is null and m_hasPendingErrorEvent is true, we know the error event has been just posted by
+    // this load and we should not cancel the event.
+    // FIXME: If both previous load and this one got blocked with an error, we can receive one error event instead of two.
+    if (m_hasPendingErrorEvent && newImage) {
+        errorEventSender().cancelEvent(this);
+        m_hasPendingErrorEvent = false;
+    }
+
+    m_image = newImage;
+    m_hasPendingLoadEvent = newImage;
+    m_imageComplete = !newImage;
+
+    updateLayoutObject();
+    // If newImage exists and is cached, addObserver() will result in the load event
+    // being queued to fire. Ensure this happens after beforeload is dispatched.
+    if (newImage) {
+        newImage->addObserver(this);
+    }
+    if (oldImage) {
+        oldImage->removeObserver(this);
+    }
+}
+
 static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorldBehavior bypassBehavior, Element& element, const ClientHintsPreferences& clientHintsPreferences)
 {
     if (bypassBehavior == ImageLoader::BypassMainWorldCSP)
@@ -312,33 +344,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage() && newImage == oldImage) {
         toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     } else {
-        if (m_hasPendingLoadEvent) {
-            loadEventSender().cancelEvent(this);
-            m_hasPendingLoadEvent = false;
-        }
-
-        // Cancel error events that belong to the previous load, which is now cancelled by changing the src attribute.
-        // If newImage is null and m_hasPendingErrorEvent is true, we know the error event has been just posted by
-        // this load and we should not cancel the event.
-        // FIXME: If both previous load and this one got blocked with an error, we can receive one error event instead of two.
-        if (m_hasPendingErrorEvent && newImage) {
-            errorEventSender().cancelEvent(this);
-            m_hasPendingErrorEvent = false;
-        }
-
-        m_image = newImage;
-        m_hasPendingLoadEvent = newImage;
-        m_imageComplete = !newImage;
-
-        updateLayoutObject();
-        // If newImage exists and is cached, addObserver() will result in the load event
-        // being queued to fire. Ensure this happens after beforeload is dispatched.
-        if (newImage) {
-            newImage->addObserver(this);
-        }
-        if (oldImage) {
-            oldImage->removeObserver(this);
-        }
+        setImagePending(newImage);
     }
 
     if (LayoutImageResource* imageResource = layoutImageResource())
@@ -366,8 +372,11 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
     // funneling the main resource bytes into m_image, so just create an ImageResource
     // to be populated later.
     if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
-        setImage(ImageResource::create(imageSourceToKURL(m_element->imageSourceURL())));
+        setImagePending(ImageResource::create(imageSourceToKURL(m_element->imageSourceURL())));
         m_image->setStatus(Resource::Pending);
+        // Only consider updating the protection ref-count of the Element immediately before returning
+        // from this function as doing so might result in the destruction of this ImageLoader.
+        updatedHasPendingEvent();
         return;
     }
 

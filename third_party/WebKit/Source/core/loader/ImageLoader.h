@@ -128,7 +128,12 @@ private:
     LayoutImageResource* layoutImageResource();
     void updateLayoutObject();
 
+    // Sets |m_image| and flags as loading is completed.
     void setImageWithoutConsideringPendingLoadEvent(ImageResource*);
+    // Sets |m_image| and flags as loading is pending/not completed
+    // if |newImage| is non-null.
+    void setImagePending(ImageResource* /* newImage */);
+
     void clearFailedLoadURL();
     void dispatchErrorEvent();
     void crossSiteOrCSPViolationOccurred(AtomicString);
