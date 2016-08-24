@@ -1833,6 +1833,95 @@ Polymer({
   }
 });
 
+Polymer.IronScrollTargetBehavior = {
+  properties: {
+    scrollTarget: {
+      type: HTMLElement,
+      value: function() {
+        return this._defaultScrollTarget;
+      }
+    }
+  },
+  observers: [ '_scrollTargetChanged(scrollTarget, isAttached)' ],
+  _scrollTargetChanged: function(scrollTarget, isAttached) {
+    var eventTarget;
+    if (this._oldScrollTarget) {
+      eventTarget = this._oldScrollTarget === this._doc ? window : this._oldScrollTarget;
+      eventTarget.removeEventListener('scroll', this._boundScrollHandler);
+      this._oldScrollTarget = null;
+    }
+    if (!isAttached) {
+      return;
+    }
+    if (scrollTarget === 'document') {
+      this.scrollTarget = this._doc;
+    } else if (typeof scrollTarget === 'string') {
+      this.scrollTarget = this.domHost ? this.domHost.$[scrollTarget] : Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
+    } else if (this._isValidScrollTarget()) {
+      eventTarget = scrollTarget === this._doc ? window : scrollTarget;
+      this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
+      this._oldScrollTarget = scrollTarget;
+      eventTarget.addEventListener('scroll', this._boundScrollHandler);
+    }
+  },
+  _scrollHandler: function scrollHandler() {},
+  get _defaultScrollTarget() {
+    return this._doc;
+  },
+  get _doc() {
+    return this.ownerDocument.documentElement;
+  },
+  get _scrollTop() {
+    if (this._isValidScrollTarget()) {
+      return this.scrollTarget === this._doc ? window.pageYOffset : this.scrollTarget.scrollTop;
+    }
+    return 0;
+  },
+  get _scrollLeft() {
+    if (this._isValidScrollTarget()) {
+      return this.scrollTarget === this._doc ? window.pageXOffset : this.scrollTarget.scrollLeft;
+    }
+    return 0;
+  },
+  set _scrollTop(top) {
+    if (this.scrollTarget === this._doc) {
+      window.scrollTo(window.pageXOffset, top);
+    } else if (this._isValidScrollTarget()) {
+      this.scrollTarget.scrollTop = top;
+    }
+  },
+  set _scrollLeft(left) {
+    if (this.scrollTarget === this._doc) {
+      window.scrollTo(left, window.pageYOffset);
+    } else if (this._isValidScrollTarget()) {
+      this.scrollTarget.scrollLeft = left;
+    }
+  },
+  scroll: function(left, top) {
+    if (this.scrollTarget === this._doc) {
+      window.scrollTo(left, top);
+    } else if (this._isValidScrollTarget()) {
+      this.scrollTarget.scrollLeft = left;
+      this.scrollTarget.scrollTop = top;
+    }
+  },
+  get _scrollTargetWidth() {
+    if (this._isValidScrollTarget()) {
+      return this.scrollTarget === this._doc ? window.innerWidth : this.scrollTarget.offsetWidth;
+    }
+    return 0;
+  },
+  get _scrollTargetHeight() {
+    if (this._isValidScrollTarget()) {
+      return this.scrollTarget === this._doc ? window.innerHeight : this.scrollTarget.offsetHeight;
+    }
+    return 0;
+  },
+  _isValidScrollTarget: function() {
+    return this.scrollTarget instanceof HTMLElement;
+  }
+};
+
 (function() {
   'use strict';
   var KEY_IDENTIFIER = {
@@ -7007,95 +7096,6 @@ Polymer({
   }
 });
 
-Polymer.IronScrollTargetBehavior = {
-  properties: {
-    scrollTarget: {
-      type: HTMLElement,
-      value: function() {
-        return this._defaultScrollTarget;
-      }
-    }
-  },
-  observers: [ '_scrollTargetChanged(scrollTarget, isAttached)' ],
-  _scrollTargetChanged: function(scrollTarget, isAttached) {
-    var eventTarget;
-    if (this._oldScrollTarget) {
-      eventTarget = this._oldScrollTarget === this._doc ? window : this._oldScrollTarget;
-      eventTarget.removeEventListener('scroll', this._boundScrollHandler);
-      this._oldScrollTarget = null;
-    }
-    if (!isAttached) {
-      return;
-    }
-    if (scrollTarget === 'document') {
-      this.scrollTarget = this._doc;
-    } else if (typeof scrollTarget === 'string') {
-      this.scrollTarget = this.domHost ? this.domHost.$[scrollTarget] : Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
-    } else if (this._isValidScrollTarget()) {
-      eventTarget = scrollTarget === this._doc ? window : scrollTarget;
-      this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
-      this._oldScrollTarget = scrollTarget;
-      eventTarget.addEventListener('scroll', this._boundScrollHandler);
-    }
-  },
-  _scrollHandler: function scrollHandler() {},
-  get _defaultScrollTarget() {
-    return this._doc;
-  },
-  get _doc() {
-    return this.ownerDocument.documentElement;
-  },
-  get _scrollTop() {
-    if (this._isValidScrollTarget()) {
-      return this.scrollTarget === this._doc ? window.pageYOffset : this.scrollTarget.scrollTop;
-    }
-    return 0;
-  },
-  get _scrollLeft() {
-    if (this._isValidScrollTarget()) {
-      return this.scrollTarget === this._doc ? window.pageXOffset : this.scrollTarget.scrollLeft;
-    }
-    return 0;
-  },
-  set _scrollTop(top) {
-    if (this.scrollTarget === this._doc) {
-      window.scrollTo(window.pageXOffset, top);
-    } else if (this._isValidScrollTarget()) {
-      this.scrollTarget.scrollTop = top;
-    }
-  },
-  set _scrollLeft(left) {
-    if (this.scrollTarget === this._doc) {
-      window.scrollTo(left, window.pageYOffset);
-    } else if (this._isValidScrollTarget()) {
-      this.scrollTarget.scrollLeft = left;
-    }
-  },
-  scroll: function(left, top) {
-    if (this.scrollTarget === this._doc) {
-      window.scrollTo(left, top);
-    } else if (this._isValidScrollTarget()) {
-      this.scrollTarget.scrollLeft = left;
-      this.scrollTarget.scrollTop = top;
-    }
-  },
-  get _scrollTargetWidth() {
-    if (this._isValidScrollTarget()) {
-      return this.scrollTarget === this._doc ? window.innerWidth : this.scrollTarget.offsetWidth;
-    }
-    return 0;
-  },
-  get _scrollTargetHeight() {
-    if (this._isValidScrollTarget()) {
-      return this.scrollTarget === this._doc ? window.innerHeight : this.scrollTarget.offsetHeight;
-    }
-    return 0;
-  },
-  _isValidScrollTarget: function() {
-    return this.scrollTarget instanceof HTMLElement;
-  }
-};
-
 (function() {
   var IOS = navigator.userAgent.match(/iP(?:hone|ad;(?: U;)? CPU) OS (\d+)/);
   var IOS_TOUCH_SCROLLING = IOS && IOS[1] >= 8;
@@ -8215,6 +8215,9 @@ Polymer({
     if (this.getSelectedItemCount() > 0) return;
     this.queryHistory(false);
   },
+  getContentScrollTarget: function() {
+    return this.getSelectedList_();
+  },
   getSelectedItemCount: function() {
     return this.getSelectedList_().selectedPaths.size;
   },
@@ -8409,6 +8412,9 @@ Polymer({
     chrome.send('otherDevicesInitialized');
     md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED, SyncedTabsHistogram.LIMIT);
   },
+  getContentScrollTarget: function() {
+    return this;
+  },
   createInternalDevice_: function(session) {
     var tabs = [];
     var separatorIndexes = [];
@@ -8579,6 +8585,7 @@ Polymer({
 // found in the LICENSE file.
 Polymer({
   is: 'history-app',
+  behaviors: [ Polymer.IronScrollTargetBehavior ],
   properties: {
     showSidebarFooter: Boolean,
     selectedPage_: {
@@ -8624,6 +8631,11 @@ Polymer({
     isUserSignedIn_: {
       type: Boolean,
       value: loadTimeData.getBoolean('isUserSignedIn')
+    },
+    toolbarShadow_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      notify: true
     }
   },
   observers: [ 'routeDataChanged_(routeData_.page)', 'selectedPageChanged_(selectedPage_)', 'searchTermChanged_(queryState_.searchTerm)', 'searchQueryParamChanged_(queryParams_.q)' ],
@@ -8634,7 +8646,7 @@ Polymer({
     'delete-selected': 'deleteSelected',
     'search-domain': 'searchDomain_',
     'history-close-drawer': 'closeDrawer_',
-    'history-view-changed': 'recordHistoryPageView_'
+    'history-view-changed': 'historyViewChanged_'
   },
   ready: function() {
     this.grouped_ = loadTimeData.getBoolean('groupByDomain');
@@ -8652,6 +8664,9 @@ Polymer({
     if (!this.hasDrawer_) {
       this.focusToolbarSearchField();
     }
+  },
+  _scrollHandler: function() {
+    this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
   },
   onMenuTap_: function() {
     var drawer = this.$$('#drawer');
@@ -8736,6 +8751,13 @@ Polymer({
   },
   selectedPageChanged_: function(selectedPage) {
     this.set('routeData_.page', selectedPage);
+    this.historyViewChanged_();
+  },
+  historyViewChanged_: function() {
+    requestAnimationFrame(function() {
+      this.scrollTarget = this.$.content.selectedItem.getContentScrollTarget();
+      this._scrollHandler();
+    }.bind(this));
     this.recordHistoryPageView_();
   },
   getSelectedPage_: function(selectedPage, items) {

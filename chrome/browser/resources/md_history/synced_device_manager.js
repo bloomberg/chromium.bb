@@ -74,6 +74,9 @@ Polymer({
         SyncedTabsHistogram.LIMIT);
   },
 
+  /** @return {HTMLElement} */
+  getContentScrollTarget: function() { return this; },
+
   /**
    * @param {!ForeignSession} session
    * @return {!ForeignDeviceInternal}

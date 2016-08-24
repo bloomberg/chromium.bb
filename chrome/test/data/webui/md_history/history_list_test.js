@@ -301,6 +301,22 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
+      test('scrolling history list causes toolbar shadow to appear', () => {
+        for (var i = 0; i < 10; i++)
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        return flush().then(function() {
+          assertFalse(app.toolbarShadow_);
+          element.$['infinite-list'].scrollToIndex(20);
+          return waitForEvent(app, 'toolbar-shadow_-changed');
+        }).then(() => {
+          assertTrue(app.toolbarShadow_);
+          element.$['infinite-list'].scrollToIndex(0);
+          return waitForEvent(app, 'toolbar-shadow_-changed');
+        }).then(() => {
+          assertFalse(app.toolbarShadow_);
+        });
+      });
+
       test('changing search deselects items', function() {
         app.historyResult(
             createHistoryInfo('ex'),

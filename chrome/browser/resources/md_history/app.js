@@ -5,6 +5,8 @@
 Polymer({
   is: 'history-app',
 
+  behaviors: [Polymer.IronScrollTargetBehavior],
+
   properties: {
     showSidebarFooter: Boolean,
 
@@ -62,6 +64,12 @@ Polymer({
       // 'otherDevicesInitialized'.
       value: loadTimeData.getBoolean('isUserSignedIn'),
     },
+
+    toolbarShadow_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      notify: true,
+    }
   },
 
   observers: [
@@ -83,7 +91,7 @@ Polymer({
     'delete-selected': 'deleteSelected',
     'search-domain': 'searchDomain_',
     'history-close-drawer': 'closeDrawer_',
-    'history-view-changed': 'recordHistoryPageView_',
+    'history-view-changed': 'historyViewChanged_',
   },
 
   /** @override */
@@ -115,6 +123,11 @@ Polymer({
     if (!this.hasDrawer_) {
       this.focusToolbarSearchField();
     }
+  },
+
+  /** Overridden from IronScrollTargetBehavior */
+  _scrollHandler: function() {
+    this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
   },
 
   /** @private */
@@ -291,6 +304,17 @@ Polymer({
    */
   selectedPageChanged_: function(selectedPage) {
     this.set('routeData_.page', selectedPage);
+    this.historyViewChanged_();
+  },
+
+  /** @private */
+  historyViewChanged_: function() {
+    // This allows the synced-device-manager to render so that it can be set as
+    // the scroll target.
+    requestAnimationFrame(function() {
+      this.scrollTarget = this.$.content.selectedItem.getContentScrollTarget();
+      this._scrollHandler();
+    }.bind(this));
     this.recordHistoryPageView_();
   },
 

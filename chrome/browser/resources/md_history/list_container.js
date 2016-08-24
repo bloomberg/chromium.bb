@@ -95,6 +95,11 @@ Polymer({
     this.queryHistory(false);
   },
 
+  /** @return {HTMLElement} */
+  getContentScrollTarget: function() {
+    return this.getSelectedList_();
+  },
+
   /** @return {number} */
   getSelectedItemCount: function() {
     return this.getSelectedList_().selectedPaths.size;
@@ -253,7 +258,5 @@ Polymer({
    * @return {HTMLElement}
    * @private
    */
-  getSelectedList_: function() {
-    return this.$.content.selectedItem;
-  },
+  getSelectedList_: function() { return this.$.content.selectedItem; },
 });
