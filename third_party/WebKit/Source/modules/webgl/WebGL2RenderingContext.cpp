@@ -39,8 +39,7 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::create(HTMLCanvasElemen
         return nullptr;
     }
 
-    WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 2));
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attrs, 2));
     if (!contextProvider)
         return nullptr;
     gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
@@ -52,7 +51,7 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::create(HTMLCanvasElemen
         gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
     }
 
-    WebGL2RenderingContext* renderingContext = new WebGL2RenderingContext(canvas, std::move(contextProvider), attributes);
+    WebGL2RenderingContext* renderingContext = new WebGL2RenderingContext(canvas, std::move(contextProvider), attrs);
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL2 context."));
@@ -70,7 +69,7 @@ void WebGL2RenderingContext::Factory::onError(HTMLCanvasElement* canvas, const S
     canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, error));
 }
 
-WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const CanvasContextCreationAttributes& requestedAttributes)
     : WebGL2RenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes)
 {
 }

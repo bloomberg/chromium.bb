@@ -110,8 +110,7 @@ private:
 };
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
-    : CanvasRenderingContext(canvas)
-    , m_hasAlpha(attrs.alpha())
+    : CanvasRenderingContext(canvas, nullptr, attrs)
     , m_contextLostMode(NotLostContext)
     , m_contextRestorable(true)
     , m_tryRestoreContextAttemptCount(0)
@@ -785,10 +784,10 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
         return;
 
     // Currently, SkPictureImageFilter does not support subpixel text anti-aliasing, which
-    // is expected when !m_hasAlpha, so we need to fall out of display list mode when
-    // drawing text to an opaque canvas
+    // is expected when !creationAttributes().alpha(), so we need to fall out of display
+    // list mode when drawing text to an opaque canvas.
     // crbug.com/583809
-    if (!m_hasAlpha && !isAccelerated())
+    if (!creationAttributes().alpha() && !isAccelerated())
         canvas()->disableDeferral(DisableDeferralReasonSubPixelTextAntiAliasingSupport);
 
     const Font& font = accessFont();
@@ -911,7 +910,8 @@ WebLayer* CanvasRenderingContext2D::platformLayer() const
 
 void CanvasRenderingContext2D::getContextAttributes(Canvas2DContextAttributes& attrs) const
 {
-    attrs.setAlpha(m_hasAlpha);
+    attrs.setAlpha(creationAttributes().alpha());
+    attrs.setColorSpace(colorSpaceAsString());
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element)

@@ -60,13 +60,13 @@ enum {
 
 namespace blink {
 
-static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, bool* surfaceIsAccelerated)
+static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace, bool* surfaceIsAccelerated)
 {
     if (gr)
         gr->resetContext();
 
     SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType, colorSpace);
     SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
     sk_sp<SkSurface> surface;
 
@@ -90,7 +90,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     return fromSkSp(surface);
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
+Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode, sk_sp<SkColorSpace> colorSpace)
     : m_contextProvider(std::move(contextProvider))
     , m_logger(wrapUnique(new Logger))
     , m_weakPtrFactory(this)
@@ -110,6 +110,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DPro
     , m_accelerationMode(accelerationMode)
     , m_opacityMode(opacityMode)
     , m_size(size)
+    , m_colorSpace(colorSpace)
 {
     DCHECK(m_contextProvider);
     DCHECK(!m_contextProvider->isSoftwareRendering());
@@ -465,7 +466,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
     }
 
     bool surfaceIsAccelerated;
-    m_surface = createSkSurface(wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
+    m_surface = createSkSurface(wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, m_colorSpace, &surfaceIsAccelerated);
 
     if (!m_surface)
         reportSurfaceCreationFailure();
@@ -742,7 +743,7 @@ bool Canvas2DLayerBridge::restoreSurface()
     if (sharedGL && sharedGL->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
         GrContext* grCtx = m_contextProvider->grContext();
         bool surfaceIsAccelerated;
-        RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated));
+        RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode, m_colorSpace, &surfaceIsAccelerated));
 
         if (!m_surface)
             reportSurfaceCreationFailure();
@@ -759,6 +760,31 @@ bool Canvas2DLayerBridge::restoreSurface()
         m_imageBuffer->updateGPUMemoryUsage();
 
     return m_surface.get();
+}
+
+static gfx::ColorSpace SkColorSpaceToColorSpace(const SkColorSpace* skColorSpace)
+{
+    // TODO(crbug.com/634102): Eliminate this clumsy conversion by unifying
+    // SkColorSpace and gfx::ColorSpace.
+    if (!skColorSpace)
+        return gfx::ColorSpace();
+
+    gfx::ColorSpace::TransferID transferID = gfx::ColorSpace::TransferID::UNSPECIFIED;
+    switch (skColorSpace->gammaNamed()) {
+    case SkColorSpace::kSRGB_GammaNamed:
+        transferID = gfx::ColorSpace::TransferID::IEC61966_2_1;
+        break;
+    case SkColorSpace::kLinear_GammaNamed:
+        transferID = gfx::ColorSpace::TransferID::LINEAR;
+        break;
+    default:
+        // TODO(crbug.com/634102): Not all curve type are supported
+        DCHECK(false);
+    }
+
+    // TODO(crbug.com/634102): No primary conversions are performed.
+    // Rec-709 is assumed.
+    return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709, transferID, gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL);
 }
 
 bool Canvas2DLayerBridge::PrepareTextureMailbox(
@@ -800,6 +826,8 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
     if (!prepareMailboxFromImage(image.release(), outMailbox))
         return false;
     outMailbox->set_nearest_neighbor(getGLFilter() == GL_NEAREST);
+    gfx::ColorSpace colorSpace = SkColorSpaceToColorSpace(m_colorSpace.get());
+    outMailbox->set_color_space(colorSpace);
 
     auto func = WTF::bind(&Canvas2DLayerBridge::mailboxReleased,
         m_weakPtrFactory.createWeakPtr(),

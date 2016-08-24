@@ -79,10 +79,10 @@ class MockSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
 public:
     MockSurfaceFactory() : m_createSurfaceCount(0) { }
 
-    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
     {
         m_createSurfaceCount++;
-        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode));
+        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode, InitializeImagePixels, std::move(colorSpace)));
     }
 
     virtual ~MockSurfaceFactory() { }
@@ -99,7 +99,7 @@ protected:
     {
         std::unique_ptr<MockSurfaceFactory> surfaceFactory = wrapUnique(new MockSurfaceFactory());
         m_surfaceFactory = surfaceFactory.get();
-        std::unique_ptr<RecordingImageBufferSurface> testSurface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), std::move(surfaceFactory)));
+        std::unique_ptr<RecordingImageBufferSurface> testSurface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), std::move(surfaceFactory), NonOpaque, nullptr));
         m_testSurface = testSurface.get();
         // We create an ImageBuffer in order for the testSurface to be
         // properly initialized with a GraphicsContext

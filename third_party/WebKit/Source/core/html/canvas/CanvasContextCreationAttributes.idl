@@ -25,6 +25,7 @@
 dictionary CanvasContextCreationAttributes {
     // Canvas 2D attributes
     boolean alpha = true;  // Also used for WebGL.
+    [RuntimeEnabled=ExperimentalCanvasFeatures] DOMString colorSpace = "legacy-srgb";
 
     // WebGL attributes
     boolean depth = true;

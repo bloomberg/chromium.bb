@@ -170,7 +170,7 @@ const GLenum kCompressedTextureFormatsETC2EAC[] = {
     GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
 };
 
-WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const CanvasContextCreationAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, std::move(contextProvider), requestedAttributes, 2)
 {
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
@@ -3336,10 +3336,10 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(Script
 
     // Default framebuffer (an internal fbo)
     if (!framebufferBinding) {
-        // We can use m_requestedAttribs because in WebGL 2, they are required to be honored.
-        bool hasDepth = m_requestedAttributes.depth();
-        bool hasStencil = m_requestedAttributes.stencil();
-        bool hasAlpha = m_requestedAttributes.alpha();
+        // We can use creationAttributes() because in WebGL 2, they are required to be honored.
+        bool hasDepth = creationAttributes().depth();
+        bool hasStencil = creationAttributes().stencil();
+        bool hasAlpha = creationAttributes().alpha();
         bool missingImage = (attachment == GL_DEPTH && !hasDepth)
             || (attachment == GL_STENCIL && !hasStencil);
         if (missingImage) {

@@ -85,7 +85,8 @@ public:
         ForceAccelerationForTesting,
     };
 
-    Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
+    Canvas2DLayerBridge(std::unique_ptr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode, sk_sp<SkColorSpace>);
+
     ~Canvas2DLayerBridge() override;
 
     // cc::TextureLayerClient implementation.
@@ -122,6 +123,7 @@ public:
     void beginDestruction();
     void hibernate();
     bool isHibernating() const { return m_hibernationImage.get(); }
+    sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
 
     PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 
@@ -274,6 +276,7 @@ private:
     AccelerationMode m_accelerationMode;
     OpacityMode m_opacityMode;
     const IntSize m_size;
+    sk_sp<SkColorSpace> m_colorSpace;
     int m_recordingPixelCount;
 
 #if USE_IOSURFACE_FOR_2D_CANVAS

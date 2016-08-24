@@ -41,7 +41,7 @@ namespace blink {
 class PLATFORM_EXPORT AcceleratedImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(AcceleratedImageBufferSurface); USING_FAST_MALLOC(AcceleratedImageBufferSurface);
 public:
-    AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
+    AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, sk_sp<SkColorSpace> = nullptr);
     ~AcceleratedImageBufferSurface() override { }
 
     SkCanvas* canvas() override { return m_surface ? m_surface->getCanvas() : nullptr; }

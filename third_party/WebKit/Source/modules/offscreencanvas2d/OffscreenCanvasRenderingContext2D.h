@@ -69,7 +69,7 @@ public:
 
     void validateStateStack() final;
 
-    bool hasAlpha() const override { return m_hasAlpha; }
+    bool hasAlpha() const final { return creationAttributes().alpha(); }
     bool isContextLost() const override;
 
     ImageBitmap* transferToImageBitmap(ExceptionState&) final;
@@ -79,7 +79,6 @@ protected:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    bool m_hasAlpha;
     bool m_needsMatrixClipRestore = false;
     std::unique_ptr<ImageBuffer> m_imageBuffer;
 

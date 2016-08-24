@@ -24,8 +24,7 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D()
 }
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(ScriptState* scriptState, OffscreenCanvas* canvas, const CanvasContextCreationAttributes& attrs)
-    : CanvasRenderingContext(nullptr, canvas)
-    , m_hasAlpha(attrs.alpha())
+    : CanvasRenderingContext(nullptr, canvas, attrs)
 {
     ExecutionContext* executionContext = scriptState->getExecutionContext();
     if (executionContext->isDocument()) {
@@ -93,7 +92,7 @@ ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
 {
     if (!m_imageBuffer) {
         IntSize surfaceSize(width(), height());
-        OpacityMode opacityMode = m_hasAlpha ? NonOpaque : Opaque;
+        OpacityMode opacityMode = hasAlpha() ? NonOpaque : Opaque;
         std::unique_ptr<ImageBufferSurface> surface;
         if (shouldAccelerate(surfaceSize)) {
             surface.reset(new AcceleratedImageBufferSurface(surfaceSize, opacityMode));

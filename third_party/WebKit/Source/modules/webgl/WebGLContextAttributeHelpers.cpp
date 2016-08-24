@@ -21,7 +21,7 @@ WebGLContextAttributes toWebGLContextAttributes(const CanvasContextCreationAttri
     return result;
 }
 
-Platform::ContextAttributes toPlatformContextAttributes(const WebGLContextAttributes& attrs, unsigned webGLVersion)
+Platform::ContextAttributes toPlatformContextAttributes(const CanvasContextCreationAttributes& attrs, unsigned webGLVersion)
 {
     Platform::ContextAttributes result;
     result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();

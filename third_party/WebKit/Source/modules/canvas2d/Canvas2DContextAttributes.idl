@@ -26,4 +26,8 @@
 
 dictionary Canvas2DContextAttributes {
     boolean alpha = true;
+
+    // TODO(crbug.com/637288): Do we keep "legacy-srgb" as the default?
+    // Must decide before shipping.
+    [RuntimeEnabled=ExperimentalCanvasFeatures] DOMString colorSpace = "legacy-srgb";
 };

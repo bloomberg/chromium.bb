@@ -28,15 +28,15 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringHash.h"
 
 class SkCanvas;
-
-namespace blink { class WebLayer; }
 
 namespace blink {
 
@@ -44,6 +44,13 @@ class CanvasImageSource;
 class HTMLCanvasElement;
 class ImageData;
 class ImageBitmap;
+class WebLayer;
+
+enum CanvasColorSpace {
+    kLegacyCanvasColorSpace,
+    kSRGBCanvasColorSpace,
+    kLinearRGBCanvasColorSpace,
+};
 
 class CORE_EXPORT CanvasRenderingContext : public GarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
@@ -70,10 +77,13 @@ public:
 
     HTMLCanvasElement* canvas() const { return m_canvas; }
 
+    CanvasColorSpace colorSpace() const { return m_colorSpace; };
+    WTF::String colorSpaceAsString() const;
+    sk_sp<SkColorSpace> skColorSpace() const;
+
     virtual ContextType getContextType() const = 0;
     virtual bool isAccelerated() const { return false; }
     virtual bool shouldAntialias() const { return false; }
-    virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
     virtual bool isContextLost() const { return true; }
     virtual void setCanvasGetContextResult(RenderingContext&) { NOTREACHED(); };
@@ -138,8 +148,10 @@ public:
 
     void detachCanvas() { m_canvas = nullptr; }
 
+    const CanvasContextCreationAttributes& creationAttributes() const { return m_creationAttributes; }
+
 protected:
-    CanvasRenderingContext(HTMLCanvasElement* = nullptr, OffscreenCanvas* = nullptr);
+    CanvasRenderingContext(HTMLCanvasElement*, OffscreenCanvas*, const CanvasContextCreationAttributes&);
     DECLARE_VIRTUAL_TRACE();
     virtual void stop() = 0;
 
@@ -150,6 +162,8 @@ private:
     Member<OffscreenCanvas> m_offscreenCanvas;
     HashSet<String> m_cleanURLs;
     HashSet<String> m_dirtyURLs;
+    CanvasColorSpace m_colorSpace;
+    CanvasContextCreationAttributes m_creationAttributes;
 };
 
 } // namespace blink

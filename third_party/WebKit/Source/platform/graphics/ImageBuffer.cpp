@@ -74,9 +74,9 @@ std::unique_ptr<ImageBuffer> ImageBuffer::create(std::unique_ptr<ImageBufferSurf
     return wrapUnique(new ImageBuffer(std::move(surface)));
 }
 
-std::unique_ptr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode)
+std::unique_ptr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opacityMode, ImageInitializationMode initializationMode, sk_sp<SkColorSpace> colorSpace)
 {
-    std::unique_ptr<ImageBufferSurface> surface(wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode)));
+    std::unique_ptr<ImageBufferSurface> surface(wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode, std::move(colorSpace))));
     if (!surface->isValid())
         return nullptr;
     return wrapUnique(new ImageBuffer(std::move(surface)));
@@ -425,9 +425,9 @@ void ImageBuffer::updateGPUMemoryUsage() const
 
 class UnacceleratedSurfaceFactory : public RecordingImageBufferFallbackSurfaceFactory {
 public:
-    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode)
+    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
     {
-        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode));
+        return wrapUnique(new UnacceleratedImageBufferSurface(size, opacityMode, InitializeImagePixels, colorSpace));
     }
 
     virtual ~UnacceleratedSurfaceFactory() { }
@@ -443,7 +443,7 @@ void ImageBuffer::disableAcceleration()
 
     // Create and configure a recording (unaccelerated) surface.
     std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
-    std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(m_surface->size(), std::move(surfaceFactory), m_surface->getOpacityMode()));
+    std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(m_surface->size(), std::move(surfaceFactory), m_surface->getOpacityMode(), m_surface->colorSpace()));
     surface->canvas()->drawImage(image, 0, 0);
     surface->setImageBuffer(this);
 

@@ -75,7 +75,7 @@ class PLATFORM_EXPORT ImageBuffer {
     WTF_MAKE_NONCOPYABLE(ImageBuffer);
     USING_FAST_MALLOC(ImageBuffer);
 public:
-    static std::unique_ptr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels);
+    static std::unique_ptr<ImageBuffer> create(const IntSize&, OpacityMode = NonOpaque, ImageInitializationMode = InitializeImagePixels, sk_sp<SkColorSpace> = nullptr);
     static std::unique_ptr<ImageBuffer> create(std::unique_ptr<ImageBufferSurface>);
 
     virtual ~ImageBuffer();

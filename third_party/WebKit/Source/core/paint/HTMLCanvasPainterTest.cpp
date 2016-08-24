@@ -56,7 +56,8 @@ protected:
     {
         return adoptRef(new Canvas2DLayerBridge(
             wrapUnique(new FakeWebGraphicsContext3DProvider(&m_gl)),
-            size, 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting));
+            size, 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting,
+            nullptr));
     }
 
 private:

@@ -940,8 +940,6 @@
       'canvas2d/CanvasStyle.h',
       'canvas2d/ClipList.cpp',
       'canvas2d/ClipList.h',
-      'canvas2d/ContextAttributeHelpers.cpp',
-      'canvas2d/ContextAttributeHelpers.h',
       'canvas2d/HitRegion.cpp',
       'canvas2d/HitRegion.h',
       'canvas2d/Path2D.h',

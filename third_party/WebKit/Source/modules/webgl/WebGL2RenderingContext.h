@@ -42,7 +42,7 @@ public:
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 protected:
-    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
+    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes& requestedAttributes);
 
     Member<EXTColorBufferFloat> m_extColorBufferFloat;
     Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;

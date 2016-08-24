@@ -50,6 +50,8 @@
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
+class SkColorSpace;
+
 namespace blink {
 
 class AffineTransform;
@@ -228,7 +230,7 @@ private:
 
     void reset();
 
-    std::unique_ptr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount);
+    std::unique_ptr<ImageBufferSurface> createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount, sk_sp<SkColorSpace>);
     void createImageBuffer();
     void createImageBufferInternal(std::unique_ptr<ImageBufferSurface> externalSurface);
     bool shouldUseDisplayList(const IntSize& deviceSize);

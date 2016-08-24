@@ -300,7 +300,7 @@ void CompositedLayerMapping::updateContentsOpaque()
     if (isAcceleratedCanvas(layoutObject())) {
         // Determine whether the rendering context's external texture layer is opaque.
         CanvasRenderingContext* context = toHTMLCanvasElement(layoutObject()->node())->renderingContext();
-        if (!context->hasAlpha())
+        if (!context->creationAttributes().alpha())
             m_graphicsLayer->setContentsOpaque(true);
         else if (WebLayer* layer = context->platformLayer())
             m_graphicsLayer->setContentsOpaque(!Color(layer->backgroundColor()).hasAlpha());

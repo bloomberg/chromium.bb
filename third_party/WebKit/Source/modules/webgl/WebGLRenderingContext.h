@@ -64,8 +64,8 @@ public:
     DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 private:
-    WebGLRenderingContext(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
-    WebGLRenderingContext(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    WebGLRenderingContext(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&);
+    WebGLRenderingContext(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&);
 
     // Enabled extension objects.
     Member<ANGLEInstancedArrays> m_angleInstancedArrays;

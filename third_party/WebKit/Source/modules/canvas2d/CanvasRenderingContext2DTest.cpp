@@ -186,7 +186,7 @@ void CanvasRenderingContext2DTest::TearDown()
 
 PassRefPtr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::makeBridge(std::unique_ptr<FakeWebGraphicsContext3DProvider> provider, const IntSize& size, Canvas2DLayerBridge::AccelerationMode accelerationMode)
 {
-    return adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode));
+    return adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode, nullptr));
 }
 
 //============================================================================
@@ -276,11 +276,11 @@ public:
     };
     static std::unique_ptr<MockSurfaceFactory> create(FallbackExpectation expectation) { return wrapUnique(new MockSurfaceFactory(expectation)); }
 
-    std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode mode) override
+    std::unique_ptr<ImageBufferSurface> createSurface(const IntSize& size, OpacityMode mode, sk_sp<SkColorSpace> colorSpace) override
     {
         EXPECT_EQ(ExpectFallback, m_expectation);
         m_didFallback = true;
-        return wrapUnique(new UnacceleratedImageBufferSurface(size, mode));
+        return wrapUnique(new UnacceleratedImageBufferSurface(size, mode, InitializeImagePixels, colorSpace));
     }
 
     ~MockSurfaceFactory() override
@@ -420,7 +420,7 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionByDefault)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     EXPECT_FALSE(canvasElement().shouldBeDirectComposited());
@@ -429,7 +429,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionByDefault)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->setGlobalAlpha(0.5f); // To prevent overdraw optimization
@@ -443,7 +443,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit)
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->setGlobalAlpha(0.5f); // To prevent overdraw optimization
@@ -457,7 +457,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     NonThrowableExceptionState exceptionState;
@@ -482,7 +482,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     NonThrowableExceptionState exceptionState;
@@ -507,7 +507,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderExpensivePathPointCount)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->beginPath();
@@ -524,7 +524,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderExpensivePathPointCoun
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverExpensivePathPointCount)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->beginPath();
@@ -541,7 +541,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverExpensivePathPointCount)
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->beginPath();
@@ -561,7 +561,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithRectangleClip)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->beginPath();
@@ -575,7 +575,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithRectangleClip)
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->beginPath();
@@ -596,7 +596,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip)
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->setShadowColor(String("red"));
@@ -613,7 +613,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow)
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithSharpShadow)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->setShadowColor(String("red"));
@@ -626,7 +626,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithSharpShadow)
 TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
@@ -640,7 +640,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState)
 TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
@@ -659,7 +659,7 @@ TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText)
     // does not support pixel geometry settings.
     // See: crbug.com/583809
     createContext(Opaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), Opaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), Opaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->fillText("Text", 0, 5);
@@ -668,7 +668,7 @@ TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText)
 TEST_F(CanvasRenderingContext2DTest, NonOpaqueDisplayListDoesNotFallBackForText)
 {
     createContext(NonOpaque);
-    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    std::unique_ptr<RecordingImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque, nullptr));
     canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
 
     context2d()->fillText("Text", 0, 5);

@@ -672,6 +672,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   }
   resource->allocated = true;
   resource->set_mailbox(mailbox);
+  resource->color_space = mailbox.color_space();
   resource->release_callback_impl =
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
@@ -819,6 +820,13 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
   return GetResource(id)->hint;
 }
 
+static sk_sp<SkColorSpace> ColorSpaceToSkColorSpace(
+    const gfx::ColorSpace& color_space) {
+  // TODO(crbug.com/634102): Implement conversion for skia-based compositing to
+  // be color-managed
+  return nullptr;
+}
+
 void ResourceProvider::CopyToResource(ResourceId id,
                                       const uint8_t* image,
                                       const gfx::Size& image_size) {
@@ -839,8 +847,9 @@ void ResourceProvider::CopyToResource(ResourceId id,
     DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
     DCHECK(resource->allocated);
     DCHECK_EQ(RGBA_8888, resource->format);
-    SkImageInfo source_info =
-        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height());
+    SkImageInfo source_info = SkImageInfo::MakeN32Premul(
+        image_size.width(), image_size.height(),
+        ColorSpaceToSkColorSpace(resource->color_space));
     size_t image_stride = image_size.width() * 4;
 
     ScopedWriteLockSoftware lock(this, id);
@@ -1165,8 +1174,9 @@ ResourceProvider::ScopedSkSurfaceProvider::~ScopedSkSurfaceProvider() {
 void ResourceProvider::PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                                     const Resource* resource) {
   DCHECK_EQ(RGBA_8888, resource->format);
-  SkImageInfo info = SkImageInfo::MakeN32Premul(resource->size.width(),
-                                                resource->size.height());
+  SkImageInfo info = SkImageInfo::MakeN32Premul(
+      resource->size.width(), resource->size.height(),
+      ColorSpaceToSkColorSpace(resource->color_space));
   sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
 }
 
@@ -1199,7 +1209,9 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     desc.fOrigin = kTopLeft_GrSurfaceOrigin;
     desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
     sk_image_ = SkImage::MakeFromTexture(
-        resource_provider->compositor_context_provider_->GrContext(), desc);
+        resource_provider->compositor_context_provider_->GrContext(), desc,
+        kPremul_SkAlphaType, ColorSpaceToSkColorSpace(resource->color_space),
+        nullptr, nullptr);
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;
     ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap, resource);

@@ -39,15 +39,15 @@ namespace blink {
 // This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
 class Canvas2DImageBufferSurface final : public ImageBufferSurface {
 public:
-    Canvas2DImageBufferSurface(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, Canvas2DLayerBridge::AccelerationMode accelerationMode)
-        : ImageBufferSurface(size, opacityMode)
-        , m_layerBridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), size, msaaSampleCount, opacityMode, accelerationMode)))
+    Canvas2DImageBufferSurface(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, Canvas2DLayerBridge::AccelerationMode accelerationMode, sk_sp<SkColorSpace> colorSpace)
+        : ImageBufferSurface(size, opacityMode, colorSpace)
+        , m_layerBridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), size, msaaSampleCount, opacityMode, accelerationMode, colorSpace)))
     {
         init();
     }
 
     Canvas2DImageBufferSurface(PassRefPtr<Canvas2DLayerBridge> bridge, const IntSize& size)
-        : ImageBufferSurface(size, bridge->opacityMode())
+        : ImageBufferSurface(size, bridge->opacityMode(), bridge->colorSpace())
         , m_layerBridge(std::move(bridge))
     {
         init();

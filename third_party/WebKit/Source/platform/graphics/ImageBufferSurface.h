@@ -42,6 +42,7 @@
 
 class SkBitmap;
 class SkCanvas;
+class SkColorSpace;
 class SkImage;
 struct SkImageInfo;
 class SkPicture;
@@ -86,15 +87,17 @@ public:
 
     OpacityMode getOpacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }
+    const sk_sp<SkColorSpace> colorSpace() const { return m_colorSpace; }
     void notifyIsValidChanged(bool isValid) const;
 
 protected:
-    ImageBufferSurface(const IntSize&, OpacityMode);
+    ImageBufferSurface(const IntSize&, OpacityMode, sk_sp<SkColorSpace>);
     void clear();
 
 private:
     OpacityMode m_opacityMode;
     IntSize m_size;
+    sk_sp<SkColorSpace> m_colorSpace;
 };
 
 } // namespace blink

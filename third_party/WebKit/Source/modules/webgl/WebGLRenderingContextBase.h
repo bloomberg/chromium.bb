@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/TypedFlexibleArrayBufferView.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/ContentChangeType.h"
 #include "modules/webgl/WebGLContextAttributes.h"
@@ -139,8 +140,8 @@ public:
 
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
-    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
-    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(ScriptState*, WebGLContextAttributes, unsigned webGLVersion);
+    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, const CanvasContextCreationAttributes&, unsigned webGLVersion);
+    static std::unique_ptr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(ScriptState*, const CanvasContextCreationAttributes&, unsigned webGLVersion);
     static void forceNextWebGLContextCreationToFail();
 
     unsigned version() const { return m_version; }
@@ -434,8 +435,8 @@ protected:
     friend class ScopedTexture2DRestorer;
     friend class ScopedFramebufferRestorer;
 
-    WebGLRenderingContextBase(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&, unsigned);
-    WebGLRenderingContextBase(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&, unsigned);
+    WebGLRenderingContextBase(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&, unsigned);
+    WebGLRenderingContextBase(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&, unsigned);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>);
     void setupFlags();
 
@@ -568,7 +569,6 @@ protected:
     bool m_unpackFlipY;
     bool m_unpackPremultiplyAlpha;
     GLenum m_unpackColorspaceConversion;
-    WebGLContextAttributes m_requestedAttributes;
 
     GLfloat m_clearColor[4];
     bool m_scissorEnabled;
@@ -1111,8 +1111,8 @@ protected:
     static const char* getTexImageFunctionName(TexImageFunctionID);
 
 private:
-    WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&, unsigned);
-    static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
+    WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&, unsigned);
+    static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, const CanvasContextCreationAttributes&, unsigned);
     void texImageCanvasByGPU(HTMLCanvasElement*, GLuint, GLenum, GLenum, GLint);
     void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 

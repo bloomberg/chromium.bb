@@ -26,7 +26,7 @@ class RecordingImageBufferFallbackSurfaceFactory {
     USING_FAST_MALLOC(RecordingImageBufferFallbackSurfaceFactory);
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferFallbackSurfaceFactory);
 public:
-    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize&, OpacityMode) = 0;
+    virtual std::unique_ptr<ImageBufferSurface> createSurface(const IntSize&, OpacityMode, sk_sp<SkColorSpace>) = 0;
     virtual ~RecordingImageBufferFallbackSurfaceFactory() { }
 protected:
     RecordingImageBufferFallbackSurfaceFactory() { }
@@ -39,7 +39,7 @@ public:
     // for one frame and should not be used for any operations which need a
     // raster surface, (i.e. writePixels).
     // Only #getPicture should be used to access the resulting frame.
-    RecordingImageBufferSurface(const IntSize&, std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory = nullptr, OpacityMode = NonOpaque);
+    RecordingImageBufferSurface(const IntSize&, std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory = nullptr, OpacityMode = NonOpaque, sk_sp<SkColorSpace> = nullptr);
     ~RecordingImageBufferSurface() override;
 
     // Implementation of ImageBufferSurface interfaces

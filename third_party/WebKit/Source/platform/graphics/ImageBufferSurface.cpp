@@ -33,15 +33,17 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 class SkPicture;
 
 namespace blink {
 
-ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
+ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
     : m_opacityMode(opacityMode)
     , m_size(size)
+    , m_colorSpace(colorSpace)
 {
     setIsHidden(false);
 }

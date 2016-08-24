@@ -25,16 +25,74 @@
 
 #include "core/html/canvas/CanvasRenderingContext.h"
 
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
+const char * const kLinearRGBCanvasColorSpaceName = "linear-rgb";
+const char * const kSRGBCanvasColorSpaceName = "srgb";
+const char * const kLegacyCanvasColorSpaceName = "legacy-srgb";
+
 namespace blink {
 
-CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas, OffscreenCanvas* offscreenCanvas)
+CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas, OffscreenCanvas* offscreenCanvas, const CanvasContextCreationAttributes& attrs)
     : m_canvas(canvas)
     , m_offscreenCanvas(offscreenCanvas)
+    , m_colorSpace(kLegacyCanvasColorSpace)
+    , m_creationAttributes(attrs)
 {
+    if (RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
+        if (m_creationAttributes.colorSpace() == kSRGBCanvasColorSpaceName)
+            m_colorSpace = kSRGBCanvasColorSpace;
+        else if (m_creationAttributes.colorSpace() == kLinearRGBCanvasColorSpaceName)
+            m_colorSpace = kLinearRGBCanvasColorSpace;
+    }
+    // Make m_creationAttributes reflect the effective colorSpace rather than the requested one
+    m_creationAttributes.setColorSpace(colorSpaceAsString());
+}
+
+WTF::String CanvasRenderingContext::colorSpaceAsString() const
+{
+    switch (m_colorSpace) {
+    case kSRGBCanvasColorSpace:
+        return kSRGBCanvasColorSpaceName;
+    case kLinearRGBCanvasColorSpace:
+        return kLinearRGBCanvasColorSpaceName;
+    case kLegacyCanvasColorSpace:
+        return kLegacyCanvasColorSpaceName;
+    };
+    CHECK(false);
+    return "";
+}
+
+sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const
+{
+    switch (m_colorSpace) {
+    case kSRGBCanvasColorSpace:
+        return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+    case kLinearRGBCanvasColorSpace:
+        {
+            // Creating a temp srgb colorspace just to get the matrix.
+            // There should be a better way
+            sk_sp<SkColorSpace> tmp = SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+            return SkColorSpace::NewRGB(SkColorSpace::kLinear_GammaNamed, tmp->xyz());
+        }
+    case kLegacyCanvasColorSpace:
+        // TODO(crbug.com/637381): To uncomment the following block of code we need
+        // it to not cause a bunch of test failures.
+        /*
+        if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+            // Legacy colorspace ensures color matching with CSS is preserved.
+            // So if CSS is color corrected from sRGB to display space, then
+            // canvas must do the same
+            return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
+        }
+        */
+        return nullptr;
+    };
+    CHECK(false);
+    return nullptr;
 }
 
 void CanvasRenderingContext::dispose()

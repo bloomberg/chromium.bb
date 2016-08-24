@@ -204,7 +204,7 @@ private:
     CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::Context2d; }
     bool is2d() const override { return true; }
     bool isAccelerated() const override;
-    bool hasAlpha() const override { return m_hasAlpha; }
+    bool hasAlpha() const override { return creationAttributes().alpha(); }
     void setIsHidden(bool) override;
     void stop() final;
     DECLARE_VIRTUAL_TRACE();
@@ -214,7 +214,6 @@ private:
     WebLayer* platformLayer() const override;
 
     Member<HitRegionManager> m_hitRegionManager;
-    bool m_hasAlpha;
     LostContextMode m_contextLostMode;
     bool m_contextRestorable;
     unsigned m_tryRestoreContextAttemptCount;

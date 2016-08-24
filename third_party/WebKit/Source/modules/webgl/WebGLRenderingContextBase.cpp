@@ -574,7 +574,7 @@ static std::unique_ptr<WebGraphicsContext3DProvider> createContextProviderOnWork
     return std::move(creationInfo.createdContextProvider);
 }
 
-std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, const CanvasContextCreationAttributes& attributes, unsigned webGLVersion)
 {
     // Exactly one of these must be provided.
     DCHECK_EQ(!canvas, !!scriptState);
@@ -612,7 +612,7 @@ std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createC
     return contextProvider;
 }
 
-std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
@@ -632,7 +632,7 @@ std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createW
     return createContextProviderInternal(canvas, nullptr, attributes, webGLVersion);
 }
 
-std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+std::unique_ptr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, const CanvasContextCreationAttributes& attributes, unsigned webGLVersion)
 {
     return createContextProviderInternal(nullptr, scriptState, attributes, webGLVersion);
 }
@@ -888,20 +888,20 @@ bool isSRGBFormat(GLenum internalformat)
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(OffscreenCanvas* passedOffscreenCanvas,
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
-    const WebGLContextAttributes& requestedAttributes, unsigned version)
+    const CanvasContextCreationAttributes& requestedAttributes, unsigned version)
     : WebGLRenderingContextBase(nullptr, passedOffscreenCanvas, std::move(contextProvider), requestedAttributes, version)
 { }
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas,
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
-    const WebGLContextAttributes& requestedAttributes, unsigned version)
+    const CanvasContextCreationAttributes& requestedAttributes, unsigned version)
     : WebGLRenderingContextBase(passedCanvas, nullptr, std::move(contextProvider), requestedAttributes, version)
 { }
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas,
     OffscreenCanvas* passedOffscreenCanvas, std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
-    const WebGLContextAttributes& requestedAttributes, unsigned version)
-    : CanvasRenderingContext(passedCanvas, passedOffscreenCanvas)
+    const CanvasContextCreationAttributes& requestedAttributes, unsigned version)
+    : CanvasRenderingContext(passedCanvas, passedOffscreenCanvas, requestedAttributes)
     , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
     , m_autoRecoveryMethod(Manual)
@@ -910,7 +910,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_restoreTimer(this, &WebGLRenderingContextBase::maybeRestoreContext)
     , m_preservedDefaultVAOObjectWrapper(false)
     , m_generatedImageCache(4)
-    , m_requestedAttributes(requestedAttributes)
     , m_synthesizedErrorsToConsole(true)
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
     , m_onePlusMaxNonDefaultTextureUnit(0)
@@ -954,12 +953,12 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider)
 {
-    bool premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
-    bool wantAlphaChannel = m_requestedAttributes.alpha();
-    bool wantDepthBuffer = m_requestedAttributes.depth();
-    bool wantStencilBuffer = m_requestedAttributes.stencil();
-    bool wantAntialiasing = m_requestedAttributes.antialias();
-    DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+    bool premultipliedAlpha = creationAttributes().premultipliedAlpha();
+    bool wantAlphaChannel = creationAttributes().alpha();
+    bool wantDepthBuffer = creationAttributes().depth();
+    bool wantStencilBuffer = creationAttributes().stencil();
+    bool wantAntialiasing = creationAttributes().antialias();
+    DrawingBuffer::PreserveDrawingBuffer preserve = creationAttributes().preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
     DrawingBuffer::WebGLVersion webGLVersion = DrawingBuffer::WebGL1;
     if (version() == 1) {
         webGLVersion = DrawingBuffer::WebGL1;
@@ -1352,7 +1351,7 @@ ImageData* WebGLRenderingContextBase::paintRenderingResultsToImageData(SourceDra
 {
     if (isContextLost())
         return nullptr;
-    if (m_requestedAttributes.premultipliedAlpha())
+    if (creationAttributes().premultipliedAlpha())
         return nullptr;
 
     clearIfComposited();
@@ -2558,12 +2557,12 @@ void WebGLRenderingContextBase::getContextAttributes(Nullable<WebGLContextAttrib
 {
     if (isContextLost())
         return;
-    result.set(m_requestedAttributes);
+    result.set(toWebGLContextAttributes(creationAttributes()));
     // Some requested attributes may not be honored, so we need to query the underlying
     // context/drawing buffer and adjust accordingly.
-    if (m_requestedAttributes.depth() && !drawingBuffer()->hasDepthBuffer())
+    if (creationAttributes().depth() && !drawingBuffer()->hasDepthBuffer())
         result.get().setDepth(false);
-    if (m_requestedAttributes.stencil() && !drawingBuffer()->hasStencilBuffer())
+    if (creationAttributes().stencil() && !drawingBuffer()->hasStencilBuffer())
         result.get().setStencil(false);
     result.get().setAntialias(drawingBuffer()->multisample());
 }
@@ -2765,7 +2764,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_CURRENT_PROGRAM:
         return WebGLAny(scriptState, m_currentProgram.get());
     case GL_DEPTH_BITS:
-        if (!m_framebufferBinding && !m_requestedAttributes.depth())
+        if (!m_framebufferBinding && !creationAttributes().depth())
             return WebGLAny(scriptState, intZero);
         return getIntParameter(scriptState, pname);
     case GL_DEPTH_CLEAR_VALUE:
@@ -2864,7 +2863,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_STENCIL_BACK_WRITEMASK:
         return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BITS:
-        if (!m_framebufferBinding && !m_requestedAttributes.stencil())
+        if (!m_framebufferBinding && !creationAttributes().stencil())
             return WebGLAny(scriptState, intZero);
         return getIntParameter(scriptState, pname);
     case GL_STENCIL_CLEAR_VALUE:
@@ -6147,7 +6146,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*)
         m_drawingBuffer.clear();
     }
 
-    Platform::ContextAttributes attributes = toPlatformContextAttributes(m_requestedAttributes, version());
+    Platform::ContextAttributes attributes = toPlatformContextAttributes(creationAttributes(), version());
     Platform::GraphicsInfo glInfo;
     std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
         attributes, canvas()->document().topDocument().url(), 0, &glInfo));

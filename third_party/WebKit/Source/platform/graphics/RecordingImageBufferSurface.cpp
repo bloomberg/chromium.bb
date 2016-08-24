@@ -17,8 +17,8 @@
 
 namespace blink {
 
-RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode opacityMode)
-    : ImageBufferSurface(size, opacityMode)
+RecordingImageBufferSurface::RecordingImageBufferSurface(const IntSize& size, std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
+    : ImageBufferSurface(size, opacityMode, std::move(colorSpace))
     , m_imageBuffer(0)
     , m_currentFramePixelCount(0)
     , m_previousFramePixelCount(0)
@@ -82,7 +82,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, canvasFallbackHistogram, new EnumerationHistogram("Canvas.DisplayListFallbackReason", FallbackReasonCount));
     canvasFallbackHistogram.count(reason);
 
-    m_fallbackSurface = m_fallbackFactory->createSurface(size(), getOpacityMode());
+    m_fallbackSurface = m_fallbackFactory->createSurface(size(), getOpacityMode(), colorSpace());
     m_fallbackSurface->setImageBuffer(m_imageBuffer);
 
     if (m_previousFrame) {

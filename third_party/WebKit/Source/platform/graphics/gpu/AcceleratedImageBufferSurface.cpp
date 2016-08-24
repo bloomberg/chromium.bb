@@ -40,8 +40,8 @@
 
 namespace blink {
 
-AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
-    : ImageBufferSurface(size, opacityMode)
+AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
+    : ImageBufferSurface(size, opacityMode, colorSpace)
 {
     m_contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!m_contextProvider)
