@@ -156,6 +156,22 @@ VideoEncodeAcceleratorTestEnvironment* g_env;
 // "--num_frames_to_encode". Ignored if 0.
 int g_num_frames_to_encode = 0;
 
+#ifdef ARCH_CPU_ARMEL
+// ARM performs CPU cache management with CPU cache line granularity. We thus
+// need to ensure our buffers are CPU cache line-aligned (64 byte-aligned).
+// Otherwise newer kernels will refuse to accept them, and on older kernels
+// we'll be treating ourselves to random corruption.
+// Moreover, some hardware codecs require 128-byte alignment for physical
+// buffers.
+const size_t kPlatformBufferAlignment = 128;
+#else
+const size_t kPlatformBufferAlignment = 1;
+#endif
+
+inline static size_t AlignToPlatformRequirements(size_t value) {
+  return base::bits::Align(value, kPlatformBufferAlignment);
+}
+
 // An aligned STL allocator.
 template <typename T, size_t ByteAlignment>
 class AlignedAllocator : public std::allocator<T> {
@@ -206,8 +222,10 @@ struct TestStream {
   std::string in_filename;
 
   // A vector used to prepare aligned input buffers of |in_filename|. This
-  // makes sure starting address of YUV planes are 64 bytes-aligned.
-  std::vector<char, AlignedAllocator<char, 64>> aligned_in_file_data;
+  // makes sure starting addresses of YUV planes are aligned to
+  // kPlatformBufferAlignment bytes.
+  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
+      aligned_in_file_data;
 
   // Byte size of a frame of |aligned_in_file_data|.
   size_t aligned_buffer_size;
@@ -222,10 +240,6 @@ struct TestStream {
   unsigned int requested_subsequent_bitrate;
   unsigned int requested_subsequent_framerate;
 };
-
-inline static size_t Align64Bytes(size_t value) {
-  return base::bits::Align(value, 64);
-}
 
 // Return the |percentile| from a sorted vector.
 static base::TimeDelta Percentile(
@@ -267,14 +281,11 @@ static std::string FilePathStringTypeToString(
 #endif  // defined(OS_WIN)
 }
 
-// ARM performs CPU cache management with CPU cache line granularity. We thus
-// need to ensure our buffers are CPU cache line-aligned (64 byte-aligned).
-// Otherwise newer kernels will refuse to accept them, and on older kernels
-// we'll be treating ourselves to random corruption.
+// Some platforms may have requirements on physical memory buffer alignment.
 // Since we are just mapping and passing chunks of the input file directly to
-// the VEA as input frames to avoid copying large chunks of raw data on each
-// frame and thus affecting performance measurements, we have to prepare a
-// temporary file with all planes aligned to 64-byte boundaries beforehand.
+// the VEA as input frames, to avoid copying large chunks of raw data on each
+// frame, and thus affecting performance measurements, we have to prepare a
+// temporary file with all planes aligned to the required alignment beforehand.
 static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
                                          TestStream* test_stream) {
   // Test case may have many encoders and memory should be prepared once.
@@ -295,15 +306,17 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   std::vector<size_t> visible_plane_rows(num_planes);
 
   // Calculate padding in bytes to be added after each plane required to keep
-  // starting addresses of all planes at a 64 byte boudnary. This padding will
-  // be added after each plane when copying to the temporary file.
+  // starting addresses of all planes at a byte boundary required by the
+  // platform. This padding will be added after each plane when copying to the
+  // temporary file.
   // At the same time we also need to take into account coded_size requested by
   // the VEA; each row of visible_bpl bytes in the original file needs to be
   // copied into a row of coded_bpl bytes in the aligned file.
   for (size_t i = 0; i < num_planes; i++) {
     const size_t size =
         VideoFrame::PlaneSize(kInputFormat, i, coded_size).GetArea();
-    test_stream->aligned_plane_size.push_back(Align64Bytes(size));
+    test_stream->aligned_plane_size.push_back(
+        AlignToPlatformRequirements(size));
     test_stream->aligned_buffer_size += test_stream->aligned_plane_size.back();
 
     coded_bpl[i] = VideoFrame::RowBytes(i, kInputFormat, coded_size.width());
@@ -314,7 +327,8 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const size_t padding_rows =
         VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
         visible_plane_rows[i];
-    padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;
+    padding_sizes[i] =
+        padding_rows * coded_bpl[i] + AlignToPlatformRequirements(size) - size;
   }
 
   base::FilePath src_file(StringToFilePathStringType(test_stream->in_filename));
@@ -342,9 +356,9 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
                static_cast<int>(visible_buffer_size));
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
-      // Assert that each plane of frame starts at 64 byte boundary.
-      ASSERT_EQ(dest_offset & 63, 0)
-          << "Planes of frame should be mapped at a 64 byte boundary";
+      // Assert that each plane of frame starts at required byte boundary.
+      ASSERT_EQ(dest_offset & (kPlatformBufferAlignment - 1), 0u)
+          << "Planes of frame should be mapped per platform requirements";
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
         memcpy(&test_stream->aligned_in_file_data[dest_offset], src_ptr,
                visible_bpl[i]);
@@ -356,14 +370,6 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     src_offset += static_cast<off_t>(visible_buffer_size);
   }
   src.Close();
-
-#if defined(OS_POSIX)
-  // Assert that memory mapped of file starts at 64 byte boundary. So each
-  // plane of frames also start at 64 byte boundary.
-  ASSERT_EQ(reinterpret_cast<off_t>(&test_stream->aligned_in_file_data[0]) & 63,
-            0)
-      << "File should be mapped at a 64 byte boundary";
-#endif  // defined(OS_POSIX)
 
   LOG_ASSERT(test_stream->num_frames > 0UL);
 }
