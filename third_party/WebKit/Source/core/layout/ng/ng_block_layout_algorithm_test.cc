@@ -32,8 +32,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 
   NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));
   NGFragment* frag = algorithm.layout(space);
-  EXPECT_EQ(frag->inlineSize(), LayoutUnit(30));
-  EXPECT_EQ(frag->blockSize(), LayoutUnit(40));
+  EXPECT_EQ(frag->InlineSize(), LayoutUnit(30));
+  EXPECT_EQ(frag->BlockSize(), LayoutUnit(40));
 }
 
 }  // namespace

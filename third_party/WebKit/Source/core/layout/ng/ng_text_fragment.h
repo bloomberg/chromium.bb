@@ -16,19 +16,11 @@ namespace blink {
 
 class CORE_EXPORT NGTextFragment final : public NGFragmentBase {
  public:
-  NGTextFragment(LayoutUnit inlineSize,
-                 LayoutUnit blockSize,
-                 LayoutUnit inlineOverflow,
-                 LayoutUnit blockOverflow,
+  NGTextFragment(NGLogicalSize size,
+                 NGLogicalSize overflow,
                  NGWritingMode writingMode,
                  NGDirection direction)
-      : NGFragmentBase(inlineSize,
-                       blockSize,
-                       inlineOverflow,
-                       blockOverflow,
-                       writingMode,
-                       direction,
-                       FragmentText) {}
+      : NGFragmentBase(size, overflow, writingMode, direction, FragmentText) {}
 
   String text() const;
 

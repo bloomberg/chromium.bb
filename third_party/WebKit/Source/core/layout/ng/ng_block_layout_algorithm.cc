@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutBox.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_margin_strut.h"
@@ -29,28 +30,31 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
   NGConstraintSpace constraint_space_for_children(
       constraintSpace, NGLogicalSize(inlineSize, blockSize));
 
-  HeapVector<Member<const NGFragmentBase>> childFragments;
+  NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
+  builder.SetInlineSize(inlineSize).SetBlockSize(blockSize);
+
   LayoutUnit contentSize;
   for (NGBox box : m_boxIterator) {
     NGBoxMargins childMargins =
         computeMargins(constraint_space_for_children, *box.style());
     NGFragment* fragment = box.layout(constraint_space_for_children);
     // TODO(layout-ng): Support auto margins
-    fragment->setOffset(childMargins.inlineStart,
+    fragment->SetOffset(childMargins.inlineStart,
                         contentSize + childMargins.blockStart);
     box.positionUpdated(*fragment);
-    contentSize += fragment->blockSize() + childMargins.blockSum();
-    childFragments.append(fragment);
+    contentSize += fragment->BlockSize() + childMargins.blockSum();
+    builder.AddChild(fragment);
   }
 
   // Recompute the block-axis size now that we know our content size.
   blockSize =
       computeBlockSizeForFragment(constraintSpace, *m_style, contentSize);
-  NGFragment* returnFragment =
-      new NGFragment(inlineSize, blockSize, inlineSize, blockSize,
-                     HorizontalTopBottom, LeftToRight);
-  returnFragment->swapChildren(childFragments);
-  return returnFragment;
+  // TODO(layout-ng): Compute correct inline overflow (block overflow should be
+  // correct)
+  builder.SetBlockSize(blockSize)
+      .SetInlineOverflow(inlineSize)
+      .SetBlockOverflow(contentSize);
+  return builder.ToFragment();
 }
 
 }  // namespace blink

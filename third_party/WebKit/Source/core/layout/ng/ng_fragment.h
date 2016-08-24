@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -16,31 +17,23 @@ namespace blink {
 
 class CORE_EXPORT NGFragment final : public NGFragmentBase {
  public:
-  NGFragment(LayoutUnit inlineSize,
-             LayoutUnit blockSize,
-             LayoutUnit inlineOverflow,
-             LayoutUnit blockOverflow,
+  // This modified the passed-in children vector.
+  NGFragment(NGLogicalSize size,
+             NGLogicalSize overflow,
              NGWritingMode writingMode,
-             NGDirection direction)
-      : NGFragmentBase(inlineSize,
-                       blockSize,
-                       inlineOverflow,
-                       blockOverflow,
-                       writingMode,
-                       direction,
-                       FragmentBox) {}
+             NGDirection direction,
+             HeapVector<Member<const NGFragmentBase>>& children)
+      : NGFragmentBase(size, overflow, writingMode, direction, FragmentBox) {
+    children_.swap(children);
+  }
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(m_children);
+    visitor->trace(children_);
     NGFragmentBase::traceAfterDispatch(visitor);
   }
 
-  void swapChildren(HeapVector<Member<const NGFragmentBase>>& children) {
-    m_children.swap(children);
-  }
-
  private:
-  HeapVector<Member<const NGFragmentBase>> m_children;
+  HeapVector<Member<const NGFragmentBase>> children_;
 };
 
 }  // namespace blink

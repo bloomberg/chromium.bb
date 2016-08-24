@@ -8,33 +8,29 @@
 
 namespace blink {
 
-NGFragmentBase::NGFragmentBase(LayoutUnit inlineSize,
-                               LayoutUnit blockSize,
-                               LayoutUnit inlineOverflow,
-                               LayoutUnit blockOverflow,
-                               NGWritingMode writingMode,
+NGFragmentBase::NGFragmentBase(NGLogicalSize size,
+                               NGLogicalSize overflow,
+                               NGWritingMode writing_mode,
                                NGDirection direction,
                                NGFragmentType type)
-    : m_inlineSize(inlineSize),
-      m_blockSize(blockSize),
-      m_inlineOverflow(inlineOverflow),
-      m_blockOverflow(blockOverflow),
-      m_type(type),
-      m_writingMode(writingMode),
-      m_direction(direction),
-      m_hasBeenPlaced(false) {}
+    : size_(size),
+      overflow_(overflow),
+      type_(type),
+      writing_mode_(writing_mode),
+      direction_(direction),
+      has_been_placed_(false) {}
 
-void NGFragmentBase::setOffset(LayoutUnit inlineOffset,
-                               LayoutUnit blockOffset) {
+void NGFragmentBase::SetOffset(LayoutUnit inline_offset,
+                               LayoutUnit block_offset) {
   // setOffset should only be called once.
-  DCHECK(!m_hasBeenPlaced);
-  m_inlineOffset = inlineOffset;
-  m_blockOffset = blockOffset;
-  m_hasBeenPlaced = true;
+  DCHECK(!has_been_placed_);
+  offset_.inlineOffset = inline_offset;
+  offset_.blockOffset = block_offset;
+  has_been_placed_ = true;
 }
 
 DEFINE_TRACE(NGFragmentBase) {
-  if (type() == FragmentText)
+  if (Type() == FragmentText)
     static_cast<NGTextFragment*>(this)->traceAfterDispatch(visitor);
   else
     static_cast<NGFragment*>(this)->traceAfterDispatch(visitor);

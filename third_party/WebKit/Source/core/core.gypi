@@ -555,6 +555,8 @@
             'layout/ng/ng_derived_constraint_space.h',
             'layout/ng/ng_fragment_base.cc',
             'layout/ng/ng_fragment_base.h',
+            'layout/ng/ng_fragment_builder.cc',
+            'layout/ng/ng_fragment_builder.h',
             'layout/ng/ng_fragment.cc',
             'layout/ng/ng_fragment.h',
             'layout/ng/ng_layout_input_text.h',
