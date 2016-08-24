@@ -10,6 +10,7 @@
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {
@@ -23,8 +24,7 @@ void setFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> o
     if (!V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, callback, external, 0).ToLocal(&func))
         return;
     func->SetName(funcName);
-    if (!obj->Set(context, funcName, func).FromMaybe(false))
-        return;
+    createDataProperty(context, obj, funcName, func);
 }
 
 V8InspectorImpl* unwrapInspector(const v8::FunctionCallbackInfo<v8::Value>& info)

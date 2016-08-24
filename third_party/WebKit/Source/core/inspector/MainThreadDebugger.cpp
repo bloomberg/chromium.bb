@@ -366,7 +366,7 @@ void MainThreadDebugger::querySelectorAllCallback(const v8::FunctionCallbackInfo
     v8::Local<v8::Array> nodes = v8::Array::New(isolate, elementList->length());
     for (size_t i = 0; i < elementList->length(); ++i) {
         Element* element = elementList->item(i);
-        if (!nodes->Set(context, i, toV8(element, info.Holder(), info.GetIsolate())).FromMaybe(false))
+        if (!createDataPropertyInArray(context, nodes, i, toV8(element, info.Holder(), info.GetIsolate())).FromMaybe(false))
             return;
     }
     info.GetReturnValue().Set(nodes);
@@ -401,7 +401,7 @@ void MainThreadDebugger::xpathSelectorCallback(const v8::FunctionCallbackInfo<v8
         while (Node* node = result->iterateNext(exceptionState)) {
             if (exceptionState.throwIfNeeded())
                 return;
-            if (!nodes->Set(context, index++, toV8(node, info.Holder(), info.GetIsolate())).FromMaybe(false))
+            if (!createDataPropertyInArray(context, nodes, index++, toV8(node, info.Holder(), info.GetIsolate())).FromMaybe(false))
                 return;
         }
         info.GetReturnValue().Set(nodes);

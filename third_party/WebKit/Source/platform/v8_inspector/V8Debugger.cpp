@@ -611,12 +611,12 @@ v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> 
         v8::Local<v8::Function> function = value.As<v8::Function>();
         v8::Local<v8::Value> location = functionLocation(context, function);
         if (location->IsObject()) {
-            properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[FunctionLocation]]"));
-            properties->Set(properties->Length(), location);
+            createDataProperty(context, properties, properties->Length(), toV8StringInternalized(m_isolate, "[[FunctionLocation]]"));
+            createDataProperty(context, properties, properties->Length(), location);
         }
         if (function->IsGeneratorFunction()) {
-            properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[IsGenerator]]"));
-            properties->Set(properties->Length(), v8::True(m_isolate));
+            createDataProperty(context, properties, properties->Length(), toV8StringInternalized(m_isolate, "[[IsGenerator]]"));
+            createDataProperty(context, properties, properties->Length(), v8::True(m_isolate));
         }
     }
     if (!enabled())
@@ -624,15 +624,15 @@ v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> 
     if (value->IsMap() || value->IsWeakMap() || value->IsSet() || value->IsWeakSet() || value->IsSetIterator() || value->IsMapIterator()) {
         v8::Local<v8::Value> entries = collectionEntries(context, v8::Local<v8::Object>::Cast(value));
         if (entries->IsArray()) {
-            properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[Entries]]"));
-            properties->Set(properties->Length(), entries);
+            createDataProperty(context, properties, properties->Length(), toV8StringInternalized(m_isolate, "[[Entries]]"));
+            createDataProperty(context, properties, properties->Length(), entries);
         }
     }
     if (value->IsGeneratorObject()) {
         v8::Local<v8::Value> location = generatorObjectLocation(context, v8::Local<v8::Object>::Cast(value));
         if (location->IsObject()) {
-            properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[GeneratorLocation]]"));
-            properties->Set(properties->Length(), location);
+            createDataProperty(context, properties, properties->Length(), toV8StringInternalized(m_isolate, "[[GeneratorLocation]]"));
+            createDataProperty(context, properties, properties->Length(), location);
         }
     }
     if (value->IsFunction()) {
@@ -640,8 +640,8 @@ v8::MaybeLocal<v8::Array> V8Debugger::internalProperties(v8::Local<v8::Context> 
         v8::Local<v8::Value> boundFunction = function->GetBoundFunction();
         v8::Local<v8::Value> scopes;
         if (boundFunction->IsUndefined() && functionScopes(context, function).ToLocal(&scopes)) {
-            properties->Set(properties->Length(), toV8StringInternalized(m_isolate, "[[Scopes]]"));
-            properties->Set(properties->Length(), scopes);
+            createDataProperty(context, properties, properties->Length(), toV8StringInternalized(m_isolate, "[[Scopes]]"));
+            createDataProperty(context, properties, properties->Length(), scopes);
         }
     }
     return properties;
@@ -691,11 +691,11 @@ v8::Local<v8::Value> V8Debugger::functionLocation(v8::Local<v8::Context> context
     v8::Local<v8::Object> location = v8::Object::New(m_isolate);
     if (!location->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
         return v8::Null(m_isolate);
-    if (!location->Set(context, toV8StringInternalized(m_isolate, "scriptId"), toV8String(m_isolate, String16::fromInteger(scriptId))).FromMaybe(false))
+    if (!createDataProperty(context, location, toV8StringInternalized(m_isolate, "scriptId"), toV8String(m_isolate, String16::fromInteger(scriptId))).FromMaybe(false))
         return v8::Null(m_isolate);
-    if (!location->Set(context, toV8StringInternalized(m_isolate, "lineNumber"), v8::Integer::New(m_isolate, lineNumber)).FromMaybe(false))
+    if (!createDataProperty(context, location, toV8StringInternalized(m_isolate, "lineNumber"), v8::Integer::New(m_isolate, lineNumber)).FromMaybe(false))
         return v8::Null(m_isolate);
-    if (!location->Set(context, toV8StringInternalized(m_isolate, "columnNumber"), v8::Integer::New(m_isolate, columnNumber)).FromMaybe(false))
+    if (!createDataProperty(context, location, toV8StringInternalized(m_isolate, "columnNumber"), v8::Integer::New(m_isolate, columnNumber)).FromMaybe(false))
         return v8::Null(m_isolate);
     if (!markAsInternal(context, location, V8InternalValueType::kLocation))
         return v8::Null(m_isolate);

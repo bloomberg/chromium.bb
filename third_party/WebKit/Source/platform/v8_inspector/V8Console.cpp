@@ -15,6 +15,7 @@
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {
@@ -276,10 +277,9 @@ void createBoundFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::O
         v8::Local<v8::String> returnValue = toV8String(context->GetIsolate(), description);
         v8::Local<v8::Function> toStringFunction;
         if (V8_FUNCTION_NEW_REMOVE_PROTOTYPE(context, returnDataCallback, returnValue, 0).ToLocal(&toStringFunction))
-            func->Set(toV8StringInternalized(context->GetIsolate(), "toString"), toStringFunction);
+            createDataProperty(context, func, toV8StringInternalized(context->GetIsolate(), "toString"), toStringFunction);
     }
-    if (!console->Set(context, funcName, func).FromMaybe(false))
-        return;
+    createDataProperty(context, console, funcName, func);
 }
 
 } // namespace
@@ -522,8 +522,7 @@ void V8Console::valuesCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
         v8::Local<v8::Value> value;
         if (!obj->Get(context, key).ToLocal(&value))
             continue;
-        if (!values->Set(context, i, value).FromMaybe(false))
-            continue;
+        createDataProperty(context, values, i, value);
     }
     info.GetReturnValue().Set(values);
 }

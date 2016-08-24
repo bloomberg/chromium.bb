@@ -51,6 +51,7 @@ protected:
     virtual void reportConsoleMessage(ExecutionContext*, MessageSource, MessageLevel, const String& message, SourceLocation*) = 0;
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
+    static v8::Maybe<bool> createDataPropertyInArray(v8::Local<v8::Context>, v8::Local<v8::Array>, int index, v8::Local<v8::Value>);
     static MessageLevel consoleAPITypeToMessageLevel(v8_inspector::V8ConsoleAPIType);
 
     v8::Isolate* m_isolate;

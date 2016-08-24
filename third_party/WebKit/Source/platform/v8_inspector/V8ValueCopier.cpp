@@ -40,7 +40,7 @@ public:
                 v8::Local<v8::Value> copied;
                 if (!copy(item, depth + 1).ToLocal(&copied))
                     return v8::MaybeLocal<v8::Value>();
-                if (!result->Set(m_to, i, copied).FromMaybe(false))
+                if (!createDataProperty(m_to, result, i, copied).FromMaybe(false))
                     return v8::MaybeLocal<v8::Value>();
             }
             return result;
@@ -63,7 +63,7 @@ public:
             v8::Local<v8::Value> copied;
             if (!copy(property, depth + 1).ToLocal(&copied))
                 return v8::MaybeLocal<v8::Value>();
-            if (!result->Set(m_to, name, copied).FromMaybe(false))
+            if (!createDataProperty(m_to, result, v8::Local<v8::String>::Cast(name), copied).FromMaybe(false))
                 return v8::MaybeLocal<v8::Value>();
         }
         return result;
@@ -85,6 +85,20 @@ v8::MaybeLocal<v8::Value> copyValueFromDebuggerContext(v8::Isolate* isolate, v8:
     copier.m_to = toContext;
     copier.m_calls = 0;
     return copier.copy(value, 0);
+}
+
+v8::Maybe<bool> createDataProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, v8::Local<v8::Name> key, v8::Local<v8::Value> value)
+{
+    v8::TryCatch tryCatch(context->GetIsolate());
+    v8::Isolate::DisallowJavascriptExecutionScope throwJs(context->GetIsolate(), v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
+    return object->CreateDataProperty(context, key, value);
+}
+
+v8::Maybe<bool> createDataProperty(v8::Local<v8::Context> context, v8::Local<v8::Array> array, int index, v8::Local<v8::Value> value)
+{
+    v8::TryCatch tryCatch(context->GetIsolate());
+    v8::Isolate::DisallowJavascriptExecutionScope throwJs(context->GetIsolate(), v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
+    return array->CreateDataProperty(context, index, value);
 }
 
 } // namespace v8_inspector
