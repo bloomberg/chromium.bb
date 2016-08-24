@@ -14,14 +14,6 @@
             "group_name": "Enabled"
         }
     ],
-    "AutofillProfileCleanup": [
-        {
-            "enable_features": [
-                "AutofillProfileCleanup"
-            ],
-            "group_name": "Enabled"
-        }
-    ],
     "AutofillProfileOrderByFrecency": [
         {
             "group_name": "EnabledLimitTo3",
