@@ -28,6 +28,9 @@ class GitCL(object):
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._executive.run_command(command, cwd=self._cwd)
 
+    def get_issue_number(self):
+        return self.run(['issue']).split()[2]
+
     def has_failing_try_results(self, poll_delay_seconds=300):
         """Waits for try job results and checks whether there are failing results."""
         # TODO(qyearsley): Refactor to make this more easily-testable.

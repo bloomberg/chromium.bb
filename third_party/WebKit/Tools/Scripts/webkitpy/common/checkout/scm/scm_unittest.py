@@ -254,11 +254,3 @@ class GitTestWithMock(SCMTestBase):
 
         scm._run_git = lambda args: 'Date: 2013-02-08 01:55:21 -0800'
         self.assertEqual(scm.timestamp_of_revision('some-path', '12345'), '2013-02-08T09:55:21Z')
-
-    def test_get_issue_number(self):
-        scm = Git(cwd='.', executive=MockExecutive2(output='Issue number: 12345 (http://crrev.com/12345)'))
-        issue_number = scm.get_issue_number()
-        self.assertEqual(issue_number, '12345')
-        scm2 = Git(cwd='.', executive=MockExecutive2(output='Issue number: None (None)'))
-        issue_number = scm2.get_issue_number()
-        self.assertEqual(issue_number, 'None')

@@ -5,10 +5,11 @@
 import optparse
 import json
 
-from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web_mock import MockWeb
+from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
@@ -54,9 +55,6 @@ class RebaselineCLTest(BaseTestCase):
             },
         })
         self.command.rietveld = Rietveld(web)
-        self.git = MockSCM()
-        self.git.get_issue_number = lambda: 'None'
-        self.command.git = lambda: self.git
 
     @staticmethod
     def command_options(**kwargs):
@@ -99,7 +97,9 @@ class RebaselineCLTest(BaseTestCase):
         self.assertTrue(logs.startswith('No issue number given and no issue for current branch.'))
 
     def test_execute_with_issue_number_from_branch(self):
-        self.git.get_issue_number = lambda: '11112222'
+        git_cl = GitCL(MockExecutive2())
+        git_cl.get_issue_number = lambda: '11112222'
+        self.command.git_cl = lambda: git_cl
         oc = OutputCapture()
         try:
             oc.capture_output()

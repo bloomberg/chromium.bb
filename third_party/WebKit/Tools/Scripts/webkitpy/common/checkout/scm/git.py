@@ -327,7 +327,3 @@ class Git(SCM):
         self._discard_working_directory_changes()
         self._run_git(['checkout', '-q', self._branch_tracking_remote_master()])
         self._discard_local_commits()
-
-    def get_issue_number(self):
-        # TODO(qyearsley): Move this to webkitpy.common.net.git_cl.
-        return str(self._run_git(['cl', 'issue']).split()[2])

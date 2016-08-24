@@ -53,3 +53,11 @@ class GitCLTest(unittest.TestCase):
                 'chromeos_daisy'
             ])
         })
+
+    def test_get_issue_number(self):
+        git_cl = GitCL(MockExecutive2(output='Issue number: 12345 (http://crrev.com/12345)'))
+        self.assertEqual(git_cl.get_issue_number(), '12345')
+
+    def test_get_issue_number_none(self):
+        git_cl = GitCL(MockExecutive2(output='Issue number: None (None)'))
+        self.assertEqual(git_cl.get_issue_number(), 'None')

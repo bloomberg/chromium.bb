@@ -10,6 +10,7 @@ This script is used as part of the w3c test auto-import process.
 
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
 
@@ -46,7 +47,7 @@ class W3CExpectationsLineAdder(object):
         self.filesystem = host.filesystem
 
     def get_issue_number(self):
-        return self._host.scm().get_issue_number()
+        return GitCL(self._host.executive).get_issue_number()
 
     def get_try_bots(self):
         return self._host.builders.all_try_builder_names()

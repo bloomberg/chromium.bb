@@ -11,7 +11,6 @@ with layout test results.
 import logging
 import optparse
 
-from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
@@ -83,7 +82,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""
         if options.issue:
             return options.issue
-        issue_number = self.git().get_issue_number()
+        issue_number = self.git_cl().get_issue_number()
         _log.debug('Issue number for current branch: %s', issue_number)
         if not issue_number.isdigit():
             _log.error('No issue number given and no issue for current branch. This tool requires a CL\n'
@@ -92,25 +91,25 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return None
         return int(issue_number)
 
-    def git(self):
-        """Returns a Git instance; can be overridden for tests."""
-        # Pass in a current working directory inside of the repo so
-        # that this command can be called from outside of the repo.
-        return Git(cwd=self._tool.filesystem.dirname(self._tool.path()))
+    def git_cl(self):
+        """Returns a GitCL instance; can be overridden for tests."""
+        return GitCL(self._tool.executive)
 
     def trigger_jobs_for_missing_builds(self, builds):
         builders_with_builds = {b.builder_name for b in builds}
         builders_without_builds = set(self._try_bots()) - builders_with_builds
         if not builders_without_builds:
             return
+
         _log.info('Triggering try jobs for:')
         for builder in sorted(builders_without_builds):
             _log.info('  %s', builder)
+
         git_cl = GitCL(self._tool.executive)
         command = ['try']
         for builder in sorted(builders_without_builds):
             command += ['-b', builder]
-        git_cl.run(command)
+        self.git_cl().run(command)
 
     def _test_prefix_list(self, issue_number, only_changed_tests):
         """Returns a collection of test, builder and file extensions to get new baselines for.
