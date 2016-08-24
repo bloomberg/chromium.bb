@@ -100,7 +100,6 @@ public class SnippetArticleViewHolder extends CardViewHolder
      * @param manager The NTPManager object used to open an article
      * @param suggestionsSource The source used to retrieve the thumbnails.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
-     * @param listener A Listener to be notified whenever a Context Menu is created.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
             SuggestionsSource suggestionsSource, UiConfig uiConfig) {

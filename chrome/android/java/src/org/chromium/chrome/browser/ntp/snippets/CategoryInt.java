@@ -9,10 +9,9 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Annotation used to denote int values that identify a content suggestion category.
- * Because the set of categories is not fully known at compile time, we can't use an {@link @IntDef}
- * annotation.
- * Currently nothing enforces that a value annotated this way actually is a valid category ID,
- * but it serves as documentation.
+ * Because the set of categories is not fully known at compile time, we can't use an {@code @IntDef}
+ * annotation. Currently nothing enforces that a value annotated this way actually is a valid
+ * category ID, but it serves as documentation.
  */
 @Retention(value = RetentionPolicy.SOURCE)
 public @interface CategoryInt {

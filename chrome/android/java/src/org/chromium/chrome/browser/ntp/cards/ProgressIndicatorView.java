@@ -35,6 +35,7 @@ public class ProgressIndicatorView extends ImageView {
         super(context, attrs);
 
         mShowSpinnerRunnable = new Runnable() {
+            @Override
             public void run() {
                 mPostedCallback = false;
                 show();
