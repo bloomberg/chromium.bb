@@ -6,10 +6,12 @@
             height: 0px;
         }
     </style>
+    <script src="../../resources/js-test.js"></script>
     <script>
       window.enablePixelTesting = true;
 
       function scroll() {
+          // Scrolls so that unscaled content is out of view
           window.scrollTo(100,100);
       }
 
@@ -20,12 +22,14 @@
       }
 
       function test() {
+          if (window.internals)
+            internals.settings.setScrollAnimatorEnabled(false);
+
           // Scroll before applying page scale so we scroll the layout viewport.
           scroll();
           applyScaleFactor();
       }
     </script>
-    <script src="../../resources/js-test.js"></script>
 </head>
 <body style="height:2000px; width: 2000px; margin:0px;" onload="test();">
     <div style="position: fixed; top: -100px; right: 500px; z-index: 1">

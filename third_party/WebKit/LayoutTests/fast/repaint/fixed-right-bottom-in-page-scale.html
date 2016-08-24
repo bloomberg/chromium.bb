@@ -16,9 +16,8 @@
 
       function scaleWithEventSender() {
           var scaleFactor = 2.0;
-          if (window.internals) {
+          if (window.internals)
              internals.setPageScaleFactor(scaleFactor);
-          }
       }
 
       function test() {
