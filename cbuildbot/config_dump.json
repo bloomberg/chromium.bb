@@ -22061,12 +22061,6 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "smaug-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "smaug"
-        ]
-    },
     "smaug-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -22098,6 +22092,7 @@
             "recovery",
             "test"
         ],
+        "paygen": false,
         "sign_types": [
             "nv_lp0_firmware"
         ],

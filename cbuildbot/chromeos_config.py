@@ -2992,6 +2992,7 @@ def GetConfig():
   overwritten_configs = {
       ### Arm release configs
       'smaug-release' : {
+          'paygen': False,
           'images':['base', 'recovery', 'test'],
           'sign_types':['nv_lp0_firmware'],
       },
