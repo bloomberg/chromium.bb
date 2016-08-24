@@ -1946,52 +1946,6 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
   return results
 
-def _CheckNewSourceFileAddedToGnGypi(input_api, output_api):
-   """Checks new source code files were added to GN/GYPi files"""
-   new_source_files = []
-   gn_gypi_files = []
-
-   """ Get lists of new source code files and GN/GYPi files in the commit"""
-   for f in input_api.AffectedFiles():
-     if f.LocalPath().endswith(('.gn', '.gypi')):
-       gn_gypi_files.append(f)
-       continue
-     if f.LocalPath().endswith(('.h', '.c', '.cc', '.m', '.mm', '.java')):
-        if f.Action() == 'A':
-          new_source_files.append(f.LocalPath())
-
-   if not new_source_files:
-     return []
-
-   if not gn_gypi_files:
-     return [output_api.PresubmitPromptWarning('The following new'
-         ' source code files must be added to GN/GYPI files:\n    ' +
-         '\n    '.join(new_source_files))]
-
-   """Get a list of new source code files that CAN BE FOUND in the GN/GYPI
-      files"""
-   source_files_listed = []
-   for f in new_source_files:
-     head, sep, tail = f.rpartition('/')
-     source_file_match_pattern = tail
-     for g in gn_gypi_files:
-       for line in g.GenerateScmDiff().splitlines():
-         if line.endswith((source_file_match_pattern + '",',
-                           source_file_match_pattern + '\',')):
-           source_files_listed.append(f)
-           break
-
-   """Remove files, which has been found in the GN files, from the list"""
-   for f in source_files_listed:
-     if f in new_source_files:
-       new_source_files.remove(f)
-
-   if new_source_files:
-     return [output_api.PresubmitPromptWarning('The following new'
-         ' source code files must be added to GN/GYPI files:\n    ' +
-         '\n    '.join(new_source_files))]
-
-   return []
 
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
@@ -2043,7 +1997,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckMojoUsesNewWrapperTypes(input_api, output_api))
-  results.extend(_CheckNewSourceFileAddedToGnGypi(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
