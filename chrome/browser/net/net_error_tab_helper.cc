@@ -298,21 +298,8 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
 #if BUILDFLAG(ANDROID_JAVA_UI)
 void NetErrorTabHelper::UpdateHasOfflinePages(
     content::RenderFrameHost* render_frame_host) {
-  // Bails out if offline pages not supported.
-  if (!offline_pages::IsOfflinePagesEnabled())
-    return;
-
-  offline_pages::OfflinePageModel* offline_page_model =
-      offline_pages::OfflinePageModelFactory::GetForBrowserContext(
-          web_contents()->GetBrowserContext());
-  if (!offline_page_model)
-    return;
-
-  offline_page_model->HasPages(
-      offline_pages::kBookmarkNamespace,
-      base::Bind(&NetErrorTabHelper::SetHasOfflinePages,
-                 weak_factory_.GetWeakPtr(),
-                 render_frame_host->GetFrameTreeNodeId()));
+  // TODO(chili): remove entirely in M55 if AsyncLoading does not need this.
+  SetHasOfflinePages(render_frame_host->GetFrameTreeNodeId(), false);
 }
 
 void NetErrorTabHelper::SetHasOfflinePages(int frame_tree_node_id,
