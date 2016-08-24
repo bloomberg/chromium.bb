@@ -41,10 +41,11 @@ public class PermissionInfoBar extends ConfirmInfoBar {
     private SparseArray<String> mContentSettingsToPermissionsMap;
 
     protected PermissionInfoBar(int iconDrawableId, Bitmap iconBitmap, String message,
-            String linkText, String primaryButtonText, String secondaryButtonText) {
+            String linkText, String primaryButtonText, String secondaryButtonText,
+            boolean showPersistenceToggle) {
         super(iconDrawableId, iconBitmap, message, linkText, primaryButtonText,
                 secondaryButtonText);
-        mShowPersistenceToggle = false;
+        mShowPersistenceToggle = showPersistenceToggle;
     }
 
     @Override
@@ -75,16 +76,6 @@ public class PermissionInfoBar extends ConfirmInfoBar {
                 : "A WindowAndroid must be specified to request access to content settings";
 
         mContentSettingsToPermissionsMap = generatePermissionsMapping(contentSettings);
-    }
-
-    /**
-     * Specifies whether or not this infobar should display a toggle asking the user if they want to
-     * save their choice.
-     *
-     * @param showPersistenceToggle True if the toggle should be displayed.
-     */
-    private void setShowPersistenceToggle(boolean showPersistenceToggle) {
-        mShowPersistenceToggle = showPersistenceToggle;
     }
 
     private SparseArray<String> generatePermissionsMapping(int[] contentSettings) {
@@ -204,7 +195,7 @@ public class PermissionInfoBar extends ConfirmInfoBar {
      * Returns true if the persist switch exists and is toggled on.
      */
     @CalledByNative
-    private boolean isPersistSwitchOn() {
+    protected boolean isPersistSwitchOn() {
         SwitchCompat persistSwitch = (SwitchCompat) getView().findViewById(
                 R.id.permission_infobar_persist_toggle);
         if (mShowPersistenceToggle && persistSwitch != null) {
@@ -236,9 +227,8 @@ public class PermissionInfoBar extends ConfirmInfoBar {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 
         PermissionInfoBar infoBar = new PermissionInfoBar(drawableId, iconBitmap, message, linkText,
-                buttonOk, buttonCancel);
+                buttonOk, buttonCancel, showPersistenceToggle);
         infoBar.setContentSettings(windowAndroid, contentSettings);
-        infoBar.setShowPersistenceToggle(showPersistenceToggle);
 
         return infoBar;
     }

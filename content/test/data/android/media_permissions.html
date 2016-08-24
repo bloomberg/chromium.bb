@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Media</title>
+        <script>
+            var micCount = 0;
+            var cameraCount = 0;
+            var combinedCount = 0;
+            function gotMicrophone(stream) {
+                micCount++;
+                window.document.title = 'Mic count:' + micCount;
+            }
+            function gotCamera(stream) {
+                cameraCount++;
+                window.document.title = 'Camera count:' + cameraCount;
+            }
+            function gotCombined(stream) {
+                combinedCount++;
+                window.document.title = 'Combined count:' + combinedCount;
+            }
+            function errorCallback(error){
+                window.document.title = 'deny';
+                console.log('navigator.getUserMedia error: ', error);
+            }
+            function initiate_getMicrophone() {
+              navigator.webkitGetUserMedia(
+                    {audio : true}, gotMicrophone, errorCallback);
+            }
+            function initiate_getCamera() {
+              navigator.webkitGetUserMedia(
+                    {video : true}, gotCamera, errorCallback);
+            }
+            function initiate_getCombined() {
+              navigator.webkitGetUserMedia(
+                    {video : true, audio: true}, gotCombined, errorCallback);
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

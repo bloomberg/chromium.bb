@@ -35,6 +35,9 @@ class MediaStreamInfoBarDelegateAndroid
   explicit MediaStreamInfoBarDelegateAndroid(
       std::unique_ptr<MediaStreamDevicesController> controller);
 
+  void RecordPermissionAcceptedUma(int position, bool persist);
+  void RecordPermissionDeniedUma(int position, bool persist);
+
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
