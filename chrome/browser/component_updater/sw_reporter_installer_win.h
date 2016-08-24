@@ -5,8 +5,27 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_SW_REPORTER_INSTALLER_WIN_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_SW_REPORTER_INSTALLER_WIN_H_
 
+#include <stdint.h>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "components/component_updater/default_component_installer.h"
+
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class DictionaryValue;
+class FilePath;
+class Version;
+}
+
+namespace safe_browsing {
+struct SwReporterInvocation;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -15,6 +34,40 @@ class PrefRegistrySyncable;
 namespace component_updater {
 
 class ComponentUpdateService;
+
+// Callback for running the software reporter after it is downloaded.
+using SwReporterRunner =
+    base::Callback<void(const safe_browsing::SwReporterInvocation& invocation,
+                        const base::Version& version)>;
+
+class SwReporterInstallerTraits : public ComponentInstallerTraits {
+ public:
+  explicit SwReporterInstallerTraits(const SwReporterRunner& reporter_runner);
+  ~SwReporterInstallerTraits() override;
+
+ private:
+  friend class SwReporterInstallerTest;
+
+  // ComponentInstallerTraits implementation.
+  bool VerifyInstallation(const base::DictionaryValue& manifest,
+                          const base::FilePath& dir) const override;
+  bool SupportsGroupPolicyEnabledComponentUpdates() const override;
+  bool RequiresNetworkEncryption() const override;
+  bool OnCustomInstall(const base::DictionaryValue& manifest,
+                       const base::FilePath& install_dir) override;
+  void ComponentReady(const base::Version& version,
+                      const base::FilePath& install_dir,
+                      std::unique_ptr<base::DictionaryValue> manifest) override;
+  base::FilePath GetRelativeInstallDir() const override;
+  void GetHash(std::vector<uint8_t>* hash) const override;
+  std::string GetName() const override;
+  update_client::InstallerAttributes GetInstallerAttributes() const override;
+  std::vector<std::string> GetMimeTypes() const override;
+
+  SwReporterRunner reporter_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwReporterInstallerTraits);
+};
 
 // Call once during startup to make the component update service aware of the
 // SwReporter.

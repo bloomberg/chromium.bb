@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/default_component_installer.h"
 #include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -103,72 +103,80 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
-class SwReporterInstallerTraits : public ComponentInstallerTraits {
- public:
-  SwReporterInstallerTraits() {}
-
-  ~SwReporterInstallerTraits() override {}
-
-  bool VerifyInstallation(const base::DictionaryValue& manifest,
-                          const base::FilePath& dir) const override {
-    return base::PathExists(dir.Append(kSwReporterExeName));
-  }
-
-  bool SupportsGroupPolicyEnabledComponentUpdates() const override {
-    return true;
-  }
-
-  bool RequiresNetworkEncryption() const override { return false; }
-
-  bool OnCustomInstall(const base::DictionaryValue& manifest,
-                       const base::FilePath& install_dir) override {
-    return true;
-  }
-
-  void ComponentReady(
-      const base::Version& version,
-      const base::FilePath& install_dir,
-      std::unique_ptr<base::DictionaryValue> manifest) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    const base::FilePath exe_path(install_dir.Append(kSwReporterExeName));
-    content::BrowserThread::PostAfterStartupTask(
-        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-        base::Bind(&safe_browsing::RunSwReporter,
-                   safe_browsing::SwReporterInvocation::FromFilePath(exe_path),
-                   version, base::ThreadTaskRunnerHandle::Get(),
-                   base::WorkerPool::GetTaskRunner(true)));
-  }
-
-  base::FilePath GetRelativeInstallDir() const override {
-    return base::FilePath(FILE_PATH_LITERAL("SwReporter"));
-  }
-
-  void GetHash(std::vector<uint8_t>* hash) const override { GetPkHash(hash); }
-
-  std::string GetName() const override { return "Software Reporter Tool"; }
-
-  update_client::InstallerAttributes GetInstallerAttributes() const override {
-    return update_client::InstallerAttributes();
-  }
-  std::vector<std::string> GetMimeTypes() const override {
-    return std::vector<std::string>();
-  }
-
-  static std::string ID() {
-    update_client::CrxComponent component;
-    component.version = base::Version("0.0.0.0");
-    GetPkHash(&component.pk_hash);
-    return update_client::GetCrxComponentID(component);
-  }
-
- private:
-  static void GetPkHash(std::vector<uint8_t>* hash) {
-    DCHECK(hash);
-    hash->assign(kSha256Hash, kSha256Hash + sizeof(kSha256Hash));
-  }
-};
+// Run the software reporter on the next Chrome startup after it's downloaded.
+// (This is the default |reporter_runner| function passed to the
+// |SwReporterInstallerTraits| constructor in |RegisterSwReporterComponent|
+// below.)
+void RunSwReporterAfterStartup(
+    const safe_browsing::SwReporterInvocation& invocation,
+    const base::Version& version) {
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&safe_browsing::RunSwReporter, invocation, version,
+                 base::ThreadTaskRunnerHandle::Get(),
+                 base::WorkerPool::GetTaskRunner(true)));
+}
 
 }  // namespace
+
+SwReporterInstallerTraits::SwReporterInstallerTraits(
+    const SwReporterRunner& reporter_runner)
+    : reporter_runner_(reporter_runner) {}
+
+SwReporterInstallerTraits::~SwReporterInstallerTraits() {}
+
+bool SwReporterInstallerTraits::VerifyInstallation(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& dir) const {
+  return base::PathExists(dir.Append(kSwReporterExeName));
+}
+
+bool SwReporterInstallerTraits::SupportsGroupPolicyEnabledComponentUpdates()
+    const {
+  return true;
+}
+
+bool SwReporterInstallerTraits::RequiresNetworkEncryption() const {
+  return false;
+}
+
+bool SwReporterInstallerTraits::OnCustomInstall(
+    const base::DictionaryValue& manifest,
+    const base::FilePath& install_dir) {
+  return true;
+}
+
+void SwReporterInstallerTraits::ComponentReady(
+    const base::Version& version,
+    const base::FilePath& install_dir,
+    std::unique_ptr<base::DictionaryValue> manifest) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::FilePath exe_path(install_dir.Append(kSwReporterExeName));
+  reporter_runner_.Run(
+      safe_browsing::SwReporterInvocation::FromFilePath(exe_path), version);
+}
+
+base::FilePath SwReporterInstallerTraits::GetRelativeInstallDir() const {
+  return base::FilePath(FILE_PATH_LITERAL("SwReporter"));
+}
+
+void SwReporterInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
+  DCHECK(hash);
+  hash->assign(kSha256Hash, kSha256Hash + sizeof(kSha256Hash));
+}
+
+std::string SwReporterInstallerTraits::GetName() const {
+  return "Software Reporter Tool";
+}
+
+update_client::InstallerAttributes
+SwReporterInstallerTraits::GetInstallerAttributes() const {
+  return update_client::InstallerAttributes();
+}
+
+std::vector<std::string> SwReporterInstallerTraits::GetMimeTypes() const {
+  return std::vector<std::string>();
+}
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   if (!safe_browsing::IsSwReporterEnabled())
@@ -248,7 +256,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
 
   // Install the component.
   std::unique_ptr<ComponentInstallerTraits> traits(
-      new SwReporterInstallerTraits());
+      new SwReporterInstallerTraits(base::Bind(&RunSwReporterAfterStartup)));
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(std::move(traits));
