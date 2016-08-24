@@ -387,7 +387,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
     markMisspellingsAndBadGrammar(adjacentWords);
 }
 
-bool SpellChecker::isSpellCheckingEnabledFor(Node* node) const
+bool SpellChecker::isSpellCheckingEnabledFor(const Node* node) const
 {
     if (!node)
         return false;
@@ -833,6 +833,8 @@ void SpellChecker::cancelCheck()
 
 void SpellChecker::requestTextChecking(const Element& element)
 {
+    if (!isSpellCheckingEnabledFor(&element))
+        return;
     const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck));
 }

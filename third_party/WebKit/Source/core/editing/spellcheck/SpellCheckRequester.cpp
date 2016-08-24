@@ -159,19 +159,9 @@ void SpellCheckRequester::timerFiredToProcessQueuedRequest(TimerBase*)
     invokeRequest(m_requestQueue.takeFirst());
 }
 
-static bool canCheckAsynchronously(const Range* range)
-{
-    if (!range || !range->firstNode() || !range->firstNode()->layoutObject())
-        return false;
-    const Node* node = range->startContainer();
-    if (node && node->isElementNode() && !toElement(node)->isSpellCheckingEnabled())
-        return false;
-    return true;
-}
-
 void SpellCheckRequester::requestCheckingFor(SpellCheckRequest* request)
 {
-    if (!request || !canCheckAsynchronously(request->checkingRange()))
+    if (!request)
         return;
 
     DCHECK_EQ(request->data().sequence(), unrequestedTextCheckingSequence);

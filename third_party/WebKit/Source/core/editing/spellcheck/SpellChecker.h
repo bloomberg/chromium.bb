@@ -60,7 +60,7 @@ public:
     void toggleSpellCheckingEnabled();
     void ignoreSpelling();
     bool isSpellCheckingEnabledInFocusedNode() const;
-    bool isSpellCheckingEnabledFor(Node*) const;
+    bool isSpellCheckingEnabledFor(const Node*) const;
     static bool isSpellCheckingEnabledFor(const VisibleSelection&);
     void markMisspellingsAfterApplyingCommand(const CompositeEditCommand&);
     void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
