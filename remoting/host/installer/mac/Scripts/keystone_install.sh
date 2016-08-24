@@ -6,4 +6,8 @@
 
 # Version = @@VERSION@@
 
+logger Keystone installer for Chrome Remote Desktop
+logger Version @@VERSION@@
+logger /usr/sbin/installer -pkg "$1/@@HOST_PKG@@.pkg" -target /
+
 /usr/sbin/installer -pkg "$1/@@HOST_PKG@@.pkg" -target /

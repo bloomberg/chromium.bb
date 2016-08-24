@@ -58,6 +58,7 @@ logger Running Chrome Remote Desktop preflight script @@VERSION@@
 
 # If there is an _enabled file, rename it while upgrading.
 if [[ -f "$ENABLED_FILE" ]]; then
+  logger Moving _enabled file
   mv "$ENABLED_FILE" "$ENABLED_FILE_BACKUP"
 fi
 
@@ -67,6 +68,7 @@ fi
 rm -f "$USERS_TMP_FILE"
 
 for uid in $(find_users_with_active_hosts); do
+  logger Unloading service for user "$uid"
   if [[ -n "$uid" ]]; then
     echo "$uid" >> "$USERS_TMP_FILE"
     if [[ "$uid" = "0" ]]; then
@@ -94,7 +96,9 @@ for uid in $(find_users_with_active_hosts); do
       bootstrap_user="launchctl bsexec $pid"
     fi
 
+    logger $bootstrap_user $sudo_user $stop
     $bootstrap_user $sudo_user $stop
+    logger $bootstrap_user $sudo_user $unload
     $bootstrap_user $sudo_user $unload
   fi
 done

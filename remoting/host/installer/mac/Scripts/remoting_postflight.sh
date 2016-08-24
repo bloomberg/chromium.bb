@@ -60,6 +60,7 @@ $KSADMIN --register --productid "$KSPID" --version "$KSPVERSION" \
 
 # If there is a backup _enabled file, re-enable the service.
 if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
+  logger Restoring _enabled file
   mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
 fi
 
@@ -121,7 +122,9 @@ if [[ -r "$USERS_TMP_FILE" ]]; then
       bootstrap_user="launchctl bsexec $pid"
     fi
 
+    logger $bootstrap_user $sudo_user $load
     $bootstrap_user $sudo_user $load
+    logger $bootstrap_user $sudo_user $start
     $bootstrap_user $sudo_user $start
   done
 fi
