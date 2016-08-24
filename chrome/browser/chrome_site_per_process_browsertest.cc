@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -23,6 +24,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/display/display_switches.h"
 #include "url/gurl.h"
 
 class ChromeSitePerProcessTest : public InProcessBrowserTest {
@@ -43,6 +45,75 @@ class ChromeSitePerProcessTest : public InProcessBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSitePerProcessTest);
 };
+
+class SitePerProcessHighDPIExpiredCertBrowserTest
+    : public ChromeSitePerProcessTest {
+ public:
+  const double kDeviceScaleFactor = 2.0;
+
+  SitePerProcessHighDPIExpiredCertBrowserTest()
+      : https_server_expired_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_expired_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  }
+
+  net::EmbeddedTestServer* expired_cert_test_server() {
+    return &https_server_expired_;
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ChromeSitePerProcessTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor,
+        base::StringPrintf("%f", kDeviceScaleFactor));
+  }
+
+  void SetUpOnMainThread() override {
+    ChromeSitePerProcessTest::SetUpOnMainThread();
+    ASSERT_TRUE(https_server_expired_.Start());
+  }
+
+ private:
+  net::EmbeddedTestServer https_server_expired_;
+};
+
+double GetFrameDeviceScaleFactor(const content::ToRenderFrameHost& adapter) {
+  double device_scale_factor;
+  const char kGetFrameDeviceScaleFactor[] =
+      "window.domAutomationController.send(window.devicePixelRatio);";
+  EXPECT_TRUE(ExecuteScriptAndExtractDouble(adapter, kGetFrameDeviceScaleFactor,
+                                            &device_scale_factor));
+  return device_scale_factor;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIExpiredCertBrowserTest,
+                       InterstitialLoadsWithCorrectDeviceScaleFactor) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  EXPECT_EQ(SitePerProcessHighDPIExpiredCertBrowserTest::kDeviceScaleFactor,
+            GetFrameDeviceScaleFactor(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // Navigate to page with expired cert.
+  GURL bad_cert_url(
+      expired_cert_test_server()->GetURL("c.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), bad_cert_url);
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WaitForInterstitialAttach(active_web_contents);
+  EXPECT_TRUE(active_web_contents->ShowingInterstitialPage());
+
+  // Here we check the device scale factor in use via the interstitial's
+  // RenderFrameHost; doing the check directly via the 'active web contents'
+  // does not give us the device scale factor for the interstitial.
+  content::RenderFrameHost* interstitial_frame_host =
+      active_web_contents->GetInterstitialPage()->GetMainFrame();
+
+  EXPECT_EQ(SitePerProcessHighDPIExpiredCertBrowserTest::kDeviceScaleFactor,
+            GetFrameDeviceScaleFactor(interstitial_frame_host));
+}
 
 // Verify that browser shutdown path works correctly when there's a
 // RenderFrameProxyHost for a child frame.

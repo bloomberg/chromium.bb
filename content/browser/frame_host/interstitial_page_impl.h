@@ -162,6 +162,8 @@ class CONTENT_EXPORT InterstitialPageImpl
                               bool* is_keyboard_shortcut) override;
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   TextInputManager* GetTextInputManager() override;
+  void GetScreenInfo(blink::WebScreenInfo* screen_info) override;
+  void UpdateDeviceScaleFactor(double device_scale_factor) override;
 
   bool enabled() const { return enabled_; }
   WebContents* web_contents() const;
