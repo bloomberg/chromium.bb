@@ -89,7 +89,7 @@ public:
         USING_GARBAGE_COLLECTED_MIXIN(Peer);
         WTF_MAKE_NONCOPYABLE(Peer);
     public:
-        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*, WorkerThreadLifecycleContext*);
+        Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WorkerThreadLifecycleContext*);
         ~Peer() override;
 
         // SourceLocation parameter may be shown when the connection fails.
@@ -123,7 +123,6 @@ public:
         CrossThreadWeakPersistent<Bridge> m_bridge;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannel> m_mainWebSocketChannel;
-        Member<WebSocketChannelSyncHelper> m_syncHelper;
     };
 
     // Bridge for Peer. Running on the worker thread.
@@ -143,7 +142,7 @@ public:
         void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>);
         void disconnect();
 
-        void connectOnMainThread(std::unique_ptr<SourceLocation>, WorkerThreadLifecycleContext*, const KURL&, const String& protocol, ExecutionContext*);
+        void connectOnMainThread(std::unique_ptr<SourceLocation>, WorkerThreadLifecycleContext*, const KURL&, const String& protocol, WebSocketChannelSyncHelper*, ExecutionContext*);
 
         // Returns null when |disconnect| has already been called.
         WebSocketChannelClient* client() { return m_client; }
@@ -153,13 +152,9 @@ public:
         EAGERLY_FINALIZE();
 
     private:
-        // Returns false if shutdown event is received before method completion.
-        bool waitForMethodCompletion(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
-
         Member<WebSocketChannelClient> m_client;
         Member<WorkerGlobalScope> m_workerGlobalScope;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
-        Member<WebSocketChannelSyncHelper> m_syncHelper;
         CrossThreadPersistent<Peer> m_peer;
     };
 
