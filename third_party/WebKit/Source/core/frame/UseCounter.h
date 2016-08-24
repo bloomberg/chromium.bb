@@ -682,7 +682,6 @@ public:
         V8MouseEvent_InitMouseEvent_Method = 869,
         V8MutationEvent_InitMutationEvent_Method = 870,
         V8StorageEvent_InitStorageEvent_Method = 871,
-        V8TouchEvent_InitTouchEvent_Method = 872,
         V8UIEvent_InitUIEvent_Method = 873,
         V8Document_CreateTouch_Method = 874,
         RequestFileSystemNonWebbyOrigin = 876,
