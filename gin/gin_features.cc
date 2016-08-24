@@ -17,16 +17,4 @@ const base::Feature kV8IgnitionLowEnd {
   "V8IgnitionLowEnd", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
-// Enables lazy compilation for the V8 Ignition interpreter. Only
-// one of V8IgnitionLazy or V8IgnitionEager should be enabled.
-const base::Feature kV8IgnitionLazy {
-  "V8IgnitionLazy", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
-// Enables eager compilation for the V8 Ignition interpreter. Only
-// one of V8IgnitionLazy or V8IgnitionEager should be enabled.
-const base::Feature kV8IgnitionEager {
-  "V8IgnitionEager", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 }  // namespace features

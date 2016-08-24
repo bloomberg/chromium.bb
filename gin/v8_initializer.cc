@@ -228,18 +228,6 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   return true;
 }
 
-bool ShouldUseIgnition() {
-  if (base::FeatureList::IsEnabled(features::kV8Ignition)) return true;
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
-      base::SysInfo::IsLowEndDevice()) {
-    return true;
-  }
-#endif
-  return false;
-}
-
-
 }  // namespace
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -431,22 +419,15 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   }
 
   const char* ignition_enabled_crash_key = "N";
-  if (ShouldUseIgnition()) {
+  if (base::FeatureList::IsEnabled(features::kV8Ignition)) {
+    ignition_enabled_crash_key = "Y";
+    std::string flag("--ignition-staging");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+  } else if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
+             base::SysInfo::IsLowEndDevice()) {
     ignition_enabled_crash_key = "Y";
     std::string flag("--ignition");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
-
-    if (base::FeatureList::IsEnabled(features::kV8IgnitionEager)) {
-      std::string eager_flag("--ignition-eager");
-      v8::V8::SetFlagsFromString(
-          eager_flag.c_str(), static_cast<int>(eager_flag.size()));
-    }
-
-    if (base::FeatureList::IsEnabled(features::kV8IgnitionLazy)) {
-      std::string lazy_flag("--no-ignition-eager");
-      v8::V8::SetFlagsFromString(
-          lazy_flag.c_str(), static_cast<int>(lazy_flag.size()));
-    }
   }
   static const char kIgnitionEnabledKey[] = "v8-ignition";
   base::debug::SetCrashKeyValue(kIgnitionEnabledKey,
