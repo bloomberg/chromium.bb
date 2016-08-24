@@ -750,6 +750,15 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE" desc="Text for the title of the Printer Details subpage.">
       Printer details
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED" desc="Label for the toggle control to show/hide the advanced details of the printer.">
+      Advanced
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS" desc="Label for the CUPS printer address in the Advanced section in the printer details page.">
+      Address
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL" desc="Label for the CUPS printer protocol in the Advanced section in the printer details page.">
+      Protocol
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME" desc="Lable for the CUPS printer name in the printer details page.">
       Name
     </message>

@@ -15,6 +15,11 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    advancedExpanded: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {settings.CupsPrintersBrowserProxy} */
@@ -32,5 +37,15 @@ Polymer({
   onValueChanged_: function() {
     this.browserProxy_.updateCupsPrinter(this.printer.printerId,
                                          this.printer.printerName);
+  },
+
+  /**
+   * @param {Event} event
+   * @private
+   */
+  toggleAdvancedExpanded_: function(event) {
+    if (event.target.id == 'expandButton')
+      return;  // Already handled.
+    this.advancedExpanded = !this.advancedExpanded;
   },
 });

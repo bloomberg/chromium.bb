@@ -1000,6 +1000,9 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"addPrinterTitle", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_TITLE},
     {"cancelButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_CANCEL},
     {"addPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
+    {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
+    {"printerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS},
+    {"printerProtocol", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
