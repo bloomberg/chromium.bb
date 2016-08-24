@@ -65,9 +65,6 @@ crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-backgro
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
-crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ Failure ]
-crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ Failure ]
-
 crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
 crbug.com/619103 fast/repaint/hover-invalidation-table.html [ Failure ]
 crbug.com/619103 fast/repaint/selected-replaced.html [ Failure ]

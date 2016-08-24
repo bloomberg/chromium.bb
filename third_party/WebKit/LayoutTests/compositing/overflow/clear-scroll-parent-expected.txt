@@ -1,36 +1,45 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "children": [
         {
+          "name": "LayoutBlockFlow DIV class='container'",
           "position": [8, 8],
           "bounds": [308, 208],
           "shouldFlattenTransform": false,
           "drawsContent": true,
+          "backgroundColor": "#00FF007F",
           "children": [
             {
+              "name": "Scrolling Layer",
               "position": [4, 4],
               "bounds": [285, 200],
               "shouldFlattenTransform": false,
               "children": [
                 {
+                  "name": "Scrolling Contents Layer",
                   "bounds": [285, 530],
                   "drawsContent": true
                 }
               ]
             },
             {
+              "name": "Overflow Controls Host Layer",
               "bounds": [308, 208],
               "children": [
                 {
+                  "name": "Vertical Scrollbar Layer",
                   "position": [289, 4],
                   "bounds": [15, 185]
                 },
                 {
+                  "name": "Scroll Corner Layer",
                   "position": [289, 189],
                   "bounds": [15, 15],
                   "drawsContent": true
@@ -40,6 +49,7 @@
           ]
         },
         {
+          "name": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "position": [50, 200],
           "bounds": [200, 200],
           "contentsOpaque": true,
@@ -47,32 +57,35 @@
           "backgroundColor": "#008000"
         },
         {
-          "position": [4, 4],
+          "name": "Ancestor Clipping Layer",
+          "position": [12, 12],
           "bounds": [80, 80],
           "shouldFlattenTransform": false,
           "hasScrollParent": true,
           "children": [
             {
-              "position": [18, 18],
+              "name": "LayoutBlockFlow (relative positioned) DIV class='box red'",
+              "position": [10, 10],
               "bounds": [100, 100],
-              "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#FF0000"
+              "backgroundColor": "#FF00007F"
             }
           ]
         },
         {
+          "name": "Squashing Containment Layer",
           "shouldFlattenTransform": false,
           "hasScrollParent": true,
           "children": [
             {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
               "position": [22, 102],
               "bounds": [100, 100],
-              "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF"
+              "backgroundColor": "#0000FF7F"
             },
             {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
               "position": [22, 212],
               "bounds": [100, 320],
               "drawsContent": true
