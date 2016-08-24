@@ -150,6 +150,8 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const InvalidationSet&
     DCHECK(!m_wholeSubtreeInvalid);
     DCHECK(!invalidationSet.wholeSubtreeInvalid());
     DCHECK(!invalidationSet.isEmpty());
+    if (invalidationSet.customPseudoInvalid())
+        m_invalidateCustomPseudo = true;
     if (invalidationSet.treeBoundaryCrossing())
         m_treeBoundaryCrossing = true;
     if (invalidationSet.insertionPointCrossing())
@@ -157,7 +159,6 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const InvalidationSet&
     if (invalidationSet.invalidatesSlotted())
         m_invalidatesSlotted = true;
     m_invalidationSets.append(&invalidationSet);
-    m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
 }
 
 ALWAYS_INLINE bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& element) const

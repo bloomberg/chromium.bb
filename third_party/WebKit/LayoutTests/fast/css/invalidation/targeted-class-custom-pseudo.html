@@ -2,11 +2,12 @@
 <script src="../../../resources/js-test.js"></script>
 <style>
 .theme ::-webkit-file-upload-button { background-color: green }
+.other #t2 { background-color: lime }
 </style>
 <div id="t">
     <div></div>
     <div></div>
-    <div></div>
+    <div id="t2"></div>
     <div></div>
     <div></div>
     <input type="file"></input>
@@ -19,16 +20,20 @@ shouldBeTrue("!!window.internals");
 if (window.internals) {
     var gray = "rgb(192, 192, 192)";
     var green = "rgb(0, 128, 0)";
+    var lime = "rgb(0, 255, 0)";
 
     fileUploadButton = internals.shadowRoot(document.querySelector("input")).firstChild;
+    t2 = document.getElementById("t2");
 
     shouldBe("getComputedStyle(fileUploadButton, null).backgroundColor", "gray");
 
     document.body.offsetLeft; // force style recalc.
 
     document.getElementById("t").className = "theme";
+    document.getElementById("t").classList.add("other");
 
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
     shouldBe("getComputedStyle(fileUploadButton, null).backgroundColor", "green");
+    shouldBe("getComputedStyle(t2, null).backgroundColor", "lime");
 }
 </script>
