@@ -107,6 +107,23 @@ public:
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == RawResourceType; }
     ResourceClientType getResourceClientType() const final { return RawResourceType; }
 
+    // The order of the callbacks is as follows:
+    // [Case 1] A successful load:
+    // 0+  redirectReceived() and/or dataSent()
+    // 1   responseReceived()
+    // 0-1 setSerializedCachedMetadata()
+    // 0+  dataReceived() or dataDownloaded(), but never both
+    // 1   notifyFinished() with errorOccurred() = false
+    // [Case 2] When redirect is blocked:
+    // 0+  redirectReceived() and/or dataSent()
+    // 1   redirectBlocked()
+    // 1   notifyFinished() with errorOccurred() = true
+    // [Case 3] Other failures:
+    //     notifyFinished() with errorOccurred() = true is called at any time
+    //     (unless notifyFinished() is already called).
+    // In all cases:
+    //     No callbacks are made after notifyFinished() or
+    //     removeClient() is called.
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&, std::unique_ptr<WebDataConsumerHandle>) { }
     virtual void setSerializedCachedMetadata(Resource*, const char*, size_t) { }
@@ -117,6 +134,43 @@ public:
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
+};
+
+// Checks the sequence of callbacks of RawResourceClient.
+// This can be used only when a RawResourceClient is added as a client to
+// at most one RawResource.
+class CORE_EXPORT RawResourceClientStateChecker final {
+public:
+    RawResourceClientStateChecker();
+    ~RawResourceClientStateChecker();
+
+    // Call before addClient()/removeClient() is called.
+    void willAddClient();
+    void willRemoveClient();
+
+    // Call RawResourceClientStateChecker::f() at the beginning of
+    // RawResourceClient::f().
+    void redirectReceived();
+    void redirectBlocked();
+    void dataSent();
+    void responseReceived();
+    void setSerializedCachedMetadata();
+    void dataReceived();
+    void dataDownloaded();
+    void notifyFinished(Resource*);
+
+private:
+    enum State {
+        NotAddedAsClient,
+        Started,
+        RedirectBlocked,
+        ResponseReceived,
+        SetSerializedCachedMetadata,
+        DataReceived,
+        DataDownloaded,
+        NotifyFinished
+    };
+    State m_state;
 };
 
 } // namespace blink

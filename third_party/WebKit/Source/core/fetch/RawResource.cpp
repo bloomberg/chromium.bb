@@ -260,4 +260,73 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const
     return true;
 }
 
+RawResourceClientStateChecker::RawResourceClientStateChecker()
+    : m_state(NotAddedAsClient)
+{
+}
+
+RawResourceClientStateChecker::~RawResourceClientStateChecker()
+{
+}
+
+void RawResourceClientStateChecker::willAddClient()
+{
+    SECURITY_CHECK(m_state == NotAddedAsClient);
+    m_state = Started;
+}
+
+void RawResourceClientStateChecker::willRemoveClient()
+{
+    SECURITY_CHECK(m_state != NotAddedAsClient);
+    m_state = NotAddedAsClient;
+}
+
+void RawResourceClientStateChecker::redirectReceived()
+{
+    SECURITY_CHECK(m_state == Started);
+}
+
+void RawResourceClientStateChecker::redirectBlocked()
+{
+    SECURITY_CHECK(m_state == Started);
+    m_state = RedirectBlocked;
+}
+
+void RawResourceClientStateChecker::dataSent()
+{
+    SECURITY_CHECK(m_state == Started);
+}
+
+void RawResourceClientStateChecker::responseReceived()
+{
+    SECURITY_CHECK(m_state == Started);
+    m_state = ResponseReceived;
+}
+
+void RawResourceClientStateChecker::setSerializedCachedMetadata()
+{
+    SECURITY_CHECK(m_state == ResponseReceived);
+    m_state = SetSerializedCachedMetadata;
+}
+
+void RawResourceClientStateChecker::dataReceived()
+{
+    SECURITY_CHECK(m_state == ResponseReceived || m_state == SetSerializedCachedMetadata || m_state == DataReceived);
+    m_state = DataReceived;
+}
+
+void RawResourceClientStateChecker::dataDownloaded()
+{
+    SECURITY_CHECK(m_state == ResponseReceived || m_state == SetSerializedCachedMetadata || m_state == DataDownloaded);
+    m_state = DataDownloaded;
+}
+
+void RawResourceClientStateChecker::notifyFinished(Resource* resource)
+{
+    SECURITY_CHECK(m_state != NotAddedAsClient);
+    SECURITY_CHECK(m_state != NotifyFinished);
+    SECURITY_CHECK(resource->errorOccurred() || (m_state == ResponseReceived || m_state == SetSerializedCachedMetadata || m_state == DataReceived || m_state == DataDownloaded));
+    m_state = NotifyFinished;
+}
+
 } // namespace blink

@@ -421,6 +421,8 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
 
+    m_checker.redirectReceived();
+
     if (!m_actualRequest.isNull()) {
         reportResponseReceived(resource->identifier(), redirectResponse);
 
@@ -555,6 +557,8 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
 void DocumentThreadableLoader::redirectBlocked()
 {
+    m_checker.redirectBlocked();
+
     // Tells the client that a redirect was received but not followed (for an unknown reason).
     ThreadableLoaderClient* client = m_client;
     clear();
@@ -567,6 +571,7 @@ void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long b
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
 
+    m_checker.dataSent();
     m_client->didSendData(bytesSent, totalBytesToBeSent);
 }
 
@@ -577,6 +582,7 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
     ASSERT(m_actualRequest.isNull());
     ASSERT(m_async);
 
+    m_checker.dataDownloaded();
     m_client->didDownloadData(dataLength);
 }
 
@@ -593,6 +599,8 @@ void DocumentThreadableLoader::responseReceived(Resource* resource, const Resour
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
+
+    m_checker.responseReceived();
 
     if (handle)
         m_isUsingDataConsumerHandle = true;
@@ -701,6 +709,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
 
 void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char* data, size_t size)
 {
+    m_checker.setSerializedCachedMetadata();
+
     if (!m_actualRequest.isNull())
         return;
     m_client->didReceiveCachedMetadata(data, size);
@@ -710,6 +720,8 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
+
+    m_checker.dataReceived();
 
     if (m_isUsingDataConsumerHandle)
         return;
@@ -737,6 +749,8 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
     ASSERT(m_client);
     ASSERT(resource == this->resource());
     ASSERT(m_async);
+
+    m_checker.notifyFinished(resource);
 
     if (resource->errorOccurred()) {
         handleError(resource->resourceError());

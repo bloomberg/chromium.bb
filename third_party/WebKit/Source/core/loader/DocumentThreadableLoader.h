@@ -151,11 +151,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // returns allowCredentials value of m_resourceLoaderOptions.
         StoredCredentials effectiveAllowCredentials() const;
 
-        // TODO(oilpan): DocumentThreadableLoader used to be a ResourceOwner,
-        // but ResourceOwner was moved onto the oilpan heap before
-        // DocumentThreadableLoader was ready. When DocumentThreadableLoader
-        // moves onto the oilpan heap, make it a ResourceOwner again and remove
-        // this re-implementation of ResourceOwner.
+        // TODO(hiroshige): After crbug.com/633696 is fixed,
+        // - Remove RawResourceClientStateChecker logic,
+        // - Make DocumentThreadableLoader to be a ResourceOwner and remove
+        //   this re-implementation of ResourceOwner, and
+        // - Consider re-applying RawResourceClientStateChecker in a more
+        //   general fashion (crbug.com/640291).
         RawResource* resource() const { return m_resource.get(); }
         void clearResource() { setResource(nullptr); }
         void setResource(RawResource* newResource)
@@ -163,11 +164,14 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
             if (newResource == m_resource)
                 return;
 
-            if (RawResource* oldResource = m_resource.release())
+            if (RawResource* oldResource = m_resource.release()) {
+                m_checker.willRemoveClient();
                 oldResource->removeClient(this);
+            }
 
             if (newResource) {
                 m_resource = newResource;
+                m_checker.willAddClient();
                 m_resource->addClient(this);
             }
         }
@@ -233,6 +237,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         bool m_didRedirect;
         Referrer m_referrerAfterRedirect;
 
+        RawResourceClientStateChecker m_checker;
         WeakPtrFactory<DocumentThreadableLoader> m_weakFactory;
     };
 
