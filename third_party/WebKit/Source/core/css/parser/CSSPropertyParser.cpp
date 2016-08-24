@@ -4241,10 +4241,8 @@ bool CSSPropertyParser::consumeBackgroundShorthand(const StylePropertyShorthand&
                 if (property == CSSPropertyBackgroundRepeatX || property == CSSPropertyWebkitMaskRepeatX) {
                     consumeRepeatStyleComponent(m_range, value, valueY, implicit);
                 } else if (property == CSSPropertyBackgroundPositionX || property == CSSPropertyWebkitMaskPositionX) {
-                    CSSParserTokenRange rangeCopy = m_range;
-                    if (!consumePosition(rangeCopy, m_context.mode(), UnitlessQuirk::Forbid, value, valueY))
+                    if (!consumePosition(m_range, m_context.mode(), UnitlessQuirk::Forbid, value, valueY))
                         continue;
-                    m_range = rangeCopy;
                 } else if (property == CSSPropertyBackgroundSize || property == CSSPropertyWebkitMaskSize) {
                     if (!consumeSlashIncludingWhitespace(m_range))
                         continue;

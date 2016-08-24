@@ -488,11 +488,24 @@ CSSValue* consumeColor(CSSParserTokenRange& range, CSSParserMode cssParserMode, 
     return CSSColorValue::create(color);
 }
 
-static CSSPrimitiveValue* consumePositionComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+static CSSPrimitiveValue* consumePositionComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, bool& horizontalEdge, bool& verticalEdge)
 {
-    if (range.peek().type() == IdentToken)
-        return consumeIdent<CSSValueLeft, CSSValueTop, CSSValueBottom, CSSValueRight, CSSValueCenter>(range);
-    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
+    if (range.peek().type() != IdentToken)
+        return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, unitless);
+
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueLeft || id == CSSValueRight) {
+        if (horizontalEdge)
+            return nullptr;
+        horizontalEdge = true;
+    } else if (id == CSSValueTop || id == CSSValueBottom) {
+        if (verticalEdge)
+            return nullptr;
+        verticalEdge = true;
+    } else if (id != CSSValueCenter) {
+        return nullptr;
+    }
+    return consumeIdent(range);
 }
 
 static bool isHorizontalPositionKeywordOnly(const CSSPrimitiveValue& value)
@@ -514,33 +527,29 @@ static void positionFromOneValue(CSSPrimitiveValue* value, CSSValue*& resultX, C
         std::swap(resultX, resultY);
 }
 
-static bool positionFromTwoValues(CSSPrimitiveValue* value1, CSSPrimitiveValue* value2,
+static void positionFromTwoValues(CSSPrimitiveValue* value1, CSSPrimitiveValue* value2,
     CSSValue*& resultX, CSSValue*& resultY)
 {
     bool mustOrderAsXY = isHorizontalPositionKeywordOnly(*value1) || isVerticalPositionKeywordOnly(*value2)
         || !value1->isValueID() || !value2->isValueID();
     bool mustOrderAsYX = isVerticalPositionKeywordOnly(*value1) || isHorizontalPositionKeywordOnly(*value2);
-    if (mustOrderAsXY && mustOrderAsYX)
-        return false;
+    DCHECK(!mustOrderAsXY || !mustOrderAsYX);
     resultX = value1;
     resultY = value2;
     if (mustOrderAsYX)
         std::swap(resultX, resultY);
-    return true;
 }
 
-static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, CSSValue*& resultX, CSSValue*& resultY)
+static void positionFromThreeOrFourValues(CSSPrimitiveValue** values, CSSValue*& resultX, CSSValue*& resultY)
 {
     CSSPrimitiveValue* center = nullptr;
     for (int i = 0; values[i]; i++) {
         CSSPrimitiveValue* currentValue = values[i];
-        if (!currentValue->isValueID())
-            return false;
+        DCHECK(currentValue->isValueID());
         CSSValueID id = currentValue->getValueID();
 
         if (id == CSSValueCenter) {
-            if (center)
-                return false;
+            DCHECK(!center);
             center = currentValue;
             continue;
         }
@@ -553,57 +562,69 @@ static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, CSSValue*&
         }
 
         if (id == CSSValueLeft || id == CSSValueRight) {
-            if (resultX)
-                return false;
+            DCHECK(!resultX);
             resultX = result;
         } else {
-            ASSERT(id == CSSValueTop || id == CSSValueBottom);
-            if (resultY)
-                return false;
+            DCHECK(id == CSSValueTop || id == CSSValueBottom);
+            DCHECK(!resultY);
             resultY = result;
         }
     }
 
     if (center) {
-        ASSERT(resultX || resultY);
-        if (resultX && resultY)
-            return false;
+        DCHECK(!!resultX != !!resultY);
         if (!resultX)
             resultX = center;
         else
             resultY = center;
     }
 
-    ASSERT(resultX && resultY);
-    return true;
+    DCHECK(resultX && resultY);
 }
 
-// TODO(timloh): This may consume from the range upon failure. The background
-// shorthand works around it, but we should just fix it here.
 bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, CSSValue*& resultX, CSSValue*& resultY)
 {
-    CSSPrimitiveValue* value1 = consumePositionComponent(range, cssParserMode, unitless);
+    bool horizontalEdge = false;
+    bool verticalEdge = false;
+    CSSPrimitiveValue* value1 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
     if (!value1)
         return false;
+    if (!value1->isValueID())
+        horizontalEdge = true;
 
-    CSSPrimitiveValue* value2 = consumePositionComponent(range, cssParserMode, unitless);
+    CSSParserTokenRange rangeAfterFirstConsume = range;
+    CSSPrimitiveValue* value2 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
     if (!value2) {
         positionFromOneValue(value1, resultX, resultY);
         return true;
     }
 
-    CSSPrimitiveValue* value3 = consumePositionComponent(range, cssParserMode, unitless);
-    if (!value3)
-        return positionFromTwoValues(value1, value2, resultX, resultY);
+    CSSPrimitiveValue* value3 = nullptr;
+    if (value1->isValueID()
+        && value2->isValueID() != (range.peek().type() == IdentToken)
+        && (value2->isValueID() ? value2->getValueID() : value1->getValueID()) != CSSValueCenter)
+        value3 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
+    if (!value3) {
+        if (verticalEdge && !value2->isValueID()) {
+            range = rangeAfterFirstConsume;
+            positionFromOneValue(value1, resultX, resultY);
+            return true;
+        }
+        positionFromTwoValues(value1, value2, resultX, resultY);
+        return true;
+    }
 
-    CSSPrimitiveValue* value4 = consumePositionComponent(range, cssParserMode, unitless);
+    CSSPrimitiveValue* value4 = nullptr;
+    if (value3->isValueID() && value3->getValueID() != CSSValueCenter && range.peek().type() != IdentToken)
+        value4 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
     CSSPrimitiveValue* values[5];
     values[0] = value1;
     values[1] = value2;
     values[2] = value3;
     values[3] = value4;
     values[4] = nullptr;
-    return positionFromThreeOrFourValues(values, resultX, resultY);
+    positionFromThreeOrFourValues(values, resultX, resultY);
+    return true;
 }
 
 CSSValuePair* consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
@@ -617,15 +638,23 @@ CSSValuePair* consumePosition(CSSParserTokenRange& range, CSSParserMode cssParse
 
 bool consumeOneOrTwoValuedPosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, CSSValue*& resultX, CSSValue*& resultY)
 {
-    CSSPrimitiveValue* value1 = consumePositionComponent(range, cssParserMode, unitless);
+    bool horizontalEdge = false;
+    bool verticalEdge = false;
+    CSSPrimitiveValue* value1 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
     if (!value1)
         return false;
-    CSSPrimitiveValue* value2 = consumePositionComponent(range, cssParserMode, unitless);
+    if (!value1->isValueID())
+        horizontalEdge = true;
+
+    CSSPrimitiveValue* value2 = nullptr;
+    if (!verticalEdge || range.peek().type() == IdentToken)
+        value2 = consumePositionComponent(range, cssParserMode, unitless, horizontalEdge, verticalEdge);
     if (!value2) {
         positionFromOneValue(value1, resultX, resultY);
         return true;
     }
-    return positionFromTwoValues(value1, value2, resultX, resultY);
+    positionFromTwoValues(value1, value2, resultX, resultY);
+    return true;
 }
 
 // This should go away once we drop support for -webkit-gradient

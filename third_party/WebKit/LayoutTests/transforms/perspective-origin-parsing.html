@@ -23,9 +23,11 @@ expect('right bottom').parsesAs('right bottom');
 expect('center center').parsesAs('center center').isComputedTo('100px 50px');
 expect('center top').parsesAs('center top');
 expect('center left').parsesAs('left center');
+expect('center 10%').parsesAs('center 10%').isComputedTo('100px 10px');
 expect('top right').parsesAs('right top');
 expect('left 10%').parsesAs('left 10%');
 expect('left 10px').parsesAs('left 10px');
+expect('left 10% center').parsesAs('left 10% center');
 expect('10% top').parsesAs('10% top');
 expect('10px top').parsesAs('10px top');
 expect('10px 20%').parsesAs('10px 20%');
@@ -43,6 +45,7 @@ expect('top right 30px').parsesAs('right 30px top');
 expect('left 30px bottom 20px').parsesAs('left 30px bottom 20px');
 expect('top 10px left 20px').parsesAs('left 20px top 10px');
 expect('top 40px right 15%').parsesAs('right 15% top 40px');
+expect('top center').parsesAs('center top');
 
 expect('left right').isInvalid();
 expect('top bottom').isInvalid();
@@ -52,4 +55,14 @@ expect('10% 20% 30%').isInvalid();
 expect('top 10%').isInvalid();
 expect('bottom 10%').isInvalid();
 expect('50% 50% 0px').isInvalid();
+
+expect('left center top').isInvalid();
+expect('left center 10%').isInvalid();
+expect('left top center').isInvalid();
+expect('left 10% right').isInvalid();
+expect('left 10% 20%').isInvalid();
+expect('center center left').isInvalid();
+expect('center center 10%').isInvalid();
+expect('10% left').isInvalid();
+expect('10% top 20%').isInvalid();
 </script>
