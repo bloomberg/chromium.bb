@@ -59,7 +59,7 @@ TEST(SimpleColorSpace, BT709toSRGB) {
   ColorSpace bt709 = ColorSpace::CreateREC709();
   ColorSpace sRGB = ColorSpace::CreateSRGB();
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      bt709, sRGB, ColorTransform::Intent::INTENT_ABSOLUTE));
+      bt709, sRGB, ColorTransform::Intent::ABSOLUTE));
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->transform(&tmp, 1);
@@ -343,7 +343,7 @@ TEST(SimpleColorSpace, BT709toSRGBICC) {
   ColorSpace bt709 = ColorSpace::CreateREC709();
   ColorSpace sRGB = srgb_icc.GetColorSpace();
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      bt709, sRGB, ColorTransform::Intent::INTENT_ABSOLUTE));
+      bt709, sRGB, ColorTransform::Intent::ABSOLUTE));
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->transform(&tmp, 1);
@@ -364,48 +364,11 @@ TEST(SimpleColorSpace, BT709toSRGBICC) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
-TEST(SimpleColorSpace, GetColorSpace) {
-  ICCProfile srgb_icc = ICCProfile::FromData(
-      reinterpret_cast<char*>(srgb_icc_data), arraysize(srgb_icc_data));
-  ColorSpace sRGB = srgb_icc.GetColorSpace();
-  ColorSpace sRGB2 = sRGB;
-
-  // Prevent sRGB2 from using a cached ICC profile.
-  sRGB2.icc_profile_id_ = 0;
-
-  std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      sRGB, sRGB2, ColorTransform::Intent::INTENT_ABSOLUTE));
-
-  ColorTransform::TriStim tmp(1.0f, 1.0f, 1.0f);
-  t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
-
-  tmp = ColorTransform::TriStim(1.0f, 0.0f, 0.0f);
-  t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
-
-  tmp = ColorTransform::TriStim(0.0f, 1.0f, 0.0f);
-  t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
-
-  tmp = ColorTransform::TriStim(0.0f, 0.0f, 1.0f);
-  t->transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
-}
-
 TEST(SimpleColorSpace, UnknownToSRGB) {
   ColorSpace unknown;
   ColorSpace sRGB = ColorSpace::CreateSRGB();
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      unknown, sRGB, ColorTransform::Intent::INTENT_PERCEPTUAL));
+      unknown, sRGB, ColorTransform::Intent::PERCEPTUAL));
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->transform(&tmp, 1);
@@ -484,7 +447,7 @@ class ColorSpaceTest : public testing::TestWithParam<ColorSpaceTestData> {
 
 TEST_P(ColorSpaceTest, testNullTransform) {
   std::unique_ptr<ColorTransform> t(ColorTransform::NewColorTransform(
-      color_space_, color_space_, ColorTransform::Intent::INTENT_ABSOLUTE));
+      color_space_, color_space_, ColorTransform::Intent::ABSOLUTE));
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t->transform(&tristim, 1);
   EXPECT_NEAR(tristim.x(), 0.4f, 0.001f);
@@ -495,10 +458,10 @@ TEST_P(ColorSpaceTest, testNullTransform) {
 TEST_P(ColorSpaceTest, toXYZandBack) {
   std::unique_ptr<ColorTransform> t1(ColorTransform::NewColorTransform(
       color_space_, ColorSpace::CreateXYZD50(),
-      ColorTransform::Intent::INTENT_ABSOLUTE));
+      ColorTransform::Intent::ABSOLUTE));
   std::unique_ptr<ColorTransform> t2(ColorTransform::NewColorTransform(
       ColorSpace::CreateXYZD50(), color_space_,
-      ColorTransform::Intent::INTENT_ABSOLUTE));
+      ColorTransform::Intent::ABSOLUTE));
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t1->transform(&tristim, 1);
   t2->transform(&tristim, 1);

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
@@ -133,9 +132,6 @@ class GFX_EXPORT ColorSpace {
   MatrixID matrix_;
   RangeID range_;
 
-  // Only used if primaries_ == PrimaryID::CUSTOM
-  float custom_primary_matrix_[12];
-
   // This is used to look up the ICCProfile from which this ColorSpace was
   // created, if possible.
   uint64_t icc_profile_id_ = 0;
@@ -143,7 +139,6 @@ class GFX_EXPORT ColorSpace {
   friend class ICCProfile;
   friend class ColorSpaceToColorSpaceTransform;
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
-  FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 
 }  // namespace gfx

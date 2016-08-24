@@ -19,7 +19,10 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 
 namespace {
-const size_t kLargestDrawQuadSize = sizeof(cc::YUVVideoDrawQuad);
+const size_t kLargestDrawQuadSize =
+    sizeof(cc::RenderPassDrawQuad) > sizeof(cc::StreamVideoDrawQuad)
+        ? sizeof(cc::RenderPassDrawQuad)
+        : sizeof(cc::StreamVideoDrawQuad);
 }  // namespace
 
 namespace cc {

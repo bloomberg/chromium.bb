@@ -9,7 +9,6 @@
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
-#include "ui/gfx/color_transform.h"
 
 namespace gfx {
 
@@ -91,9 +90,8 @@ ICCProfile ICCProfile::FromColorSpace(const gfx::ColorSpace& color_space) {
     base::AutoLock lock(cache.lock);
 
     auto found = cache.id_to_icc_profile_mru.Get(color_space.icc_profile_id_);
-    if (found != cache.id_to_icc_profile_mru.end()) {
+    if (found != cache.id_to_icc_profile_mru.end())
       return found->second;
-    }
   }
   // TODO(ccameron): Support constructing ICC profiles from arbitrary ColorSpace
   // objects.
@@ -119,50 +117,6 @@ ColorSpace ICCProfile::GetColorSpace() const {
     if (found == cache.id_to_icc_profile_mru.end())
       cache.id_to_icc_profile_mru.Put(id_, *this);
   }
-
-  ColorSpace unity_colorspace(
-      ColorSpace::PrimaryID::CUSTOM, ColorSpace::TransferID::LINEAR,
-      ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  unity_colorspace.custom_primary_matrix_[0] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[1] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[2] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[3] = 0.0f;
-
-  unity_colorspace.custom_primary_matrix_[4] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[5] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[6] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[7] = 0.0f;
-
-  unity_colorspace.custom_primary_matrix_[8] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[9] = 0.0f;
-  unity_colorspace.custom_primary_matrix_[10] = 1.0f;
-  unity_colorspace.custom_primary_matrix_[11] = 0.0f;
-
-  // This will look up and use the ICC profile.
-  std::unique_ptr<ColorTransform> transform(ColorTransform::NewColorTransform(
-      color_space, unity_colorspace, ColorTransform::Intent::INTENT_ABSOLUTE));
-
-  ColorTransform::TriStim tmp[4];
-  tmp[0].set_x(1.0f);
-  tmp[1].set_y(1.0f);
-  tmp[2].set_z(1.0f);
-  transform->transform(tmp, arraysize(tmp));
-
-  color_space.custom_primary_matrix_[0] = tmp[0].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[1] = tmp[1].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[2] = tmp[2].x() - tmp[3].x();
-  color_space.custom_primary_matrix_[3] = tmp[3].x();
-
-  color_space.custom_primary_matrix_[4] = tmp[0].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[5] = tmp[1].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[6] = tmp[2].y() - tmp[3].y();
-  color_space.custom_primary_matrix_[7] = tmp[3].y();
-
-  color_space.custom_primary_matrix_[8] = tmp[0].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[9] = tmp[1].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[10] = tmp[2].z() - tmp[3].z();
-  color_space.custom_primary_matrix_[11] = tmp[3].z();
-
   return color_space;
 }
 
