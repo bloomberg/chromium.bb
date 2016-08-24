@@ -31,7 +31,17 @@ class ArcCustomNotificationView::EventForwarder : public ui::EventHandler {
 
  private:
   // ui::EventHandler
-  void OnEvent(ui::Event* event) override { owner_->OnEvent(event); }
+  void OnEvent(ui::Event* event) override {
+    // Do not forward event targeted to the floating close button so that
+    // keyboard press and tap are handled properly.
+    if (owner_->floating_close_button_widget_ && event->target() &&
+        owner_->floating_close_button_widget_->GetNativeWindow() ==
+            event->target()) {
+      return;
+    }
+
+    owner_->OnEvent(event);
+  }
 
   ArcCustomNotificationView* const owner_;
 
@@ -125,19 +135,20 @@ void ArcCustomNotificationView::CreateFloatingCloseButton() {
   floating_close_button_ = new views::ImageButton(this);
   floating_close_button_->set_background(
       views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
-  floating_close_button_->SetBorder(
-      views::Border::CreateEmptyBorder(5, 5, 5, 5));
+
+  // The sizes below are in DIPs.
+  constexpr int kPaddingFromBorder = 4;
+  constexpr int kImageSize = 16;
+  constexpr int kTouchExtendedPadding =
+      message_center::kControlButtonSize - kImageSize - kPaddingFromBorder;
+  floating_close_button_->SetBorder(views::Border::CreateEmptyBorder(
+      kPaddingFromBorder, kTouchExtendedPadding, kTouchExtendedPadding,
+      kPaddingFromBorder));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   floating_close_button_->SetImage(
       views::CustomButton::STATE_NORMAL,
-      rb.GetImageSkiaNamed(IDR_NOTIFICATION_CLOSE));
-  floating_close_button_->SetImage(
-      views::CustomButton::STATE_HOVERED,
-      rb.GetImageSkiaNamed(IDR_NOTIFICATION_CLOSE_HOVER));
-  floating_close_button_->SetImage(
-      views::CustomButton::STATE_PRESSED,
-      rb.GetImageSkiaNamed(IDR_NOTIFICATION_CLOSE_PRESSED));
+      rb.GetImageSkiaNamed(IDR_ARC_NOTIFICATION_CLOSE));
   floating_close_button_->set_animate_on_state_change(false);
   floating_close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
