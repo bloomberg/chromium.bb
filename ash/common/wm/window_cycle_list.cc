@@ -254,6 +254,7 @@ class WindowCycleView : public views::WidgetDelegateView {
         target_window_(nullptr) {
     DCHECK(!windows.empty());
     SetPaintToLayer(true);
+    layer()->SetBackgroundBlur(4);
     layer()->SetFillsBoundsOpaquely(false);
     layer()->SetMasksToBounds(true);
     layer()->SetOpacity(0.0);
