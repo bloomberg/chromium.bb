@@ -49,7 +49,8 @@ ArcBridgeService* ArcBridgeService::Get() {
 // static
 bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
   return command_line->HasSwitch(chromeos::switches::kEnableArc) ||
-         base::FeatureList::IsEnabled(kArcEnabledFeature);
+         (command_line->HasSwitch(chromeos::switches::kArcAvailable) &&
+          base::FeatureList::IsEnabled(kArcEnabledFeature));
 }
 
 void ArcBridgeService::AddObserver(Observer* observer) {

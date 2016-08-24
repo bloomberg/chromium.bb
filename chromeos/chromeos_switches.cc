@@ -58,6 +58,9 @@ const char kAllowRAInDevMode[] = "allow-ra-in-dev-mode";
 // Path for app's OEM manifest file.
 const char kAppOemManifestFile[] = "app-mode-oem-manifest";
 
+// Signals the availability of the ARC instance on this device.
+const char kArcAvailable[] = "arc-available";
+
 // Screenshot testing: specifies the directoru where artifacts will be stored.
 const char kArtifactsDir[] = "artifacts-dir";
 
