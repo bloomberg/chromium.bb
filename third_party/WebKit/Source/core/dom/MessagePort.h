@@ -88,7 +88,7 @@ public:
     ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
     MessagePort* toMessagePort() override { return this; }
 
-    // ActiveScriptWrappable implementation.
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject implementation.

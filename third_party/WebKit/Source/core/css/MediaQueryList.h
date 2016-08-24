@@ -67,7 +67,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    // From ActiveScriptWrappable
+    // From ScriptWrappable
     bool hasPendingActivity() const final;
 
     // From ActiveDOMObject

@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::trace, V8TestInterfaceCustomConstructor::traceWrappers, 0, 0, V8TestInterfaceCustomConstructor::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceCustomConstructor", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::trace, V8TestInterfaceCustomConstructor::traceWrappers, 0, V8TestInterfaceCustomConstructor::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceCustomConstructor", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -32,9 +32,16 @@ const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin:
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestInterfaceCustomConstructor::s_wrapperTypeInfo = V8TestInterfaceCustomConstructor::wrapperTypeInfo;
 
+// not [ActiveScriptWrappable]
 static_assert(
     !std::is_base_of<ActiveScriptWrappable, TestInterfaceCustomConstructor>::value,
-    "TestInterfaceCustomConstructor inherits from ActiveScriptWrappable, but does not specify "
+    "TestInterfaceCustomConstructor inherits from ActiveScriptWrappable, but is not specifying "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+static_assert(
+    std::is_same<decltype(&TestInterfaceCustomConstructor::hasPendingActivity),
+                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    "TestInterfaceCustomConstructor is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 

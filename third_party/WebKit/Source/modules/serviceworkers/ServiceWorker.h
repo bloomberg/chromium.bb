@@ -63,6 +63,9 @@ public:
     String state() const;
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
+    // ScriptWrappable overrides.
+    bool hasPendingActivity() const final;
+
     // WebServiceWorkerProxy overrides.
     void dispatchStateChangeEvent() override;
 
@@ -73,9 +76,6 @@ public:
 private:
     static ServiceWorker* getOrCreate(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
     ServiceWorker(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
-
-    // ActiveScriptWrappable overrides.
-    bool hasPendingActivity() const final;
 
     // ActiveDOMObject overrides.
     void stop() override;

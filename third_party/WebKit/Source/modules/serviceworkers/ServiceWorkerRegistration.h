@@ -36,6 +36,9 @@ class ServiceWorkerRegistration final
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
     USING_PRE_FINALIZER(ServiceWorkerRegistration, dispose);
 public:
+    // ScriptWrappable overrides.
+    bool hasPendingActivity() const final;
+
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override { return ActiveDOMObject::getExecutionContext(); }
@@ -70,9 +73,6 @@ public:
 private:
     ServiceWorkerRegistration(ExecutionContext*, std::unique_ptr<WebServiceWorkerRegistration::Handle>);
     void dispose();
-
-    // ActiveScriptWrappable overrides.
-    bool hasPendingActivity() const final;
 
     // ActiveDOMObject overrides.
     void stop() override;

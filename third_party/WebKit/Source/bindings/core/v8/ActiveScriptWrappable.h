@@ -30,11 +30,9 @@ public:
 
     static void traceActiveScriptWrappables(v8::Isolate*, ScriptWrappableVisitor*);
 
-    virtual bool hasPendingActivity() const = 0;
-
+private:
     ScriptWrappable* toScriptWrappable() const { return m_scriptWrappable; }
 
-private:
     ScriptWrappable* m_scriptWrappable;
 };
 

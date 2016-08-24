@@ -91,7 +91,7 @@ public:
     void onAbort(int64_t, DOMException*);
     void onComplete(int64_t);
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject

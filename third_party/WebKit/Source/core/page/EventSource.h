@@ -87,7 +87,7 @@ public:
     // asynchronous events from the loader won't be invoked.
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();

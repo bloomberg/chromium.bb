@@ -23,7 +23,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::trace, V8SVGTestInterface::traceWrappers, 0, 0, V8SVGTestInterface::preparePrototypeAndInterfaceObject, nullptr, "SVGTestInterface", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
+const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::trace, V8SVGTestInterface::traceWrappers, 0, V8SVGTestInterface::preparePrototypeAndInterfaceObject, nullptr, "SVGTestInterface", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromActiveScriptWrappable, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Dependent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -33,9 +33,16 @@ const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlin
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& SVGTestInterface::s_wrapperTypeInfo = V8SVGTestInterface::wrapperTypeInfo;
 
+// not [ActiveScriptWrappable]
 static_assert(
     !std::is_base_of<ActiveScriptWrappable, SVGTestInterface>::value,
-    "SVGTestInterface inherits from ActiveScriptWrappable, but does not specify "
+    "SVGTestInterface inherits from ActiveScriptWrappable, but is not specifying "
+    "[ActiveScriptWrappable] extended attribute in the IDL file.  "
+    "Be consistent.");
+static_assert(
+    std::is_same<decltype(&SVGTestInterface::hasPendingActivity),
+                 decltype(&ScriptWrappable::hasPendingActivity)>::value,
+    "SVGTestInterface is overriding hasPendingActivity(), but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 

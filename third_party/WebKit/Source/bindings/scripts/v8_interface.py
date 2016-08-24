@@ -216,6 +216,11 @@ def interface_context(interface):
 
     wrapper_class_id = ('NodeClassId' if inherits_interface(interface.name, 'Node') else 'ObjectClassId')
 
+    # [ActiveScriptWrappable] must be accompanied with [DependentLifetime].
+    if active_scriptwrappable and not is_dependent_lifetime:
+        raise Exception('[ActiveScriptWrappable] interface must also specify '
+                        '[DependentLifetime]: %s' % interface.name)
+
     v8_class_name = v8_utilities.v8_class_name(interface)
     cpp_class_name = cpp_name(interface)
     cpp_class_name_or_partial = cpp_name_or_partial(interface)

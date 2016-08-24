@@ -100,7 +100,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // XMLHttpRequestEventTarget

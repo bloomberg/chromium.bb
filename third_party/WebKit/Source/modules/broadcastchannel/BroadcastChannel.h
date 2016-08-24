@@ -38,7 +38,7 @@ public:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 
-    // ActiveScriptWrappable:
+    // ScriptWrappable:
     bool hasPendingActivity() const override;
 
     // ContextLifecycleObserver:

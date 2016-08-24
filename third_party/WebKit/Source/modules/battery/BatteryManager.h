@@ -52,7 +52,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // ActiveScriptWrappable implementation.
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();

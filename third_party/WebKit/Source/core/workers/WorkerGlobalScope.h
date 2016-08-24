@@ -98,7 +98,7 @@ public:
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) final;
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) final;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const override;
 
     // ExecutionContext

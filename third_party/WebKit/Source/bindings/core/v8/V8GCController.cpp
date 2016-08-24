@@ -116,7 +116,8 @@ public:
 
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
-        if (toWrapperTypeInfo(wrapper)->hasPendingActivity(wrapper)) {
+        if (toWrapperTypeInfo(wrapper)->isActiveScriptWrappable()
+            && toScriptWrappable(wrapper)->hasPendingActivity()) {
             v8::Persistent<v8::Object>::Cast(*value).MarkActive();
             return;
         }
@@ -157,21 +158,18 @@ public:
         if (classId != WrapperTypeInfo::NodeClassId && classId != WrapperTypeInfo::ObjectClassId)
             return;
 
+        if (value->IsIndependent())
+            return;
+
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
-        ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
+        DCHECK(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type->hasPendingActivity(wrapper)) {
-            // If you hit this assert, you'll need to add a [DependentiLifetime]
-            // extended attribute to the DOM interface. A DOM interface that
-            // overrides hasPendingActivity must be marked as [DependentLifetime].
-            RELEASE_ASSERT(!value->IsIndependent());
+        if (type->isActiveScriptWrappable()
+            && toScriptWrappable(wrapper)->hasPendingActivity()) {
             m_isolate->SetObjectGroupId(*value, liveRootId());
             ++m_domObjectsWithPendingActivity;
         }
-
-        if (value->IsIndependent())
-            return;
 
         if (classId == WrapperTypeInfo::NodeClassId) {
             DCHECK(V8Node::hasInstance(wrapper, m_isolate));
@@ -185,7 +183,7 @@ public:
         } else if (classId == WrapperTypeInfo::ObjectClassId) {
             type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper), v8::Persistent<v8::Object>::Cast(*value));
         } else {
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 
@@ -457,7 +455,8 @@ public:
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
         // The ExecutionContext check is heavy, so it should be done at the last.
-        if (toWrapperTypeInfo(wrapper)->hasPendingActivity(wrapper)
+        if (toWrapperTypeInfo(wrapper)->isActiveScriptWrappable()
+            && toScriptWrappable(wrapper)->hasPendingActivity()
             // TODO(haraken): Currently we don't have a way to get a creation
             // context from a wrapper. We should implement the way and enable
             // the following condition.

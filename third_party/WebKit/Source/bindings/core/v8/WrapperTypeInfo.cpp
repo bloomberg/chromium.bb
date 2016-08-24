@@ -13,7 +13,7 @@ static_assert(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct g
 EventTarget* WrapperTypeInfo::toEventTarget(v8::Local<v8::Object> object) const
 {
     if (eventTargetInheritance == NotInheritFromEventTarget)
-        return 0;
+        return nullptr;
     return static_cast<EventTarget*>(toScriptWrappable(object));
 }
 

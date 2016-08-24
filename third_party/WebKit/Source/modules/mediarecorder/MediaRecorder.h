@@ -75,7 +75,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final { return !m_stopped; }
 
     // WebMediaRecorderHandlerClient

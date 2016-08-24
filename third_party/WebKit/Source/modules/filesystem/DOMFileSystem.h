@@ -68,7 +68,7 @@ public:
 
     static void reportError(ExecutionContext*, ErrorCallbackBase*, FileError::ErrorCode);
 
-    // ActiveScriptWrappable overrides.
+    // ScriptWrappable overrides.
     bool hasPendingActivity() const final;
 
     void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);

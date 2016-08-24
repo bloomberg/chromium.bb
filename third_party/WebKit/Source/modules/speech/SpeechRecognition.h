@@ -86,11 +86,11 @@ public:
     void didStart();
     void didEnd();
 
-    // EventTarget.
+    // EventTarget
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
-    // ActiveScriptWrappable.
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject

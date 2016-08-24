@@ -43,7 +43,7 @@ public:
     void availabilityChanged(bool) override;
     const WebURL url() const override;
 
-    // ActiveScriptWrappable implementation.
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject implementation.

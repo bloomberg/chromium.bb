@@ -37,7 +37,7 @@ public:
     ExecutionContext* getExecutionContext() const override;
     void removeAllEventListeners() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject overrides.

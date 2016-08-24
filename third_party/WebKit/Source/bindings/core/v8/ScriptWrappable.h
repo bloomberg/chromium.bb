@@ -40,18 +40,12 @@
 
 namespace blink {
 
-/**
- * ScriptWrappable wraps a V8 object and its WrapperTypeInfo.
- *
- * ScriptWrappable acts much like a v8::Persistent<> in that it keeps a
- * V8 object alive.
- *
- *  The state transitions are:
- *  - new: an empty ScriptWrappable.
- *  - setWrapper: install a v8::Persistent (or empty)
- *  - disposeWrapper (via setWeakCallback, triggered by V8 garbage collecter):
- *        remove v8::Persistent and become empty.
- */
+// ScriptWrappable provides a way to map from/to C++ DOM implementation to/from
+// JavaScript object (platform object).  toV8() converts a ScriptWrappable to
+// a v8::Object and toScriptWrappable() converts a v8::Object back to
+// a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
+// The wrapepr object for the main world is stored in ScriptWrappable.  Wrapper
+// objects for other worlds are stored in DOMWrapperMap.
 class CORE_EXPORT ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(ScriptWrappable);
 public:
@@ -89,6 +83,10 @@ public:
     // or |wrapper| if not yet associated.
     // The caller should always use the returned value rather than |wrapper|.
     virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) WARN_UNUSED_RETURN;
+
+    // Returns true if the instance needs to be kept alive even when the
+    // instance is unreachable from JavaScript.
+    virtual bool hasPendingActivity() const { return false; }
 
     // Associates this instance with the given |wrapper| if this instance is not
     // yet associated with any wrapper.  Returns true if the given wrapper is
@@ -144,23 +142,12 @@ public:
 
     bool containsWrapper() const { return !m_mainWorldWrapper.IsEmpty(); }
 
-    /**
-     *  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
-     *  wrapper in the main world. To mark wrappers in all worlds call
-     *  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
-     */
+    //  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
+    //  wrapper in the main world. To mark wrappers in all worlds call
+    //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
     void markWrapper(const WrapperVisitor*) const;
 
     DECLARE_VIRTUAL_TRACE_WRAPPERS() {};
-
-    // With Oilpan we don't need a ScriptWrappable destructor.
-    //
-    // 'RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper())' is not needed
-    // because Oilpan is not using reference counting at all. If containsWrapper() is true,
-    // it means that ScriptWrappable still has a wrapper. In this case, the destructor
-    // must not be called since the wrapper has a persistent handle back to this ScriptWrappable object.
-    // Assuming that Oilpan's GC is correct (If we cannot assume this, a lot of more things are
-    // already broken), we must not hit the RELEASE_ASSERT.
 
 private:
     // These classes are exceptionally allowed to use mainWorldWrapper().

@@ -132,7 +132,7 @@ public:
     EventListener* onended();
     void setOnended(EventListener*);
 
-    // ActiveScriptWrappable
+    // ScriptWrappable:
     bool hasPendingActivity() const final;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { AudioSourceNode::trace(visitor); }

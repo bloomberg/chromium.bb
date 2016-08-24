@@ -113,7 +113,7 @@ public:
     // ActiveDOMObject interface.
     void stop() override;
 
-    // ActiveScriptWrappable interface.
+    // ScriptWrappable interface.
     bool hasPendingActivity() const final;
 
     DECLARE_VIRTUAL_TRACE();

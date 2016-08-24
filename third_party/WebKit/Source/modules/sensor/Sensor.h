@@ -54,6 +54,8 @@ public:
     void suspend() override;
     void resume() override;
     void stop() override;
+
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const override;
 
     DECLARE_VIRTUAL_TRACE();

@@ -59,7 +59,7 @@ public:
     // This function must be called with entering an appropriate V8 context.
     Response* clone(ScriptState*, ExceptionState&);
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // Does not call response.setBlobDataHandle().

@@ -509,18 +509,21 @@ If an interface X has `[ActiveScriptWrappable]` and an interface Y inherits the 
 ```webidl
 [
     ActiveScriptWrappable,
+    DependentLifetime,
 ] interface Foo {};
-```
 
 interface Bar : Foo {};  // inherits [ActiveScriptWrappable] from Foo
+```
+
 If a given DOM object needs to be kept alive as long as the DOM object has pending activities, you need to specify `[ActiveScriptWrappable]` and `[DependentLifetime]`. For example, `[ActiveScriptWrappable]` can be used when the DOM object is expecting events to be raised in the future.
 
-If you use `[ActiveScriptWrappable]`, the corresponding Blink class needs to inherit ActiveScriptWrappable. For example, in case of XMLHttpRequest, core/xml/XMLHttpRequest.h would look like this:
+If you use `[ActiveScriptWrappable]`, the corresponding Blink class needs to inherit ActiveScriptWrappable and override hasPendingActivity(). For example, in case of XMLHttpRequest, core/xml/XMLHttpRequest.h would look like this:
 
 ```c++
 class XMLHttpRequest : public ActiveScriptWrappable
 {
-    ...;
+    // Returns true if the object needs to be kept alive.
+    bool hasPendingActivity() const override { return ...; }
 }
 ```
 

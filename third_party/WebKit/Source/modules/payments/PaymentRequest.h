@@ -60,6 +60,9 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange);
 
+    // ScriptWrappable:
+    bool hasPendingActivity() const override;
+
     // EventTargetWithInlineData:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
@@ -80,9 +83,6 @@ private:
 
     // LifecycleObserver:
     void contextDestroyed() override;
-
-    // ActiveScriptWrappable:
-    bool hasPendingActivity() const override;
 
     // mojom::blink::PaymentRequestClient:
     void OnShippingAddressChange(mojom::blink::PaymentAddressPtr) override;

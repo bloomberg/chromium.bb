@@ -121,7 +121,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable functions.
     // Prevent this instance from being collected while it's not in CLOSED
     // state.
     bool hasPendingActivity() const final;

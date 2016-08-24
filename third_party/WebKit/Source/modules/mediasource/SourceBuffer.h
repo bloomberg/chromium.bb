@@ -103,10 +103,10 @@ public:
     void removedFromMediaSource();
     double highestPresentationTimestamp();
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
-    // ActiveDOMObject interface
+    // ActiveDOMObject
     void suspend() override;
     void resume() override;
     void stop() override;

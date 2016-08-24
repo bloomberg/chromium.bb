@@ -79,7 +79,7 @@ public:
     // ActiveDOMObject
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // EventTarget

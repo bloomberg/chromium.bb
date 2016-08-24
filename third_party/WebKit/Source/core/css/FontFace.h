@@ -110,7 +110,7 @@ public:
     };
     void loadWithCallback(LoadFontCallback*, ExecutionContext*);
 
-    // ActiveScriptWrappable.
+    // ScriptWrappable:
     bool hasPendingActivity() const final;
 
 private:

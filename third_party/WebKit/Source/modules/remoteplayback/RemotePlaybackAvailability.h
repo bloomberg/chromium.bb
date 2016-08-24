@@ -35,7 +35,7 @@ public:
 
     bool value() const;
 
-    // ActiveScriptWrappable implementation.
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);

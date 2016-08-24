@@ -155,7 +155,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     // We keep the this object alive until either stopped or closed.
     bool hasPendingActivity() const final
     {

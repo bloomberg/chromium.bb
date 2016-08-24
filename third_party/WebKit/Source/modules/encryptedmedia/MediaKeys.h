@@ -88,7 +88,7 @@ public:
     void contextDestroyed() override;
     void stop() override;
 
-    // ActiveScriptWrappable implementation.
+    // ScriptWrappable implementation.
     bool hasPendingActivity() const final;
 
 private:

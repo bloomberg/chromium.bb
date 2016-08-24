@@ -38,7 +38,7 @@ public:
     void notifyLockAcquired();
     void notifyLockReleased();
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const;
 
     // ActiveDOMObject

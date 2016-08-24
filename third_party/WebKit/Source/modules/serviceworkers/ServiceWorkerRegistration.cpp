@@ -20,6 +20,11 @@
 
 namespace blink {
 
+bool ServiceWorkerRegistration::hasPendingActivity() const
+{
+    return !m_stopped;
+}
+
 const AtomicString& ServiceWorkerRegistration::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerRegistration;
@@ -129,11 +134,6 @@ DEFINE_TRACE(ServiceWorkerRegistration)
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
     Supplementable<ServiceWorkerRegistration>::trace(visitor);
-}
-
-bool ServiceWorkerRegistration::hasPendingActivity() const
-{
-    return !m_stopped;
 }
 
 void ServiceWorkerRegistration::stop()

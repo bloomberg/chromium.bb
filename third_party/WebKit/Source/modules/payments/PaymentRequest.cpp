@@ -404,6 +404,11 @@ ScriptPromise PaymentRequest::abort(ScriptState* scriptState)
     return m_abortResolver->promise();
 }
 
+bool PaymentRequest::hasPendingActivity() const
+{
+    return m_showResolver || m_completeResolver;
+}
+
 const AtomicString& PaymentRequest::interfaceName() const
 {
     return EventTargetNames::PaymentRequest;
@@ -525,11 +530,6 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<Paymen
 void PaymentRequest::contextDestroyed()
 {
     clearResolversAndCloseMojoConnection();
-}
-
-bool PaymentRequest::hasPendingActivity() const
-{
-    return m_showResolver || m_completeResolver;
 }
 
 void PaymentRequest::OnShippingAddressChange(mojom::blink::PaymentAddressPtr address)

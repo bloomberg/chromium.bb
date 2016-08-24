@@ -51,7 +51,7 @@ public:
     virtual bool bodyUsed();
     bool isBodyLocked();
 
-    // ActiveScriptWrappable override.
+    // ScriptWrappable override.
     bool hasPendingActivity() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()

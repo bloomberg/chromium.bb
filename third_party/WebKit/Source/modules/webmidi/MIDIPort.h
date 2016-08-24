@@ -86,7 +86,7 @@ public:
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
     ExecutionContext* getExecutionContext() const final;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     // ActiveDOMObject

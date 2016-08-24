@@ -45,6 +45,7 @@ class EventTarget;
 class ScriptWrappable;
 
 ScriptWrappable* toScriptWrappable(const v8::PersistentBase<v8::Object>& wrapper);
+ScriptWrappable* toScriptWrappable(v8::Local<v8::Object> wrapper);
 
 static const int v8DOMWrapperTypeIndex = static_cast<int>(gin::kWrapperInfoIndex);
 static const int v8DOMWrapperObjectIndex = static_cast<int>(gin::kEncodedValueIndex);
@@ -70,6 +71,7 @@ inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappable* scriptWrappabl
 // comparing pointers is a safe way to determine if types match.
 struct WrapperTypeInfo {
     DISALLOW_NEW();
+
     enum WrapperTypePrototype {
         WrapperTypeObjectPrototype,
         WrapperTypeExceptionPrototype,
@@ -78,6 +80,11 @@ struct WrapperTypeInfo {
     enum WrapperClassId {
         NodeClassId = 1, // NodeClassId must be smaller than ObjectClassId.
         ObjectClassId,
+    };
+
+    enum ActiveScriptWrappableInheritance {
+        NotInheritFromActiveScriptWrappable,
+        InheritFromActiveScriptWrappable,
     };
 
     enum EventTargetInheritance {
@@ -158,16 +165,9 @@ struct WrapperTypeInfo {
             installConditionallyEnabledPropertiesFunction(prototypeObject, isolate);
     }
 
-    ActiveScriptWrappable* toActiveScriptWrappable(v8::Local<v8::Object> object) const
+    bool isActiveScriptWrappable() const
     {
-        if (!toActiveScriptWrappableFunction)
-            return nullptr;
-        return toActiveScriptWrappableFunction(object);
-    }
-
-    bool hasPendingActivity(v8::Local<v8::Object> object) const
-    {
-        return !toActiveScriptWrappableFunction ? false : toActiveScriptWrappableFunction(object)->hasPendingActivity();
+        return activeScriptWrappableInheritance == InheritFromActiveScriptWrappable;
     }
 
     EventTarget* toEventTarget(v8::Local<v8::Object>) const;
@@ -180,13 +180,13 @@ struct WrapperTypeInfo {
             visitDOMWrapperFunction(isolate, scriptWrappable, wrapper);
     }
 
-    // This field must be the first member of the struct WrapperTypeInfo. This is also checked by a static_assert() below.
+    // This field must be the first member of the struct WrapperTypeInfo.
+    // See also static_assert() in .cpp file.
     const gin::GinEmbedder ginEmbedder;
 
     DomTemplateFunction domTemplateFunction;
     const TraceFunction traceFunction;
     const TraceWrappersFunction traceWrappersFunction;
-    const ToActiveScriptWrappableFunction toActiveScriptWrappableFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
@@ -194,6 +194,7 @@ struct WrapperTypeInfo {
     const WrapperTypeInfo* parentClass;
     const unsigned wrapperTypePrototype : 1; // WrapperTypePrototype
     const unsigned wrapperClassId : 2; // WrapperClassId
+    const unsigned activeScriptWrappableInheritance : 1; // ActiveScriptWrappableInheritance
     const unsigned eventTargetInheritance : 1; // EventTargetInheritance
     const unsigned lifetime : 1; // Lifetime
 };

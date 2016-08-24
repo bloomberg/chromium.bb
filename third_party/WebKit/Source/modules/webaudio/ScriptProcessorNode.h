@@ -113,7 +113,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
     size_t bufferSize() const;
 
-    // ActiveScriptWrappable
+    // ScriptWrappable
     bool hasPendingActivity() const final;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::trace(visitor); }
