@@ -379,4 +379,18 @@ TEST_F(MojoRendererTest, Destroy_PendingSetCdm) {
 // TODO(xhwang): Add more tests on OnError. For example, ErrorDuringFlush,
 // ErrorAfterFlush etc.
 
+TEST_F(MojoRendererTest, ErrorDuringPlayback) {
+  Initialize();
+
+  EXPECT_CALL(renderer_client_, OnError(PIPELINE_ERROR_DECODE)).Times(1);
+
+  Play();
+  remote_renderer_client_->OnError(PIPELINE_ERROR_DECODE);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*mock_renderer_, SetPlaybackRate(0.0)).Times(1);
+  mojo_renderer_->SetPlaybackRate(0.0);
+  Flush();
+}
+
 }  // namespace media

@@ -80,7 +80,7 @@ void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
 
 void MojoRendererService::SetPlaybackRate(double playback_rate) {
   DVLOG(2) << __FUNCTION__ << ": " << playback_rate;
-  DCHECK_EQ(state_, STATE_PLAYING);
+  DCHECK(state_ == STATE_PLAYING || state_ == STATE_ERROR);
   renderer_->SetPlaybackRate(playback_rate);
 }
 
