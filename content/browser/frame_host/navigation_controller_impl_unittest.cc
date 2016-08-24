@@ -2196,7 +2196,13 @@ TEST_F(NavigationControllerTest, NewSubframe) {
     subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
-    EXPECT_EQ(0U, notifications.size());
+
+    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
+    // the entry here rather than during UpdateState.
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
+    else
+      EXPECT_EQ(0U, notifications.size());
   }
 
   // Now do a new navigation in the frame.
@@ -2283,7 +2289,13 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe->SendRendererInitiatedNavigationRequest(url2, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
-    EXPECT_EQ(0U, notifications.size());
+
+    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
+    // the entry here rather than during UpdateState.
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
+    else
+      EXPECT_EQ(0U, notifications.size());
   }
 
   // There should still be only one entry.
@@ -2332,7 +2344,13 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe2->SendRendererInitiatedNavigationRequest(url3, false);
     subframe2->PrepareForCommit();
     subframe2->SendNavigateWithParams(&params);
-    EXPECT_EQ(0U, notifications.size());
+
+    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
+    // the entry here rather than during UpdateState.
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
+    else
+      EXPECT_EQ(0U, notifications.size());
   }
 
   // There should still be only one entry, mostly unchanged.
@@ -2386,7 +2404,13 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
     subframe3->SendRendererInitiatedNavigationRequest(url4, false);
     subframe3->PrepareForCommit();
     subframe3->SendNavigateWithParams(&params);
-    EXPECT_EQ(0U, notifications.size());
+
+    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
+    // the entry here rather than during UpdateState.
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
+    else
+      EXPECT_EQ(0U, notifications.size());
   }
 
   // There should still be only one entry, mostly unchanged.
@@ -2455,7 +2479,13 @@ TEST_F(NavigationControllerTest, BackSubframe) {
     subframe->SendRendererInitiatedNavigationRequest(subframe_url, false);
     subframe->PrepareForCommit();
     subframe->SendNavigateWithParams(&params);
-    EXPECT_EQ(0U, notifications.size());
+
+    // In UseSubframeNavigationEntries mode, we notify of a PageState update to
+    // the entry here rather than during UpdateState.
+    if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+      EXPECT_TRUE(notifications.Check1AndReset(NOTIFICATION_NAV_ENTRY_CHANGED));
+    else
+      EXPECT_EQ(0U, notifications.size());
   }
 
   // First manual subframe navigation.

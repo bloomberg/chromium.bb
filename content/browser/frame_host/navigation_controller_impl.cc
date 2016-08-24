@@ -835,8 +835,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
                                      details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
-      if (!RendererDidNavigateAutoSubframe(rfh, params))
+      if (!RendererDidNavigateAutoSubframe(rfh, params)) {
+        // In UseSubframeNavigationEntries mode, we won't send a notification
+        // about auto-subframe PageState during UpdateStateForFrame, since it
+        // looks like nothing has changed.  Send it here at commit time instead.
+        if (SiteIsolationPolicy::UseSubframeNavigationEntries())
+          NotifyEntryChanged(GetLastCommittedEntry());
         return false;
+      }
       break;
     case NAVIGATION_TYPE_NAV_IGNORE:
       // If a pending navigation was in progress, this canceled it.  We should

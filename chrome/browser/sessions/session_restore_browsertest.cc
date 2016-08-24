@@ -1281,6 +1281,44 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWithNavigateSelectedTab) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+// Ensure that AUTO_SUBFRAME navigations in subframes are restored.
+// See https://crbug.com/638088.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterAutoSubframe) {
+  // Load a page with a blank iframe, then navigate the iframe.  This will be an
+  // auto-subframe commit, and we expect it to be restored.
+  GURL main_url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("iframe_blank.html"))));
+  GURL subframe_url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title1.html"))));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  std::string nav_frame_script =
+      "frames[0].location.href = '" + subframe_url.spec() + "';";
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), nav_frame_script));
+  observer.Wait();
+
+  // Restore the session.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, active_browser_list_->size());
+  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
+
+  // The restored page should have the right iframe.
+  ASSERT_EQ(main_url,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  std::string actual_frame_url;
+  std::string frame_url_script =
+      "window.domAutomationController.send("
+      "frames[0].location.href);";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      new_browser->tab_strip_model()->GetActiveWebContents(), frame_url_script,
+      &actual_frame_url));
+  EXPECT_EQ(subframe_url.possibly_invalid_spec(), actual_frame_url);
+}
+
 // Do a clobber restore from the new tab page. This test follows the code path
 // of a crash followed by the user clicking restore from the new tab page.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClobberRestoreTest) {
