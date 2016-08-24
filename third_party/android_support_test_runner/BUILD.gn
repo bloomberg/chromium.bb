@@ -5,8 +5,15 @@
 import("//build/config/android/rules.gni")
 
 android_java_prebuilt("runner_java") {
-  jar_path = "lib/runner-0.3-release-no-dep.jar"
+  testonly = true
+  jar_path = "lib/runner-0.5-release-no-dep.jar"
   deps = [
+    ":exposed_instrumentation_api_publish_java",
     "//third_party/guava:guava_java",
+    "//third_party/junit",
   ]
+}
+
+android_java_prebuilt("exposed_instrumentation_api_publish_java") {
+  jar_path = "lib/exposed-instrumentation-api-publish-0.5-no-dep.jar"
 }

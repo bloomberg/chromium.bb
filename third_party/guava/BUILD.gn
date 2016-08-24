@@ -5,5 +5,6 @@
 import("//build/config/android/rules.gni")
 
 java_prebuilt("guava_java") {
+  supports_android = true
   jar_path = "lib/guava-18.0.jar"
 }

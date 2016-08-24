@@ -1892,6 +1892,9 @@ if (enable_java_templates) {
       _supports_android = invoker.supports_android
     }
 
+    _requires_android =
+        defined(invoker.requires_android) && invoker.requires_android
+
     _enable_errorprone = use_errorprone_java_compiler
     if (!_chromium_code) {
       _enable_errorprone = false
@@ -2015,7 +2018,7 @@ if (enable_java_templates) {
         inputs += [ "$root_build_dir/bin/jmake" ]
         outputs += [ "${_javac_jar_path}.pdb" ]
       }
-      if (_supports_android) {
+      if (_requires_android) {
         if (defined(invoker.alternative_android_sdk_ijar)) {
           deps += [ invoker.alternative_android_sdk_ijar_dep ]
           _android_sdk_ijar = invoker.alternative_android_sdk_ijar
@@ -2027,6 +2030,9 @@ if (enable_java_templates) {
         _rebased_android_sdk_ijar =
             rebase_path(_android_sdk_ijar, root_build_dir)
         args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
+      }
+      if (_supports_android) {
+        args += [ "--java-version=1.7" ]
       }
       foreach(e, _manifest_entries) {
         args += [ "--manifest-entry=" + e ]
@@ -2298,6 +2304,7 @@ if (enable_java_templates) {
       srcjars = _srcjars
       chromium_code = _chromium_code
       supports_android = _supports_android
+      requires_android = _requires_android
       emma_instrument = _emma_instrument
       deps = _accumulated_deps
     }

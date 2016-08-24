@@ -257,6 +257,9 @@ def _ParseOptions(argv):
       help='Boot classpath for javac. If this is specified multiple times, '
       'they will all be appended to construct the classpath.')
   parser.add_option(
+      '--java-version',
+      help='Java language version to use in -source and -target args to javac.')
+  parser.add_option(
       '--classpath',
       action='append',
       help='Classpath for javac. If this is specified multiple times, they '
@@ -379,10 +382,14 @@ def main(argv):
 
   if options.bootclasspath:
     javac_cmd.extend([
-        '-bootclasspath', ':'.join(options.bootclasspath),
-        '-source', '1.7',
-        '-target', '1.7',
-        ])
+      '-bootclasspath', ':'.join(options.bootclasspath)
+    ])
+
+  if options.java_version:
+    javac_cmd.extend([
+      '-source', options.java_version,
+      '-target', options.java_version,
+    ])
 
   if options.chromium_code:
     javac_cmd.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
