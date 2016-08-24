@@ -123,7 +123,7 @@ def get_targets(args, parser, use_null_terminator):
     parser.error('Missing target.')
 
   if len(args) == 1 and args[0] == '-':
-    # Take stdin as a newline or null seperated list of files.
+    # Take stdin as a newline or null separated list of files.
     if use_null_terminator:
       return sys.stdin.read().split('\0')
     else:

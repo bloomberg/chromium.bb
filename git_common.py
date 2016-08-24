@@ -900,7 +900,7 @@ def tree(treeref, recurse=False):
 
   Args:
     treeref (str) - a git ref which resolves to a tree (commits count as trees).
-    recurse (bool) - include all of the tree's decendants too. File names will
+    recurse (bool) - include all of the tree's descendants too. File names will
       take the form of 'some/path/to/file'.
 
   Return format:

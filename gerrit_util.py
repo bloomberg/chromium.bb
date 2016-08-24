@@ -326,7 +326,7 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
     msg = (
-        'A transient error occured while querying %s:\n'
+        'A transient error occurred while querying %s:\n'
         '%s %s %s\n'
         '%s %d %s' % (
             conn.host, conn.req_params['method'], conn.req_params['url'],

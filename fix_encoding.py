@@ -356,7 +356,7 @@ def fix_win_console(encoding):
 def fix_encoding():
   """Fixes various encoding problems on all platforms.
 
-  Should be called at the very begining of the process.
+  Should be called at the very beginning of the process.
   """
   ret = True
   if sys.platform == 'win32':

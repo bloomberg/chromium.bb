@@ -378,7 +378,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This is inherited from WorkItem.  We want the URL to be a resource.
     if url and isinstance(url, basestring):
       # The url is usually given to gclient either as https://blah@123
-      # or just https://blah.  The @123 portion is irrelevent.
+      # or just https://blah.  The @123 portion is irrelevant.
       self.resources.append(url.split('@')[0])
 
     if not self.name and self.parent:
@@ -569,7 +569,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # than in the os list), then it wants to use the default value.
     for os_dep_key, os_dep_value in os_overrides.iteritems():
       if len(os_dep_value) != len(target_os_list):
-        # Record the default value too so that we don't accidently
+        # Record the default value too so that we don't accidentally
         # set it to None or miss a conflicting DEPS.
         if os_dep_key in deps:
           os_dep_value.append(('default', deps[os_dep_key]))
@@ -1782,7 +1782,7 @@ def CMDrecurse(parser, args):
   """Operates [command args ...] on all the dependencies.
 
   Runs a shell command on all entries.
-  Sets GCLIENT_DEP_PATH enviroment variable as the dep's relative location to
+  Sets GCLIENT_DEP_PATH environment variable as the dep's relative location to
   root directory of the checkout.
   """
   # Stop parsing at the first non-arg so that these go through to the command

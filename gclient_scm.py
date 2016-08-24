@@ -1647,7 +1647,7 @@ class SVNWrapper(SCMWrapper):
       self._RunAndGetFileList(['update', '--revision', 'BASE'], options,
           file_list)
     except OSError, e:
-      # Maybe the directory disapeared meanwhile. Do not throw an exception.
+      # Maybe the directory disappeared meanwhile. Do not throw an exception.
       logging.error('Failed to update:\n%s' % str(e))
 
   def revinfo(self, _options, _args, _file_list):

@@ -620,7 +620,7 @@ def LoadChangelistInfoForMultiple(changenames, local_root, fail_on_not_found,
                                   update_status):
   """Loads many changes and merge their files list into one pseudo change.
 
-  This is mainly usefull to concatenate many changes into one for a 'gcl try'.
+  This is mainly useful to concatenate many changes into one for a 'gcl try'.
   """
   changes = changenames.split(',')
   aggregate_change_info = ChangeInfo(

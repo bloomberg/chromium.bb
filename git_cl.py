@@ -202,7 +202,7 @@ def _git_set_branch_config_value(key, value, branch=None, **kwargs):
     branch = GetCurrentBranch()
     assert branch, 'a branch name OR currently checked out branch is required'
   args = ['config']
-  # Check for boolean first, becuase bool is int, but int is not bool.
+  # Check for boolean first, because bool is int, but int is not bool.
   if value is None:
     args.append('--unset')
   elif isinstance(value, bool):
@@ -2403,7 +2403,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if not('From Gerrit Code Review' in data and 'add_ChangeId()' in data):
       return
     print('Warning: you have Gerrit commit-msg hook installed.\n'
-          'It is not neccessary for uploading with git cl in squash mode, '
+          'It is not necessary for uploading with git cl in squash mode, '
           'and may interfere with it in subtle ways.\n'
           'We recommend you remove the commit-msg hook.')
     if offer_removal:
@@ -3114,7 +3114,7 @@ def get_cl_statuses(changes, fine_grained, max_processes=None):
 
   See GetStatus() for a list of possible statuses.
   """
-  # Silence upload.py otherwise it becomes unwieldly.
+  # Silence upload.py otherwise it becomes unwieldy.
   upload.verbosity = 0
 
   if fine_grained:
