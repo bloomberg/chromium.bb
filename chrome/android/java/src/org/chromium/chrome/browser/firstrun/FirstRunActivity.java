@@ -60,17 +60,24 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     // UMA constants.
     private static final String UMA_SIGNIN_CHOICE = "MobileFre.SignInChoice";
-    private static final String UMA_SIGNIN_CHOICE_ENTRY_MAIN_INTENT = ".MainIntent";
-    private static final String UMA_SIGNIN_CHOICE_ENTRY_VIEW_INTENT = ".ViewIntent";
-    private static final String UMA_SIGNIN_CHOICE_ZERO_ACCOUNTS = ".ZeroAccounts";
-    private static final String UMA_SIGNIN_CHOICE_ONE_ACCOUNT = ".OneAccount";
-    private static final String UMA_SIGNIN_CHOICE_MANY_ACCOUNTS = ".ManyAccounts";
     private static final int SIGNIN_SETTINGS_DEFAULT_ACCOUNT = 0;
     private static final int SIGNIN_SETTINGS_ANOTHER_ACCOUNT = 1;
     private static final int SIGNIN_ACCEPT_DEFAULT_ACCOUNT = 2;
     private static final int SIGNIN_ACCEPT_ANOTHER_ACCOUNT = 3;
     private static final int SIGNIN_NO_THANKS = 4;
     private static final int SIGNIN_OPTION_COUNT = 5;
+
+    private static final String FRE_ENTRY_MAIN_INTENT = ".MainIntent";
+    private static final String FRE_ENTRY_VIEW_INTENT = ".ViewIntent";
+
+    private static final String UMA_FRE_PROGRESS = "MobileFre.Progress";
+    private static final int FRE_PROGRESS_STARTED = 0;
+    private static final int FRE_PROGRESS_WELCOME_SHOWN = 1;
+    private static final int FRE_PROGRESS_DATA_SAVER_SHOWN = 2;
+    private static final int FRE_PROGRESS_SIGNIN_SHOWN = 3;
+    private static final int FRE_PROGRESS_COMPLETED_SIGNED_IN = 4;
+    private static final int FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN = 5;
+    private static final int FRE_PROGRESS_TERMINATOR = 6;
 
     @VisibleForTesting
     static FirstRunGlue sGlue = new FirstRunGlueImpl();
@@ -89,6 +96,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
     private List<Callable<FirstRunPage>> mPages;
 
+    private List<Integer> mFreProgressStates;
+
     /**
      * The pager adapter, which provides the pages to the view pager widget.
      */
@@ -99,18 +108,24 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
      */
     private void createPageSequence() {
         mPages = new ArrayList<Callable<FirstRunPage>>();
+        mFreProgressStates = new ArrayList<Integer>();
 
         // An optional welcome page.
-        if (mShowWelcomePage) mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
+        if (mShowWelcomePage) {
+            mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
+            mFreProgressStates.add(FRE_PROGRESS_WELCOME_SHOWN);
+        }
 
         // An optional Data Saver page.
         if (mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE)) {
             mPages.add(pageOf(DataReductionProxyFirstRunFragment.class));
+            mFreProgressStates.add(FRE_PROGRESS_DATA_SAVER_SHOWN);
         }
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
             mPages.add(pageOf(AccountFirstRunFragment.class));
+            mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
         }
     }
 
@@ -180,9 +195,13 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
                 stopProgressionIfNotAcceptedTermsOfService();
                 mPager.setAdapter(mPagerAdapter);
 
+                recordFreProgressHistogram(mFreProgressStates.get(0));
+
                 skipPagesIfNecessary();
             }
         }.start();
+
+        recordFreProgressHistogram(FRE_PROGRESS_STARTED);
     }
 
     @Override
@@ -284,19 +303,9 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             RecordHistogram.recordEnumeratedHistogram(
                     UMA_SIGNIN_CHOICE, choice, SIGNIN_OPTION_COUNT);
 
-            String entryType = mFreProperties.getBoolean(FirstRunActivity.COMING_FROM_CHROME_ICON)
-                    ? UMA_SIGNIN_CHOICE_ENTRY_MAIN_INTENT : UMA_SIGNIN_CHOICE_ENTRY_VIEW_INTENT;
-            int numAccounts = sGlue.numberOfAccounts(getApplicationContext());
-            String numAccountsString;
-            if (numAccounts == 0) {
-                numAccountsString = UMA_SIGNIN_CHOICE_ZERO_ACCOUNTS;
-            } else if (numAccounts == 1) {
-                numAccountsString = UMA_SIGNIN_CHOICE_ONE_ACCOUNT;
-            } else {
-                numAccountsString = UMA_SIGNIN_CHOICE_MANY_ACCOUNTS;
-            }
-            RecordHistogram.recordEnumeratedHistogram(
-                    UMA_SIGNIN_CHOICE + entryType + numAccountsString, choice, SIGNIN_OPTION_COUNT);
+            recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_SIGNED_IN);
+        } else {
+            recordFreProgressHistogram(FRE_PROGRESS_COMPLETED_NOT_SIGNED_IN);
         }
 
         mFreProperties.putString(RESULT_SIGNIN_ACCOUNT_NAME, mResultSignInAccountName);
@@ -398,6 +407,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             return false;
         }
         mPager.setCurrentItem(position, false);
+        recordFreProgressHistogram(mFreProgressStates.get(position));
         return true;
     }
 
@@ -432,6 +442,14 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             abortFirstRunExperience();
             return;
         }
+    }
+
+    private void recordFreProgressHistogram(int state) {
+        String entryType = mFreProperties.getBoolean(FirstRunActivity.COMING_FROM_CHROME_ICON)
+                ? FRE_ENTRY_MAIN_INTENT
+                : FRE_ENTRY_VIEW_INTENT;
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_FRE_PROGRESS + entryType, state, FRE_PROGRESS_TERMINATOR);
     }
 
     /**

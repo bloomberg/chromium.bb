@@ -25011,6 +25011,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileFre.Progress" enum="MobileFreProgress">
+  <owner>gogerald@chromium.org</owner>
+  <summary>
+    Android: Records which states of the &quot;first run experience&quot; have
+    been reached. Each bucket represents a state and recorded everytime the
+    state changed.
+  </summary>
+</histogram>
+
 <histogram name="MobileFre.SignInChoice" enum="MobileFreSignInChoice">
   <owner>aruslan@chromium.org</owner>
   <summary>
@@ -86379,6 +86388,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Resumption auto started"/>
 </enum>
 
+<enum name="MobileFreProgress" type="int">
+  <int value="0" label="FRE started"/>
+  <int value="1" label="Welcome shown"/>
+  <int value="2" label="Data saver shown"/>
+  <int value="3" label="Sign in shown"/>
+  <int value="4" label="FRE completed w/ user signed in"/>
+  <int value="5" label="FRE completed w/ user not signed in"/>
+</enum>
+
 <enum name="MobileFreSignInChoice" type="int">
   <summary>
     These values are defined inside the MobileFreSignInChoice enum
@@ -100184,13 +100202,25 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="MobileDownload.InterruptionsCount"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="MobileFreEntryType" separator=".">
+  <suffix name="MainIntent" label="Icon click"/>
+  <suffix name="ViewIntent" label="VIEW intent"/>
+  <affected-histogram name="MobileFre.Progress"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="MobileFreSignInChoiceEntryType" separator=".">
+  <obsolete>
+    Removed from code as of 08/2016.
+  </obsolete>
   <suffix name="MainIntent" label="Icon click"/>
   <suffix name="ViewIntent" label="VIEW intent"/>
   <affected-histogram name="MobileFre.SignInChoice"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MobileFreSignInChoiceNumberOfAccounts" separator=".">
+  <obsolete>
+    Removed from code as of 08/2016.
+  </obsolete>
   <suffix name="ZeroAccounts" label="Zero accounts"/>
   <suffix name="OneAccount" label="One account"/>
   <suffix name="ManyAccounts" label="Two or more accounts"/>
