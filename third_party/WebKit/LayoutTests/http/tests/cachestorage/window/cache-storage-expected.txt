@@ -5,7 +5,7 @@ PASS CacheStorage.open with an empty name
 PASS CacheStorage.open with no arguments 
 PASS CacheStorage.has with existing cache 
 PASS CacheStorage.has with nonexistent cache 
-FAIL CacheStorage.open with existing cache assert_not_equals: CacheStorage.open should return a new Cache object each time its called. got disallowed value object "[object Cache]"
+PASS CacheStorage.open with existing cache 
 PASS CacheStorage.delete with existing cache 
 PASS CacheStorage.delete with nonexistent cache 
 FAIL CacheStorage names are DOMStrings not USVStrings assert_true: keys should include cache with bad name expected true got false

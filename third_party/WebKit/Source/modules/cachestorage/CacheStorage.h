@@ -53,7 +53,6 @@ private:
 
     Member<GlobalFetch::ScopedFetcher> m_scopedFetcher;
     std::unique_ptr<WebServiceWorkerCacheStorage> m_webCacheStorage;
-    HeapHashMap<String, Member<Cache>> m_nameToCacheMap;
 };
 
 } // namespace blink

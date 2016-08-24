@@ -87,7 +87,6 @@ public:
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, wrapUnique(webCache.release()));
-        m_cacheStorage->m_nameToCacheMap.set(m_cacheName, cache);
         m_resolver->resolve(cache);
         m_resolver.clear();
     }
@@ -151,7 +150,6 @@ public:
 
     void onSuccess() override
     {
-        m_cacheStorage->m_nameToCacheMap.remove(m_cacheName);
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_resolver->resolve(true);
@@ -219,12 +217,6 @@ ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheNa
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
 
-    if (m_nameToCacheMap.contains(cacheName)) {
-        Cache* cache = m_nameToCacheMap.find(cacheName)->value;
-        resolver->resolve(cache);
-        return promise;
-    }
-
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchOpen(new WithCacheCallbacks(cacheName, this, resolver), cacheName);
     else
@@ -240,11 +232,6 @@ ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheNam
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-
-    if (m_nameToCacheMap.contains(cacheName)) {
-        resolver->resolve(true);
-        return promise;
-    }
 
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchHas(new Callbacks(resolver), cacheName);
@@ -339,7 +326,6 @@ void CacheStorage::dispose()
 DEFINE_TRACE(CacheStorage)
 {
     visitor->trace(m_scopedFetcher);
-    visitor->trace(m_nameToCacheMap);
 }
 
 } // namespace blink
