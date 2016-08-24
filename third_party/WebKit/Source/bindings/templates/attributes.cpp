@@ -118,10 +118,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}))
         return;
     v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
-        {{attribute.v8_set_return_value}};
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
+    {{attribute.v8_set_return_value}};
     {% elif world_suffix %}
     {{attribute.v8_set_return_value_for_main_world}};
     {% else %}
@@ -419,10 +417,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);
     if (v8Value.IsEmpty())
@@ -451,9 +445,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
 }

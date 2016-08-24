@@ -585,9 +585,6 @@ bool {{v8_class}}::PrivateScript::{{method.name}}Method({{method.argument_declar
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     {% for argument in method.arguments %}
     v8::Local<v8::Value> {{argument.handle}} = {{argument.private_script_cpp_value_to_v8_value}};
     {% endfor %}

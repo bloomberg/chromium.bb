@@ -174,10 +174,8 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2681,10 +2679,8 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -2700,10 +2696,8 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
     if (cppValue && DOMDataStore::setReturnValueForMainWorld(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3211,10 +3205,8 @@ static void locationGarbageCollectedAttributeGetter(const v8::FunctionCallbackIn
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void locationGarbageCollectedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4454,10 +4446,8 @@ static void sameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "sameObjectAttribute"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "sameObjectAttribute"), v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4486,10 +4476,8 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "saveSameObjectAttribute"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "saveSameObjectAttribute"), v8Value);
+    v8SetReturnValue(info, v8Value);
     privateSameObject.set(info.GetIsolate()->GetCurrentContext(), holder, info.GetReturnValue().Get());
 }
 
@@ -11943,9 +11931,6 @@ bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(Loc
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> *argv = 0;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
@@ -11970,9 +11955,6 @@ bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(Lo
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> *argv = 0;
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
@@ -12001,9 +11983,6 @@ bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPriva
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
     v8::Local<v8::Value> argv[] = { valueHandle };
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
@@ -12033,9 +12012,6 @@ bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPri
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> valueHandle = v8String(scriptState->isolate(), value);
     v8::Local<v8::Value> argv[] = { valueHandle };
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
@@ -12065,9 +12041,6 @@ bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivate
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> valueHandle = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> argv[] = { valueHandle };
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
@@ -12095,9 +12068,6 @@ bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPri
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> documentHandle = toV8(document, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> nodeHandle = toV8(node, scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
@@ -12129,9 +12099,6 @@ bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* f
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     v8::Local<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
     v8::Local<v8::Value> value2Handle = v8::Integer::New(scriptState->isolate(), value2);
     v8::Local<v8::Value> argv[] = { value1Handle, value2Handle };
@@ -12162,9 +12129,6 @@ bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFra
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "readonlyShortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "readonlyShortAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12192,9 +12156,6 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* fram
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12222,9 +12183,6 @@ bool V8TestObject::PrivateScript::shortAttributeAttributeSetter(LocalFrame* fram
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
 }
@@ -12244,9 +12202,6 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* fra
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12274,9 +12229,6 @@ bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* fra
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
 }
@@ -12296,9 +12248,6 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder);
     if (v8Value.IsEmpty())
@@ -12324,9 +12273,6 @@ bool V8TestObject::PrivateScript::nodeAttributeAttributeSetter(LocalFrame* frame
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "nodeAttribute", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));
 }
@@ -12346,9 +12292,6 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(L
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "attributeForPrivateScriptOnly", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder);
     if (v8Value.IsEmpty())
@@ -12376,9 +12319,6 @@ bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeSetter(L
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "attributeForPrivateScriptOnly", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder, v8String(scriptState->isolate(), cppValue));
 }
@@ -12398,9 +12338,6 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::GetterContext, "enumForPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder);
     if (v8Value.IsEmpty())
@@ -12428,9 +12365,6 @@ bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(LocalFrame
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-    if (holder.IsEmpty())
-        return false;
-
     ExceptionState exceptionState(ExceptionState::SetterContext, "enumForPrivateScript", "TestObject", scriptState->context()->Global(), scriptState->isolate());
     return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder, v8String(scriptState->isolate(), cppValue));
 }
