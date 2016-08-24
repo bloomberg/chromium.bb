@@ -1,17 +1,22 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<p>This tests deleting the line break before a paragraph that ends with unrendered space.</p>
-<div id="test" contenteditable="true">foo<br>bar
-<div>baz</div></div>
-
-<script type="text/javascript" src="../editing.js"></script>
-<script>
-var s = window.getSelection();
-var e = document.getElementById("test");
-
-s.collapse(e, 0);
-moveSelectionForwardByLineCommand();
-deleteCommand();
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                'foo<br>',
+                '|bar  ',
+                '<div>baz</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                'foo|bar  ',
+                '<div>baz</div>',
+            '</div>',
+        ].join('')),
+        'Delete BR keeps trailing whitespaces');
 </script>
