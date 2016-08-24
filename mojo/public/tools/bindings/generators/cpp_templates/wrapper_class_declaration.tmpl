@@ -52,14 +52,14 @@ class {{export_attribute}} {{struct.name}} {
   template <typename UserType>
   static {{serialization_result_type}} Serialize(UserType* input) {
     return mojo::internal::StructSerializeImpl<
-        {{struct.name}}Ptr, {{serialization_result_type}}>(input);
+        {{struct.name}}::DataView, {{serialization_result_type}}>(input);
   }
 
   template <typename UserType>
   static bool Deserialize(const {{serialization_result_type}}& input,
                           UserType* output) {
     return mojo::internal::StructDeserializeImpl<
-        {{struct.name}}Ptr, {{serialization_result_type}}>(
+        {{struct.name}}::DataView, {{serialization_result_type}}>(
             input, output);
   }
 

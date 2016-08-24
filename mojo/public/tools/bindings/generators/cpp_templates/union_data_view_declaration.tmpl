@@ -45,16 +45,28 @@ class {{union.name}}DataView {
         data_->data.f_{{name}}, output);
   }
 
-  {{kind|get_qualified_name_for_kind}} {{name}}() const {
+  {{kind|cpp_data_view_type}} {{name}}() const {
     DCHECK(is_{{name}}());
-    return static_cast<{{kind|get_qualified_name_for_kind}}>(
+    return static_cast<{{kind|cpp_data_view_type}}>(
         data_->data.f_{{name}});
   }
 
-{%-   elif kind|is_any_handle_or_interface_kind %}
-  {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}() {
+{%-   elif kind|is_any_handle_kind %}
+  {{kind|cpp_data_view_type}} Take{{name|under_to_camel}}() {
     DCHECK(is_{{name}}());
-    {{kind|cpp_wrapper_type}} result;
+    {{kind|cpp_data_view_type}} result;
+    bool ret =
+        mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+            &data_->data.f_{{name}}, &result, context_);
+    DCHECK(ret);
+    return result;
+  }
+
+{%-   elif kind|is_any_interface_kind %}
+  template <typename UserType>
+  UserType Take{{name|under_to_camel}}() {
+    DCHECK(is_{{name}}());
+    UserType result;
     bool ret =
         mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
             &data_->data.f_{{name}}, &result, context_);
@@ -63,7 +75,7 @@ class {{union.name}}DataView {
   }
 
 {%-   else %}
-  {{kind|cpp_wrapper_type}} {{name}}() const {
+  {{kind|cpp_data_view_type}} {{name}}() const {
     DCHECK(is_{{name}}());
     return data_->data.f_{{name}};
   }

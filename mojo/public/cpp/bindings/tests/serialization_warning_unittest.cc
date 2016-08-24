@@ -47,18 +47,20 @@ class SerializationWarningTest : public testing::Test {
  protected:
   template <typename T>
   void TestWarning(T obj, mojo::internal::ValidationError expected_warning) {
+    using MojomType = typename T::Struct::DataView;
+
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<T>(obj, &context));
-    typename mojo::internal::MojomTypeTraits<T>::Data* data;
-    mojo::internal::Serialize<T>(obj, &buf, &data, &context);
+        mojo::internal::PrepareToSerialize<MojomType>(obj, &context));
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
+    mojo::internal::Serialize<MojomType>(obj, &buf, &data, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
-  template <typename T>
+  template <typename MojomType, typename T>
   void TestArrayWarning(T obj,
                         mojo::internal::ValidationError expected_warning,
                         const ContainerValidateParams* validate_params) {
@@ -66,9 +68,10 @@ class SerializationWarningTest : public testing::Test {
 
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<T>(obj, &context));
-    typename mojo::internal::MojomTypeTraits<T>::Data* data;
-    mojo::internal::Serialize<T>(obj, &buf, &data, validate_params, &context);
+        mojo::internal::PrepareToSerialize<MojomType>(obj, &context));
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
+    mojo::internal::Serialize<MojomType>(obj, &buf, &data, validate_params,
+                                         &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -76,13 +79,15 @@ class SerializationWarningTest : public testing::Test {
   template <typename T>
   void TestUnionWarning(T obj,
                         mojo::internal::ValidationError expected_warning) {
+    using MojomType = typename T::Struct::DataView;
+
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<T>(obj, false, &context));
-    typename mojo::internal::MojomTypeTraits<T>::Data* data;
-    mojo::internal::Serialize<T>(obj, &buf, &data, false, &context);
+        mojo::internal::PrepareToSerialize<MojomType>(obj, false, &context));
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
+    mojo::internal::Serialize<MojomType>(obj, &buf, &data, false, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
@@ -153,57 +158,66 @@ TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
 }
 
 TEST_F(SerializationWarningTest, ArrayOfArraysOfHandles) {
+  using MojomType = ArrayDataView<ArrayDataView<ScopedHandle>>;
   Array<Array<ScopedHandle>> test_array = CreateTestNestedHandleArray();
   test_array[0] = nullptr;
   test_array[1][0] = ScopedHandle();
 
   ContainerValidateParams validate_params_0(
       0, true, new ContainerValidateParams(0, true, nullptr));
-  TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
-                   &validate_params_0);
+  TestArrayWarning<MojomType>(std::move(test_array),
+                              mojo::internal::VALIDATION_ERROR_NONE,
+                              &validate_params_0);
 
   test_array = CreateTestNestedHandleArray();
   test_array[0] = nullptr;
   ContainerValidateParams validate_params_1(
       0, false, new ContainerValidateParams(0, true, nullptr));
-  TestArrayWarning(std::move(test_array),
-                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-                   &validate_params_1);
+  TestArrayWarning<MojomType>(
+      std::move(test_array),
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+      &validate_params_1);
 
   test_array = CreateTestNestedHandleArray();
   test_array[1][0] = ScopedHandle();
   ContainerValidateParams validate_params_2(
       0, true, new ContainerValidateParams(0, false, nullptr));
-  TestArrayWarning(std::move(test_array),
-                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
-                   &validate_params_2);
+  TestArrayWarning<MojomType>(
+      std::move(test_array),
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+      &validate_params_2);
 }
 
 TEST_F(SerializationWarningTest, ArrayOfStrings) {
+  using MojomType = ArrayDataView<StringDataView>;
+
   Array<String> test_array(3);
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = "hello";
 
   ContainerValidateParams validate_params_0(
       0, true, new ContainerValidateParams(0, false, nullptr));
-  TestArrayWarning(std::move(test_array), mojo::internal::VALIDATION_ERROR_NONE,
-                   &validate_params_0);
+  TestArrayWarning<MojomType>(std::move(test_array),
+                              mojo::internal::VALIDATION_ERROR_NONE,
+                              &validate_params_0);
 
   test_array = Array<String>(3);
   for (size_t i = 0; i < test_array.size(); ++i)
     test_array[i] = nullptr;
   ContainerValidateParams validate_params_1(
       0, false, new ContainerValidateParams(0, false, nullptr));
-  TestArrayWarning(std::move(test_array),
-                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-                   &validate_params_1);
+  TestArrayWarning<MojomType>(
+      std::move(test_array),
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+      &validate_params_1);
 
   test_array = Array<String>(2);
   ContainerValidateParams validate_params_2(
       3, true, new ContainerValidateParams(0, false, nullptr));
-  TestArrayWarning(std::move(test_array),
-                   mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
-                   &validate_params_2);
+  TestArrayWarning<MojomType>(
+      std::move(test_array),
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
+      &validate_params_2);
 }
 
 TEST_F(SerializationWarningTest, StructInUnion) {

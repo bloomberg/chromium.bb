@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/array_data_view.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
@@ -287,9 +287,6 @@ struct ArraySerializer<
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
-  static_assert(std::is_same<Element, typename Traits::Element>::value,
-                "Incorrect array serializer");
-
   static size_t GetSerializedSize(UserTypeIterator* input,
                                   SerializationContext* context) {
     return sizeof(Data) +
@@ -448,10 +445,6 @@ struct ArraySerializer<
   using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
-  static_assert(std::is_same<typename MojomType::Element,
-                             typename Traits::Element>::value,
-                "Incorrect array serializer");
-
   static size_t GetSerializedSize(UserTypeIterator* input,
                                   SerializationContext* context) {
     size_t element_count = input->GetSize();
@@ -498,13 +491,13 @@ struct ArraySerializer<
 };
 
 template <typename Element, typename MaybeConstUserType>
-struct Serializer<Array<Element>, MaybeConstUserType> {
+struct Serializer<ArrayDataView<Element>, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = ArrayTraits<UserType>;
-  using Impl = ArraySerializer<Array<Element>,
+  using Impl = ArraySerializer<ArrayDataView<Element>,
                                MaybeConstUserType,
                                ArrayIterator<Traits, MaybeConstUserType>>;
-  using Data = typename MojomTypeTraits<Array<Element>>::Data;
+  using Data = typename MojomTypeTraits<ArrayDataView<Element>>::Data;
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {

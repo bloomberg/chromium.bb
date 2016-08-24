@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
@@ -21,13 +21,10 @@ class ArrayDataViewImpl;
 template <typename T>
 class ArrayDataViewImpl<
     T,
-    typename std::enable_if<BelongsTo<typename DataViewTraits<T>::MojomType,
-                                      MojomTypeCategory::POD>::value>::type> {
+    typename std::enable_if<
+        BelongsTo<T, MojomTypeCategory::POD>::value>::type> {
  public:
-  static_assert(std::is_same<T, typename DataViewTraits<T>::MojomType>::value,
-                "DataView type mismatch");
-
-  using Data_ = typename MojomTypeTraits<Array<T>>::Data;
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -42,15 +39,12 @@ class ArrayDataViewImpl<
 };
 
 template <typename T>
-class ArrayDataViewImpl<T,
-                        typename std::enable_if<BelongsTo<
-                            typename DataViewTraits<T>::MojomType,
-                            MojomTypeCategory::BOOLEAN>::value>::type> {
+class ArrayDataViewImpl<
+    T,
+    typename std::enable_if<
+        BelongsTo<T, MojomTypeCategory::BOOLEAN>::value>::type> {
  public:
-  static_assert(std::is_same<T, typename DataViewTraits<T>::MojomType>::value,
-                "DataView type mismatch");
-
-  using Data_ = typename MojomTypeTraits<Array<T>>::Data;
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -65,14 +59,12 @@ class ArrayDataViewImpl<T,
 template <typename T>
 class ArrayDataViewImpl<
     T,
-    typename std::enable_if<BelongsTo<typename DataViewTraits<T>::MojomType,
-                                      MojomTypeCategory::ENUM>::value>::type> {
+    typename std::enable_if<
+        BelongsTo<T, MojomTypeCategory::ENUM>::value>::type> {
  public:
-  static_assert(std::is_same<T, typename DataViewTraits<T>::MojomType>::value,
-                "DataView type mismatch");
   static_assert(sizeof(T) == sizeof(int32_t), "Unexpected enum size");
 
-  using Data_ = typename MojomTypeTraits<Array<T>>::Data;
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -95,17 +87,37 @@ template <typename T>
 class ArrayDataViewImpl<
     T,
     typename std::enable_if<
-        BelongsTo<typename DataViewTraits<T>::MojomType,
+        BelongsTo<T,
                   MojomTypeCategory::ASSOCIATED_INTERFACE |
                       MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST |
-                      MojomTypeCategory::HANDLE |
                       MojomTypeCategory::INTERFACE |
                       MojomTypeCategory::INTERFACE_REQUEST>::value>::type> {
  public:
-  static_assert(std::is_same<T, typename DataViewTraits<T>::MojomType>::value,
-                "DataView type mismatch");
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
-  using Data_ = typename MojomTypeTraits<Array<T>>::Data;
+  ArrayDataViewImpl(Data_* data, SerializationContext* context)
+      : data_(data), context_(context) {}
+
+  template <typename U>
+  U Take(size_t index) {
+    U result;
+    bool ret = Deserialize<T>(&data_->at(index), &result, context_);
+    DCHECK(ret);
+    return result;
+  }
+
+ protected:
+  Data_* data_;
+  SerializationContext* context_;
+};
+
+template <typename T>
+class ArrayDataViewImpl<
+    T,
+    typename std::enable_if<
+        BelongsTo<T, MojomTypeCategory::HANDLE>::value>::type> {
+ public:
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -125,13 +137,12 @@ class ArrayDataViewImpl<
 template <typename T>
 class ArrayDataViewImpl<T,
                         typename std::enable_if<BelongsTo<
-                            typename DataViewTraits<T>::MojomType,
+                            T,
                             MojomTypeCategory::ARRAY | MojomTypeCategory::MAP |
                                 MojomTypeCategory::STRING |
                                 MojomTypeCategory::STRUCT>::value>::type> {
  public:
-  using Data_ = typename MojomTypeTraits<
-      Array<typename DataViewTraits<T>::MojomType>>::Data;
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -142,8 +153,7 @@ class ArrayDataViewImpl<T,
 
   template <typename U>
   bool Read(size_t index, U* output) {
-    return Deserialize<typename DataViewTraits<T>::MojomType>(
-        data_->at(index).Get(), output, context_);
+    return Deserialize<T>(data_->at(index).Get(), output, context_);
   }
 
  protected:
@@ -154,11 +164,10 @@ class ArrayDataViewImpl<T,
 template <typename T>
 class ArrayDataViewImpl<
     T,
-    typename std::enable_if<BelongsTo<typename DataViewTraits<T>::MojomType,
-                                      MojomTypeCategory::UNION>::value>::type> {
+    typename std::enable_if<
+        BelongsTo<T, MojomTypeCategory::UNION>::value>::type> {
  public:
-  using Data_ = typename MojomTypeTraits<
-      Array<typename DataViewTraits<T>::MojomType>>::Data;
+  using Data_ = typename MojomTypeTraits<ArrayDataView<T>>::Data;
 
   ArrayDataViewImpl(Data_* data, SerializationContext* context)
       : data_(data), context_(context) {}
@@ -169,8 +178,7 @@ class ArrayDataViewImpl<
 
   template <typename U>
   bool Read(size_t index, U* output) {
-    return Deserialize<typename DataViewTraits<T>::MojomType>(&data_->at(index),
-                                                              output, context_);
+    return Deserialize<T>(&data_->at(index), output, context_);
   }
 
  protected:
@@ -186,6 +194,7 @@ class MapDataView;
 template <typename T>
 class ArrayDataView : public internal::ArrayDataViewImpl<T> {
  public:
+  using Element = T;
   using Data_ = typename internal::ArrayDataViewImpl<T>::Data_;
 
   ArrayDataView() : internal::ArrayDataViewImpl<T>(nullptr, nullptr) {}
@@ -213,8 +222,12 @@ class ArrayDataView : public internal::ArrayDataViewImpl<T> {
   //   template <typename U>
   //   bool Read(size_t index, U* output);
 
-  // Handles and interfaces:
+  // Handles:
   //   T Take(size_t index);
+
+  // Interfaces:
+  //   template <typename U>
+  //   U Take(size_t index);
 
   // Object types:
   //   void GetDataView(size_t index, T* output);

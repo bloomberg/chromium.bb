@@ -3,7 +3,16 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/public/interfaces/bindings/tests/rect.mojom"
-public_headers = [ "//mojo/public/cpp/bindings/tests/rect_blink.h" ]
-traits_headers = [ "//mojo/public/cpp/bindings/tests/rect_blink_traits.h" ]
+public_headers = [
+  "//mojo/public/cpp/bindings/tests/rect_blink.h",
+  "//mojo/public/cpp/bindings/tests/shared_rect.h",
+]
+traits_headers = [
+  "//mojo/public/cpp/bindings/tests/rect_blink_traits.h",
+  "//mojo/public/cpp/bindings/tests/shared_rect_traits.h",
+]
 
-type_mappings = [ "mojo.test.TypemappedRect=mojo::test::RectBlink" ]
+type_mappings = [
+  "mojo.test.TypemappedRect=mojo::test::RectBlink",
+  "mojo.test.SharedTypemappedRect=mojo::test::SharedRect",
+]

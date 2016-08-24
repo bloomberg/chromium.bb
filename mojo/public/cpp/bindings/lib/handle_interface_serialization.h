@@ -5,9 +5,12 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_HANDLE_INTERFACE_SERIALIZATION_H_
 
+#include <type_traits>
+
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/interface_data_view.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
@@ -18,9 +21,11 @@
 namespace mojo {
 namespace internal {
 
-template <typename T>
-struct Serializer<AssociatedInterfacePtrInfo<T>,
+template <typename Base, typename T>
+struct Serializer<AssociatedInterfacePtrInfoDataView<Base>,
                   AssociatedInterfacePtrInfo<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
   static void Serialize(AssociatedInterfacePtrInfo<T>& input,
                         AssociatedInterface_Data* output,
                         SerializationContext* context) {
@@ -41,9 +46,11 @@ struct Serializer<AssociatedInterfacePtrInfo<T>,
   }
 };
 
-template <typename T>
-struct Serializer<AssociatedInterfaceRequest<T>,
+template <typename Base, typename T>
+struct Serializer<AssociatedInterfaceRequestDataView<Base>,
                   AssociatedInterfaceRequest<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
   static void Serialize(AssociatedInterfaceRequest<T>& input,
                         AssociatedInterfaceRequest_Data* output,
                         SerializationContext* context) {
@@ -62,8 +69,10 @@ struct Serializer<AssociatedInterfaceRequest<T>,
   }
 };
 
-template <typename T>
-struct Serializer<InterfacePtr<T>, InterfacePtr<T>> {
+template <typename Base, typename T>
+struct Serializer<InterfacePtrDataView<Base>, InterfacePtr<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
   static void Serialize(InterfacePtr<T>& input,
                         Interface_Data* output,
                         SerializationContext* context) {
@@ -82,8 +91,10 @@ struct Serializer<InterfacePtr<T>, InterfacePtr<T>> {
   }
 };
 
-template <typename T>
-struct Serializer<InterfaceRequest<T>, InterfaceRequest<T>> {
+template <typename Base, typename T>
+struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
+  static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
+
   static void Serialize(InterfaceRequest<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {

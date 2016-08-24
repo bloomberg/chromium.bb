@@ -61,17 +61,32 @@ class {{struct.name}}DataView {
         data_value, output);
   }
 
-  {{kind|get_qualified_name_for_kind}} {{name}}() const {
+  {{kind|cpp_data_view_type}} {{name}}() const {
 {%-     if pf.min_version != 0 %}
     if (data_->header_.version < {{pf.min_version}})
       return {{kind|get_qualified_name_for_kind}}{};
 {%-     endif %}
-    return static_cast<{{kind|get_qualified_name_for_kind}}>(data_->{{name}});
+    return static_cast<{{kind|cpp_data_view_type}}>(data_->{{name}});
   }
 
-{%-   elif kind|is_any_handle_or_interface_kind %}
-  {{kind|cpp_wrapper_type}} Take{{name|under_to_camel}}() {
-    {{kind|cpp_wrapper_type}} result;
+{%-   elif kind|is_any_handle_kind %}
+  {{kind|cpp_data_view_type}} Take{{name|under_to_camel}}() {
+    {{kind|cpp_data_view_type}} result;
+{%-     if pf.min_version != 0 %}
+    if (data_->header_.version < {{pf.min_version}})
+      return result;
+{%-     endif %}
+    bool ret =
+        mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
+            &data_->{{name}}, &result, context_);
+    DCHECK(ret);
+    return result;
+  }
+
+{%-   elif kind|is_any_interface_kind %}
+  template <typename UserType>
+  UserType Take{{name|under_to_camel}}() {
+    UserType result;
 {%-     if pf.min_version != 0 %}
     if (data_->header_.version < {{pf.min_version}})
       return result;
@@ -84,10 +99,10 @@ class {{struct.name}}DataView {
   }
 
 {%-   else %}
-  {{kind|cpp_field_type}} {{name}}() const {
+  {{kind|cpp_data_view_type}} {{name}}() const {
 {%-     if pf.min_version != 0 %}
     if (data_->header_.version < {{pf.min_version}})
-      return {{kind|cpp_field_type}}{};
+      return {{kind|cpp_data_view_type}}{};
 {%-     endif %}
     return data_->{{name}};
   }

@@ -109,7 +109,7 @@ struct ArrayDataTraits<bool> {
 //
 // TODO(yzshen): Validation code should be organzied in a way similar to
 // Serializer<>, or merged into it. It should be templatized with the mojo
-// wrapper type instead of the data type, that way we can use MojomTypeTraits
+// data view type instead of the data type, that way we can use MojomTypeTraits
 // to determine the categories.
 
 template <typename T, bool is_union, bool is_handle_or_interface>

@@ -11,14 +11,14 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
-#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 
 namespace mojo {
 namespace internal {
 
 template <typename MaybeConstUserType>
-struct Serializer<String, MaybeConstUserType> {
+struct Serializer<StringDataView, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = StringTraits<UserType>;
 

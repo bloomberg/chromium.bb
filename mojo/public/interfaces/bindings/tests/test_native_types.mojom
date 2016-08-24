@@ -34,4 +34,5 @@ interface PicklePasser {
 interface RectService {
   AddRect(TypemappedRect r);
   GetLargestRect() => (TypemappedRect largest);
+  PassSharedRect(SharedTypemappedRect r) => (SharedTypemappedRect passed);
 };

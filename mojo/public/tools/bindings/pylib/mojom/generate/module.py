@@ -432,7 +432,7 @@ class Map(ReferenceKind):
         raise Exception("Structs cannot be keys in maps.")
       if IsAnyHandleKind(key_kind):
         raise Exception("Handles cannot be keys in maps.")
-      if IsInterfaceKind(key_kind):
+      if IsAnyInterfaceKind(key_kind):
         raise Exception("Interfaces cannot be keys in maps.")
       if IsArrayKind(key_kind):
         raise Exception("Arrays cannot be keys in maps.")
@@ -771,20 +771,22 @@ def IsPointerKind(kind):
           IsMapKind(kind))
 
 
-# Please note that interface is not considered as handle kind, since it is an
-# aggregate type consisting of a handle and a version number.
+# Please note that it doesn't include any interface kind.
 def IsAnyHandleKind(kind):
   return (IsGenericHandleKind(kind) or
           IsDataPipeConsumerKind(kind) or
           IsDataPipeProducerKind(kind) or
           IsMessagePipeKind(kind) or
-          IsSharedBufferKind(kind) or
-          IsInterfaceRequestKind(kind))
+          IsSharedBufferKind(kind))
+
+
+def IsAnyInterfaceKind(kind):
+  return (IsInterfaceKind(kind) or IsInterfaceRequestKind(kind) or
+          IsAssociatedKind(kind))
 
 
 def IsAnyHandleOrInterfaceKind(kind):
-  return (IsAnyHandleKind(kind) or IsInterfaceKind(kind) or
-          IsAssociatedKind(kind))
+  return IsAnyHandleKind(kind) or IsAnyInterfaceKind(kind)
 
 
 def IsAssociatedKind(kind):

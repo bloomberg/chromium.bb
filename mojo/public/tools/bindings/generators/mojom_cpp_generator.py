@@ -275,20 +275,6 @@ def GetCppWrapperParamType(kind):
   return (cpp_wrapper_type if ShouldPassParamByValue(kind)
                            else "const %s&" % cpp_wrapper_type)
 
-def GetCppDataViewType(kind):
-  if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-    return "%sDataView" % GetNameForKind(kind)
-  if mojom.IsArrayKind(kind):
-    return "mojo::ArrayDataView<%s>" % GetCppDataViewType(kind.kind)
-  if mojom.IsMapKind(kind):
-    return ("mojo::MapDataView<%s, %s>" % (GetCppDataViewType(kind.key_kind),
-                                           GetCppDataViewType(kind.value_kind)))
-  if mojom.IsStringKind(kind):
-    return "mojo::StringDataView"
-  return GetCppWrapperType(kind)
-
 def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
     return ("mojo::internal::Pointer<%s>" %
@@ -327,27 +313,31 @@ def GetUnionGetterReturnType(kind):
     return "%s&" % GetCppWrapperType(kind)
   return GetCppWrapperType(kind)
 
-def GetUnmappedTypeForSerializer(kind):
+def GetCppDataViewType(kind, qualified=False):
+  def _GetName(input_kind):
+    return _NameFormatter(input_kind, None).FormatForCpp(
+        add_same_module_namespaces=qualified, flatten_nested_kind=True)
+
   if mojom.IsEnumKind(kind):
-    return GetQualifiedNameForKind(kind)
+    return _GetName(kind)
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-    return "%sPtr" % GetQualifiedNameForKind(kind)
+    return "%sDataView" % _GetName(kind)
   if mojom.IsArrayKind(kind):
-    return "mojo::Array<%s>" % GetUnmappedTypeForSerializer(kind.kind)
+    return "mojo::ArrayDataView<%s>" % GetCppDataViewType(kind.kind, qualified)
   if mojom.IsMapKind(kind):
-    return "mojo::Map<%s, %s>" % (
-        GetUnmappedTypeForSerializer(kind.key_kind),
-        GetUnmappedTypeForSerializer(kind.value_kind))
-  if mojom.IsInterfaceKind(kind):
-    return "%sPtr" % GetQualifiedNameForKind(kind)
-  if mojom.IsInterfaceRequestKind(kind):
-    return "%sRequest" % GetQualifiedNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceKind(kind):
-    return "%sAssociatedPtrInfo" % GetQualifiedNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "%sAssociatedRequest" % GetQualifiedNameForKind(kind.kind)
+    return ("mojo::MapDataView<%s, %s>" % (
+        GetCppDataViewType(kind.key_kind, qualified),
+        GetCppDataViewType(kind.value_kind, qualified)))
   if mojom.IsStringKind(kind):
-    return "mojo::String"
+    return "mojo::StringDataView"
+  if mojom.IsInterfaceKind(kind):
+    return "%sPtrDataView" % _GetName(kind)
+  if mojom.IsInterfaceRequestKind(kind):
+    return "%sRequestDataView" % _GetName(kind.kind)
+  if mojom.IsAssociatedInterfaceKind(kind):
+    return "%sAssociatedPtrInfoDataView" % _GetName(kind.kind)
+  if mojom.IsAssociatedInterfaceRequestKind(kind):
+    return "%sAssociatedRequestDataView" % _GetName(kind.kind)
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -359,6 +349,9 @@ def GetUnmappedTypeForSerializer(kind):
   if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
+
+def GetUnmappedTypeForSerializer(kind):
+  return GetCppDataViewType(kind, qualified=True)
 
 def TranslateConstants(token, kind):
   if isinstance(token, mojom.NamedValue):
@@ -496,6 +489,8 @@ class Generator(generator.Generator):
     "is_enum_kind": mojom.IsEnumKind,
     "is_integral_kind": mojom.IsIntegralKind,
     "is_native_only_kind": IsNativeOnlyKind,
+    "is_any_handle_kind": mojom.IsAnyHandleKind,
+    "is_any_interface_kind": mojom.IsAnyInterfaceKind,
     "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
     "is_associated_kind": mojom.IsAssociatedKind,
     "is_map_kind": mojom.IsMapKind,

@@ -33,13 +33,13 @@ struct DataViewHolder {
 std::unique_ptr<DataViewHolder> SerializeTestStruct(TestStructPtr input) {
   std::unique_ptr<DataViewHolder> result(new DataViewHolder);
 
-  size_t size = mojo::internal::PrepareToSerialize<TestStructPtr>(
+  size_t size = mojo::internal::PrepareToSerialize<TestStructDataView>(
       input, &result->context);
 
   result->buf.reset(new mojo::internal::FixedBufferForTesting(size));
   internal::TestStruct_Data* data = nullptr;
-  mojo::internal::Serialize<TestStructPtr>(input, result->buf.get(), &data,
-                                           &result->context);
+  mojo::internal::Serialize<TestStructDataView>(input, result->buf.get(), &data,
+                                                &result->context);
 
   result->data_view.reset(new TestStructDataView(data, &result->context));
   return result;
@@ -175,13 +175,13 @@ TEST_F(DataViewTest, InterfaceArray) {
   auto data_view_holder = SerializeTestStruct(std::move(obj));
   auto& data_view = *data_view_holder->data_view;
 
-  ArrayDataView<TestInterfacePtr> array_data_view;
+  ArrayDataView<TestInterfacePtrDataView> array_data_view;
   data_view.GetFInterfaceArrayDataView(&array_data_view);
 
   ASSERT_FALSE(array_data_view.is_null());
   ASSERT_EQ(1u, array_data_view.size());
 
-  TestInterfacePtr ptr2 = array_data_view.Take(0);
+  TestInterfacePtr ptr2 = array_data_view.Take<TestInterfacePtr>(0);
   ASSERT_TRUE(ptr2);
   int32_t result = 0;
   ASSERT_TRUE(ptr2->Echo(42, &result));

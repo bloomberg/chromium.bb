@@ -166,18 +166,18 @@ class ArrayCommonTest {
     for (size_t i = 0; i < array.size(); ++i)
       array[i] = static_cast<int32_t>(i);
 
-    size_t size =
-        mojo::internal::PrepareToSerialize<Array<int32_t>>(array, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<ArrayDataView<int32_t>>(
+        array, nullptr);
     EXPECT_EQ(8U + 4 * 4U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
     mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
-    mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
-                                              &validate_params, nullptr);
+    mojo::internal::Serialize<ArrayDataView<int32_t>>(
+        array, &buf, &data, &validate_params, nullptr);
 
     ArrayType<int32_t> array2;
-    mojo::internal::Deserialize<Array<int32_t>>(data, &array2, nullptr);
+    mojo::internal::Deserialize<ArrayDataView<int32_t>>(data, &array2, nullptr);
 
     EXPECT_EQ(4U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i)
@@ -186,22 +186,23 @@ class ArrayCommonTest {
 
   static void Serialization_EmptyArrayOfPOD() {
     ArrayType<int32_t> array;
-    size_t size =
-        mojo::internal::PrepareToSerialize<Array<int32_t>>(array, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<ArrayDataView<int32_t>>(
+        array, nullptr);
     EXPECT_EQ(8U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
     mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
-    mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
-                                              &validate_params, nullptr);
+    mojo::internal::Serialize<ArrayDataView<int32_t>>(
+        array, &buf, &data, &validate_params, nullptr);
 
     ArrayType<int32_t> array2;
-    mojo::internal::Deserialize<Array<int32_t>>(data, &array2, nullptr);
+    mojo::internal::Deserialize<ArrayDataView<int32_t>>(data, &array2, nullptr);
     EXPECT_EQ(0U, array2.size());
   }
 
   static void Serialization_ArrayOfArrayOfPOD() {
+    using MojomType = ArrayDataView<ArrayDataView<int32_t>>;
     ArrayType<ArrayType<int32_t>> array(2);
     for (size_t j = 0; j < array.size(); ++j) {
       ArrayType<int32_t> inner(4);
@@ -210,20 +211,19 @@ class ArrayCommonTest {
       array[j] = std::move(inner);
     }
 
-    size_t size = mojo::internal::PrepareToSerialize<Array<Array<int32_t>>>(
-        array, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<MojomType>(array, nullptr);
     EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
     mojo::internal::FixedBufferForTesting buf(size);
-    typename mojo::internal::MojomTypeTraits<Array<Array<int32_t>>>::Data* data;
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
     mojo::internal::ContainerValidateParams validate_params(
         0, false,
         new mojo::internal::ContainerValidateParams(0, false, nullptr));
-    mojo::internal::Serialize<Array<Array<int32_t>>>(array, &buf, &data,
-                                                     &validate_params, nullptr);
+    mojo::internal::Serialize<MojomType>(array, &buf, &data, &validate_params,
+                                         nullptr);
 
     ArrayType<ArrayType<int32_t>> array2;
-    mojo::internal::Deserialize<Array<Array<int32_t>>>(data, &array2, nullptr);
+    mojo::internal::Deserialize<MojomType>(data, &array2, nullptr);
 
     EXPECT_EQ(2U, array2.size());
     for (size_t j = 0; j < array2.size(); ++j) {
@@ -240,17 +240,17 @@ class ArrayCommonTest {
       array[i] = i % 2 ? true : false;
 
     size_t size =
-        mojo::internal::PrepareToSerialize<Array<bool>>(array, nullptr);
+        mojo::internal::PrepareToSerialize<ArrayDataView<bool>>(array, nullptr);
     EXPECT_EQ(8U + 8U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<bool>* data;
     mojo::internal::ContainerValidateParams validate_params(0, false, nullptr);
-    mojo::internal::Serialize<Array<bool>>(array, &buf, &data, &validate_params,
-                                           nullptr);
+    mojo::internal::Serialize<ArrayDataView<bool>>(array, &buf, &data,
+                                                   &validate_params, nullptr);
 
     ArrayType<bool> array2;
-    mojo::internal::Deserialize<Array<bool>>(data, &array2, nullptr);
+    mojo::internal::Deserialize<ArrayDataView<bool>>(data, &array2, nullptr);
 
     EXPECT_EQ(10U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i)
@@ -258,14 +258,14 @@ class ArrayCommonTest {
   }
 
   static void Serialization_ArrayOfString() {
+    using MojomType = ArrayDataView<StringDataView>;
     ArrayType<String> array(10);
     for (size_t i = 0; i < array.size(); ++i) {
       char c = 'A' + static_cast<char>(i);
       array[i] = String(&c, 1);
     }
 
-    size_t size =
-        mojo::internal::PrepareToSerialize<Array<String>>(array, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<MojomType>(array, nullptr);
     EXPECT_EQ(8U +            // array header
                   10 * 8U +   // array payload (10 pointers)
                   10 * (8U +  // string header
@@ -273,15 +273,15 @@ class ArrayCommonTest {
               size);
 
     mojo::internal::FixedBufferForTesting buf(size);
-    typename mojo::internal::MojomTypeTraits<Array<String>>::Data* data;
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
     mojo::internal::ContainerValidateParams validate_params(
         0, false,
         new mojo::internal::ContainerValidateParams(0, false, nullptr));
-    mojo::internal::Serialize<Array<String>>(array, &buf, &data,
-                                             &validate_params, nullptr);
+    mojo::internal::Serialize<MojomType>(array, &buf, &data, &validate_params,
+                                         nullptr);
 
     ArrayType<String> array2;
-    mojo::internal::Deserialize<Array<String>>(data, &array2, nullptr);
+    mojo::internal::Deserialize<MojomType>(data, &array2, nullptr);
 
     EXPECT_EQ(10U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i) {

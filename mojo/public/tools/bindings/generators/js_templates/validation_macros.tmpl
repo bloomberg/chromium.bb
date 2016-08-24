@@ -24,7 +24,7 @@ err = messageValidator.validateMapPointer({{offset}}, {{field|validate_map_param
 // validate {{name}}
 err = messageValidator.validateInterface({{offset}}, {{field|validate_interface_params}});
 {{_check_err()}}
-{%-   elif field|is_handle_field %}
+{%-   elif field|is_handle_field or field|is_interface_request_field %}
 // validate {{name}}
 err = messageValidator.validateHandle({{offset}}, {{field|validate_handle_params}})
 {{_check_err()}}

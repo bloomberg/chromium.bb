@@ -24,14 +24,13 @@ void SendRunOrClosePipeMessage(MessageReceiver* receiver,
       pipe_control::RunOrClosePipeMessageParams::New());
   params_ptr->input = std::move(input);
 
-  size_t size =
-      internal::PrepareToSerialize<
-          pipe_control::RunOrClosePipeMessageParamsPtr>(params_ptr, context);
+  size_t size = internal::PrepareToSerialize<
+      pipe_control::RunOrClosePipeMessageParamsDataView>(params_ptr, context);
   internal::MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId,
                                    size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
-  internal::Serialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
+  internal::Serialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
       params_ptr, builder.buffer(), &params, context);
   builder.message()->set_interface_id(kInvalidInterfaceId);
   bool ok = receiver->Accept(builder.message());

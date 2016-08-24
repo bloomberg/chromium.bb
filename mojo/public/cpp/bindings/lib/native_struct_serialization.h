@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
 #include "mojo/public/cpp/bindings/native_struct.h"
+#include "mojo/public/cpp/bindings/native_struct_data_view.h"
 
 namespace mojo {
 namespace internal {
@@ -123,7 +124,7 @@ struct NativeStructSerializerImpl<const NativeStructPtr>
     : public UnmappedNativeStructSerializerImpl {};
 
 template <typename MaybeConstUserType>
-struct Serializer<NativeStructPtr, MaybeConstUserType>
+struct Serializer<NativeStructDataView, MaybeConstUserType>
     : public NativeStructSerializerImpl<MaybeConstUserType> {};
 
 }  // namespace internal

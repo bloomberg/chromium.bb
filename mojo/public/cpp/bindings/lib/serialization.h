@@ -55,7 +55,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
 
   Buffer buffer;
   buffer.Initialize(result_buffer, size);
-  typename MojomType::Struct::Data_* data = nullptr;
+  typename MojomTypeTraits<MojomType>::Data* data = nullptr;
   Serialize<MojomType>(*input, &buffer, &data, &context);
 
   if (need_copy) {
@@ -70,7 +70,7 @@ template <typename MojomType, typename DataArrayType, typename UserType>
 bool StructDeserializeImpl(const DataArrayType& input, UserType* output) {
   static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
                 "Unexpected type.");
-  using DataType = typename MojomType::Struct::Data_;
+  using DataType = typename MojomTypeTraits<MojomType>::Data;
 
   if (input.is_null())
     return false;

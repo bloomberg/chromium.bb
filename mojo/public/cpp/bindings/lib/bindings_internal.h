@@ -17,44 +17,26 @@
 namespace mojo {
 
 template <typename T>
-class Array;
-
-template <typename T>
 class ArrayDataView;
 
 template <typename T>
-class AssociatedInterfacePtrInfo;
+class AssociatedInterfacePtrInfoDataView;
 
 template <typename T>
-class AssociatedInterfaceRequest;
+class AssociatedInterfaceRequestDataView;
 
 template <typename T>
-class InterfacePtr;
+class InterfacePtrDataView;
 
 template <typename T>
-class InterfaceRequest;
-
-template <typename K, typename V>
-class Map;
+class InterfaceRequestDataView;
 
 template <typename K, typename V>
 class MapDataView;
 
-class NativeStruct;
-
 class NativeStructDataView;
 
-class String;
-
 class StringDataView;
-
-template <typename T>
-class StructPtr;
-
-template <typename T>
-class InlinedStructPtr;
-
-using NativeStructPtr = StructPtr<NativeStruct>;
 
 namespace internal {
 
@@ -71,6 +53,8 @@ class Array_Data;
 
 template <typename K, typename V>
 class Map_Data;
+
+class NativeStruct_Data;
 
 using String_Data = Array_Data<char>;
 
@@ -232,7 +216,7 @@ struct MojomTypeTraits {
 };
 
 template <typename T>
-struct MojomTypeTraits<Array<T>, false> {
+struct MojomTypeTraits<ArrayDataView<T>, false> {
   using Data = Array_Data<typename MojomTypeTraits<T>::DataAsArrayElement>;
   using DataAsArrayElement = Pointer<Data>;
 
@@ -240,7 +224,7 @@ struct MojomTypeTraits<Array<T>, false> {
 };
 
 template <typename T>
-struct MojomTypeTraits<AssociatedInterfacePtrInfo<T>, false> {
+struct MojomTypeTraits<AssociatedInterfacePtrInfoDataView<T>, false> {
   using Data = AssociatedInterface_Data;
   using DataAsArrayElement = Data;
 
@@ -249,7 +233,7 @@ struct MojomTypeTraits<AssociatedInterfacePtrInfo<T>, false> {
 };
 
 template <typename T>
-struct MojomTypeTraits<AssociatedInterfaceRequest<T>, false> {
+struct MojomTypeTraits<AssociatedInterfaceRequestDataView<T>, false> {
   using Data = AssociatedInterfaceRequest_Data;
   using DataAsArrayElement = Data;
 
@@ -282,7 +266,7 @@ struct MojomTypeTraits<ScopedHandleBase<T>, false> {
 };
 
 template <typename T>
-struct MojomTypeTraits<InterfacePtr<T>, false> {
+struct MojomTypeTraits<InterfacePtrDataView<T>, false> {
   using Data = Interface_Data;
   using DataAsArrayElement = Data;
 
@@ -290,7 +274,7 @@ struct MojomTypeTraits<InterfacePtr<T>, false> {
 };
 
 template <typename T>
-struct MojomTypeTraits<InterfaceRequest<T>, false> {
+struct MojomTypeTraits<InterfaceRequestDataView<T>, false> {
   using Data = Handle_Data;
   using DataAsArrayElement = Data;
 
@@ -299,7 +283,7 @@ struct MojomTypeTraits<InterfaceRequest<T>, false> {
 };
 
 template <typename K, typename V>
-struct MojomTypeTraits<Map<K, V>, false> {
+struct MojomTypeTraits<MapDataView<K, V>, false> {
   using Data = Map_Data<typename MojomTypeTraits<K>::DataAsArrayElement,
                         typename MojomTypeTraits<V>::DataAsArrayElement>;
   using DataAsArrayElement = Pointer<Data>;
@@ -308,37 +292,19 @@ struct MojomTypeTraits<Map<K, V>, false> {
 };
 
 template <>
-struct MojomTypeTraits<String, false> {
+struct MojomTypeTraits<NativeStructDataView, false> {
+  using Data = internal::NativeStruct_Data;
+  using DataAsArrayElement = Pointer<Data>;
+
+  static const MojomTypeCategory category = MojomTypeCategory::STRUCT;
+};
+
+template <>
+struct MojomTypeTraits<StringDataView, false> {
   using Data = String_Data;
   using DataAsArrayElement = Pointer<Data>;
 
   static const MojomTypeCategory category = MojomTypeCategory::STRING;
-};
-
-template <typename T>
-struct MojomTypeTraits<StructPtr<T>, false> {
-  using Data = typename T::Data_;
-  using DataAsArrayElement =
-      typename std::conditional<IsUnionDataType<Data>::value,
-                                Data,
-                                Pointer<Data>>::type;
-
-  static const MojomTypeCategory category = IsUnionDataType<Data>::value
-                                                ? MojomTypeCategory::UNION
-                                                : MojomTypeCategory::STRUCT;
-};
-
-template <typename T>
-struct MojomTypeTraits<InlinedStructPtr<T>, false> {
-  using Data = typename T::Data_;
-  using DataAsArrayElement =
-      typename std::conditional<IsUnionDataType<Data>::value,
-                                Data,
-                                Pointer<Data>>::type;
-
-  static const MojomTypeCategory category = IsUnionDataType<Data>::value
-                                                ? MojomTypeCategory::UNION
-                                                : MojomTypeCategory::STRUCT;
 };
 
 template <typename T, MojomTypeCategory categories>
@@ -355,32 +321,6 @@ struct EnumHashImpl {
     using UnderlyingType = typename base::underlying_type<T>::type;
     return std::hash<UnderlyingType>()(static_cast<UnderlyingType>(input));
   }
-};
-
-template <typename T>
-struct DataViewTraits {
-  using MojomType = T;
-};
-
-template <typename T>
-struct DataViewTraits<ArrayDataView<T>> {
-  using MojomType = Array<typename DataViewTraits<T>::MojomType>;
-};
-
-template <typename K, typename V>
-struct DataViewTraits<MapDataView<K, V>> {
-  using MojomType = Map<typename DataViewTraits<K>::MojomType,
-                        typename DataViewTraits<V>::MojomType>;
-};
-
-template <>
-struct DataViewTraits<StringDataView> {
-  using MojomType = String;
-};
-
-template <>
-struct DataViewTraits<NativeStructDataView> {
-  using MojomType = NativeStructPtr;
 };
 
 }  // namespace internal

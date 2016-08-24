@@ -50,14 +50,20 @@ MultiVersionStructPtr MakeMultiVersionStruct() {
 
 template <typename U, typename T>
 U SerializeAndDeserialize(T input) {
-  using InputDataType = typename mojo::internal::MojomTypeTraits<T>::Data*;
-  using OutputDataType = typename mojo::internal::MojomTypeTraits<U>::Data*;
+  using InputMojomType = typename T::Struct::DataView;
+  using OutputMojomType = typename U::Struct::DataView;
+
+  using InputDataType =
+      typename mojo::internal::MojomTypeTraits<InputMojomType>::Data*;
+  using OutputDataType =
+      typename mojo::internal::MojomTypeTraits<OutputMojomType>::Data*;
 
   mojo::internal::SerializationContext context;
-  size_t size = mojo::internal::PrepareToSerialize<T>(input, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<InputMojomType>(input, &context);
   mojo::internal::FixedBufferForTesting buf(size + 32);
   InputDataType data;
-  mojo::internal::Serialize<T>(input, &buf, &data, &context);
+  mojo::internal::Serialize<InputMojomType>(input, &buf, &data, &context);
 
   // Set the subsequent area to a special value, so that we can find out if we
   // mistakenly access the area.
@@ -67,7 +73,7 @@ U SerializeAndDeserialize(T input) {
   OutputDataType output_data = reinterpret_cast<OutputDataType>(data);
 
   U output;
-  mojo::internal::Deserialize<U>(output_data, &output, &context);
+  mojo::internal::Deserialize<OutputMojomType>(output_data, &output, &context);
   return std::move(output);
 }
 
@@ -131,15 +137,15 @@ TEST_F(StructTest, Clone) {
 TEST_F(StructTest, Serialization_Basic) {
   RectPtr rect(MakeRect());
 
-  size_t size = mojo::internal::PrepareToSerialize<RectPtr>(rect, nullptr);
+  size_t size = mojo::internal::PrepareToSerialize<RectDataView>(rect, nullptr);
   EXPECT_EQ(8U + 16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::Rect_Data* data;
-  mojo::internal::Serialize<RectPtr>(rect, &buf, &data, nullptr);
+  mojo::internal::Serialize<RectDataView>(rect, &buf, &data, nullptr);
 
   RectPtr rect2;
-  mojo::internal::Deserialize<RectPtr>(data, &rect2, nullptr);
+  mojo::internal::Deserialize<RectDataView>(data, &rect2, nullptr);
 
   CheckRect(*rect2);
 }
@@ -164,15 +170,16 @@ TEST_F(StructTest, Serialization_StructPointers) {
   pair->first = MakeRect();
   pair->second = MakeRect();
 
-  size_t size = mojo::internal::PrepareToSerialize<RectPairPtr>(pair, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<RectPairDataView>(pair, nullptr);
   EXPECT_EQ(8U + 16U + 2 * (8U + 16U), size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::RectPair_Data* data;
-  mojo::internal::Serialize<RectPairPtr>(pair, &buf, &data, nullptr);
+  mojo::internal::Serialize<RectPairDataView>(pair, &buf, &data, nullptr);
 
   RectPairPtr pair2;
-  mojo::internal::Deserialize<RectPairPtr>(data, &pair2, nullptr);
+  mojo::internal::Deserialize<RectPairDataView>(data, &pair2, nullptr);
 
   CheckRect(*pair2->first);
   CheckRect(*pair2->second);
@@ -187,7 +194,7 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
     (*region->rects)[i] = MakeRect(static_cast<int32_t>(i) + 1);
 
   size_t size =
-      mojo::internal::PrepareToSerialize<NamedRegionPtr>(region, nullptr);
+      mojo::internal::PrepareToSerialize<NamedRegionDataView>(region, nullptr);
   EXPECT_EQ(8U +            // header
                 8U +        // name pointer
                 8U +        // rects pointer
@@ -201,10 +208,10 @@ TEST_F(StructTest, Serialization_ArrayPointers) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
-  mojo::internal::Serialize<NamedRegionPtr>(region, &buf, &data, nullptr);
+  mojo::internal::Serialize<NamedRegionDataView>(region, &buf, &data, nullptr);
 
   NamedRegionPtr region2;
-  mojo::internal::Deserialize<NamedRegionPtr>(data, &region2, nullptr);
+  mojo::internal::Deserialize<NamedRegionDataView>(data, &region2, nullptr);
 
   EXPECT_EQ("region", *region2->name);
 
@@ -220,7 +227,7 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
   EXPECT_FALSE(region->rects);
 
   size_t size =
-      mojo::internal::PrepareToSerialize<NamedRegionPtr>(region, nullptr);
+      mojo::internal::PrepareToSerialize<NamedRegionDataView>(region, nullptr);
   EXPECT_EQ(8U +      // header
                 8U +  // name pointer
                 8U,   // rects pointer
@@ -228,10 +235,10 @@ TEST_F(StructTest, Serialization_NullArrayPointers) {
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::NamedRegion_Data* data;
-  mojo::internal::Serialize<NamedRegionPtr>(region, &buf, &data, nullptr);
+  mojo::internal::Serialize<NamedRegionDataView>(region, &buf, &data, nullptr);
 
   NamedRegionPtr region2;
-  mojo::internal::Deserialize<NamedRegionPtr>(data, &region2, nullptr);
+  mojo::internal::Deserialize<NamedRegionDataView>(data, &region2, nullptr);
 
   EXPECT_FALSE(region2->name);
   EXPECT_FALSE(region2->rects);
@@ -420,38 +427,40 @@ TEST_F(StructTest, Serialization_NativeStruct) {
   {
     // Serialization of a null native struct.
     NativeStructPtr native;
-    size_t size =
-        mojo::internal::PrepareToSerialize<NativeStructPtr>(native, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
+        native, nullptr);
     EXPECT_EQ(0u, size);
     mojo::internal::FixedBufferForTesting buf(size);
 
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructPtr>(std::move(native), &buf, &data,
-                                               nullptr);
+    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
+                                                    &data, nullptr);
 
     EXPECT_EQ(nullptr, data);
 
     NativeStructPtr output_native;
-    mojo::internal::Deserialize<NativeStructPtr>(data, &output_native, nullptr);
+    mojo::internal::Deserialize<NativeStructDataView>(data, &output_native,
+                                                      nullptr);
     EXPECT_TRUE(output_native.is_null());
   }
 
   {
     // Serialization of a native struct with null data.
     NativeStructPtr native(NativeStruct::New());
-    size_t size =
-        mojo::internal::PrepareToSerialize<NativeStructPtr>(native, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
+        native, nullptr);
     EXPECT_EQ(0u, size);
     mojo::internal::FixedBufferForTesting buf(size);
 
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructPtr>(std::move(native), &buf, &data,
-                                               nullptr);
+    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
+                                                    &data, nullptr);
 
     EXPECT_EQ(nullptr, data);
 
     NativeStructPtr output_native;
-    mojo::internal::Deserialize<NativeStructPtr>(data, &output_native, nullptr);
+    mojo::internal::Deserialize<NativeStructDataView>(data, &output_native,
+                                                      nullptr);
     EXPECT_TRUE(output_native.is_null());
   }
 
@@ -461,19 +470,20 @@ TEST_F(StructTest, Serialization_NativeStruct) {
     native->data[0] = 'X';
     native->data[1] = 'Y';
 
-    size_t size =
-        mojo::internal::PrepareToSerialize<NativeStructPtr>(native, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<NativeStructDataView>(
+        native, nullptr);
     EXPECT_EQ(16u, size);
     mojo::internal::FixedBufferForTesting buf(size);
 
     Data* data = nullptr;
-    mojo::internal::Serialize<NativeStructPtr>(std::move(native), &buf, &data,
-                                               nullptr);
+    mojo::internal::Serialize<NativeStructDataView>(std::move(native), &buf,
+                                                    &data, nullptr);
 
     EXPECT_NE(nullptr, data);
 
     NativeStructPtr output_native;
-    mojo::internal::Deserialize<NativeStructPtr>(data, &output_native, nullptr);
+    mojo::internal::Deserialize<NativeStructDataView>(data, &output_native,
+                                                      nullptr);
     EXPECT_FALSE(output_native.is_null());
     EXPECT_FALSE(output_native->data.is_null());
     EXPECT_EQ(2u, output_native->data.size());

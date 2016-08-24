@@ -30,17 +30,6 @@ namespace {{variant}} {
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro data_view_traits(kind) %}
-namespace mojo {
-namespace internal {
-template <>
-struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
-  using MojomType = {{kind|get_qualified_name_for_kind}}Ptr;
-};
-}  // namespace internal
-}  // namespace mojo
-{%- endmacro %}
-
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
@@ -51,7 +40,6 @@ struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/array_data_view.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -62,12 +50,9 @@ struct DataViewTraits<{{kind|get_qualified_name_for_kind}}DataView> {
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/union_accessor.h"
 #include "mojo/public/cpp/bindings/map.h"
-#include "mojo/public/cpp/bindings/map_data_view.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/native_struct.h"
-#include "mojo/public/cpp/bindings/native_struct_data_view.h"
 #include "mojo/public/cpp/bindings/no_interface.h"
-#include "mojo/public/cpp/bindings/string_data_view.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
@@ -106,7 +91,6 @@ using {{enum.name}} = {{enum.name}};  // Alias for definition in the parent name
 {%-   endfor %}
 {%- endif %}
 
-
 {#--- Constants #}
 {%- for constant in module.constants %}
 {#-   To be consistent with constants defined inside interfaces, only make
@@ -136,11 +120,9 @@ using {{interface.name}}AssociatedRequest =
 {%  for struct in structs %}
 {%-   if struct|is_native_only_kind %}
 using {{struct.name}} = mojo::NativeStruct;
-using {{struct.name}}DataView = mojo::NativeStructDataView;
 using {{struct.name}}Ptr = mojo::NativeStructPtr;
 {%-   else %}
 class {{struct.name}};
-class {{struct.name}}DataView;
 {%-     if struct|should_inline %}
 using {{struct.name}}Ptr = mojo::InlinedStructPtr<{{struct.name}}>;
 {%-     else %}
@@ -152,7 +134,6 @@ using {{struct.name}}Ptr = mojo::StructPtr<{{struct.name}}>;
 {#--- Union Forward Declarations -#}
 {%  for union in unions %}
 class {{union.name}};
-class {{union.name}}DataView;
 {%    if union|should_inline_union %}
 typedef mojo::InlinedStructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    else %}
@@ -192,12 +173,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%  for struct in structs %}
 {%    if struct|should_inline and not struct|is_native_only_kind %}
 {%      include "wrapper_class_declaration.tmpl" %}
-{%      include "struct_data_view_declaration.tmpl" %}
-
-{{namespace_end()}}
-{{data_view_traits(struct)}}
-{{namespace_begin()}}
-
 {%    endif %}
 {%- endfor %}
 
@@ -206,36 +181,22 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {#--- Unions #}
 {%  for union in unions %}
 {%    include "wrapper_union_class_declaration.tmpl" %}
-{%    include "union_data_view_declaration.tmpl" %}
-
-{{namespace_end()}}
-{{data_view_traits(union)}}
-{{namespace_begin()}}
-
 {%- endfor %}
 
 {#--- Non-inlined structs #}
 {%  for struct in structs %}
 {%    if not struct|should_inline and not struct|is_native_only_kind %}
 {%      include "wrapper_class_declaration.tmpl" %}
-{%      include "struct_data_view_declaration.tmpl" %}
-
-{{namespace_end()}}
-{{data_view_traits(struct)}}
-{{namespace_begin()}}
-
 {%    endif %}
 {%- endfor %}
 
 {%- for union in unions %}
 {%    include "wrapper_union_class_template_definition.tmpl" %}
-{%    include "union_data_view_definition.tmpl" %}
 {%- endfor %}
 
 {%- for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
 {%      include "wrapper_class_template_definition.tmpl" %}
-{%      include "struct_data_view_definition.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 
@@ -246,14 +207,14 @@ namespace mojo {
 {#--- Struct Serialization Helpers -#}
 {%  for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
-{%      include "struct_serialization_declaration.tmpl" %}
+{%      include "struct_traits_declaration.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 
 {#--- Union Serialization Helpers -#}
 {%  if unions %}
 {%-   for union in unions %}
-{%      include "union_serialization_declaration.tmpl" %}
+{%      include "union_traits_declaration.tmpl" %}
 {%-   endfor %}
 {%- endif %}
 

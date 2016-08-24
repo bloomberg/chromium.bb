@@ -331,6 +331,9 @@ def IsHandleField(field):
 def IsInterfaceField(field):
   return mojom.IsInterfaceKind(field.kind)
 
+def IsInterfaceRequestField(field):
+  return mojom.IsInterfaceRequestKind(field.kind)
+
 def IsUnionField(field):
   return mojom.IsUnionKind(field.kind)
 
@@ -354,6 +357,7 @@ class Generator(generator.Generator):
     "is_union_field": IsUnionField,
     "is_handle_field": IsHandleField,
     "is_interface_field": IsInterfaceField,
+    "is_interface_request_field": IsInterfaceRequestField,
     "js_type": JavaScriptType,
     "js_proxy_method_parameter_value": JavaScriptProxyMethodParameterValue,
     "js_stub_method_parameter_value": JavaScriptStubMethodParameterValue,

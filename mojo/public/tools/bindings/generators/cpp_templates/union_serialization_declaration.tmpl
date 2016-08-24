@@ -1,41 +1,12 @@
-{%- set mojom_type = union|get_qualified_name_for_kind %}
+{%- set data_view = union|get_qualified_name_for_kind ~ "DataView" %}
 {%- set data_type = union|get_qualified_name_for_kind(internal=True) %}
-
-template <>
-struct {{export_attribute}} UnionTraits<{{mojom_type}}::DataView,
-                                        {{mojom_type}}Ptr> {
-  static bool IsNull(const {{mojom_type}}Ptr& input) { return !input; }
-  static void SetToNull({{mojom_type}}Ptr* output) { output->reset(); }
-
-  static {{mojom_type}}::Tag GetTag(const {{mojom_type}}Ptr& input) {
-    return input->which();
-  }
-
-{%- for field in union.fields %}
-{%-   set return_ref = field.kind|is_object_kind or
-                       field.kind|is_any_handle_or_interface_kind %}
-{%-   if return_ref %}
-  static decltype(std::declval<{{mojom_type}}>().get_{{field.name}}())
-      {{field.name}}({{mojom_type}}Ptr& input) {
-    return input->get_{{field.name}}();
-  }
-{%-   else %}
-  static decltype(std::declval<{{mojom_type}}>().get_{{field.name}}())
-      {{field.name}}(const {{mojom_type}}Ptr& input) {
-    return input->get_{{field.name}}();
-  }
-{%-   endif %}
-{%- endfor %}
-
-  static bool Read({{mojom_type}}::DataView input, {{mojom_type}}Ptr* output);
-};
 
 namespace internal {
 
 template <typename MaybeConstUserType>
-struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
+struct Serializer<{{data_view}}, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Traits = UnionTraits<{{mojom_type}}::DataView, UserType>;
+  using Traits = UnionTraits<{{data_view}}, UserType>;
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    bool inlined,
@@ -51,7 +22,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
     switch (CallWithContext(Traits::GetTag, input, custom_context)) {
 {%- for field in union.fields %}
 {%-   set name = field.name %}
-      case {{mojom_type}}::Tag::{{name|upper}}: {
+      case {{data_view}}::Tag::{{name|upper}}: {
 {%-   if field.kind|is_object_kind %}
 {%-     set kind = field.kind %}
 {%-     set serializer_type = kind|unmapped_type_for_serializer %}
@@ -102,7 +73,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
 {%-   set name = field.name %}
 {%-   set kind = field.kind %}
 {%-   set serializer_type = kind|unmapped_type_for_serializer %}
-      case {{mojom_type}}::Tag::{{field.name|upper}}: {
+      case {{data_view}}::Tag::{{field.name|upper}}: {
         decltype(CallWithContext(Traits::{{name}}, input, custom_context))
             in_{{name}} = CallWithContext(Traits::{{name}}, input,
                                           custom_context);
@@ -162,7 +133,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
     if (!input || input->is_null())
       return CallSetToNullIfExists<Traits>(output);
 
-    {{mojom_type}}::DataView data_view(input, context);
+    {{data_view}} data_view(input, context);
     return Traits::Read(data_view, output);
   }
 };

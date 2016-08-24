@@ -155,7 +155,7 @@ class MapCommonTest {
 
   static void ArrayOfMap() {
     {
-      using MojomType = Array<Map<int32_t, int8_t>>;
+      using MojomType = ArrayDataView<MapDataView<int32_t, int8_t>>;
       using UserType = ArrayType<MapType<int32_t, int8_t>>;
 
       UserType array(1);
@@ -185,7 +185,8 @@ class MapCommonTest {
     }
 
     {
-      using MojomType = Array<Map<String, Array<bool>>>;
+      using MojomType =
+          ArrayDataView<MapDataView<StringDataView, ArrayDataView<bool>>>;
       using UserType = ArrayType<MapType<StringType, ArrayType<bool>>>;
 
       UserType array(1);

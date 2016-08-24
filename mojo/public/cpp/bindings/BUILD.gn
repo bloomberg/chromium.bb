@@ -20,6 +20,7 @@ static_library("bindings") {
     "binding_set.h",
     "connector.h",
     "enum_traits.h",
+    "interface_data_view.h",
     "interface_endpoint_client.h",
     "interface_endpoint_controller.h",
     "interface_id.h",

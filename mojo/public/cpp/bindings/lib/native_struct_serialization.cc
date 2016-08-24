@@ -15,7 +15,8 @@ size_t UnmappedNativeStructSerializerImpl::PrepareToSerialize(
     SerializationContext* context) {
   if (!input)
     return 0;
-  return internal::PrepareToSerialize<Array<uint8_t>>(input->data, context);
+  return internal::PrepareToSerialize<ArrayDataView<uint8_t>>(input->data,
+                                                              context);
 }
 
 // static
@@ -31,8 +32,8 @@ void UnmappedNativeStructSerializerImpl::Serialize(
 
   Array_Data<uint8_t>* data = nullptr;
   const ContainerValidateParams params(0, false, nullptr);
-  internal::Serialize<Array<uint8_t>>(input->data, buffer, &data, &params,
-                                      context);
+  internal::Serialize<ArrayDataView<uint8_t>>(input->data, buffer, &data,
+                                              &params, context);
   *output = reinterpret_cast<NativeStruct_Data*>(data);
 }
 
@@ -44,7 +45,8 @@ bool UnmappedNativeStructSerializerImpl::Deserialize(
   Array_Data<uint8_t>* data = reinterpret_cast<Array_Data<uint8_t>*>(input);
 
   NativeStructPtr result(NativeStruct::New());
-  if (!internal::Deserialize<Array<uint8_t>>(data, &result->data, context)) {
+  if (!internal::Deserialize<ArrayDataView<uint8_t>>(data, &result->data,
+                                                     context)) {
     output = nullptr;
     return false;
   }

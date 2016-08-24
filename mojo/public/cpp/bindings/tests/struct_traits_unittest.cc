@@ -70,6 +70,11 @@ class ChromiumRectServiceImpl : public RectService {
     callback.Run(largest_rect_);
   }
 
+  void PassSharedRect(const SharedRect& r,
+                      const PassSharedRectCallback& callback) override {
+    callback.Run(r);
+  }
+
  private:
   RectChromium largest_rect_;
 };
@@ -91,6 +96,11 @@ class BlinkRectServiceImpl : public blink::RectService {
 
   void GetLargestRect(const GetLargestRectCallback& callback) override {
     callback.Run(largest_rect_);
+  }
+
+  void PassSharedRect(const SharedRect& r,
+                      const PassSharedRectCallback& callback) override {
+    callback.Run(r);
   }
 
  private:
@@ -200,6 +210,13 @@ TEST_F(StructTraitsTest, ChromiumProxyToChromiumService) {
         ExpectResult(RectChromium(1, 1, 4, 5), loop.QuitClosure()));
     loop.Run();
   }
+  {
+    base::RunLoop loop;
+    chromium_proxy->PassSharedRect(
+        {1, 2, 3, 4},
+        ExpectResult(SharedRect({1, 2, 3, 4}), loop.QuitClosure()));
+    loop.Run();
+  }
 }
 
 TEST_F(StructTraitsTest, ChromiumToBlinkService) {
@@ -211,6 +228,13 @@ TEST_F(StructTraitsTest, ChromiumToBlinkService) {
     chromium_proxy->AddRect(RectChromium(2, 2, 5, 5));
     chromium_proxy->GetLargestRect(
         ExpectResult(RectChromium(2, 2, 5, 5), loop.QuitClosure()));
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    chromium_proxy->PassSharedRect(
+        {1, 2, 3, 4},
+        ExpectResult(SharedRect({1, 2, 3, 4}), loop.QuitClosure()));
     loop.Run();
   }
   // The Blink service should drop our connection because RectBlink's
@@ -236,6 +260,13 @@ TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
         ExpectResult(RectBlink(10, 10, 20, 20), loop.QuitClosure()));
     loop.Run();
   }
+  {
+    base::RunLoop loop;
+    blink_proxy->PassSharedRect(
+        {4, 3, 2, 1},
+        ExpectResult(SharedRect({4, 3, 2, 1}), loop.QuitClosure()));
+    loop.Run();
+  }
 }
 
 TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
@@ -247,6 +278,13 @@ TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
     blink_proxy->AddRect(RectBlink(10, 10, 2, 2));
     blink_proxy->GetLargestRect(
         ExpectResult(RectBlink(1, 1, 4, 5), loop.QuitClosure()));
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    blink_proxy->PassSharedRect(
+        {4, 3, 2, 1},
+        ExpectResult(SharedRect({4, 3, 2, 1}), loop.QuitClosure()));
     loop.Run();
   }
 }

@@ -55,24 +55,6 @@ const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_val
 {%-   endif %}
 {%- endfor %}
 
-namespace {
-
-{#--- Interface parameter data view definitions #}
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%      set struct = method.param_struct %}
-{%      include "struct_data_view_declaration.tmpl" %}
-{%      include "struct_data_view_definition.tmpl" %}
-{%-     if method.response_parameters != None %}
-{%-       set struct = method.response_param_struct %}
-{%        include "struct_data_view_declaration.tmpl" %}
-{%        include "struct_data_view_definition.tmpl" %}
-{%-     endif %}
-{%-   endfor %}
-{%- endfor %}
-
-}  // namespace
-
 {#--- Struct Constants #}
 {%- for struct in structs %}
 {%-   for constant in struct.constants %}
@@ -113,17 +95,16 @@ namespace mojo {
 {#--- Struct Serialization Helpers -#}
 {%  for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
-{%      include "struct_serialization_definition.tmpl" %}
+{%      include "struct_traits_definition.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 
 {#--- Union Serialization Helpers #}
 {%- for union in unions %}
-{%-   include "union_serialization_definition.tmpl" %}
+{%-   include "union_traits_definition.tmpl" %}
 {%- endfor %}
 
 }  // namespace mojo
-
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

@@ -19,8 +19,13 @@ bool UnionTraits<{{mojom_type}}::DataView, {{mojom_type}}Ptr>::Read(
       if (!input.Read{{name|under_to_camel}}(result_acc.data()->{{name}}))
         return false;
 
-{%-   elif kind|is_any_handle_or_interface_kind %}
+{%-   elif kind|is_any_handle_kind %}
       auto result_{{name}} = input.Take{{name|under_to_camel}}();
+      result->set_{{name}}(std::move(result_{{name}}));
+
+{%-   elif kind|is_any_interface_kind %}
+      auto result_{{name}} =
+          input.Take{{name|under_to_camel}}<typename std::remove_reference<decltype(result->get_{{name}}())>::type>();
       result->set_{{name}}(std::move(result_{{name}}));
 
 {%-   elif kind|is_enum_kind %}

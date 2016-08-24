@@ -168,7 +168,7 @@ if ({{variable}} != null) {
 {% for field in struct.fields %}
 {%   if field.default %}
         {{field|name}} = {{field|default_value}};
-{%   elif field.kind|is_any_handle_kind and not field.kind|is_interface_request_kind %}
+{%   elif field.kind|is_any_handle_kind %}
         {{field|name}} = org.chromium.mojo.system.InvalidHandle.INSTANCE;
 {%   endif %}
 {% endfor %}
