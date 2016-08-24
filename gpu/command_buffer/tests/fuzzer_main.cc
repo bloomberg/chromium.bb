@@ -138,10 +138,15 @@ class CommandBufferSetup {
   }
 
   void RunCommandBuffer(const uint8_t* data, size_t size) {
-    InitDecoder();
     // The commands are flushed at a uint32_t granularity. If the data is not
     // a full command, we zero-pad it.
     size_t padded_size = (size + 3) & ~3;
+    // crbug.com/638836 The -max_len argument is sometimes not respected, so the
+    // fuzzer may give us too much data. Bail ASAP in that case.
+    if (padded_size > kCommandBufferSize)
+      return;
+
+    InitDecoder();
     size_t buffer_size = buffer_->size();
     CHECK_LE(padded_size, buffer_size);
     command_buffer_->SetGetBuffer(buffer_id_);
