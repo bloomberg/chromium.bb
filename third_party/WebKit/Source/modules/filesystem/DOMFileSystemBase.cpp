@@ -94,22 +94,6 @@ bool DOMFileSystemBase::isValidType(FileSystemType type)
     return type == FileSystemTypeTemporary || type == FileSystemTypePersistent || type == FileSystemTypeIsolated || type == FileSystemTypeExternal;
 }
 
-bool DOMFileSystemBase::crackFileSystemURL(const KURL& url, FileSystemType& type, String& filePath)
-{
-    if (!url.protocolIs("filesystem"))
-        return false;
-
-    if (!url.innerURL())
-        return false;
-
-    String typeString = url.innerURL()->path().substring(1);
-    if (!pathPrefixToFileSystemType(typeString, type))
-        return false;
-
-    filePath = decodeURLEscapeSequences(url.path());
-    return true;
-}
-
 KURL DOMFileSystemBase::createFileSystemRootURL(const String& origin, FileSystemType type)
 {
     String typeString;

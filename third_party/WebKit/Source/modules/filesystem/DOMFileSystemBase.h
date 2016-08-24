@@ -96,7 +96,6 @@ public:
     bool clonable() const { return m_clonable; }
 
     static bool isValidType(FileSystemType);
-    static bool crackFileSystemURL(const KURL&, FileSystemType&, String& filePath);
     static KURL createFileSystemRootURL(const String& origin, FileSystemType);
     bool supportsToURL() const;
     KURL createFileSystemURL(const EntryBase*) const;
