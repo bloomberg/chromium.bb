@@ -59,7 +59,6 @@ private:
     friend class WebHelperPlugin;
 
     WebHelperPluginImpl();
-    ~WebHelperPluginImpl() override;
 
     bool initialize(const String& pluginType, WebLocalFrameImpl*);
     void reallyDestroy(TimerBase*);
