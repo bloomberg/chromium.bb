@@ -325,6 +325,8 @@ class DepsUpdater(object):
         email_addresses = set()
         for file_path in changed_files:
             test_path = self.finder.layout_test_name(file_path)
+            if test_path is None:
+                continue
             test_dir = self.fs.dirname(test_path)
             if test_dir in directory_to_owner:
                 email_addresses.add(directory_to_owner[test_dir])

@@ -44,6 +44,7 @@ class DepsUpdaterTest(unittest.TestCase):
             'third_party/WebKit/LayoutTests/foo/bar/file.html',
             'third_party/WebKit/LayoutTests/foo/bar/otherfile.html',
             'third_party/WebKit/LayoutTests/foo/baz/files.html',
+            'some/non-test.file',
         ]
         directory_to_owner = {
             'foo/bar': 'me@gmail.com',
