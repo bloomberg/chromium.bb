@@ -402,7 +402,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
             if (isFinishedParsingChildren()) {
                 // Set the caret to the end of the text value except for initialize.
                 unsigned endOfString = m_value.length();
-                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent, ChangeSelectionIfFocused);
+                setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent);
             }
         }
         return;
@@ -419,7 +419,7 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventB
     if (isFinishedParsingChildren()) {
         // Set the caret to the end of the text value except for initialize.
         unsigned endOfString = m_value.length();
-        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent, ChangeSelectionIfFocused);
+        setSelectionRange(endOfString, endOfString, SelectionHasNoDirection, NotDispatchSelectEvent);
     }
 
     notifyFormStateChanged();

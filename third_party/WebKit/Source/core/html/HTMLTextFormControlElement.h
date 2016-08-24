@@ -43,12 +43,6 @@ public:
     // Common flag for HTMLInputElement::tooLong(), HTMLTextAreaElement::tooLong(),
     // HTMLInputElement::tooShort() and HTMLTextAreaElement::tooShort().
     enum NeedsToCheckDirtyFlag {CheckDirtyFlag, IgnoreDirtyFlag};
-    // Option of setSelectionRange.
-    enum SelectionOption {
-        ChangeSelectionAndFocus,
-        ChangeSelectionIfFocused,
-        NotChangeSelection
-    };
 
     ~HTMLTextFormControlElement() override;
 
@@ -77,7 +71,7 @@ public:
     virtual void setRangeText(const String& replacement, ExceptionState&);
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
     void setSelectionRange(int start, int end, const String& direction);
-    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent, SelectionOption = ChangeSelectionIfFocused);
+    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent);
     Range* selection() const;
 
     virtual bool supportsAutocapitalize() const = 0;

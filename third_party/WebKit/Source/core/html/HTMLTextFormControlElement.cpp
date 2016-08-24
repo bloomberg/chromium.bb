@@ -189,8 +189,8 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 
 void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheets();
-    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
+    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour);
+    focus();
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
@@ -343,7 +343,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
     return index;
 }
 
-void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour, SelectionOption selectionOption)
+void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextFieldSelectionDirection direction, NeedToDispatchSelectEvent eventBehaviour)
 {
     if (openShadowRoot() || !isTextFormControl())
         return;
@@ -353,7 +353,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     start = std::min(std::max(start, 0), end);
     cacheSelection(start, end, direction);
 
-    if (selectionOption == NotChangeSelection || (selectionOption == ChangeSelectionIfFocused && document().focusedElement() != this) || !isConnected()) {
+    if (document().focusedElement() != this) {
         if (eventBehaviour == DispatchSelectEvent)
             scheduleSelectEvent();
         return;
@@ -385,7 +385,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection.setWithoutValidation(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    frame->selection().setSelection(newSelection, FrameSelection::DoNotAdjustInFlatTree | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
+    frame->selection().setSelection(newSelection, FrameSelection::DoNotAdjustInFlatTree | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);
     if (eventBehaviour == DispatchSelectEvent)
         scheduleSelectEvent();
 }
