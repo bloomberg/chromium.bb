@@ -402,7 +402,13 @@ config("target_winrt") {
 # Config used by the MIDL template to disable warnings.
 config("midl_warnings") {
   if (is_clang) {
-    # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_".
-    cflags = [ "-Wno-extra-tokens" ]
+    cflags = [
+      # MIDL generates code like "#endif !_MIDL_USE_GUIDDEF_".
+      "-Wno-extra-tokens",
+
+      # TODO(thakis): Remove this once clang is rolled past r279116,
+      # https://crbug.com/637456
+      "-Wno-extern-initializer",
+    ]
   }
 }
