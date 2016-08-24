@@ -450,8 +450,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
             fragment.backgroundRect = paintingInfo.paintDirtyRect;
             fragment.paginationOffset = paginationOffset;
             fragments.append(fragment);
-            // TODO(crbug.com/638981): Is the conversion to int intentional?
-            paginationOffset += LayoutPoint(0, view->pageLogicalHeight().toInt());
+            paginationOffset += LayoutPoint(LayoutUnit(), view->pageLogicalHeight());
         }
     } else if (paginationLayer) {
         // FIXME: This is a mess. Look closely at this code and the code in Layer and fix any

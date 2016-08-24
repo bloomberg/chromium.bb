@@ -495,10 +495,8 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
     // and so will end up positioned at (0, 0), even though we paint their
     // selection highlight with character width. For RTL then, we have to
     // explicitly shift the selection rect over to paint in the right location.
-    if (!m_inlineTextBox.isLeftToRightDirection() && m_inlineTextBox.isLineBreak()) {
-        // TODO(crbug.com/638981): Is the conversion to int intentional?
-        selectionRect.move(-selectionRect.width().toInt(), 0);
-    }
+    if (!m_inlineTextBox.isLeftToRightDirection() && m_inlineTextBox.isLineBreak())
+        selectionRect.move(-selectionRect.width(), LayoutUnit());
     if (!flowIsLTR && m_inlineTextBox.truncation() != cNoTruncation)
         selectionRect.move(m_inlineTextBox.logicalWidth() - selectionRect.width(), LayoutUnit());
 

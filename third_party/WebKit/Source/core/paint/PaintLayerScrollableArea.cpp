@@ -1180,11 +1180,10 @@ bool PaintLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, co
 
     int resizeControlSize = max(resizeControlRect.height(), 0);
     if (hasVerticalScrollbar() && verticalScrollbar()->shouldParticipateInHitTesting()) {
-        // TODO(crbug.com/638981): Are the conversions to int intentional?
         LayoutRect vBarRect(verticalScrollbarStart(0, box().size().width().toInt()),
             box().borderTop(),
             verticalScrollbar()->width(),
-            (box().size().height() - (box().borderTop() + box().borderBottom()) - (hasHorizontalScrollbar() ? horizontalScrollbar()->height() : resizeControlSize)).toInt());
+            box().size().height().toInt() - (box().borderTop() + box().borderBottom()) - (hasHorizontalScrollbar() ? horizontalScrollbar()->height() : resizeControlSize));
         if (vBarRect.contains(localPoint)) {
             result.setScrollbar(verticalScrollbar());
             return true;

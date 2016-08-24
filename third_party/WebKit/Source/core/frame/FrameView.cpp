@@ -2955,8 +2955,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             LayoutUnit clippedLogicalLeft;
             if (!layoutView->style()->isLeftToRightDirection())
                 clippedLogicalLeft = LayoutUnit(docLogicalRight - pageLogicalWidth);
-            // TODO(crbug.com/638981): Are the conversions to int intentional?
-            LayoutRect overflow(clippedLogicalLeft.toInt(), docLogicalTop.toInt(), pageLogicalWidth, docLogicalHeight.toInt());
+            LayoutRect overflow(clippedLogicalLeft, docLogicalTop, LayoutUnit(pageLogicalWidth), docLogicalHeight);
 
             if (!horizontalWritingMode)
                 overflow = overflow.transposedRect();
