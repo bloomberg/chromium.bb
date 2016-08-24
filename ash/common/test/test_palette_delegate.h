@@ -20,6 +20,8 @@ class TestPaletteDelegate : public PaletteDelegate {
 
   int has_note_app_count() const { return has_note_app_count_; }
 
+  bool partial_magnifier_state() const { return partial_magnifier_state_; }
+
   int take_screenshot_count() const { return take_screenshot_count_; }
 
   int take_partial_screenshot_count() const {
@@ -32,12 +34,14 @@ class TestPaletteDelegate : public PaletteDelegate {
   // PaletteDelegate:
   void CreateNote() override;
   bool HasNoteApp() override;
+  void SetPartialMagnifierState(bool enabled) override;
   void TakeScreenshot() override;
   void TakePartialScreenshot() override;
 
   bool has_note_app_ = false;
   int create_note_count_ = 0;
   int has_note_app_count_ = 0;
+  bool partial_magnifier_state_ = false;
   int take_screenshot_count_ = 0;
   int take_partial_screenshot_count_ = 0;
 

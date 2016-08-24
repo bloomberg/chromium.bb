@@ -22,6 +22,9 @@ class PaletteDelegate {
   // Returns true if there is a note-taking application available.
   virtual bool HasNoteApp() = 0;
 
+  // Enables or disables the partial magnifier.
+  virtual void SetPartialMagnifierState(bool enabled) = 0;
+
   // Take a screenshot of the entire window.
   virtual void TakeScreenshot() = 0;
 

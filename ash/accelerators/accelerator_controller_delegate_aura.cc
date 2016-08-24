@@ -35,7 +35,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/rotator/window_rotation.h"
@@ -152,9 +151,7 @@ void HandleLaunchLastApp() {
 }
 
 bool CanHandleMagnifyScreen() {
-  Shell* shell = Shell::GetInstance();
-  return shell->magnification_controller()->IsEnabled() ||
-         shell->partial_magnification_controller()->is_enabled();
+  return Shell::GetInstance()->magnification_controller()->IsEnabled();
 }
 
 // Magnify the screen
@@ -170,11 +167,6 @@ void HandleMagnifyScreen(int delta_index) {
 
     Shell::GetInstance()->magnification_controller()->SetScale(
         std::pow(kMagnificationScaleFactor, new_scale_index), true);
-  } else if (Shell::GetInstance()
-                 ->partial_magnification_controller()
-                 ->is_enabled()) {
-    float scale = delta_index > 0 ? kDefaultPartialMagnifiedScale : 1;
-    Shell::GetInstance()->partial_magnification_controller()->SetScale(scale);
   }
 }
 

@@ -138,6 +138,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PALETTE_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in. Additionally, the palette tray is closed.">
         Create Note
       </message>
+      <message name="IDS_ASH_PALETTE_MAGNIFIER_MODE" desc="Title of the magnification mode in the palette. Clicking this button opens up a magnifier. The magnifier remains active until the user turns it off by tapping the same button again.">
+        Magnifier
+      </message>
 
       <!-- TODO(zork): Only include these in Aura builds -->
       <message name="IDS_ASH_SHELF_APP_LIST_TITLE" desc="The title used for the Ash App List in the Shelf">

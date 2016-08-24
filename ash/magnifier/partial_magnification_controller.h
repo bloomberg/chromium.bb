@@ -5,79 +5,90 @@
 #ifndef ASH_MAGNIFIER_PARTIAL_MAGNIFICATION_CONTROLLER_H_
 #define ASH_MAGNIFIER_PARTIAL_MAGNIFICATION_CONTROLLER_H_
 
+#include <memory>
+
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace ui {
+class Layer;
+class LocatedEvent;
+struct PointerDetails;
+}
 
 namespace ash {
 
-const float kDefaultPartialMagnifiedScale = 1.5f;
-const float kNonPartialMagnifiedScale = 1.0f;
-
 // Controls the partial screen magnifier, which is a small area of the screen
 // which is zoomed in.  The zoomed area follows the mouse cursor when enabled.
-class PartialMagnificationController : public ui::EventHandler,
-                                       public aura::WindowObserver,
-                                       public views::WidgetObserver {
+class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
+                                                  public aura::WindowObserver,
+                                                  public views::WidgetObserver {
  public:
   PartialMagnificationController();
   ~PartialMagnificationController() override;
 
-  // Enables (or disables if |enabled| is false) partial screen magnifier
-  // feature.
-  virtual void SetEnabled(bool enabled);
-
-  bool is_enabled() const { return is_enabled_; }
-
-  // Sets the magnification ratio. 1.0f means no magnification.
-  void SetScale(float scale);
-
-  // Returns the current magnification ratio.
-  float GetScale() const { return scale_; }
+  // Turns the partial screen magnifier feature on or off. Turning the magnifier
+  // on does not imply that it will be displayed; the magnifier is only
+  // displayed when it is both enabled and active.
+  void SetEnabled(bool enabled);
 
   // Switch PartialMagnified RootWindow to |new_root_window|. This does
   // following:
   //  - Remove the magnifier from the current root window.
   //  - Create a magnifier in the new root_window |new_root_window|.
   //  - Switch the target window from current window to |new_root_window|.
-  void SwitchTargetRootWindow(aura::Window* new_root_window);
+  void SwitchTargetRootWindowIfNeeded(aura::Window* new_root_window);
 
  private:
-  void OnMouseMove(const gfx::Point& location_in_root);
+  friend class PartialMagnificationControllerTestApi;
 
-  // Returns the root window that contains the mouse cursor.
-  aura::Window* GetCurrentRootWindow();
+  class ContentMask;
 
-  // Return true if the magnification scale > kMinPartialMagnifiedScaleThreshold
-  bool IsPartialMagnified() const;
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
-  // Create the magnifier window.
-  void CreateMagnifierWindow();
+  // WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
-  // Cleans up the window if needed.
+  // WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
+  // Enables or disables the actual magnifier window.
+  void SetActive(bool active);
+
+  // Contains common logic between OnMouseEvent and OnTouchEvent.
+  void OnLocatedEvent(ui::LocatedEvent* event,
+                      const ui::PointerDetails& pointer_details);
+
+  // Create or close the magnifier window.
+  void CreateMagnifierWindow(aura::Window* root_window);
   void CloseMagnifierWindow();
 
   // Removes this as an observer of the zoom widget and the root window.
   void RemoveZoomWidgetObservers();
 
-  // ui::EventHandler overrides:
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  bool is_enabled_ = false;
+  bool is_active_ = false;
 
-  // Overridden from WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  // The host widget is the root parent for all of the layers. The widget's
+  // location follows the mouse, which causes the layers to also move.
+  views::Widget* host_widget_ = nullptr;
 
-  // Overridden from WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-
-  bool is_enabled_;
-
-  // Current scale, origin (left-top) position of the magnification window.
-  float scale_;
-  gfx::Point origin_;
-
-  views::Widget* zoom_widget_;
+  // Draws the background with a zoom filter applied.
+  std::unique_ptr<ui::Layer> zoom_layer_;
+  // Draws an outline that is overlayed on top of |zoom_layer_|.
+  std::unique_ptr<ui::Layer> border_layer_;
+  // Masks the content of |zoom_layer_| so that only a circle is magnified.
+  std::unique_ptr<ContentMask> zoom_mask_;
+  // Masks the content of |border_layer_| so that only a circle outline is
+  // drawn.
+  std::unique_ptr<ContentMask> border_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialMagnificationController);
 };

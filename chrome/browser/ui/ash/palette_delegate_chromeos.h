@@ -24,6 +24,7 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate {
   // ash::PaletteDelegate:
   void CreateNote() override;
   bool HasNoteApp() override;
+  void SetPartialMagnifierState(bool enabled) override;
   void TakeScreenshot() override;
   void TakePartialScreenshot() override;
 

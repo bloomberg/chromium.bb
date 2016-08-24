@@ -19,6 +19,10 @@ bool TestPaletteDelegate::HasNoteApp() {
   return has_note_app_;
 }
 
+void TestPaletteDelegate::SetPartialMagnifierState(bool enabled) {
+  partial_magnifier_state_ = enabled;
+}
+
 void TestPaletteDelegate::TakeScreenshot() {
   ++take_screenshot_count_;
 }

@@ -4,42 +4,108 @@
 
 #include "ash/magnifier/partial_magnification_controller.h"
 
-#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/compositor/paint_recorder.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/compound_event_filter.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
+namespace ash {
 namespace {
 
-const float kMinPartialMagnifiedScaleThreshold = 1.1f;
-
-// Number of pixels to make the border of the magnified area.
-const int kZoomInset = 16;
-
-// Width of the magnified area.
-const int kMagnifierWidth = 200;
-
-// Height of the magnified area.
-const int kMagnifierHeight = 200;
+// Ratio of magnifier scale.
+const float kMagnificationScale = 2.f;
+// Radius of the magnifying glass in DIP.
+const int kMagnifierRadius = 200;
+// Size of the border around the magnifying glass in DIP.
+const int kBorderSize = 10;
+// Inset on the zoom filter.
+const int kZoomInset = 0;
+// Vertical offset between the center of the magnifier and the tip of the
+// pointer. TODO(jdufault): The vertical offset should only apply to the window
+// location, not the magnified contents. See crbug.com/637617.
+const int kVerticalOffset = 0;
 
 // Name of the magnifier window.
 const char kPartialMagniferWindowName[] = "PartialMagnifierWindow";
 
+gfx::Size GetWindowSize() {
+  return gfx::Size(kMagnifierRadius * 2, kMagnifierRadius * 2);
+}
+
+gfx::Rect GetBounds(gfx::Point mouse) {
+  gfx::Size size = GetWindowSize();
+  gfx::Point origin(mouse.x() - (size.width() / 2),
+                    mouse.y() - (size.height() / 2) - kVerticalOffset);
+  return gfx::Rect(origin, size);
+}
+
+aura::Window* GetCurrentRootWindow() {
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  for (aura::Window* root_window : root_windows) {
+    if (root_window->ContainsPointInRoot(
+            root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot()))
+      return root_window;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
-namespace ash {
+// The content mask provides a clipping layer for the magnification window so we
+// can show a circular magnifier.
+class PartialMagnificationController::ContentMask : public ui::LayerDelegate {
+ public:
+  // If |stroke| is true, the circle will be a stroke. This is useful if we wish
+  // to clip a border.
+  ContentMask(bool stroke, gfx::Size mask_bounds)
+      : layer_(ui::LAYER_TEXTURED), stroke_(stroke) {
+    layer_.set_delegate(this);
+    layer_.SetFillsBoundsOpaquely(false);
+    layer_.SetBounds(gfx::Rect(mask_bounds));
+  }
 
-PartialMagnificationController::PartialMagnificationController()
-    : is_enabled_(false),
-      scale_(kNonPartialMagnifiedScale),
-      zoom_widget_(NULL) {
+  ~ContentMask() override { layer_.set_delegate(nullptr); }
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // Overridden from LayerDelegate.
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, layer()->size());
+
+    SkPaint paint;
+    paint.setAlpha(255);
+    paint.setAntiAlias(true);
+    paint.setStrokeWidth(kBorderSize);
+    paint.setStyle(stroke_ ? SkPaint::kStroke_Style : SkPaint::kFill_Style);
+
+    gfx::Rect rect(layer()->bounds().size());
+    recorder.canvas()->DrawCircle(rect.CenterPoint(),
+                                  rect.width() / 2 - kBorderSize / 2, paint);
+  }
+
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+    // Redrawing will take care of scale factor change.
+  }
+
+  base::Closure PrepareForLayerBoundsChange() override {
+    return base::Closure();
+  }
+
+  ui::Layer layer_;
+  bool stroke_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentMask);
+};
+
+PartialMagnificationController::PartialMagnificationController() {
   Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -49,87 +115,105 @@ PartialMagnificationController::~PartialMagnificationController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 }
 
-void PartialMagnificationController::SetScale(float scale) {
-  if (!is_enabled_)
+void PartialMagnificationController::SetEnabled(bool enabled) {
+  is_enabled_ = enabled;
+  SetActive(false);
+}
+
+void PartialMagnificationController::SwitchTargetRootWindowIfNeeded(
+    aura::Window* new_root_window) {
+  if (host_widget_ &&
+      new_root_window == host_widget_->GetNativeView()->GetRootWindow())
     return;
 
-  scale_ = scale;
+  if (!new_root_window)
+    new_root_window = GetCurrentRootWindow();
 
-  if (IsPartialMagnified()) {
-    CreateMagnifierWindow();
-  } else {
+  if (is_enabled_ && is_active_) {
     CloseMagnifierWindow();
+    CreateMagnifierWindow(new_root_window);
   }
 }
-
-void PartialMagnificationController::SetEnabled(bool enabled) {
-  if (enabled) {
-    is_enabled_ = enabled;
-    SetScale(kDefaultPartialMagnifiedScale);
-  } else {
-    SetScale(kNonPartialMagnifiedScale);
-    is_enabled_ = enabled;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// PartialMagnificationController: ui::EventHandler implementation
 
 void PartialMagnificationController::OnMouseEvent(ui::MouseEvent* event) {
-  if (IsPartialMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
-    aura::Window* target = static_cast<aura::Window*>(event->target());
-    aura::Window* current_root = target->GetRootWindow();
-    // TODO(zork): Handle the case where the event is captured on a different
-    // display, such as when a menu is opened.
-    gfx::Rect root_bounds = current_root->bounds();
-
-    if (root_bounds.Contains(event->root_location())) {
-      SwitchTargetRootWindow(current_root);
-
-      OnMouseMove(event->root_location());
-    }
-  }
+  OnLocatedEvent(event, event->pointer_details());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// PartialMagnificationController: aura::WindowObserver implementation
+void PartialMagnificationController::OnTouchEvent(ui::TouchEvent* event) {
+  OnLocatedEvent(event, event->pointer_details());
+}
 
 void PartialMagnificationController::OnWindowDestroying(aura::Window* window) {
   CloseMagnifierWindow();
 
   aura::Window* new_root_window = GetCurrentRootWindow();
   if (new_root_window != window)
-    SwitchTargetRootWindow(new_root_window);
+    SwitchTargetRootWindowIfNeeded(new_root_window);
 }
 
 void PartialMagnificationController::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(widget, zoom_widget_);
+  DCHECK_EQ(widget, host_widget_);
   RemoveZoomWidgetObservers();
-  zoom_widget_ = NULL;
+  host_widget_ = nullptr;
 }
 
-void PartialMagnificationController::OnMouseMove(
-    const gfx::Point& location_in_root) {
-  gfx::Point origin(location_in_root);
+void PartialMagnificationController::SetActive(bool active) {
+  // Fail if we're trying to activate while disabled.
+  DCHECK(is_enabled_ || !active);
 
-  origin.Offset(-kMagnifierWidth / 2, -kMagnifierHeight / 2);
-
-  if (zoom_widget_) {
-    zoom_widget_->SetBounds(
-        gfx::Rect(origin.x(), origin.y(), kMagnifierWidth, kMagnifierHeight));
+  is_active_ = active;
+  if (is_active_) {
+    CreateMagnifierWindow(GetCurrentRootWindow());
+  } else {
+    CloseMagnifierWindow();
   }
 }
 
-bool PartialMagnificationController::IsPartialMagnified() const {
-  return scale_ >= kMinPartialMagnifiedScaleThreshold;
-}
-
-void PartialMagnificationController::CreateMagnifierWindow() {
-  if (zoom_widget_)
+void PartialMagnificationController::OnLocatedEvent(
+    ui::LocatedEvent* event,
+    const ui::PointerDetails& pointer_details) {
+  if (!is_enabled_)
     return;
 
-  aura::Window* root_window = GetCurrentRootWindow();
-  if (!root_window)
+  if (pointer_details.pointer_type != ui::EventPointerType::POINTER_TYPE_PEN)
+    return;
+
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    SetActive(true);
+
+  if (event->type() == ui::ET_MOUSE_RELEASED)
+    SetActive(false);
+
+  if (!is_active_)
+    return;
+
+  // If the previous root window was detached host_widget_ will be null;
+  // reconstruct it. We also need to change the root window if the cursor has
+  // crossed display boundries.
+  SwitchTargetRootWindowIfNeeded(GetCurrentRootWindow());
+
+  // If that failed for any reason return.
+  if (!host_widget_) {
+    SetActive(false);
+    return;
+  }
+
+  gfx::Point point = event->root_location();
+
+  // Remap point from where it was captured to the display it is actually on.
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  aura::Window* event_root = target->GetRootWindow();
+  aura::Window::ConvertPointToTarget(
+      event_root, host_widget_->GetNativeView()->GetRootWindow(), &point);
+
+  host_widget_->SetBounds(GetBounds(point));
+
+  event->StopPropagation();
+}
+
+void PartialMagnificationController::CreateMagnifierWindow(
+    aura::Window* root_window) {
+  if (host_widget_ || !root_window)
     return;
 
   root_window->AddObserver(this);
@@ -137,68 +221,56 @@ void PartialMagnificationController::CreateMagnifierWindow() {
   gfx::Point mouse(
       root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
 
-  zoom_widget_ = new views::Widget;
+  host_widget_ = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
+  params.bounds = GetBounds(mouse);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window;
-  zoom_widget_->Init(params);
-  zoom_widget_->SetBounds(gfx::Rect(mouse.x() - kMagnifierWidth / 2,
-                                    mouse.y() - kMagnifierHeight / 2,
-                                    kMagnifierWidth, kMagnifierHeight));
-  zoom_widget_->set_focus_on_creation(false);
-  zoom_widget_->Show();
+  host_widget_->Init(params);
+  host_widget_->set_focus_on_creation(false);
+  host_widget_->Show();
 
-  aura::Window* window = zoom_widget_->GetNativeView();
+  aura::Window* window = host_widget_->GetNativeView();
   window->SetName(kPartialMagniferWindowName);
 
-  zoom_widget_->GetNativeView()->layer()->SetBounds(
-      gfx::Rect(0, 0, kMagnifierWidth, kMagnifierHeight));
-  zoom_widget_->GetNativeView()->layer()->SetBackgroundZoom(scale_, kZoomInset);
+  ui::Layer* root_layer = host_widget_->GetNativeView()->layer();
 
-  zoom_widget_->AddObserver(this);
+  zoom_layer_.reset(new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
+  zoom_layer_->SetBounds(gfx::Rect(GetWindowSize()));
+  zoom_layer_->SetBackgroundZoom(kMagnificationScale, kZoomInset);
+  root_layer->Add(zoom_layer_.get());
+
+  border_layer_.reset(new ui::Layer(ui::LayerType::LAYER_SOLID_COLOR));
+  border_layer_->SetBounds(gfx::Rect(GetWindowSize()));
+  border_layer_->SetColor(SK_ColorWHITE);
+  root_layer->Add(border_layer_.get());
+
+  border_mask_.reset(new ContentMask(true, GetWindowSize()));
+  border_layer_->SetMaskLayer(border_mask_->layer());
+
+  zoom_mask_.reset(new ContentMask(false, GetWindowSize()));
+  zoom_layer_->SetMaskLayer(zoom_mask_->layer());
+
+  host_widget_->AddObserver(this);
 }
 
 void PartialMagnificationController::CloseMagnifierWindow() {
-  if (zoom_widget_) {
+  if (host_widget_) {
     RemoveZoomWidgetObservers();
-    zoom_widget_->Close();
-    zoom_widget_ = NULL;
+    host_widget_->Close();
+    host_widget_ = nullptr;
   }
 }
 
 void PartialMagnificationController::RemoveZoomWidgetObservers() {
-  DCHECK(zoom_widget_);
-  zoom_widget_->RemoveObserver(this);
-  aura::Window* root_window = zoom_widget_->GetNativeView()->GetRootWindow();
+  DCHECK(host_widget_);
+  host_widget_->RemoveObserver(this);
+  aura::Window* root_window = host_widget_->GetNativeView()->GetRootWindow();
   DCHECK(root_window);
   root_window->RemoveObserver(this);
-}
-
-void PartialMagnificationController::SwitchTargetRootWindow(
-    aura::Window* new_root_window) {
-  if (zoom_widget_ &&
-      new_root_window == zoom_widget_->GetNativeView()->GetRootWindow())
-    return;
-
-  CloseMagnifierWindow();
-
-  // Recreate the magnifier window by updating the scale factor.
-  SetScale(GetScale());
-}
-
-aura::Window* PartialMagnificationController::GetCurrentRootWindow() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    aura::Window* root_window = *iter;
-    if (root_window->ContainsPointInRoot(
-            root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot()))
-      return root_window;
-  }
-  return NULL;
 }
 
 }  // namespace ash

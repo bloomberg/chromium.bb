@@ -43,6 +43,9 @@ const int kVerticalShelfVerticalPadding = 5;
 // Width of the palette itself (dp).
 const int kPaletteWidth = 360;
 
+// Size of icon in the shelf (dp).
+const int kShelfIconSize = 18;
+
 // Creates a separator.
 views::Separator* CreateSeparator(views::Separator::Orientation orientation) {
   const int kSeparatorInset = 10;
@@ -309,7 +312,7 @@ void PaletteTray::SetIconBorderForShelfAlignment() {
 void PaletteTray::UpdateTrayIcon() {
   gfx::VectorIconId icon = palette_tool_manager_->GetActiveTrayIcon(
       palette_tool_manager_->GetActiveTool(ash::PaletteGroup::MODE));
-  icon_->SetImage(CreateVectorIcon(icon, kShelfIconColor));
+  icon_->SetImage(CreateVectorIcon(icon, kShelfIconSize, kShelfIconColor));
 }
 
 void PaletteTray::UpdateIconVisibility() {

@@ -87,6 +87,7 @@ class PaletteDelegateImpl : public PaletteDelegate {
   // PaletteDelegate:
   void CreateNote() override {}
   bool HasNoteApp() override { return false; }
+  void SetPartialMagnifierState(bool enabled) override {}
   void TakeScreenshot() override {}
   void TakePartialScreenshot() override {}
 

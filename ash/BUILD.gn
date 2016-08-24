@@ -418,6 +418,7 @@ test("ash_unittests") {
       # Can't resize on Windows Ash. http://crbug.com/165962
       "autoclick/autoclick_unittest.cc",
       "magnifier/magnification_controller_unittest.cc",
+      "magnifier/partial_magnification_controller_unittest.cc",
       "sticky_keys/sticky_keys_overlay_unittest.cc",
       "virtual_keyboard_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",

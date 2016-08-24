@@ -584,7 +584,8 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
         ash_host->AsWindowTreeHost()->window(), false);
     Shell::GetInstance()
         ->partial_magnification_controller()
-        ->SwitchTargetRootWindow(ash_host->AsWindowTreeHost()->window());
+        ->SwitchTargetRootWindowIfNeeded(
+            ash_host->AsWindowTreeHost()->window());
 
     AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
     primary_tree_host_for_replace_ = nullptr;
