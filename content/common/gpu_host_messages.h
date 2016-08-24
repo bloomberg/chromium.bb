@@ -31,6 +31,10 @@
 
 #define IPC_MESSAGE_START GpuMsgStart
 
+IPC_ENUM_TRAITS_VALIDATE(gpu::GpuPreferences::VpxDecodeVendors,
+                         ((value >= gpu::GpuPreferences::VPX_VENDOR_NONE) &&
+                          (value <= gpu::GpuPreferences::VPX_VENDOR_ALL)))
+
 IPC_STRUCT_TRAITS_BEGIN(gpu::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)

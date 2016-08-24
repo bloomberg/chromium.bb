@@ -31,6 +31,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/filters/h264_parser.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
@@ -492,7 +493,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   bool using_angle_device_;
 
   // Enables experimental hardware acceleration for VP8/VP9 video decoding.
-  const bool enable_accelerated_vpx_decode_;
+  const gpu::GpuPreferences::VpxDecodeVendors enable_accelerated_vpx_decode_;
 
   // The media foundation H.264 decoder has problems handling changes like
   // resolution change, bitrate change etc. If we reinitialize the decoder

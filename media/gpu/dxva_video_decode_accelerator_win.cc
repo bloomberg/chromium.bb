@@ -52,6 +52,26 @@
 
 namespace {
 
+// AMD
+// Path is appended on to the PROGRAM_FILES base path.
+const wchar_t kAMDVPXDecoderDLLPath[] =
+    L"Common Files\\ATI Technologies\\Multimedia\\";
+
+const wchar_t kAMDVP9DecoderDLLName[] =
+#if defined(ARCH_CPU_X86)
+    L"amf-mft-decvp9-decoder32.dll";
+#elif defined(ARCH_CPU_X86_64)
+    L"amf-mft-decvp9-decoder64.dll";
+#else
+#error Unsupported Windows CPU Architecture
+#endif
+
+const CLSID CLSID_AMDWebmMfVp9Dec = {
+    0x2d2d728a,
+    0x67d6,
+    0x48ab,
+    {0x89, 0xfb, 0xa6, 0xec, 0x65, 0x55, 0x49, 0x70}};
+
 const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
 
 const CLSID MEDIASUBTYPE_VP80 = {
@@ -1317,15 +1337,39 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
               profile == VP9PROFILE_PROFILE1 ||
               profile == VP9PROFILE_PROFILE2 ||
               profile == VP9PROFILE_PROFILE3)) {
-    if (profile != VP8PROFILE_ANY) {
+    if (profile != VP8PROFILE_ANY &&
+        (enable_accelerated_vpx_decode_ &
+         gpu::GpuPreferences::VPX_VENDOR_MICROSOFT)) {
       codec_ = kCodecVP9;
       clsid = CLSID_MSVPxDecoder;
       decoder_dll = ::LoadLibrary(kMSVP9DecoderDLLName);
       if (decoder_dll)
         using_ms_vp9_mft_ = true;
     }
-    RETURN_ON_FAILURE(decoder_dll, "vpx decoder dll is not loaded", false);
-  } else {
+
+    int program_files_key = base::DIR_PROGRAM_FILES;
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+        base::win::OSInfo::WOW64_ENABLED) {
+      program_files_key = base::DIR_PROGRAM_FILES6432;
+    }
+
+    // AMD
+    if (!decoder_dll &&
+        enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
+        profile == VP9PROFILE_PROFILE0) {
+      base::FilePath dll_path;
+      if (PathService::Get(program_files_key, &dll_path)) {
+        codec_ = media::kCodecVP9;
+        dll_path = dll_path.Append(kAMDVPXDecoderDLLPath);
+        dll_path = dll_path.Append(kAMDVP9DecoderDLLName);
+        clsid = CLSID_AMDWebmMfVp9Dec;
+        decoder_dll = ::LoadLibraryEx(dll_path.value().data(), NULL,
+                                      LOAD_WITH_ALTERED_SEARCH_PATH);
+      }
+    }
+  }
+
+  if (!decoder_dll) {
     RETURN_ON_FAILURE(false, "Unsupported codec.", false);
   }
 

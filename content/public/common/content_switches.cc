@@ -1056,6 +1056,7 @@ const char kEnableWin32kLockDownMimeTypes[] =
     "enable-win32k-lockdown-mimetypes";
 
 // Enables experimental hardware acceleration for VP8/VP9 video decoding.
+// Bitmask - 0x1=Microsoft, 0x2=AMD, 0x03=Try all.
 const char kEnableAcceleratedVpxDecode[] = "enable-accelerated-vpx-decode";
 
 // Enables H264 HW decode acceleration for WebRtc on Win 7.

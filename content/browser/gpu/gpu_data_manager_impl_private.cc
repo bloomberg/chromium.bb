@@ -747,7 +747,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 #if defined(OS_WIN)
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE) &&
       gpu_preferences) {
-    gpu_preferences->enable_accelerated_vpx_decode = false;
+    gpu_preferences->enable_accelerated_vpx_decode =
+        gpu::GpuPreferences::VPX_VENDOR_NONE;
   }
 #endif
 
