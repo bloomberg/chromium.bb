@@ -1472,11 +1472,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)queryPageReferrerPolicy:(void (^)(NSString*))responseHandler {
   DCHECK(responseHandler);
-  [self evaluateJavaScript:@"__gCrWeb.getPageReferrerPolicy()"
-       stringResultHandler:^(NSString* referrer, NSError* error) {
-         DCHECK_NE(error.code, WKErrorJavaScriptExceptionOccurred);
-         responseHandler(!error ? referrer : nil);
-       }];
+  [self executeJavaScript:@"__gCrWeb.getPageReferrerPolicy()"
+        completionHandler:^(id referrer, NSError* error) {
+          DCHECK_NE(error.code, WKErrorJavaScriptExceptionOccurred);
+          responseHandler(base::mac::ObjCCast<NSString>(referrer));
+        }];
 }
 
 - (void)pushStateWithPageURL:(const GURL&)pageURL
