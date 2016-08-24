@@ -58,8 +58,6 @@ class MockHostResolverProc : public net::HostResolverProc {
  public:
   MockHostResolverProc() : HostResolverProc(nullptr) {}
 
-  ~MockHostResolverProc() override {}
-
   int Resolve(const std::string& hostname,
               net::AddressFamily address_family,
               net::HostResolverFlags host_resolver_flags,
@@ -68,6 +66,9 @@ class MockHostResolverProc : public net::HostResolverProc {
     *address_list = MakeAddressList(kNetworkAddress);
     return net::OK;
   }
+
+ protected:
+  ~MockHostResolverProc() override {}
 };
 
 class StaleHostResolverTest : public testing::Test {
