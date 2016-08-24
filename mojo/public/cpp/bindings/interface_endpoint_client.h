@@ -17,8 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -36,7 +36,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   // object.
   InterfaceEndpointClient(ScopedInterfaceEndpointHandle handle,
                           MessageReceiverWithResponderStatus* receiver,
-                          std::unique_ptr<MessageFilter> payload_validator,
+                          std::unique_ptr<MessageReceiver> payload_validator,
                           bool expect_sync_requests,
                           scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~InterfaceEndpointClient() override;
@@ -65,6 +65,10 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   }
   AssociatedGroup* associated_group();
   uint32_t interface_id() const;
+
+  // Adds a MessageReceiver which can filter a message after validation but
+  // before dispatch.
+  void AddFilter(std::unique_ptr<MessageReceiver> filter);
 
   // After this call the object is in an invalid state and shouldn't be reused.
   ScopedInterfaceEndpointHandle PassHandle();
@@ -130,8 +134,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   InterfaceEndpointController* controller_;
 
   MessageReceiverWithResponderStatus* const incoming_receiver_;
-  std::unique_ptr<MessageFilter> payload_validator_;
   HandleIncomingMessageThunk thunk_;
+  FilterChain filters_;
 
   AsyncResponderMap async_responders_;
   SyncResponseMap sync_responses_;

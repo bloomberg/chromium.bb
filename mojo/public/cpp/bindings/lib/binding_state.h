@@ -16,12 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
@@ -37,6 +37,8 @@ class SimpleBindingState {
  public:
   SimpleBindingState();
   ~SimpleBindingState();
+
+  void AddFilter(std::unique_ptr<MessageReceiver> filter);
 
   bool HasAssociatedInterfaces() const { return false; }
 
@@ -68,7 +70,7 @@ class SimpleBindingState {
   void BindInternal(ScopedMessagePipeHandle handle,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const char* interface_name,
-                    MessageFilter* request_validator,
+                    std::unique_ptr<MessageReceiver> request_validator,
                     bool has_sync_methods,
                     MessageReceiverWithResponderStatus* stub);
 
@@ -100,10 +102,10 @@ class BindingState<Interface, false> : public SimpleBindingState {
   void Bind(ScopedMessagePipeHandle handle,
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
     DCHECK(!router_);
-    SimpleBindingState::BindInternal(std::move(handle), runner,
-                                     Interface::Name_, new
-                                     typename Interface::RequestValidator_(),
-                                     Interface::HasSyncMethods_, &stub_);
+    SimpleBindingState::BindInternal(
+        std::move(handle), runner, Interface::Name_,
+        base::MakeUnique<typename Interface::RequestValidator_>(),
+        Interface::HasSyncMethods_, &stub_);
   }
 
   InterfaceRequest<Interface> Unbind() {
@@ -161,7 +163,7 @@ class MultiplexedBindingState {
   void BindInternal(ScopedMessagePipeHandle handle,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const char* interface_name,
-                    std::unique_ptr<MessageFilter> request_validator,
+                    std::unique_ptr<MessageReceiver> request_validator,
                     bool has_sync_methods,
                     MessageReceiverWithResponderStatus* stub);
 
@@ -188,7 +190,7 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
             scoped_refptr<base::SingleThreadTaskRunner> runner) {
     MultiplexedBindingState::BindInternal(
         std::move(handle), runner, Interface::Name_,
-        base::WrapUnique(new typename Interface::RequestValidator_()),
+        base::MakeUnique<typename Interface::RequestValidator_>(),
         Interface::HasSyncMethods_, &stub_);
     stub_.serialization_context()->group_controller = router_;
   }

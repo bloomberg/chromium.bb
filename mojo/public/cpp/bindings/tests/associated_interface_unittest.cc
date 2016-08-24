@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -21,6 +22,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -587,6 +589,155 @@ TEST_F(AssociatedInterfaceTest, BindingWaitAndPauseWhenNoAssociatedInterfaces) {
   // an associated interface has been set up on the pipe. It is not allowed to
   // wait or pause.
   EXPECT_TRUE(connection.binding()->HasAssociatedInterfaces());
+}
+
+class PingServiceImpl : public PingService {
+ public:
+  explicit PingServiceImpl(PingServiceAssociatedRequest request)
+      : binding_(this, std::move(request)) {}
+  ~PingServiceImpl() override {}
+
+  AssociatedBinding<PingService>& binding() { return binding_; }
+
+  void set_ping_handler(const base::Closure& handler) {
+    ping_handler_ = handler;
+  }
+
+  // PingService:
+  void Ping(const PingCallback& callback) override {
+    if (!ping_handler_.is_null())
+      ping_handler_.Run();
+    callback.Run();
+  }
+
+ private:
+  AssociatedBinding<PingService> binding_;
+  base::Closure ping_handler_;
+};
+
+class PingProviderImpl : public AssociatedPingProvider {
+ public:
+  explicit PingProviderImpl(AssociatedPingProviderRequest request)
+      : binding_(this, std::move(request)) {}
+  ~PingProviderImpl() override {}
+
+  // AssociatedPingProvider:
+  void GetPing(PingServiceAssociatedRequest request) override {
+    ping_services_.emplace_back(new PingServiceImpl(std::move(request)));
+
+    if (expected_bindings_count_ > 0 &&
+        ping_services_.size() == expected_bindings_count_ &&
+        !quit_waiting_.is_null()) {
+      expected_bindings_count_ = 0;
+      base::ResetAndReturn(&quit_waiting_).Run();
+    }
+  }
+
+  std::vector<std::unique_ptr<PingServiceImpl>>& ping_services() {
+    return ping_services_;
+  }
+
+  void WaitForBindings(size_t count) {
+    DCHECK(quit_waiting_.is_null());
+
+    expected_bindings_count_ = count;
+    base::RunLoop loop;
+    quit_waiting_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+ private:
+  Binding<AssociatedPingProvider> binding_;
+  std::vector<std::unique_ptr<PingServiceImpl>> ping_services_;
+  size_t expected_bindings_count_ = 0;
+  base::Closure quit_waiting_;
+};
+
+class CallbackFilter : public MessageReceiver {
+ public:
+  explicit CallbackFilter(const base::Closure& callback)
+      : callback_(callback) {}
+  ~CallbackFilter() override {}
+
+  static std::unique_ptr<CallbackFilter> Wrap(const base::Closure& callback) {
+    return base::MakeUnique<CallbackFilter>(callback);
+  }
+
+  // MessageReceiver:
+  bool Accept(Message* message) override {
+    callback_.Run();
+    return true;
+  }
+
+ private:
+  const base::Closure callback_;
+};
+
+// Verifies that filters work as expected on associated bindings, i.e. that
+// they're notified in order, before dispatch; and that each associated
+// binding in a group operates with its own set of filters.
+TEST_F(AssociatedInterfaceTest, BindingWithFilters) {
+  AssociatedPingProviderPtr provider;
+  PingProviderImpl provider_impl(GetProxy(&provider));
+
+  PingServiceAssociatedPtr ping_a, ping_b;
+  provider->GetPing(GetProxy(&ping_a, provider.associated_group()));
+  provider->GetPing(GetProxy(&ping_b, provider.associated_group()));
+  provider_impl.WaitForBindings(2);
+
+  ASSERT_EQ(2u, provider_impl.ping_services().size());
+  PingServiceImpl& ping_a_impl = *provider_impl.ping_services()[0];
+  PingServiceImpl& ping_b_impl = *provider_impl.ping_services()[1];
+
+  int a_status, b_status;
+  auto handler_helper = [] (int* a_status, int* b_status, int expected_a_status,
+                            int new_a_status, int expected_b_status,
+                            int new_b_status) {
+    EXPECT_EQ(expected_a_status, *a_status);
+    EXPECT_EQ(expected_b_status, *b_status);
+    *a_status = new_a_status;
+    *b_status = new_b_status;
+  };
+  auto create_handler = [&] (int expected_a_status, int new_a_status,
+                             int expected_b_status, int new_b_status) {
+    return base::Bind(handler_helper, &a_status, &b_status, expected_a_status,
+                      new_a_status, expected_b_status, new_b_status);
+  };
+
+  ping_a_impl.binding().AddFilter(
+      CallbackFilter::Wrap(create_handler(0, 1, 0, 0)));
+  ping_a_impl.binding().AddFilter(
+      CallbackFilter::Wrap(create_handler(1, 2, 0, 0)));
+  ping_a_impl.set_ping_handler(create_handler(2, 3, 0, 0));
+
+  ping_b_impl.binding().AddFilter(
+      CallbackFilter::Wrap(create_handler(3, 3, 0, 1)));
+  ping_b_impl.binding().AddFilter(
+      CallbackFilter::Wrap(create_handler(3, 3, 1, 2)));
+  ping_b_impl.set_ping_handler(create_handler(3, 3, 2, 3));
+
+  for (int i = 0; i < 10; ++i) {
+    a_status = 0;
+    b_status = 0;
+
+    {
+      base::RunLoop loop;
+      ping_a->Ping(loop.QuitClosure());
+      loop.Run();
+    }
+
+    EXPECT_EQ(3, a_status);
+    EXPECT_EQ(0, b_status);
+
+    {
+      base::RunLoop loop;
+      ping_b->Ping(loop.QuitClosure());
+      loop.Run();
+    }
+
+    EXPECT_EQ(3, a_status);
+    EXPECT_EQ(3, b_status);
+  }
 }
 
 }  // namespace

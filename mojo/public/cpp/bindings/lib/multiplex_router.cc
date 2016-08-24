@@ -286,7 +286,8 @@ MultiplexRouter::MultiplexRouter(
     scoped_refptr<base::SingleThreadTaskRunner> runner)
     : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
       task_runner_(runner),
-      header_validator_(this),
+      header_validator_(nullptr),
+      filters_(this),
       connector_(std::move(message_pipe),
                  Connector::MULTI_THREADED_SEND,
                  std::move(runner)),
@@ -302,10 +303,15 @@ MultiplexRouter::MultiplexRouter(
   // expect sync requests during sync handle watching, it may still need to
   // dispatch messages to associated endpoints on a different thread.
   connector_.AllowWokenUpBySyncWatchOnSameThread();
-  connector_.set_incoming_receiver(&header_validator_);
+  connector_.set_incoming_receiver(&filters_);
   connector_.set_connection_error_handler(
       base::Bind(&MultiplexRouter::OnPipeConnectionError,
                  base::Unretained(this)));
+
+  std::unique_ptr<MessageHeaderValidator> header_validator =
+      base::MakeUnique<MessageHeaderValidator>();
+  header_validator_ = header_validator.get();
+  filters_.Append(std::move(header_validator));
 }
 
 MultiplexRouter::~MultiplexRouter() {
@@ -329,7 +335,7 @@ MultiplexRouter::~MultiplexRouter() {
 
 void MultiplexRouter::SetMasterInterfaceName(const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  header_validator_.SetDescription(name + " [master] MessageHeaderValidator");
+  header_validator_->SetDescription(name + " [master] MessageHeaderValidator");
   control_message_handler_.SetDescription(
       name + " [master] PipeControlMessageHandler");
 }

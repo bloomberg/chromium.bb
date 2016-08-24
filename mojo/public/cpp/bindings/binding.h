@@ -21,6 +21,7 @@
 namespace mojo {
 
 class AssociatedGroup;
+class MessageReceiver;
 
 // Represents the binding of an interface implementation to a message pipe.
 // When the |Binding| object is destroyed, the binding between the message pipe
@@ -150,6 +151,14 @@ class Binding {
             scoped_refptr<base::SingleThreadTaskRunner> runner =
                 base::ThreadTaskRunnerHandle::Get()) {
     Bind(request.PassMessagePipe(), std::move(runner));
+  }
+
+  // Adds a message filter to be notified of each incoming message before
+  // dispatch. If a filter returns |false| from Accept(), the message is not
+  // dispatched and the pipe is closed. Filters cannot be removed.
+  void AddFilter(std::unique_ptr<MessageReceiver> filter) {
+    DCHECK(is_bound());
+    internal_state_.AddFilter(std::move(filter));
   }
 
   // Whether there are any associated interfaces running on the pipe currently.

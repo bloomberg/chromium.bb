@@ -21,6 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
 #include "mojo/public/cpp/bindings/connector.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
@@ -206,7 +207,10 @@ class MultiplexRouter
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  MessageHeaderValidator header_validator_;
+  // Owned by |filters_| below.
+  MessageHeaderValidator* header_validator_;
+
+  FilterChain filters_;
   Connector connector_;
 
   base::ThreadChecker thread_checker_;

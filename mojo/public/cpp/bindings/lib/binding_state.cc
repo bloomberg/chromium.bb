@@ -11,6 +11,11 @@ SimpleBindingState::SimpleBindingState() = default;
 
 SimpleBindingState::~SimpleBindingState() = default;
 
+void SimpleBindingState::AddFilter(std::unique_ptr<MessageReceiver> filter) {
+  DCHECK(router_);
+  router_->AddFilter(std::move(filter));
+}
+
 void SimpleBindingState::PauseIncomingMethodCallProcessing() {
   DCHECK(router_);
   router_->PauseIncomingMethodCallProcessing();
@@ -42,12 +47,12 @@ void SimpleBindingState::BindInternal(
     ScopedMessagePipeHandle handle,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const char* interface_name,
-    MessageFilter* request_validator,
+    std::unique_ptr<MessageReceiver> request_validator,
     bool has_sync_methods,
     MessageReceiverWithResponderStatus* stub) {
-  internal::FilterChain filters;
+  FilterChain filters;
   filters.Append<MessageHeaderValidator>(interface_name);
-  filters.Append(request_validator);
+  filters.Append(std::move(request_validator));
 
   router_ = new internal::Router(std::move(handle), std::move(filters),
                                  has_sync_methods, std::move(runner));
@@ -111,7 +116,7 @@ void MultiplexedBindingState::BindInternal(
     ScopedMessagePipeHandle handle,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const char* interface_name,
-    std::unique_ptr<MessageFilter> request_validator,
+    std::unique_ptr<MessageReceiver> request_validator,
     bool has_sync_methods,
     MessageReceiverWithResponderStatus* stub) {
   DCHECK(!router_);

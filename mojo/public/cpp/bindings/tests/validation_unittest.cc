@@ -16,8 +16,8 @@
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/connector.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -376,20 +376,20 @@ TEST_F(ValidationTest, InputParser) {
 
 TEST_F(ValidationTest, Conformance) {
   DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
+  mojo::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::MessageHeaderValidator>();
   validators.Append<ConformanceTestInterface::RequestValidator_>();
 
-  RunValidationTests("conformance_", validators.GetHead());
+  RunValidationTests("conformance_", &validators);
 }
 
 TEST_F(ValidationTest, AssociatedConformace) {
   DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
+  mojo::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::MessageHeaderValidator>();
   validators.Append<AssociatedConformanceTestInterface::RequestValidator_>();
 
-  RunValidationTests("associated_conformance_", validators.GetHead());
+  RunValidationTests("associated_conformance_", &validators);
 }
 
 // This test is similar to Conformance test but its goal is specifically
@@ -397,31 +397,31 @@ TEST_F(ValidationTest, AssociatedConformace) {
 // detection of off-by-one errors in method ordinals.
 TEST_F(ValidationTest, BoundsCheck) {
   DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
+  mojo::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::MessageHeaderValidator>();
   validators.Append<BoundsCheckTestInterface::RequestValidator_>();
 
-  RunValidationTests("boundscheck_", validators.GetHead());
+  RunValidationTests("boundscheck_", &validators);
 }
 
 // This test is similar to the Conformance test but for responses.
 TEST_F(ValidationTest, ResponseConformance) {
   DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
+  mojo::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::MessageHeaderValidator>();
   validators.Append<ConformanceTestInterface::ResponseValidator_>();
 
-  RunValidationTests("resp_conformance_", validators.GetHead());
+  RunValidationTests("resp_conformance_", &validators);
 }
 
 // This test is similar to the BoundsCheck test but for responses.
 TEST_F(ValidationTest, ResponseBoundsCheck) {
   DummyMessageReceiver dummy_receiver;
-  mojo::internal::FilterChain validators(&dummy_receiver);
+  mojo::FilterChain validators(&dummy_receiver);
   validators.Append<mojo::MessageHeaderValidator>();
   validators.Append<BoundsCheckTestInterface::ResponseValidator_>();
 
-  RunValidationTests("resp_boundscheck_", validators.GetHead());
+  RunValidationTests("resp_boundscheck_", &validators);
 }
 
 // Test that InterfacePtr<X> applies the correct validators and they don't

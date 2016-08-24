@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -308,6 +309,80 @@ TEST_F(BindingTest, ErrorHandleNotRunWhilePaused) {
   binding.ResumeIncomingMethodCallProcessing();
   run_loop.Run();
   EXPECT_TRUE(called);
+}
+
+class PingServiceImpl : public test::PingService {
+ public:
+  explicit PingServiceImpl(test::PingServiceRequest request)
+      : binding_(this, std::move(request)) {}
+  ~PingServiceImpl() override {}
+
+  // test::PingService:
+  void Ping(const PingCallback& callback) override {
+    if (!ping_handler_.is_null())
+      ping_handler_.Run();
+    callback.Run();
+  }
+
+  mojo::Binding<test::PingService>& binding() { return binding_; }
+
+  void set_ping_handler(const base::Closure& handler) {
+    ping_handler_ = handler;
+  }
+
+ private:
+  mojo::Binding<test::PingService> binding_;
+  base::Closure ping_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(PingServiceImpl);
+};
+
+class CallbackFilter : public MessageReceiver {
+ public:
+  explicit CallbackFilter(const base::Closure& callback)
+      : callback_(callback) {}
+  ~CallbackFilter() override {}
+
+  static std::unique_ptr<CallbackFilter> Wrap(const base::Closure& callback) {
+    return base::MakeUnique<CallbackFilter>(callback);
+  }
+
+  // MessageReceiver:
+  bool Accept(Message* message) override {
+    callback_.Run();
+    return true;
+  }
+
+ private:
+  const base::Closure callback_;
+};
+
+// Verifies that message filters are notified in the order they were added and
+// are always notified before a message is dispatched.
+TEST_F(BindingTest, MessageFilter) {
+  test::PingServicePtr ptr;
+  PingServiceImpl impl(GetProxy(&ptr));
+
+  int status = 0;
+  auto handler_helper = [] (int* status, int expected_status, int new_status) {
+    EXPECT_EQ(expected_status, *status);
+    *status = new_status;
+  };
+  auto create_handler = [&] (int expected_status, int new_status) {
+    return base::Bind(handler_helper, &status, expected_status, new_status);
+  };
+
+  impl.binding().AddFilter(CallbackFilter::Wrap(create_handler(0, 1)));
+  impl.binding().AddFilter(CallbackFilter::Wrap(create_handler(1, 2)));
+  impl.set_ping_handler(create_handler(2, 3));
+
+  for (int i = 0; i < 10; ++i) {
+    status = 0;
+    base::RunLoop loop;
+    ptr->Ping(loop.QuitClosure());
+    loop.Run();
+    EXPECT_EQ(3, status);
+  }
 }
 
 // StrongBindingTest -----------------------------------------------------------

@@ -23,6 +23,8 @@
 
 namespace mojo {
 
+class MessageReceiver;
+
 // Represents the implementation side of an associated interface. It is similar
 // to Binding, except that it doesn't own a message pipe handle.
 //
@@ -108,6 +110,14 @@ class AssociatedBinding {
 
     stub_.serialization_context()->group_controller =
         endpoint_client_->group_controller();
+  }
+
+  // Adds a message filter to be notified of each incoming message before
+  // dispatch. If a filter returns |false| from Accept(), the message is not
+  // dispatched and the pipe is closed. Filters cannot be removed.
+  void AddFilter(std::unique_ptr<MessageReceiver> filter) {
+    DCHECK(endpoint_client_);
+    endpoint_client_->AddFilter(std::move(filter));
   }
 
   // Closes the associated interface. Puts this object into a state where it can

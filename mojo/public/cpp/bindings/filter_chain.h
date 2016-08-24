@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_FILTER_CHAIN_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_FILTER_CHAIN_H_
 
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/message_filter.h"
 
 namespace mojo {
-namespace internal {
 
-class FilterChain {
+class FilterChain : public MessageReceiver {
  public:
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
@@ -23,28 +22,22 @@ class FilterChain {
 
   FilterChain(FilterChain&& other);
   FilterChain& operator=(FilterChain&& other);
-  ~FilterChain();
+  ~FilterChain() override;
 
   template <typename FilterType, typename... Args>
   inline void Append(Args&&... args);
 
-  // Takes ownership of |filter|.
-  void Append(MessageFilter* filter);
+  void Append(std::unique_ptr<MessageReceiver> filter);
 
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
   void SetSink(MessageReceiver* sink);
 
-  // Returns a receiver to accept messages. Messages flow through all filters in
-  // the same order as they were appended to the chain. If all filters allow a
-  // message to pass, it will be forwarded to |sink_|.
-  // The returned value is invalidated when this object goes away.
-  MessageReceiver* GetHead();
+  // MessageReceiver:
+  bool Accept(Message* message) override;
 
  private:
-  // Owned by this object.
-  // TODO(dcheng): Use unique_ptr.
-  std::vector<MessageFilter*> filters_;
+  std::vector<std::unique_ptr<MessageReceiver>> filters_;
 
   MessageReceiver* sink_;
 
@@ -53,14 +46,13 @@ class FilterChain {
 
 template <typename FilterType, typename... Args>
 inline void FilterChain::Append(Args&&... args) {
-  Append(new FilterType(std::forward<Args>(args)..., sink_));
+  Append(base::MakeUnique<FilterType>(std::forward<Args>(args)...));
 }
 
 template <>
 inline void FilterChain::Append<PassThroughFilter>() {
 }
 
-}  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_FILTER_CHAIN_H_

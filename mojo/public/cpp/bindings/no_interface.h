@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_NO_INTERFACE_H_
 
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {

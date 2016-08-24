@@ -114,6 +114,12 @@ void Message::CloseHandles() {
   }
 }
 
+PassThroughFilter::PassThroughFilter() {}
+
+PassThroughFilter::~PassThroughFilter() {}
+
+bool PassThroughFilter::Accept(Message* message) { return true; }
+
 SyncMessageResponseContext::SyncMessageResponseContext()
     : outer_context_(current()) {
   g_tls_sync_response_context.Get().Set(this);

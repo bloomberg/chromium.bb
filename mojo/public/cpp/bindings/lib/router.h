@@ -18,7 +18,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/connector.h"
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {
@@ -57,6 +58,8 @@ class Router : public MessageReceiverWithResponder {
     DCHECK(thread_checker_.CalledOnValidThread());
     return connector_.is_valid();
   }
+
+  void AddFilter(std::unique_ptr<MessageReceiver> filter);
 
   // Please note that this method shouldn't be called unless it results from an
   // explicit request of the user of bindings (e.g., the user sets an

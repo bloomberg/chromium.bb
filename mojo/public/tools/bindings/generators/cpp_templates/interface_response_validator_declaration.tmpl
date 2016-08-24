@@ -1,6 +1,4 @@
-class {{export_attribute}} {{interface.name}}ResponseValidator : public NON_EXPORTED_BASE(mojo::MessageFilter) {
+class {{export_attribute}} {{interface.name}}ResponseValidator : public NON_EXPORTED_BASE(mojo::MessageReceiver) {
  public:
-  explicit {{interface.name}}ResponseValidator(mojo::MessageReceiver* sink = nullptr);
-
   bool Accept(mojo::Message* message) override;
 };

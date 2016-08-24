@@ -200,6 +200,18 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
       WARN_UNUSED_RESULT = 0;
 };
 
+class PassThroughFilter : public MessageReceiver {
+ public:
+  PassThroughFilter();
+  ~PassThroughFilter() override;
+
+  // MessageReceiver:
+  bool Accept(Message* message) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PassThroughFilter);
+};
+
 namespace internal {
 class SyncMessageResponseSetup;
 }

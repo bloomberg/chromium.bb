@@ -48,14 +48,15 @@ class ChannelAssociatedGroupController
       : task_runner_(ipc_task_runner),
         proxy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
-        header_validator_(
-            "IPC::mojom::Bootstrap [master] MessageHeaderValidator", this),
+        filters_(this),
         control_message_handler_(this),
         control_message_proxy_thunk_(this),
         control_message_proxy_(&control_message_proxy_thunk_) {
     thread_checker_.DetachFromThread();
     control_message_handler_.SetDescription(
         "IPC::mojom::Bootstrap [master] PipeControlMessageHandler");
+    filters_.Append<mojo::MessageHeaderValidator>(
+        "IPC::mojom::Bootstrap [master] MessageHeaderValidator");
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -65,7 +66,7 @@ class ChannelAssociatedGroupController
     connector_.reset(new mojo::Connector(
         std::move(handle), mojo::Connector::SINGLE_THREADED_SEND,
         task_runner_));
-    connector_->set_incoming_receiver(&header_validator_);
+    connector_->set_incoming_receiver(&filters_);
     connector_->set_connection_error_handler(
         base::Bind(&ChannelAssociatedGroupController::OnPipeError,
                    base::Unretained(this)));
@@ -752,7 +753,7 @@ class ChannelAssociatedGroupController
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   const bool set_interface_id_namespace_bit_;
   std::unique_ptr<mojo::Connector> connector_;
-  mojo::MessageHeaderValidator header_validator_;
+  mojo::FilterChain filters_;
   mojo::PipeControlMessageHandler control_message_handler_;
   ControlMessageProxyThunk control_message_proxy_thunk_;
   mojo::PipeControlMessageProxy control_message_proxy_;

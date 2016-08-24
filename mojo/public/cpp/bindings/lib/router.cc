@@ -133,12 +133,16 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
   filters_.SetSink(&thunk_);
   if (expects_sync_requests)
     connector_.AllowWokenUpBySyncWatchOnSameThread();
-  connector_.set_incoming_receiver(filters_.GetHead());
+  connector_.set_incoming_receiver(&filters_);
   connector_.set_connection_error_handler(
       base::Bind(&Router::OnConnectionError, base::Unretained(this)));
 }
 
 Router::~Router() {}
+
+void Router::AddFilter(std::unique_ptr<MessageReceiver> filter) {
+  filters_.Append(std::move(filter));
+}
 
 bool Router::Accept(Message* message) {
   DCHECK(thread_checker_.CalledOnValidThread());

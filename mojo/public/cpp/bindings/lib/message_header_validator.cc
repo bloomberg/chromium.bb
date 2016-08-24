@@ -65,12 +65,11 @@ bool IsValidMessageHeader(const internal::MessageHeader* header,
 
 }  // namespace
 
-MessageHeaderValidator::MessageHeaderValidator(MessageReceiver* sink)
-    : MessageHeaderValidator("MessageHeaderValidator", sink) {}
+MessageHeaderValidator::MessageHeaderValidator()
+    : MessageHeaderValidator("MessageHeaderValidator") {}
 
-MessageHeaderValidator::MessageHeaderValidator(const std::string& description,
-                                               MessageReceiver* sink)
-    : MessageFilter(sink), description_(description) {
+MessageHeaderValidator::MessageHeaderValidator(const std::string& description)
+    : description_(description) {
 }
 
 void MessageHeaderValidator::SetDescription(const std::string& description) {
@@ -90,7 +89,7 @@ bool MessageHeaderValidator::Accept(Message* message) {
   if (!IsValidMessageHeader(message->header(), &validation_context))
     return false;
 
-  return sink_->Accept(message);
+  return true;
 }
 
 }  // namespace mojo

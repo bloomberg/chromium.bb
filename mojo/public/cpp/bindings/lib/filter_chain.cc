@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "mojo/public/cpp/bindings/filter_chain.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 
 namespace mojo {
-namespace internal {
 
 FilterChain::FilterChain(MessageReceiver* sink) : sink_(sink) {
 }
@@ -26,30 +25,23 @@ FilterChain& FilterChain::operator=(FilterChain&& other) {
 }
 
 FilterChain::~FilterChain() {
-  for (std::vector<MessageFilter*>::iterator iter = filters_.begin();
-       iter != filters_.end();
-       ++iter) {
-    delete *iter;
-  }
 }
 
 void FilterChain::SetSink(MessageReceiver* sink) {
   DCHECK(!sink_);
   sink_ = sink;
-  if (!filters_.empty())
-    filters_.back()->set_sink(sink);
 }
 
-MessageReceiver* FilterChain::GetHead() {
+bool FilterChain::Accept(Message* message) {
   DCHECK(sink_);
-  return filters_.empty() ? sink_ : filters_.front();
+  for (auto& filter : filters_)
+    if (!filter->Accept(message))
+      return false;
+  return sink_->Accept(message);
 }
 
-void FilterChain::Append(MessageFilter* filter) {
-  if (!filters_.empty())
-    filters_.back()->set_sink(filter);
-  filters_.push_back(filter);
+void FilterChain::Append(std::unique_ptr<MessageReceiver> filter) {
+  filters_.emplace_back(std::move(filter));
 }
 
-}  // namespace internal
 }  // namespace mojo

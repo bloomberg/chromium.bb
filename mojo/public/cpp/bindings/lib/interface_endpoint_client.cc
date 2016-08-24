@@ -132,13 +132,13 @@ bool InterfaceEndpointClient::HandleIncomingMessageThunk::Accept(
 InterfaceEndpointClient::InterfaceEndpointClient(
     ScopedInterfaceEndpointHandle handle,
     MessageReceiverWithResponderStatus* receiver,
-    std::unique_ptr<MessageFilter> payload_validator,
+    std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
     scoped_refptr<base::SingleThreadTaskRunner> runner)
     : handle_(std::move(handle)),
       incoming_receiver_(receiver),
-      payload_validator_(std::move(payload_validator)),
       thunk_(this),
+      filters_(&thunk_),
       next_request_id_(1),
       encountered_error_(false),
       task_runner_(std::move(runner)),
@@ -148,7 +148,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 
   // TODO(yzshen): the way to use validator (or message filter in general)
   // directly is a little awkward.
-  payload_validator_->set_sink(&thunk_);
+  filters_.Append(std::move(payload_validator));
 
   controller_ = handle_.group_controller()->AttachEndpointClient(
       handle_, this, task_runner_);
@@ -185,6 +185,11 @@ ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
   handle_.group_controller()->DetachEndpointClient(handle_);
 
   return std::move(handle_);
+}
+
+void InterfaceEndpointClient::AddFilter(
+    std::unique_ptr<MessageReceiver> filter) {
+  filters_.Append(std::move(filter));
 }
 
 void InterfaceEndpointClient::RaiseError() {
@@ -256,8 +261,7 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
 
 bool InterfaceEndpointClient::HandleIncomingMessage(Message* message) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  return payload_validator_->Accept(message);
+  return filters_.Accept(message);
 }
 
 void InterfaceEndpointClient::NotifyError() {

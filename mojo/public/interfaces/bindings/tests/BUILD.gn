@@ -102,6 +102,10 @@ mojom("test_associated_interfaces") {
     "test_associated_interfaces.mojom",
     "validation_test_associated_interfaces.mojom",
   ]
+
+  public_deps = [
+    ":test_interfaces",
+  ]
 }
 
 mojom("versioning_test_service_interfaces") {
