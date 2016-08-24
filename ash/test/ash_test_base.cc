@@ -176,6 +176,14 @@ void AshTestBase::TearDown() {
 }
 
 // static
+WmShelf* AshTestBase::GetPrimaryShelf() {
+  return WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->GetShelf();
+}
+
+// static
 SystemTray* AshTestBase::GetPrimarySystemTray() {
   return Shell::GetInstance()->GetPrimarySystemTray();
 }
@@ -209,14 +217,6 @@ bool AshTestBase::SupportsMultipleDisplays() {
 // static
 bool AshTestBase::SupportsHostWindowResize() {
   return AshTestHelper::SupportsHostWindowResize();
-}
-
-// static
-WmShelf* AshTestBase::GetPrimaryShelf() {
-  return WmShell::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
-      ->GetShelf();
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {

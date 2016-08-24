@@ -5,11 +5,12 @@
 #include "ash/common/shelf/shelf_widget.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_view.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
@@ -31,7 +32,7 @@ namespace ash {
 namespace {
 
 ShelfWidget* GetShelfWidget() {
-  return Shelf::ForPrimaryDisplay()->shelf_widget();
+  return test::AshTestBase::GetPrimaryShelf()->GetShelfWidgetForTesting();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
@@ -52,7 +53,7 @@ INSTANTIATE_TEST_CASE_P(
 void TestLauncherAlignment(WmWindow* root,
                            ShelfAlignment alignment,
                            const gfx::Rect& expected) {
-  Shelf::ForWindow(root)->SetAlignment(alignment);
+  root->GetRootWindowController()->GetShelf()->SetAlignment(alignment);
   EXPECT_EQ(expected.ToString(),
             root->GetDisplayNearestWindow().work_area().ToString());
 }
@@ -147,8 +148,6 @@ TEST_P(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
 // Makes sure the shelf is initially sized correctly.
 TEST_P(ShelfWidgetTest, LauncherInitiallySized) {
   ShelfWidget* shelf_widget = GetShelfWidget();
-  Shelf* shelf = shelf_widget->shelf();
-  ASSERT_TRUE(shelf);
   ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   ASSERT_TRUE(shelf_layout_manager);
   ASSERT_TRUE(shelf_widget->status_area_widget());
@@ -156,8 +155,9 @@ TEST_P(ShelfWidgetTest, LauncherInitiallySized) {
       shelf_widget->status_area_widget()->GetWindowBoundsInScreen().width();
   // Test only makes sense if the status is > 0, which it better be.
   EXPECT_GT(status_width, 0);
-  EXPECT_EQ(status_width, shelf_widget->GetContentsView()->width() -
-                              test::ShelfTestAPI(shelf).shelf_view()->width());
+  EXPECT_EQ(status_width,
+            shelf_widget->GetContentsView()->width() -
+                GetPrimaryShelf()->GetShelfViewForTesting()->width());
 }
 
 // Verifies when the shell is deleted with a full screen window we don't crash.
@@ -253,7 +253,7 @@ TEST_P(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   }
 
   // Change shelf alignment to verify that the targeter insets are updated.
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   shelf_layout_manager->LayoutShelf();
   shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
@@ -297,7 +297,7 @@ TEST_P(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
 // Tests that the shelf has a slightly larger hit-region for touch-events when
 // it's in the auto-hidden state.
 TEST_P(ShelfWidgetTest, HiddenShelfHitTestTouch) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfWidget* shelf_widget = GetShelfWidget();
   gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(!shelf_bounds.IsEmpty());
@@ -360,8 +360,8 @@ class TestShelfDelegate : public ShelfDelegate {
 
   // ShelfDelegate implementation.
   void OnShelfCreated(Shelf* shelf) override {
-    shelf->SetAlignment(initial_alignment_);
-    shelf->SetAutoHideBehavior(initial_auto_hide_behavior_);
+    shelf->wm_shelf()->SetAlignment(initial_alignment_);
+    shelf->wm_shelf()->SetAutoHideBehavior(initial_auto_hide_behavior_);
   }
   void OnShelfDestroyed(Shelf* shelf) override {}
   void OnShelfAlignmentChanged(Shelf* shelf) override {}
@@ -437,7 +437,7 @@ class ShelfWidgetTestWithDelegate : public ShelfWidgetTest {
 
     ShelfWidget* shelf_widget = GetShelfWidget();
     ASSERT_NE(nullptr, shelf_widget);
-    Shelf* shelf = shelf_widget->shelf();
+    WmShelf* shelf = GetPrimaryShelf();
     ASSERT_NE(nullptr, shelf);
     ShelfLayoutManager* shelf_layout_manager =
         shelf_widget->shelf_layout_manager();

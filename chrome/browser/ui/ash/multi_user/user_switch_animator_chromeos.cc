@@ -8,6 +8,7 @@
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
@@ -275,7 +276,8 @@ void UserSwitchAnimatorChromeOS::TransitionUserShelf(
       // This shelf change is only part of the animation and will be updated by
       // ChromeLauncherController::ActiveUserChanged() to the new users value.
       // Note that the user preference will not be changed.
-      shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+      shelf->wm_shelf()->SetAutoHideBehavior(
+          ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
     }
   }
 }

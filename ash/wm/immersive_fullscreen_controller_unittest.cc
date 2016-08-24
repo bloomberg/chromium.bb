@@ -4,8 +4,8 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -1021,7 +1021,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
 // immersive fullscreen and that the shelf's state before entering immersive
 // fullscreen is restored upon exiting immersive fullscreen.
 TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Shelf is visible by default.
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);

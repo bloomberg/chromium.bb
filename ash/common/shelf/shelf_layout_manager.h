@@ -36,6 +36,7 @@ class PanelLayoutManagerTest;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
+class WmShelf;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -53,7 +54,7 @@ class ASH_EXPORT ShelfLayoutManager
       public wm::WmSnapToPixelLayoutManager,
       public SessionStateObserver {
  public:
-  explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
+  ShelfLayoutManager(ShelfWidget* shelf_widget, WmShelf* wm_shelf);
   ~ShelfLayoutManager() override;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -315,6 +316,7 @@ class ASH_EXPORT ShelfLayoutManager
   State state_;
 
   ShelfWidget* shelf_widget_;
+  WmShelf* wm_shelf_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;

@@ -5,18 +5,11 @@
 #ifndef ASH_COMMON_SHELF_SHELF_H_
 #define ASH_COMMON_SHELF_SHELF_H_
 
-#include <stdint.h>
-
-#include <memory>
-
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_locking_manager.h"
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "base/macros.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace app_list {
 class ApplicationDragAndDropHost;
@@ -26,14 +19,8 @@ namespace gfx {
 class Rect;
 }
 
-namespace views {
-class View;
-}
-
 namespace ash {
 class AppListButton;
-class FocusCycler;
-class ShelfDelegate;
 class ShelfView;
 class WmShelf;
 
@@ -59,20 +46,9 @@ class ASH_EXPORT Shelf {
   // user is logged in yet.
   static Shelf* ForWindow(WmWindow* window);
 
-  // DEPRECATED. Use WmShelf::GetAlignment() and SetAlignment().
-  void SetAlignment(ShelfAlignment alignment);
-  ShelfAlignment alignment() const { return alignment_; }
-
-  // Sets the ShelfAutoHideBehavior. See enum description for details.
-  // DEPRECATED. Use WmShelf::GetAutoHideBehavior() and SetAutoHideBehavior().
-  void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior);
-  ShelfAutoHideBehavior auto_hide_behavior() const {
-    return auto_hide_behavior_;
-  }
-
-  ShelfAutoHideState GetAutoHideState() const;
-
-  ShelfVisibilityState GetVisibilityState() const;
+  // For porting from Shelf to WmShelf.
+  // TODO(jamescook): Remove this.
+  WmShelf* wm_shelf() { return wm_shelf_; }
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
@@ -112,10 +88,6 @@ class ASH_EXPORT Shelf {
   // Updates the background for the shelf items.
   void UpdateShelfItemBackground(int alpha);
 
-  ShelfLockingManager* shelf_locking_manager_for_testing() {
-    return &shelf_locking_manager_;
-  }
-
   ShelfView* shelf_view_for_testing() { return shelf_view_; }
 
  private:
@@ -125,10 +97,6 @@ class ASH_EXPORT Shelf {
   WmShelf* wm_shelf_;
   ShelfWidget* shelf_widget_;
   ShelfView* shelf_view_;
-  ShelfLockingManager shelf_locking_manager_;
-
-  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM;
-  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };

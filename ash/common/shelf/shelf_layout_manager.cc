@@ -10,10 +10,10 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
@@ -144,9 +144,11 @@ class ShelfLayoutManager::RootWindowControllerObserverImpl
 
 // ShelfLayoutManager ----------------------------------------------------------
 
-ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
+ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
+                                       WmShelf* wm_shelf)
     : updating_bounds_(false),
       shelf_widget_(shelf_widget),
+      wm_shelf_(wm_shelf),
       window_overlaps_shelf_(false),
       mouse_over_shelf_when_auto_hide_timer_started_(false),
       gesture_drag_status_(GESTURE_DRAG_NONE),
@@ -158,6 +160,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget)
       root_window_controller_observer_(
           new RootWindowControllerObserverImpl(this)) {
   DCHECK(shelf_widget_);
+  DCHECK(wm_shelf_);
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
   WmShell::Get()->AddActivationObserver(this);
@@ -222,7 +225,7 @@ void ShelfLayoutManager::LayoutShelf() {
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
-  switch (shelf_widget_->shelf()->auto_hide_behavior()) {
+  switch (wm_shelf_->auto_hide_behavior()) {
     case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
       return SHELF_AUTO_HIDE;
     case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
@@ -1162,9 +1165,8 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   // |gesture_drag_status_| to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto
   // hide state to |gesture_drag_auto_hide_state_|.
   gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-  Shelf* shelf = shelf_widget_->shelf();
-  if (shelf->auto_hide_behavior() != new_auto_hide_behavior)
-    shelf->SetAutoHideBehavior(new_auto_hide_behavior);
+  if (wm_shelf_->auto_hide_behavior() != new_auto_hide_behavior)
+    wm_shelf_->SetAutoHideBehavior(new_auto_hide_behavior);
   else
     UpdateVisibilityState();
   gesture_drag_status_ = GESTURE_DRAG_NONE;

@@ -313,7 +313,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container,
   SetContentsView(delegate_view_);
   delegate_view_->SetParentLayer(GetLayer());
 
-  shelf_layout_manager_ = new ShelfLayoutManager(this);
+  shelf_layout_manager_ = new ShelfLayoutManager(this, wm_shelf_);
   shelf_layout_manager_->AddObserver(this);
   shelf_container->SetLayoutManager(base::WrapUnique(shelf_layout_manager_));
   background_animator_.PaintBackground(
@@ -407,6 +407,7 @@ ShelfAlignment ShelfWidget::GetAlignment() const {
 }
 
 void ShelfWidget::OnShelfAlignmentChanged() {
+  shelf_view_->OnShelfAlignmentChanged();
   status_area_widget_->SetShelfAlignment(GetAlignment());
   delegate_view_->SchedulePaint();
 }

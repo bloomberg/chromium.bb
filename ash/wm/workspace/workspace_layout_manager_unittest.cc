@@ -9,9 +9,9 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
@@ -313,6 +313,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
 
   void set_window(aura::Window* window) { window_ = window; }
 
+  // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override {
@@ -324,7 +325,7 @@ class DontClobberRestoreBoundsWindowObserver : public aura::WindowObserver {
       window_ = nullptr;
 
       gfx::Rect shelf_bounds(
-          Shelf::ForPrimaryDisplay()->shelf_layout_manager()->GetIdealBounds());
+          test::AshTestBase::GetPrimaryShelf()->GetIdealBounds());
       const gfx::Rect& window_bounds(w->bounds());
       w->SetBounds(gfx::Rect(window_bounds.x(), shelf_bounds.y() - 1,
                              window_bounds.width(), window_bounds.height()));
@@ -841,7 +842,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
 
-  Shelf* shelf = Shelf::ForWindow(WmWindowAura::Get(window.get()));
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));
@@ -1036,7 +1037,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
 // Tests that when hidding the shelf, that the backdrop resizes to fill the
 // entire workspace area.
 TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   ShowTopWindowBackdrop(true);
   RunAllPendingInMessageLoop();

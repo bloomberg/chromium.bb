@@ -4,8 +4,8 @@
 
 #include "ash/content/keyboard_overlay/keyboard_overlay_delegate.h"
 
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +36,7 @@ TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
     return;
 
   UpdateDisplay("500x400,300x200");
-  Shelf::ForPrimaryDisplay()->SetAlignment(shelf_alignment());
+  GetPrimaryShelf()->SetAlignment(shelf_alignment());
   KeyboardOverlayDelegate delegate(base::ASCIIToUTF16("Title"),
                                    GURL("chrome://keyboardoverlay/"));
   // Showing the dialog creates a widget.

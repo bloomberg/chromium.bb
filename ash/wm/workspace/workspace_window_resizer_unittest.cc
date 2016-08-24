@@ -5,7 +5,8 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/shelf_constants.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -37,10 +38,6 @@ namespace ash {
 namespace {
 
 const int kRootHeight = 600;
-
-Shelf* GetShelf() {
-  return Shelf::ForPrimaryDisplay();
-}
 
 // A simple window delegate that returns the specified min size.
 class TestWindowDelegate : public aura::test::TestWindowDelegate {
@@ -996,7 +993,7 @@ TEST_P(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
 
 // Verifies snapping to edges works.
 TEST_P(WorkspaceWindowResizerTest, SnapToEdge) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
   // Click 50px to the right so that the mouse pointer does not leave the
   // workspace ensuring sticky behavior.
@@ -1772,7 +1769,7 @@ TEST_P(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
 // The following variants test that windows are resized correctly to the edges
 // of the screen using touch, when touch point is off of the window border.
 TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTRIGHT);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
@@ -1803,7 +1800,7 @@ TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
 }
 
 TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTLEFT);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
@@ -1834,7 +1831,7 @@ TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
 }
 
 TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTTOP);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),
@@ -1862,7 +1859,7 @@ TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
 }
 
 TEST_P(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
 
   InitTouchResizeWindow(gfx::Rect(100, 100, 600, kRootHeight - 200), HTBOTTOM);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 200).ToString(),

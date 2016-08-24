@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 #include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
+#include "ash/common/shelf/shelf_locking_manager.h"
+#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -15,10 +20,16 @@ void WmShelf::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_);
   DCHECK(shelf);
   shelf_ = shelf;
+  DCHECK(shelf_layout_manager_);
+  shelf_locking_manager_.reset(new ShelfLockingManager(this));
+  // When the shelf is created the alignment is unlocked. Chrome will update the
+  // alignment later from preferences.
+  alignment_ = SHELF_ALIGNMENT_BOTTOM;
 }
 
 void WmShelf::ClearShelf() {
   DCHECK(shelf_);
+  shelf_locking_manager_.reset();
   shelf_ = nullptr;
 }
 
@@ -36,16 +47,28 @@ WmWindow* WmShelf::GetWindow() {
       shelf_layout_manager_->shelf_widget());
 }
 
-ShelfAlignment WmShelf::GetAlignment() const {
-  return shelf_ ? shelf_->alignment() : SHELF_ALIGNMENT_BOTTOM_LOCKED;
-}
-
 void WmShelf::SetAlignment(ShelfAlignment alignment) {
-  shelf_->SetAlignment(alignment);
+  DCHECK(shelf_layout_manager_);
+
+  if (alignment_ == alignment)
+    return;
+
+  if (shelf_locking_manager_->is_locked() &&
+      alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
+    shelf_locking_manager_->set_stored_alignment(alignment);
+    return;
+  }
+
+  alignment_ = alignment;
+  // The ShelfWidget notifies the ShelfView of the alignment change.
+  shelf_layout_manager_->shelf_widget()->OnShelfAlignmentChanged();
+  WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(shelf_);
+  WmShell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
+  // ShelfLayoutManager will resize the shelf.
 }
 
 bool WmShelf::IsHorizontalAlignment() const {
-  switch (GetAlignment()) {
+  switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return true;
@@ -60,7 +83,7 @@ bool WmShelf::IsHorizontalAlignment() const {
 int WmShelf::SelectValueForShelfAlignment(int bottom,
                                           int left,
                                           int right) const {
-  switch (GetAlignment()) {
+  switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return bottom;
@@ -77,12 +100,16 @@ int WmShelf::PrimaryAxisValue(int horizontal, int vertical) const {
   return IsHorizontalAlignment() ? horizontal : vertical;
 }
 
-ShelfAutoHideBehavior WmShelf::GetAutoHideBehavior() const {
-  return shelf_->auto_hide_behavior();
-}
+void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
+  DCHECK(shelf_layout_manager_);
 
-void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  shelf_->SetAutoHideBehavior(behavior);
+  if (auto_hide_behavior_ == auto_hide_behavior)
+    return;
+
+  auto_hide_behavior_ = auto_hide_behavior;
+  WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(shelf_);
+  WmShell::Get()->NotifyShelfAutoHideBehaviorChanged(
+      GetWindow()->GetRootWindow());
 }
 
 ShelfAutoHideState WmShelf::GetAutoHideState() const {
@@ -164,11 +191,15 @@ void WmShelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
 }
 
 ShelfLockingManager* WmShelf::GetShelfLockingManagerForTesting() {
-  return shelf_->shelf_locking_manager_for_testing();
+  return shelf_locking_manager_.get();
 }
 
 ShelfView* WmShelf::GetShelfViewForTesting() {
   return shelf_->shelf_view_for_testing();
+}
+
+ShelfWidget* WmShelf::GetShelfWidgetForTesting() {
+  return shelf_layout_manager_->shelf_widget();
 }
 
 WmShelf::WmShelf() {}

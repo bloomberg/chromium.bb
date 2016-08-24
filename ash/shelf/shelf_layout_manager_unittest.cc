@@ -4,17 +4,18 @@
 
 #include "ash/common/shelf/shelf_layout_manager.h"
 
+#include "ash/aura/wm_shelf_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -62,16 +63,12 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 }
 
-Shelf* GetShelf() {
-  return Shelf::ForPrimaryDisplay();
-}
-
 ShelfWidget* GetShelfWidget() {
-  return GetShelf()->shelf_widget();
+  return test::AshTestBase::GetPrimaryShelf()->GetShelfWidgetForTesting();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
-  return GetShelfWidget()->shelf_layout_manager();
+  return test::AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
 }
 
 // Class which waits till the shelf finishes animating to the target size and
@@ -184,8 +181,9 @@ class ShelfDragCallback {
     // Auto hidden shelf has a visible height of 0 in MD (where this inequality
     // does not apply); whereas auto hidden shelf has a visible height of 3 in
     // non-MD.
+    WmShelf* shelf = test::AshTestBase::GetPrimaryShelf();
     if (!ash::MaterialDesignController::IsShelfMaterial() ||
-        GetShelf()->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
+        shelf->GetAutoHideState() != ash::SHELF_AUTO_HIDE_HIDDEN) {
       EXPECT_GE(shelf_bounds.height(),
                 auto_hidden_shelf_widget_bounds_.height());
     }
@@ -329,7 +327,7 @@ class ShelfLayoutManagerTest : public test::AshTestBase {
 };
 
 void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   views::Widget* widget = CreateTestWidget();
@@ -688,7 +686,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
 
 // Makes sure LayoutShelf invoked while animating cleans things up.
 TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   // Force an initial layout.
   layout_manager->LayoutShelf();
@@ -739,21 +737,21 @@ TEST_F(ShelfLayoutManagerTest, SetStateWhileAnimating) {
 
 // Makes sure the shelf is sized when the status area changes size.
 TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ASSERT_TRUE(shelf);
   ShelfWidget* shelf_widget = GetShelfWidget();
   ASSERT_TRUE(shelf_widget);
   ASSERT_TRUE(shelf_widget->status_area_widget());
   shelf_widget->status_area_widget()->SetBounds(gfx::Rect(0, 0, 200, 200));
   EXPECT_EQ(200, shelf_widget->GetContentsView()->width() -
-                     test::ShelfTestAPI(shelf).shelf_view()->width());
+                     shelf->GetShelfViewForTesting()->width());
 }
 
 // Various assertions around auto-hide.
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
   ui::test::EventGenerator& generator(GetEventGenerator());
 
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = CreateTestWidget();
@@ -817,7 +815,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       test::CreateDisplayLayout(display::DisplayPlacement::RIGHT, 0));
   // Put the primary monitor's shelf on the display boundary.
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
 
   // Create a window because the shelf is always shown when no windows are
@@ -900,7 +898,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
 
 // Assertions around the lock screen showing.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   views::Widget* widget = CreateTestWidget();
@@ -930,7 +928,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
 
 // Assertions around SetAutoHideBehavior.
 TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   views::Widget* widget = CreateTestWidget();
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1130,7 +1128,7 @@ TEST_F(ShelfLayoutManagerTest, DimmingBehaviorWithMenus) {
 
 // Verifies the shelf is visible when status/shelf is focused.
 TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   views::Widget* widget = CreateTestWidget();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1158,7 +1156,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
 // visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   WmShell* shell = WmShell::Get();
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -1186,7 +1184,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
 // toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   WmShell* shell = WmShell::Get();
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1229,11 +1227,11 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(root_windows.size(), 2U);
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  Shelf* shelf_1 = GetRootWindowController(root_windows[0])->GetShelf();
-  Shelf* shelf_2 = GetRootWindowController(root_windows[1])->GetShelf();
+  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf_aura();
+  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf_aura();
   EXPECT_NE(shelf_1, shelf_2);
-  EXPECT_NE(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow());
+  EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
+            shelf_2->GetWindow()->GetRootWindow());
   shelf_1->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_1->shelf_layout_manager()->LayoutShelf();
   shelf_2->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1249,10 +1247,10 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_2->Show();
 
-  EXPECT_EQ(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            window_1->GetRootWindow());
-  EXPECT_EQ(shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            window_2->GetRootWindow());
+  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
+            WmWindowAura::Get(window_1)->GetRootWindow());
+  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
+            WmWindowAura::Get(window_2)->GetRootWindow());
 
   // Activate one window in one display and manually trigger the update of shelf
   // visibility.
@@ -1289,7 +1287,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
 // will unhide when we open the app list.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   WmShell* shell = WmShell::Get();
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   // For shelf to be visible, app list is not open in initial state.
   layout_manager->LayoutShelf();
@@ -1319,7 +1317,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
 // Tests the correct behavior of the shelf when there is a system modal window
 // open when we have a single display.
 TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowSingleDisplay) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1352,11 +1350,11 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   EXPECT_EQ(2U, root_windows.size());
 
   // Get the shelves in both displays and set them to be 'AutoHide'.
-  Shelf* shelf_1 = GetRootWindowController(root_windows[0])->GetShelf();
-  Shelf* shelf_2 = GetRootWindowController(root_windows[1])->GetShelf();
+  WmShelf* shelf_1 = GetRootWindowController(root_windows[0])->wm_shelf_aura();
+  WmShelf* shelf_2 = GetRootWindowController(root_windows[1])->wm_shelf_aura();
   EXPECT_NE(shelf_1, shelf_2);
-  EXPECT_NE(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow());
+  EXPECT_NE(shelf_1->GetWindow()->GetRootWindow(),
+            shelf_2->GetWindow()->GetRootWindow());
   shelf_1->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_1->shelf_layout_manager()->LayoutShelf();
   shelf_2->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1372,10 +1370,10 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
   window_2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window_2->Show();
 
-  EXPECT_EQ(shelf_1->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            window_1->GetRootWindow());
-  EXPECT_EQ(shelf_2->shelf_widget()->GetNativeWindow()->GetRootWindow(),
-            window_2->GetRootWindow());
+  EXPECT_EQ(shelf_1->GetWindow()->GetRootWindow(),
+            WmWindowAura::Get(window_1)->GetRootWindow());
+  EXPECT_EQ(shelf_2->GetWindow()->GetRootWindow(),
+            WmWindowAura::Get(window_2)->GetRootWindow());
   EXPECT_TRUE(window_1->IsVisible());
   EXPECT_TRUE(window_2->IsVisible());
 
@@ -1395,7 +1393,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
 // Tests that the shelf is only hidden for a fullscreen window at the front and
 // toggles visibility when another window is activated.
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Create a window and make it full screen.
   aura::Window* window1 = CreateTestWindow();
@@ -1454,7 +1452,7 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
 
 // Test for Pinned mode.
 TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
 
   aura::Window* window1 = CreateTestWindow();
   window1->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1471,7 +1469,7 @@ TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
 
 // Tests SHELF_ALIGNMENT_(LEFT, RIGHT).
 TEST_F(ShelfLayoutManagerTest, SetAlignment) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   // Force an initial layout.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -1540,7 +1538,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   // these tests. Ignore it.
   ui::GestureConfiguration::GetInstance()
       ->set_max_touch_move_in_pixels_for_click(0);
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   {
     SCOPED_TRACE("BOTTOM");
     shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
@@ -1565,7 +1563,7 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   layout_manager->LayoutShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1619,7 +1617,7 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
 TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
   // Test the shelf animates back to its original visible bounds when it is
   // dragged when there are no visible windows.
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -1686,7 +1684,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Create a visible window so auto-hide behavior is enforced.
   CreateTestWidget();
@@ -1706,7 +1704,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
 
 TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
   // Make sure the shelf is always visible.
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   layout_manager->LayoutShelf();
@@ -1747,7 +1745,7 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
 // Confirm that the shelf is dimmed only when content is maximized and
 // shelf is not autohidden.
 TEST_F(ShelfLayoutManagerTest, Dimming) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
@@ -1778,10 +1776,10 @@ TEST_F(ShelfLayoutManagerTest, Dimming) {
 // Make sure that the shelf will not hide if the mouse is between a bubble and
 // the shelf.
 TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
-  Shelf* shelf = GetShelf();
+  WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   StatusAreaWidget* status_area_widget =
-      shelf->shelf_widget()->status_area_widget();
+      shelf->GetShelfWidgetForTesting()->status_area_widget();
   SystemTray* tray = GetPrimarySystemTray();
 
   // Create a visible window so auto-hide behavior is enforced.
@@ -1863,7 +1861,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
   wm::ActivateWindow(w1.get());
@@ -1881,7 +1879,7 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
   inset_display_bounds.Inset(0, 0, 1, 1);
 
   // Test bottom right pixel for bottom alignment.
-  GetShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   generator.MoveMouseTo(inset_display_bounds.bottom_right());
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 #if !defined(OS_WIN)
@@ -1893,7 +1891,7 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 
   // Test bottom right pixel for right alignment.
-  GetShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   generator.MoveMouseTo(inset_display_bounds.bottom_right());
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 #if !defined(OS_WIN)
@@ -1906,7 +1904,7 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
 
   // Test bottom left pixel for left alignment.
   generator.MoveMouseTo(inset_display_bounds.bottom_left());
-  GetShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
   generator.ClickLeftButton();
   EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
@@ -1924,11 +1922,11 @@ TEST_F(ShelfLayoutManagerTest,
 
   ui::ScopedAnimationDurationScaleMode regular_animations(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   gfx::Rect hide_target_bounds = status_window->GetTargetBounds();
   EXPECT_GT(hide_target_bounds.y(), initial_bounds.y());
 
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   gfx::Rect reshow_target_bounds = status_window->GetTargetBounds();
   EXPECT_EQ(initial_bounds, reshow_target_bounds);
 }
@@ -1944,7 +1942,7 @@ TEST_F(ShelfLayoutManagerTest,
 // Tests that during shutdown, that window activation changes are properly
 // handled, and do not crash (crbug.com/458768)
 TEST_F(ShelfLayoutManagerTest, MAYBE_ShutdownHandlesWindowActivation) {
-  GetShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   aura::Window* window1 = CreateTestWindowInShellWithId(0);
   window1->SetBounds(gfx::Rect(0, 0, 100, 100));

@@ -13,6 +13,7 @@
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/wm/window_util.h"
@@ -453,9 +454,9 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   if (item_rect.width() != 0 || item_rect.height() != 0) {
     if (shelf->shelf_layout_manager()->visibility_state() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
-      if (shelf->alignment() == SHELF_ALIGNMENT_LEFT)
+      if (shelf->wm_shelf()->alignment() == SHELF_ALIGNMENT_LEFT)
         item_rect.set_x(shelf_bounds.right());
-      else if (shelf->alignment() == SHELF_ALIGNMENT_RIGHT)
+      else if (shelf->wm_shelf()->alignment() == SHELF_ALIGNMENT_RIGHT)
         item_rect.set_x(shelf_bounds.x());
       else
         item_rect.set_y(shelf_bounds.y());
@@ -469,7 +470,7 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   int ltr_adjusted_x = base::i18n::IsRTL() ? work_area.right() : work_area.x();
-  switch (shelf->alignment()) {
+  switch (shelf->wm_shelf()->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       return gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0);

@@ -1405,7 +1405,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Change the shelf layout. This should not crash.
-  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
 }
 
 // Changing the shelf alignment closes any open tooltip.
@@ -1421,7 +1421,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
-  Shelf::ForPrimaryDisplay()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
@@ -1759,7 +1759,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   ASSERT_EQ(2U, WmShell::Get()->GetAllRootWindows().size());
 
   WmWindow* second_root = WmShell::Get()->GetAllRootWindows()[1];
-  Shelf* secondary_shelf = Shelf::ForWindow(second_root);
+  WmShelf* secondary_shelf = second_root->GetRootWindowController()->GetShelf();
 
   secondary_shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_EQ(SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
@@ -1770,7 +1770,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   EXPECT_GT(browser_index, 0);
 
   ShelfView* shelf_view_for_secondary =
-      ShelfTestAPI(secondary_shelf).shelf_view();
+      secondary_shelf->GetShelfViewForTesting();
 
   ShelfViewTestAPI test_api_for_secondary_shelf_view(shelf_view_for_secondary);
   ShelfButton* button =

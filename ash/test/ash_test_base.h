@@ -69,6 +69,9 @@ class AshTestBase : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Returns the WmShelf for the primary display.
+  static WmShelf* GetPrimaryShelf();
+
   // Returns the system tray on the primary display.
   static SystemTray* GetPrimarySystemTray();
 
@@ -133,9 +136,6 @@ class AshTestBase : public testing::Test {
 
   // Proxy to AshTestHelper::SupportsHostWindowResize().
   static bool SupportsHostWindowResize();
-
-  // Returns the WmShelf for the primary display.
-  static WmShelf* GetPrimaryShelf();
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
 

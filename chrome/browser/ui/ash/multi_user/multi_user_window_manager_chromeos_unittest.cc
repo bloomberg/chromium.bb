@@ -7,6 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
@@ -1017,10 +1018,10 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_FALSE(CoversScreen(window(1)));
   EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
   EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
-  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  ShelfWidget* shelf_widget = shelf->GetShelfWidgetForTesting();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // Start the animation and see that the old window is becoming invisible, the
@@ -1300,13 +1301,13 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
   EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
-  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  ShelfWidget* shelf_widget = shelf->GetShelfWidgetForTesting();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // First test that with no maximized window we show/hide the shelf.

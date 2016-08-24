@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
 #include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "base/rand_util.h"
@@ -375,7 +376,7 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   // during the user image picker step are below it.
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
-  ash::Shelf::ForPrimaryDisplay()->SetAlignment(
+  ash::Shelf::ForPrimaryDisplay()->wm_shelf()->SetAlignment(
       ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED);
 
   controller_->SetManagerProfile(manager_profile);

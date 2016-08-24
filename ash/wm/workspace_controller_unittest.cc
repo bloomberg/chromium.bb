@@ -7,9 +7,9 @@
 #include <map>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -379,7 +379,7 @@ TEST_P(WorkspaceControllerTest, ShelfStateUpdated) {
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   const gfx::Rect touches_shelf_bounds(
       0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
@@ -519,8 +519,7 @@ TEST_P(WorkspaceControllerTest, MinimizeResetsVisibility) {
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, shelf_widget()->GetBackgroundType());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, shelf_widget()->GetBackgroundType());
 }
 
@@ -676,7 +675,7 @@ class DontCrashOnChangeAndActivateDelegate
 // . show the window and during the bounds change activate it.
 TEST_P(WorkspaceControllerTest, DontCrashOnChangeAndActivate) {
   // Force the shelf
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   DontCrashOnChangeAndActivateDelegate delegate;
@@ -1402,8 +1401,7 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
       &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Drag near the shelf.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -1432,7 +1430,7 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
       &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 

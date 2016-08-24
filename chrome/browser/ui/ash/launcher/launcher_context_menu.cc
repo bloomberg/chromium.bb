@@ -86,7 +86,7 @@ base::string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   if (command_id == MENU_AUTO_HIDE) {
-    return wm_shelf_->GetAutoHideBehavior() ==
+    return wm_shelf_->auto_hide_behavior() ==
            ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   }
   DCHECK(command_id < MENU_ITEM_COUNT);
@@ -132,7 +132,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       break;
     case MENU_AUTO_HIDE:
       wm_shelf_->SetAutoHideBehavior(
-          wm_shelf_->GetAutoHideBehavior() ==
+          wm_shelf_->auto_hide_behavior() ==
                   ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
               ? ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER
               : ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

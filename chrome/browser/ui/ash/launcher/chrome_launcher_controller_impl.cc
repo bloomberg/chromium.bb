@@ -12,6 +12,7 @@
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -866,25 +867,28 @@ void ChromeLauncherControllerImpl::OnShelfCreated(ash::Shelf* shelf) {
   PrefService* prefs = profile_->GetPrefs();
   const int64_t display = GetDisplayIDForShelf(shelf);
 
-  shelf->SetAutoHideBehavior(
+  shelf->wm_shelf()->SetAutoHideBehavior(
       ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display));
 
-  if (ash::ShelfWidget::ShelfAlignmentAllowed())
-    shelf->SetAlignment(ash::launcher::GetShelfAlignmentPref(prefs, display));
+  if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
+    shelf->wm_shelf()->SetAlignment(
+        ash::launcher::GetShelfAlignmentPref(prefs, display));
+  }
 }
 
 void ChromeLauncherControllerImpl::OnShelfDestroyed(ash::Shelf* shelf) {}
 
 void ChromeLauncherControllerImpl::OnShelfAlignmentChanged(ash::Shelf* shelf) {
-  ash::launcher::SetShelfAlignmentPref(
-      profile_->GetPrefs(), GetDisplayIDForShelf(shelf), shelf->alignment());
+  ash::launcher::SetShelfAlignmentPref(profile_->GetPrefs(),
+                                       GetDisplayIDForShelf(shelf),
+                                       shelf->wm_shelf()->alignment());
 }
 
 void ChromeLauncherControllerImpl::OnShelfAutoHideBehaviorChanged(
     ash::Shelf* shelf) {
-  ash::launcher::SetShelfAutoHideBehaviorPref(profile_->GetPrefs(),
-                                              GetDisplayIDForShelf(shelf),
-                                              shelf->auto_hide_behavior());
+  ash::launcher::SetShelfAutoHideBehaviorPref(
+      profile_->GetPrefs(), GetDisplayIDForShelf(shelf),
+      shelf->wm_shelf()->auto_hide_behavior());
 }
 
 void ChromeLauncherControllerImpl::OnShelfAutoHideStateChanged(
@@ -1313,8 +1317,9 @@ void ChromeLauncherControllerImpl::SetShelfAutoHideBehaviorFromPrefs() {
   for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
     ash::Shelf* shelf = ash::Shelf::ForWindow(window);
     if (shelf) {
-      shelf->SetAutoHideBehavior(ash::launcher::GetShelfAutoHideBehaviorPref(
-          profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
+      shelf->wm_shelf()->SetAutoHideBehavior(
+          ash::launcher::GetShelfAutoHideBehaviorPref(
+              profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
     }
   }
 }
@@ -1326,7 +1331,7 @@ void ChromeLauncherControllerImpl::SetShelfAlignmentFromPrefs() {
   for (ash::WmWindow* window : ash::WmShell::Get()->GetAllRootWindows()) {
     ash::Shelf* shelf = ash::Shelf::ForWindow(window);
     if (shelf) {
-      shelf->SetAlignment(ash::launcher::GetShelfAlignmentPref(
+      shelf->wm_shelf()->SetAlignment(ash::launcher::GetShelfAlignmentPref(
           profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
     }
   }
@@ -1647,7 +1652,8 @@ void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
   // Because it might be called by some operations, like crbug.com/627040
   // rotating screen.
   ash::Shelf* shelf = ash::Shelf::ForPrimaryDisplay();
-  if (!shelf || shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
+  if (!shelf ||
+      shelf->wm_shelf()->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
     SetShelfBehaviorsFromPrefs();
 }
 

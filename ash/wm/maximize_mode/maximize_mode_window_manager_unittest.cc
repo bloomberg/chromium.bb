@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/shelf/shelf.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -33,6 +33,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -860,7 +861,7 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1055,7 +1056,7 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide and enter full screen.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -1082,7 +1083,7 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  WmShelf* shelf = GetPrimaryShelf();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

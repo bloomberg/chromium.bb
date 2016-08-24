@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/profiles/multiprofiles_session_aborted_dialog.h"
 
-#include "ash/common/shelf/shelf.h"
+#include "ash/aura/wm_shelf_aura.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/macros.h"
@@ -83,7 +83,7 @@ void MultiprofilesSessionAbortedView::ShowDialog(
   std::vector<ash::RootWindowController*> controllers =
       ash::Shell::GetAllRootWindowControllers();
   for (ash::RootWindowController* controller : controllers) {
-    controller->GetShelf()->SetAutoHideBehavior(
+    controller->wm_shelf_aura()->SetAutoHideBehavior(
         ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   }
 }

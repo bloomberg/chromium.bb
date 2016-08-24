@@ -5,6 +5,8 @@
 #ifndef ASH_COMMON_SHELF_WM_SHELF_H_
 #define ASH_COMMON_SHELF_WM_SHELF_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_types.h"
@@ -24,12 +26,14 @@ class Shelf;
 class ShelfLayoutManager;
 class ShelfLockingManager;
 class ShelfView;
+class ShelfWidget;
 class StatusAreaWidget;
 class WmDimmerView;
 class WmShelfObserver;
 class WmWindow;
 
-// Used for accessing global state.
+// Controller for the shelf state. Exists for the lifetime of each root window
+// controller. Note that the shelf widget may not be created until after login.
 class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
  public:
   void SetShelf(Shelf* shelf);
@@ -44,7 +48,9 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Returns the window showing the shelf.
   WmWindow* GetWindow();
 
-  ShelfAlignment GetAlignment() const;
+  ShelfAlignment alignment() const { return alignment_; }
+  // TODO(jamescook): Replace with alignment().
+  ShelfAlignment GetAlignment() const { return alignment_; }
   void SetAlignment(ShelfAlignment alignment);
 
   // Returns true if the shelf alignment is horizontal (i.e. at the bottom).
@@ -56,7 +62,9 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Returns |horizontal| is shelf is horizontal, otherwise |vertical|.
   int PrimaryAxisValue(int horizontal, int vertical) const;
 
-  ShelfAutoHideBehavior GetAutoHideBehavior() const;
+  ShelfAutoHideBehavior auto_hide_behavior() const {
+    return auto_hide_behavior_;
+  }
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
 
   ShelfAutoHideState GetAutoHideState() const;
@@ -112,6 +120,7 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();
+  ShelfWidget* GetShelfWidgetForTesting();
 
  protected:
   WmShelf();
@@ -132,6 +141,13 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
+
+  ShelfAlignment alignment_ = SHELF_ALIGNMENT_BOTTOM_LOCKED;
+
+  // Sets shelf alignment to bottom during login and screen lock.
+  std::unique_ptr<ShelfLockingManager> shelf_locking_manager_;
+
+  ShelfAutoHideBehavior auto_hide_behavior_ = SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
 
   base::ObserverList<WmShelfObserver> observers_;
 

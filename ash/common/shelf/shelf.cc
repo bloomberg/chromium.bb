@@ -4,31 +4,19 @@
 
 #include "ash/common/shelf/shelf.h"
 
-#include <algorithm>
-#include <cmath>
-
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_navigator.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
-#include "ui/compositor/layer.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/skbitmap_operations.h"
-#include "ui/views/accessible_pane_view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/public/activation_client.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -37,8 +25,7 @@ Shelf::Shelf(WmShelf* wm_shelf,
              ShelfWidget* shelf_widget)
     : wm_shelf_(wm_shelf),
       shelf_widget_(shelf_widget),
-      shelf_view_(shelf_view),
-      shelf_locking_manager_(wm_shelf) {
+      shelf_view_(shelf_view) {
   DCHECK(wm_shelf_);
   DCHECK(shelf_view_);
   DCHECK(shelf_widget_);
@@ -56,43 +43,6 @@ Shelf* Shelf::ForPrimaryDisplay() {
 // static
 Shelf* Shelf::ForWindow(WmWindow* window) {
   return window->GetRootWindowController()->GetShelf()->shelf();
-}
-
-void Shelf::SetAlignment(ShelfAlignment alignment) {
-  if (alignment_ == alignment)
-    return;
-
-  if (shelf_locking_manager_.is_locked() &&
-      alignment != SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    shelf_locking_manager_.set_stored_alignment(alignment);
-    return;
-  }
-
-  alignment_ = alignment;
-  shelf_view_->OnShelfAlignmentChanged();
-  shelf_widget_->OnShelfAlignmentChanged();
-  WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
-  WmShell::Get()->NotifyShelfAlignmentChanged(
-      WmLookup::Get()->GetWindowForWidget(shelf_widget_)->GetRootWindow());
-  // ShelfLayoutManager will resize the shelf.
-}
-
-void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
-  if (auto_hide_behavior_ == auto_hide_behavior)
-    return;
-
-  auto_hide_behavior_ = auto_hide_behavior;
-  WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(this);
-  WmShell::Get()->NotifyShelfAutoHideBehaviorChanged(
-      WmLookup::Get()->GetWindowForWidget(shelf_widget_)->GetRootWindow());
-}
-
-ShelfAutoHideState Shelf::GetAutoHideState() const {
-  return shelf_widget_->shelf_layout_manager()->auto_hide_state();
-}
-
-ShelfVisibilityState Shelf::GetVisibilityState() const {
-  return shelf_widget_->shelf_layout_manager()->visibility_state();
 }
 
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
