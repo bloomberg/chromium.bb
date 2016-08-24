@@ -129,6 +129,12 @@ This file contains the strings for ash.
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
 
+      <message name="IDS_ASH_PALETTE_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the palette (a pop-up panel next to the status tray). This causes a partial screenshot to be taken, where after clicking the palette is dimissed and the user selects an area of the screen to take a screenshot of.">
+        Capture Region
+      </message>
+      <message name="IDS_ASH_PALETTE_CAPTURE_SCREEN_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this button takes a screenshot of the entire screen. Additionally, the palette tray is closed.">
+        Capture Screen
+      </message>
       <message name="IDS_ASH_PALETTE_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in. Additionally, the palette tray is closed.">
         Create Note
       </message>

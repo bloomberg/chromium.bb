@@ -19,4 +19,12 @@ bool TestPaletteDelegate::HasNoteApp() {
   return has_note_app_;
 }
 
+void TestPaletteDelegate::TakeScreenshot() {
+  ++take_screenshot_count_;
+}
+
+void TestPaletteDelegate::TakePartialScreenshot() {
+  ++take_partial_screenshot_count_;
+}
+
 }  // namespace ash

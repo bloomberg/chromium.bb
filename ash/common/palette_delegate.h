@@ -22,6 +22,12 @@ class PaletteDelegate {
   // Returns true if there is a note-taking application available.
   virtual bool HasNoteApp() = 0;
 
+  // Take a screenshot of the entire window.
+  virtual void TakeScreenshot() = 0;
+
+  // Take a screenshot of a user-selected region.
+  virtual void TakePartialScreenshot() = 0;
+
  private:
   DISALLOW_ASSIGN(PaletteDelegate);
 };

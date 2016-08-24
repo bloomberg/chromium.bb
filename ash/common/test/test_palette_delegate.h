@@ -20,16 +20,26 @@ class TestPaletteDelegate : public PaletteDelegate {
 
   int has_note_app_count() const { return has_note_app_count_; }
 
+  int take_screenshot_count() const { return take_screenshot_count_; }
+
+  int take_partial_screenshot_count() const {
+    return take_partial_screenshot_count_;
+  }
+
   void set_has_note_app(bool has_note_app) { has_note_app_ = has_note_app; }
 
  private:
   // PaletteDelegate:
   void CreateNote() override;
   bool HasNoteApp() override;
+  void TakeScreenshot() override;
+  void TakePartialScreenshot() override;
 
   bool has_note_app_ = false;
   int create_note_count_ = 0;
   int has_note_app_count_ = 0;
+  int take_screenshot_count_ = 0;
+  int take_partial_screenshot_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaletteDelegate);
 };

@@ -87,6 +87,8 @@ class PaletteDelegateImpl : public PaletteDelegate {
   // PaletteDelegate:
   void CreateNote() override {}
   bool HasNoteApp() override { return false; }
+  void TakeScreenshot() override {}
+  void TakePartialScreenshot() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);
