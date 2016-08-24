@@ -4,6 +4,7 @@
 
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
@@ -18,6 +19,7 @@ ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
 
 void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     bool visibility) {
+  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumVisibility", visibility);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
   content_settings->SetSubresourceBlocked(visibility);

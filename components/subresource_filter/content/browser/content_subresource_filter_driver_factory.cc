@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
@@ -119,7 +120,7 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitMainFrameNavigation(
 }
 
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
-  // TODO(melandory): Collect metrics.
+  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
   const GURL whitelist_url(web_contents()->GetLastCommittedURL());
   AddHostOfURLToWhitelistSet(whitelist_url);
   web_contents()->GetController().Reload(true);

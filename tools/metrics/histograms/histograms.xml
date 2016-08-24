@@ -58268,6 +58268,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.Prompt.NumReloads" enum="BooleanRequested">
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Number of times the user has requested a reload for the page by clicking on
+    the reload button.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.Prompt.NumVisibility" enum="BooleanVisible">
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Number of times Safebrowsing Subresource Filter decided to toggle visibility
+    of the prompt.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.WriteRuleset.ReplaceFileError"
     enum="PlatformFileError">
   <owner>engedy@chromium.org</owner>
@@ -70292,6 +70308,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Reported"/>
 </enum>
 
+<enum name="BooleanRequested" type="int">
+  <int value="0" label="Not requested"/>
+  <int value="1" label="Requested"/>
+</enum>
+
 <enum name="BooleanReset" type="int">
   <int value="0" label="Not reset"/>
   <int value="1" label="Reset"/>
@@ -70415,6 +70436,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanVirtualContext" type="int">
   <int value="0" label="Real context encountered"/>
   <int value="1" label="Virtual context encountered"/>
+</enum>
+
+<enum name="BooleanVisible" type="int">
+  <int value="0" label="Not visible"/>
+  <int value="1" label="Visible"/>
 </enum>
 
 <enum name="BooleanWasted" type="int">
