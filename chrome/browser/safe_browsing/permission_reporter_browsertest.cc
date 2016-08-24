@@ -7,12 +7,15 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
@@ -29,10 +32,14 @@
 
 namespace safe_browsing {
 
-class PermissionReporterBrowserTest : public InProcessBrowserTest {
+class PermissionReporterBrowserTest : public SyncTest {
+ public:
+  PermissionReporterBrowserTest() : SyncTest(SINGLE_CLIENT) {}
+  ~PermissionReporterBrowserTest() override {}
+
  protected:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+    SyncTest::SetUpOnMainThread();
 
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
@@ -43,25 +50,10 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
             make_scoped_refptr(g_browser_process->safe_browsing_service())),
         run_loop.QuitClosure());
     run_loop.Run();
-
-    PermissionRequestManager* manager = GetPermissionRequestManager();
-    mock_permission_prompt_factory_ =
-        base::MakeUnique<MockPermissionPromptFactory>(manager);
-    manager->DisplayPendingRequests();
-
-#if !defined(OS_CHROMEOS)
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(browser()->profile());
-    signin_manager->SetAuthenticatedAccountInfo("gaia_id", "fake_username");
-#endif
-  }
-
-  void TearDownOnMainThread() override {
-    InProcessBrowserTest::TearDownOnMainThread();
-    mock_permission_prompt_factory_.reset();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    SyncTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePermissionActionReporting);
   }
 
@@ -76,45 +68,50 @@ class PermissionReporterBrowserTest : public InProcessBrowserTest {
                                base::WrapUnique(new base::SimpleTestClock)));
   }
 
-  PermissionRequestManager* GetPermissionRequestManager() {
+  PermissionRequestManager* GetPermissionRequestManager(Browser* browser) {
     return PermissionRequestManager::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
+        browser->tab_strip_model()->GetActiveWebContents());
   }
 
-  void AcceptBubble() { GetPermissionRequestManager()->Accept(); }
-
-  MockPermissionPromptFactory* prompt_factory() {
-    return mock_permission_prompt_factory_.get();
-  }
+  void AcceptBubble(Browser* b) { GetPermissionRequestManager(b)->Accept(); }
 
   MockPermissionReportSender* mock_report_sender() {
     return mock_report_sender_;
   }
 
  private:
-  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
-
   // Owned by permission reporter.
   MockPermissionReportSender* mock_report_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionReporterBrowserTest);
 };
 
 // Test that permission action report will be sent if the user is opted into it.
-// TODO(kcarattini): Make this test pass with the call to Sync backends.
 // TODO(kcarattini): Address crbug/638316 to reenable this test.
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
                        DISABLED_PermissionActionReporting) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  // Set up the Sync client.
+  ASSERT_TRUE(SetupSync());
+  Profile* profile = GetProfile(0);
+  Browser* browser = CreateBrowser(profile);
 
+  // Set up mock permission manager and prompt factory.
+  PermissionRequestManager* manager = GetPermissionRequestManager(browser);
+  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory =
+      base::MakeUnique<MockPermissionPromptFactory>(manager);
+  manager->DisplayPendingRequests();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), embedded_test_server()->GetURL("/permissions/request.html"),
+      browser, embedded_test_server()->GetURL("/permissions/request.html"),
       1);
 
-  prompt_factory()->WaitForPermissionBubble();
-  EXPECT_TRUE(prompt_factory()->is_visible());
+  mock_permission_prompt_factory->WaitForPermissionBubble();
+  EXPECT_TRUE(mock_permission_prompt_factory->is_visible());
 
-  AcceptBubble();
+  AcceptBubble(browser);
 
-  EXPECT_FALSE(prompt_factory()->is_visible());
+  EXPECT_FALSE(mock_permission_prompt_factory->is_visible());
   EXPECT_EQ(1, mock_report_sender()->GetAndResetNumberOfReportsSent());
 
   PermissionReport permission_report;
