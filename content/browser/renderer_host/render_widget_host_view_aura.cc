@@ -723,7 +723,6 @@ void RenderWidgetHostViewAura::SetNeedsBeginFrames(bool needs_begin_frames) {
 
 void RenderWidgetHostViewAura::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
-  delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
   last_begin_frame_args_ = args;
 }

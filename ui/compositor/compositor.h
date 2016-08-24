@@ -287,6 +287,12 @@ class COMPOSITOR_EXPORT Compositor
   // context.
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
 
+  // Most platforms set their vsync info via BrowerCompositorOutputSurface's
+  // OnUpdateVSyncParametersFromGpu, but Mac routes vsync info via the
+  // browser compositor instead through this path.
+  void SetDisplayVSyncParameters(base::TimeTicks timebase,
+                                 base::TimeDelta interval);
+
   // Sets the widget for the compositor to render into.
   void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
   // Releases the widget previously set through SetAcceleratedWidget().

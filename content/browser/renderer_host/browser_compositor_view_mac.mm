@@ -300,13 +300,8 @@ void BrowserCompositorMac::UpdateVSyncParameters(
     const base::TimeTicks& timebase,
     const base::TimeDelta& interval) {
   if (recyclable_compositor_) {
-    recyclable_compositor_->compositor()
-        ->vsync_manager()
-        ->UpdateVSyncParameters(timebase, interval);
-    recyclable_compositor_->compositor()
-        ->context_factory()
-        ->SetDisplayVSyncParameters(recyclable_compositor_->compositor(),
-                                    timebase, interval);
+    recyclable_compositor_->compositor()->SetDisplayVSyncParameters(
+        timebase, interval);
   }
 }
 
@@ -474,7 +469,6 @@ bool BrowserCompositorMac::IsAutoResizeEnabled() const {
 // cc::BeginFrameSourceBase, public:
 
 void BrowserCompositorMac::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  delegated_frame_host_->SetVSyncParameters(args.frame_time, args.interval);
   client_->BrowserCompositorMacSendBeginFrame(args);
   last_begin_frame_args_ = args;
 }

@@ -398,10 +398,13 @@ bool Compositor::GetScrollOffsetForLayer(int layer_id,
 void Compositor::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
   context_factory_->SetAuthoritativeVSyncInterval(this, interval);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-         cc::switches::kDisableBeginFrameScheduling)) {
-    vsync_manager_->SetAuthoritativeVSyncInterval(interval);
-  }
+  vsync_manager_->SetAuthoritativeVSyncInterval(interval);
+}
+
+void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
+                                           base::TimeDelta interval) {
+  context_factory_->SetDisplayVSyncParameters(this, timebase, interval);
+  vsync_manager_->UpdateVSyncParameters(timebase, interval);
 }
 
 void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {

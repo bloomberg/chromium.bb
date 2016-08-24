@@ -35,18 +35,12 @@ class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
 class CONTENT_EXPORT BrowserCompositorOutputSurface
-    : public cc::OutputSurface,
-      public ui::CompositorVSyncManager::Observer {
+    : public cc::OutputSurface {
  public:
   ~BrowserCompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
-  bool BindToClient(cc::OutputSurfaceClient* client) override;
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
-
-  // ui::CompositorVSyncManager::Observer implementation.
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval) override;
 
   void OnUpdateVSyncParametersFromGpu(base::TimeTicks timebase,
                                       base::TimeDelta interval);
@@ -95,14 +89,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   cc::SyntheticBeginFrameSource* synthetic_begin_frame_source_;
   ReflectorImpl* reflector_;
 
-  // True when BeginFrame scheduling is enabled.
-  bool use_begin_frame_scheduling_;
-
  private:
   void Initialize();
-
-  void UpdateVSyncParametersInternal(base::TimeTicks timebase,
-                                     base::TimeDelta interval);
 
   std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
       overlay_candidate_validator_;
