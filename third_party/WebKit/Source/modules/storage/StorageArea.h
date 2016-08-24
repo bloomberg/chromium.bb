@@ -26,7 +26,7 @@
 #ifndef StorageArea_h
 #define StorageArea_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -35,7 +35,6 @@
 namespace blink {
 
 class ExceptionState;
-class LocalFrame;
 class KURL;
 class SecurityOrigin;
 class Storage;
@@ -47,8 +46,7 @@ enum StorageType {
     SessionStorage
 };
 
-class MODULES_EXPORT StorageArea final : public GarbageCollectedFinalized<StorageArea>, public LocalFrameLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
+class MODULES_EXPORT StorageArea final : public GarbageCollectedFinalized<StorageArea> {
 public:
     static StorageArea* create(std::unique_ptr<WebStorageArea>, StorageType);
 
@@ -79,6 +77,7 @@ private:
 
     std::unique_ptr<WebStorageArea> m_storageArea;
     StorageType m_storageType;
+    WeakMember<LocalFrame> m_frameUsedForCanAccessStorage;
     bool m_canAccessStorageCachedResult;
 };
 

@@ -53,9 +53,9 @@ StorageArea* StorageArea::create(std::unique_ptr<WebStorageArea> storageArea, St
 }
 
 StorageArea::StorageArea(std::unique_ptr<WebStorageArea> storageArea, StorageType storageType)
-    : LocalFrameLifecycleObserver(nullptr)
-    , m_storageArea(std::move(storageArea))
+    : m_storageArea(std::move(storageArea))
     , m_storageType(storageType)
+    , m_frameUsedForCanAccessStorage(nullptr)
     , m_canAccessStorageCachedResult(false)
 {
 }
@@ -66,7 +66,7 @@ StorageArea::~StorageArea()
 
 DEFINE_TRACE(StorageArea)
 {
-    LocalFrameLifecycleObserver::trace(visitor);
+    visitor->trace(m_frameUsedForCanAccessStorage);
 }
 
 unsigned StorageArea::length(ExceptionState& exceptionState, LocalFrame* frame)
@@ -140,17 +140,16 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
     if (!frame || !frame->page())
         return false;
 
-    // LocalFrameLifecycleObserver is used to safely keep the cached
-    // reference to the LocalFrame. Should the LocalFrame die before
-    // this StorageArea does, that cached reference will be cleared.
-    if (this->frame() == frame)
+    // Should the LocalFrame die before this StorageArea does,
+    // that cached reference will be cleared.
+    if (m_frameUsedForCanAccessStorage == frame)
         return m_canAccessStorageCachedResult;
     StorageNamespaceController* controller = StorageNamespaceController::from(frame->page());
     if (!controller)
         return false;
     bool result = controller->getStorageClient()->canAccessStorage(frame, m_storageType);
     // Move attention to the new LocalFrame.
-    LocalFrameLifecycleObserver::setContext(frame);
+    m_frameUsedForCanAccessStorage = frame;
     m_canAccessStorageCachedResult = result;
     return result;
 }
