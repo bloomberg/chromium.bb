@@ -568,7 +568,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   ShelfDelegate* shelf_delegate = WmShell::Get()->shelf_delegate();
   DCHECK(shelf_delegate);
   if (old_state.visibility_state != state_.visibility_state)
-    shelf_delegate->OnShelfVisibilityStateChanged(shelf_widget_->shelf());
+    shelf_delegate->OnShelfVisibilityStateChanged(wm_shelf_);
 
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
@@ -576,7 +576,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if ((old_state.visibility_state != state_.visibility_state &&
        state_.visibility_state == SHELF_AUTO_HIDE) ||
       old_state.auto_hide_state != state_.auto_hide_state) {
-    shelf_delegate->OnShelfAutoHideStateChanged(shelf_widget_->shelf());
+    shelf_delegate->OnShelfAutoHideStateChanged(wm_shelf_);
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       OnAutoHideStateChanged(state_.auto_hide_state));
   }

@@ -19,9 +19,9 @@
 #include "ash/shell.h"
 #include "ash/shell/context_menu.h"
 #include "ash/shell/example_factory.h"
-#include "ash/shell/shelf_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/test_keyboard_ui.h"
+#include "ash/test/test_shelf_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -231,7 +231,7 @@ app_list::AppListPresenter* ShellDelegateImpl::GetAppListPresenter() {
 }
 
 ShelfDelegate* ShellDelegateImpl::CreateShelfDelegate(ShelfModel* model) {
-  shelf_delegate_ = new ShelfDelegateImpl();
+  shelf_delegate_ = new test::TestShelfDelegate(model);
   return shelf_delegate_;
 }
 

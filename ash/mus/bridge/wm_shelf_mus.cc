@@ -28,7 +28,7 @@ WmShelfMus::WmShelfMus(WmRootWindowController* root_window_controller) {
   // Must be initialized before the delegate is notified because the delegate
   // may try to access the WmShelf.
   SetShelf(shelf_.get());
-  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(this);
   WmShell::Get()->NotifyShelfCreatedForRootWindow(root);
   shelf_widget_->PostCreateShelf();
 }

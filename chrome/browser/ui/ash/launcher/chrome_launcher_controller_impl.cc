@@ -108,11 +108,9 @@ using content::WebContents;
 
 namespace {
 
-int64_t GetDisplayIDForShelf(ash::Shelf* shelf) {
-  aura::Window* root_window =
-      shelf->shelf_widget()->GetNativeWindow()->GetRootWindow();
+int64_t GetDisplayIDForShelf(ash::WmShelf* shelf) {
   display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
+      shelf->GetWindow()->GetRootWindow()->GetDisplayNearestWindow();
   DCHECK(display.is_valid());
   return display.id();
 }
@@ -836,7 +834,7 @@ bool ChromeLauncherControllerImpl::ShelfBoundsChangesProbablyWithUser(
   // no window on desktop, multi user, ..) the shelf could be shown - or not.
   PrefService* prefs = profile_->GetPrefs();
   PrefService* other_prefs = other_profile->GetPrefs();
-  const int64_t display = GetDisplayIDForShelf(shelf);
+  const int64_t display = GetDisplayIDForShelf(shelf->wm_shelf());
   const bool currently_shown =
       ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER ==
       ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display);
@@ -863,39 +861,37 @@ ChromeLauncherControllerImpl::GetArcDeferredLauncher() {
 ///////////////////////////////////////////////////////////////////////////////
 // ash::ShelfDelegate:
 
-void ChromeLauncherControllerImpl::OnShelfCreated(ash::Shelf* shelf) {
+void ChromeLauncherControllerImpl::OnShelfCreated(ash::WmShelf* shelf) {
   PrefService* prefs = profile_->GetPrefs();
   const int64_t display = GetDisplayIDForShelf(shelf);
 
-  shelf->wm_shelf()->SetAutoHideBehavior(
+  shelf->SetAutoHideBehavior(
       ash::launcher::GetShelfAutoHideBehaviorPref(prefs, display));
 
-  if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
-    shelf->wm_shelf()->SetAlignment(
-        ash::launcher::GetShelfAlignmentPref(prefs, display));
-  }
+  if (ash::ShelfWidget::ShelfAlignmentAllowed())
+    shelf->SetAlignment(ash::launcher::GetShelfAlignmentPref(prefs, display));
 }
 
-void ChromeLauncherControllerImpl::OnShelfDestroyed(ash::Shelf* shelf) {}
+void ChromeLauncherControllerImpl::OnShelfDestroyed(ash::WmShelf* shelf) {}
 
-void ChromeLauncherControllerImpl::OnShelfAlignmentChanged(ash::Shelf* shelf) {
-  ash::launcher::SetShelfAlignmentPref(profile_->GetPrefs(),
-                                       GetDisplayIDForShelf(shelf),
-                                       shelf->wm_shelf()->alignment());
+void ChromeLauncherControllerImpl::OnShelfAlignmentChanged(
+    ash::WmShelf* shelf) {
+  ash::launcher::SetShelfAlignmentPref(
+      profile_->GetPrefs(), GetDisplayIDForShelf(shelf), shelf->alignment());
 }
 
 void ChromeLauncherControllerImpl::OnShelfAutoHideBehaviorChanged(
-    ash::Shelf* shelf) {
-  ash::launcher::SetShelfAutoHideBehaviorPref(
-      profile_->GetPrefs(), GetDisplayIDForShelf(shelf),
-      shelf->wm_shelf()->auto_hide_behavior());
+    ash::WmShelf* shelf) {
+  ash::launcher::SetShelfAutoHideBehaviorPref(profile_->GetPrefs(),
+                                              GetDisplayIDForShelf(shelf),
+                                              shelf->auto_hide_behavior());
 }
 
 void ChromeLauncherControllerImpl::OnShelfAutoHideStateChanged(
-    ash::Shelf* shelf) {}
+    ash::WmShelf* shelf) {}
 
 void ChromeLauncherControllerImpl::OnShelfVisibilityStateChanged(
-    ash::Shelf* shelf) {}
+    ash::WmShelf* shelf) {}
 
 ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppID(
     const std::string& app_id) {
@@ -1319,7 +1315,7 @@ void ChromeLauncherControllerImpl::SetShelfAutoHideBehaviorFromPrefs() {
     if (shelf) {
       shelf->wm_shelf()->SetAutoHideBehavior(
           ash::launcher::GetShelfAutoHideBehaviorPref(
-              profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
+              profile_->GetPrefs(), GetDisplayIDForShelf(shelf->wm_shelf())));
     }
   }
 }
@@ -1332,7 +1328,7 @@ void ChromeLauncherControllerImpl::SetShelfAlignmentFromPrefs() {
     ash::Shelf* shelf = ash::Shelf::ForWindow(window);
     if (shelf) {
       shelf->wm_shelf()->SetAlignment(ash::launcher::GetShelfAlignmentPref(
-          profile_->GetPrefs(), GetDisplayIDForShelf(shelf)));
+          profile_->GetPrefs(), GetDisplayIDForShelf(shelf->wm_shelf())));
     }
   }
 }

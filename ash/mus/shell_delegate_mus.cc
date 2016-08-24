@@ -104,12 +104,12 @@ class ShelfDelegateStub : public ShelfDelegate {
   ~ShelfDelegateStub() override {}
 
   // ShelfDelegate overrides:
-  void OnShelfCreated(Shelf* shelf) override {}
-  void OnShelfDestroyed(Shelf* shelf) override {}
-  void OnShelfAlignmentChanged(Shelf* shelf) override {}
-  void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override {}
-  void OnShelfAutoHideStateChanged(Shelf* shelf) override {}
-  void OnShelfVisibilityStateChanged(Shelf* shelf) override {}
+  void OnShelfCreated(WmShelf* shelf) override {}
+  void OnShelfDestroyed(WmShelf* shelf) override {}
+  void OnShelfAlignmentChanged(WmShelf* shelf) override {}
+  void OnShelfAutoHideBehaviorChanged(WmShelf* shelf) override {}
+  void OnShelfAutoHideStateChanged(WmShelf* shelf) override {}
+  void OnShelfVisibilityStateChanged(WmShelf* shelf) override {}
   ShelfID GetShelfIDForAppID(const std::string& app_id) override { return 0; }
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return false; }
   const std::string& GetAppIDForShelfID(ShelfID id) override {

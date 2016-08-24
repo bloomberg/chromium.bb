@@ -62,7 +62,7 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_layout_manager_->shelf_widget()->OnShelfAlignmentChanged();
-  WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(shelf_);
+  WmShell::Get()->shelf_delegate()->OnShelfAlignmentChanged(this);
   WmShell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
   // ShelfLayoutManager will resize the shelf.
 }
@@ -107,7 +107,7 @@ void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
     return;
 
   auto_hide_behavior_ = auto_hide_behavior;
-  WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(shelf_);
+  WmShell::Get()->shelf_delegate()->OnShelfAutoHideBehaviorChanged(this);
   WmShell::Get()->NotifyShelfAutoHideBehaviorChanged(
       GetWindow()->GetRootWindow());
 }

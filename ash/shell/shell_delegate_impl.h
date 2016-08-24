@@ -23,8 +23,6 @@ class KeyboardUI;
 namespace ash {
 namespace shell {
 
-class ShelfDelegateImpl;
-
 class ShellDelegateImpl : public ShellDelegate {
  public:
   ShellDelegateImpl();
@@ -57,7 +55,7 @@ class ShellDelegateImpl : public ShellDelegate {
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
  private:
-  ShelfDelegateImpl* shelf_delegate_;
+  ShelfDelegate* shelf_delegate_;
   std::unique_ptr<app_list::AppListPresenterDelegateFactory>
       app_list_presenter_delegate_factory_;
   std::unique_ptr<app_list::AppListPresenterImpl> app_list_presenter_;

@@ -359,15 +359,15 @@ class TestShelfDelegate : public ShelfDelegate {
   ~TestShelfDelegate() override {}
 
   // ShelfDelegate implementation.
-  void OnShelfCreated(Shelf* shelf) override {
-    shelf->wm_shelf()->SetAlignment(initial_alignment_);
-    shelf->wm_shelf()->SetAutoHideBehavior(initial_auto_hide_behavior_);
+  void OnShelfCreated(WmShelf* shelf) override {
+    shelf->SetAlignment(initial_alignment_);
+    shelf->SetAutoHideBehavior(initial_auto_hide_behavior_);
   }
-  void OnShelfDestroyed(Shelf* shelf) override {}
-  void OnShelfAlignmentChanged(Shelf* shelf) override {}
-  void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override {}
-  void OnShelfAutoHideStateChanged(Shelf* shelf) override {}
-  void OnShelfVisibilityStateChanged(Shelf* shelf) override {}
+  void OnShelfDestroyed(WmShelf* shelf) override {}
+  void OnShelfAlignmentChanged(WmShelf* shelf) override {}
+  void OnShelfAutoHideBehaviorChanged(WmShelf* shelf) override {}
+  void OnShelfAutoHideStateChanged(WmShelf* shelf) override {}
+  void OnShelfVisibilityStateChanged(WmShelf* shelf) override {}
   ShelfID GetShelfIDForAppID(const std::string& app_id) override { return 0; }
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return false; }
   const std::string& GetAppIDForShelfID(ShelfID id) override {

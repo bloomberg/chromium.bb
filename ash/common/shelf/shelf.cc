@@ -32,7 +32,7 @@ Shelf::Shelf(WmShelf* wm_shelf,
 }
 
 Shelf::~Shelf() {
-  WmShell::Get()->shelf_delegate()->OnShelfDestroyed(this);
+  WmShell::Get()->shelf_delegate()->OnShelfDestroyed(wm_shelf_);
 }
 
 // static

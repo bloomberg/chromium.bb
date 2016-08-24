@@ -478,7 +478,7 @@ void RootWindowController::CreateShelf() {
   // Must be initialized before the delegate is notified because the delegate
   // may try to access the WmShelf.
   wm_shelf_aura_->SetShelf(shelf_.get());
-  WmShell::Get()->shelf_delegate()->OnShelfCreated(shelf_.get());
+  WmShell::Get()->shelf_delegate()->OnShelfCreated(wm_shelf_aura_.get());
 
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(wm_shelf_aura_.get());

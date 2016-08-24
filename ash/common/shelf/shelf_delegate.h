@@ -5,11 +5,14 @@
 #ifndef ASH_COMMON_SHELF_SHELF_DELEGATE_H_
 #define ASH_COMMON_SHELF_SHELF_DELEGATE_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_item_types.h"
 
 namespace ash {
-class Shelf;
+
+class WmShelf;
 
 // Delegate shared by all shelf instances.
 class ASH_EXPORT ShelfDelegate {
@@ -18,23 +21,23 @@ class ASH_EXPORT ShelfDelegate {
 
   // Callback used to allow delegate to perform initialization actions that
   // depend on the Shelf being in a known state.
-  virtual void OnShelfCreated(Shelf* shelf) = 0;
+  virtual void OnShelfCreated(WmShelf* shelf) = 0;
 
   // Callback used to inform the delegate that a specific shelf no longer
   // exists.
-  virtual void OnShelfDestroyed(Shelf* shelf) = 0;
+  virtual void OnShelfDestroyed(WmShelf* shelf) = 0;
 
   // Called when |shelf|'s alignment changes.
-  virtual void OnShelfAlignmentChanged(Shelf* shelf) = 0;
+  virtual void OnShelfAlignmentChanged(WmShelf* shelf) = 0;
 
   // Called when |shelf|'s auto-hide behavior changes.
-  virtual void OnShelfAutoHideBehaviorChanged(Shelf* shelf) = 0;
+  virtual void OnShelfAutoHideBehaviorChanged(WmShelf* shelf) = 0;
 
   // Called when |shelf|'s auto-hide state changes.
-  virtual void OnShelfAutoHideStateChanged(Shelf* shelf) = 0;
+  virtual void OnShelfAutoHideStateChanged(WmShelf* shelf) = 0;
 
   // Called when |shelf|'s visibility state is committed.
-  virtual void OnShelfVisibilityStateChanged(Shelf* shelf) = 0;
+  virtual void OnShelfVisibilityStateChanged(WmShelf* shelf) = 0;
 
   // Get the shelf ID from an application ID.
   virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;

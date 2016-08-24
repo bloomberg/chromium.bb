@@ -912,8 +912,6 @@
       'shell/lock_view.cc',
       'shell/panel_window.cc',
       'shell/panel_window.h',
-      'shell/shelf_delegate_impl.cc',
-      'shell/shelf_delegate_impl.h',
       'shell/shell_delegate_impl.cc',
       'shell/shell_delegate_impl.h',
       'shell/toplevel_window.cc',
