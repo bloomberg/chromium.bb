@@ -299,7 +299,7 @@ rm -rf "$DUMMY_STAGING_DIR"
 # lsb-base: Implies many other dependencies.
 # xdg-utils: For OS integration.
 # wget: For uploading crash reports with Breakpad.
-ADDITION_DEPS="ca-certificates, fonts-liberation, libappindicator1,
+ADDITION_DEPS="ca-certificates, fonts-liberation, libappindicator1, \
   libnss3 (>= 3.17.2), libstdc++6 (>=4.8.0), lsb-base (>=4.1), \
   xdg-utils (>= 1.0.2), wget"
 
