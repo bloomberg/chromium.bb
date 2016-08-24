@@ -935,6 +935,14 @@ def UncompressFile(infile, outfile):
   RunCommand(cmd, log_stdout_to_file=outfile)
 
 
+class CreateTarballError(RunCommandError):
+  """Error while running tar.
+
+  We may run tar multiple times because of "soft" errors.  The result is from
+  the last RunCommand instance.
+  """
+
+
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                   inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
@@ -953,6 +961,9 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
 
   Returns:
     The cmd_result object returned by the RunCommand invocation.
+
+  Raises:
+    CreateTarballError: if the tar command failed, possibly after retry.
   """
   if inputs is None:
     inputs = ['.']
@@ -967,7 +978,21 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
          ['--sparse', '-I', comp, '-cf', target] +
          list(inputs))
   rc_func = SudoRunCommand if sudo else RunCommand
-  return rc_func(cmd, cwd=cwd, **kwargs)
+
+  # If tar fails with status 1, retry, but only once.  We think this is
+  # acceptable because we see directories being modified, but not files.  Our
+  # theory is that temporary files are created in those directories, but we
+  # haven't been able to prove it yet.
+  for try_count in range(2):
+    result = rc_func(cmd, cwd=cwd, **dict(kwargs, error_code_ok=True))
+    if result.returncode == 0:
+      return result
+    if result.returncode != 1 or try_count > 0:
+      raise CreateTarballError('CreateTarball', result)
+    assert result.returncode == 1 and try_count == 0
+    logging.warning('CreateTarball: tar: source modification time changed ' +
+                    '(see crbug.com/547055), retrying once')
+    logging.PrintBuildbotStepWarnings()
 
 
 def GroupByKey(input_iter, key):

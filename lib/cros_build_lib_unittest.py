@@ -1909,3 +1909,54 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     """Create a tarfile."""
     cros_build_lib.CreateTarball(self.target, self.inputDir,
                                  inputs=self.inputsWithDirs)
+
+# Tests for tar failure retry logic.
+
+class FailedCreateTarballTests(cros_test_lib.MockTestCase):
+  """Tests special case error handling for CreateTarBall."""
+
+  def setUp(self):
+    """Mock RunCommand mock."""
+    # Each test can change this value as needed.  Each element is the return
+    # code in the CommandResult for subsequent calls to RunCommand().
+    self.tarResults = []
+
+    def Result(*_args, **_kwargs):
+      """Creates CommandResult objects for each tarResults value in turn."""
+      return cros_build_lib.CommandResult(returncode=self.tarResults.pop(0))
+
+    self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
+                                    autospec=True,
+                                    side_effect=Result)
+
+  def testSuccess(self):
+    """CreateTarball works the first time."""
+    self.tarResults = [0]
+    cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+
+    self.assertEqual(self.mockRun.call_count, 1)
+
+  def testFailedOnceSoft(self):
+    """Force a single retry for CreateTarball."""
+    self.tarResults = [1, 0]
+    cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+
+    self.assertEqual(self.mockRun.call_count, 2)
+
+  def testFailedOnceHard(self):
+    """Test unrecoverable error."""
+    self.tarResults = [2]
+    with self.assertRaises(cros_build_lib.RunCommandError) as cm:
+      cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+
+    self.assertEqual(self.mockRun.call_count, 1)
+    self.assertEqual(cm.exception.args[1].returncode, 2)
+
+  def testFailedTwiceSoft(self):
+    """Exhaust retries for recoverable errors."""
+    self.tarResults = [1, 1]
+    with self.assertRaises(cros_build_lib.RunCommandError) as cm:
+      cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+
+    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(cm.exception.args[1].returncode, 1)
