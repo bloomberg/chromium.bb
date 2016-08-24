@@ -690,9 +690,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   }
 }
 
-// TODO(ekaramad): Enable the following tests on other platforms when the
-// corresponding feature is implemented (http://crbug.com/578168).
-#if defined(USE_AURA)
 // The following test verifies that when the active widget changes value, it is
 // always from nullptr to non-null or vice versa.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
@@ -744,6 +741,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // based on InputMethodObserver. Write similar tests for Mac/Android/Mus
 // (crbug.com/602723).
 
+#if defined(USE_AURA)
 // -----------------------------------------------------------------------------
 // Input Method Observer Tests
 //
