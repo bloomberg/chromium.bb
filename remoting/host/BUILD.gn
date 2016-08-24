@@ -382,6 +382,7 @@ source_set("unit_tests") {
     "//remoting/host/native_messaging",
     "//remoting/host/setup",
     "//remoting/proto",
+    "//remoting/resources",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
