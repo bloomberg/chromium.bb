@@ -1706,11 +1706,12 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   current_profile_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   NonInteractiveContainer* profile_name_container =
       new NonInteractiveContainer();
-  int name_container_v_spacing = views::kRelatedControlVerticalSpacing;
-  if (!avatar_item.signed_in || switches::IsEnableAccountConsistency())
-    name_container_v_spacing += views::kRelatedControlVerticalSpacing;
-  profile_name_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, name_container_v_spacing, 0));
+  int name_container_v_spacing =
+      (current_profile_photo->GetPreferredSize().height() -
+       current_profile_name->GetPreferredSize().height()) / 2;
+  views::BoxLayout* profile_name_layout = new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, name_container_v_spacing, 0);
+  profile_name_container->SetLayoutManager(profile_name_layout);
   profile_name_container->AddChildView(current_profile_name);
 
   const int between_child_spacing =
@@ -1748,6 +1749,12 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
       email_label->SetElideBehavior(gfx::ELIDE_EMAIL);
       email_label->SetEnabled(false);
       email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      name_container_v_spacing =
+          (current_profile_photo->GetPreferredSize().height() -
+           current_profile_name->GetPreferredSize().height() -
+           email_label->GetPreferredSize().height()) / 2;
+      profile_name_layout->set_inside_border_insets(
+          gfx::Insets(name_container_v_spacing, 0));
       profile_name_container->AddChildView(email_label);
     }
     return view;
