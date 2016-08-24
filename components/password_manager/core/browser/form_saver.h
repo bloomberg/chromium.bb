@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_SAVER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FORM_SAVER_H_
 
+#include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
@@ -28,7 +31,8 @@ class FormSaver {
   // |best_matches|. If |old_primary_key| is given, uses it for saving
   // |pending|.
   virtual void Save(const autofill::PasswordForm& pending,
-                    const autofill::PasswordFormMap& best_matches,
+                    const std::map<base::string16,
+                                   const autofill::PasswordForm*>& best_matches,
                     const autofill::PasswordForm* old_primary_key) = 0;
 
   // Updates the |pending| form and updates the stored preference on
@@ -37,7 +41,8 @@ class FormSaver {
   // |credentials_to_update|.
   virtual void Update(
       const autofill::PasswordForm& pending,
-      const autofill::PasswordFormMap& best_matches,
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          best_matches,
       const std::vector<autofill::PasswordForm>* credentials_to_update,
       const autofill::PasswordForm* old_primary_key) = 0;
 
@@ -61,7 +66,7 @@ class FormSaver {
   // account.
   virtual void WipeOutdatedCopies(
       const autofill::PasswordForm& pending,
-      autofill::PasswordFormMap* best_matches,
+      std::map<base::string16, const autofill::PasswordForm*>* best_matches,
       const autofill::PasswordForm** preferred_match) = 0;
 
  private:

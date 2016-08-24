@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,10 +50,8 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
 
 void ManagePasswordsTest::SetupManagingPasswords() {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map.insert(std::make_pair(
-      kTestUsername,
-      base::WrapUnique(new autofill::PasswordForm(*test_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  map.insert(std::make_pair(kTestUsername, test_form()));
   GetController()->OnPasswordAutofilled(map, map.begin()->second->origin,
                                         nullptr);
 }

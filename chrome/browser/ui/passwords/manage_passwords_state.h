@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_STATE_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_STATE_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -69,10 +71,10 @@ class ManagePasswordsState {
   // autofilled. In addition, |federated_matches|, if not null, contains stored
   // federated credentials to show to the user as well.
   void OnPasswordAutofilled(
-      const autofill::PasswordFormMap& password_form_map,
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          password_form_map,
       const GURL& origin,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-          federated_matches);
+      const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Move to INACTIVE_STATE.
   void OnInactive();

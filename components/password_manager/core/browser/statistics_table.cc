@@ -35,15 +35,14 @@ bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs) {
          lhs.update_time == rhs.update_time;
 }
 
-InteractionsStats* FindStatsByUsername(
-    const std::vector<std::unique_ptr<InteractionsStats>>& stats,
+const InteractionsStats* FindStatsByUsername(
+    const std::vector<const InteractionsStats*>& stats,
     const base::string16& username) {
-  auto it = std::find_if(
-      stats.begin(), stats.end(),
-      [&username](const std::unique_ptr<InteractionsStats>& element) {
-        return username == element->username_value;
-      });
-  return it == stats.end() ? nullptr : it->get();
+  auto it = std::find_if(stats.begin(), stats.end(),
+                         [&username](const InteractionsStats* element) {
+                           return username == element->username_value;
+                         });
+  return it == stats.end() ? nullptr : *it;
 }
 
 StatisticsTable::StatisticsTable() : db_(nullptr) {

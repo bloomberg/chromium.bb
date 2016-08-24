@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -212,7 +214,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 
   // Returns the best matches.
-  const autofill::PasswordFormMap& best_matches() const {
+  const std::map<base::string16, const autofill::PasswordForm*>& best_matches()
+      const {
     return best_matches_;
   }
 
@@ -220,13 +223,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return preferred_match_;
   }
 
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  blacklisted_matches() const {
+  const std::vector<const autofill::PasswordForm*>& blacklisted_matches()
+      const {
     return blacklisted_matches_;
   }
 
-  const std::vector<std::unique_ptr<InteractionsStats>>& interactions_stats()
-      const {
+  const std::vector<const InteractionsStats*>& interactions_stats() const {
     return interactions_stats_;
   }
 
@@ -236,8 +238,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return is_possible_change_password_form_without_username_;
   }
 
-  const std::vector<std::unique_ptr<autofill::PasswordForm>>&
-  federated_matches() {
+  const std::vector<const autofill::PasswordForm*>& federated_matches() const {
     return federated_matches_;
   }
 
@@ -438,7 +439,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // for empty |password| return nullptr and for non-empty |password| returns
   // the unique entry in |best_matches_| with the same password, if it exists,
   // and nullptr otherwise.
-  autofill::PasswordForm* FindBestMatchForUpdatePassword(
+  const autofill::PasswordForm* FindBestMatchForUpdatePassword(
       const base::string16& password) const;
 
   // Try to find best matched to |form| from |best_matches_| by the rules:
@@ -450,7 +451,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // a form contains only one field which is a password) and there is an element
   // from |best_matches_| with the same password as in |form| then return it;
   // 4. Otherwise return nullptr.
-  autofill::PasswordForm* FindBestSavedMatch(
+  const autofill::PasswordForm* FindBestSavedMatch(
       const autofill::PasswordForm* form) const;
 
   // Send appropriate votes based on what is currently being saved.
@@ -470,29 +471,35 @@ class PasswordFormManager : public PasswordStoreConsumer {
       std::vector<autofill::PasswordForm>* credentials_to_update);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
-  // being managed by this. Use a map instead of vector, because we most
-  // frequently require lookups by username value in IsNewLogin.
-  autofill::PasswordFormMap best_matches_;
+  // being managed by this.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches_owned_;
+  // Weak copy for sharing, indexed by username.
+  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
 
   // Set of forms from PasswordStore that correspond to the current site and
-  // that are not in |best_matches_|.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> not_best_matches_;
+  // that are not in |best_matches_|, and their weak copy for sharing.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> not_best_matches_owned_;
+  std::vector<const autofill::PasswordForm*> not_best_matches_;
 
   // Federated credentials relevant to the observed form. They are neither
   // filled not saved by this PasswordFormManager, so they are kept separately
   // from |best_matches_|. The PasswordFormManager passes them further to
-  // PasswordManager to show them in the UI.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches_;
+  // PasswordManager to show them in the UI. Also weak copy for sharing.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches_owned_;
+  std::vector<const autofill::PasswordForm*> federated_matches_;
 
   // Set of blacklisted forms from the PasswordStore that best match the current
-  // form.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> blacklisted_matches_;
+  // form, and their weak copy for sharing.
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+      blacklisted_matches_owned_;
+  std::vector<const autofill::PasswordForm*> blacklisted_matches_;
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
 
-  // Statistics for the current domain.
-  std::vector<std::unique_ptr<InteractionsStats>> interactions_stats_;
+  // Statistics for the current domain and their weak copy for sharing.
+  std::vector<std::unique_ptr<InteractionsStats>> interactions_stats_owned_;
+  std::vector<const InteractionsStats*> interactions_stats_;
 
   // Stores a submitted form.
   std::unique_ptr<const autofill::PasswordForm> provisionally_saved_form_;

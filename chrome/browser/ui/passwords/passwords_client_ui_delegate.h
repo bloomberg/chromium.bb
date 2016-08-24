@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_CLIENT_UI_DELEGATE_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORDS_CLIENT_UI_DELEGATE_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace content {
@@ -70,10 +72,10 @@ class PasswordsClientUIDelegate {
   // the manage password icon. |federated_matches| contain the matching stored
   // federated credentials to display in the UI.
   virtual void OnPasswordAutofilled(
-      const autofill::PasswordFormMap& password_form_map,
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          password_form_map,
       const GURL& origin,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-          federated_matches) = 0;
+      const std::vector<const autofill::PasswordForm*>* federated_matches) = 0;
 
  protected:
   virtual ~PasswordsClientUIDelegate() = default;

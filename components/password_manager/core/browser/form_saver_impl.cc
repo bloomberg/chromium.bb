@@ -18,7 +18,6 @@
 #include "url/origin.h"
 
 using autofill::PasswordForm;
-using autofill::PasswordFormMap;
 
 namespace password_manager {
 
@@ -37,15 +36,16 @@ void FormSaverImpl::PermanentlyBlacklist(PasswordForm* observed) {
   store_->AddLogin(*observed);
 }
 
-void FormSaverImpl::Save(const PasswordForm& pending,
-                         const autofill::PasswordFormMap& best_matches,
-                         const PasswordForm* old_primary_key) {
+void FormSaverImpl::Save(
+    const PasswordForm& pending,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const PasswordForm* old_primary_key) {
   SaveImpl(pending, true, best_matches, nullptr, old_primary_key);
 }
 
 void FormSaverImpl::Update(
     const PasswordForm& pending,
-    const autofill::PasswordFormMap& best_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
     const std::vector<PasswordForm>* credentials_to_update,
     const PasswordForm* old_primary_key) {
   SaveImpl(pending, false, best_matches, credentials_to_update,
@@ -68,9 +68,10 @@ void FormSaverImpl::RemovePresavedPassword() {
   presaved_ = nullptr;
 }
 
-void FormSaverImpl::WipeOutdatedCopies(const PasswordForm& pending,
-                                       PasswordFormMap* best_matches,
-                                       const PasswordForm** preferred_match) {
+void FormSaverImpl::WipeOutdatedCopies(
+    const PasswordForm& pending,
+    std::map<base::string16, const PasswordForm*>* best_matches,
+    const PasswordForm** preferred_match) {
   DCHECK(preferred_match);  // Note: *preferred_match may still be null.
   DCHECK(url::Origin(GURL(pending.signon_realm))
              .IsSameOriginWith(
@@ -82,7 +83,7 @@ void FormSaverImpl::WipeOutdatedCopies(const PasswordForm& pending,
     if ((pending.password_value != it->second->password_value) &&
         gaia::AreEmailsSame(base::UTF16ToUTF8(pending.username_value),
                             base::UTF16ToUTF8(it->second->username_value))) {
-      if (it->second.get() == *preferred_match)
+      if (it->second == *preferred_match)
         *preferred_match = nullptr;
       store_->RemoveLogin(*it->second);
       it = best_matches->erase(it);
@@ -95,14 +96,14 @@ void FormSaverImpl::WipeOutdatedCopies(const PasswordForm& pending,
 void FormSaverImpl::SaveImpl(
     const PasswordForm& pending,
     bool is_new_login,
-    const PasswordFormMap& best_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
     const std::vector<PasswordForm>* credentials_to_update,
     const PasswordForm* old_primary_key) {
   DCHECK(pending.preferred);
   DCHECK(!pending.blacklisted_by_user);
 
-  base::AutoReset<const autofill::PasswordFormMap*> ar1(&best_matches_,
-                                                        &best_matches);
+  base::AutoReset<const std::map<base::string16, const PasswordForm*>*> ar1(
+      &best_matches_, &best_matches);
   base::AutoReset<const PasswordForm*> ar2(&pending_, &pending);
 
   UpdatePreferredLoginState();
@@ -130,11 +131,11 @@ void FormSaverImpl::SaveImpl(
 void FormSaverImpl::UpdatePreferredLoginState() {
   const base::string16& preferred_username = pending_->username_value;
   for (const auto& key_value_pair : *best_matches_) {
-    const auto& form = key_value_pair.second;
-    if (form->preferred && !form->is_public_suffix_match &&
-        form->username_value != preferred_username) {
+    const PasswordForm& form = *key_value_pair.second;
+    if (form.preferred && !form.is_public_suffix_match &&
+        form.username_value != preferred_username) {
       // This wasn't the selected login but it used to be preferred.
-      PasswordForm update(*form);
+      PasswordForm update(form);
       update.preferred = false;
       store_->UpdateLogin(update);
     }
@@ -145,7 +146,7 @@ void FormSaverImpl::DeleteEmptyUsernameCredentials() {
   DCHECK(!pending_->username_value.empty());
 
   for (const auto& match : *best_matches_) {
-    const PasswordForm* form = match.second.get();
+    const PasswordForm* form = match.second;
     if (!form->is_public_suffix_match && form->username_value.empty() &&
         form->password_value == pending_->password_value) {
       store_->RemoveLogin(*form);

@@ -39,8 +39,8 @@ struct InteractionsStats {
 bool operator==(const InteractionsStats& lhs, const InteractionsStats& rhs);
 
 // Returns an element from |stats| with |username| or nullptr if not found.
-InteractionsStats* FindStatsByUsername(
-    const std::vector<std::unique_ptr<InteractionsStats>>& stats,
+const InteractionsStats* FindStatsByUsername(
+    const std::vector<const InteractionsStats*>& stats,
     const base::string16& username);
 
 // Represents the 'stats' table in the Login Database.

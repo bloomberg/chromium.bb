@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -14,12 +15,12 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 
 using password_manager::PasswordFormManager;
-using autofill::PasswordFormMap;
 
 namespace {
 
 std::vector<std::unique_ptr<autofill::PasswordForm>> DeepCopyMapToVector(
-    const PasswordFormMap& password_form_map) {
+    const std::map<base::string16, const autofill::PasswordForm*>&
+        password_form_map) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> ret;
   ret.reserve(password_form_map.size());
   for (const auto& form_pair : password_form_map)
@@ -28,7 +29,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> DeepCopyMapToVector(
 }
 
 void AppendDeepCopyVector(
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>& forms,
+    const std::vector<const autofill::PasswordForm*>& forms,
     std::vector<std::unique_ptr<autofill::PasswordForm>>* result) {
   result->reserve(result->size() + forms.size());
   for (const auto& form : forms)
@@ -145,17 +146,18 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsState::OnPasswordAutofilled(
-    const PasswordFormMap& password_form_map,
+    const std::map<base::string16, const autofill::PasswordForm*>&
+        password_form_map,
     const GURL& origin,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-        federated_matches) {
+    const std::vector<const autofill::PasswordForm*>* federated_matches) {
   DCHECK(!password_form_map.empty());
   ClearData();
-  bool only_PSL_matches =
-      std::all_of(password_form_map.begin(), password_form_map.end(),
-                  [](const PasswordFormMap::value_type& p) {
-                    return p.second->is_public_suffix_match;
-                  });
+  bool only_PSL_matches = std::all_of(
+      password_form_map.begin(), password_form_map.end(),
+      [](const std::map<base::string16,
+                        const autofill::PasswordForm*>::value_type& p) {
+        return p.second->is_public_suffix_match;
+      });
   if (only_PSL_matches) {
     // Don't show the UI for PSL matched passwords. They are not stored for this
     // page and cannot be deleted.

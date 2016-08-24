@@ -41,7 +41,6 @@
 #endif
 
 using autofill::PasswordForm;
-using autofill::PasswordFormMap;
 
 namespace password_manager {
 
@@ -739,8 +738,8 @@ bool PasswordManager::OtherPossibleUsernamesEnabled() const {
 void PasswordManager::Autofill(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& form_for_autofill,
-    const PasswordFormMap& best_matches,
-    const std::vector<std::unique_ptr<PasswordForm>>& federated_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& federated_matches,
     const PasswordForm& preferred_match,
     bool wait_for_username) const {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
@@ -772,8 +771,7 @@ void PasswordManager::Autofill(
 void PasswordManager::ShowInitialPasswordAccountSuggestions(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& form_for_autofill,
-    const PasswordFormMap& best_matches,
-    const std::vector<std::unique_ptr<PasswordForm>>& federated_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
     const PasswordForm& preferred_match,
     bool wait_for_username) const {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, preferred_match.scheme);
@@ -796,7 +794,7 @@ void PasswordManager::ShowInitialPasswordAccountSuggestions(
 }
 
 void PasswordManager::AutofillHttpAuth(
-    const PasswordFormMap& best_matches,
+    const std::map<base::string16, const PasswordForm*>& best_matches,
     const PasswordForm& preferred_match) const {
   DCHECK_NE(PasswordForm::SCHEME_HTML, preferred_match.scheme);
 

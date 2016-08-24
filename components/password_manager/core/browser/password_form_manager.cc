@@ -42,7 +42,6 @@
 
 using autofill::FormStructure;
 using autofill::PasswordForm;
-using autofill::PasswordFormMap;
 using base::Time;
 
 // Shorten the name to spare line breaks. The code provides enough context
@@ -58,7 +57,7 @@ namespace {
 bool DoesUsenameAndPasswordMatchCredentials(
     const base::string16& typed_username,
     const base::string16& typed_password,
-    const autofill::PasswordFormMap& credentials) {
+    const std::map<base::string16, const PasswordForm*>& credentials) {
   for (const auto& match : credentials) {
     if (match.second->username_value == typed_username &&
         match.second->password_value == typed_password)
@@ -93,7 +92,7 @@ bool IsProbablyNotUsername(const base::string16& s) {
 
 // Splits federated matches from |store_results| into a separate vector and
 // returns that.
-std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
+std::vector<std::unique_ptr<PasswordForm>> SplitFederatedMatches(
     std::vector<std::unique_ptr<PasswordForm>>* store_results) {
   auto first_federated =
       std::partition(store_results->begin(), store_results->end(),
@@ -101,7 +100,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> SplitFederatedMatches(
                        return form->federation_origin.unique();
                      });
 
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches(
+  std::vector<std::unique_ptr<PasswordForm>> federated_matches(
       store_results->end() - first_federated);
   std::move(first_federated, store_results->end(), federated_matches.begin());
   store_results->erase(first_federated, store_results->end());
@@ -124,12 +123,13 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
 
 // Returns true iff |best_matches| contain a preferred credential with a
 // username other than |preferred_username|.
-bool DidPreferenceChange(const autofill::PasswordFormMap& best_matches,
-                         const base::string16& preferred_username) {
+bool DidPreferenceChange(
+    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const base::string16& preferred_username) {
   for (const auto& key_value_pair : best_matches) {
-    const auto& form = key_value_pair.second;
-    if (form->preferred && !form->is_public_suffix_match &&
-        form->username_value != preferred_username) {
+    const PasswordForm& form = *key_value_pair.second;
+    if (form.preferred && !form.is_public_suffix_match &&
+        form.username_value != preferred_username) {
       return true;
     }
   }
@@ -310,9 +310,10 @@ void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK_EQ(State::NOT_WAITING, state_);
   DCHECK(!client_->IsOffTheRecord());
 
-  blacklisted_matches_.push_back(
-      base::MakeUnique<autofill::PasswordForm>(observed_form_));
-  form_saver_->PermanentlyBlacklist(blacklisted_matches_.back().get());
+  blacklisted_matches_owned_.push_back(
+      base::MakeUnique<PasswordForm>(observed_form_));
+  blacklisted_matches_.push_back(blacklisted_matches_owned_.back().get());
+  form_saver_->PermanentlyBlacklist(blacklisted_matches_owned_.back().get());
 }
 
 bool PasswordFormManager::IsNewLogin() const {
@@ -483,7 +484,11 @@ void PasswordFormManager::OnRequestDone(
     std::vector<std::unique_ptr<PasswordForm>> logins_result) {
   preferred_match_ = nullptr;
   best_matches_.clear();
+  best_matches_owned_.clear();
+  not_best_matches_.clear();
+  not_best_matches_owned_.clear();
   blacklisted_matches_.clear();
+  blacklisted_matches_owned_.clear();
   const size_t logins_result_size = logins_result.size();
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -505,7 +510,8 @@ void PasswordFormManager::OnRequestDone(
                      });
   for (auto it = begin_blacklisted; it != logins_result.end(); ++it) {
     if (IsBlacklistMatch(**it)) {
-      blacklisted_matches_.push_back(std::move(*it));
+      blacklisted_matches_.push_back(it->get());
+      blacklisted_matches_owned_.push_back(std::move(*it));
     }
   }
   logins_result.erase(begin_blacklisted, logins_result.end());
@@ -527,12 +533,13 @@ void PasswordFormManager::OnRequestDone(
 
   // Fill |best_matches_| with the best-scoring credentials for each username.
   for (size_t i = 0; i < logins_result.size(); ++i) {
-    std::unique_ptr<PasswordForm> login(std::move(logins_result[i]));
+    auto login = std::move(logins_result[i]);
     DCHECK(!login->blacklisted_by_user);
     const base::string16& username = login->username_value;
 
     if (credential_scores[i] < best_scores[username]) {
-      not_best_matches_.push_back(std::move(login));
+      not_best_matches_.push_back(login.get());
+      not_best_matches_owned_.push_back(std::move(login));
       continue;
     }
 
@@ -543,9 +550,11 @@ void PasswordFormManager::OnRequestDone(
     // and add the current form to |not_best_matches_|.
     auto best_match_username = best_matches_.find(username);
     if (best_match_username == best_matches_.end()) {
-      best_matches_.insert(std::make_pair(username, std::move(login)));
+      best_matches_.insert(std::make_pair(username, login.get()));
+      best_matches_owned_.push_back(std::move(login));
     } else {
-      not_best_matches_.push_back(std::move(login));
+      not_best_matches_.push_back(login.get());
+      not_best_matches_owned_.push_back(std::move(login));
     }
   }
 
@@ -607,8 +616,8 @@ void PasswordFormManager::ProcessFrameInternal(
     // return with any found password forms so a list of password account
     // suggestions can be drawn.
     password_manager_->ShowInitialPasswordAccountSuggestions(
-        driver.get(), observed_form_, best_matches_, federated_matches_,
-        *preferred_match_, wait_for_username);
+        driver.get(), observed_form_, best_matches_, *preferred_match_,
+        wait_for_username);
   } else {
     // If fill-on-account-select is not enabled, continue with autofilling any
     // password forms as traditionally has been done.
@@ -647,7 +656,13 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
-  federated_matches_ = SplitFederatedMatches(&results);
+  federated_matches_owned_ = SplitFederatedMatches(&results);
+  federated_matches_.resize(federated_matches_owned_.size());
+  std::transform(
+      federated_matches_owned_.begin(), federated_matches_owned_.end(),
+      federated_matches_.begin(),
+      [](const std::unique_ptr<PasswordForm>& form) { return form.get(); });
+
   if (!results.empty())
     OnRequestDone(std::move(results));
   state_ = State::NOT_WAITING;
@@ -667,7 +682,13 @@ void PasswordFormManager::OnGetSiteStatistics(
     std::vector<std::unique_ptr<InteractionsStats>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
-  interactions_stats_.swap(stats);
+  interactions_stats_owned_.swap(stats);
+  interactions_stats_.resize(interactions_stats_owned_.size());
+  std::transform(interactions_stats_owned_.begin(),
+                 interactions_stats_owned_.end(), interactions_stats_.begin(),
+                 [](const std::unique_ptr<InteractionsStats>& stat) {
+                   return stat.get();
+                 });
 }
 
 void PasswordFormManager::ProcessUpdate() {
@@ -694,11 +715,11 @@ void PasswordFormManager::ProcessUpdate() {
 
 bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
     const base::string16& username) {
-  for (PasswordFormMap::const_iterator it = best_matches_.begin();
-       it != best_matches_.end(); ++it) {
-    for (size_t i = 0; i < it->second->other_possible_usernames.size(); ++i) {
-      if (it->second->other_possible_usernames[i] == username) {
-        pending_credentials_ = *it->second;
+  for (const auto& key_value : best_matches_) {
+    const PasswordForm& match = *key_value.second;
+    for (size_t i = 0; i < match.other_possible_usernames.size(); ++i) {
+      if (match.other_possible_usernames[i] == username) {
+        pending_credentials_ = match;
         return true;
       }
     }
@@ -958,7 +979,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   // autofilled ones, as they may have changed if the user experienced a login
   // failure.
   // Look for these credentials in the list containing auto-fill entries.
-  PasswordForm* saved_form =
+  const PasswordForm* saved_form =
       FindBestSavedMatch(provisionally_saved_form_.get());
   if (saved_form != nullptr) {
     // The user signed in with a login we autofilled.
@@ -1040,7 +1061,7 @@ void PasswordFormManager::CreatePendingCredentials() {
              (provisionally_saved_form_
                   ->IsPossibleChangePasswordFormWithoutUsername() ||
               provisionally_saved_form_->username_element.empty())) {
-    PasswordForm* best_update_match = FindBestMatchForUpdatePassword(
+    const PasswordForm* best_update_match = FindBestMatchForUpdatePassword(
         provisionally_saved_form_->password_value);
 
     retry_password_form_password_update_ =
@@ -1198,28 +1219,28 @@ bool PasswordFormManager::IsBlacklistMatch(
   return true;
 }
 
-PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
+const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
     const base::string16& password) const {
   if (best_matches_.size() == 1 && !has_generated_password_) {
     // In case when the user has only one credential and the current password is
     // not generated, consider it the same as is being saved.
-    return best_matches_.begin()->second.get();
+    return best_matches_.begin()->second;
   }
   if (password.empty())
     return nullptr;
 
   for (auto it = best_matches_.begin(); it != best_matches_.end(); ++it) {
     if (it->second->password_value == password)
-      return it->second.get();
+      return it->second;
   }
   return nullptr;
 }
 
-PasswordForm* PasswordFormManager::FindBestSavedMatch(
+const PasswordForm* PasswordFormManager::FindBestSavedMatch(
     const PasswordForm* form) const {
-  PasswordFormMap::const_iterator it = best_matches_.find(form->username_value);
+  auto it = best_matches_.find(form->username_value);
   if (it != best_matches_.end())
-    return it->second.get();
+    return it->second;
   if (form->type == autofill::PasswordForm::TYPE_API)
     // Match Credential API forms only by username.
     return nullptr;
@@ -1227,7 +1248,7 @@ PasswordForm* PasswordFormManager::FindBestSavedMatch(
     return nullptr;
   for (const auto& stored_match : best_matches_) {
     if (stored_match.second->password_value == form->password_value)
-      return stored_match.second.get();
+      return stored_match.second;
   }
   return nullptr;
 }
@@ -1386,7 +1407,7 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
   // If this was a password update, then update all non-best matches entries
   // with the same username and the same old password.
   if (update_related_credentials) {
-    PasswordFormMap::const_iterator updated_password_it =
+    auto updated_password_it =
         best_matches_.find(pending_credentials_.username_value);
     DCHECK(best_matches_.end() != updated_password_it);
     const base::string16& old_password =

@@ -216,7 +216,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     } else {
       interaction_stats.origin_domain = origin_.GetOrigin();
       interaction_stats.username_value = pending_password_.username_value;
-      password_manager::InteractionsStats* stats =
+      const password_manager::InteractionsStats* stats =
           delegate_->GetCurrentInteractionStats();
       if (stats) {
         DCHECK_EQ(interaction_stats.username_value, stats->username_value);

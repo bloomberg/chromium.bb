@@ -296,12 +296,6 @@ struct LessThanUniqueKey {
   bool operator()(const PasswordForm* left, const PasswordForm* right) const;
 };
 
-// Map username to PasswordForm* for convenience. See password_form_manager.h.
-using PasswordFormMap = std::map<base::string16, std::unique_ptr<PasswordForm>>;
-
-// Like PasswordFormMap, but with weak (not owned) pointers.
-using ConstPasswordFormMap = std::map<base::string16, const PasswordForm*>;
-
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);

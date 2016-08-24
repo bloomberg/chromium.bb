@@ -72,19 +72,20 @@ class MockFormSaver : public StubFormSaver {
 
   // FormSaver:
   MOCK_METHOD1(PermanentlyBlacklist, void(autofill::PasswordForm* observed));
-  MOCK_METHOD3(Save,
-               void(const autofill::PasswordForm& pending,
-                    const autofill::PasswordFormMap& best_matches,
-                    const autofill::PasswordForm* old_primary_key));
+  MOCK_METHOD3(
+      Save,
+      void(const autofill::PasswordForm& pending,
+           const std::map<base::string16, const PasswordForm*>& best_matches,
+           const autofill::PasswordForm* old_primary_key));
   MOCK_METHOD4(
       Update,
       void(const autofill::PasswordForm& pending,
-           const autofill::PasswordFormMap& best_matches,
+           const std::map<base::string16, const PasswordForm*>& best_matches,
            const std::vector<autofill::PasswordForm>* credentials_to_update,
            const autofill::PasswordForm* old_primary_key));
   MOCK_METHOD3(WipeOutdatedCopies,
                void(const autofill::PasswordForm& pending,
-                    autofill::PasswordFormMap* best_matches,
+                    std::map<base::string16, const PasswordForm*>* best_matches,
                     const autofill::PasswordForm** preferred_match));
 
   // Convenience downcasting method.
@@ -1363,7 +1364,7 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsByEachUsernameAreIncluded) {
       .WillOnce(SaveArg<0>(&fill_data));
 
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
-  const autofill::PasswordFormMap& best_matches =
+  const std::map<base::string16, const PasswordForm*>& best_matches =
       form_manager()->best_matches();
   EXPECT_EQ(3u, best_matches.size());
   EXPECT_NE(best_matches.end(),
@@ -1957,7 +1958,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
   form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
   EXPECT_EQ(1u, form_manager()->best_matches().size());
   EXPECT_EQ(form_manager()->preferred_match(),
-            form_manager()->best_matches().begin()->second.get());
+            form_manager()->best_matches().begin()->second);
   // Make sure to access all fields of preferred_match; this way if it was
   // deleted, ASAN might notice it.
   PasswordForm dummy(*form_manager()->preferred_match());

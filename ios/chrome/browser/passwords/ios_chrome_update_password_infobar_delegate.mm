@@ -57,8 +57,7 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {
 
 NSArray* IOSChromeUpdatePasswordInfoBarDelegate::GetAccounts() const {
   NSMutableArray* usernames = [NSMutableArray array];
-  const autofill::PasswordFormMap& matches = form_to_save()->best_matches();
-  for (const auto& match : matches) {
+  for (const auto& match : form_to_save()->best_matches()) {
     [usernames addObject:base::SysUTF16ToNSString(match.first)];
   }
   return usernames;
@@ -96,7 +95,7 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save());
   if (ShowMultipleAccounts()) {
     form_to_save()->Update(
-        *form_to_save()->best_matches().at(selected_account_).get());
+        *form_to_save()->best_matches().at(selected_account_));
   } else {
     form_to_save()->Update(form_to_save()->pending_credentials());
   }

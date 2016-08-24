@@ -32,7 +32,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using autofill::PasswordFormMap;
 using password_manager::PasswordFormManager;
 
 namespace {
@@ -77,7 +76,8 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   DestroyAccountChooser();
   passwords_data_.OnPendingPassword(std::move(form_manager));
   if (show_bubble) {
-    password_manager::InteractionsStats* stats = GetCurrentInteractionStats();
+    const password_manager::InteractionsStats* stats =
+        GetCurrentInteractionStats();
     const int show_threshold =
         password_bubble_experiment::GetSmartBubbleDismissalThreshold();
     if (stats && show_threshold > 0 && stats->dismissal_count >= show_threshold)
@@ -149,10 +149,10 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
-    const autofill::PasswordFormMap& password_form_map,
+    const std::map<base::string16, const autofill::PasswordForm*>&
+        password_form_map,
     const GURL& origin,
-    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-        federated_matches) {
+    const std::vector<const autofill::PasswordForm*>* federated_matches) {
   // To change to managed state only when the managed state is more important
   // for the user that the current state.
   if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||
@@ -241,7 +241,7 @@ ManagePasswordsUIController::GetFederatedForms() const {
   return passwords_data_.federation_providers_forms();
 }
 
-password_manager::InteractionsStats*
+const password_manager::InteractionsStats*
 ManagePasswordsUIController::GetCurrentInteractionStats() const {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   password_manager::PasswordFormManager* form_manager =

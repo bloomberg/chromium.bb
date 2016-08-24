@@ -431,10 +431,9 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveWithFederations) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
-  autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(std::make_pair(
-      test_local_form().username_value,
-      base::WrapUnique(new autofill::PasswordForm(test_local_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  password_form_map.insert(
+      std::make_pair(test_local_form().username_value, &test_local_form()));
   GURL origin("https://example.com");
   passwords_data().OnPasswordAutofilled(password_form_map, origin, nullptr);
 
@@ -448,14 +447,12 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofilled) {
 }
 
 TEST_F(ManagePasswordsStateTest, PasswordAutofillWithSavedFederations) {
-  autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(std::make_pair(
-      test_local_form().username_value,
-      base::WrapUnique(new autofill::PasswordForm(test_local_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  password_form_map.insert(
+      std::make_pair(test_local_form().username_value, &test_local_form()));
   GURL origin("https://example.com");
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated;
-  federated.push_back(base::WrapUnique(
-      new autofill::PasswordForm(test_local_federated_form())));
+  std::vector<const autofill::PasswordForm*> federated;
+  federated.push_back(&test_local_federated_form());
   passwords_data().OnPasswordAutofilled(password_form_map, origin, &federated);
 
   // |federated| represents the locally saved federations. These are bundled in
@@ -469,15 +466,13 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofillWithSavedFederations) {
 }
 
 TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
-  autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(std::make_pair(
-      test_local_form().username_value,
-      base::WrapUnique(new autofill::PasswordForm(test_local_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  password_form_map.insert(
+      std::make_pair(test_local_form().username_value, &test_local_form()));
   autofill::PasswordForm psl_matched_test_form = test_local_form();
   psl_matched_test_form.is_public_suffix_match = true;
-  password_form_map.insert(std::make_pair(
-      psl_matched_test_form.username_value,
-      base::WrapUnique(new autofill::PasswordForm(psl_matched_test_form))));
+  password_form_map.insert(std::make_pair(psl_matched_test_form.username_value,
+                                          &psl_matched_test_form));
   GURL origin("https://example.com");
   passwords_data().OnPasswordAutofilled(password_form_map, origin, nullptr);
 
@@ -493,10 +488,9 @@ TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
 TEST_F(ManagePasswordsStateTest, InactiveOnPSLMatched) {
   autofill::PasswordForm psl_matched_test_form = test_local_form();
   psl_matched_test_form.is_public_suffix_match = true;
-  autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(std::make_pair(
-      psl_matched_test_form.username_value,
-      base::WrapUnique(new autofill::PasswordForm(psl_matched_test_form))));
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  password_form_map.insert(std::make_pair(psl_matched_test_form.username_value,
+                                          &psl_matched_test_form));
   passwords_data().OnPasswordAutofilled(
       password_form_map, GURL("https://m.example.com/"), nullptr);
 
@@ -578,10 +572,9 @@ TEST_F(ManagePasswordsStateTest, AutomaticPasswordSaveAddBlacklisted) {
 }
 
 TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
-  autofill::PasswordFormMap password_form_map;
-  password_form_map.insert(std::make_pair(
-      test_local_form().username_value,
-      base::WrapUnique(new autofill::PasswordForm(test_local_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  password_form_map.insert(
+      std::make_pair(test_local_form().username_value, &test_local_form()));
   passwords_data().OnPasswordAutofilled(
       password_form_map, password_form_map.begin()->second->origin, nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());

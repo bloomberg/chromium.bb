@@ -65,10 +65,11 @@ class ManagePasswordsUIController
       std::unique_ptr<password_manager::PasswordFormManager> form_manager)
       override;
   void OnPasswordAutofilled(
-      const autofill::PasswordFormMap& password_form_map,
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          password_form_map,
       const GURL& origin,
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
-          federated_matches) override;
+      const std::vector<const autofill::PasswordForm*>* federated_matches)
+      override;
 
   // PasswordStore::Observer:
   void OnLoginsChanged(
@@ -94,8 +95,8 @@ class ManagePasswordsUIController
       const override;
   const std::vector<std::unique_ptr<autofill::PasswordForm>>&
   GetFederatedForms() const override;
-  password_manager::InteractionsStats* GetCurrentInteractionStats() const
-      override;
+  const password_manager::InteractionsStats* GetCurrentInteractionStats()
+      const override;
   void OnBubbleShown() override;
   void OnBubbleHidden() override;
   void OnNoInteractionOnUpdate() override;

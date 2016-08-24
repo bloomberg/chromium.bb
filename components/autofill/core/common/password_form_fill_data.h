@@ -90,7 +90,7 @@ struct PasswordFormFillData {
 // in |result|.
 void InitPasswordFormFillData(
     const PasswordForm& form_on_page,
-    const PasswordFormMap& matches,
+    const std::map<base::string16, const PasswordForm*>& matches,
     const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
     bool enable_other_possible_usernames,

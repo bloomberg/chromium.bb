@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -9,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -275,11 +277,9 @@ void ManagePasswordsUIControllerTest::TestNotChangingStateOnAutofill(
   ASSERT_EQ(state, controller()->GetState());
 
   // Autofill happens.
-  std::unique_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordFormMap map;
+  std::map<base::string16, const autofill::PasswordForm*> map;
   map.insert(
-      std::make_pair(test_local_form().username_value, std::move(test_form)));
+      std::make_pair(test_local_form().username_value, &test_local_form()));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   // State shouldn't changed.
@@ -295,12 +295,10 @@ TEST_F(ManagePasswordsUIControllerTest, DefaultState) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
-  std::unique_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordForm* test_form_ptr = test_form.get();
-  base::string16 kTestUsername = test_form->username_value;
-  autofill::PasswordFormMap map;
-  map.insert(std::make_pair(kTestUsername, std::move(test_form)));
+  const autofill::PasswordForm* test_form_ptr = &test_local_form();
+  base::string16 kTestUsername = test_form_ptr->username_value;
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  map.insert(std::make_pair(kTestUsername, test_form_ptr));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
@@ -487,10 +485,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map.insert(std::make_pair(
-      kTestUsername,
-      base::WrapUnique(new autofill::PasswordForm(test_local_form()))));
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  map.insert(std::make_pair(kTestUsername, &test_local_form()));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
@@ -638,12 +634,10 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRun) {
 
 TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterAutofill) {
   // Setup the managed state first.
-  std::unique_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordForm* test_form_ptr = test_form.get();
-  const base::string16 kTestUsername = test_form->username_value;
-  autofill::PasswordFormMap map;
-  map.insert(std::make_pair(kTestUsername, std::move(test_form)));
+  const autofill::PasswordForm* test_form_ptr = &test_local_form();
+  const base::string16 kTestUsername = test_form_ptr->username_value;
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  map.insert(std::make_pair(kTestUsername, test_form_ptr));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordAutofilled(map, test_form_ptr->origin, nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
@@ -685,11 +679,9 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
   controller()->OnAutoSignin(std::move(local_credentials),
                              test_local_form().origin);
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
-  std::unique_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordFormMap map;
-  base::string16 kTestUsername = test_form->username_value;
-  map.insert(std::make_pair(kTestUsername, std::move(test_form)));
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  base::string16 kTestUsername = test_local_form().username_value;
+  map.insert(std::make_pair(kTestUsername, &test_local_form()));
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 
   ExpectIconAndControllerStateIs(password_manager::ui::AUTO_SIGNIN_STATE);
@@ -697,11 +689,10 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
 
 TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  std::unique_ptr<autofill::PasswordForm> psl_matched_test_form(
-      new autofill::PasswordForm(test_local_form()));
-  psl_matched_test_form->is_public_suffix_match = true;
-  map.insert(std::make_pair(kTestUsername, std::move(psl_matched_test_form)));
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  autofill::PasswordForm psl_matched_test_form(test_local_form());
+  psl_matched_test_form.is_public_suffix_match = true;
+  map.insert(std::make_pair(kTestUsername, &psl_matched_test_form));
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
 

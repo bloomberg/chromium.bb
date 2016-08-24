@@ -55,8 +55,8 @@ class PasswordsModelDelegate {
 
   // For PENDING_PASSWORD_STATE state returns the current statistics for
   // the pending username.
-  virtual password_manager::InteractionsStats* GetCurrentInteractionStats()
-      const = 0;
+  virtual const password_manager::InteractionsStats*
+  GetCurrentInteractionStats() const = 0;
 
   // Called from the model when the bubble is displayed.
   virtual void OnBubbleShown() = 0;

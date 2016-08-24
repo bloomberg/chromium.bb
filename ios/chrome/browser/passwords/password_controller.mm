@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -345,13 +346,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
             const std::vector<autofill::PasswordForm>& forms) {
     for (const auto& form : forms) {
       autofill::PasswordFormFillData formData;
-      autofill::PasswordFormMap matches;
+      std::map<base::string16, const autofill::PasswordForm*> matches;
       // Initialize |matches| to satisfy the expectation from
       // InitPasswordFormFillData() that the preferred match (3rd parameter)
       // should be one of the |matches|.
-      auto scoped_form = base::WrapUnique(new autofill::PasswordForm(form));
-      matches.insert(
-          std::make_pair(form.username_value, std::move(scoped_form)));
+      matches.insert(std::make_pair(form.username_value, &form));
       autofill::InitPasswordFormFillData(form, matches, &form, false, false,
                                          &formData);
       [self fillPasswordForm:formData
