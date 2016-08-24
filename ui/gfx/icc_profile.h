@@ -71,6 +71,7 @@ class GFX_EXPORT ICCProfile {
   uint64_t id_ = 0;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
+  FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
   friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
   friend class ColorSpace;
   friend struct IPC::ParamTraits<gfx::ICCProfile>;

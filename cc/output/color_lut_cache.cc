@@ -46,7 +46,7 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
   }
   std::unique_ptr<gfx::ColorTransform> transform(
       gfx::ColorTransform::NewColorTransform(
-          from, to, gfx::ColorTransform::Intent::PERCEPTUAL));
+          from, to, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL));
 
   int lut_entries = lut_samples * lut_samples * lut_samples;
   float inverse = 1.0f / (lut_samples - 1);

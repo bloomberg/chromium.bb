@@ -16,6 +16,10 @@ void ParamTraits<gfx::ColorSpace>::GetSize(base::PickleSizer* s,
   GetParamSize(s, p.matrix_);
   GetParamSize(s, p.range_);
   GetParamSize(s, p.icc_profile_id_);
+  if (p.primaries_ == gfx::ColorSpace::PrimaryID::CUSTOM) {
+    for (int i = 0; i < 12; i++)
+      GetParamSize(s, p.custom_primary_matrix_[i]);
+  }
 }
 
 void ParamTraits<gfx::ColorSpace>::Write(base::Pickle* m,
@@ -25,6 +29,10 @@ void ParamTraits<gfx::ColorSpace>::Write(base::Pickle* m,
   WriteParam(m, p.matrix_);
   WriteParam(m, p.range_);
   WriteParam(m, p.icc_profile_id_);
+  if (p.primaries_ == gfx::ColorSpace::PrimaryID::CUSTOM) {
+    for (int i = 0; i < 12; i++)
+      WriteParam(m, p.custom_primary_matrix_[i]);
+  }
 }
 
 bool ParamTraits<gfx::ColorSpace>::Read(const base::Pickle* m,
@@ -41,6 +49,12 @@ bool ParamTraits<gfx::ColorSpace>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &r->icc_profile_id_))
     return false;
 
+  if (r->primaries_ == gfx::ColorSpace::PrimaryID::CUSTOM) {
+    for (int i = 0; i < 12; i++) {
+      if (!ReadParam(m, iter, r->custom_primary_matrix_ + i))
+        return false;
+    }
+  }
   return true;
 }
 
