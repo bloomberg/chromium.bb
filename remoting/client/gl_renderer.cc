@@ -132,11 +132,17 @@ void GlRenderer::OnRender() {
 
   if (canvas_) {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // Layers will be drawn from bottom to top.
     desktop_.Draw();
-    cursor_.Draw();
+
+    // |cursor_feedback_| should be drawn before |cursor_| so that the cursor
+    // won't be covered by the feedback animation.
     if (cursor_feedback_.Draw()) {
       RequestRender();
     }
+
+    cursor_.Draw();
   }
 
   delegate_->OnFrameRendered();

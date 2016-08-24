@@ -21,7 +21,12 @@ import org.chromium.chromoting.jni.Client;
  */
 public abstract class DesktopView extends SurfaceView {
     /** Used to define the animation feedback shown when a user touches the screen. */
-    public enum InputFeedbackType { NONE, SMALL_ANIMATION, LARGE_ANIMATION }
+    public enum InputFeedbackType {
+        NONE,
+        SHORT_TOUCH_ANIMATION,
+        LONG_TOUCH_ANIMATION,
+        LONG_TRACKPAD_ANIMATION
+    }
 
     protected final RenderData mRenderData;
     protected final TouchInputHandler mInputHandler;
@@ -38,6 +43,7 @@ public abstract class DesktopView extends SurfaceView {
     protected final Event.Raisable<SizeChangedEventParameter> mOnHostSizeChanged =
             new Event.Raisable<>();
 
+    private final int mTinyFeedbackPixelRadius;
     private final int mSmallFeedbackPixelRadius;
     private final int mLargeFeedbackPixelRadius;
 
@@ -58,11 +64,14 @@ public abstract class DesktopView extends SurfaceView {
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
         setFocusableInTouchMode(true);
 
-        mSmallFeedbackPixelRadius = getResources()
-                .getDimensionPixelSize(R.dimen.feedback_animation_radius_small);
+        mTinyFeedbackPixelRadius =
+                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_tiny);
 
-        mLargeFeedbackPixelRadius = getResources()
-                .getDimensionPixelSize(R.dimen.feedback_animation_radius_large);
+        mSmallFeedbackPixelRadius =
+                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_small);
+
+        mLargeFeedbackPixelRadius =
+                getResources().getDimensionPixelSize(R.dimen.feedback_animation_radius_large);
     }
 
     // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
@@ -124,14 +133,19 @@ public abstract class DesktopView extends SurfaceView {
      * Returns the radius of the given feedback type.
      * 0.0f will be returned if no feedback should be shown.
      */
-    protected final float getFeedbackRadius(InputFeedbackType feedbackToShow) {
+    protected final float getFeedbackRadius(InputFeedbackType feedbackToShow, float scaleFactor) {
         switch (feedbackToShow) {
             case NONE:
                 return 0.0f;
-            case SMALL_ANIMATION:
-                return mSmallFeedbackPixelRadius;
-            case LARGE_ANIMATION:
-                return mLargeFeedbackPixelRadius;
+            case SHORT_TOUCH_ANIMATION:
+                return mSmallFeedbackPixelRadius / scaleFactor;
+            case LONG_TOUCH_ANIMATION:
+                return mLargeFeedbackPixelRadius / scaleFactor;
+            case LONG_TRACKPAD_ANIMATION:
+                // The size of the longpress trackpad animation is supposed to be close to the size
+                // of the cursor so it doesn't need to be normalized and should be scaled with the
+                // canvas.
+                return mTinyFeedbackPixelRadius;
             default:
                 // Unreachable, but required by Google Java style and findbugs.
                 assert false : "Unreached";

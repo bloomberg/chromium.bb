@@ -10,20 +10,22 @@ namespace remoting {
 
 namespace {
 
-const int kColorRingsCount = 4;
+const int kColorRingsCount = 5;
 const int kFeedbackTexturePixelDiameter = 512;
 const int kFeedbackTexturePixelRadius = kFeedbackTexturePixelDiameter / 2;
 
 // RGBA8888 colors. From inside to outside.
 const uint8_t kFeedbackRingColors[kColorRingsCount]
                                  [GlRenderLayer::kBytesPerPixel] = {
-                                     {0, 0, 0, 0},  // transparent black
-                                     {0xff, 0xff, 0xff, 0xff},  // white
-                                     {0, 0, 0, 0xff},           // black
-                                     {0, 0, 0, 0}  // transparent black
+                                     {0x0, 0x0, 0x0, 0x7f},  // Black
+                                     {0x0, 0x0, 0x0, 0x7f},  // Black
+                                     {0xff, 0xff, 0xff, 0x7f},  // White
+                                     {0xff, 0xff, 0xff, 0x7f},  // White
+                                     {0xff, 0xff, 0xff, 0}  // Transparent White
 };
 
-const float kFeedbackRadiusStops[kColorRingsCount] = {0.0f, 0.8f, 0.9f, 1.0f};
+const float kFeedbackRadiusStops[kColorRingsCount] =
+    {0.0f, 0.85f, 0.9f, 0.95f, 1.0f};
 
 uint32_t GetColorByRadius(float radius) {
   int ring_index = kColorRingsCount - 1;

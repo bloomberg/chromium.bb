@@ -39,12 +39,12 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
 
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
-        float diameter = getFeedbackRadius(feedbackToShow) * 2.0f;
+        float scaleFactor = mRenderData.transform.mapRadius(1);
+        float diameter = getFeedbackRadius(feedbackToShow, scaleFactor) * 2.0f;
         if (diameter <= 0.0f) {
             return;
         }
-        float scaleFactor = mRenderData.transform.mapRadius(1);
-        mDisplay.showCursorInputFeedback(pos.x, pos.y, diameter / scaleFactor);
+        mDisplay.showCursorInputFeedback(pos.x, pos.y, diameter);
     }
 
     @Override
