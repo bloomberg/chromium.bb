@@ -47,15 +47,14 @@ protected:
     LayoutTableCell* m_cell;
 };
 
-// TODO(esprehn): Disabled all of these tests because they're flaky: crbug.com/630625
-TEST_F(LayoutTableCellDeathTest, DISABLED_CanSetColumn)
+TEST_F(LayoutTableCellDeathTest, CanSetColumn)
 {
     static const unsigned columnIndex = 10;
     m_cell->setAbsoluteColumnIndex(columnIndex);
     EXPECT_EQ(columnIndex, m_cell->absoluteColumnIndex());
 }
 
-TEST_F(LayoutTableCellDeathTest, DISABLED_CanSetColumnToMaxColumnIndex)
+TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
 {
     m_cell->setAbsoluteColumnIndex(maxColumnIndex);
     EXPECT_EQ(maxColumnIndex, m_cell->absoluteColumnIndex());
@@ -63,14 +62,16 @@ TEST_F(LayoutTableCellDeathTest, DISABLED_CanSetColumnToMaxColumnIndex)
 
 // FIXME: Re-enable these tests once ASSERT_DEATH is supported for Android.
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
-#if !OS(ANDROID)
+// TODO(dgrogan): These tests started flaking on Mac try bots around 2016-07-28.
+// https://crbug.com/632816
+#if !OS(ANDROID) && !OS(MACOSX)
 
-TEST_F(LayoutTableCellDeathTest, DISABLED_CrashIfColumnOverflowOnSetting)
+TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting)
 {
     ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(maxColumnIndex + 1), "");
 }
 
-TEST_F(LayoutTableCellDeathTest, DISABLED_CrashIfSettingUnsetColumnIndex)
+TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
 {
     ASSERT_DEATH(m_cell->setAbsoluteColumnIndex(unsetColumnIndex), "");
 }

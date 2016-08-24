@@ -47,15 +47,14 @@ protected:
     LayoutTableRow* m_row;
 };
 
-// TODO(esprehn): Disabled all of these tests because they're flaky: crbug.com/630625
-TEST_F(LayoutTableRowDeathTest, DISABLED_CanSetRow)
+TEST_F(LayoutTableRowDeathTest, CanSetRow)
 {
     static const unsigned rowIndex = 10;
     m_row->setRowIndex(rowIndex);
     EXPECT_EQ(rowIndex, m_row->rowIndex());
 }
 
-TEST_F(LayoutTableRowDeathTest, DISABLED_CanSetRowToMaxRowIndex)
+TEST_F(LayoutTableRowDeathTest, CanSetRowToMaxRowIndex)
 {
     m_row->setRowIndex(maxRowIndex);
     EXPECT_EQ(maxRowIndex, m_row->rowIndex());
@@ -63,14 +62,16 @@ TEST_F(LayoutTableRowDeathTest, DISABLED_CanSetRowToMaxRowIndex)
 
 // FIXME: Re-enable these tests once ASSERT_DEATH is supported for Android.
 // See: https://bugs.webkit.org/show_bug.cgi?id=74089
-#if !OS(ANDROID)
+// TODO(dgrogan): These tests started flaking on Mac try bots around 2016-07-28.
+// https://crbug.com/632816
+#if !OS(ANDROID) && !OS(MACOSX)
 
-TEST_F(LayoutTableRowDeathTest, DISABLED_CrashIfRowOverflowOnSetting)
+TEST_F(LayoutTableRowDeathTest, CrashIfRowOverflowOnSetting)
 {
     ASSERT_DEATH(m_row->setRowIndex(maxRowIndex + 1), "");
 }
 
-TEST_F(LayoutTableRowDeathTest, DISABLED_CrashIfSettingUnsetRowIndex)
+TEST_F(LayoutTableRowDeathTest, CrashIfSettingUnsetRowIndex)
 {
     ASSERT_DEATH(m_row->setRowIndex(unsetRowIndex), "");
 }
