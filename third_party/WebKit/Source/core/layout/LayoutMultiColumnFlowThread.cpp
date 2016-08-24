@@ -395,7 +395,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
     ASSERT(!m_columnSetsInvalidated);
     if (m_multiColumnSetList.isEmpty())
         return nullptr;
-    if (offset <= 0)
+    if (offset < LayoutUnit())
         return m_multiColumnSetList.first();
 
     MultiColumnSetSearchAdapter adapter(offset);
