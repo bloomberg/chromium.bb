@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -33,7 +34,9 @@ class SavePageRequest;
 class Scheduler;
 
 // Coordinates queueing and processing save page later requests.
-class RequestCoordinator : public KeyedService, public RequestNotifier {
+class RequestCoordinator : public KeyedService,
+                           public RequestNotifier,
+                           public base::SupportsUserData {
  public:
 
   // Nested observer class.  To make sure that no events are missed, the client
@@ -42,6 +45,8 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
   // events after the return callback from |GetAllRequests|.
   class Observer {
    public:
+    virtual ~Observer() = default;
+
     virtual void OnAdded(const SavePageRequest& request) = 0;
     virtual void OnCompleted(const SavePageRequest& request,
                              RequestNotifier::SavePageStatus status) = 0;

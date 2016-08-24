@@ -94,7 +94,6 @@ bool RequestCoordinator::SavePageLater(
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
-  NotifyAdded(request);
   return true;
 }
 void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
@@ -187,6 +186,7 @@ void RequestCoordinator::ResumeRequests(
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
+  NotifyAdded(request);
   // Inform the scheduler that we have an outstanding task..
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }

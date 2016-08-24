@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
+#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/prerendering_offliner_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -20,6 +22,7 @@
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/request_queue_store_sql.h"
 #include "components/offline_pages/background/scheduler.h"
+#include "components/offline_pages/downloads/download_notifying_observer.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace offline_pages {
@@ -59,11 +62,17 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(queue_store)));
   std::unique_ptr<Scheduler>
       scheduler(new android::BackgroundSchedulerBridge());
+  // TODO(fgorski): Something needs to keep the handle to the Notification
+  // dispatcher.
+  RequestCoordinator* request_coordinator =
+      new RequestCoordinator(std::move(policy), std::move(prerenderer_offliner),
+                             std::move(queue), std::move(scheduler));
 
-  return new RequestCoordinator(std::move(policy),
-                                std::move(prerenderer_offliner),
-                                std::move(queue),
-                                std::move(scheduler));
+  DownloadNotifyingObserver::CreateAndStartObserving(
+      request_coordinator,
+      base::MakeUnique<android::OfflinePageNotificationBridge>());
+
+  return request_coordinator;
 }
 
 content::BrowserContext* RequestCoordinatorFactory::GetBrowserContextToUse(

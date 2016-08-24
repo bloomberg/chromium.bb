@@ -11,15 +11,18 @@
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "components/offline_pages/offline_page_item.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
+
+struct OfflinePageItem;
+class SavePageRequest;
 
 struct DownloadUIItem {
  public:
   DownloadUIItem();
   explicit DownloadUIItem(const OfflinePageItem& page);
+  explicit DownloadUIItem(const SavePageRequest& request);
   DownloadUIItem(const DownloadUIItem& other);
   ~DownloadUIItem();
 

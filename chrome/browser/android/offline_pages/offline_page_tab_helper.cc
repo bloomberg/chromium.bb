@@ -117,7 +117,8 @@ void OfflinePageTabHelper::DidStartNavigation(
       const OfflinePageItem* offline_page =
           offline_page_model->MaybeGetPageByOfflineURL(navigated_url);
       if (offline_page &&
-          offline_page->client_id.name_space == kDownloadNamespace) {
+          (offline_page->client_id.name_space == kDownloadNamespace ||
+           offline_page->client_id.name_space == kAsyncNamespace)) {
         offline_page_ = base::MakeUnique<OfflinePageItem>(*offline_page);
         return;
       }

@@ -9,6 +9,8 @@ if (is_android) {
 # GYP: //components/offline_pages.gypi:offline_pages_ui_adapter
 static_library("offline_pages_ui_adapter") {
   sources = [
+    "download_notifying_observer.cc",
+    "download_notifying_observer.h",
     "download_ui_adapter.cc",
     "download_ui_adapter.h",
     "download_ui_item.cc",
@@ -19,6 +21,7 @@ static_library("offline_pages_ui_adapter") {
   deps = [
     "//base",
     "//components/offline_pages:offline_pages",
+    "//components/offline_pages/background:background_offliner",
     "//url",
   ]
 }
@@ -26,6 +29,7 @@ static_library("offline_pages_ui_adapter") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "download_notifying_observer_unittest.cc",
     "download_ui_adapter_unittest.cc",
   ]
 
@@ -35,6 +39,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/offline_pages:offline_pages",
     "//components/offline_pages:test_support",
+    "//components/offline_pages/background:background_offliner",
     "//testing/gtest",
   ]
 }

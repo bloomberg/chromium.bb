@@ -23,6 +23,8 @@ class RequestNotifier {
     REMOVED,
   };
 
+  virtual ~RequestNotifier() = default;
+
   // Notifies observers that |request| has been added.
   virtual void NotifyAdded(const SavePageRequest& request) = 0;
 
