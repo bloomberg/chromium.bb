@@ -219,8 +219,10 @@ ShellSurface::ScopedConfigure::~ScopedConfigure() {
   if (needs_configure_ || force_configure_)
     shell_surface_->Configure();
   // ScopedConfigure instance might have suppressed a widget bounds update.
-  if (shell_surface_->widget_)
+  if (shell_surface_->widget_) {
     shell_surface_->UpdateWidgetBounds();
+    shell_surface_->UpdateShadow();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
