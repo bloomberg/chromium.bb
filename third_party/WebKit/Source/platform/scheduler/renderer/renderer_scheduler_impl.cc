@@ -38,17 +38,19 @@ const double kShortIdlePeriodDurationPercentile = 50;
 const double kFastCompositingIdleTimeThreshold = .2;
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
+  int load_percentage = static_cast<int>(load * 100);
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.ForegroundRendererMainThreadLoad",
-                           static_cast<int>(load * 100));
+                           load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.ForegroundRendererLoad", load);
+                 "RendererScheduler.ForegroundRendererLoad", load_percentage);
 }
 
 void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
+  int load_percentage = static_cast<int>(load * 100);
   UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.BackgroundRendererMainThreadLoad",
-                           static_cast<int>(load * 100));
+                           load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.BackgroundRendererLoad", load);
+                 "RendererScheduler.BackgroundRendererLoad", load_percentage);
 }
 
 }  // namespace
