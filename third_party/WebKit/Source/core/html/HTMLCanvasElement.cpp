@@ -257,8 +257,8 @@ bool HTMLCanvasElement::isPaintable() const
 {
     if (!m_context)
         return ImageBuffer::canCreateImageBuffer(size());
-    if (renderingContext()->getImage())
-        return true;
+    if (m_context->getContextType() == CanvasRenderingContext::ContextImageBitmap)
+        return (renderingContext()->getImage().get());
     return buffer();
 }
 

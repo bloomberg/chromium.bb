@@ -26,6 +26,11 @@ void ImageBitmapRenderingContext::setCanvasGetContextResult(RenderingContext& re
 
 void ImageBitmapRenderingContext::transferFromImageBitmap(ImageBitmap* imageBitmap)
 {
+    if (!imageBitmap) {
+        m_image.release();
+        return;
+    }
+
     m_image = imageBitmap->bitmapImage();
     if (!m_image)
         return;
