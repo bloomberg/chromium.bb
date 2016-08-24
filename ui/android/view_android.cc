@@ -48,16 +48,16 @@ ViewAndroid::ScopedAnchorView::operator=(ScopedAnchorView&& other) {
 }
 
 ViewAndroid::ScopedAnchorView::~ScopedAnchorView() {
+  Reset();
+}
+
+void ViewAndroid::ScopedAnchorView::Reset() {
   JNIEnv* env = base::android::AttachCurrentThread();
   const ScopedJavaLocalRef<jobject> view = view_.get(env);
   const ScopedJavaLocalRef<jobject> delegate = delegate_.get(env);
   if (!view.is_null() && !delegate.is_null()) {
     Java_ViewAndroidDelegate_removeView(env, delegate, view);
   }
-  view_.reset();
-}
-
-void ViewAndroid::ScopedAnchorView::Reset() {
   view_.reset();
   delegate_.reset();
 }

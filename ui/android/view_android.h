@@ -65,10 +65,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // if disconnected.
   virtual WindowAndroid* GetWindowAndroid() const;
 
-  // Set the root |WindowAndroid|. This is only valid for root
-  // nodes and must not be called for children.
-  void SetWindowAndroid(WindowAndroid* root_window);
-
   // Used to return and set the layer for this view. May be |null|.
   cc::Layer* GetLayer() const;
   void SetLayer(scoped_refptr<cc::Layer> layer);
