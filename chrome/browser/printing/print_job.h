@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-
-class Thread;
 
 namespace base {
 class RefCountedMemory;
@@ -93,17 +91,20 @@ class PrintJob : public PrintJobWorkerOwner,
   PrintedDocument* document() const;
 
 #if defined(OS_WIN)
+  // Let the PrintJob know the 0-based |page_number| of a given printed page.
+  void AppendPrintedPage(int page_number);
+
   void StartPdfToEmfConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size,
       const gfx::Rect& content_area);
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
  protected:
   ~PrintJob() override;
 
  private:
-  // Updates document_ to a new instance.
+  // Updates |document_| to a new instance.
   void UpdatePrintedDocument(PrintedDocument* new_document);
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
@@ -127,7 +128,7 @@ class PrintJob : public PrintJobWorkerOwner,
   void OnPdfToEmfPageConverted(int page_number,
                                float scale_factor,
                                std::unique_ptr<MetafilePlayer> emf);
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
   content::NotificationRegistrar registrar_;
 
@@ -155,8 +156,9 @@ class PrintJob : public PrintJobWorkerOwner,
 
 #if defined(OS_WIN)
   class PdfToEmfState;
-  std::unique_ptr<PdfToEmfState> ptd_to_emf_state_;
-#endif  // OS_WIN
+  std::unique_ptr<PdfToEmfState> pdf_to_emf_state_;
+  std::vector<int> pdf_page_mapping_;
+#endif  // defined(OS_WIN)
 
   // Used at shutdown so that we can quit a nested message loop.
   base::WeakPtrFactory<PrintJob> quit_factory_;
