@@ -17,11 +17,26 @@ namespace test {
 
 void TapWebViewElementWithId(web::WebState* web_state,
                              const std::string& element_id) {
+  RunActionOnWebViewElementWithId(web_state, element_id, CLICK);
+}
+
+void RunActionOnWebViewElementWithId(web::WebState* web_state,
+                                     const std::string& element_id,
+                                     ElementAction action) {
   CRWWebController* web_controller =
       static_cast<WebStateImpl*>(web_state)->GetWebController();
+  const char* jsAction = nullptr;
+  switch (action) {
+    case CLICK:
+      jsAction = ".click()";
+      break;
+    case FOCUS:
+      jsAction = ".focus();";
+      break;
+  }
   NSString* script =
-      [NSString stringWithFormat:@"document.getElementById('%s').click()",
-                                 element_id.c_str()];
+      [NSString stringWithFormat:@"document.getElementById('%s')%s",
+                                 element_id.c_str(), jsAction];
   __block bool did_complete = false;
   [web_controller executeUserJavaScript:script
                       completionHandler:^(id, NSError*) {
