@@ -1286,8 +1286,8 @@ public:
         RadioNameMatchingStrict = 1513,
         RadioNameMatchingASCIICaseless = 1514,
         RadioNameMatchingCaseFolding = 1515,
-
         NavigatorPointerEnabled = 1516,
+        InputSelectionGettersThrow = 1517,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
