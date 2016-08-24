@@ -551,27 +551,6 @@ void Resource::setResponse(const ResourceResponse& response)
         m_cacheHandler = ServiceWorkerResponseCachedMetadataHandler::create(this, m_fetcherSecurityOrigin.get());
 }
 
-bool Resource::unlock()
-{
-    if (!m_data)
-        return false;
-
-    if (!m_data->isLocked())
-        return true;
-
-    if (!memoryCache()->contains(this) || hasClientsOrObservers() || !isLoaded() || !isSafeToUnlock())
-        return false;
-
-    if (RuntimeEnabledFeatures::doNotUnlockSharedBufferEnabled())
-        return false;
-
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, unlockHistogram, new EnumerationHistogram("Blink.SharedBuffer.Unlock", kLastResourceType));
-    unlockHistogram.count(getType());
-
-    m_data->unlock();
-    return true;
-}
-
 void Resource::responseReceived(const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle>)
 {
     m_responseTimestamp = currentTime();
@@ -676,7 +655,6 @@ static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
 
 void Resource::willAddClientOrObserver()
 {
-    ASSERT(!isPurgeable());
     if (m_preloadResult == PreloadNotReferenced) {
         if (isLoaded())
             m_preloadResult = PreloadReferencedWhileComplete;
@@ -761,8 +739,6 @@ void Resource::allClientsAndObserversRemoved()
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
         m_cancelTimer.startOneShot(0, BLINK_FROM_HERE);
-
-    unlock();
 }
 
 void Resource::cancelTimerFired(TimerBase* timer)
@@ -832,7 +808,6 @@ void Resource::finishPendingClients()
 void Resource::prune()
 {
     destroyDecodedDataIfPossible();
-    unlock();
 }
 
 void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump) const
@@ -843,15 +818,13 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
     const String dumpName = getMemoryDumpName();
     WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
     dump->addScalar("encoded_size", "bytes", m_encodedSize);
-    if (m_data && m_data->isLocked())
+    if (hasClientsOrObservers())
         dump->addScalar("live_size", "bytes", m_encodedSize);
     else
         dump->addScalar("dead_size", "bytes", m_encodedSize);
 
-    if (m_data) {
-        dump->addScalar("purgeable_size", "bytes", isPurgeable() ? encodedSize() + overheadSize() : 0);
+    if (m_data)
         m_data->onMemoryDump(dumpName, memoryDump);
-    }
 
     if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed) {
         String urlToReport = url().getString();
@@ -981,38 +954,6 @@ bool Resource::canUseCacheValidator()
         return false;
 
     return m_response.hasCacheValidatorFields() || m_resourceRequest.hasCacheValidatorFields();
-}
-
-bool Resource::isPurgeable() const
-{
-    return m_data && !m_data->isLocked();
-}
-
-bool Resource::lock()
-{
-    if (!m_data)
-        return true;
-    if (m_data->isLocked())
-        return true;
-
-    ASSERT(!hasClientsOrObservers());
-
-    // If locking fails, our buffer has been purged. There's no point
-    // in leaving a purged resource in MemoryCache.
-    if (!m_data->lock()) {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, failedLockHistogram, new EnumerationHistogram("Blink.SharedBuffer.FailedLock", kLastResourceType));
-        failedLockHistogram.count(getType());
-
-        m_data.clear();
-        setEncodedSize(0);
-        memoryCache()->remove(this);
-        return false;
-    }
-
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, successfulLockHistogram, new EnumerationHistogram("Blink.SharedBuffer.SuccessfulLock", kLastResourceType));
-    successfulLockHistogram.count(getType());
-
-    return true;
 }
 
 size_t Resource::calculateOverheadSize() const

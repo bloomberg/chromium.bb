@@ -65,15 +65,6 @@ TEST_P(PurgeableVectorTestWithDiscardableMemory, clear)
     EXPECT_EQ(0, purgeableVector.data());
 }
 
-TEST_P(PurgeableVectorTestWithDiscardableMemory, clearDoesNotResetLockCounter)
-{
-    PurgeableVector purgeableVector(GetParam());
-    purgeableVector.clear();
-    EXPECT_TRUE(purgeableVector.isLocked());
-    purgeableVector.unlock();
-    EXPECT_FALSE(purgeableVector.isLocked());
-}
-
 TEST_P(PurgeableVectorTestWithDiscardableMemory, reserveCapacityDoesNotChangeSize)
 {
     PurgeableVector purgeableVector(GetParam());
@@ -214,81 +205,6 @@ TEST(PurgeableVectorTest, adoptDiscardsPreviousData)
     purgeableVector.adopt(testData);
     EXPECT_EQ(testData.size(), purgeableVector.size());
     ASSERT_EQ(0, memcmp(purgeableVector.data(), testData.data(), testData.size()));
-}
-
-TEST(PurgeableVectorTest, unlockWithoutHintAtConstruction)
-{
-    Vector<char> testData(30000);
-    std::generate(testData.begin(), testData.end(), &std::rand);
-
-    unsigned length = testData.size();
-    PurgeableVector purgeableVector(PurgeableVector::NotPurgeable);
-    purgeableVector.append(testData.data(), length);
-    ASSERT_EQ(length, purgeableVector.size());
-    const char* data = purgeableVector.data();
-
-    purgeableVector.unlock();
-
-    // Note that the purgeable vector must be locked before calling data().
-    const bool wasPurged = !purgeableVector.lock();
-
-    // The implementation of purgeable memory used for testing always purges data upon unlock().
-    EXPECT_TRUE(wasPurged);
-
-    // The data should have been moved from the heap-allocated vector to a purgeable buffer.
-    ASSERT_NE(data, purgeableVector.data());
-
-    if (!wasPurged)
-        ASSERT_EQ(0, memcmp(purgeableVector.data(), testData.data(), length));
-}
-
-TEST(PurgeableVectorTest, unlockOnEmptyPurgeableVector)
-{
-    PurgeableVector purgeableVector;
-    ASSERT_EQ(0U, purgeableVector.size());
-    purgeableVector.unlock();
-    ASSERT_FALSE(purgeableVector.isLocked());
-}
-
-TEST(PurgeableVectorTest, unlockOnPurgeableVectorWithPurgeableHint)
-{
-    Vector<char> testData(kTestSize);
-    std::generate(testData.begin(), testData.end(), &std::rand);
-
-    PurgeableVector purgeableVector;
-    purgeableVector.append(testData.data(), kTestSize);
-    const char* const data = purgeableVector.data();
-
-    // unlock() should happen in place, i.e. without causing any reallocation.
-    // Note that the instance must be locked when data() is called.
-    purgeableVector.unlock();
-    EXPECT_FALSE(purgeableVector.isLocked());
-    purgeableVector.lock();
-    EXPECT_TRUE(purgeableVector.isLocked());
-    EXPECT_EQ(data, purgeableVector.data());
-}
-
-TEST(PurgeableVectorTest, lockingUsesACounter)
-{
-    Vector<char> testData(kTestSize);
-    std::generate(testData.begin(), testData.end(), &std::rand);
-
-    PurgeableVector purgeableVector(PurgeableVector::NotPurgeable);
-    purgeableVector.append(testData.data(), testData.size());
-    ASSERT_EQ(testData.size(), purgeableVector.size());
-
-    ASSERT_TRUE(purgeableVector.isLocked()); // PurgeableVector is locked at creation.
-    ASSERT_TRUE(purgeableVector.lock()); // Add an extra lock.
-    ASSERT_TRUE(purgeableVector.isLocked());
-
-    purgeableVector.unlock();
-    ASSERT_TRUE(purgeableVector.isLocked());
-
-    purgeableVector.unlock();
-    ASSERT_FALSE(purgeableVector.isLocked());
-
-    if (purgeableVector.lock())
-        ASSERT_EQ(0, memcmp(purgeableVector.data(), testData.data(), testData.size()));
 }
 
 // Instantiates all the unit tests using the PurgeableVectorTestWithDiscardableMemory

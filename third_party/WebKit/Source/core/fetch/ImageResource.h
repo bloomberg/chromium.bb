@@ -167,7 +167,6 @@ private:
 
     void doResetAnimation();
 
-    bool isSafeToUnlock() const override;
     void destroyDecodedDataIfPossible() override;
     void destroyDecodedDataForFailedRevalidation() override;
 

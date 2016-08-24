@@ -194,12 +194,6 @@ ResourcePriority ImageResource::priorityFromObservers()
     return priority;
 }
 
-bool ImageResource::isSafeToUnlock() const
-{
-    // Note that |m_image| holds a reference to |data()| in addition to the one held by the Resource parent class.
-    return !m_image || (m_image->hasOneRef() && data()->refCount() == 2);
-}
-
 void ImageResource::destroyDecodedDataForFailedRevalidation()
 {
     clearImage();
@@ -275,8 +269,6 @@ bool ImageResource::willPaintBrokenImage() const
 
 blink::Image* ImageResource::getImage()
 {
-    ASSERT(!isPurgeable());
-
     if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
         // deviceScaleFactor from here. It is critical that callers use ImageResource::brokenImage()
@@ -308,8 +300,6 @@ bool ImageResource::imageHasRelativeSize() const
 
 LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectImageOrientation, float multiplier, SizeType sizeType)
 {
-    ASSERT(!isPurgeable());
-
     if (!m_image)
         return LayoutSize();
 

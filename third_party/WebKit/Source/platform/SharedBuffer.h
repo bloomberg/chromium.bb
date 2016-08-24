@@ -145,16 +145,6 @@ public:
     // SkData without merging segmented buffers into a flat buffer.
     sk_sp<SkData> getAsSkData() const;
 
-    // See PurgeableVector::lock().
-    bool lock();
-
-    // WARNING: Calling unlock() on a SharedBuffer that wasn't created with the
-    // purgeability option does an extra memcpy(). Please use
-    // SharedBuffer::createPurgeable() if you intend to call unlock().
-    void unlock();
-
-    bool isLocked() const;
-
     void onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump*) const;
 
 private:

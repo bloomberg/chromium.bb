@@ -82,7 +82,6 @@ void ScriptResource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebP
 
 const String& ScriptResource::script()
 {
-    ASSERT(!isPurgeable());
     ASSERT(isLoaded());
 
     if (m_script.isNull() && data()) {

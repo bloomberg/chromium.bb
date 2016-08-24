@@ -50,7 +50,6 @@ PurgeableVector::PurgeableVector(PurgeableOption purgeable)
     : m_discardableCapacity(0)
     , m_discardableSize(0)
     , m_isPurgeable(purgeable == Purgeable)
-    , m_locksCount(1) // The buffer is locked at creation.
 {
 }
 
@@ -60,8 +59,6 @@ PurgeableVector::~PurgeableVector()
 
 void PurgeableVector::reserveCapacity(size_t capacity)
 {
-    ASSERT(isLocked());
-
     if (m_isPurgeable) {
         if (reservePurgeableCapacity(capacity, UseExactCapacity))
             return;
@@ -110,8 +107,6 @@ void PurgeableVector::clearDiscardable()
 
 void PurgeableVector::append(const char* data, size_t length)
 {
-    ASSERT(isLocked());
-
     if (!m_isPurgeable) {
         m_vector.append(data, length);
         return;
@@ -154,7 +149,6 @@ void PurgeableVector::clear()
 
 char* PurgeableVector::data()
 {
-    ASSERT(isLocked());
     return m_discardable ? static_cast<char*>(m_discardable->data()) : m_vector.data();
 }
 
@@ -178,43 +172,6 @@ void PurgeableVector::adopt(Vector<char>& other)
 
     append(other.data(), other.size());
     other.clear();
-}
-
-bool PurgeableVector::lock()
-{
-    ++m_locksCount;
-    if (m_locksCount > 1)
-        return true;
-
-    ASSERT(m_locksCount == 1);
-    if (!m_discardable)
-        return true;
-
-    return m_discardable->Lock();
-}
-
-void PurgeableVector::unlock()
-{
-    ASSERT(isLocked());
-    --m_locksCount;
-    if (m_locksCount > 0)
-        return;
-
-    if (!m_vector.isEmpty()) {
-        ASSERT(!m_discardable);
-        m_isPurgeable = true;
-        if (!reservePurgeableCapacity(m_vector.size(), UseExactCapacity))
-            return;
-    }
-
-    if (m_discardable)
-        m_discardable->Unlock();
-}
-
-bool PurgeableVector::isLocked() const
-{
-    ASSERT(m_locksCount >= 0);
-    return m_locksCount > 0;
 }
 
 bool PurgeableVector::reservePurgeableCapacity(size_t capacity, PurgeableAllocationStrategy allocationStrategy)

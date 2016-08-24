@@ -18,22 +18,6 @@ namespace blink {
 
 namespace {
 
-class UnlockableResource : public Resource {
-public:
-    static UnlockableResource* create(const KURL& url)
-    {
-        return new UnlockableResource(ResourceRequest(url), Resource::Raw);
-    }
-
-private:
-    UnlockableResource(const ResourceRequest& request, Type type)
-        : Resource(request, type, ResourceLoaderOptions())
-        {
-        }
-
-    bool isSafeToUnlock() const override { return true; }
-};
-
 class MockPlatform final : public TestingPlatformSupport {
 public:
     MockPlatform() { }
@@ -88,28 +72,6 @@ TEST(ResourceTest, SetCachedMetadata_DoesNotSendMetadataToPlatformWhenFetchedVia
     response.setWasFetchedViaServiceWorker(true);
     createTestResourceAndSetCachedMetadata(response);
     EXPECT_EQ(0u, mock.cachedURLs().size());
-}
-
-TEST(ResourceTest, LockFailureNoCrash)
-{
-    ResourceResponse response(createTestResourceResponse());
-    UnlockableResource* resource = UnlockableResource::create(response.url());
-    memoryCache()->add(resource);
-    resource->setResponse(response);
-
-    // A Resource won't be put in DiscardableMemory unless it is at least 16KiB.
-    Vector<char> dataVector(4*4096);
-    for (int i = 0; i < 4096; i++)
-        dataVector.append("test", 4);
-    resource->setResourceBuffer(SharedBuffer::adoptVector(dataVector));
-
-    resource->finish(currentTime());
-    resource->prune();
-    ASSERT_TRUE(resource->isPurgeable());
-    bool didLock = resource->lock();
-    ASSERT_FALSE(didLock);
-    EXPECT_EQ(nullptr, resource->resourceBuffer());
-    EXPECT_EQ(size_t(0), resource->encodedSize());
 }
 
 TEST(ResourceTest, RevalidateWithFragment)

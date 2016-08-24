@@ -140,11 +140,6 @@ FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold,
     return m_fontData->fontPlatformData(size, bold, italic, orientation);
 }
 
-bool FontResource::isSafeToUnlock() const
-{
-    return data()->hasOneRef();
-}
-
 void FontResource::fontLoadShortLimitCallback(TimerBase*)
 {
     if (!isLoading())

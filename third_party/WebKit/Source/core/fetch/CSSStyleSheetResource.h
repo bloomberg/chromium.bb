@@ -73,7 +73,6 @@ private:
 
     void setParsedStyleSheetCache(StyleSheetContents*);
 
-    bool isSafeToUnlock() const override;
     void destroyDecodedDataIfPossible() override;
     void destroyDecodedDataForFailedRevalidation() override { destroyDecodedDataIfPossible(); }
 

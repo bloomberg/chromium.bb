@@ -46,10 +46,9 @@ namespace blink {
 
 class WebProcessMemoryDump;
 
-// A simple vector implementation that supports purgeable memory. The vector is
-// already locked at construction and locking uses an internal counter which
-// means that N calls to lock() must be followed by N+1 calls to unlock() to
-// actually make the vector purgeable.
+// A simple vector implementation that supports purgeable memory.
+// TODO(hiroshige): PurgeableVector is about to be removed and some
+// functionality has already been removed https://crbug.com/603791.
 class PLATFORM_EXPORT PurgeableVector {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(PurgeableVector);
@@ -59,16 +58,10 @@ public:
         Purgeable,
     };
 
-    // Clients who know in advance that they will call unlock() should construct
-    // the instance with the Purgeable option so that the instance uses
-    // discardable memory from the start and unlock() doesn't cause a memcpy().
     PurgeableVector(PurgeableOption = Purgeable);
 
     ~PurgeableVector();
 
-    // WARNING: This causes a memcpy() if the instance was constructed with the
-    // Purgeable hint or had its internal vector moved to discardable memory
-    // after a call to unlock().
     void adopt(Vector<char>& other);
 
     void append(const char* data, size_t length);
@@ -77,19 +70,9 @@ public:
 
     void clear();
 
-    // The instance must be locked before calling this.
     char* data();
 
     size_t size() const;
-
-    // Returns whether the memory is still resident.
-    bool lock();
-
-    // WARNING: Calling unlock() on an instance that wasn't created with the
-    // Purgeable option does an extra memcpy().
-    void unlock();
-
-    bool isLocked() const;
 
     // Note that this method should be used carefully since it may not use
     // exponential growth internally. This means that repeated/invalid uses of
@@ -124,7 +107,6 @@ private:
     size_t m_discardableCapacity;
     size_t m_discardableSize;
     bool m_isPurgeable;
-    int m_locksCount;
 };
 
 } // namespace blink

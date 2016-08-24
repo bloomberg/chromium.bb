@@ -204,10 +204,7 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL, const String& cac
     MemoryCacheEntry* entry = resources->get(url);
     if (!entry)
         return nullptr;
-    Resource* resource = entry->resource();
-    if (resource && !resource->lock())
-        return nullptr;
-    return resource;
+    return entry->resource();
 }
 
 HeapVector<Member<Resource>> MemoryCache::resourcesForURL(const KURL& resourceURL)
@@ -585,15 +582,12 @@ void MemoryCache::removeURLFromCache(const KURL& url)
 
 void MemoryCache::TypeStatistic::addResource(Resource* o)
 {
-    bool purgeable = o->isPurgeable();
-    size_t pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
     count++;
     size += o->size();
     liveSize += o->hasClientsOrObservers() ? o->size() : 0;
     decodedSize += o->decodedSize();
     encodedSize += o->encodedSize();
     encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
-    purgeableSize += purgeable ? pageSize : 0;
 }
 
 MemoryCache::Statistics MemoryCache::getStatistics()
@@ -787,7 +781,7 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         while (current) {
             Resource* currentResource = current->resource();
             if (includeLive || !currentResource->hasClientsOrObservers())
-                printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers(), currentResource->isPurgeable());
+                printf("(%.1fK, %.1fK, %uA, %dR); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers());
 
             current = current->m_previousInAllResourcesList;
         }

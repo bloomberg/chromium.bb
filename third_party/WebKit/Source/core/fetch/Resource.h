@@ -220,9 +220,6 @@ public:
     double freshnessLifetime();
     double stalenessLifetime();
 
-    bool isPurgeable() const;
-    bool lock();
-
     void setCacheIdentifier(const String& cacheIdentifier) { m_cacheIdentifier = cacheIdentifier; }
     String cacheIdentifier() const { return m_cacheIdentifier; }
 
@@ -279,7 +276,6 @@ protected:
     };
     const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
 
-    virtual bool isSafeToUnlock() const { return false; }
     virtual void destroyDecodedDataIfPossible() { }
 
     virtual void markClientsAndObserversFinished();
@@ -307,8 +303,6 @@ private:
     void revalidationFailed();
 
     size_t calculateOverheadSize() const;
-
-    bool unlock();
 
     String reasonNotDeletable() const;
 

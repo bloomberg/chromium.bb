@@ -123,7 +123,6 @@ void SharedBuffer::append(PassRefPtr<SharedBuffer> data)
 
 void SharedBuffer::appendInternal(const char* data, size_t length)
 {
-    ASSERT(isLocked());
     if (!length)
         return;
 
@@ -210,7 +209,6 @@ void SharedBuffer::mergeSegmentsIntoBuffer() const
 
 size_t SharedBuffer::getSomeDataInternal(const char*& someData, size_t position) const
 {
-    ASSERT(isLocked());
     size_t totalSize = size();
     if (position >= totalSize) {
         someData = 0;
@@ -281,22 +279,6 @@ sk_sp<SkData> SharedBuffer::getAsSkData() const
         return nullptr;
     }
     return data;
-}
-
-bool SharedBuffer::lock()
-{
-    return m_buffer.lock();
-}
-
-void SharedBuffer::unlock()
-{
-    mergeSegmentsIntoBuffer();
-    m_buffer.unlock();
-}
-
-bool SharedBuffer::isLocked() const
-{
-    return m_buffer.isLocked();
 }
 
 void SharedBuffer::onMemoryDump(const String& dumpPrefix, WebProcessMemoryDump* memoryDump) const

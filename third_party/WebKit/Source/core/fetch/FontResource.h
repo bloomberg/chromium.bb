@@ -79,8 +79,6 @@ private:
     void fontLoadShortLimitCallback(TimerBase*);
     void fontLoadLongLimitCallback(TimerBase*);
 
-    bool isSafeToUnlock() const override;
-
     enum LoadLimitState { UnderLimit, ShortLimitExceeded, LongLimitExceeded };
 
     std::unique_ptr<FontCustomPlatformData> m_fontData;
