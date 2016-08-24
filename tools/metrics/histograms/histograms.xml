@@ -91605,16 +91605,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="0-10%"/>
   <int value="1" label="10%-30%"/>
   <int value="2" label="30%-60%"/>
-  <int value="3" label="&gt;60%"/>
+  <int value="4" label="&gt;60%"/>
 </enum>
 
 <enum name="ResourceReporterMemoryUsage" type="int">
   <int value="0" label="0-200MB"/>
   <int value="1" label="200MB-400MB"/>
   <int value="2" label="400MB-600MB"/>
-  <int value="3" label="600MB-800MB"/>
-  <int value="4" label="800MB-1GB"/>
-  <int value="5" label="&gt;1GB."/>
+  <int value="4" label="600MB-800MB"/>
+  <int value="8" label="800MB-1GB"/>
+  <int value="16" label="&gt;1GB."/>
 </enum>
 
 <enum name="ResourceType" type="int">

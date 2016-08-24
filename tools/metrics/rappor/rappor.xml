@@ -1692,30 +1692,27 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="priority">
-    <flag>Bit 0: FOREGROUND</flag>
-    <flag>Bit 1: BACKGROUND</flag>
+    <flag>Bit 0: BACKGROUND</flag>
     <summary>
       Bitfield for the task's process priority (whether it's foregrounded or
       backgrounded).
     </summary>
   </flags-field>
   <flags-field name="num_cores_range">
-    <flag>Bit 0: RANGE_CORES_NA</flag>
-    <flag>Bit 1: RANGE_CORES_1_CORE</flag>
-    <flag>Bit 2: RANGE_CORES_2_CORES</flag>
-    <flag>Bit 3: RANGE_CORES_3_TO_4_CORES</flag>
-    <flag>Bit 4: RANGE_CORES_5_TO_8_CORES</flag>
-    <flag>Bit 5: RANGE_CORES_9_TO_16_CORES</flag>
-    <flag>Bit 6: RANGE_CORES_ABOVE_16_CORES</flag>
+    <flag>Bit 0: RANGE_CORES_1_CORE</flag>
+    <flag>Bit 1: RANGE_CORES_2_CORES</flag>
+    <flag>Bit 2: RANGE_CORES_3_TO_4_CORES</flag>
+    <flag>Bit 3: RANGE_CORES_5_TO_8_CORES</flag>
+    <flag>Bit 4: RANGE_CORES_9_TO_16_CORES</flag>
+    <flag>Bit 5: RANGE_CORES_ABOVE_16_CORES</flag>
     <summary>
       Bitfield for the current system's number or cores range.
     </summary>
   </flags-field>
   <flags-field name="usage_range">
-    <flag>Bit 0: RANGE_0_TO_10_PERCENT</flag>
-    <flag>Bit 1: RANGE_10_TO_30_PERCENT</flag>
-    <flag>Bit 2: RANGE_30_TO_60_PERCENT</flag>
-    <flag>Bit 3: RANGE_ABOVE_60_PERCENT</flag>
+    <flag>Bit 0: RANGE_10_TO_30_PERCENT</flag>
+    <flag>Bit 1: RANGE_30_TO_60_PERCENT</flag>
+    <flag>Bit 2: RANGE_ABOVE_60_PERCENT</flag>
     <summary>
       Bitfield for the tasks CPU usage range.
     </summary>
@@ -1734,20 +1731,18 @@ now we are only interested in H264, VP8 and VP9.
     </summary>
   </string-field>
   <flags-field name="priority">
-    <flag>Bit 0: FOREGROUND</flag>
-    <flag>Bit 1: BACKGROUND</flag>
+    <flag>Bit 0: BACKGROUND</flag>
     <summary>
       Bitfield for the task's process priority (whether it's foregrounded or
       backgrounded).
     </summary>
   </flags-field>
   <flags-field name="usage_range">
-    <flag>Bit 0: RANGE_0_TO_200_MB</flag>
-    <flag>Bit 1: RANGE_200_TO_400_MB</flag>
-    <flag>Bit 2: RANGE_400_TO_600_MB</flag>
-    <flag>Bit 3: RANGE_600_TO_800_MB</flag>
-    <flag>Bit 4: RANGE_800_TO_1_GB</flag>
-    <flag>Bit 5: RANGE_ABOVE_1_GB</flag>
+    <flag>Bit 0: RANGE_200_TO_400_MB</flag>
+    <flag>Bit 1: RANGE_400_TO_600_MB</flag>
+    <flag>Bit 2: RANGE_600_TO_800_MB</flag>
+    <flag>Bit 3: RANGE_800_TO_1_GB</flag>
+    <flag>Bit 4: RANGE_ABOVE_1_GB</flag>
     <summary>
       Bitfield for the tasks memory usage range.
     </summary>
