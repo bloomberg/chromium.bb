@@ -538,6 +538,7 @@ void TrayBackgroundView::SetSeparatorVisibility(bool is_shown) {
 }
 
 void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
+  ActionableView::OnPaint(canvas);
   if (!MaterialDesignController::IsShelfMaterial() ||
       shelf()->GetBackgroundType() ==
           ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
