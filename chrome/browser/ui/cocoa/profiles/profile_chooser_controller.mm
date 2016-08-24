@@ -2071,6 +2071,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   }
 
   // Profile card button that contains the profile icon, name, and username.
+  const base::string16 profileNameString =
+      profiles::GetAvatarNameForProfile(browser_->profile()->GetPath());
   NSRect rect = NSMakeRect(0, yOffset, GetFixedMenuWidth(),
                            kMdImageSide + kVerticalSpacing);
   NSButton* profileCard =
@@ -2080,6 +2082,20 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                                    profiles::SHAPE_CIRCLE)
                          action:@selector(editProfile:)];
   [[profileCard cell] setImageDimsWhenDisabled:NO];
+  if (item.signed_in) {
+    [[profileCard cell]
+        accessibilitySetOverrideValue:
+            l10n_util::GetNSStringF(
+                IDS_PROFILES_EDIT_SIGNED_IN_PROFILE_ACCESSIBLE_NAME,
+                profileNameString, item.username)
+                         forAttribute:NSAccessibilityTitleAttribute];
+  } else {
+    [[profileCard cell]
+        accessibilitySetOverrideValue:
+            l10n_util::GetNSStringF(IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME,
+                                    profileNameString)
+                         forAttribute:NSAccessibilityTitleAttribute];
+  }
   [container addSubview:profileCard];
   if (isGuestSession_)
     [profileCard setEnabled:NO];
@@ -2117,10 +2133,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Profile name, left-aligned to the right of profile icon.
   xOffset += kMdImageSide + kHorizontalSpacing;
   CGFloat fontSize = kTextFontSize + 1.0;
-  NSTextField* profileName = BuildLabel(
-      base::SysUTF16ToNSString(
-          profiles::GetAvatarNameForProfile(browser_->profile()->GetPath())),
-      NSZeroPoint, nil);
+  NSTextField* profileName =
+      BuildLabel(base::SysUTF16ToNSString(profileNameString), NSZeroPoint, nil);
   [[profileName cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   [profileName setFont:[NSFont labelFontOfSize:fontSize]];
   [profileName sizeToFit];
