@@ -5,16 +5,11 @@
 #ifndef ASH_COMMON_SYSTEM_CHROMEOS_IME_MENU_IME_LIST_VIEW_H_
 #define ASH_COMMON_SYSTEM_CHROMEOS_IME_MENU_IME_LIST_VIEW_H_
 
+#include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/view_click_listener.h"
 
 namespace ash {
-struct IMEInfo;
-struct IMEPropertyInfo;
-
-using IMEInfoList = std::vector<IMEInfo>;
-using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
-
 // The detailed view for showing IME list.
 class ImeListView : public TrayDetailsView, public ViewClickListener {
  public:

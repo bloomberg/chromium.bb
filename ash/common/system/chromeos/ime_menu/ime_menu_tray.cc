@@ -9,6 +9,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
+#include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -28,6 +29,12 @@
 namespace ash {
 
 namespace {
+
+// Returns the max height of ImeListView.
+int GetImeListViewMaxHeight() {
+  const int max_items = 7;
+  return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) * max_items;
+}
 
 class ImeMenuLabel : public views::Label {
  public:
@@ -260,9 +267,14 @@ void ImeMenuTray::ShowImeMenuBubble() {
   bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
   bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
+  ImeListView* ime_list_view =
+      new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
+  if (ime_list_view->scroll_content()->height() > GetImeListViewMaxHeight()) {
+    ime_list_view->scroller()->SetFixedSize(
+        gfx::Size(kTrayPopupMaxWidth, GetImeListViewMaxHeight()));
+  }
   // Adds IME list to the bubble.
-  bubble_view->AddChildView(
-      new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME));
+  bubble_view->AddChildView(ime_list_view);
 
   // Adds IME buttons to the bubble if needed.
   LoginStatus login =
