@@ -95,7 +95,7 @@ public:
         // SourceLocation parameter may be shown when the connection fails.
         bool initialize(std::unique_ptr<SourceLocation>, ExecutionContext*);
 
-        void connect(const KURL&, const String& protocol);
+        bool connect(const KURL&, const String& protocol);
         void sendTextAsCharVector(std::unique_ptr<Vector<char>>);
         void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
         void sendBlob(PassRefPtr<BlobDataHandle>);
@@ -132,9 +132,10 @@ public:
     public:
         Bridge(WebSocketChannelClient*, WorkerGlobalScope&);
         ~Bridge();
+
         // SourceLocation parameter may be shown when the connection fails.
-        void initialize(std::unique_ptr<SourceLocation>);
-        bool connect(const KURL&, const String& protocol);
+        bool connect(std::unique_ptr<SourceLocation>, const KURL&, const String& protocol);
+
         void send(const CString& message);
         void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength);
         void send(PassRefPtr<BlobDataHandle>);
@@ -142,7 +143,7 @@ public:
         void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>);
         void disconnect();
 
-        void createPeerOnMainThread(std::unique_ptr<SourceLocation>, WorkerThreadLifecycleContext*, ExecutionContext*);
+        void connectOnMainThread(std::unique_ptr<SourceLocation>, WorkerThreadLifecycleContext*, const KURL&, const String& protocol, ExecutionContext*);
 
         // Returns null when |disconnect| has already been called.
         WebSocketChannelClient* client() { return m_client; }

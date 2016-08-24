@@ -109,7 +109,6 @@ WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalSc
     : m_bridge(new Bridge(client, workerGlobalScope))
     , m_locationAtConnection(std::move(location))
 {
-    m_bridge->initialize(m_locationAtConnection->clone());
 }
 
 WorkerWebSocketChannel::~WorkerWebSocketChannel()
@@ -120,7 +119,7 @@ WorkerWebSocketChannel::~WorkerWebSocketChannel()
 bool WorkerWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
     ASSERT(m_bridge);
-    return m_bridge->connect(url, protocol);
+    return m_bridge->connect(m_locationAtConnection->clone(), url, protocol);
 }
 
 void WorkerWebSocketChannel::send(const CString& message)
@@ -204,17 +203,12 @@ bool Peer::initialize(std::unique_ptr<SourceLocation> location, ExecutionContext
     return true;
 }
 
-void Peer::connect(const KURL& url, const String& protocol)
+bool Peer::connect(const KURL& url, const String& protocol)
 {
     ASSERT(isMainThread());
-    ASSERT(m_syncHelper);
-    if (!m_mainWebSocketChannel) {
-        m_syncHelper->setConnectRequestResult(false);
-    } else {
-        bool connectRequestResult = m_mainWebSocketChannel->connect(url, protocol);
-        m_syncHelper->setConnectRequestResult(connectRequestResult);
-    }
-    m_syncHelper->signalWorkerThread();
+    if (!m_mainWebSocketChannel)
+        return false;
+    return m_mainWebSocketChannel->connect(url, protocol);
 }
 
 void Peer::sendTextAsCharVector(std::unique_ptr<Vector<char>> data)
@@ -393,34 +387,24 @@ Bridge::~Bridge()
     ASSERT(!m_peer);
 }
 
-void Bridge::createPeerOnMainThread(std::unique_ptr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, ExecutionContext* context)
+void Bridge::connectOnMainThread(std::unique_ptr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, const KURL& url, const String& protocol, ExecutionContext* context)
 {
     DCHECK(isMainThread());
     DCHECK(!m_peer);
     Peer* peer = new Peer(this, m_loaderProxy, m_syncHelper, workerThreadLifecycleContext);
-    if (peer->initialize(std::move(location), context))
+    if (peer->initialize(std::move(location), context)) {
         m_peer = peer;
+        bool result = m_peer->connect(url, protocol);
+        m_syncHelper->setConnectRequestResult(result);
+    }
     m_syncHelper->signalWorkerThread();
 }
 
-void Bridge::initialize(std::unique_ptr<SourceLocation> location)
+bool Bridge::connect(std::unique_ptr<SourceLocation> location, const KURL& url, const String& protocol)
 {
-    // Wait for completion of the task on the main thread because the connection
-    // must synchronously be established (see Bridge::connect).
-    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::createPeerOnMainThread, wrapCrossThreadPersistent(this), passed(location->clone()), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext())))) {
-        // The worker thread has been signalled to shutdown before method completion.
-        disconnect();
-    }
-}
-
-bool Bridge::connect(const KURL& url, const String& protocol)
-{
-    if (!m_peer)
-        return false;
-
     // Wait for completion of the task on the main thread because the mixed
     // content check must synchronously be conducted.
-    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Peer::connect, wrapCrossThreadPersistent(m_peer.get()), url, protocol)))
+    if (!waitForMethodCompletion(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::connectOnMainThread, wrapCrossThreadPersistent(this), passed(location->clone()), wrapCrossThreadPersistent(m_workerGlobalScope->thread()->getWorkerThreadLifecycleContext()), url, protocol)))
         return false;
 
     return m_syncHelper->connectRequestResult();
