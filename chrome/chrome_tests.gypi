@@ -233,6 +233,7 @@
       'browser/extensions/background_xhr_browsertest.cc',
       'browser/extensions/browsertest_util_browsertest.cc',
       'browser/extensions/chrome_app_api_browsertest.cc',
+      'browser/extensions/chrome_theme_url_browsertest.cc',
       'browser/extensions/chrome_ui_overrides_browsertest.cc',
       'browser/extensions/content_capabilities_browsertest.cc',
       'browser/extensions/content_script_apitest.cc',

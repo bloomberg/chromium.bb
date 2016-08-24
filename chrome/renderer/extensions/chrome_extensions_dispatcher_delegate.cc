@@ -62,6 +62,20 @@ ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
 void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
     const extensions::Extension* extension,
     bool is_extension_active) {
+  // Allow component extensions to access chrome://theme/.
+  //
+  // We don't want to grant these permissions to inactive component extensions,
+  // to avoid granting them in "unblessed" (non-extension) processes.  If a
+  // component extension somehow starts as inactive and becomes active later,
+  // we'll re-init the origin permissions, so there's no danger in being
+  // conservative.
+  if (extensions::Manifest::IsComponentLocation(extension->location()) &&
+      is_extension_active) {
+    blink::WebSecurityPolicy::addOriginAccessWhitelistEntry(
+        extension->url(), blink::WebString::fromUTF8(content::kChromeUIScheme),
+        blink::WebString::fromUTF8(chrome::kChromeUIThemeHost), false);
+  }
+
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
