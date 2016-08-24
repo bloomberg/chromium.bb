@@ -18,7 +18,8 @@
         background: var(--md-toolbar-color);
       }
     </style>
-    <downloads-toolbar id="toolbar"></downloads-toolbar>
+    <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}">
+    </downloads-toolbar>
     <iron-list id="downloads-list" items="{{items_}}"
         hidden="[[!hasDownloads_]]">
       <template>

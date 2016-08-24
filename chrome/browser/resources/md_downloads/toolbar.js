@@ -13,6 +13,11 @@ cr.define('downloads', function() {
         value: false,
         observer: 'downloadsShowingChanged_',
       },
+
+      spinnerActive: {
+        type: Boolean,
+        notify: true,
+      },
     },
 
     listeners: {
@@ -22,16 +27,17 @@ cr.define('downloads', function() {
 
     /** @return {boolean} Whether removal can be undone. */
     canUndo: function() {
-      return this.$['search-input'] != this.shadowRoot.activeElement;
+      return !this.$.toolbar.getSearchField().isSearchFocused();
     },
 
     /** @return {boolean} Whether "Clear all" should be allowed. */
     canClearAll: function() {
-      return !this.$['search-input'].getValue() && this.downloadsShowing;
+      return !this.$.toolbar.getSearchField().getValue() &&
+          this.downloadsShowing;
     },
 
     onFindCommand: function() {
-      this.$['search-input'].showAndFocus();
+      this.$.toolbar.getSearchField().showAndFocus();
     },
 
     /** @private */
@@ -80,8 +86,9 @@ cr.define('downloads', function() {
      * @private
      */
     onSearchChanged_: function(event) {
-      downloads.ActionService.getInstance().search(
-          /** @type {string} */ (event.detail));
+      var actionService = downloads.ActionService.getInstance();
+      actionService.search(/** @type {string} */ (event.detail));
+      this.spinnerActive = actionService.isSearching();
       this.updateClearAll_();
     },
 
@@ -92,7 +99,6 @@ cr.define('downloads', function() {
 
     /** @private */
     updateClearAll_: function() {
-      this.$$('#actions .clear-all').hidden = !this.canClearAll();
       this.$$('paper-menu .clear-all').hidden = !this.canClearAll();
     },
   });

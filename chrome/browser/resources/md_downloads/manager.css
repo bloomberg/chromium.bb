@@ -7,13 +7,18 @@
   flex: 1 0;
   flex-direction: column;
   height: 100%;
-  overflow-y: overlay;
 }
 
 @media screen and (max-width: 1024px) {
   :host {
     flex-basis: 670px;  /* 622 card width + 24 left margin + 24 right margin. */
   }
+}
+
+#downloads-list {
+  /* TODO(dbeam): we're not setting scrollTarget explicitly, yet
+   * style="overflow: auto" is still being set by <iron-list>'s JS. Weird. */
+  overflow-y: overlay !important;
 }
 
 #no-downloads,

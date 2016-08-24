@@ -6027,66 +6027,67 @@ Polymer({
   }
 });
 
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-var CrSearchFieldBehavior = {
+Polymer({
+  is: 'iron-media-query',
   properties: {
-    label: {
-      type: String,
-      value: ''
-    },
-    clearLabel: {
-      type: String,
-      value: ''
-    },
-    showingSearch: {
+    queryMatches: {
       type: Boolean,
       value: false,
-      notify: true,
-      observer: 'showingSearchChanged_',
-      reflectToAttribute: true
+      readOnly: true,
+      notify: true
     },
-    lastValue_: {
+    query: {
       type: String,
-      value: ''
+      observer: 'queryChanged'
+    },
+    full: {
+      type: Boolean,
+      value: false
+    },
+    _boundMQHandler: {
+      value: function() {
+        return this.queryHandler.bind(this);
+      }
+    },
+    _mq: {
+      value: null
     }
   },
-  getSearchInput: function() {},
-  getValue: function() {
-    return this.getSearchInput().value;
+  attached: function() {
+    this.style.display = 'none';
+    this.queryChanged();
   },
-  setValue: function(value) {
-    this.getSearchInput().bindValue = value;
-    this.onValueChanged_(value);
+  detached: function() {
+    this._remove();
   },
-  showAndFocus: function() {
-    this.showingSearch = true;
-    this.focus_();
+  _add: function() {
+    if (this._mq) {
+      this._mq.addListener(this._boundMQHandler);
+    }
   },
-  focus_: function() {
-    this.getSearchInput().focus();
+  _remove: function() {
+    if (this._mq) {
+      this._mq.removeListener(this._boundMQHandler);
+    }
+    this._mq = null;
   },
-  onSearchTermSearch: function() {
-    this.onValueChanged_(this.getValue());
-  },
-  onValueChanged_: function(newValue) {
-    if (newValue == this.lastValue_) return;
-    this.fire('search-changed', newValue);
-    this.lastValue_ = newValue;
-  },
-  onSearchTermKeydown: function(e) {
-    if (e.key == 'Escape') this.showingSearch = false;
-  },
-  showingSearchChanged_: function() {
-    if (this.showingSearch) {
-      this.focus_();
+  queryChanged: function() {
+    this._remove();
+    var query = this.query;
+    if (!query) {
       return;
     }
-    this.setValue('');
-    this.getSearchInput().blur();
+    if (!this.full && query[0] !== '(') {
+      query = '(' + query + ')';
+    }
+    this._mq = window.matchMedia(query);
+    this._add();
+    this.queryHandler(this._mq);
+  },
+  queryHandler: function(mq) {
+    this._setQueryMatches(mq.matches);
   }
-};
+});
 
 (function() {
   'use strict';
@@ -6543,24 +6544,204 @@ Polymer({
   }
 });
 
-// Copyright 2015 The Chromium Authors. All rights reserved.
+Polymer.PaperSpinnerBehavior = {
+  listeners: {
+    animationend: '__reset',
+    webkitAnimationEnd: '__reset'
+  },
+  properties: {
+    active: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+      observer: '__activeChanged'
+    },
+    alt: {
+      type: String,
+      value: 'loading',
+      observer: '__altChanged'
+    },
+    __coolingDown: {
+      type: Boolean,
+      value: false
+    }
+  },
+  __computeContainerClasses: function(active, coolingDown) {
+    return [ active || coolingDown ? 'active' : '', coolingDown ? 'cooldown' : '' ].join(' ');
+  },
+  __activeChanged: function(active, old) {
+    this.__setAriaHidden(!active);
+    this.__coolingDown = !active && old;
+  },
+  __altChanged: function(alt) {
+    if (alt === this.getPropertyInfo('alt').value) {
+      this.alt = this.getAttribute('aria-label') || alt;
+    } else {
+      this.__setAriaHidden(alt === '');
+      this.setAttribute('aria-label', alt);
+    }
+  },
+  __setAriaHidden: function(hidden) {
+    var attr = 'aria-hidden';
+    if (hidden) {
+      this.setAttribute(attr, 'true');
+    } else {
+      this.removeAttribute(attr);
+    }
+  },
+  __reset: function() {
+    this.active = false;
+    this.__coolingDown = false;
+  }
+};
+
+Polymer({
+  is: 'paper-spinner-lite',
+  behaviors: [ Polymer.PaperSpinnerBehavior ]
+});
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var SearchField = Polymer({
-  is: 'cr-search-field',
+var CrSearchFieldBehavior = {
+  properties: {
+    label: {
+      type: String,
+      value: ''
+    },
+    clearLabel: {
+      type: String,
+      value: ''
+    },
+    showingSearch: {
+      type: Boolean,
+      value: false,
+      notify: true,
+      observer: 'showingSearchChanged_',
+      reflectToAttribute: true
+    },
+    lastValue_: {
+      type: String,
+      value: ''
+    }
+  },
+  getSearchInput: function() {},
+  getValue: function() {
+    return this.getSearchInput().value;
+  },
+  setValue: function(value) {
+    this.getSearchInput().bindValue = value;
+    this.onValueChanged_(value);
+  },
+  showAndFocus: function() {
+    this.showingSearch = true;
+    this.focus_();
+  },
+  focus_: function() {
+    this.getSearchInput().focus();
+  },
+  onSearchTermSearch: function() {
+    this.onValueChanged_(this.getValue());
+  },
+  onValueChanged_: function(newValue) {
+    if (newValue == this.lastValue_) return;
+    this.fire('search-changed', newValue);
+    this.lastValue_ = newValue;
+  },
+  onSearchTermKeydown: function(e) {
+    if (e.key == 'Escape') this.showingSearch = false;
+  },
+  showingSearchChanged_: function() {
+    if (this.showingSearch) {
+      this.focus_();
+      return;
+    }
+    this.setValue('');
+    this.getSearchInput().blur();
+  }
+};
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+Polymer({
+  is: 'cr-toolbar-search-field',
   behaviors: [ CrSearchFieldBehavior ],
   properties: {
-    value_: String
+    narrow: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
+    label: String,
+    clearLabel: String,
+    spinnerActive: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
+    hasSearchText_: Boolean
+  },
+  listeners: {
+    tap: 'showSearch_',
+    'searchInput.bind-value-changed': 'onBindValueChanged_'
   },
   getSearchInput: function() {
     return this.$.searchInput;
   },
-  clearSearch_: function() {
-    this.setValue('');
-    this.getSearchInput().focus();
+  isSearchFocused: function() {
+    return this.$.searchTerm.focused;
   },
-  toggleShowingSearch_: function() {
-    this.showingSearch = !this.showingSearch;
+  computeIconTabIndex_: function(narrow) {
+    return narrow ? 0 : -1;
+  },
+  isSpinnerShown_: function(spinnerActive, showingSearch) {
+    return spinnerActive && showingSearch;
+  },
+  onInputBlur_: function() {
+    if (!this.hasSearchText_) this.showingSearch = false;
+  },
+  onBindValueChanged_: function() {
+    var newValue = this.$.searchInput.bindValue;
+    this.hasSearchText_ = newValue != '';
+    if (newValue != '') this.showingSearch = true;
+  },
+  showSearch_: function(e) {
+    if (e.target != this.$.clearSearch) this.showingSearch = true;
+  },
+  hideSearch_: function(e) {
+    this.showingSearch = false;
+    e.stopPropagation();
+  }
+});
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+Polymer({
+  is: 'cr-toolbar',
+  properties: {
+    pageName: String,
+    searchPrompt: String,
+    clearLabel: String,
+    menuLabel: String,
+    spinnerActive: Boolean,
+    showMenu: {
+      type: Boolean,
+      value: false
+    },
+    narrow_: {
+      type: Boolean,
+      reflectToAttribute: true
+    },
+    showingSearch_: {
+      type: Boolean,
+      reflectToAttribute: true
+    }
+  },
+  getSearchField: function() {
+    return this.$.search;
+  },
+  onMenuTap_: function(e) {
+    this.fire('cr-menu-tap');
   }
 });
 
@@ -6576,6 +6757,10 @@ cr.define('downloads', function() {
         type: Boolean,
         value: false,
         observer: 'downloadsShowingChanged_'
+      },
+      spinnerActive: {
+        type: Boolean,
+        notify: true
       }
     },
     listeners: {
@@ -6583,13 +6768,13 @@ cr.define('downloads', function() {
       'paper-dropdown-open': 'onPaperDropdownOpen_'
     },
     canUndo: function() {
-      return this.$['search-input'] != this.shadowRoot.activeElement;
+      return !this.$.toolbar.getSearchField().isSearchFocused();
     },
     canClearAll: function() {
-      return !this.$['search-input'].getValue() && this.downloadsShowing;
+      return !this.$.toolbar.getSearchField().getValue() && this.downloadsShowing;
     },
     onFindCommand: function() {
-      this.$['search-input'].showAndFocus();
+      this.$.toolbar.getSearchField().showAndFocus();
     },
     closeMoreActions_: function() {
       this.$.more.close();
@@ -6616,14 +6801,15 @@ cr.define('downloads', function() {
       window.addEventListener('resize', this.boundClose_);
     },
     onSearchChanged_: function(event) {
-      downloads.ActionService.getInstance().search(event.detail);
+      var actionService = downloads.ActionService.getInstance();
+      actionService.search(event.detail);
+      this.spinnerActive = actionService.isSearching();
       this.updateClearAll_();
     },
     onOpenDownloadsFolderTap_: function() {
       downloads.ActionService.getInstance().openDownloadsFolder();
     },
     updateClearAll_: function() {
-      this.$$('#actions .clear-all').hidden = !this.canClearAll();
       this.$$('paper-menu .clear-all').hidden = !this.canClearAll();
     }
   });
@@ -6648,6 +6834,10 @@ cr.define('downloads', function() {
         value: function() {
           return [];
         }
+      },
+      spinnerActive_: {
+        type: Boolean,
+        notify: true
       }
     },
     hostAttributes: {
@@ -6674,6 +6864,7 @@ cr.define('downloads', function() {
       this.splice.apply(this, [ 'items_', index, 0 ].concat(list));
       this.updateHideDates_(index, index + list.length);
       this.removeAttribute('loading');
+      this.spinnerActive_ = false;
     },
     itemsChanged_: function() {
       this.hasDownloads_ = this.items_.length > 0;

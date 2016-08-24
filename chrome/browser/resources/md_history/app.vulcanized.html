@@ -2386,8 +2386,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       h1 {
-        @apply(--layout-flex);
         -webkit-margin-start: 6px;
+        flex: 1;
         font-size: 123%;
         font-weight: 400;
         text-overflow: ellipsis;
@@ -2412,20 +2412,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         width: 32px;
       }
 
-      :host(:not([show-menu])) #menuButton {
-        display: none;
-      }
-
       #centeredContent {
         -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
-        -webkit-padding-end: 12px;
         display: flex;
         flex: 1 1 0;
         justify-content: center;
       }
 
+      :host([narrow_]) #centeredContent {
+        -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
+      }
+
+      :host(:not([narrow_])) h1 {
+        @apply(--cr-toolbar-header-wide);
+      }
+
       :host(:not([narrow_])) #leftContent {
         max-width: calc((100% - var(--cr-toolbar-field-width) - 18px) / 2);
+        @apply(--cr-toolbar-left-content-wide);
+      }
+
+      :host(:not([narrow_])) #rightContent {
+        @apply(--cr-toolbar-right-content-wide);
       }
 
       :host([narrow_]) #centeredContent {
@@ -2437,8 +2445,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
     <div id="leftContent">
-      <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[menuLabel]]">
-      </paper-icon-button>
+      <template is="dom-if" if="[[showMenu]]">
+        <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[menuLabel]]">
+        </paper-icon-button>
+      </template>
       <h1>[[pageName]]</h1>
     </div>
 
@@ -2447,6 +2457,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </cr-toolbar-search-field>
       <iron-media-query query="(max-width: 900px)" query-matches="{{narrow_}}">
       </iron-media-query>
+    </div>
+
+    <div id="rightContent">
+      <content select=".more-actions"></content>
     </div>
   </template>
   </dom-module>
@@ -2604,7 +2618,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --cr-toolbar-field-margin: var(--side-bar-width);
       }
 
-      cr-toolbar[show-menu] {
+      :host([has-drawer]) cr-toolbar {
         --cr-toolbar-field-margin: 0;
       }
 

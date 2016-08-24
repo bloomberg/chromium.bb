@@ -16,6 +16,11 @@ cr.define('downloads', function() {
         type: Array,
         value: function() { return []; },
       },
+
+      spinnerActive_: {
+        type: Boolean,
+        notify: true,
+      },
     },
 
     hostAttributes: {
@@ -59,6 +64,7 @@ cr.define('downloads', function() {
       this.splice.apply(this, ['items_', index, 0].concat(list));
       this.updateHideDates_(index, index + list.length);
       this.removeAttribute('loading');
+      this.spinnerActive_ = false;
     },
 
     /** @private */

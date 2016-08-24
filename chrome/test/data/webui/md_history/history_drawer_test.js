@@ -6,11 +6,9 @@ cr.define('md_history.history_drawer_test', function () {
   function registerTests() {
     suite('drawer-test', function() {
       var app;
-      var menuButton;
 
       suiteSetup(function() {
         app = $('history-app');
-        menuButton = app.$.toolbar.$['main-toolbar'].$.menuButton;
       });
 
       test('drawer has correct selection', function() {
@@ -22,6 +20,10 @@ cr.define('md_history.history_drawer_test', function () {
 
           assertTrue(!!drawer);
           assertTrue(!!drawerSideBar);
+
+          var menuButton = app.$.toolbar.$['main-toolbar'].$$('#menuButton');
+          assertTrue(!!menuButton);
+
           MockInteractions.tap(menuButton);
           assertTrue(drawer.opened);
 

@@ -25,8 +25,7 @@ Polymer({
     // Controls whether the menu button is shown at the start of the menu.
     showMenu: {
       type: Boolean,
-      reflectToAttribute: true,
-      value: true
+      value: false
     },
 
     /** @private */

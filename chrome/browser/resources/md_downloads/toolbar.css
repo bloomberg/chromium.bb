@@ -6,64 +6,29 @@
   align-items: center;
   background: var(--md-toolbar-color);
   color: white;
-  content-sizing: padding-box;
   display: flex;
   min-height: 56px;
 }
 
-#title h1 {
-  -webkit-margin-end: 0;
-  -webkit-margin-start: 24px;
-  font-size: 123.1%;
-  font-weight: normal;
-  margin-bottom: 0;
-  margin-top: 0;
-}
-
-#actions {
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  flex: none;
-  width: var(--downloads-item-width);
-}
-
-:host-context([loading]) #actions {
-  visibility: hidden;
-}
-
-:host(:not([downloads-showing])) #actions {
-  justify-content: center;
-}
-
-#actions paper-button {
-  --paper-button-flat-keyboard-focus: {
-    color: rgba(255, 255, 255, 1);
+#toolbar {
+  --cr-toolbar-field-end-padding: 0;
+  --cr-toolbar-field-width: var(--downloads-item-width);
+  --cr-toolbar-header-wide: {
+    -webkit-margin-start: 24px;
+    -webkit-margin-end: 16px;  /* Only matters around 900px in Russian. */
   };
-}
-
-#actions paper-button:first-of-type {
-  -webkit-margin-start: -0.57em;  /* Matches paper-button padding. */
-}
-
-#actions paper-button:not(:last-of-type) {
-  -webkit-margin-end: 8px;  /* Margin between items. */
-}
-
-#actions paper-button:last-of-type {
-  -webkit-margin-end: -0.57em;  /* Matches paper-button padding. */
-}
-
-#search {
-  -webkit-padding-end: 10px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: flex-end;
-}
-
-#title,
-#search {
-  /* (1024 total width - 622 item width) / 2 = 201 room to play. */
-  flex: 1 0 201px;
+  --cr-toolbar-left-content-wide: {
+    -webkit-margin-start: 0;
+    flex: 1 0 1px;
+    max-width: none;
+    position: static;
+  };
+  --cr-toolbar-right-content-wide: {
+    flex: 1 0 1px;
+    position: static;
+  };
+  align-items: center;
+  flex: 1;
 }
 
 paper-icon-button {
@@ -76,11 +41,16 @@ paper-icon-button {
   };
 }
 
+.more-actions {
+  -webkit-margin-end: 16px;
+  -webkit-margin-start: 8px;
+  text-align: end;
+}
+
 #more {
   --paper-menu-button: {
     padding: 0;
   };
-  -webkit-margin-start: 16px;
 }
 
 paper-menu {
@@ -97,18 +67,4 @@ paper-item {
   /* TODO(michaelpg): fix this for everybody ever.
    * https://github.com/PolymerElements/paper-menu-button/issues/56 */
   white-space: nowrap;
-}
-
-@media not all and (max-width: 1024px) {
-  /* Hide vertical dot menu when there's enough room for #actions. */
-  paper-menu-button {
-    display: none;
-  }
-}
-
-@media all and (max-width: 1024px) {
-  /* Hide #actions for narrow windows; they're shown in a vertical dot menu. */
-  #actions {
-    display: none;
-  }
 }

@@ -4411,8 +4411,7 @@ Polymer({
     spinnerActive: Boolean,
     showMenu: {
       type: Boolean,
-      reflectToAttribute: true,
-      value: true
+      value: false
     },
     narrow_: {
       type: Boolean,
