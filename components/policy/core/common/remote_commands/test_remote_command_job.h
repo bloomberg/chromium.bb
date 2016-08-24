@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
-#include "policy/proto/device_management_backend.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 

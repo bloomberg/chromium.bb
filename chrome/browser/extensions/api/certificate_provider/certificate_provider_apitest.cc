@@ -27,6 +27,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -36,7 +37,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Return;

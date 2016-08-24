@@ -16,11 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
+#include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "net/cert/x509_certificate.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 

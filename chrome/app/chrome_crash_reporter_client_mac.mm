@@ -8,7 +8,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 #if !defined(DISABLE_NACL)
 #include "base/command_line.h"

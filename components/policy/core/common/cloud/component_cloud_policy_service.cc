@@ -27,8 +27,8 @@
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 

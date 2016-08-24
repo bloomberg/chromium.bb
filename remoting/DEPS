@@ -7,7 +7,7 @@ include_rules = [
   "+net/socket",
   "+net/url_request",
 
-  "+policy/policy_constants.h",
+  "+components/policy",
 
   "-remoting",
   "+remoting/base",

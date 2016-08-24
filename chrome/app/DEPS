@@ -22,7 +22,7 @@ include_rules = [
   "+components/nacl/common",
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
-  "+components/policy/core/browser/android",
+  "+components/policy",
   "+components/safe_browsing_db/safe_browsing_api_handler.h",
   "+components/startup_metric_utils/browser",
   "+components/startup_metric_utils/common",
@@ -32,7 +32,6 @@ include_rules = [
   "+content/public/browser/browser_main_runner.h",
   "+extensions/common/constants.h",
   "+native_client/src/trusted/service_runtime/osx",
-  "+policy",  # For generated headers and source
   "+remoting/client/plugin",
   "+sandbox",
   "+syzygy/kasko/api",

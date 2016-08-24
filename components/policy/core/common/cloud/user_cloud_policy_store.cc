@@ -14,10 +14,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
+#include "components/policy/proto/policy_signing_key.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "policy/proto/cloud_policy.pb.h"
-#include "policy/proto/device_management_backend.pb.h"
-#include "policy/proto/policy_signing_key.pb.h"
 
 namespace em = enterprise_management;
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
 
 #include "components/policy/core/common/schema.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace chromeos {
 

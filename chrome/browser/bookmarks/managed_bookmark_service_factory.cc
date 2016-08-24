@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace {
 

@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace {
 

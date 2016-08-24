@@ -42,7 +42,7 @@
 #include "components/policy/core/common/preg_parser_win.h"
 #include "components/policy/core/common/registry_dict_win.h"
 #include "components/policy/core/common/schema.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace schema = json_schema_constants;
 

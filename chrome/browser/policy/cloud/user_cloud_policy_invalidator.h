@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 class Profile;
 

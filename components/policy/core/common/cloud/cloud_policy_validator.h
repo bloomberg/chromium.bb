@@ -20,10 +20,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/policy/policy_export.h"
-#include "policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "policy/proto/chrome_extension_policy.pb.h"
+#include "components/policy/proto/chrome_extension_policy.pb.h"
 #endif
 
 namespace base {

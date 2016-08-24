@@ -19,9 +19,9 @@
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
 #include "mojo/public/cpp/bindings/string.h"
-#include "policy/policy_constants.h"
 
 namespace arc {
 

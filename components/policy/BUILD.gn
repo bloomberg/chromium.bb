@@ -63,25 +63,20 @@ if (is_component_build) {
 }
 
 if (enable_configuration_policy) {
-  # TODO(GYP_GONE) this component should use target_gen_dir instead but the GYP
-  # build puts everything into the following directory. We do the same for now.
-  # Fix when GYP is gone.
-  policy_gen_dir = "$root_gen_dir/policy"
-
   # This protobuf is equivalent to chrome_settings.proto but shares messages
   # for policies of the same type, so that less classes have to be generated
   # and compiled.
-  cloud_policy_proto_path = "$policy_gen_dir/cloud_policy.proto"
+  cloud_policy_proto_path = "$target_gen_dir/proto/cloud_policy.proto"
 
   # This is the "full" protobuf, which defines one protobuf message per
   # policy. It is also the format currently used by the server.
-  chrome_settings_proto_path = "$policy_gen_dir/chrome_settings.proto"
+  chrome_settings_proto_path = "$target_gen_dir/proto/chrome_settings.proto"
 
-  constants_header_path = "$policy_gen_dir/policy_constants.h"
-  constants_source_path = "$policy_gen_dir/policy_constants.cc"
-  protobuf_decoder_path = "$policy_gen_dir/cloud_policy_generated.cc"
-  app_restrictions_path = "$policy_gen_dir/app_restrictions.xml"
-  risk_tag_header_path = "$policy_gen_dir/risk_tag.h"
+  constants_header_path = "$target_gen_dir/policy_constants.h"
+  constants_source_path = "$target_gen_dir/policy_constants.cc"
+  protobuf_decoder_path = "$target_gen_dir/cloud_policy_generated.cc"
+  app_restrictions_path = "$target_gen_dir/app_restrictions.xml"
+  risk_tag_header_path = "$target_gen_dir/risk_tag.h"
 
   action("cloud_policy_code_generate") {
     script = "tools/generate_policy_source.py"
@@ -167,9 +162,9 @@ if (enable_configuration_policy) {
       cloud_policy_proto_path,
     ]
 
-    proto_out_dir = "policy/proto"
+    proto_out_dir = "components/policy/proto"
     cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
-    cc_include = "components/policy/policy_proto_export.h"
+    cc_include = "components/policy/proto/policy_proto_export.h"
     component_build_force_source_set = true
     defines = [ "POLICY_PROTO_COMPILATION" ]
 
@@ -183,7 +178,7 @@ if (enable_configuration_policy) {
     sources = [
       chrome_settings_proto_path,
     ]
-    proto_out_dir = "policy/proto"
+    proto_out_dir = "components/policy/proto"
 
     deps = [
       ":cloud_policy_code_generate",

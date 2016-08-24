@@ -9,7 +9,7 @@
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/policy_map.h"
-#include "policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 
 namespace policy {
 

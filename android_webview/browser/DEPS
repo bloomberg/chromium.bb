@@ -36,7 +36,7 @@ include_rules = [
 
   "+media/base/android",
 
-  "+policy/policy_constants.h",
+  "+components/policy/policy_constants.h",
 
   "+printing",
 

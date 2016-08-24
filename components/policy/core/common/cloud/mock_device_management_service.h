@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "policy/proto/device_management_backend.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {

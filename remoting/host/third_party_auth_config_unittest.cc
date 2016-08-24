@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include "base/values.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

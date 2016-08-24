@@ -20,9 +20,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 

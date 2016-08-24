@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "components/policy/policy_export.h"
-#include "policy/risk_tag.h"
+#include "components/policy/risk_tag.h"
 
 namespace policy {
 

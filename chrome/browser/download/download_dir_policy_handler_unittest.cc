@@ -20,7 +20,7 @@
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_system_util.h"

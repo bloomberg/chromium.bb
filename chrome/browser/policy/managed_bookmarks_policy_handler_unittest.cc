@@ -14,7 +14,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/common/value_builder.h"

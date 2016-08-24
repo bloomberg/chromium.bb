@@ -18,9 +18,9 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/proto/chrome_extension_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
-#include "policy/proto/chrome_extension_policy.pb.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;

@@ -14,12 +14,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/rsa_private_key.h"
-#include "policy/proto/cloud_policy.pb.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "policy/proto/chrome_extension_policy.pb.h"
+#include "components/policy/proto/chrome_extension_policy.pb.h"
 #endif
 
 namespace policy {

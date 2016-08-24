@@ -660,16 +660,16 @@ class SchemaNodesGenerator:
         self.properties_nodes)
 
 def _WritePolicyConstantSource(policies, os, f, riskTags):
-  f.write('#include "policy/policy_constants.h"\n'
+  f.write('#include "components/policy/policy_constants.h"\n'
           '\n'
           '#include <algorithm>\n'
           '#include <climits>\n'
           '\n'
           '#include "base/logging.h"\n'
           '#include "base/memory/ptr_util.h"\n'
-          '#include "policy/risk_tag.h"\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
+          '#include "components/policy/risk_tag.h"\n'
           '\n'
           'namespace policy {\n'
           '\n')
@@ -1017,8 +1017,8 @@ CPP_HEAD = '''
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "policy/policy_constants.h"
-#include "policy/proto/cloud_policy.pb.h"
+#include "components/policy/policy_constants.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 
 using google::protobuf::RepeatedPtrField;
 

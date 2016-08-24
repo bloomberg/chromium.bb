@@ -18,9 +18,9 @@
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/proto/chrome_extension_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
-#include "policy/proto/chrome_extension_policy.pb.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -20,8 +20,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/ownership/owner_settings_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/scoped_nss_types.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace crypto {
 class RSAPrivateKey;

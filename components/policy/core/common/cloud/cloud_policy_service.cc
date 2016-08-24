@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "policy/proto/device_management_backend.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 

@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 #include "components/policy/core/common/cloud/resource_cache.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace policy {
 

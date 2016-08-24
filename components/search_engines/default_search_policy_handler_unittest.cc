@@ -10,9 +10,9 @@
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "policy/policy_constants.h"
 
 namespace {
 // TODO(caitkp): Should we find a way to route this through DefaultSearchManager

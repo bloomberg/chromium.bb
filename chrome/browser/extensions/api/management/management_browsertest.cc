@@ -24,6 +24,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -38,7 +39,6 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/url_request/test_url_request_interceptor.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::BrowserThread;

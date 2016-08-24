@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/policy_map.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace policy {
 

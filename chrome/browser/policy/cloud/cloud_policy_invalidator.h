@@ -21,8 +21,8 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace base {
 class Clock;

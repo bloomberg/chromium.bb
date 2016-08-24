@@ -23,12 +23,12 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

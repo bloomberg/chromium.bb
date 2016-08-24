@@ -35,6 +35,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +61,6 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

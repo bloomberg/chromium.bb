@@ -18,6 +18,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_change.h"
@@ -29,7 +30,6 @@
 #include "components/syncable_prefs/synced_pref_change_registrar.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_utils.h"
-#include "policy/policy_constants.h"
 
 namespace {
 

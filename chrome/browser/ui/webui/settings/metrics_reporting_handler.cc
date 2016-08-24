@@ -13,9 +13,9 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
-#include "policy/policy_constants.h"
 
 namespace settings {
 

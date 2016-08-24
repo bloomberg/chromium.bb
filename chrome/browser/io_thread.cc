@@ -52,6 +52,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/network_session_configurator.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
@@ -104,7 +105,6 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "policy/policy_constants.h"
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)

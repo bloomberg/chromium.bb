@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
-#include "policy/proto/device_management_backend.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace invalidation {
 class InvalidationService;

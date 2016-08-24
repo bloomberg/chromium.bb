@@ -30,8 +30,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;

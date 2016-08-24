@@ -12,10 +12,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

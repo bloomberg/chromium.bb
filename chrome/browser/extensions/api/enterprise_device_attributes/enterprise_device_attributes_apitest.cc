@@ -15,6 +15,7 @@
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -25,7 +26,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
-#include "policy/policy_constants.h"
 
 namespace {
 

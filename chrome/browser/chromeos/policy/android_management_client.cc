@@ -9,9 +9,9 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
 

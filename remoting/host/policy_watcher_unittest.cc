@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

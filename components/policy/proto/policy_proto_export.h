@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_POLICY_PROTO_EXPORT_H_
-#define COMPONENTS_POLICY_POLICY_PROTO_EXPORT_H_
+#ifndef COMPONENTS_POLICY_PROTO_POLICY_PROTO_EXPORT_H_
+#define COMPONENTS_POLICY_PROTO_POLICY_PROTO_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 
@@ -31,4 +31,4 @@
 
 #endif  // defined(COMPONENT_BUILD)
 
-#endif  // COMPONENTS_POLICY_POLICY_PROTO_EXPORT_H_
+#endif  // COMPONENTS_POLICY_PROTO_POLICY_PROTO_EXPORT_H_

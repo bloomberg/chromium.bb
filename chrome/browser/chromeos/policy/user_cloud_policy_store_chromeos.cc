@@ -24,9 +24,9 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/device_management_local.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "policy/proto/cloud_policy.pb.h"
-#include "policy/proto/device_management_local.pb.h"
 
 namespace em = enterprise_management;
 

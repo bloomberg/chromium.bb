@@ -18,7 +18,7 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 // This policy loader loads a managed app configuration from the NSUserDefaults.
 // For example code from Apple see:

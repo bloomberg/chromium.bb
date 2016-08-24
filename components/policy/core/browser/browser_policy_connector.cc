@@ -24,9 +24,9 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "policy/policy_constants.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace policy {

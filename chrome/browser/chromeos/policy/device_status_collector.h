@@ -23,10 +23,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geoposition.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {

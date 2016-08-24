@@ -31,10 +31,10 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "crypto/sha2.h"
 #include "grit/components_strings.h"
-#include "policy/policy_constants.h"
 #include "url/gurl.h"
 
 namespace policy {

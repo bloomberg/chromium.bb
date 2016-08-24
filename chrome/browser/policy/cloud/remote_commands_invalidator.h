@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/invalidation/public/invalidation_handler.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace invalidation {
 class InvalidationService;

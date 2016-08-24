@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
+#include "components/policy/policy_constants.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -33,7 +34,6 @@
 #include "net/cert/test_root_certs.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "policy/policy_constants.h"
 
 namespace {
 

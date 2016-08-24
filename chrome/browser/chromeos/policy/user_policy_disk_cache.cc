@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
-#include "policy/proto/device_management_local.pb.h"
+#include "components/policy/proto/device_management_local.pb.h"
 
 namespace em = enterprise_management;
 

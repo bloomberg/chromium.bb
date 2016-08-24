@@ -48,6 +48,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -57,7 +58,6 @@
 #include "components/version_info/version_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

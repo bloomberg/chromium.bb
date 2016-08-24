@@ -26,11 +26,11 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_test_utils.h"
+#include "components/policy/proto/chrome_extension_policy.pb.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/proto/chrome_extension_policy.pb.h"
-#include "policy/proto/cloud_policy.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

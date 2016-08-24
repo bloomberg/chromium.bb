@@ -29,10 +29,10 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "dbus/object_path.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
 namespace system {

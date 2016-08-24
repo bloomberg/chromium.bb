@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/policy/policy_export.h"
-#include "policy/proto/policy_signing_key.pb.h"
+#include "components/policy/proto/policy_signing_key.pb.h"
 
 namespace base {
 class SequencedTaskRunner;

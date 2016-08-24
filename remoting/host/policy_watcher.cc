@@ -23,7 +23,7 @@
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/third_party_auth_config.h"
 #include "remoting/protocol/port_range.h"

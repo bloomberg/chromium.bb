@@ -26,10 +26,10 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/policy_constants.h"
 
 #if defined(OS_WIN)
 #include "components/policy/core/common/policy_loader_win.h"

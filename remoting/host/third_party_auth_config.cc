@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "policy/policy_constants.h"
+#include "components/policy/policy_constants.h"
 
 namespace remoting {
 

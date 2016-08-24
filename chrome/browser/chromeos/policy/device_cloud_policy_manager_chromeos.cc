@@ -37,11 +37,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "policy/proto/device_management_backend.pb.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;

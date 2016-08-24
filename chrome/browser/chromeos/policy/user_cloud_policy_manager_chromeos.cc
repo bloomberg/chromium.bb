@@ -32,10 +32,10 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/policy_constants.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
