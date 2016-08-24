@@ -59,7 +59,7 @@ class DepsUpdater(object):
 
         has_changes = self.commit_changes_if_needed(chromium_commitish, import_commitish)
         if options.auto_update and has_changes:
-            commit_successful = self.do_auto_update(options.auth_refresh_token_json)
+            commit_successful = self.do_auto_update()
             if not commit_successful:
                 return 1
         return 0
@@ -260,7 +260,7 @@ class DepsUpdater(object):
     def print_(self, msg):
         self.host.print_(msg)
 
-    def do_auto_update(self, auth_refresh_token_json):
+    def do_auto_update(self):
         """Attempts to upload a CL, make any required adjustments, and commit.
 
         This function assumes that the imported repo has already been updated,
@@ -274,7 +274,7 @@ class DepsUpdater(object):
         self.print_('## Uploading change list.')
         cc_list = self.get_directory_owners_to_cc()
         self.git_cl.run([
-            'upload', '-f', '--rietveld'
+            'upload', '-f', '--rietveld',
             '-m', 'W3C auto test import CL.\n\nTBR=qyearsley@chromium.org',
         ] + ['--cc=' + email for email in cc_list])
 
