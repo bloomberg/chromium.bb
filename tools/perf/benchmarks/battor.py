@@ -118,3 +118,15 @@ class BattOrPowerCasesNoChromeTrace(_BattOrBenchmark):
   @classmethod
   def Name(cls):
     return 'battor.power_cases_no_chrome_trace'
+
+
+@benchmark.Enabled('mac')
+class BattOrTrivialPages(_BattOrBenchmark):
+
+  def CreateStorySet(self, options):
+    # We want it to wait for 30 seconds to be comparable to legacy power tests.
+    return page_sets.MacGpuTrivialPagesStorySet(wait_in_seconds=30)
+
+  @classmethod
+  def Name(cls):
+    return 'battor.trivial_pages'
