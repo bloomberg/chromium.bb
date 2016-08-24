@@ -38,6 +38,7 @@ namespace offline_pages {
 
 namespace {
 const char kTestClientNamespace[] = "CLIENT_NAMESPACE";
+const char kUserRequestedNamespace[] = "download";
 const GURL kTestUrl("http://example.com");
 const GURL kTestUrl2("http://other.page.com");
 const GURL kTestUrl3("http://test.xyz");
@@ -46,6 +47,7 @@ const GURL kFileUrl("file:///foo");
 const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const ClientId kTestClientId3(kTestClientNamespace, "42");
+const ClientId kTestUserRequestedClientId(kUserRequestedNamespace, "714");
 const int64_t kTestFileSize = 876543LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
 
@@ -648,7 +650,41 @@ TEST_F(OfflinePageModelImplTest, DeletePageSuccessful) {
   EXPECT_EQ(0u, store->GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelImplTest, DeletePageByPredicate) {
+TEST_F(OfflinePageModelImplTest, DeleteCachedPageByPredicateUserRequested) {
+  OfflinePageTestStore* store = GetStore();
+
+  // Save one page.
+  SavePage(kTestUrl, kTestClientId1);
+  int64_t offline1 = last_save_offline_id();
+  EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
+  EXPECT_EQ(1u, store->GetAllPages().size());
+
+  ResetResults();
+
+  // Save an user-requested page in same domain.
+  SavePage(kTestUrl, kTestUserRequestedClientId);
+  int64_t offline2 = last_save_offline_id();
+  EXPECT_EQ(SavePageResult::SUCCESS, last_save_result());
+  EXPECT_EQ(2u, store->GetAllPages().size());
+
+  ResetResults();
+
+  // Delete the second page.
+  model()->DeleteCachedPagesByURLPredicate(
+      base::Bind(&URLSpecContains, "example.com"),
+      base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
+
+  PumpLoop();
+
+  EXPECT_EQ(last_deleted_offline_id(), offline1);
+  EXPECT_EQ(last_deleted_client_id(), kTestClientId1);
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_result());
+  ASSERT_EQ(1u, store->GetAllPages().size());
+  EXPECT_EQ(kTestUrl, store->GetAllPages()[0].url);
+  EXPECT_EQ(offline2, store->GetAllPages()[0].offline_id);
+}
+
+TEST_F(OfflinePageModelImplTest, DeleteCachedPageByPredicate) {
   OfflinePageTestStore* store = GetStore();
 
   // Save one page.
@@ -668,7 +704,7 @@ TEST_F(OfflinePageModelImplTest, DeletePageByPredicate) {
   ResetResults();
 
   // Delete the second page.
-  model()->DeletePagesByURLPredicate(
+  model()->DeleteCachedPagesByURLPredicate(
       base::Bind(&URLSpecContains, "page.com"),
       base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
 
@@ -683,7 +719,7 @@ TEST_F(OfflinePageModelImplTest, DeletePageByPredicate) {
   ResetResults();
 
   // Delete the first page.
-  model()->DeletePagesByURLPredicate(
+  model()->DeleteCachedPagesByURLPredicate(
       base::Bind(&URLSpecContains, "example.com"),
       base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
 
@@ -704,7 +740,7 @@ TEST_F(OfflinePageModelImplTest, DeletePageNotFound) {
 
   ResetResults();
 
-  model()->DeletePagesByURLPredicate(
+  model()->DeleteCachedPagesByURLPredicate(
       base::Bind(&URLSpecContains, "page.com"),
       base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
   PumpLoop();

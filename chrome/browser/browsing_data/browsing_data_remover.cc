@@ -1104,10 +1104,9 @@ void BrowsingDataRemover::RemoveImpl(
   if ((remove_mask & REMOVE_CACHE) && offline_pages::IsOfflinePagesEnabled()) {
     waiting_for_clear_offline_page_data_ = true;
     offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
-        ->DeletePagesByURLPredicate(
-            filter,
-            base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
-                       weak_ptr_factory_.GetWeakPtr()));
+        ->DeleteCachedPagesByURLPredicate(
+            filter, base::Bind(&BrowsingDataRemover::OnClearedOfflinePageData,
+                               weak_ptr_factory_.GetWeakPtr()));
   }
 #endif
 

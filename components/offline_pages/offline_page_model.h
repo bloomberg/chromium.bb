@@ -103,8 +103,8 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                       const DeletePageCallback& callback) = 0;
 
-  // Deletes offline pages matching the URL predicate.
-  virtual void DeletePagesByURLPredicate(
+  // Deletes cached offline pages matching the URL predicate.
+  virtual void DeleteCachedPagesByURLPredicate(
       const UrlPredicate& predicate,
       const DeletePageCallback& callback) = 0;
 

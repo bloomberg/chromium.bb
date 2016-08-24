@@ -75,8 +75,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void ClearAll(const base::Closure& callback) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
-  void DeletePagesByURLPredicate(const UrlPredicate& predicate,
-                                 const DeletePageCallback& callback) override;
+  void DeleteCachedPagesByURLPredicate(
+      const UrlPredicate& predicate,
+      const DeletePageCallback& callback) override;
   void HasPages(const std::string& name_space,
                 const HasPagesCallback& callback) override;
   void CheckPagesExistOffline(
@@ -242,8 +243,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Similar to DoDeletePagesByOfflineId, does actual work of deleting, and
   // requires that the model is loaded.
-  void DoDeletePagesByURLPredicate(const UrlPredicate& predicate,
-                                   const DeletePageCallback& callback);
+  void DoDeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
+                                         const DeletePageCallback& callback);
 
   // Callback completing page expiration.
   void OnExpirePageDone(int64_t offline_id,
@@ -260,6 +261,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Post task to clear storage.
   void PostClearStorageIfNeededTask();
+
+  // Check if |offline_page| is user-requested.
+  bool IsUserRequestedPage(const OfflinePageItem& offline_page) const;
 
   void RunWhenLoaded(const base::Closure& job);
 

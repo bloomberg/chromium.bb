@@ -379,22 +379,23 @@ void OfflinePageModelImpl::ClearAll(const base::Closure& callback) {
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void OfflinePageModelImpl::DeletePagesByURLPredicate(
+void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::DoDeletePagesByURLPredicate,
-                           weak_ptr_factory_.GetWeakPtr(), predicate,
-                           callback));
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate,
+                 weak_ptr_factory_.GetWeakPtr(), predicate, callback));
 }
 
-void OfflinePageModelImpl::DoDeletePagesByURLPredicate(
+void OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
 
   std::vector<int64_t> offline_ids;
   for (const auto& id_page_pair : offline_pages_) {
-    if (predicate.Run(id_page_pair.second.url))
+    if (!IsUserRequestedPage(id_page_pair.second) &&
+        predicate.Run(id_page_pair.second.url))
       offline_ids.push_back(id_page_pair.first);
   }
   DoDeletePagesByOfflineId(offline_ids, callback);
@@ -1058,6 +1059,12 @@ void OfflinePageModelImpl::PostClearStorageIfNeededTask() {
                             weak_ptr_factory_.GetWeakPtr(),
                             base::Bind(&OfflinePageModelImpl::OnStorageCleared,
                                        weak_ptr_factory_.GetWeakPtr())));
+}
+
+bool OfflinePageModelImpl::IsUserRequestedPage(
+    const OfflinePageItem& offline_page) const {
+  return (offline_page.client_id.name_space == kAsyncNamespace ||
+          offline_page.client_id.name_space == kDownloadNamespace);
 }
 
 void OfflinePageModelImpl::RunWhenLoaded(const base::Closure& task) {

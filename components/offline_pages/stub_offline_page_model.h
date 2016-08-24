@@ -32,8 +32,9 @@ class StubOfflinePageModel : public OfflinePageModel {
   void ClearAll(const base::Closure& callback) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
-  void DeletePagesByURLPredicate(const UrlPredicate& predicate,
-                                 const DeletePageCallback& callback) override;
+  void DeleteCachedPagesByURLPredicate(
+      const UrlPredicate& predicate,
+      const DeletePageCallback& callback) override;
   void HasPages(const std::string& name_space,
                 const HasPagesCallback& callback) override;
   void CheckPagesExistOffline(

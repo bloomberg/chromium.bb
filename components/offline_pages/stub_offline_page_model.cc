@@ -22,7 +22,7 @@ void StubOfflinePageModel::ClearAll(const base::Closure& callback) {}
 void StubOfflinePageModel::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback) {}
-void StubOfflinePageModel::DeletePagesByURLPredicate(
+void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     const DeletePageCallback& callback) {}
 void StubOfflinePageModel::HasPages(const std::string& name_space,
