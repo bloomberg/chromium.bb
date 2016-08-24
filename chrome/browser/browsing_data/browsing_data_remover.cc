@@ -452,6 +452,12 @@ void BrowsingDataRemover::RemoveImpl(
   base::Callback<bool(const ContentSettingsPattern& url)> same_pattern_filter =
       filter_builder.BuildWebsiteSettingsPatternMatchesFilter();
 
+  // Some backends support a filter that |is_null()| to make complete deletion
+  // more efficient.
+  base::Callback<bool(const GURL&)> nullable_filter =
+      filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
+                                        : filter;
+
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
       prefs::kAllowDeletingBrowserHistory);
@@ -514,11 +520,10 @@ void BrowsingDataRemover::RemoveImpl(
 
     // The power consumption history by origin contains details of websites
     // that were visited.
-    // TODO(dmurph): Support all backends with filter (crbug.com/113621).
     power::OriginPowerMap* origin_power_map =
         power::OriginPowerMapFactory::GetForBrowserContext(profile_);
     if (origin_power_map)
-      origin_power_map->ClearOriginMap();
+      origin_power_map->ClearOriginMap(nullable_filter);
 
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history: we have no mechanism to track when these items were

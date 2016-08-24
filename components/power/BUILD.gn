@@ -26,6 +26,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":power",
+    "//base",
     "//testing/gtest",
   ]
 }

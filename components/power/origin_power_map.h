@@ -45,8 +45,9 @@ class OriginPowerMap : public KeyedService {
   // updating for all origins this cycle.
   void OnAllOriginsUpdated();
 
-  // Clears all URLs out of the map.
-  void ClearOriginMap();
+  // Clears URLs out of the map. If |url_filter| is not null, only clears those
+  // URLs that are matched by it.
+  void ClearOriginMap(const base::Callback<bool(const GURL&)> url_filter);
 
  private:
   // OriginMap maps a URL to the amount of power consumed by the URL using the

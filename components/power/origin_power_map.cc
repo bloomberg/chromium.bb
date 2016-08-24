@@ -4,6 +4,8 @@
 
 #include "components/power/origin_power_map.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
@@ -59,9 +61,27 @@ void OriginPowerMap::OnAllOriginsUpdated() {
   callback_list_.Notify();
 }
 
-void OriginPowerMap::ClearOriginMap() {
-  origin_map_.clear();
-  total_consumed_ = 0;
+void OriginPowerMap::ClearOriginMap(
+    const base::Callback<bool(const GURL&)> url_filter) {
+  if (url_filter.is_null()) {
+    origin_map_.clear();
+  } else {
+    for (auto it = origin_map_.begin(); it != origin_map_.end();) {
+      auto next_it = std::next(it);
+
+      if (url_filter.Run(it->first)) {
+        total_consumed_ -= it->second;
+        origin_map_.erase(it);
+      }
+
+      it = next_it;
+    }
+  }
+
+  // Handle the empty case separately to avoid reporting nonzero power usage
+  // for zero origins in case of double rounding errors.
+  if (origin_map_.empty())
+    total_consumed_ = 0;
 }
 
 }  // namespace power
