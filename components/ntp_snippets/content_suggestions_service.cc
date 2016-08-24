@@ -81,18 +81,18 @@ void ContentSuggestionsService::FetchSuggestionImage(
                                                          callback);
 }
 
-void ContentSuggestionsService::ClearAllCachedSuggestionsForDebugging() {
+void ContentSuggestionsService::ClearAllCachedSuggestions() {
   suggestions_by_category_.clear();
   id_category_map_.clear();
   for (const auto& category_provider_pair : providers_by_category_) {
-    category_provider_pair.second->ClearCachedSuggestionsForDebugging(
+    category_provider_pair.second->ClearCachedSuggestions(
         category_provider_pair.first);
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnNewSuggestions(category_provider_pair.first));
   }
 }
 
-void ContentSuggestionsService::ClearCachedSuggestionsForDebugging(
+void ContentSuggestionsService::ClearCachedSuggestions(
     Category category) {
   for (const ContentSuggestion& suggestion :
        suggestions_by_category_[category]) {
@@ -101,7 +101,7 @@ void ContentSuggestionsService::ClearCachedSuggestionsForDebugging(
   suggestions_by_category_[category].clear();
   auto iterator = providers_by_category_.find(category);
   if (iterator != providers_by_category_.end())
-    iterator->second->ClearCachedSuggestionsForDebugging(category);
+    iterator->second->ClearCachedSuggestions(category);
 }
 
 void ContentSuggestionsService::GetDismissedSuggestionsForDebugging(

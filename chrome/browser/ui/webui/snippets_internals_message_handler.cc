@@ -194,7 +194,7 @@ void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
   Category category =
       content_suggestions_service_->category_factory()->FromIDValue(
           category_id);
-  content_suggestions_service_->ClearCachedSuggestionsForDebugging(category);
+  content_suggestions_service_->ClearCachedSuggestions(category);
   SendContentSuggestions();
 }
 

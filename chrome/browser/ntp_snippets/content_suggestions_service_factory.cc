@@ -91,7 +91,6 @@ ContentSuggestionsServiceFactory::GetInstance() {
 // static
 ContentSuggestionsService* ContentSuggestionsServiceFactory::GetForProfile(
     Profile* profile) {
-  DCHECK(!profile->IsOffTheRecord());
   return static_cast<ContentSuggestionsService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -116,6 +115,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   using State = ContentSuggestionsService::State;
   Profile* profile = Profile::FromBrowserContext(context);
+  DCHECK(!profile->IsOffTheRecord());
 
   // Create the ContentSuggestionsService.
   State state =

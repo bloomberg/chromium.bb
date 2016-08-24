@@ -168,8 +168,7 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
-void BookmarkSuggestionsProvider::ClearCachedSuggestionsForDebugging(
-    Category category) {
+void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {
   DCHECK_EQ(category, provided_category_);
   // Ignored.
 }

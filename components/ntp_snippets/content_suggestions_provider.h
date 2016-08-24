@@ -102,9 +102,9 @@ class ContentSuggestionsProvider {
   virtual void FetchSuggestionImage(const std::string& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 
-  // Used only for debugging purposes. Clears all caches for the given category,
-  // so that the next fetch starts from scratch.
-  virtual void ClearCachedSuggestionsForDebugging(Category category) = 0;
+  // Clears all caches for the given category, so that the next fetch starts
+  // from scratch.
+  virtual void ClearCachedSuggestions(Category category) = 0;
 
   // Used only for debugging purposes. Retrieves suggestions for the given
   // |category| that have previously been dismissed and are still stored in the

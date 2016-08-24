@@ -140,7 +140,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   void DismissSuggestion(const std::string& suggestion_id) override;
   void FetchSuggestionImage(const std::string& suggestion_id,
                             const ImageFetchedCallback& callback) override;
-  void ClearCachedSuggestionsForDebugging(Category category) override;
+  void ClearCachedSuggestions(Category category) override;
   void GetDismissedSuggestionsForDebugging(
       Category category,
       const DismissedSuggestionsCallback& callback) override;

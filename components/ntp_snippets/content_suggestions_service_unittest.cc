@@ -100,7 +100,7 @@ class MockProvider : public ContentSuggestionsProvider {
     observer()->OnSuggestionInvalidated(this, category, suggestion_id);
   }
 
-  MOCK_METHOD1(ClearCachedSuggestionsForDebugging, void(Category category));
+  MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
   MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
                void(Category category,
                     const DismissedSuggestionsCallback& callback));

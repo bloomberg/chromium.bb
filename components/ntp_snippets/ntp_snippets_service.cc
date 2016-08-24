@@ -330,7 +330,7 @@ void NTPSnippetsService::FetchSuggestionImage(
                  base::Unretained(this), callback, snippet_id));
 }
 
-void NTPSnippetsService::ClearCachedSuggestionsForDebugging(Category category) {
+void NTPSnippetsService::ClearCachedSuggestions(Category category) {
   DCHECK_EQ(category, provided_category_);
   if (!initialized())
     return;
@@ -405,7 +405,6 @@ void NTPSnippetsService::OnURLsDeleted(
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
-  //TODO handle not-yet-initialized case!
   // We don't care about expired entries.
   if (expired)
     return;
@@ -662,7 +661,7 @@ void NTPSnippetsService::ClearExpiredSnippets() {
 }
 
 void NTPSnippetsService::NukeAllSnippets() {
-  ClearCachedSuggestionsForDebugging(provided_category_);
+  ClearCachedSuggestions(provided_category_);
   ClearDismissedSuggestionsForDebugging(provided_category_);
 
   // Temporarily enter an "explicitly disabled" state, so that any open UIs
@@ -767,7 +766,7 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
-  ClearCachedSuggestionsForDebugging(provided_category_);
+  ClearCachedSuggestions(provided_category_);
   ClearDismissedSuggestionsForDebugging(provided_category_);
 
   expiry_timer_.Stop();

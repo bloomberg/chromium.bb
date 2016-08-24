@@ -452,7 +452,7 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->GetSnippetsForTesting(), SizeIs(1));
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestions(articles_category());
   EXPECT_THAT(service()->GetSnippetsForTesting(), IsEmpty());
 }
 
@@ -706,7 +706,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestions(articles_category());
   // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
   // Source 1 should win in this case since we prefer publisher name to AMP url
   source_urls.clear();
@@ -732,7 +732,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestions(articles_category());
   // Set source 1 to have no AMP url and no source, and source 2 to only have
   // amp url. There should be no snippets since we only add sources we consider
   // complete
@@ -779,7 +779,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 2 complete sources, we should choose the first complete source
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestions(articles_category());
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));
@@ -807,7 +807,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 3 complete sources, we should choose the first complete source
-  service()->ClearCachedSuggestionsForDebugging(articles_category());
+  service()->ClearCachedSuggestions(articles_category());
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));

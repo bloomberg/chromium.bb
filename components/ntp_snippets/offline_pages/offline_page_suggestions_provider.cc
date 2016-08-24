@@ -150,8 +150,7 @@ void OfflinePageSuggestionsProvider::FetchSuggestionImage(
       FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
 }
 
-void OfflinePageSuggestionsProvider::ClearCachedSuggestionsForDebugging(
-    Category category) {
+void OfflinePageSuggestionsProvider::ClearCachedSuggestions(Category category) {
   // Ignored.
 }
 

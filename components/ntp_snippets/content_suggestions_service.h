@@ -120,19 +120,17 @@ class ContentSuggestionsService : public KeyedService,
   // called only once per provider.
   void RegisterProvider(std::unique_ptr<ContentSuggestionsProvider> provider);
 
-  // Only for debugging use through the internals page.
   // Removes all suggestions from all caches or internal stores in all
-  // providers. See |ClearCachedSuggestionsForDebugging|.
-  void ClearAllCachedSuggestionsForDebugging();
+  // providers. See |ClearCachedSuggestions|.
+  void ClearAllCachedSuggestions();
 
-  // Only for debugging use through the internals page.
   // Removes all suggestions of the given |category| from all caches or internal
   // stores in the service and the corresponding provider. It does, however, not
   // remove any suggestions from the provider's sources, so if its configuration
   // hasn't changed, it might return the same results when it fetches the next
   // time. In particular, calling this method will not mark any suggestions as
   // dismissed.
-  void ClearCachedSuggestionsForDebugging(Category category);
+  void ClearCachedSuggestions(Category category);
 
   // Only for debugging use through the internals page.
   // Retrieves suggestions of the given |category| that have previously been

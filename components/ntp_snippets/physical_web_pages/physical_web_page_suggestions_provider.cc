@@ -82,7 +82,7 @@ void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
   // TODO(vitaliii): Implement.
 }
 
-void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestionsForDebugging(
+void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestions(
     Category category) {
   // Ignored
 }

@@ -31,6 +31,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -56,6 +57,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/power/origin_power_map.h"
@@ -972,6 +974,11 @@ void BrowsingDataRemover::RemoveImpl(
         delete_begin_,
         base::Bind(&BrowsingDataRemover::OnClearedNetworkingHistory,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+        ContentSuggestionsServiceFactory::GetForProfile(profile_);
+    if (content_suggestions_service)
+      content_suggestions_service->ClearAllCachedSuggestions();
   }
 
   // Content Decryption Modules used by Encrypted Media store licenses in a
