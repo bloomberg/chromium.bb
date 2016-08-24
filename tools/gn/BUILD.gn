@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 defines = [ "GN_BUILD" ]
 
@@ -344,5 +345,14 @@ test("gn_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",
+  ]
+}
+
+fuzzer_test("gn_parser_fuzzer") {
+  sources = [
+    "parser_fuzzer.cc",
+  ]
+  deps = [
+    ":gn_lib",
   ]
 }
