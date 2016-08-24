@@ -1534,8 +1534,6 @@ cr.define('login', function() {
       this.actionBoxMenuRemoveElement.hidden = true;
       this.actionBoxRemoveUserWarningElement.hidden = false;
 
-      // Show extra statistics information for desktop users
-      var message;
       if (!this.user.isDesktopUser) {
         this.moveActionMenuUpIfNeeded_();
         if (!this.user.legacySupervisedUser) {
@@ -1545,12 +1543,11 @@ cr.define('login', function() {
               '.action-box-remove-user-warning-table-nonsync').style.display
               = 'none';
           var message = loadTimeData.getString('removeNonOwnerUserWarningText');
-          var element_id = '.action-box-remove-non-owner-user-warning-text';
-          this.updateRemoveWarningDialogSetMessage_(element_id,
-                                                    this.user.profilePath,
-                                                    message);
+          this.updateRemoveNonOwnerUserWarningMessage_(this.user.profilePath,
+                                                       message);
         }
       } else {
+        // Show extra statistics information for desktop users
         this.querySelector(
           '.action-box-remove-non-owner-user-warning-text').hidden = true;
         this.RemoveWarningDialogSetMessage_(true, false);
@@ -1613,7 +1610,6 @@ cr.define('login', function() {
       if (total_count)
         this.classList.remove('has-no-stats');
 
-      var elementSelector = '.action-box-remove-user-warning-text';
       var is_synced_user = this.user.emailAddress !== "";
       // Write total number if all statistics are loaded.
       if (num_stats_loaded === Object.keys(stats_elements).length) {
@@ -1622,8 +1618,7 @@ cr.define('login', function() {
           var message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(elementSelector,
-                                                    this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
                                                     message);
         } else {
           window.updateRemoveWarningDialogSetMessage =
@@ -1640,8 +1635,7 @@ cr.define('login', function() {
           message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
-          this.updateRemoveWarningDialogSetMessage_(elementSelector,
-                                                    this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
                                                     message);
         } else {
           message = loadTimeData.getString(
@@ -1649,8 +1643,7 @@ cr.define('login', function() {
                                'removeUserWarningTextNonSyncCalculating');
           substitute = loadTimeData.getString(
               'removeUserWarningTextCalculating');
-          this.updateRemoveWarningDialogSetMessage_(elementSelector,
-                                                    this.user.profilePath,
+          this.updateRemoveWarningDialogSetMessage_(this.user.profilePath,
                                                     message, substitute);
         }
       }
@@ -1658,22 +1651,19 @@ cr.define('login', function() {
 
     /**
      * Refresh the message in the remove user warning dialog.
-     * @param {string} elementSelector The elementSelector of warning dialog.
      * @param {string} profilePath The filepath of the URL (must be verified).
      * @param {string} message The message to be written.
      * @param {number|string=} count The number or string to replace $1 in
      * |message|. Can be omitted if $1 is not present in |message|.
      */
-    updateRemoveWarningDialogSetMessage_: function(elementSelector,
-                                                   profilePath,
-                                                   message,
+    updateRemoveWarningDialogSetMessage_: function(profilePath, message,
                                                    count) {
       if (profilePath !== this.user.profilePath)
         return;
       // Add localized messages where $1 will be replaced with
       // <span class="total-count"></span> and $2 will be replaced with
       // <span class="email"></span>.
-      var element = this.querySelector(elementSelector);
+      var element = this.querySelector('.action-box-remove-user-warning-text');
       element.textContent = '';
 
       messageParts = message.split(/(\$[12])/);
@@ -1685,6 +1675,35 @@ cr.define('login', function() {
           elementToAdd.textContent = count;
           element.appendChild(elementToAdd);
         } else if (messageParts[j] === '$2') {
+          var elementToAdd = document.createElement('span');
+          elementToAdd.classList.add('email');
+          elementToAdd.textContent = this.user.emailAddress;
+          element.appendChild(elementToAdd);
+        } else {
+          element.appendChild(document.createTextNode(messageParts[j]));
+        }
+      }
+      this.moveActionMenuUpIfNeeded_();
+    },
+
+    /**
+     * Update the message in the "remove non-owner user warning" dialog on CrOS.
+     * @param {string} profilePath The filepath of the URL (must be verified).
+     * @param (string) message The message to be written.
+     */
+    updateRemoveNonOwnerUserWarningMessage_: function(profilePath, message) {
+      if (profilePath !== this.user.profilePath)
+        return;
+      // Add localized messages where $1 will be replaced with
+      // <span class="email"></span>.
+      var element = this.querySelector(
+          '.action-box-remove-non-owner-user-warning-text');
+      element.textContent = '';
+
+      messageParts = message.split(/(\$[1])/);
+      var numParts = messageParts.length;
+      for (var j = 0; j < numParts; j++) {
+        if (messageParts[j] == '$1') {
           var elementToAdd = document.createElement('span');
           elementToAdd.classList.add('email');
           elementToAdd.textContent = this.user.emailAddress;
