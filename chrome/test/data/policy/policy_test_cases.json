@@ -2058,6 +2058,14 @@
     ]
   },
 
+  "ExternalStorageReadOnly": {
+    "os": ["chromeos"],
+    "test_policy": { "ExternalStorageReadOnly": true },
+    "pref_mappings": [
+      { "pref": "hardware.external_storage_read_only" }
+    ]
+  },
+
   "AudioOutputAllowed": {
     "os": ["chromeos"],
     "test_policy": { "AudioOutputAllowed": true },

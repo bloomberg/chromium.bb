@@ -75548,6 +75548,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="340" label="Enable SHA-1 certificates from local trust anchors"/>
   <int value="341" label="Set an external source of URL restrictions"/>
   <int value="342" label="Enable component updates"/>
+  <int value="343" label="Mount external storage only in read-only mode"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
