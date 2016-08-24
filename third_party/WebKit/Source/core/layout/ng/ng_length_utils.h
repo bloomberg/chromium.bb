@@ -16,6 +16,8 @@ struct NGBoxMargins;
 
 enum class LengthResolveType { MinSize, MaxSize, ContentSize, MarginSize };
 
+#define NGSizeIndefinite LayoutUnit(-1)
+
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
 CORE_EXPORT LayoutUnit resolveInlineLength(const NGConstraintSpace&,

@@ -7,6 +7,7 @@
 #include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_length_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +27,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 
   NGLogicalSize container_size;
   container_size.inlineSize = LayoutUnit(100);
-  container_size.blockSize = LayoutUnit(-1);
+  container_size.blockSize = NGSizeIndefinite;
   NGConstraintSpace space(container_size);
 
   NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));

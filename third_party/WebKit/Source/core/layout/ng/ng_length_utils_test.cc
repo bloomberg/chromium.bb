@@ -159,6 +159,21 @@ TEST_F(NGLengthUtilsTest, testComputeBlockSizeForFragment) {
   // TODO(layout-ng): test {min,max}-content on max-height.
 }
 
+TEST_F(NGLengthUtilsTest, testIndefinitePercentages) {
+  style_->setMinHeight(Length(20, Fixed));
+  style_->setHeight(Length(20, Percent));
+
+  EXPECT_EQ(NGSizeIndefinite,
+            computeBlockSizeForFragment(constructConstraintSpace(200, -1),
+                                        LayoutUnit(-1)));
+  EXPECT_EQ(LayoutUnit(20),
+            computeBlockSizeForFragment(constructConstraintSpace(200, -1),
+                                        LayoutUnit(10)));
+  EXPECT_EQ(LayoutUnit(120),
+            computeBlockSizeForFragment(constructConstraintSpace(200, -1),
+                                        LayoutUnit(120)));
+}
+
 TEST_F(NGLengthUtilsTest, testMargins) {
   style_->setMarginTop(Length(10, Percent));
   style_->setMarginRight(Length(52, Fixed));

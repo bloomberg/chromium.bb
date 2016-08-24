@@ -21,6 +21,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
                                LengthResolveType type) {
   // TODO(layout-ng): Handle min/max/fit-content
   DCHECK(!length.isMaxSizeNone());
+  DCHECK_GE(constraintSpace.ContainerSize().inlineSize, LayoutUnit());
 
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
@@ -45,6 +46,12 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
     return contentSize;
 
   if (length.isMinContent() || length.isMaxContent() || length.isFitContent())
+    return contentSize;
+
+  // Make sure that indefinite percentages resolve to NGSizeIndefinite, not to
+  // a random negative number.
+  if (length.hasPercent() &&
+      constraintSpace.ContainerSize().blockSize == NGSizeIndefinite)
     return contentSize;
 
   return valueForLength(length, constraintSpace.ContainerSize().blockSize);
@@ -86,8 +93,12 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   LayoutUnit extent =
       resolveBlockLength(constraintSpace, style.logicalHeight(), contentSize,
                          LengthResolveType::ContentSize);
-  Length maxLength = style.logicalMaxHeight();
+  if (extent == NGSizeIndefinite) {
+    DCHECK_EQ(contentSize, NGSizeIndefinite);
+    return extent;
+  }
 
+  Length maxLength = style.logicalMaxHeight();
   if (!maxLength.isMaxSizeNone()) {
     LayoutUnit max = resolveBlockLength(constraintSpace, maxLength, contentSize,
                                         LengthResolveType::MaxSize);
