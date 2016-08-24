@@ -175,7 +175,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
     }
 
     // Add a menu item for each trigger.
-    for (const auto& trigger : registered_triggers_) {
+    for (auto* trigger : registered_triggers_) {
       const gfx::ImageSkia* icon = trigger->GetIcon();
       const base::string16& name = trigger->GetName();
       int command_id = command_id_handler_vector_->size();
@@ -540,7 +540,7 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
   // Get the new apps (if any) and process them.
   std::set<const extensions::Extension*> new_apps = bmd->GetNewBackgroundApps();
   std::vector<base::string16> new_names;
-  for (const auto& app : new_apps)
+  for (auto* app : new_apps)
     new_names.push_back(base::UTF8ToUTF16(app->name()));
   OnClientsChanged(profile, new_names);
 }
@@ -970,7 +970,7 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
     std::sort(bmd_vector.begin(), bmd_vector.end(),
               &BackgroundModeData::BackgroundModeDataCompare);
     int profiles_using_background_mode = 0;
-    for (const auto& bmd : bmd_vector) {
+    for (auto* bmd : bmd_vector) {
       // We should only display the profile in the status icon if it has at
       // least one background app.
       if (bmd->GetBackgroundClientCount() > 0) {
