@@ -33,7 +33,7 @@ cr.define('md_history.history_routing_test', function() {
         assertEquals('syncedTabs', app.routeData_.page);
         assertEquals('chrome://history/syncedTabs', window.location.href);
 
-        MockInteractions.tap(menu.children[0]);
+        MockInteractions.keyDownOn(menu.children[0], 32, '', "Space");
         assertEquals('', app.routeData_.page);
         assertEquals('chrome://history/', window.location.href);
       });

@@ -5,6 +5,8 @@
 Polymer({
   is: 'history-side-bar',
 
+  behaviors: [Polymer.IronA11yKeysBehavior],
+
   properties: {
     selectedPage: {type: String, notify: true},
 
@@ -14,6 +16,18 @@ Polymer({
 
     // If true, the sidebar is contained within an app-drawer.
     drawer: {type: Boolean, reflectToAttribute: true},
+  },
+
+  keyBindings: {
+    'space:keydown': 'onSpacePressed_',
+  },
+
+  /**
+   * @param {CustomEvent} e
+   * @private
+   */
+  onSpacePressed_: function(e) {
+    e.detail.keyboardEvent.path[0].click();
   },
 
   /**

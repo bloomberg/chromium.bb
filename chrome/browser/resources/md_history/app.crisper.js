@@ -8541,6 +8541,7 @@ Polymer({
 // found in the LICENSE file.
 Polymer({
   is: 'history-side-bar',
+  behaviors: [ Polymer.IronA11yKeysBehavior ],
   properties: {
     selectedPage: {
       type: String,
@@ -8552,6 +8553,12 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true
     }
+  },
+  keyBindings: {
+    'space:keydown': 'onSpacePressed_'
+  },
+  onSpacePressed_: function(e) {
+    e.detail.keyboardEvent.path[0].click();
   },
   onSelectorActivate_: function() {
     this.fire('history-close-drawer');
