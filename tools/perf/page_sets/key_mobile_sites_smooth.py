@@ -125,6 +125,14 @@ class AmazonNicolasCageSmoothPage(
           selector='#search',
           distance_expr='document.body.scrollHeight - window.innerHeight')
 
+class CNNArticleSmoothPage(
+      key_mobile_sites_pages.CnnArticlePage):
+
+  def RunPageInteractions(self, action_runner):
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      # With default top_start_ratio=0.5 the corresponding element in this page
+      # will not be in the root scroller.
+      action_runner.ScrollPage(top_start_ratio=0.01)
 
 class KeyMobileSitesSmoothPageSet(story.StorySet):
 
@@ -140,7 +148,6 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
     predefined_page_classes = [
       key_mobile_sites_pages.CapitolVolkswagenPage,
       key_mobile_sites_pages.TheVergeArticlePage,
-      key_mobile_sites_pages.CnnArticlePage,
       key_mobile_sites_pages.FacebookPage,
       key_mobile_sites_pages.YoutubeMobilePage,
       key_mobile_sites_pages.YahooAnswersPage,
@@ -164,6 +171,7 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
     # self.AddStory(GroupClonedListImagesSmoothPage(self))
     self.AddStory(GoogleNewsMobile2SmoothPage(self))
     self.AddStory(AmazonNicolasCageSmoothPage(self))
+    self.AddStory(CNNArticleSmoothPage(self))
 
     # Add pages with custom labels.
 
