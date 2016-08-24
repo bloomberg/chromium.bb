@@ -79734,6 +79734,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1515" label="RadioNameMatchingCaseFolding"/>
   <int value="1516" label="NavigatorPointerEnabled"/>
   <int value="1517" label="InputSelectionGettersThrow"/>
+  <int value="1518" label="DocumentCreateEventVRDisplayEvent"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

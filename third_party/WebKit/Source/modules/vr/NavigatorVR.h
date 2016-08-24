@@ -9,6 +9,7 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "modules/ModulesExport.h"
 #include "modules/vr/VRDisplay.h"
+#include "modules/vr/VRDisplayEvent.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
@@ -43,6 +44,8 @@ private:
     explicit NavigatorVR(LocalFrame*);
 
     static const char* supplementName();
+
+    void fireVRDisplayPresentChange(VRDisplay*);
 
     Member<VRController> m_controller;
 };

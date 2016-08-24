@@ -100,4 +100,12 @@ const char* NavigatorVR::supplementName()
     return "NavigatorVR";
 }
 
+void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display)
+{
+    if (m_frame && m_frame->localDOMWindow()) {
+        m_frame->localDOMWindow()->enqueueWindowEvent(
+            VRDisplayEvent::create(EventTypeNames::vrdisplaypresentchange, true, false, display, ""));
+    }
+}
+
 } // namespace blink

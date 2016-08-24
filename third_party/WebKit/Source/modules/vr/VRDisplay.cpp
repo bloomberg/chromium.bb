@@ -5,6 +5,7 @@
 #include "modules/vr/VRDisplay.h"
 
 #include "core/dom/DOMException.h"
+#include "core/dom/Fullscreen.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
@@ -40,6 +41,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR)
     , m_capabilities(new VRDisplayCapabilities())
     , m_eyeParametersLeft(new VREyeParameters())
     , m_eyeParametersRight(new VREyeParameters())
+    , m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck)
 {
 }
 
@@ -131,6 +133,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
+    m_isPresenting = false;
+
     if (!m_capabilities->canPresent()) {
         DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay cannot present");
         resolver->reject(exception);
@@ -146,11 +150,32 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
         return promise;
     }
 
-    // TODO: Implement VR presentation
-    NOTIMPLEMENTED();
+    m_layer = layers[0];
 
-    DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented");
-    resolver->reject(exception);
+    if (m_layer.source()) {
+        if (!m_capabilities->hasExternalDisplay()) {
+            // TODO: Need a proper VR compositor, but for the moment on mobile
+            // we'll just make the canvas fullscreen so that VrShell can pick it
+            // up through the standard (high latency) compositing path.
+            Fullscreen::from(m_layer.source()->document()).requestFullscreen(*m_layer.source(), Fullscreen::UnprefixedRequest);
+
+            m_isPresenting = true;
+
+            resolver->resolve();
+
+            m_navigatorVR->fireVRDisplayPresentChange(this);
+
+            // Check to see if the canvas is still the current fullscreen
+            // element once per second.
+            m_fullscreenCheckTimer.startRepeating(1.0, BLINK_FROM_HERE);
+        } else {
+            DOMException* exception = DOMException::create(InvalidStateError, "VR Presentation not implemented for this VRDisplay");
+            resolver->reject(exception);
+        }
+    } else {
+        DOMException* exception = DOMException::create(InvalidStateError, "Invalid layer source");
+        resolver->reject(exception);
+    }
 
     return promise;
 }
@@ -160,21 +185,43 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    // Can't stop presenting if we're not presenting.
-    DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay is not presenting");
-    resolver->reject(exception);
+    if (!m_isPresenting) {
+        // Can't stop presenting if we're not presenting.
+        DOMException* exception = DOMException::create(InvalidStateError, "VRDisplay is not presenting");
+        resolver->reject(exception);
+        return promise;
+    }
+
+    if (!m_capabilities->hasExternalDisplay()) {
+        Fullscreen::fullyExitFullscreen(m_layer.source()->document());
+        m_fullscreenCheckTimer.stop();
+    } else {
+        // Can't get into this presentation mode, so nothing to do here.
+    }
+
+    m_isPresenting = false;
+
+    // TODO: Resolve when exit is confirmed
+    resolver->resolve();
+
+    m_navigatorVR->fireVRDisplayPresentChange(this);
+
     return promise;
 }
 
 HeapVector<VRLayer> VRDisplay::getLayers()
 {
     HeapVector<VRLayer> layers;
+
+    if (m_isPresenting) {
+        layers.append(m_layer);
+    }
+
     return layers;
 }
 
 void VRDisplay::submitFrame(VRPose* pose)
 {
-    NOTIMPLEMENTED();
 }
 
 void VRDisplay::didProcessTask()
@@ -186,6 +233,20 @@ void VRDisplay::didProcessTask()
     }
 }
 
+void VRDisplay::onFullscreenCheck(TimerBase*)
+{
+    // TODO: This is a temporary measure to track if fullscreen mode has been
+    // exited by the UA. If so we need to end VR presentation. Soon we won't
+    // depend on the Fullscreen API to fake VR presentation, so this will
+    // become unnessecary. Until that point, though, this seems preferable to
+    // adding a bunch of notification plumbing to Fullscreen.
+    if (!Fullscreen::isCurrentFullScreenElement(*m_layer.source())) {
+        m_isPresenting = false;
+        m_navigatorVR->fireVRDisplayPresentChange(this);
+        m_fullscreenCheckTimer.stop();
+    }
+}
+
 DEFINE_TRACE(VRDisplay)
 {
     visitor->trace(m_navigatorVR);
@@ -194,6 +255,7 @@ DEFINE_TRACE(VRDisplay)
     visitor->trace(m_eyeParametersLeft);
     visitor->trace(m_eyeParametersRight);
     visitor->trace(m_framePose);
+    visitor->trace(m_layer);
 }
 
 } // namespace blink
