@@ -60,6 +60,7 @@ InvalidationSet::InvalidationSet(InvalidationType type)
     , m_treeBoundaryCrossing(false)
     , m_insertionPointCrossing(false)
     , m_invalidatesSlotted(false)
+    , m_isAlive(true)
 {
 }
 

@@ -114,6 +114,8 @@ public:
     HeapVector<RuleFeature> siblingRules;
     HeapVector<RuleFeature> uncommonAttributeRules;
 
+    bool isAlive() const { return m_isAlive; }
+
 protected:
     InvalidationSet* invalidationSetForSelector(const CSSSelector&, InvalidationType);
 
@@ -186,6 +188,9 @@ private:
     PseudoTypeInvalidationSetMap m_pseudoInvalidationSets;
     RefPtr<SiblingInvalidationSet> m_universalSiblingInvalidationSet;
     RefPtr<DescendantInvalidationSet> m_nthInvalidationSet;
+
+    // If true, the RuleFeatureSet is alive and can be used.
+    unsigned m_isAlive : 1;
 
     friend class RuleFeatureSetTest;
 };

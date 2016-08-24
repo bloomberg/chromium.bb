@@ -30,7 +30,10 @@ public:
     void scheduleSiblingInvalidationsAsDescendants(const InvalidationLists&, ContainerNode& schedulingParent);
     void clearInvalidation(ContainerNode&);
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_pendingInvalidationMap);
+    }
 
 private:
     struct RecursionData {

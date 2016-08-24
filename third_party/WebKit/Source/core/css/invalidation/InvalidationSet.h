@@ -115,6 +115,8 @@ public:
 
     bool isEmpty() const { return !m_classes && !m_ids && !m_tagNames && !m_attributes && !m_customPseudoInvalid && !m_insertionPointCrossing && !m_invalidatesSlotted; }
 
+    bool isAlive() const { return m_isAlive; }
+
     void toTracedValue(TracedValue*) const;
 
 #ifndef NDEBUG
@@ -135,8 +137,14 @@ public:
 
     void combine(const InvalidationSet& other);
 
+    ~InvalidationSet()
+    {
+        RELEASE_ASSERT(m_isAlive);
+        m_isAlive = false;
+    }
+
 protected:
-    InvalidationSet(InvalidationType);
+    explicit InvalidationSet(InvalidationType);
 
 private:
     void destroy();
@@ -171,6 +179,9 @@ private:
 
     // If true, distributed nodes of <slot> elements need to be invalidated.
     unsigned m_invalidatesSlotted : 1;
+
+    // If true, the instance is alive and can be used.
+    unsigned m_isAlive : 1;
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {

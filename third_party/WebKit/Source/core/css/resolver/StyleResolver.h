@@ -151,6 +151,7 @@ public:
     {
         if (hasPendingAuthorStyleSheets())
             appendPendingAuthorStyleSheets();
+        RELEASE_ASSERT(m_features.isAlive());
         return m_features;
     }
 

@@ -229,6 +229,7 @@ InvalidationSet& ensureInvalidationSet(Map& map, const typename Map::KeyType& ke
 
 void extractInvalidationSets(InvalidationSet* invalidationSet, DescendantInvalidationSet*& descendants, SiblingInvalidationSet*& siblings)
 {
+    RELEASE_ASSERT(invalidationSet->isAlive());
     if (invalidationSet->type() == InvalidateDescendants) {
         descendants = toDescendantInvalidationSet(invalidationSet);
         siblings = nullptr;
@@ -254,11 +255,23 @@ DEFINE_TRACE(RuleFeature)
 }
 
 RuleFeatureSet::RuleFeatureSet()
+    : m_isAlive(true)
 {
 }
 
 RuleFeatureSet::~RuleFeatureSet()
 {
+    RELEASE_ASSERT(m_isAlive);
+
+    m_metadata.clear();
+    m_classInvalidationSets.clear();
+    m_attributeInvalidationSets.clear();
+    m_idInvalidationSets.clear();
+    m_pseudoInvalidationSets.clear();
+    m_universalSiblingInvalidationSet.clear();
+    m_nthInvalidationSet.clear();
+
+    m_isAlive = false;
 }
 
 ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const AtomicString& className, InvalidationType type)
@@ -609,6 +622,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
+    RELEASE_ASSERT(m_isAlive);
     FeatureMetadata metadata;
     if (collectFeaturesFromSelector(ruleData.selector(), metadata) == SelectorNeverMatches)
         return SelectorNeverMatches;
@@ -714,6 +728,8 @@ void RuleFeatureSet::FeatureMetadata::clear()
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
+    RELEASE_ASSERT(m_isAlive);
+    RELEASE_ASSERT(other.m_isAlive);
     for (const auto& entry : other.m_classInvalidationSets)
         ensureInvalidationSet(m_classInvalidationSets, entry.key, entry.value->type()).combine(*entry.value);
     for (const auto& entry : other.m_attributeInvalidationSets)
@@ -735,6 +751,7 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
 
 void RuleFeatureSet::clear()
 {
+    RELEASE_ASSERT(m_isAlive);
     siblingRules.clear();
     uncommonAttributeRules.clear();
     m_metadata.clear();
