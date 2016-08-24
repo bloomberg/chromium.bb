@@ -188,7 +188,7 @@ InspectorTest.dumpSelectionStats = function(textEditor)
     var selections = textEditor.selections();
     for (var i = 0; i < selections.length; ++i) {
         var selection = selections[i];
-        var text = textEditor.copyRange(selection);
+        var text = textEditor.text(selection);
         if (!listHashMap[text]) {
             listHashMap[text] = 1;
             sortedKeys.push(text);

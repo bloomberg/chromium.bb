@@ -37,7 +37,7 @@ function testMyCamelMove(foo, bar)
             var line = textEditor.line(selection.startLine);
             InspectorTest.addResult(line.substring(0, selection.startColumn) + "|" + line.substring(selection.startColumn));
         } else {
-            InspectorTest.addResult(">>" + textEditor.copyRange(selection.normalize()) + "<<");
+            InspectorTest.addResult(">>" + textEditor.text(selection.normalize()) + "<<");
         }
         return selection;
     }

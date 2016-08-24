@@ -24,9 +24,9 @@ function test()
             var range = searchResults[i];
             var prefixRange = new WebInspector.TextRange(range.startLine, 0, range.startLine, range.startColumn);
             var postfixRange = new WebInspector.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
-            var prefix = sourceFrame._textEditor.copyRange(prefixRange);
-            var result = sourceFrame._textEditor.copyRange(range);
-            var postfix = sourceFrame._textEditor.copyRange(postfixRange);
+            var prefix = sourceFrame._textEditor.text(prefixRange);
+            var result = sourceFrame._textEditor.text(range);
+            var postfix = sourceFrame._textEditor.text(postfixRange);
             InspectorTest.addResult("  - " + prefix + "<" + result + ">" + postfix);
         }
     }
