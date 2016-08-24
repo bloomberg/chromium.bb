@@ -102,6 +102,58 @@ id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state) {
                     nil);
 }
 
+id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
+                                              CGSize expected_size,
+                                              WebState* web_state) {
+  MatchesBlock matches = ^BOOL(WKWebView*) {
+    __block BOOL did_succeed = NO;
+    NSDate* deadline =
+        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
+    while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
+           !did_succeed) {
+      NSString* const kGetElementAttributesScript = [NSString
+          stringWithFormat:@"var image = document.getElementById('%@');"
+                           @"var imageHeight = image.height;"
+                           @"var imageWidth = image.width;"
+                           @"JSON.stringify({"
+                           @"  height:imageHeight,"
+                           @"  width:imageWidth"
+                           @"});",
+                           base::SysUTF8ToNSString(image_id)];
+      std::unique_ptr<base::Value> value = ExecuteScript(
+          web_state, base::SysNSStringToUTF8(kGetElementAttributesScript));
+      std::string result;
+      if (value && value->GetAsString(&result)) {
+        NSString* evaluation_result = base::SysUTF8ToNSString(result);
+        NSData* image_attributes_as_data =
+            [evaluation_result dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary* image_attributes =
+            [NSJSONSerialization JSONObjectWithData:image_attributes_as_data
+                                            options:0
+                                              error:nil];
+        CGFloat height = [image_attributes[@"height"] floatValue];
+        CGFloat width = [image_attributes[@"width"] floatValue];
+        did_succeed =
+            (height < expected_size.height && width < expected_size.width);
+      }
+      base::test::ios::SpinRunLoopWithMaxDelay(
+          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
+    }
+    return did_succeed;
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"web view blocking resource with id "];
+    [description appendText:base::SysUTF8ToNSString(image_id)];
+  };
+
+  return grey_allOf(webViewInWebState(web_state),
+                    [[[GREYElementMatcherBlock alloc]
+                        initWithMatchesBlock:matches
+                            descriptionBlock:describe] autorelease],
+                    nil);
+}
+
 id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
     std::string script = base::StringPrintf(kTestCssSelectorJavaScriptTemplate,

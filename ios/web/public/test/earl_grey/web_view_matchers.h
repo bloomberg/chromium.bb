@@ -16,6 +16,12 @@ id<GREYMatcher> webViewInWebState(WebState* web_state);
 // Matcher for WKWebView containing |text|.
 id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state);
 
+// Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
+// image will be smaller than |expected_size|.
+id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
+                                              CGSize expected_size,
+                                              WebState* web_state);
+
 // Matcher for WKWebView containing an html element which matches |selector|.
 id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state);
 
