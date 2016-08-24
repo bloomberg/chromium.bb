@@ -19,6 +19,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.io.ByteArrayOutputStream;
 
@@ -26,18 +27,6 @@ import java.io.ByteArrayOutputStream;
  * Launches Chrome in WebAPK mode.
  */
 public class HostBrowserLauncher {
-    private static final String META_DATA_RUNTIME_HOST =
-            "org.chromium.webapk.shell_apk.runtimeHost";
-    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
-    private static final String META_DATA_NAME = "org.chromium.webapk.shell_apk.name";
-    private static final String META_DATA_SCOPE = "org.chromium.webapk.shell_apk.scope";
-    private static final String META_DATA_DISPLAY_MODE =
-            "org.chromium.webapk.shell_apk.displayMode";
-    private static final String META_DATA_ORIENTATION = "org.chromium.webapk.shell_apk.orientation";
-    private static final String META_DATA_THEME_COLOR = "org.chromium.webapk.shell_apk.themeColor";
-    private static final String META_DATA_BACKGROUND_COLOR =
-            "org.chromium.webapk.shell_apk.backgroundColor";
-    private static final String META_DATA_ICON_URL = "org.chromium.webapk.shell_apk.iconUrl";
 
     // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
     private static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
@@ -68,29 +57,30 @@ public class HostBrowserLauncher {
         }
 
         Bundle metaBundle = appInfo.metaData;
-        String url = metaBundle.getString(META_DATA_START_URL);
+        String url = metaBundle.getString(WebApkMetaDataKeys.START_URL);
 
         String overrideUrl = intent.getDataString();
         // TODO(pkotwicz): Use same logic as {@code IntentHandler#shouldIgnoreIntent()}
         if (overrideUrl != null && overrideUrl.startsWith("https:")) {
             url = overrideUrl;
         }
-        String scope = metaBundle.getString(META_DATA_SCOPE);
+        String scope = metaBundle.getString(WebApkMetaDataKeys.SCOPE);
         int source = intent.getIntExtra(WebApkConstants.EXTRA_SOURCE, 0);
 
         String webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
-        String runtimeHost = metaBundle.getString(META_DATA_RUNTIME_HOST);
+        String runtimeHost = metaBundle.getString(WebApkMetaDataKeys.RUNTIME_HOST);
         String shortName = (String) context.getPackageManager().getApplicationLabel(appInfo);
         // TODO(hanxi): find a neat solution to avoid encode/decode each time launch the
         // activity.
         Bitmap icon = BitmapFactory.decodeResource(context.getResources(), appIconId);
         String encodedIcon = encodeBitmapAsString(icon);
-        String name = metaBundle.getString(META_DATA_NAME);
-        String displayMode = metaBundle.getString(META_DATA_DISPLAY_MODE);
-        String orientation = metaBundle.getString(META_DATA_ORIENTATION);
-        long themeColor = getColorFromBundle(metaBundle, META_DATA_THEME_COLOR);
-        long backgroundColor = getColorFromBundle(metaBundle, META_DATA_BACKGROUND_COLOR);
-        boolean isIconGenerated = TextUtils.isEmpty(metaBundle.getString(META_DATA_ICON_URL));
+        String name = metaBundle.getString(WebApkMetaDataKeys.NAME);
+        String displayMode = metaBundle.getString(WebApkMetaDataKeys.DISPLAY_MODE);
+        String orientation = metaBundle.getString(WebApkMetaDataKeys.ORIENTATION);
+        long themeColor = getColorFromBundle(metaBundle, WebApkMetaDataKeys.THEME_COLOR);
+        long backgroundColor = getColorFromBundle(metaBundle, WebApkMetaDataKeys.BACKGROUND_COLOR);
+        boolean isIconGenerated =
+                TextUtils.isEmpty(metaBundle.getString(WebApkMetaDataKeys.ICON_URL));
         Log.v(TAG, "Url of the WebAPK: " + url);
         Log.v(TAG, "WebappId of the WebAPK: " + webappId);
         Log.v(TAG, "Name of the WebAPK:" + name);

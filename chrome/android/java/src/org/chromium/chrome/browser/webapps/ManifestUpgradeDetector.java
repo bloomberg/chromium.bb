@@ -14,6 +14,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 /**
  * This class checks whether the WebAPK needs to be re-installed and sends a request to re-install
@@ -28,19 +29,6 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
         // Change the interface by using {@link FetchedManifestData} instead of {@link WebappInfo}.
         public void onUpgradeNeededCheckFinished(boolean isUpgraded, WebappInfo newInfo);
     }
-
-    /**
-     * The names of <meta-data> in the WebAPK's AndroidManifest.xml whose values are needed to
-     * determine whether a WebAPK needs to be upgraded but which are not present in
-     * {@link WebappInfo}. The names must stay in sync with
-     * {@linkorg.chromium.webapk.lib.runtime_library.HostBrowserLauncher}.
-     */
-    public static final String META_DATA_WEB_MANIFEST_URL =
-            "org.chromium.webapk.shell_apk.webManifestUrl";
-    public static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
-    public static final String META_DATA_ICON_URL = "org.chromium.webapk.shell_apk.iconUrl";
-    public static final String META_DATA_ICON_MURMUR2_HASH =
-            "org.chromium.webapk.shell_apk.iconMurmur2Hash";
 
     private static final String TAG = "cr_UpgradeDetector";
 
@@ -142,10 +130,10 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
                     ContextUtils.getApplicationContext().getPackageManager().getApplicationInfo(
                             mWebappInfo.webApkPackageName(), PackageManager.GET_META_DATA);
             Bundle metaData = appInfo.metaData;
-            mManifestUrl = metaData.getString(META_DATA_WEB_MANIFEST_URL);
-            mStartUrl = metaData.getString(META_DATA_START_URL);
-            mIconUrl = metaData.getString(META_DATA_ICON_URL);
-            mIconMurmur2Hash = getLongFromBundle(metaData, META_DATA_ICON_MURMUR2_HASH);
+            mManifestUrl = metaData.getString(WebApkMetaDataKeys.WEB_MANIFEST_URL);
+            mStartUrl = metaData.getString(WebApkMetaDataKeys.START_URL);
+            mIconUrl = metaData.getString(WebApkMetaDataKeys.ICON_URL);
+            mIconMurmur2Hash = getLongFromBundle(metaData, WebApkMetaDataKeys.ICON_MURMUR2_HASH);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }

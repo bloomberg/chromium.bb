@@ -12,6 +12,7 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,16 +34,6 @@ public class MainActivityTest {
 
     private static final String PACKAGE_NAME = "package_name";
     private static final String HOST_BROWSER_PACKAGE_NAME = "truly.random";
-
-    /**
-     * <meta-data> key in the Android Manifest for the host browser's package name.
-     */
-    private static final String META_RUNTIME_HOST = "org.chromium.webapk.shell_apk.runtimeHost";
-
-    /**
-     * <meta-data> key in Android Manifest for the start URL.
-     */
-    private static final String META_START_URL = "org.chromium.webapk.shell_apk.startUrl";
 
     private ShadowApplication mShadowApplication;
     private RobolectricPackageManager mPackageManager;
@@ -66,8 +57,8 @@ public class MainActivityTest {
 
         // Set WebAPK's meta-data.
         Bundle metaData = new Bundle();
-        metaData.putString(META_RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
-        metaData.putString(META_START_URL, "http://random.org");
+        metaData.putString(WebApkMetaDataKeys.RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
+        metaData.putString(WebApkMetaDataKeys.START_URL, "http://random.org");
         mPackageManager.addPackage(newPackageInfo(PACKAGE_NAME, metaData));
 
         // Make intents to Google Play not throw ActivityNotFoundException.
@@ -93,8 +84,8 @@ public class MainActivityTest {
 
         // Set WebAPK's meta-data.
         Bundle metaData = new Bundle();
-        metaData.putString(META_RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
-        metaData.putString(META_START_URL, "http://random.org");
+        metaData.putString(WebApkMetaDataKeys.RUNTIME_HOST, HOST_BROWSER_PACKAGE_NAME);
+        metaData.putString(WebApkMetaDataKeys.START_URL, "http://random.org");
         mPackageManager.addPackage(newPackageInfo(PACKAGE_NAME, metaData));
 
         Robolectric.buildActivity(MainActivity.class).create();

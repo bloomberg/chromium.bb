@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -162,11 +163,10 @@ public class ManifestUpgradeDetectorTest {
     private void setMetaData(
             String manifestUrl, String startUrl, String iconUrl, long iconMurmur2Hash) {
         Bundle bundle = new Bundle();
-        bundle.putString(ManifestUpgradeDetector.META_DATA_WEB_MANIFEST_URL, manifestUrl);
-        bundle.putString(ManifestUpgradeDetector.META_DATA_START_URL, startUrl);
-        bundle.putString(ManifestUpgradeDetector.META_DATA_ICON_URL, iconUrl);
-        bundle.putString(
-                ManifestUpgradeDetector.META_DATA_ICON_MURMUR2_HASH, iconMurmur2Hash + "L");
+        bundle.putString(WebApkMetaDataKeys.WEB_MANIFEST_URL, manifestUrl);
+        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
+        bundle.putString(WebApkMetaDataKeys.ICON_URL, iconUrl);
+        bundle.putString(WebApkMetaDataKeys.ICON_MURMUR2_HASH, iconMurmur2Hash + "L");
 
         ApplicationInfo appInfo = new ApplicationInfo();
         appInfo.metaData = bundle;

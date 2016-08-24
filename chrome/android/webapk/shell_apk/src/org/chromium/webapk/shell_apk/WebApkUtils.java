@@ -10,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+
 /**
  * Contains utility methods for interacting with WebAPKs.
  */
@@ -50,7 +52,7 @@ public class WebApkUtils {
             ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
                     context.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = ai.metaData;
-            hostPackage = bundle.getString("org.chromium.webapk.shell_apk.runtimeHost");
+            hostPackage = bundle.getString(WebApkMetaDataKeys.RUNTIME_HOST);
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }

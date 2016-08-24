@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
@@ -36,9 +37,6 @@ public class MainActivity extends Activity {
     // {@link org.chromium.chrome.browser.ShortcutHelper#REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB}.
     private static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
-
-    // Key for start URL in Android Manifest.
-    private static final String META_DATA_START_URL = "org.chromium.webapk.shell_apk.startUrl";
 
     /**
      * Key for passing app icon id.
@@ -171,6 +169,6 @@ public class MainActivity extends Activity {
         } catch (NameNotFoundException e) {
             return null;
         }
-        return appInfo.metaData.getString(META_DATA_START_URL);
+        return appInfo.metaData.getString(WebApkMetaDataKeys.START_URL);
     }
 }
