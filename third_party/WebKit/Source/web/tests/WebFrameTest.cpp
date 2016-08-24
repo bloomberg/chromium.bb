@@ -87,6 +87,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/weborigin/KURLHash.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -5920,7 +5921,7 @@ public:
         TestWebFrameClient::didStopLoading();
     }
 
-    void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) override
+    void willSendRequest(WebLocalFrame*, WebURLRequest& request) override
     {
         m_policy = request.getCachePolicy();
         m_willSendRequestCallCount++;
@@ -5971,7 +5972,7 @@ public:
     {
     }
 
-    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
+    virtual void willSendRequest(WebLocalFrame* frame, WebURLRequest&)
     {
         if (toWebLocalFrameImpl(frame)->frame()->loader().loadType() == FrameLoadTypeReloadMainResource)
             m_frameLoadTypeReloadMainResourceSeen = true;
@@ -6005,7 +6006,7 @@ public:
     {
     }
 
-    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&)
+    virtual void willSendRequest(WebLocalFrame*, WebURLRequest& request)
     {
         if (request.getRequestContext() == WebURLRequest::RequestContextImage) {
             m_numOfImageRequests++;
@@ -8829,6 +8830,97 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame)
     // Document. However, if the JS triggers a navigation, the contents should
     // not be replaced.
     EXPECT_EQ("", toLocalFrame(helper.webView()->page()->mainFrame())->document()->documentElement()->innerText());
+}
+
+class TestResourcePriorityWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    class ExpectedRequest {
+    public:
+        ExpectedRequest(const KURL& url, WebURLRequest::Priority priority)
+            : url(url)
+            , priority(priority)
+            , seen(false)
+        {
+        }
+
+        KURL url;
+        WebURLRequest::Priority priority;
+        bool seen;
+    };
+
+    TestResourcePriorityWebFrameClient()
+    {
+    }
+
+    void willSendRequest(WebLocalFrame*, WebURLRequest& request) override
+    {
+        ExpectedRequest* expectedRequest = m_expectedRequests.get(request.url());
+        DCHECK(expectedRequest);
+        EXPECT_EQ(expectedRequest->priority, request.getPriority());
+        expectedRequest->seen = true;
+    }
+
+    void addExpectedRequest(const KURL& url, WebURLRequest::Priority priority)
+    {
+        m_expectedRequests.add(url, wrapUnique(new ExpectedRequest(url, priority)));
+    }
+
+    void verifyAllRequests()
+    {
+        for (const auto& request : m_expectedRequests)
+            EXPECT_TRUE(request.value->seen);
+    }
+
+private:
+    HashMap<KURL, std::unique_ptr<ExpectedRequest>> m_expectedRequests;
+};
+
+TEST_F(WebFrameTest, ChangeResourcePriority)
+{
+    TestResourcePriorityWebFrameClient client;
+    registerMockedHttpURLLoad("promote_img_in_viewport_priority.html");
+    registerMockedHttpURLLoad("image_slow.pl");
+    registerMockedHttpURLLoad("image_slow_out_of_viewport.pl");
+    client.addExpectedRequest(toKURL("http://internal.test/promote_img_in_viewport_priority.html"), WebURLRequest::PriorityVeryHigh);
+    client.addExpectedRequest(toKURL("http://internal.test/image_slow.pl"), WebURLRequest::PriorityLow);
+    client.addExpectedRequest(toKURL("http://internal.test/image_slow_out_of_viewport.pl"), WebURLRequest::PriorityLow);
+
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initialize(true, &client);
+    helper.resize(WebSize(640, 480));
+    FrameTestHelpers::loadFrame(helper.webView()->mainFrame(), m_baseURL + "promote_img_in_viewport_priority.html");
+
+    // Ensure the image in the viewport got promoted after the request was sent.
+    Resource* image = toWebLocalFrameImpl(helper.webView()->mainFrame())->frame()->document()->fetcher()->allResources().get(toKURL("http://internal.test/image_slow.pl"));
+    DCHECK(image);
+    EXPECT_EQ(ResourceLoadPriorityHigh, image->resourceRequest().priority());
+
+    client.verifyAllRequests();
+}
+
+TEST_F(WebFrameTest, ScriptPriority)
+{
+    TestResourcePriorityWebFrameClient client;
+    registerMockedHttpURLLoad("script_priority.html");
+    registerMockedHttpURLLoad("priorities/defer.js");
+    registerMockedHttpURLLoad("priorities/async.js");
+    registerMockedHttpURLLoad("priorities/head.js");
+    registerMockedHttpURLLoad("priorities/document-write.js");
+    registerMockedHttpURLLoad("priorities/injected.js");
+    registerMockedHttpURLLoad("priorities/injected-async.js");
+    registerMockedHttpURLLoad("priorities/body.js");
+    client.addExpectedRequest(toKURL("http://internal.test/script_priority.html"), WebURLRequest::PriorityVeryHigh);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/defer.js"), WebURLRequest::PriorityLow);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/async.js"), WebURLRequest::PriorityLow);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/head.js"), WebURLRequest::PriorityHigh);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/document-write.js"), WebURLRequest::PriorityHigh);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/injected.js"), WebURLRequest::PriorityLow);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/injected-async.js"), WebURLRequest::PriorityLow);
+    client.addExpectedRequest(toKURL("http://internal.test/priorities/body.js"), WebURLRequest::PriorityHigh);
+
+    FrameTestHelpers::WebViewHelper helper;
+    helper.initializeAndLoad(m_baseURL + "script_priority.html", true, &client);
+    client.verifyAllRequests();
 }
 
 } // namespace blink

@@ -150,7 +150,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
   void DumpResourceLoadCallbacks();
-  void DumpResourceRequestPriorities();
   void DumpResourceResponseMIMETypes();
   void DumpSelectionRect();
   void DumpSpellCheckCallbacks();
@@ -400,8 +399,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpPingLoaderCallbacks)
       .SetMethod("dumpResourceLoadCallbacks",
                  &TestRunnerBindings::DumpResourceLoadCallbacks)
-      .SetMethod("dumpResourceRequestPriorities",
-                 &TestRunnerBindings::DumpResourceRequestPriorities)
       .SetMethod("dumpResourceResponseMIMETypes",
                  &TestRunnerBindings::DumpResourceResponseMIMETypes)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
@@ -1189,11 +1186,6 @@ void TestRunnerBindings::SetWillSendRequestClearHeader(
     runner_->SetWillSendRequestClearHeader(header);
 }
 
-void TestRunnerBindings::DumpResourceRequestPriorities() {
-  if (runner_)
-    runner_->DumpResourceRequestPriorities();
-}
-
 void TestRunnerBindings::SetUseMockTheme(bool use) {
   if (runner_)
     runner_->SetUseMockTheme(use);
@@ -1897,10 +1889,6 @@ bool TestRunner::policyDelegateShouldNotifyDone() const {
   return layout_test_runtime_flags_.policy_delegate_should_notify_done();
 }
 
-bool TestRunner::shouldDumpResourcePriorities() const {
-  return layout_test_runtime_flags_.dump_resource_priorities();
-}
-
 void TestRunner::setToolTipText(const WebString& text) {
   tooltip_text_ = text.utf8();
 }
@@ -2549,11 +2537,6 @@ void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
 void TestRunner::SetWillSendRequestClearHeader(const std::string& header) {
   if (!header.empty())
     http_headers_to_clear_.insert(header);
-}
-
-void TestRunner::DumpResourceRequestPriorities() {
-  layout_test_runtime_flags_.set_dump_resource_priorities(true);
-  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetUseMockTheme(bool use) {

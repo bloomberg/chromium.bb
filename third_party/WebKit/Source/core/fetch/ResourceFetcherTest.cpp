@@ -509,4 +509,22 @@ TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect)
     EXPECT_EQ(testImageSize, requester.context()->getTransferSize());
 }
 
+TEST_F(ResourceFetcherTest, SynchronousRequest)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, testImageFilename, WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+    FetchRequest request(url, FetchInitiatorInfo());
+    request.makeSynchronous();
+    Resource* resource = fetcher->requestResource(request, TestResourceFactory());
+    EXPECT_TRUE(resource->isLoaded());
+    EXPECT_EQ(ResourceLoadPriorityHighest, resource->resourceRequest().priority());
+
+    memoryCache()->remove(resource);
+}
+
 } // namespace blink

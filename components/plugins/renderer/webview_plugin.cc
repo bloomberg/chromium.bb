@@ -95,8 +95,9 @@ WebViewPlugin::~WebViewPlugin() {
 }
 
 void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
-  if (!response_.isNull()) {
-    plugin->didReceiveResponse(response_);
+  const WebURLResponse& response = web_frame_->dataSource()->response();
+  if (!response.isNull()) {
+    plugin->didReceiveResponse(response);
     size_t total_bytes = 0;
     for (std::list<std::string>::iterator it = data_.begin(); it != data_.end();
          ++it) {
@@ -256,11 +257,6 @@ blink::WebInputEventResult WebViewPlugin::handleInputEvent(
   return handled;
 }
 
-void WebViewPlugin::didReceiveResponse(const WebURLResponse& response) {
-  DCHECK(response_.isNull());
-  response_ = response;
-}
-
 void WebViewPlugin::didReceiveData(const char* data, int data_length) {
   data_.push_back(std::string(data, data_length));
 }
@@ -335,11 +331,6 @@ void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
 
   global->Set(gin::StringToV8(isolate, "plugin"),
               delegate_->GetV8Handle(isolate));
-}
-
-void WebViewPlugin::didReceiveResponse(unsigned identifier,
-                                       const WebURLResponse& response) {
-  WebFrameClient::didReceiveResponse(identifier, response);
 }
 
 void WebViewPlugin::OnDestruct() {}

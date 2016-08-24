@@ -135,7 +135,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, the test_shell will output a descriptive line for each resource
   // load callback.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_resource_load_callbacks)
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_resource_priorities)
 
   // If true, the test_shell will output the MIME type for each resource that
   // was loaded.

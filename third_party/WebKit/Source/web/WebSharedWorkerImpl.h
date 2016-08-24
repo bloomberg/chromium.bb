@@ -87,7 +87,7 @@ public:
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) override;
-    void willSendRequest(WebLocalFrame*, unsigned identifier, WebURLRequest&, const WebURLResponse& redirectResponse) override;
+    void willSendRequest(WebLocalFrame*, WebURLRequest&) override;
     void didFinishDocumentLoad(WebLocalFrame*) override;
     bool isControlledByServiceWorker(WebDataSource&) override;
     int64_t serviceWorkerID(WebDataSource&) override;

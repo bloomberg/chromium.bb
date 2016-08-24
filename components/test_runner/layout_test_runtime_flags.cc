@@ -48,7 +48,6 @@ void LayoutTestRuntimeFlags::Reset() {
   set_dump_ping_loader_callbacks(false);
   set_dump_user_gesture_in_frame_load_callbacks(false);
   set_dump_resource_load_callbacks(false);
-  set_dump_resource_priorities(false);
   set_dump_resource_response_mime_types(false);
   set_dump_navigation_policy(false);
 

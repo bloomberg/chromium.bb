@@ -124,7 +124,7 @@ private:
     void printAccessDeniedMessage(const KURL&) const;
     ResourceRequestBlockedReason canRequestInternal(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction, ResourceRequest::RedirectStatus) const;
 
-    void prepareRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse&);
+    void prepareRequest(ResourceRequest&);
 
     void dispatchDidReceiveResponseInternal(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*, LinkLoader::CanLoadResources);
 

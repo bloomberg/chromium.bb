@@ -384,41 +384,21 @@ void FrameLoaderClientImpl::detached(FrameDetachType type)
     m_webFrame->setCoreFrame(nullptr);
 }
 
-void FrameLoaderClientImpl::dispatchWillSendRequest(
-    DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
-    const ResourceResponse& redirectResponse)
+void FrameLoaderClientImpl::dispatchWillSendRequest(ResourceRequest& request)
 {
     // Give the WebFrameClient a crack at the request.
     if (m_webFrame->client()) {
         WrappedResourceRequest webreq(request);
-        WrappedResourceResponse webresp(redirectResponse);
-        m_webFrame->client()->willSendRequest(
-            m_webFrame, identifier, webreq, webresp);
+        m_webFrame->client()->willSendRequest(m_webFrame, webreq);
     }
 }
 
-void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
-                                                       unsigned long identifier,
-                                                       const ResourceResponse& response)
+void FrameLoaderClientImpl::dispatchDidReceiveResponse(const ResourceResponse& response)
 {
     if (m_webFrame->client()) {
         WrappedResourceResponse webresp(response);
-        m_webFrame->client()->didReceiveResponse(identifier, webresp);
+        m_webFrame->client()->didReceiveResponse(webresp);
     }
-}
-
-void FrameLoaderClientImpl::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority priority, int intraPriorityValue)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didChangeResourcePriority(identifier, static_cast<WebURLRequest::Priority>(priority), intraPriorityValue);
-}
-
-// Called when a particular resource load completes
-void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
-                                                    unsigned long identifier)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didFinishResourceLoad(m_webFrame, identifier);
 }
 
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()

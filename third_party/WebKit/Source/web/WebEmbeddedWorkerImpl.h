@@ -79,9 +79,7 @@ private:
     void loadShadowPage();
 
     // WebFrameClient overrides.
-    void willSendRequest(
-        WebLocalFrame*, unsigned identifier, WebURLRequest&,
-        const WebURLResponse& redirectResponse) override;
+    void willSendRequest(WebLocalFrame*, WebURLRequest&) override;
     void didFinishDocumentLoad(WebLocalFrame*) override;
 
     // WebDevToolsAgentClient overrides.

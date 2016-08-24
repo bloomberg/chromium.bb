@@ -1901,7 +1901,7 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
                        RequestNavigationParams());
 
   // Emulate a 4xx/5xx main resource response with an empty body.
-  main_frame->didReceiveResponse(1, response);
+  main_frame->didReceiveResponse(response);
   main_frame->didFinishDocumentLoad(web_frame);
   main_frame->runScriptsAtDocumentReady(web_frame, true);
 
@@ -2002,7 +2002,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.setRequestContext(blink::WebURLRequest::RequestContextSubresource);
   blink::WebURLResponse redirect_response;
-  frame()->willSendRequest(GetMainFrame(), 0, request, redirect_response);
+  frame()->willSendRequest(GetMainFrame(), request);
   extra_data = static_cast<RequestExtraData*>(request.getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),

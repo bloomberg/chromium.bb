@@ -203,9 +203,8 @@ public:
     void detached(FrameDetachType) override {}
     void frameFocused() const override {}
 
-    void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) override {}
-    void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) override {}
-    void dispatchDidFinishLoading(DocumentLoader*, unsigned long) override {}
+    void dispatchWillSendRequest(ResourceRequest&) override {}
+    void dispatchDidReceiveResponse(const ResourceResponse&) override {}
     void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override {}
 
     void dispatchDidHandleOnloadEvents() override {}

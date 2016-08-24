@@ -315,15 +315,14 @@ inline DocumentLoader* FrameFetchContext::masterDocumentLoader() const
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority, int intraPriorityValue)
 {
-    frame()->loader().client()->dispatchDidChangeResourcePriority(identifier, loadPriority, intraPriorityValue);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceChangePriority", TRACE_EVENT_SCOPE_THREAD, "data", InspectorChangeResourcePriorityEvent::data(identifier, loadPriority));
     InspectorInstrumentation::didChangeResourcePriority(frame(), identifier, loadPriority);
 }
 
-void FrameFetchContext::prepareRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse)
+void FrameFetchContext::prepareRequest(ResourceRequest& request)
 {
     frame()->loader().applyUserAgent(request);
-    frame()->loader().client()->dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse);
+    frame()->loader().client()->dispatchWillSendRequest(request);
 }
 
 void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
@@ -332,7 +331,7 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     // willStartLoadingResource(), before revalidation policy is determined.
     // That call doesn't exist for redirects, so call preareRequest() here.
     if (!redirectResponse.isNull())
-        prepareRequest(identifier, request, redirectResponse);
+        prepareRequest(request);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
     InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
     if (frame()->frameScheduler())
@@ -361,8 +360,6 @@ void FrameFetchContext::dispatchDidDownloadData(unsigned long identifier, int da
 void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier, double finishTime, int64_t encodedDataLength)
 {
     frame()->loader().progress().completeProgress(identifier);
-    frame()->loader().client()->dispatchDidFinishLoading(m_documentLoader, identifier);
-
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(identifier, finishTime, false));
     InspectorInstrumentation::didFinishLoading(frame(), identifier, finishTime, encodedDataLength);
     if (frame()->frameScheduler())
@@ -372,7 +369,6 @@ void FrameFetchContext::dispatchDidFinishLoading(unsigned long identifier, doubl
 void FrameFetchContext::dispatchDidFail(unsigned long identifier, const ResourceError& error, bool isInternalRequest)
 {
     frame()->loader().progress().completeProgress(identifier);
-    frame()->loader().client()->dispatchDidFinishLoading(m_documentLoader, identifier);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(identifier, 0, true));
     InspectorInstrumentation::didFailLoading(frame(), identifier, error);
     // Notification to FrameConsole should come AFTER InspectorInstrumentation call, DevTools front-end relies on this.
@@ -422,7 +418,7 @@ void FrameFetchContext::willStartLoadingResource(unsigned long identifier, Resou
 {
     TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", identifier, "data", loadResourceTraceData(identifier, request.url(), request.priority()));
     frame()->loader().progress().willStartLoading(identifier);
-    prepareRequest(identifier, request, ResourceResponse());
+    prepareRequest(request);
 
     if (!m_documentLoader || m_documentLoader->fetcher()->archive() || !request.url().isValid())
         return;
@@ -826,7 +822,7 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(unsigned long identif
         MixedContentChecker::handleCertificateError(frame(), response, frameType, requestContext);
 
     frame()->loader().progress().incrementProgress(identifier, response);
-    frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);
+    frame()->loader().client()->dispatchDidReceiveResponse(response);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD, "data", InspectorReceiveResponseEvent::data(identifier, frame(), response));
     DocumentLoader* documentLoader = masterDocumentLoader();
     InspectorInstrumentation::didReceiveResourceResponse(frame(), identifier, documentLoader, response, resource);

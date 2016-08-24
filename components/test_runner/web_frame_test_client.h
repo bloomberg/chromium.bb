@@ -94,16 +94,8 @@ class WebFrameTestClient : public blink::WebFrameClient {
                     bool did_block_entire_page) override;
   void didDispatchPingLoader(const blink::WebURL& url) override;
   void willSendRequest(blink::WebLocalFrame* frame,
-                       unsigned identifier,
-                       blink::WebURLRequest& request,
-                       const blink::WebURLResponse& redirect_response) override;
-  void didReceiveResponse(unsigned identifier,
-                          const blink::WebURLResponse& response) override;
-  void didChangeResourcePriority(unsigned identifier,
-                                 const blink::WebURLRequest::Priority& priority,
-                                 int intra_priority_value) override;
-  void didFinishResourceLoad(blink::WebLocalFrame* frame,
-                             unsigned identifier) override;
+                       blink::WebURLRequest& request) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;
   void checkIfAudioSinkExistsAndIsAuthorized(
@@ -120,11 +112,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   WebTestDelegate* delegate_;
   WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;
-
-  // Map from request identifier into resource url description.  The map is used
-  // to track resource requests spanning willSendRequest, didReceiveResponse,
-  // didChangeResourcePriority, didFinishResourceLoad.
-  std::map<unsigned, std::string> resource_identifier_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestClient);
 };

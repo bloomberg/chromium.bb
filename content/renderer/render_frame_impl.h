@@ -565,11 +565,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void showContextMenu(const blink::WebContextMenuData& data) override;
   void saveImageFromDataURL(const blink::WebString& data_url) override;
   void willSendRequest(blink::WebLocalFrame* frame,
-                       unsigned identifier,
-                       blink::WebURLRequest& request,
-                       const blink::WebURLResponse& redirect_response) override;
-  void didReceiveResponse(unsigned identifier,
-                          const blink::WebURLResponse& response) override;
+                       blink::WebURLRequest& request) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
   void didLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;

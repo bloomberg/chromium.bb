@@ -231,36 +231,15 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::didDispatchPingLoader(url);
   }
 
-  void willSendRequest(
-      blink::WebLocalFrame* frame,
-      unsigned identifier,
-      blink::WebURLRequest& request,
-      const blink::WebURLResponse& redirect_response) override {
-    Base::willSendRequest(frame, identifier, request, redirect_response);
-    test_client()->willSendRequest(frame, identifier, request,
-                                   redirect_response);
+  void willSendRequest(blink::WebLocalFrame* frame,
+                       blink::WebURLRequest& request) override {
+    Base::willSendRequest(frame, request);
+    test_client()->willSendRequest(frame, request);
   }
 
-  void didReceiveResponse(unsigned identifier,
-                          const blink::WebURLResponse& response) override {
-    test_client()->didReceiveResponse(identifier, response);
-    Base::didReceiveResponse(identifier, response);
-  }
-
-  void didChangeResourcePriority(unsigned identifier,
-                                 const blink::WebURLRequest::Priority& priority,
-                                 int intra_priority_value) override {
-    // This is not implemented in RenderFrameImpl, so need to explicitly call
-    // into the base proxy.
-    test_client()->didChangeResourcePriority(identifier, priority,
-                                             intra_priority_value);
-    Base::didChangeResourcePriority(
-        identifier, priority, intra_priority_value);
-  }
-
-  void didFinishResourceLoad(blink::WebLocalFrame* frame,
-                             unsigned identifier) override {
-    test_client()->didFinishResourceLoad(frame, identifier);
+  void didReceiveResponse(const blink::WebURLResponse& response) override {
+    test_client()->didReceiveResponse(response);
+    Base::didReceiveResponse(response);
   }
 
   blink::WebNavigationPolicy decidePolicyForNavigation(

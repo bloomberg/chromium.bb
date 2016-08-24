@@ -90,9 +90,8 @@ public:
 
     virtual bool hasWebView() const = 0; // mainly for assertions
 
-    virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) = 0;
-    virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) = 0;
-    virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier) = 0;
+    virtual void dispatchWillSendRequest(ResourceRequest&) = 0;
+    virtual void dispatchDidReceiveResponse(const ResourceResponse&) = 0;
     virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) = 0;
 
     virtual void dispatchDidHandleOnloadEvents() = 0;
@@ -240,8 +239,6 @@ public:
 
     // If an HTML document is being loaded, informs the embedder that the document will have its <body> attached soon.
     virtual void dispatchWillInsertBody() { }
-
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) { }
 
     virtual std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 

@@ -250,7 +250,6 @@ crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass F
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
-crbug.com/413604 http/tests/loading/script-priorities.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]

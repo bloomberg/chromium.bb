@@ -3916,11 +3916,8 @@ void RenderFrameImpl::saveImageFromDataURL(const blink::WebString& data_url) {
   }
 }
 
-void RenderFrameImpl::willSendRequest(
-    blink::WebLocalFrame* frame,
-    unsigned identifier,
-    blink::WebURLRequest& request,
-    const blink::WebURLResponse& redirect_response) {
+void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
+                                      blink::WebURLRequest& request) {
   DCHECK_EQ(frame_, frame);
   // The request my be empty during tests.
   if (request.url().isEmpty())
@@ -4125,7 +4122,6 @@ void RenderFrameImpl::willSendRequest(
 }
 
 void RenderFrameImpl::didReceiveResponse(
-    unsigned identifier,
     const blink::WebURLResponse& response) {
   // Only do this for responses that correspond to a provisional data source
   // of the top-most frame.  If we have a provisional data source, then we
@@ -5821,7 +5817,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  willSendRequest(frame_, 0, info.urlRequest, blink::WebURLResponse());
+  willSendRequest(frame_, info.urlRequest);
 
   // Update the transition type of the request for client side redirects.
   if (!info.urlRequest.getExtraData())

@@ -315,8 +315,7 @@ void WebEmbeddedWorkerImpl::loadShadowPage()
 }
 
 void WebEmbeddedWorkerImpl::willSendRequest(
-    WebLocalFrame* frame, unsigned, WebURLRequest& request,
-    const WebURLResponse& redirectResponse)
+    WebLocalFrame* frame, WebURLRequest& request)
 {
     if (m_networkProvider)
         m_networkProvider->willSendRequest(frame->dataSource(), request);

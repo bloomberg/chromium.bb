@@ -156,7 +156,6 @@ class TestRunner : public WebTestRunner {
   bool policyDelegateEnabled() const;
   bool policyDelegateIsPermissive() const;
   bool policyDelegateShouldNotifyDone() const;
-  bool shouldDumpResourcePriorities() const;
   void setToolTipText(const blink::WebString&);
   void setDragImage(const blink::WebImage& drag_image);
   bool shouldDumpNavigationPolicy() const;
@@ -443,11 +442,6 @@ class TestRunner : public WebTestRunner {
 
   // Causes WillSendRequest to clear certain headers.
   void SetWillSendRequestClearHeader(const std::string& header);
-
-  // This function sets a flag that tells the test_shell to dump a descriptive
-  // line for each resource load's priority and any time that priority
-  // changes. It takes no arguments, and ignores any that may be present.
-  void DumpResourceRequestPriorities();
 
   // Sets a flag to enable the mock theme.
   void SetUseMockTheme(bool use);

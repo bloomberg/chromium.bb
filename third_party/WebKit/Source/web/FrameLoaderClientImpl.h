@@ -84,10 +84,8 @@ public:
     Frame* lastChild() const override;
     void willBeDetached() override;
     void detached(FrameDetachType) override;
-    void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) override;
-    void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) override;
-    void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
-    void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier) override;
+    void dispatchWillSendRequest(ResourceRequest&) override;
+    void dispatchDidReceiveResponse(const ResourceResponse&) override;
     void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
     void dispatchDidHandleOnloadEvents() override;
     void dispatchDidReceiveServerRedirectForProvisionalLoad() override;

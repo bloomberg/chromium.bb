@@ -108,7 +108,7 @@ class WebViewPlugin : public blink::WebPlugin,
       const blink::WebInputEvent& event,
       blink::WebCursorInfo& cursor_info) override;
 
-  void didReceiveResponse(const blink::WebURLResponse& response) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override {}
   void didReceiveData(const char* data, int data_length) override;
   void didFinishLoading() override;
   void didFailLoading(const blink::WebURLError& error) override;
@@ -136,13 +136,6 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // WebFrameClient methods:
   void didClearWindowObject(blink::WebLocalFrame* frame) override;
-
-  // This method is defined in WebPlugin as well as in WebFrameClient, but with
-  // different parameters. We only care about implementing the WebPlugin
-  // version, so we implement this method and call the default in WebFrameClient
-  // (which does nothing) to correctly overload it.
-  void didReceiveResponse(unsigned identifier,
-                          const blink::WebURLResponse& response) override;
 
  private:
   friend class base::DeleteHelper<WebViewPlugin>;
@@ -176,7 +169,6 @@ class WebViewPlugin : public blink::WebPlugin,
   blink::WebFrame* web_frame_;
   gfx::Rect rect_;
 
-  blink::WebURLResponse response_;
   std::list<std::string> data_;
   std::unique_ptr<blink::WebURLError> error_;
   blink::WebString old_title_;

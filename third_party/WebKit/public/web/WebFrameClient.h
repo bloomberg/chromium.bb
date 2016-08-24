@@ -458,22 +458,11 @@ public:
 
     // A request is about to be sent out, and the client may modify it.  Request
     // is writable, and changes to the URL, for example, will change the request
-    // made.  If this request is the result of a redirect, then redirectResponse
-    // will be non-null and contain the response that triggered the redirect.
-    virtual void willSendRequest(
-        WebLocalFrame*, unsigned identifier, WebURLRequest&,
-        const WebURLResponse& redirectResponse) { }
+    // made.
+    virtual void willSendRequest(WebLocalFrame*, WebURLRequest&) {}
 
-    // Response headers have been received for the resource request given
-    // by identifier.
-    virtual void didReceiveResponse(unsigned identifier, const WebURLResponse&) { }
-
-    virtual void didChangeResourcePriority(
-        unsigned identifier, const WebURLRequest::Priority& priority, int) { }
-
-    // The resource request given by identifier succeeded.
-    virtual void didFinishResourceLoad(
-        WebLocalFrame*, unsigned identifier) { }
+    // Response headers have been received.
+    virtual void didReceiveResponse(const WebURLResponse&) {}
 
     // The specified request was satified from WebCore's memory cache.
     virtual void didLoadResourceFromMemoryCache(
