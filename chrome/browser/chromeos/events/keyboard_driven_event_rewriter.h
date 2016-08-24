@@ -18,6 +18,8 @@ class KeyboardDrivenEventRewriter : public ui::EventRewriter {
   KeyboardDrivenEventRewriter();
   ~KeyboardDrivenEventRewriter() override;
 
+  static KeyboardDrivenEventRewriter* GetInstance();
+
   // Calls Rewrite for testing.
   ui::EventRewriteStatus RewriteForTesting(
       const ui::Event& event,
@@ -31,9 +33,17 @@ class KeyboardDrivenEventRewriter : public ui::EventRewriter {
       const ui::Event& last_event,
       std::unique_ptr<ui::Event>* new_event) override;
 
+  // Allow setting Shift + Arrow keys rewritten to Tab/Shift-Tab keys |enabled|.
+  void SetArrowToTabRewritingEnabled(bool rewritten_to_tab) {
+    rewritten_to_tab_ = rewritten_to_tab;
+  }
+
  private:
   ui::EventRewriteStatus Rewrite(const ui::Event& event,
                                  std::unique_ptr<ui::Event>* new_event);
+
+  // If true, Shift + Arrow keys are rewritten to Tab/Shift-Tab keys.
+  bool rewritten_to_tab_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardDrivenEventRewriter);
 };

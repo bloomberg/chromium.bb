@@ -7,7 +7,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
   /** @const */ var INJECTED_WEBVIEW_SCRIPT = String.raw`
                       (function() {
                          <include src="../keyboard/keyboard_utils.js">
-                         keyboard.initializeKeyboardFlow();
+                         keyboard.initializeKeyboardFlow(true);
                        })();`;
 
   /** @const */ var STEP_SIGNIN = 'signin';
@@ -70,6 +70,24 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       this.authenticator_ =
           new cr.login.Authenticator($('oauth-enroll-auth-view'));
+
+      // Establish an initial messaging between content script and
+      // host script so that content script can message back.
+      $('oauth-enroll-auth-view').addEventListener('loadstop',
+          function(e) {
+            e.target.contentWindow.postMessage(
+                'initialMessage', $('oauth-enroll-auth-view').src);
+          });
+
+      // When we get the advancing focus command message from injected content
+      // script, we can execute it on host script context.
+      window.addEventListener('message',
+          function(e) {
+            if (e.data == 'forwardFocus')
+              keyboard.onAdvanceFocus(false);
+            else if (e.data == 'backwardFocus')
+              keyboard.onAdvanceFocus(true);
+          });
 
       this.authenticator_.addEventListener('ready',
           (function() {

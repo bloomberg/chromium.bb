@@ -42,8 +42,6 @@
 /** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
 /** @const */ var ACCELERATOR_RESET = 'reset';
-/** @const */ var ACCELERATOR_FOCUS_PREV = 'focus_prev';
-/** @const */ var ACCELERATOR_FOCUS_NEXT = 'focus_next';
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION = 'device_requisition';
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION_REMORA =
     'device_requisition_remora';
@@ -285,7 +283,7 @@ cr.define('cr.ui.login', function() {
     set forceKeyboardFlow(value) {
       this.forceKeyboardFlow_ = value;
       if (value) {
-        keyboard.initializeKeyboardFlow();
+        keyboard.initializeKeyboardFlow(false);
         cr.ui.DropDown.enableKeyboardFlow();
         for (var i = 0; i < this.screens_.length; ++i) {
           var screen = $(this.screens_[i]);
@@ -375,14 +373,6 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_TOGGLE_EASY_BOOTSTRAP) {
         if (currentStepId == SCREEN_GAIA_SIGNIN)
           chrome.send('toggleEasyBootstrap');
-      }
-
-      // Handle special accelerators for keyboard enhanced navigation flow.
-      if (this.forceKeyboardFlow_) {
-        if (name == ACCELERATOR_FOCUS_PREV)
-          keyboard.raiseKeyFocusPrevious(document.activeElement);
-        else if (name == ACCELERATOR_FOCUS_NEXT)
-          keyboard.raiseKeyFocusNext(document.activeElement);
       }
     },
 

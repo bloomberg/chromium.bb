@@ -1159,7 +1159,7 @@ cr.define('options.internet', function() {
    * Initializes even handling for keyboard driven flow.
    */
   DetailsInternetPage.initializeKeyboardFlow = function() {
-    keyboard.initializeKeyboardFlow();
+    keyboard.initializeKeyboardFlow(false);
   };
 
   DetailsInternetPage.updateProxySettings = function(type) {

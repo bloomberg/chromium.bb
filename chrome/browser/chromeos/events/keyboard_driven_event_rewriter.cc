@@ -16,6 +16,8 @@ namespace {
 
 const int kModifierMask = ui::EF_SHIFT_DOWN;
 
+KeyboardDrivenEventRewriter* instance = nullptr;
+
 // Returns true if and only if it is on login screen (i.e. user is not logged
 // in) and the keyboard driven flag in the OEM manifest is on.
 bool ShouldStripModifiersForArrowKeysAndEnter() {
@@ -30,10 +32,20 @@ bool ShouldStripModifiersForArrowKeysAndEnter() {
 
 }  // namespace
 
+// static
+KeyboardDrivenEventRewriter* KeyboardDrivenEventRewriter::GetInstance() {
+  DCHECK(instance);
+  return instance;
+}
+
 KeyboardDrivenEventRewriter::KeyboardDrivenEventRewriter() {
+  DCHECK(!instance);
+  instance = this;
 }
 
 KeyboardDrivenEventRewriter::~KeyboardDrivenEventRewriter() {
+  DCHECK_EQ(instance, this);
+  instance = nullptr;
 }
 
 ui::EventRewriteStatus KeyboardDrivenEventRewriter::RewriteForTesting(
@@ -82,6 +94,19 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
       key_event.code(),
       key_event.GetDomKey(),
       key_event.key_code()};
+
+  if (rewritten_to_tab_) {
+    if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT ||
+        key_code == ui::VKEY_UP || key_code == ui::VKEY_DOWN) {
+      const ui::KeyEvent tab_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB,
+                                   ui::EF_NONE);
+      state.code = tab_event.code();
+      state.key = tab_event.GetDomKey();
+      state.key_code = tab_event.key_code();
+      if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_UP)
+        state.flags |= ui::EF_SHIFT_DOWN;
+    }
+  }
 
   chromeos::EventRewriter::BuildRewrittenKeyEvent(key_event, state,
                                                   rewritten_event);

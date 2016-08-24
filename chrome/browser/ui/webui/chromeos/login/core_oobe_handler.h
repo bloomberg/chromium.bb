@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
+#include "ui/events/event_source.h"
 
 namespace base {
 class ListValue;
@@ -24,6 +25,10 @@ class ListValue;
 
 namespace gfx {
 class Rect;
+}
+
+namespace ui {
+class EventProcessor;
 }
 
 namespace chromeos {
@@ -34,7 +39,8 @@ class OobeUI;
 // The core handler for Javascript messages related to the "oobe" view.
 class CoreOobeHandler : public BaseScreenHandler,
                         public VersionInfoUpdater::Delegate,
-                        public CoreOobeActor {
+                        public CoreOobeActor,
+                        public ui::EventSource {
  public:
   class Delegate {
    public:
@@ -60,6 +66,9 @@ class CoreOobeHandler : public BaseScreenHandler,
       const std::string& os_version_label_text) override;
   void OnEnterpriseInfoUpdated(const std::string& message_text,
                                const std::string& asset_id) override;
+
+  // ui::EventSource implementation:
+  ui::EventProcessor* GetEventProcessor() override;
 
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);
@@ -133,6 +142,10 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
   void HandleHeaderBarVisible();
+
+  // When keyboard_utils.js arrow key down event is reached, raise it
+  // to tab/shift-tab event.
+  void HandleRaiseTabKeyEvent(bool reverse);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

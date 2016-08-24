@@ -70,8 +70,6 @@ const char kAccelNameEnrollment[] = "enrollment";
 const char kAccelNameKioskEnable[] = "kiosk_enable";
 const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
-const char kAccelFocusPrev[] = "focus_prev";
-const char kAccelFocusNext[] = "focus_next";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
@@ -140,11 +138,6 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(
       ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameToggleEasyBootstrap;
-
-  accel_map_[ui::Accelerator(ui::VKEY_LEFT, ui::EF_NONE)] =
-      kAccelFocusPrev;
-  accel_map_[ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE)] =
-      kAccelFocusNext;
 
   accel_map_[ui::Accelerator(
       ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =

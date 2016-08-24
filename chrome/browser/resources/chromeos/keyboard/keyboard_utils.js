@@ -8,6 +8,43 @@
 var keyboard = {};
 
 /**
+ * keyboard_utils may be injected as content script. This variable gets and
+ * saves the host window.
+ * @private
+ */
+var keyboardHostWindow_;
+
+/**
+ * keyboard_utils may be injected as content script. This variable gets and
+ * saves the host origin.
+ * @private
+ */
+var keyboardHostOrigin_;
+
+/**
+ * Handles the initial messaging posted from webview, where this script is
+ * injected.
+ * @param {Event} event Message event posted from webview.
+ * @private
+ */
+keyboard.onInitMessage_ = function(event) {
+  if (event.data == 'initialMessage' &&
+      event.origin == 'chrome://oobe') {
+    keyboardHostWindow_ = event.source;
+    keyboardHostOrigin_ = event.origin;
+  }
+};
+
+/**
+ * Handles the actual focus advancing by raising tab/shift-tab key events
+ * on C++ side.
+ * @param {boolean} reverse true if focus is moving backward, otherwise forward.
+ */
+keyboard.onAdvanceFocus = function(reverse) {
+  chrome.send('raiseTabKeyEvent', [reverse]);
+};
+
+/**
  * Swallows keypress and keyup events of arrow keys.
  * @param {Event} event Raised event.
  * @private
@@ -28,7 +65,7 @@ keyboard.onKeyIgnore_ = function(event) {
 };
 
 /**
- * Converts arrow keys into tab/shift-tab key events.
+ * Handles arrow key events, depending on if self is a content script.
  * @param {Event} event Raised event.
  * @private
  */
@@ -51,72 +88,52 @@ keyboard.onKeyDown_ = function(event) {
       document.getElementById('oauth-enroll-auth-view'))
     return;
 
-  var needsUpDownKeys = event.target.classList.contains('needs-up-down-keys');
+  // If we are in networks list dropdown container, let network_dropdown.js
+  // handle keyboard events.
+  if (document.activeElement.classList.contains('dropdown-container'))
+    return;
 
-  if (event.key == 'ArrowLeft' ||
-      (!needsUpDownKeys && event.key == 'ArrowUp')) {
-    keyboard.raiseKeyFocusPrevious(document.activeElement);
-    event.stopPropagation();
-    event.preventDefault();
-  } else if (event.key == 'ArrowRight' ||
-             (!needsUpDownKeys && event.key == 'ArrowDown')) {
-    keyboard.raiseKeyFocusNext(document.activeElement);
-    event.stopPropagation();
-    event.preventDefault();
+  // Do not map arrow key events to tab events if the user is currently
+  // focusing an input element and hits the left or right.
+  var needsLeftRightKey =
+      (event.key == 'ArrowLeft' || event.key == 'ArrowRight') &&
+      document.activeElement.tagName == 'INPUT';
+
+  if (!needsLeftRightKey) {
+    // Inside of a content script, instead of callling chrome.send directly
+    // (since it is not available) we send an event to the host script
+    // which will make the chrome.send call on our behalf.
+    if (event.key == 'ArrowLeft' || event.key == 'ArrowUp') {
+      if (!keyboardHostWindow_)
+        keyboard.onAdvanceFocus(true);
+      else
+        keyboardHostWindow_.postMessage('backwardFocus', keyboardHostOrigin_);
+      event.preventDefault();
+    } else if (event.key == 'ArrowRight' || event.key == 'ArrowDown') {
+      if (!keyboardHostWindow_)
+        keyboard.onAdvanceFocus(false);
+      else
+        keyboardHostWindow_.postMessage('forwardFocus', keyboardHostOrigin_);
+      event.preventDefault();
+    }
   }
-};
 
-/**
- * Raises tab/shift-tab keyboard events.
- * @param {HTMLElement} element Element that should receive the event.
- * @param {string} eventType Keyboard event type.
- * @param {boolean} shift True if shift should be on.
- * @private
- */
-keyboard.raiseTabKeyEvent_ = function(element, eventType, shift) {
-  var event = document.createEvent('KeyboardEvent');
-  event.initKeyboardEvent(
-      eventType,
-      true,  // canBubble
-      true,  // cancelable
-      window,
-      'U+0009',
-      0,  // keyLocation
-      false,  // ctrl
-      false,  // alt
-      shift,  // shift
-      false);  // meta
-  element.dispatchEvent(event);
-};
-
-/**
- * Raises shift+tab keyboard events to focus previous element.
- * @param {HTMLElement} element Element that should receive the event.
- */
-keyboard.raiseKeyFocusPrevious = function(element) {
-  keyboard.raiseTabKeyEvent_(element, 'keydown', true);
-  keyboard.raiseTabKeyEvent_(element, 'keypress', true);
-  keyboard.raiseTabKeyEvent_(element, 'keyup', true);
-};
-
-/**
- * Raises tab keyboard events to focus next element.
- * @param {HTMLElement} element Element that should receive the event.
- */
-keyboard.raiseKeyFocusNext = function(element) {
-  keyboard.raiseTabKeyEvent_(element, 'keydown', false);
-  keyboard.raiseTabKeyEvent_(element, 'keypress', false);
-  keyboard.raiseTabKeyEvent_(element, 'keyup', false);
+  if (event.key == 'ArrowLeft' || event.key == 'ArrowUp' ||
+      event.key == 'ArrowRight' || event.key == 'ArrowDown')
+    event.stopPropagation();
 };
 
 /**
  * Initializes event handling for arrow keys driven focus flow.
+ * @param {boolean} injected true if script runs as an injected content script.
  */
-keyboard.initializeKeyboardFlow = function() {
+keyboard.initializeKeyboardFlow = function(injected) {
   document.addEventListener('keydown',
       keyboard.onKeyDown_, true);
   document.addEventListener('keypress',
       keyboard.onKeyIgnore_, true);
   document.addEventListener('keyup',
       keyboard.onKeyIgnore_, true);
+  if (injected)
+    window.addEventListener('message', keyboard.onInitMessage_);
 };

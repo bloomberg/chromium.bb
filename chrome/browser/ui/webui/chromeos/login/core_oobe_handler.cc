@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -35,6 +36,7 @@
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/components_strings.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
@@ -156,6 +158,7 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDebuggingScreen);
   AddCallback("headerBarVisible",
               &CoreOobeHandler::HandleHeaderBarVisible);
+  AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
 }
 
 template <typename... Args>
@@ -296,6 +299,8 @@ void CoreOobeHandler::HandleSkipUpdateEnrollAfterEula() {
 void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
   if (delegate_)
     delegate_->OnCurrentScreenChanged(screen);
+  KeyboardDrivenEventRewriter::GetInstance()->SetArrowToTabRewritingEnabled(
+      screen == WizardController::kEulaScreenName);
 }
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
@@ -422,6 +427,10 @@ void CoreOobeHandler::OnEnterpriseInfoUpdated(
   CallJSOrDefer("setEnterpriseInfo", message_text, asset_id);
 }
 
+ui::EventProcessor* CoreOobeHandler::GetEventProcessor() {
+  return ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
+}
+
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
   CallJSOrDefer("setLabelText", id, text);
@@ -470,6 +479,13 @@ void CoreOobeHandler::HandleHeaderBarVisible() {
     login_display_host->SetStatusAreaVisible(true);
   if (ScreenLocker::default_screen_locker())
     ScreenLocker::default_screen_locker()->delegate()->OnHeaderBarVisible();
+}
+
+void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
+  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+  if (reverse)
+    event.set_flags(ui::EF_SHIFT_DOWN);
+  SendEventToProcessor(&event);
 }
 
 void CoreOobeHandler::InitDemoModeDetection() {

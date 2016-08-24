@@ -130,9 +130,6 @@ cr.define('cr.ui', function() {
         this.title_.focus();
         this.title_.removeAttribute('aria-activedescendant');
       }
-
-      // Flag for keyboard flow util to forward the up/down keys.
-      this.title_.classList.toggle('needs-up-down-keys', show);
     },
 
     /**
