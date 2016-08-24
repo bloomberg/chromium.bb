@@ -296,11 +296,11 @@ public class NewTabPage
 
         @Override
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
-            openUrl(windowOpenDisposition, article.mUrl);
             mSnippetsBridge.onSuggestionOpened(article.mGlobalPosition, article.mCategory,
                     article.mPosition, article.mPublishTimestampMilliseconds, article.mScore,
                     windowOpenDisposition);
             NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
+            openUrl(windowOpenDisposition, article.mUrl);
         }
 
         private void openUrl(int windowOpenDisposition, String url) {
