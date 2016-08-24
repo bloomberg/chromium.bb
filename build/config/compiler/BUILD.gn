@@ -166,15 +166,6 @@ config("compiler") {
     # Common GCC compiler flags setup.
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
-
-    # Eliminate build metadata (__DATE__ and __TIME_) for deterministic build.
-    # See https://crbug.com/314403
-    cflags += [
-      "-Wno-builtin-macro-redefined",
-      "-D__DATE__=",
-      "-D__TIME__=",
-    ]
-
     cflags_cc += [
       # If this is removed then remove the corresponding /Zc:threadSafeInit- for
       # Windows.
