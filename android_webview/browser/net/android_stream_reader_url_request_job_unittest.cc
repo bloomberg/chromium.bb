@@ -80,7 +80,7 @@ class StreamReaderDelegate :
 
   std::unique_ptr<InputStream> OpenInputStream(JNIEnv* env,
                                                const GURL& url) override {
-    return base::WrapUnique(new NotImplInputStream());
+    return base::MakeUnique<NotImplInputStream>();
   }
 
   void OnInputStreamOpenFailed(net::URLRequest* request,
@@ -211,7 +211,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
 
   void SetUpTestJob(std::unique_ptr<InputStreamReader> stream_reader) {
     SetUpTestJob(std::move(stream_reader),
-                 base::WrapUnique(new StreamReaderDelegate()));
+                 base::MakeUnique<StreamReaderDelegate>());
   }
 
   void SetUpTestJob(std::unique_ptr<InputStreamReader> stream_reader,
@@ -263,7 +263,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadEmptyStream) {
 }
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
-  SetUpTestJob(nullptr, base::WrapUnique(new NullStreamReaderDelegate()));
+  SetUpTestJob(nullptr, base::MakeUnique<NullStreamReaderDelegate>());
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.
@@ -279,8 +279,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, ReadWithNullStream) {
 }
 
 TEST_F(AndroidStreamReaderURLRequestJobTest, ModifyHeadersAndStatus) {
-  SetUpTestJob(nullptr,
-               base::WrapUnique(new HeaderAlteringStreamReaderDelegate()));
+  SetUpTestJob(nullptr, base::MakeUnique<HeaderAlteringStreamReaderDelegate>());
   req_->Start();
 
   // The TestDelegate will quit the message loop on request completion.

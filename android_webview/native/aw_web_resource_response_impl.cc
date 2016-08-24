@@ -33,7 +33,7 @@ std::unique_ptr<InputStream> AwWebResourceResponseImpl::GetInputStream(
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (jstream.is_null())
     return std::unique_ptr<InputStream>();
-  return base::WrapUnique(new InputStreamImpl(jstream));
+  return base::MakeUnique<InputStreamImpl>(jstream);
 }
 
 bool AwWebResourceResponseImpl::GetMimeType(JNIEnv* env,

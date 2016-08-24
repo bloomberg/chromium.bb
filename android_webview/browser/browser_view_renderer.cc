@@ -244,10 +244,10 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
-  std::unique_ptr<ChildFrame> child_frame = base::WrapUnique(new ChildFrame(
+  std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
       frame.output_surface_id, std::move(frame.frame), compositor_id_,
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
-      offscreen_pre_raster_, external_draw_constraints_.is_layer));
+      offscreen_pre_raster_, external_draw_constraints_.is_layer);
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->PassUncommittedFrameOnUI());

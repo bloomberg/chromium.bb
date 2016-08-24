@@ -102,13 +102,13 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // AwContentBrowserClient::IsHandledURL.
   bool set_protocol = aw_job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::WrapUnique(new net::FileProtocolHandler(
+      base::MakeUnique<net::FileProtocolHandler>(
           content::BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler()));
+      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       url::kBlobScheme,
@@ -205,7 +205,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
 
-  builder.set_network_delegate(base::WrapUnique(new AwNetworkDelegate()));
+  builder.set_network_delegate(base::MakeUnique<AwNetworkDelegate>());
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -231,9 +231,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_proxy_service(net::ProxyService::CreateWithoutProxyResolver(
       std::move(proxy_config_service_), net_log_.get()));
   builder.set_net_log(net_log_.get());
-  builder.SetCookieAndChannelIdStores(
-      base::WrapUnique(new AwCookieStoreWrapper()),
-      std::move(channel_id_service));
+  builder.SetCookieAndChannelIdStores(base::MakeUnique<AwCookieStoreWrapper>(),
+                                      std::move(channel_id_service));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
   cache_params.type =

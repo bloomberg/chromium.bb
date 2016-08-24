@@ -63,8 +63,8 @@ void RenderingTest::SetUpTestHarness() {
       new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
   functor_.reset(new FakeFunctor);
   functor_->Init(window.get(),
-                 base::WrapUnique(new RenderThreadManager(
-                     functor_.get(), base::ThreadTaskRunnerHandle::Get())));
+                 base::MakeUnique<RenderThreadManager>(
+                     functor_.get(), base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_->SetCurrentCompositorFrameConsumer(
       functor_->GetCompositorFrameConsumer());
   window_ = std::move(window);

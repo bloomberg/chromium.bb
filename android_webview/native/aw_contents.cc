@@ -234,8 +234,8 @@ void AwContents::SetJavaPeers(
                                           io_thread_client);
 
   InterceptNavigationDelegate::Associate(
-      web_contents_.get(), base::WrapUnique(new InterceptNavigationDelegate(
-                               env, intercept_navigation_delegate)));
+      web_contents_.get(), base::MakeUnique<InterceptNavigationDelegate>(
+                               env, intercept_navigation_delegate));
 
   // Finally, having setup the associations, release any deferred requests
   for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {

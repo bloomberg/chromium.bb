@@ -107,7 +107,7 @@ void AwContentsClientBridgeTest::TestCertType(SSLClientCertType type,
   cert_request_info_->cert_key_types.push_back(type);
   bridge_->SelectClientCertificate(
       cert_request_info_.get(),
-      base::WrapUnique(new TestClientCertificateDelegate(this)));
+      base::MakeUnique<TestClientCertificateDelegate>(this));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, cert_selected_callbacks_);
   ScopedJavaLocalRef<jobjectArray> key_types =

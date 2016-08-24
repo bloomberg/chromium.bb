@@ -161,7 +161,7 @@ void AndroidStreamReaderURLRequestJob::Kill() {
 
 std::unique_ptr<InputStreamReader>
 AndroidStreamReaderURLRequestJob::CreateStreamReader(InputStream* stream) {
-  return base::WrapUnique(new InputStreamReader(stream));
+  return base::MakeUnique<InputStreamReader>(stream);
 }
 
 void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(

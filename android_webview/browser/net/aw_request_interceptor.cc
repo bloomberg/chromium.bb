@@ -101,8 +101,8 @@ class ShouldInterceptRequestAdaptor
   void WebResourceResponseObtained(
       std::unique_ptr<AwWebResourceResponse> response) {
     if (response) {
-      callback_.Run(base::WrapUnique(
-          new StreamReaderJobDelegateImpl(std::move(response))));
+      callback_.Run(
+          base::MakeUnique<StreamReaderJobDelegateImpl>(std::move(response)));
     } else {
       callback_.Run(nullptr);
     }
@@ -160,8 +160,8 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
                        new base::SupportsUserData::Data());
   return new AndroidStreamReaderURLRequestJob(
       request, network_delegate,
-      base::WrapUnique(
-          new ShouldInterceptRequestAdaptor(std::move(io_thread_client))),
+      base::MakeUnique<ShouldInterceptRequestAdaptor>(
+          std::move(io_thread_client)),
       true);
 }
 

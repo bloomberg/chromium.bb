@@ -141,7 +141,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(JNIEnv* env,
     DLOG(ERROR) << "Unable to open input stream for Android URL";
     return std::unique_ptr<InputStream>();
   }
-  return base::WrapUnique(new InputStreamImpl(stream));
+  return base::MakeUnique<InputStreamImpl>(stream);
 }
 
 void AndroidStreamReaderURLRequestJobDelegateImpl::OnInputStreamOpenFailed(
@@ -251,7 +251,7 @@ bool RegisterAndroidProtocolHandler(JNIEnv* env) {
 // static
 std::unique_ptr<net::URLRequestInterceptor>
 CreateContentSchemeRequestInterceptor() {
-  return base::WrapUnique(new ContentSchemeRequestInterceptor());
+  return base::MakeUnique<ContentSchemeRequestInterceptor>();
 }
 
 // static

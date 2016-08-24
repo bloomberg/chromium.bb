@@ -37,19 +37,18 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
           base::Bind(&GetChromePolicyDetails)));
 
   // URL Filtering
-  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
+  handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kURLWhitelist, policy::policy_prefs::kUrlWhitelist,
-      base::Value::TYPE_LIST)));
-  handlers->AddHandler(
-      base::WrapUnique(new policy::URLBlacklistPolicyHandler()));
+      base::Value::TYPE_LIST));
+  handlers->AddHandler(base::MakeUnique<policy::URLBlacklistPolicyHandler>());
 
   // HTTP Negotiate authentication
-  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
+  handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kAuthServerWhitelist, prefs::kAuthServerWhitelist,
-      base::Value::TYPE_STRING)));
-  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
+      base::Value::TYPE_STRING));
+  handlers->AddHandler(base::MakeUnique<policy::SimplePolicyHandler>(
       policy::key::kAuthAndroidNegotiateAccountType,
-      prefs::kAuthAndroidNegotiateAccountType, base::Value::TYPE_STRING)));
+      prefs::kAuthAndroidNegotiateAccountType, base::Value::TYPE_STRING));
 
   // Web restrictions
   handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
@@ -63,8 +62,9 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
 
 AwBrowserPolicyConnector::AwBrowserPolicyConnector()
    : BrowserPolicyConnectorBase(base::Bind(&BuildHandlerList)) {
-  SetPlatformPolicyProvider(base::WrapUnique(
-      new policy::android::AndroidCombinedPolicyProvider(GetSchemaRegistry())));
+  SetPlatformPolicyProvider(
+      base::MakeUnique<policy::android::AndroidCombinedPolicyProvider>(
+          GetSchemaRegistry()));
   InitPolicyProviders();
 }
 

@@ -447,8 +447,8 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
         // Switch to new RTM.
         std::unique_ptr<FakeFunctor> functor(new FakeFunctor);
         functor->Init(window_.get(),
-                      base::WrapUnique(new RenderThreadManager(
-                          functor.get(), base::ThreadTaskRunnerHandle::Get())));
+                      base::MakeUnique<RenderThreadManager>(
+                          functor.get(), base::ThreadTaskRunnerHandle::Get()));
         browser_view_renderer_->SetCurrentCompositorFrameConsumer(
             functor->GetCompositorFrameConsumer());
         saved_functor_ = std::move(functor_);
