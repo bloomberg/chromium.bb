@@ -113,19 +113,27 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   if (!bo)
     return nullptr;
 
-  // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
-  // kept open for the lifetime of the buffer.
-  base::ScopedFD fd(gbm_bo_get_fd(bo));
-  if (!fd.is_valid()) {
-    PLOG(ERROR) << "Failed to export buffer to dma_buf";
-    gbm_bo_destroy(bo);
-    return nullptr;
-  }
   std::vector<base::ScopedFD> fds;
-  fds.emplace_back(std::move(fd));
   std::vector<gfx::NativePixmapPlane> planes;
-  planes.emplace_back(gbm_bo_get_stride(bo), gbm_bo_get_plane_offset(bo, 0),
-                      gbm_bo_get_format_modifier(bo));
+
+  DCHECK_EQ(gbm_bo_get_num_planes(bo),
+            gfx::NumberOfPlanesForBufferFormat(format));
+  for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
+    // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
+    // kept open for the lifetime of the buffer.
+    base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
+
+    if (!fd.is_valid()) {
+      PLOG(ERROR) << "Failed to export buffer to dma_buf";
+      gbm_bo_destroy(bo);
+      return nullptr;
+    }
+    fds.emplace_back(std::move(fd));
+
+    planes.emplace_back(gbm_bo_get_plane_stride(bo, i),
+                        gbm_bo_get_plane_offset(bo, i),
+                        gbm_bo_get_plane_format_modifier(bo, i));
+  }
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
       gbm, bo, format, usage, std::move(fds), size, std::move(planes)));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
