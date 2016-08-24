@@ -34,16 +34,21 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/V8SharedWorkerGlobalScope.h"
+#include "bindings/core/v8/V8WorkerGlobalScope.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/events/ErrorEvent.h"
+#include "core/frame/DOMTimer.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
 #include <memory>
@@ -103,6 +108,7 @@ WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(WorkerOrWorklet
     : m_globalScope(globalScope)
     , m_isolate(isolate)
     , m_executionForbidden(false)
+    , m_executionScheduledToTerminate(false)
     , m_rejectedPromises(RejectedPromises::create())
     , m_executionState(0)
 {
@@ -270,6 +276,22 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
         return false;
     }
     return true;
+}
+
+void WorkerOrWorkletScriptController::willScheduleExecutionTermination()
+{
+    // The mutex provides a memory barrier to ensure that once
+    // termination is scheduled, isExecutionTerminating will
+    // accurately reflect that state when called from another thread.
+    MutexLocker locker(m_scheduledTerminationMutex);
+    m_executionScheduledToTerminate = true;
+}
+
+bool WorkerOrWorkletScriptController::isExecutionTerminating() const
+{
+    // See comments in willScheduleExecutionTermination regarding mutex usage.
+    MutexLocker locker(m_scheduledTerminationMutex);
+    return m_executionScheduledToTerminate;
 }
 
 void WorkerOrWorkletScriptController::forbidExecution()

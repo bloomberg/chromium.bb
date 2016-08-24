@@ -29,6 +29,7 @@ void WorkletGlobalScope::dispose()
     stopActiveDOMObjects();
 
     DCHECK(m_scriptController);
+    m_scriptController->willScheduleExecutionTermination();
     m_scriptController->dispose();
     m_scriptController.clear();
 }

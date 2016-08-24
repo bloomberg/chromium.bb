@@ -339,7 +339,7 @@ TEST_F(WorkerThreadTest, StartAndTerminateOnScriptLoaded_TerminateWhileDebuggerT
 
     // Clean up in order to satisfy DCHECKs in dtors.
     m_workerThread->m_runningDebuggerTask = false;
-    m_workerThread->isolate()->TerminateExecution();
+    m_workerThread->forciblyTerminateExecution();
     m_workerThread->waitForShutdownForTesting();
 }
 

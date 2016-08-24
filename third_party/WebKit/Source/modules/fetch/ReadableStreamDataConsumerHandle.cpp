@@ -12,8 +12,10 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/streams/ReadableStreamOperations.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
@@ -26,6 +28,20 @@
 #include <v8.h>
 
 namespace blink {
+
+namespace {
+
+bool isTerminating(ScriptState* scriptState)
+{
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
+    if (!executionContext)
+        return true;
+    if (!executionContext->isWorkerGlobalScope())
+        return false;
+    return toWorkerGlobalScope(executionContext)->scriptController()->isExecutionTerminating();
+}
+
+} // namespace
 
 using Result = WebDataConsumerHandle::Result;
 using Flags = WebDataConsumerHandle::Flags;
@@ -49,7 +65,11 @@ public:
             bool done;
             v8::Local<v8::Value> item = v.v8Value();
             ASSERT(item->IsObject());
+            if (isTerminating(v.getScriptState()))
+                return ScriptValue();
             v8::MaybeLocal<v8::Value> maybeValue = v8UnpackIteratorResult(v.getScriptState(), item.As<v8::Object>(), &done);
+            if (isTerminating(v.getScriptState()))
+                return ScriptValue();
             v8::Local<v8::Value> value = maybeValue.ToLocalChecked();
             if (done) {
                 readingContext->onReadDone();

@@ -9,7 +9,9 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/CoreExport.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 #include <v8.h>
@@ -43,6 +45,10 @@ public:
 
     void close()
     {
+        if (isTerminating(m_scriptState.get())) {
+            m_jsController.clear();
+            return;
+        }
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
         v8::Isolate* isolate = scriptState->isolate();
@@ -54,11 +60,15 @@ public:
         v8::Local<v8::Value> args[] = { controller };
         v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerClose", args);
         m_jsController.clear();
+        if (isTerminating(m_scriptState.get()))
+            return;
         result.ToLocalChecked();
     }
 
     double desiredSize() const
     {
+        if (isTerminating(m_scriptState.get()))
+            return 0;
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
         v8::Isolate* isolate = scriptState->isolate();
@@ -69,12 +79,17 @@ public:
 
         v8::Local<v8::Value> args[] = { controller };
         v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerGetDesiredSize", args);
+        if (isTerminating(m_scriptState.get()))
+            return 0;
+
         return result.ToLocalChecked().As<v8::Number>()->Value();
     }
 
     template <typename ChunkType>
     void enqueue(ChunkType chunk) const
     {
+        if (isTerminating(m_scriptState.get()))
+            return;
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
         v8::Isolate* isolate = scriptState->isolate();
@@ -86,12 +101,18 @@ public:
         v8::Local<v8::Value> jsChunk = toV8(chunk, scriptState);
         v8::Local<v8::Value> args[] = { controller, jsChunk };
         v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerEnqueue", args);
+        if (isTerminating(m_scriptState.get()))
+            return;
         result.ToLocalChecked();
     }
 
     template <typename ErrorType>
     void error(ErrorType error)
     {
+        if (isTerminating(m_scriptState.get())) {
+            m_jsController.clear();
+            return;
+        }
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState); // will assert context is valid; do not call this method when the context is invalidated
         v8::Isolate* isolate = scriptState->isolate();
@@ -104,10 +125,22 @@ public:
         v8::Local<v8::Value> args[] = { controller, jsError };
         v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callExtra(scriptState, "ReadableStreamDefaultControllerError", args);
         m_jsController.clear();
+        if (isTerminating(m_scriptState.get()))
+            return;
         result.ToLocalChecked();
     }
 
 private:
+    static bool isTerminating(ScriptState* scriptState)
+    {
+        ExecutionContext* executionContext = scriptState->getExecutionContext();
+        if (!executionContext)
+            return true;
+        if (!executionContext->isWorkerGlobalScope())
+            return false;
+        return toWorkerGlobalScope(executionContext)->scriptController()->isExecutionTerminating();
+    }
+
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_jsController;
 };
