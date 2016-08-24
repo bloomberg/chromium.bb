@@ -13,6 +13,7 @@
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/material_design_controller_test_api.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -1928,6 +1929,46 @@ TEST_P(WindowSelectorTest, TextFilteringSelection) {
   // Undimming one window should automatically select it.
   FilterItems("Rock and roll");
   EXPECT_EQ(GetSelectedWindow(), window2.get());
+}
+
+// Tests that transferring focus from the text filter to a window that is not a
+// top level window does not cancel overview mode.
+TEST_P(WindowSelectorTest, ShowTextFilterMenu) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window0(CreateWindow(bounds));
+  base::string16 window0_title = base::UTF8ToUTF16("Test");
+  window0->SetTitle(window0_title);
+  wm::GetWindowState(window0.get())->Minimize();
+  ToggleOverview();
+
+  EXPECT_FALSE(selection_widget_active());
+  EXPECT_FALSE(showing_filter_widget());
+  FilterItems("Test");
+
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+
+  // Open system bubble shifting focus from the text filter.
+  SystemTray* tray = GetPrimarySystemTray();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+
+  // This should not cancel overview mode.
+  ASSERT_TRUE(IsSelecting());
+  EXPECT_TRUE(selection_widget_active());
+  EXPECT_TRUE(showing_filter_widget());
+
+  // Click text filter to bring focus back.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point point_in_text_filter =
+      text_filter_widget()->GetWindowBoundsInScreen().CenterPoint();
+  generator.MoveMouseTo(point_in_text_filter);
+  generator.ClickLeftButton();
+  EXPECT_TRUE(IsSelecting());
+
+  // Cancel overview mode.
+  ToggleOverview();
+  ASSERT_FALSE(IsSelecting());
 }
 
 // Tests clicking on the desktop itself to cancel overview mode.

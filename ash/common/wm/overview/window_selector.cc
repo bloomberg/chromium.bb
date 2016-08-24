@@ -281,7 +281,7 @@ WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
       overview_start_time_(base::Time::Now()),
       num_key_presses_(0),
       num_items_(0),
-      showing_selection_widget_(false),
+      showing_text_filter_(false),
       text_filter_string_length_(0),
       num_times_textfield_cleared_(0),
       restoring_minimized_windows_(false),
@@ -609,8 +609,12 @@ void WindowSelector::OnWindowActivated(WmWindow* gained_active,
   auto iter = std::find_if(windows.begin(), windows.end(),
                            WindowSelectorItemTargetComparator(gained_active));
 
-  if (iter != windows.end())
+  if (iter != windows.end()) {
     (*iter)->ShowWindowOnExit();
+  } else if (showing_text_filter_ &&
+             lost_active == GetTextFilterWidgetWindow()) {
+    return;
+  }
 
   // Don't restore focus on exit if a window was just activated.
   ResetFocusRestoreWindow(false);
@@ -628,19 +632,19 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
   if (!text_filter_string_length_)
     num_times_textfield_cleared_++;
 
-  bool should_show_selection_widget = !new_contents.empty();
-  if (showing_selection_widget_ != should_show_selection_widget) {
+  bool should_show_text_filter = !new_contents.empty();
+  if (showing_text_filter_ != should_show_text_filter) {
     WmWindow* text_filter_widget_window = GetTextFilterWidgetWindow();
     ui::ScopedLayerAnimationSettings animation_settings(
         text_filter_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    animation_settings.SetTweenType(showing_selection_widget_
+    animation_settings.SetTweenType(showing_text_filter_
                                         ? gfx::Tween::FAST_OUT_LINEAR_IN
                                         : gfx::Tween::LINEAR_OUT_SLOW_IN);
 
     gfx::Transform transform;
-    if (should_show_selection_widget) {
+    if (should_show_text_filter) {
       transform.Translate(0, 0);
       text_filter_widget_window->SetOpacity(1);
     } else {
@@ -649,7 +653,7 @@ void WindowSelector::ContentsChanged(views::Textfield* sender,
     }
 
     text_filter_widget_window->SetTransform(transform);
-    showing_selection_widget_ = should_show_selection_widget;
+    showing_text_filter_ = should_show_text_filter;
   }
   for (auto iter = grid_list_.begin(); iter != grid_list_.end(); iter++)
     (*iter)->FilterItems(new_contents);

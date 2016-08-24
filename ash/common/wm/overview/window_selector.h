@@ -157,8 +157,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // The number of items in the overview.
   size_t num_items_;
 
-  // Indicates if we are showing the selection widget.
-  bool showing_selection_widget_;
+  // Indicates if the text filter is shown on screen (rather than above it).
+  bool showing_text_filter_;
 
   // Window text filter widget. As the user writes on it, we filter the items
   // in the overview. It is also responsible for handling overview key events,
