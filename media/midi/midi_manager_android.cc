@@ -35,7 +35,10 @@ MidiManager* MidiManager::Create() {
 
 MidiManagerAndroid::MidiManagerAndroid() {}
 
-MidiManagerAndroid::~MidiManagerAndroid() {}
+MidiManagerAndroid::~MidiManagerAndroid() {
+  base::AutoLock auto_lock(scheduler_lock_);
+  CHECK(!scheduler_);
+}
 
 void MidiManagerAndroid::StartInitialization() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -43,8 +46,19 @@ void MidiManagerAndroid::StartInitialization() {
   uintptr_t pointer = reinterpret_cast<uintptr_t>(this);
   raw_manager_.Reset(Java_MidiManagerAndroid_create(
       env, base::android::GetApplicationContext(), pointer));
-  scheduler_.reset(new MidiScheduler(this));
+
+  {
+    base::AutoLock auto_lock(scheduler_lock_);
+    scheduler_.reset(new MidiScheduler(this));
+  }
+
   Java_MidiManagerAndroid_initialize(env, raw_manager_);
+}
+
+void MidiManagerAndroid::Finalize() {
+  // Destruct MidiScheduler on Chrome_IOThread.
+  base::AutoLock auto_lock(scheduler_lock_);
+  scheduler_.reset();
 }
 
 void MidiManagerAndroid::DispatchSendMidiData(MidiManagerClient* client,

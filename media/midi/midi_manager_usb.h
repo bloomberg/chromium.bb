@@ -17,6 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/usb_midi_device.h"
@@ -42,6 +43,7 @@ class USB_MIDI_EXPORT MidiManagerUsb
 
   // MidiManager implementation.
   void StartInitialization() override;
+  void Finalize() override;
   void DispatchSendMidiData(MidiManagerClient* client,
                             uint32_t port_index,
                             const std::vector<uint8_t>& data,
@@ -90,6 +92,9 @@ class USB_MIDI_EXPORT MidiManagerUsb
   // A map from <endpoint_number, cable_number> to the index of input jacks.
   base::hash_map<std::pair<int, int>, size_t> input_jack_dictionary_;
 
+  // Lock to ensure the MidiScheduler is being destructed only once in
+  // Finalize() on Chrome_IOThread.
+  base::Lock scheduler_lock_;
   std::unique_ptr<MidiScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerUsb);
