@@ -12,6 +12,7 @@ import logging
 import os
 import sys
 
+
 sys.path.append(os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir)))
 from pylib import constants
@@ -111,9 +112,8 @@ def main(argv):
   _AddBasicArguments(upload_parser)
   upload_parser.set_defaults(func=Upload)
   upload_parser.add_argument(
-      '-f', '--file-list', nargs='+',
-      help='A list of base paths for files in third_party to upload. by '
-           'default, it looks for all the jar files in the given local path')
+      '-f', '--file-list', nargs='+', required=True,
+      help='A list of base paths for files in third_party to upload.')
 
   arguments = parser.parse_args(argv)
   if not os.path.isdir(arguments.sdk_root):
