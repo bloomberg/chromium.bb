@@ -53,8 +53,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     // Create the proxy resolution service with the mock bus and the mock
     // resolver injected.
     service_provider_.reset(ProxyResolutionServiceProvider::Create(
-        base::WrapUnique(new TestProxyResolverDelegate(
-            base::ThreadTaskRunnerHandle::Get()))));
+        base::MakeUnique<TestProxyResolverDelegate>(
+            base::ThreadTaskRunnerHandle::Get())));
 
     test_helper_.SetUp(kResolveNetworkProxy, service_provider_.get());
 

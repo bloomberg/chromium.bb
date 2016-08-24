@@ -66,7 +66,7 @@ class NetworkStateTest : public testing::Test {
   }
 
   bool SetStringProperty(const std::string& key, const std::string& value) {
-    return SetProperty(key, base::WrapUnique(new TestStringValue(value)));
+    return SetProperty(key, base::MakeUnique<TestStringValue>(value));
   }
 
   bool SignalInitialPropertiesReceived() {

@@ -60,7 +60,7 @@ TEST_F(BinderServiceManagerProxyTest, AddAndCheck) {
 
   // Add service.
   scoped_refptr<Object> object(
-      new LocalObject(base::WrapUnique(new DummyTransactionHandler())));
+      new LocalObject(base::MakeUnique<DummyTransactionHandler>()));
   EXPECT_TRUE(ServiceManagerProxy::AddService(&command_broker_, kServiceName,
                                               object, 0));
 

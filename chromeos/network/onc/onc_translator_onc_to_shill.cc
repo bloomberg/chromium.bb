@@ -36,7 +36,7 @@ std::unique_ptr<base::StringValue> ConvertValueToString(
   std::string str;
   if (!value.GetAsString(&str))
     base::JSONWriter::Write(value, &str);
-  return base::WrapUnique(new base::StringValue(str));
+  return base::MakeUnique<base::StringValue>(str);
 }
 
 // This class is responsible to translate the local fields of the given

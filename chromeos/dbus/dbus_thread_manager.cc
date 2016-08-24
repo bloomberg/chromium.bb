@@ -339,7 +339,7 @@ void DBusThreadManager::CreateGlobalInstance(
     DBusClientBundle::DBusClientTypeMask unstub_client_mask) {
   CHECK(!g_dbus_thread_manager);
   g_dbus_thread_manager = new DBusThreadManager(
-      base::WrapUnique(new DBusClientBundle(unstub_client_mask)));
+      base::MakeUnique<DBusClientBundle>(unstub_client_mask));
   g_dbus_thread_manager->InitializeClients();
 }
 
