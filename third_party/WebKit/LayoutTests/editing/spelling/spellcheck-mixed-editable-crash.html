@@ -5,6 +5,9 @@
 <div id="edit" contenteditable="true"><span contenteditable="false">Bob</span> ; <span contenteditable="false"></span></div>
 <div id="log"></div>
 <script>
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 test(function() {
     var text = edit.childNodes[1];
     var selection = window.getSelection();

@@ -10,6 +10,8 @@ description("This tests whether WebKit does not spell check in 'designMode' "
     + "There should be no spelling marker for 'asd'.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 document.designMode = "on";
 

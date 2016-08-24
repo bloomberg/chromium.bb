@@ -25,6 +25,8 @@ description("Misspelling markers in text inputs should only be visible if an inp
     + "but not for the first textarea. Focus the input again - misspelling markers should be restored.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var testTextArea = document.getElementById("testTextArea");
 var testInput = document.getElementById("testInput");

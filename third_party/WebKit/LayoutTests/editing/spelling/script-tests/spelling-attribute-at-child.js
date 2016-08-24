@@ -2,6 +2,8 @@ description('Tests if the spellchecker behaves correctly when child has own '
     + 'spellcheck attribute.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var root = document.createElement("div");
 document.body.appendChild(root);

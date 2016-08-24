@@ -3,6 +3,9 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 <script>
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 window.onload = function() {
   var element = document.getElementsByTagName('html')[0];
   document.adoptNode(element);

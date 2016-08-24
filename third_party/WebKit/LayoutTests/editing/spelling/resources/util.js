@@ -23,6 +23,7 @@ function initSpellTest(testElementId, testText, testFunction, opt_doNotFinishTes
         log("FAIL Incomplete test environment");
         return;
     }
+    testRunner.setMockSpellCheckerEnabled(true);
     testFunctionCallback = testFunction;
     jsTestIsAsync = true;
     internals.settings.setSmartInsertDeleteEnabled(true);
@@ -85,11 +86,12 @@ function runNextStep(test, steps, assertions) {
 function runSpellingTest(steps, assertions, opt_title)
 {
     var t = async_test(opt_title);
-    if (!window.internals) {
-        t.step(() => assert_unreached('internals is required for this test'));
+    if (!window.internals || !window.testRunner) {
+        t.step(() => assert_unreached('Incomplete test environment'));
         t.done();
         return;
     }
 
+    testRunner.setMockSpellCheckerEnabled(true);
     runNextStep(t, steps, assertions);
 }

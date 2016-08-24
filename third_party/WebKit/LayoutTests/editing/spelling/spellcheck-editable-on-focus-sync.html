@@ -17,6 +17,9 @@ description("Spell checking should be triggered on focus of an editable. " +
 "To test manually type focus above editable and textarea. Misspellings in them " +
 "should be marked on focus.");
 
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');

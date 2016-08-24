@@ -2,6 +2,8 @@
 description('For Bug 40092: Spell checking for pasted text.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);

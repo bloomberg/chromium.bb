@@ -19,6 +19,9 @@
 <script>
 description("The spellchecker should work correctly if unified spellcheck path is used.");
 
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 var container = document.getElementById('container');
 function removeChildren(node) {
     while (node.firstChild)

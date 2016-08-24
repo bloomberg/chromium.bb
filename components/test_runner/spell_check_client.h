@@ -30,6 +30,7 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   virtual ~SpellCheckClient();
 
   void SetDelegate(WebTestDelegate* delegate);
+  void SetEnabled(bool enabled);
 
   // blink::WebSpellCheckClient implementation.
   void spellCheck(
@@ -46,6 +47,10 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
 
  private:
   void FinishLastTextCheck();
+
+  // Do not perform any checking when |enabled_ == false|.
+  // Tests related to spell checking should enable it manually.
+  bool enabled_ = false;
 
   // The mock spellchecker used in spellCheck().
   MockSpellCheck spell_check_;

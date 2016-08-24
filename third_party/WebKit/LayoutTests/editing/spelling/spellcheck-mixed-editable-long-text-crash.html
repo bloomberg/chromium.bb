@@ -12,6 +12,9 @@ SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar()
 </ul>
 <div id="log"></div>
 <script>
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 test(function() {
     if (window.internals) {
         internals.setSpellCheckingEnabled(true);

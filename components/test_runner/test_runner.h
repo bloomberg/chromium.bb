@@ -463,6 +463,9 @@ class TestRunner : public WebTestRunner {
   // to test output.
   void SetDumpConsoleMessages(bool value);
 
+  // Controls whether the mock spell checker is enabled.
+  void SetMockSpellCheckerEnabled(bool enabled);
+
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebViewTestProxy
 

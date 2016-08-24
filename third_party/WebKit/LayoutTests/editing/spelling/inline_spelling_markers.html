@@ -33,8 +33,10 @@ description("This tests the correct placement of inline spelling and grammar "
 
 jsTestIsAsync = true;
 
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsTextWithPixelResults();
+    testRunner.setMockSpellCheckerEnabled(true);
+}
 </script>
 
 LTR

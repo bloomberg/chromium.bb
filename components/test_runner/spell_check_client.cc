@@ -33,12 +33,22 @@ void SpellCheckClient::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
 }
 
+void SpellCheckClient::SetEnabled(bool enabled) {
+  enabled_ = enabled;
+}
+
 // blink::WebSpellCheckClient
 void SpellCheckClient::spellCheck(
     const blink::WebString& text,
     int& misspelled_offset,
     int& misspelled_length,
     blink::WebVector<blink::WebString>* optional_suggestions) {
+  if (!enabled_) {
+    misspelled_offset = 0;
+    misspelled_length = 0;
+    return;
+  }
+
   // Check the spelling of the given text.
   spell_check_.SpellCheckWord(text, &misspelled_offset, &misspelled_length);
 }
@@ -48,7 +58,7 @@ void SpellCheckClient::requestCheckingOfText(
     const blink::WebVector<uint32_t>& markers,
     const blink::WebVector<unsigned>& marker_offsets,
     blink::WebTextCheckingCompletion* completion) {
-  if (text.isEmpty()) {
+  if (!enabled_ || text.isEmpty()) {
     if (completion)
       completion->didCancelCheckingText();
     return;

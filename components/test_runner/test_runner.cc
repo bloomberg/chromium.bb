@@ -214,6 +214,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   void SetDumpConsoleMessages(bool value);
+  void SetMockSpellCheckerEnabled(bool enabled);
   void SetImagesAllowed(bool allowed);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                              const std::string& policy);
@@ -514,6 +515,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
       .SetMethod("setDumpConsoleMessages",
                  &TestRunnerBindings::SetDumpConsoleMessages)
+      .SetMethod("setMockSpellCheckerEnabled",
+                 &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
       .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
       .SetMethod("setIsolatedWorldContentSecurityPolicy",
@@ -703,6 +706,11 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
   if (runner_)
     runner_->SetDumpConsoleMessages(enabled);
+}
+
+void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
+  if (runner_)
+    runner_->SetMockSpellCheckerEnabled(enabled);
 }
 
 v8::Local<v8::Value>
@@ -1629,6 +1637,8 @@ void TestRunner::Reset() {
     delegate_->CloseRemainingWindows();
   else
     close_remaining_windows_ = true;
+
+  spellcheck_->SetEnabled(false);
 }
 
 void TestRunner::SetTestIsRunning(bool running) {
@@ -2568,6 +2578,10 @@ void TestRunner::DumpNavigationPolicy() {
 void TestRunner::SetDumpConsoleMessages(bool value) {
   layout_test_runtime_flags_.set_dump_console_messages(value);
   OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::SetMockSpellCheckerEnabled(bool enabled) {
+  spellcheck_->SetEnabled(enabled);
 }
 
 bool TestRunner::ShouldDumpConsoleMessages() const {

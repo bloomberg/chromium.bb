@@ -16,6 +16,8 @@ description("Spell check markers should be removed from the whole page when disa
     + "Having the editable focused, turn spell checker on. Misspellings in the editable should be marked.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 function hasSpellingMarkerOnSetting(element, enableSpellChecking)
 {

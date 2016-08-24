@@ -17,6 +17,9 @@ description("Spell checking should be triggered on focus of an editable. " +
 "should be marked on focus.Turn spell checker off and on again and again focus editables. " +
 "Mispelling should be marked again");
 
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 var frame1 = document.getElementById("frame1");
 var testEditable1 = frame1.contentWindow.document.createElement("div");
 testEditable1.setAttribute("contentEditable", "true");

@@ -32,6 +32,8 @@ description("This tests the correct placement of inline spelling and grammar "
     + "words in all cases.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 </script>
 
 LTR

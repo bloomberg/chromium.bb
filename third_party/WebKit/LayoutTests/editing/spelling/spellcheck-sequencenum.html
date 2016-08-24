@@ -11,6 +11,8 @@ description('For Bug 73511: Internals should have a method to return the max seq
 
 if (window.internals)
     window.jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);

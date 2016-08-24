@@ -11,6 +11,8 @@ description('Test if Chrome WebKit does not remove a misspelled marker when movi
             'This test succeeds when "zz" is marked as misspelled.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var node = document.getElementById('src');
 node.focus();

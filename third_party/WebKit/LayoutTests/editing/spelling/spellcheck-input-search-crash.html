@@ -3,6 +3,9 @@
 <head>
 <script src="../../resources/js-test.js"></script>
 <script>
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
+
 var clicked = false;
 
 function handleClicked()

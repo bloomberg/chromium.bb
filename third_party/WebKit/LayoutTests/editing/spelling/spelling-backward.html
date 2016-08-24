@@ -10,6 +10,8 @@ description('This tests for a bug when moving the caret backward through '
     + 'it should be marked as misspelled.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var div = document.getElementById("div");
 div.focus();

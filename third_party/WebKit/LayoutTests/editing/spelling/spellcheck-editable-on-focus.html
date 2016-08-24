@@ -17,6 +17,8 @@ description("Spell checking should be triggered on focus of an editable. "
     + "misspellings are marked.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 function findFirstTextNodeOf(id) {
     return findFirstTextNode(document.getElementById(id));

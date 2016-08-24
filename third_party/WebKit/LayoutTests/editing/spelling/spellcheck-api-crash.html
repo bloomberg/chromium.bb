@@ -2,8 +2,10 @@
 <head>
 <title></title>
 <script language="javascript" type="text/javascript">
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.setMockSpellCheckerEnabled(true);
+}
 
 function Test() {
     var node0 = document.getElementById('test0');

@@ -7,8 +7,10 @@ To test manually, right click on the text in the input box.</p>
 <script>
 function test()
 {
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.setMockSpellCheckerEnabled(true);
         testRunner.dumpAsText();
+    }
 
     var input = document.getElementById("input");
     input.focus();

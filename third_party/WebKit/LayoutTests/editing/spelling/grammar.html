@@ -38,6 +38,8 @@ description("This tests whether the grammatically-incorrect phrase "
     + "'I have a issue' has grammar marker on 'a'.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 editingTest();
 </script>

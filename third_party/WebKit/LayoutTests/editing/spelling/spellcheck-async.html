@@ -20,6 +20,8 @@
 description("Test for Unified Spell Checker & Async Spell Checker.");
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var container = document.getElementById('container');
 function removeChildren(node) {

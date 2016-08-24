@@ -3,6 +3,8 @@ description('This tests if internals.hasSpellingMarker works for differnt type o
     + 'However, only the last one should not contatin spelling marker.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);

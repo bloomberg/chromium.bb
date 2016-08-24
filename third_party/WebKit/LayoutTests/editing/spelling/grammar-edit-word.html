@@ -13,6 +13,8 @@ description('Test if WebKit removes grammar markers when we edit a grammatically
     + 'This test succeeds when "ha" does not have grammar markers.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 function editAndCheckSentence()
 {

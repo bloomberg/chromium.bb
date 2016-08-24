@@ -11,6 +11,8 @@
 description('For bug cr571988: Spell checking for pasted mixed content.');
 
 jsTestIsAsync = true;
+if (window.testRunner)
+    testRunner.setMockSpellCheckerEnabled(true);
 
 var testRoot = document.createElement("div");
 document.body.insertBefore(testRoot, document.body.firstChild);
