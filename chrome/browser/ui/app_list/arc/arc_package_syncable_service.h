@@ -51,6 +51,9 @@ class ArcPackageSyncableService : public syncer::SyncableService,
                                            ArcAppListPrefs* prefs);
   static ArcPackageSyncableService* Get(content::BrowserContext* context);
 
+  // Returns true if requested package has pending sync request.
+  bool IsPackageSyncing(const std::string& package_name) const;
+
   // syncer::SyncableService:
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
@@ -96,7 +99,7 @@ class ArcPackageSyncableService : public syncer::SyncableService,
   void UninstallPackage(const SyncItem* sync_item);
 
   // Returns if a package should be synced.
-  // TODO(lgcheng@) Supoort may need to be added in this function for different
+  // TODO(lgcheng@) Support may need to be added in this function for different
   // use cases.
   bool ShouldSyncPackage(const std::string& package_name) const;
 

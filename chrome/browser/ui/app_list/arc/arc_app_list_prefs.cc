@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
@@ -570,17 +571,22 @@ void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
 
 void ArcAppListPrefs::OnInstanceReady() {
   arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
+
+  sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
+  DCHECK(sync_service_);
+
+  // In some tests app_instance may not be set.
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
   }
 
+  is_initialized_ = false;
+
   app_instance->Init(binding_.CreateInterfacePtrAndBind());
   app_instance->RefreshAppList();
 
   // Start ArcPackageSyncService.
-  sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
-  DCHECK(sync_service_);
   sync_service_->SyncStarted();
 }
 
@@ -592,6 +598,8 @@ void ArcAppListPrefs::OnInstanceClosed() {
     sync_service_->StopSyncing(syncer::ARC_PACKAGE);
     sync_service_ = nullptr;
   }
+
+  is_initialized_ = false;
 }
 
 void ArcAppListPrefs::MayAddNonLaunchableApp(const std::string& name,
@@ -918,12 +926,44 @@ void ArcAppListPrefs::OnNotificationsEnabledChanged(
                     OnNotificationsEnabledChanged(package_name, enabled));
 }
 
+void ArcAppListPrefs::MaybeShowPackageInAppLauncher(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  // Ignore system packages and auxiliary packages.
+  if (!package_info.sync || package_info.system)
+    return;
+
+  std::unordered_set<std::string> app_ids =
+      GetAppsForPackage(package_info.package_name);
+  for (const auto& app_id : app_ids) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = GetApp(app_id);
+    if (!app_info) {
+      NOTREACHED();
+      continue;
+    }
+    if (!app_info->showInLauncher)
+      continue;
+
+    AppListService* service = AppListService::Get();
+    CHECK(service);
+    service->ShowForAppInstall(profile_, app_id, false);
+    break;
+  }
+}
+
 void ArcAppListPrefs::OnPackageAdded(
     arc::mojom::ArcPackageInfoPtr package_info) {
   DCHECK(IsArcEnabled());
+
+  // Ignore packages installed by internal sync.
+  DCHECK(sync_service_);
+  const bool new_package_in_system = !GetPackage(package_info->package_name) &&
+      !sync_service_->IsPackageSyncing(package_info->package_name);
+
   AddOrUpdatePackagePrefs(prefs_, *package_info);
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnPackageInstalled(*package_info));
+  if (new_package_in_system)
+    MaybeShowPackageInAppLauncher(*package_info);
 }
 
 void ArcAppListPrefs::OnPackageModified(

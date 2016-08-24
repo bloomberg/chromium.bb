@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
@@ -44,7 +45,7 @@ const char kTestAppName[] = "Test Arc App";
 const char kTestAppName2[] = "Test Arc App 2";
 const char kTestAppPackage[] = "test.arc.app.package";
 const char kTestAppActivity[] = "test.arc.app.package.activity";
-const char kTestAppActivity2[] = "test.arc.app.package.activity2";
+const char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
 constexpr int kAppAnimatedThresholdMs = 100;
 
 std::string GetTestApp1Id() {
@@ -152,13 +153,16 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
       ASSERT_TRUE(app_info2);
       EXPECT_TRUE(app_info2->ready);
     }
+  }
 
+  void SendPackageAdded(bool package_synced) {
     arc::mojom::ArcPackageInfo package_info;
     package_info.package_name = kTestAppPackage;
     package_info.package_version = 1;
     package_info.last_backup_android_id = 1;
     package_info.last_backup_time = 1;
-    package_info.sync = false;
+    package_info.sync = package_synced;
+    package_info.system = false;
     app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::From(package_info));
 
     base::RunLoop().RunUntilIdle();
@@ -172,7 +176,8 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   void SendPackageRemoved() { app_host()->OnPackageRemoved(kTestAppPackage); }
 
   void StartInstance() {
-    auth_service()->OnPrimaryUserProfilePrepared(profile());
+    if (auth_service()->profile() != profile())
+      auth_service()->OnPrimaryUserProfilePrepared(profile());
     app_instance_observer()->OnInstanceReady();
   }
 
@@ -219,7 +224,9 @@ class ArcAppDeferredLauncherBrowserTest
 // This tests simulates normal workflow for starting Arc app in deferred mode.
 IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   // Install app to remember existing apps.
+  StartInstance();
   InstallTestApps(false);
+  SendPackageAdded(false);
 
   const std::string app_id = GetTestApp1Id();
   if (is_pinned()) {
@@ -255,6 +262,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
       // Now simulates that Arc is started and app list is refreshed. This
       // should stop animation and delete icon from the shelf.
       InstallTestApps(false);
+      SendPackageAdded(false);
       EXPECT_TRUE(chrome_controller()
                       ->GetArcDeferredLauncher()
                       ->GetActiveTime(app_id)
@@ -294,7 +302,9 @@ INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherBrowserTestInstance,
 
 // This tests validates pin state on package update and remove.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
+  StartInstance();
   InstallTestApps(true);
+  SendPackageAdded(false);
 
   const std::string app_id1 = GetTestApp1Id();
   const std::string app_id2 = GetTestApp2Id();
@@ -305,13 +315,13 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   EXPECT_TRUE(shelf_id1_before);
   EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id2));
 
-  // Package contains only one app.
+  // Package contains only one app. App list is not shown for updated package.
   SendPackageUpdated(false);
   // Second pin should gone.
   EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
 
-  // Package contains two apps.
+  // Package contains two apps. App list is not shown for updated package.
   SendPackageUpdated(true);
   // Second pin should not appear.
   EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
@@ -322,4 +332,26 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   // No pin is expected.
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id1));
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
+}
+
+// This test validates that app list is shown on new package and not shown
+// on package update.
+IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
+  StartInstance();
+  AppListService* app_list_service = AppListService::Get();
+  ASSERT_TRUE(app_list_service);
+
+  EXPECT_FALSE(app_list_service->IsAppListVisible());
+
+  // New package is available. Show app list.
+  InstallTestApps(false);
+  SendPackageAdded(true);
+  EXPECT_TRUE(app_list_service->IsAppListVisible());
+
+  app_list_service->DismissAppList();
+  EXPECT_FALSE(app_list_service->IsAppListVisible());
+
+  // Send package update event. App list is not shown.
+  SendPackageAdded(true);
+  EXPECT_FALSE(app_list_service->IsAppListVisible());
 }

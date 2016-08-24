@@ -112,6 +112,12 @@ ArcPackageSyncableService* ArcPackageSyncableService::Get(
   return ArcPackageSyncableServiceFactory::GetForBrowserContext(context);
 }
 
+bool ArcPackageSyncableService::IsPackageSyncing(
+    const std::string& package_name) const {
+  return pending_install_items_.find(package_name) !=
+      pending_install_items_.end();
+}
+
 syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -267,11 +273,10 @@ void ArcPackageSyncableService::OnPackageRemoved(
 
 void ArcPackageSyncableService::OnPackageInstalled(
     const mojom::ArcPackageInfo& package_info) {
-  const std::string& package_name = package_info.package_name;
-
   if (!package_info.sync)
     return;
 
+  const std::string& package_name = package_info.package_name;
   SyncItemMap::iterator install_iter =
       pending_install_items_.find(package_name);
 

@@ -218,6 +218,9 @@ class ArcAppListPrefs
     return app_instance_holder_;
   }
 
+  std::unordered_set<std::string> GetAppsForPackage(
+      const std::string& package_name) const;
+
  private:
   friend class ChromeLauncherControllerImplTest;
 
@@ -289,14 +292,18 @@ class ArcAppListPrefs
   void OnIconInstalled(const std::string& app_id,
                        ui::ScaleFactor scale_factor,
                        bool install_succeed);
-  std::unordered_set<std::string> GetAppsForPackage(
-      const std::string& package_name) const;
 
   // This checks if app is not registered yet and in this case creates
   // non-launchable app entry.
   void MayAddNonLaunchableApp(const std::string& name,
                               const std::string& package_name,
                               const std::string& activity);
+
+  // Reveals first app from provided package in app launcher if package is newly
+  // installed by user. If all apps in package are hidden then app list is not
+  // shown.
+  void MaybeShowPackageInAppLauncher(
+      const arc::mojom::ArcPackageInfo& package_info);
 
   Profile* const profile_;
 
