@@ -76,8 +76,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // has changed our activation.
   void HandleNativeWidgetActivationChanged(bool active);
 
-  void AddObserver(views::DesktopWindowTreeHostObserverX11* observer);
-  void RemoveObserver(views::DesktopWindowTreeHostObserverX11* observer);
+  void AddObserver(DesktopWindowTreeHostObserverX11* observer);
+  void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
 
   // Swaps the current handler for events in the non client view with |handler|.
   void SwapNonClientEventHandler(std::unique_ptr<ui::EventHandler> handler);

@@ -44,7 +44,7 @@ AURA_EXPORT CaptureClient* GetCaptureClient(Window* root_window);
 // if the window doesn't have a root window, or there is no capture window.
 AURA_EXPORT Window* GetCaptureWindow(Window* window);
 
-}  // namespace clients
+}  // namespace client
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_CAPTURE_CLIENT_H_

@@ -247,12 +247,12 @@ void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
 }
 
 void DesktopWindowTreeHostX11::AddObserver(
-    views::DesktopWindowTreeHostObserverX11* observer) {
+    DesktopWindowTreeHostObserverX11* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void DesktopWindowTreeHostX11::RemoveObserver(
-    views::DesktopWindowTreeHostObserverX11* observer) {
+    DesktopWindowTreeHostObserverX11* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -1600,7 +1600,7 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
 
   if (!IsMaximized() && !IsFullscreen()) {
     gfx::Path window_mask;
-    views::Widget* widget = native_widget_delegate_->AsWidget();
+    Widget* widget = native_widget_delegate_->AsWidget();
     if (widget->non_client_view()) {
       // Some frame views define a custom (non-rectangular) window mask. If
       // so, use it to define the window shape. If not, fall through.
@@ -2090,7 +2090,7 @@ DesktopWindowTreeHost* DesktopWindowTreeHost::Create(
 
 // static
 ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
-  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  const LinuxUI* linux_ui = LinuxUI::instance();
   if (linux_ui) {
     ui::NativeTheme* native_theme = linux_ui->GetNativeTheme(window);
     if (native_theme)
