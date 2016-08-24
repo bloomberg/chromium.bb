@@ -49186,6 +49186,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4ApplyUpdateResultWhenReadingFromDisk"
+    enum="SafeBrowsingV4ApplyUpdateResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the result of applying an update read from disk after parsing it
+    successfully as a protobuf.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4DecodeAdditionsResult"
     enum="SafeBrowsingV4DecodeResult">
   <owner>vakh@chromium.org</owner>
@@ -91793,6 +91802,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="UNEXPECTED_MAGIC_NUMBER_FAILURE"/>
   <int value="6" label="FILE_VERSION_TOO_LOW_FAILURE"/>
   <int value="7" label="HASH_PREFIX_INFO_MISSING_FAILURE"/>
+  <int value="8" label="HASH_PREFIX_MAP_GENERATION_FAILURE"/>
 </enum>
 
 <enum name="SafeBrowsingV4StoreWriteResult" type="int">
