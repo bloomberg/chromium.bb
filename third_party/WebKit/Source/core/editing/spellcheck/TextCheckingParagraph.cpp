@@ -37,15 +37,22 @@ static EphemeralRange expandToParagraphBoundary(const EphemeralRange& range)
 {
     const VisiblePosition& start = createVisiblePosition(range.startPosition());
     DCHECK(start.isNotNull()) << range.startPosition();
-    const VisiblePosition& paragraphStart = startOfParagraph(start);
+    const Position& paragraphStart = startOfParagraph(start).deepEquivalent();
     DCHECK(paragraphStart.isNotNull()) << range.startPosition();
 
     const VisiblePosition& end = createVisiblePosition(range.endPosition());
     DCHECK(end.isNotNull()) << range.endPosition();
-    const VisiblePosition& paragraphEnd = endOfParagraph(end);
+    const Position& paragraphEnd = endOfParagraph(end).deepEquivalent();
     DCHECK(paragraphEnd.isNotNull()) << range.endPosition();
 
-    return EphemeralRange(paragraphStart.deepEquivalent(), paragraphEnd.deepEquivalent());
+    // TODO(xiaochengh): There are some cases (crbug.com/640112) where we get
+    // |paragraphStart > paragraphEnd|, which is the reason we cannot directly
+    // return |EphemeralRange(paragraphStart, paragraphEnd)|. This is not
+    // desired, though. We should do more investigation to ensure that why
+    // |paragraphStart <= paragraphEnd| is violated.
+    const Position& resultStart = paragraphStart.isNotNull() && paragraphStart <= range.startPosition() ? paragraphStart : range.startPosition();
+    const Position& resultEnd = paragraphEnd.isNotNull() && paragraphEnd >= range.endPosition() ? paragraphEnd : range.endPosition();
+    return EphemeralRange(resultStart, resultEnd);
 }
 
 TextCheckingParagraph::TextCheckingParagraph(const EphemeralRange& checkingRange)
