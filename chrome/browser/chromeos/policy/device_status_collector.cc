@@ -233,8 +233,7 @@ std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
   for (const auto& device_local_account : accounts) {
     if (AccountId::FromUserEmail(device_local_account.user_id) ==
         user->GetAccountId()) {
-      return base::WrapUnique(
-          new policy::DeviceLocalAccount(device_local_account));
+      return base::MakeUnique<policy::DeviceLocalAccount>(device_local_account);
     }
   }
   LOG(WARNING) << "Kiosk app not found in list of device-local accounts";

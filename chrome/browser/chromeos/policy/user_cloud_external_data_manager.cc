@@ -32,8 +32,8 @@ UserCloudExternalDataManager::UserCloudExternalDataManager(
                                    io_task_runner),
       resource_cache_(new ResourceCache(cache_path, backend_task_runner)) {
   SetPolicyStore(policy_store);
-  SetExternalDataStore(base::WrapUnique(new CloudExternalDataStore(
-      kCacheKey, backend_task_runner, resource_cache_)));
+  SetExternalDataStore(base::MakeUnique<CloudExternalDataStore>(
+      kCacheKey, backend_task_runner, resource_cache_));
 }
 
 UserCloudExternalDataManager::~UserCloudExternalDataManager() {

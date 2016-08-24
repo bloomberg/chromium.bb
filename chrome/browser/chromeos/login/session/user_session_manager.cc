@@ -1673,7 +1673,7 @@ void UserSessionManager::CheckEolStatus(Profile* profile) {
   std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>::iterator
       iter = eol_notification_handler_.find(profile);
   if (iter == eol_notification_handler_.end()) {
-    auto eol_notification = base::WrapUnique(new EolNotification(profile));
+    auto eol_notification = base::MakeUnique<EolNotification>(profile);
     iter = eol_notification_handler_
                .insert(std::make_pair(profile, std::move(eol_notification)))
                .first;

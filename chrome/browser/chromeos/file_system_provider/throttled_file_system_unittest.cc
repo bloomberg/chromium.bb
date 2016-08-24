@@ -61,7 +61,7 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
         extensions::SOURCE_FILE);
 
     file_system_.reset(new ThrottledFileSystem(
-        base::WrapUnique(new FakeProvidedFileSystem(file_system_info))));
+        base::MakeUnique<FakeProvidedFileSystem>(file_system_info)));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

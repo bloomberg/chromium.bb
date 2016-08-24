@@ -49,8 +49,8 @@ void SetExternalDataReference(CloudPolicyCore* core,
   PolicyMap policy_map;
   policy_map.Set(policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD, std::move(metadata),
-                 base::WrapUnique(new ExternalDataFetcher(
-                     store->external_data_manager(), policy)));
+                 base::MakeUnique<ExternalDataFetcher>(
+                     store->external_data_manager(), policy));
   store->SetPolicyMapForTesting(policy_map);
 }
 

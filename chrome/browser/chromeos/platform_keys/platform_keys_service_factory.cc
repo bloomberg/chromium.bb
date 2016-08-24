@@ -114,7 +114,7 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
       policy_connector->IsManaged(), profile->GetPrefs(),
       policy_connector->policy_service(), context, store);
 
-  service->SetSelectDelegate(base::WrapUnique(new DefaultSelectDelegate()));
+  service->SetSelectDelegate(base::MakeUnique<DefaultSelectDelegate>());
   return service;
 }
 

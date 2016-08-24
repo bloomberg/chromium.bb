@@ -237,7 +237,7 @@ bool CloudExternalDataManagerBase::Backend::OnDownloadSuccess(
   const FetchCallbackList& pending_callbacks = pending_downloads_[policy];
   for (FetchCallbackList::const_iterator it = pending_callbacks.begin();
        it != pending_callbacks.end(); ++it) {
-    RunCallback(*it, base::WrapUnique(new std::string(data)));
+    RunCallback(*it, base::MakeUnique<std::string>(data));
   }
   pending_downloads_.erase(policy);
   return true;

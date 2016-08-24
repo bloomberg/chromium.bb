@@ -153,8 +153,8 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
 
   std::unique_ptr<storage::FileSystemOperationContext>
   CreateOperationContext() {
-    return base::WrapUnique(
-        new storage::FileSystemOperationContext(file_system_context_.get()));
+    return base::MakeUnique<storage::FileSystemOperationContext>(
+        file_system_context_.get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

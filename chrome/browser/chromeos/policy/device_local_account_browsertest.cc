@@ -394,8 +394,8 @@ std::unique_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
     net::HttpStatusCode response_code,
     net::URLRequestStatus::Status status) {
   task_runner->PostTask(FROM_HERE, callback);
-  return base::WrapUnique(new net::FakeURLFetcher(url, delegate, response_data,
-                                                  response_code, status));
+  return base::MakeUnique<net::FakeURLFetcher>(url, delegate, response_data,
+                                               response_code, status);
 }
 
 bool IsSessionStarted() {
@@ -1272,8 +1272,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   CreateFile(impl_path.Append(
                  extensions::LocalExtensionCache::kCacheReadyFlagFileName),
              0, base::Time::Now());
-  extensions::ExtensionCacheImpl cache_impl(base::WrapUnique(
-      new extensions::ChromeOSExtensionCacheDelegate(impl_path)));
+  extensions::ExtensionCacheImpl cache_impl(
+      base::MakeUnique<extensions::ChromeOSExtensionCacheDelegate>(impl_path));
   std::unique_ptr<base::RunLoop> run_loop;
   run_loop.reset(new base::RunLoop);
   cache_impl.Start(base::Bind(&OnExtensionCacheImplInitialized, &run_loop));

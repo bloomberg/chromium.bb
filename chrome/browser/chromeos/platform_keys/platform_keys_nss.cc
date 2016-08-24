@@ -554,8 +554,8 @@ void SelectCertificatesOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->cert_store_.reset(new ClientCertStoreChromeOS(
       nullptr,  // no additional provider
-      base::WrapUnique(new ClientCertFilterChromeOS(state->use_system_key_slot_,
-                                                    state->username_hash_)),
+      base::MakeUnique<ClientCertFilterChromeOS>(state->use_system_key_slot_,
+                                                 state->username_hash_),
       ClientCertStoreChromeOS::PasswordDelegateFactory()));
 
   state->certs_.reset(new net::CertificateList);

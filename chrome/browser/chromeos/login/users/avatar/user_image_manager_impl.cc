@@ -409,9 +409,9 @@ void UserImageManagerImpl::Job::UpdateUser(
     user->SetImage(std::move(user_image), image_index_);
   } else {
     user->SetStubImage(
-        base::WrapUnique(new user_manager::UserImage(
+        base::MakeUnique<user_manager::UserImage>(
             *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                IDR_PROFILE_PICTURE_LOADING))),
+                IDR_PROFILE_PICTURE_LOADING)),
         image_index_, false);
   }
   user->SetImageURL(image_url_);
@@ -542,8 +542,8 @@ void UserImageManagerImpl::LoadUserImage() {
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
   if (image_index >= 0 &&
       image_index < default_user_image::kDefaultImagesCount) {
-    user->SetImage(base::WrapUnique(new user_manager::UserImage(
-                       default_user_image::GetDefaultImage(image_index))),
+    user->SetImage(base::MakeUnique<user_manager::UserImage>(
+                       default_user_image::GetDefaultImage(image_index)),
                    image_index);
     return;
   }
@@ -561,9 +561,9 @@ void UserImageManagerImpl::LoadUserImage() {
   image_properties->GetString(kImagePathNodeName, &image_path);
 
   user->SetImageURL(image_url);
-  user->SetStubImage(base::WrapUnique(new user_manager::UserImage(
+  user->SetStubImage(base::MakeUnique<user_manager::UserImage>(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING))),
+                             IDR_PROFILE_PICTURE_LOADING)),
                      image_index, true);
   DCHECK(!image_path.empty() ||
          image_index == user_manager::User::USER_IMAGE_PROFILE);

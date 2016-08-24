@@ -36,8 +36,8 @@ ScopedCrosSettingsTestHelper::~ScopedCrosSettingsTestHelper() {
 
 std::unique_ptr<FakeOwnerSettingsService>
 ScopedCrosSettingsTestHelper::CreateOwnerSettingsService(Profile* profile) {
-  return base::WrapUnique(new FakeOwnerSettingsService(
-      profile, new ownership::MockOwnerKeyUtil(), &stub_settings_provider_));
+  return base::MakeUnique<FakeOwnerSettingsService>(
+      profile, new ownership::MockOwnerKeyUtil(), &stub_settings_provider_);
 }
 
 void ScopedCrosSettingsTestHelper::ReplaceProvider(const std::string& path) {

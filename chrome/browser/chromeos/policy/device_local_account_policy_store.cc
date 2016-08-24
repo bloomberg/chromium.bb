@@ -49,7 +49,7 @@ void DeviceLocalAccountPolicyStore::Store(
     const em::PolicyFetchResponse& policy) {
   weak_factory_.InvalidateWeakPtrs();
   CheckKeyAndValidate(
-      true, base::WrapUnique(new em::PolicyFetchResponse(policy)),
+      true, base::MakeUnique<em::PolicyFetchResponse>(policy),
       base::Bind(&DeviceLocalAccountPolicyStore::StoreValidatedPolicy,
                  weak_factory_.GetWeakPtr()));
 }

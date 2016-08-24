@@ -24,8 +24,8 @@ void BuildFingerprintsMap(
           net::X509Certificate::CalculateFingerprint256(
               cert_info.certificate->os_cert_handle());
       fingerprint_to_cert->insert(std::make_pair(
-          fingerprint, base::WrapUnique(new ThreadSafeCertificateMap::MapValue(
-                           cert_info, extension_id))));
+          fingerprint, base::MakeUnique<ThreadSafeCertificateMap::MapValue>(
+                           cert_info, extension_id)));
     }
   }
 }

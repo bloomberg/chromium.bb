@@ -154,7 +154,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
                                        const std::string& key,
                                        bool value) {
     StoreDisplayPropertyForList(
-        list, key, base::WrapUnique(new base::FundamentalValue(value)));
+        list, key, base::MakeUnique<base::FundamentalValue>(value));
   }
 
   void StoreDisplayLayoutPrefForList(const display::DisplayIdList& list,
@@ -1036,7 +1036,7 @@ TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   StoreDisplayBoolPropertyForList(list, "default_unified", true);
   StoreDisplayPropertyForList(
       list, "primary-id",
-      base::WrapUnique(new base::StringValue(base::Int64ToString(id1))));
+      base::MakeUnique<base::StringValue>(base::Int64ToString(id1)));
   LoadDisplayPreferences(false);
 
   // Should not restore to unified unless unified desktop is enabled.

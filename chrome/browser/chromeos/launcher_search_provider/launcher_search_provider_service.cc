@@ -63,11 +63,11 @@ void Service::OnQueryStarted(app_list::LauncherSearchProvider* provider,
     // javascript side API while we use uint32_t internally to generate it.
     event_router->DispatchEventToExtension(
         extension_id,
-        base::WrapUnique(new extensions::Event(
+        base::MakeUnique<extensions::Event>(
             extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_QUERY_STARTED,
             api_launcher_search_provider::OnQueryStarted::kEventName,
             api_launcher_search_provider::OnQueryStarted::Create(
-                query_id_, query, max_result))));
+                query_id_, query, max_result)));
   }
 }
 
@@ -82,10 +82,10 @@ void Service::OnQueryEnded() {
   for (const ExtensionId extension_id : *cached_listener_extension_ids_.get()) {
     event_router->DispatchEventToExtension(
         extension_id,
-        base::WrapUnique(new extensions::Event(
+        base::MakeUnique<extensions::Event>(
             extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_QUERY_ENDED,
             api_launcher_search_provider::OnQueryEnded::kEventName,
-            api_launcher_search_provider::OnQueryEnded::Create(query_id_))));
+            api_launcher_search_provider::OnQueryEnded::Create(query_id_)));
   }
 
   is_query_running_ = false;
@@ -101,10 +101,10 @@ void Service::OnOpenResult(const ExtensionId& extension_id,
       extensions::EventRouter::Get(profile_);
   event_router->DispatchEventToExtension(
       extension_id,
-      base::WrapUnique(new extensions::Event(
+      base::MakeUnique<extensions::Event>(
           extensions::events::LAUNCHER_SEARCH_PROVIDER_ON_OPEN_RESULT,
           api_launcher_search_provider::OnOpenResult::kEventName,
-          api_launcher_search_provider::OnOpenResult::Create(item_id))));
+          api_launcher_search_provider::OnOpenResult::Create(item_id)));
 }
 
 void Service::SetSearchResults(

@@ -144,7 +144,7 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue(
+      base::MakeUnique<base::StringValue>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
@@ -152,7 +152,7 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
           "\"permissionGrants\":[]"
           "}],"
           "\"defaultPermissionPolicy\":\"GRANT\""
-          "}")),
+          "}"),
       nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
@@ -170,7 +170,7 @@ TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue("http://chromium.org")), nullptr);
+      base::MakeUnique<base::StringValue>("http://chromium.org"), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
@@ -178,25 +178,25 @@ TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
   policy_map().Set(policy::key::kDisableScreenshots,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"screenCaptureDisabled\":true}"));
 }
 
 TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
-  policy_map().Set(
-      policy::key::kVideoCaptureAllowed, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  policy_map().Set(policy::key::kVideoCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"cameraDisabled\":true}"));
 }
 
 TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
-  policy_map().Set(
-      policy::key::kAudioCaptureAllowed, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  policy_map().Set(policy::key::kAudioCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"unmuteMicrophoneDisabled\":true}"));
 }
@@ -205,19 +205,19 @@ TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(1), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(2)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(2), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":true}"));
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(3)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(3), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"shareLocationDisabled\":false}"));
 }
@@ -226,7 +226,7 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
   policy_map().Set(policy::key::kExternalStorageDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"mountPhysicalMediaDisabled\":true}"));
 }
@@ -266,13 +266,12 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(
-          new base::FundamentalValue(ArcCertsSyncMode::COPY_CA_CERTS)),
+      base::MakeUnique<base::FundamentalValue>(ArcCertsSyncMode::COPY_CA_CERTS),
       nullptr);
   policy_map().Set(policy::key::kOpenNetworkConfiguration,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::StringValue(kFakeONC)), nullptr);
+                   base::MakeUnique<base::StringValue>(kFakeONC), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"caCerts\":"
       "[{\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24"
@@ -287,8 +286,7 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   policy_map().Set(
       policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(
-          new base::FundamentalValue(ArcCertsSyncMode::SYNC_DISABLED)),
+      base::MakeUnique<base::FundamentalValue>(ArcCertsSyncMode::SYNC_DISABLED),
       nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
@@ -297,7 +295,7 @@ TEST_F(ArcPolicyBridgeTest, DeveloperToolsDisabledTest) {
   policy_map().Set(policy::key::kDeveloperToolsDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+                   base::MakeUnique<base::FundamentalValue>(true), nullptr);
   policy_bridge()->GetPolicies(
       PolicyStringCallback("{\"debuggingFeaturesDisabled\":true}"));
 }
@@ -306,23 +304,23 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue(
+      base::MakeUnique<base::StringValue>(
           "{\"applications\":"
           "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
           "\"installType\":\"REQUIRED\","
           "\"lockTaskAllowed\":false,"
           "\"permissionGrants\":[]"
           "}],"
-          "\"defaultPermissionPolicy\":\"GRANT\"}")),
+          "\"defaultPermissionPolicy\":\"GRANT\"}"),
       nullptr);
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue("http://chromium.org")), nullptr);
-  policy_map().Set(
-      policy::key::kVideoCaptureAllowed, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+      base::MakeUnique<base::StringValue>("http://chromium.org"), nullptr);
+  policy_map().Set(policy::key::kVideoCaptureAllowed,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::MakeUnique<base::FundamentalValue>(false), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
       "[{\"installType\":\"REQUIRED\","

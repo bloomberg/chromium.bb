@@ -98,7 +98,7 @@ class FakeEventRouter : public extensions::EventRouter {
           false /* has_more */);
     } else {
       file_system_->GetRequestManager()->RejectRequest(
-          request_id, base::WrapUnique(new RequestValue()), reply_result_);
+          request_id, base::MakeUnique<RequestValue>(), reply_result_);
     }
   }
 

@@ -377,9 +377,8 @@ void KeyPermissions::CreatePermissionObjectAndPassToCallback(
     const std::string& extension_id,
     const PermissionsCallback& callback,
     std::unique_ptr<base::Value> value) {
-  callback.Run(base::WrapUnique(
-      new PermissionsForExtension(extension_id, std::move(value),
-                                  profile_prefs_, profile_policies_, this)));
+  callback.Run(base::MakeUnique<PermissionsForExtension>(
+      extension_id, std::move(value), profile_prefs_, profile_policies_, this));
 }
 
 void KeyPermissions::SetPlatformKeysOfExtension(

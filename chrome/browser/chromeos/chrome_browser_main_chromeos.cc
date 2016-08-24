@@ -212,7 +212,7 @@ class DBusServices {
 
     ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
     service_providers.push_back(ProxyResolutionServiceProvider::Create(
-        base::WrapUnique(new ChromeProxyResolverDelegate())));
+        base::MakeUnique<ChromeProxyResolverDelegate>()));
     service_providers.push_back(new DisplayPowerServiceProvider(
         base::WrapUnique(new ChromeDisplayPowerServiceProviderDelegate)));
     service_providers.push_back(new LivenessServiceProvider);

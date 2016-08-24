@@ -86,7 +86,7 @@ TEST_F(ExtensionCacheTest, SizePolicy) {
                           now - base::TimeDelta::FromSeconds(3));
 
   ExtensionCacheImpl cache_impl(
-      base::WrapUnique(new ChromeOSExtensionCacheDelegate(cache_path)));
+      base::MakeUnique<ChromeOSExtensionCacheDelegate>(cache_path));
 
   std::unique_ptr<base::RunLoop> run_loop(new base::RunLoop);
   cache_impl.Start(run_loop->QuitClosure());

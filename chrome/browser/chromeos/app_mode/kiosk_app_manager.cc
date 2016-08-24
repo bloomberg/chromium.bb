@@ -732,9 +732,9 @@ void KioskAppManager::UpdateAppData() {
       std::string version;
       GetCachedCrx(it->kiosk_app_id, &cached_crx, &version);
 
-      apps_.push_back(base::WrapUnique(
-          new KioskAppData(this, it->kiosk_app_id, account_id,
-                           GURL(it->kiosk_app_update_url), cached_crx)));
+      apps_.push_back(base::MakeUnique<KioskAppData>(
+          this, it->kiosk_app_id, account_id, GURL(it->kiosk_app_update_url),
+          cached_crx));
       apps_.back()->Load();
     }
     CancelDelayedCryptohomeRemoval(cryptohome::Identification(account_id));

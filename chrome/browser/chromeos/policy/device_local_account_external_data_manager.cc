@@ -24,8 +24,8 @@ DeviceLocalAccountExternalDataManager::DeviceLocalAccountExternalDataManager(
     : CloudExternalDataManagerBase(get_policy_details,
                                    backend_task_runner,
                                    io_task_runner) {
-  SetExternalDataStore(base::WrapUnique(new CloudExternalDataStore(
-      account_id, backend_task_runner, resource_cache)));
+  SetExternalDataStore(base::MakeUnique<CloudExternalDataStore>(
+      account_id, backend_task_runner, resource_cache));
 }
 
 DeviceLocalAccountExternalDataManager::

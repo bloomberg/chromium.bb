@@ -929,8 +929,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   for (const auto& hash : hashes) {
-    result->SetWithoutPathExpansion(hash,
-                                    base::WrapUnique(new base::ListValue()));
+    result->SetWithoutPathExpansion(hash, base::MakeUnique<base::ListValue>());
   }
 
   for (const auto& hashAndPath : search_results) {

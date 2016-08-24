@@ -242,9 +242,8 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       net::CookieStore::SetCookiesCallback());
 
   GetChannelIDs(browser_context)
-      ->SetChannelID(base::WrapUnique(new net::ChannelIDStore::ChannelID(
-          kChannelIDServerIdentifier, base::Time(),
-          std::move(channel_id_key))));
+      ->SetChannelID(base::MakeUnique<net::ChannelIDStore::ChannelID>(
+          kChannelIDServerIdentifier, base::Time(), std::move(channel_id_key)));
 }
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(

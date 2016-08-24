@@ -159,8 +159,8 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   // Set |kStringPolicy| to a string value.
   cloud_policy_store_.policy_map_.Set(
       kStringPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::WrapUnique(new base::StringValue(std::string())), nullptr);
+      POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>(std::string()),
+      nullptr);
   // Make |k10BytePolicy| reference 10 bytes of external data.
   SetExternalDataReference(
       k10BytePolicy,
@@ -192,8 +192,8 @@ void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
       policy_details_.GetCallback(), message_loop_.task_runner(),
       message_loop_.task_runner()));
   external_data_manager_->SetExternalDataStore(
-      base::WrapUnique(new CloudExternalDataStore(
-          kCacheKey, message_loop_.task_runner(), resource_cache_.get())));
+      base::MakeUnique<CloudExternalDataStore>(
+          kCacheKey, message_loop_.task_runner(), resource_cache_.get()));
   external_data_manager_->SetPolicyStore(&cloud_policy_store_);
 }
 
@@ -213,8 +213,8 @@ void CloudExternalDataManagerBaseTest::SetExternalDataReference(
   cloud_policy_store_.policy_map_.Set(
       policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
       std::move(metadata),
-      base::WrapUnique(new ExternalDataFetcher(
-          external_data_manager_->weak_factory_.GetWeakPtr(), policy)));
+      base::MakeUnique<ExternalDataFetcher>(
+          external_data_manager_->weak_factory_.GetWeakPtr(), policy));
 }
 
 ExternalDataFetcher::FetchCallback

@@ -69,9 +69,9 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
   // handle returning non-moveable types like scoped_ptr.
   std::unique_ptr<policy::DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo()
       override {
-    return base::WrapUnique(new policy::DeviceLocalAccount(
+    return base::MakeUnique<policy::DeviceLocalAccount>(
         policy::DeviceLocalAccount::TYPE_KIOSK_APP, "account_id", "app_id",
-        "update_url"));
+        "update_url");
   }
 };
 

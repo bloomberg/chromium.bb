@@ -49,9 +49,9 @@ const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
   user->SetAffiliation(is_affiliated);
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
-  user->SetStubImage(base::WrapUnique(new user_manager::UserImage(
+  user->SetStubImage(base::MakeUnique<user_manager::UserImage>(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING))),
+                             IDR_PROFILE_PICTURE_LOADING)),
                      user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
   chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
@@ -73,9 +73,9 @@ const user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
       user_manager::User::CreatePublicAccountUser(account_id);
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
-  user->SetStubImage(base::WrapUnique(new user_manager::UserImage(
+  user->SetStubImage(base::MakeUnique<user_manager::UserImage>(
                          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                             IDR_PROFILE_PICTURE_LOADING))),
+                             IDR_PROFILE_PICTURE_LOADING)),
                      user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
   chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);

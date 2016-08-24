@@ -93,7 +93,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     // Run the function.
     std::unique_ptr<base::Value> result =
         RunFunction(new QuickUnlockPrivateGetAvailableModesFunction(),
-                    base::WrapUnique(new base::ListValue()));
+                    base::MakeUnique<base::ListValue>());
 
     // Extract the results.
     QuickUnlockModeList modes;
@@ -114,7 +114,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
   QuickUnlockModeList GetActiveModes() {
     std::unique_ptr<base::Value> result =
         RunFunction(new QuickUnlockPrivateGetActiveModesFunction(),
-                    base::WrapUnique(new base::ListValue()));
+                    base::MakeUnique<base::ListValue>());
 
     QuickUnlockModeList modes;
 
@@ -141,15 +141,15 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
                              const QuickUnlockModeList& modes,
                              const CredentialList& passwords) {
     // Serialize parameters.
-    auto params = base::WrapUnique(new base::ListValue());
+    auto params = base::MakeUnique<base::ListValue>();
     params->AppendString(password);
 
-    auto serialized_modes = base::WrapUnique(new base::ListValue());
+    auto serialized_modes = base::MakeUnique<base::ListValue>();
     for (QuickUnlockMode mode : modes)
       serialized_modes->AppendString(quick_unlock_private::ToString(mode));
     params->Append(std::move(serialized_modes));
 
-    auto serialized_passwords = base::WrapUnique(new base::ListValue());
+    auto serialized_passwords = base::MakeUnique<base::ListValue>();
     for (const std::string& password : passwords)
       serialized_passwords->AppendString(password);
     params->Append(std::move(serialized_passwords));
@@ -202,7 +202,7 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     return std::unique_ptr<base::Value>(
         api_test_utils::RunFunctionWithDelegateAndReturnSingleResult(
             func, std::move(params), profile(),
-            base::WrapUnique(new ExtensionFunctionDispatcher(profile())),
+            base::MakeUnique<ExtensionFunctionDispatcher>(profile()),
             api_test_utils::NONE));
   }
 

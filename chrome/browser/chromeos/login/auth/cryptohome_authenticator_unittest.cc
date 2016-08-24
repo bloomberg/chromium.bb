@@ -765,9 +765,8 @@ TEST_F(CryptohomeAuthenticatorTest, DriveLoginWithPreHashedPassword) {
   // pre-hashed key was used to create the cryptohome and allow a successful
   // mount when this pre-hashed key is used.
 
-  ExpectGetKeyDataExCall(
-      base::WrapUnique(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
-      base::WrapUnique(new std::string(kSalt)));
+  ExpectGetKeyDataExCall(base::MakeUnique<int64_t>(Key::KEY_TYPE_SALTED_SHA256),
+                         base::MakeUnique<std::string>(kSalt));
   ExpectMountExCall(false /* expect_create_attempt */);
 
   auth_->AuthenticateToLogin(NULL, user_context_);
@@ -783,9 +782,8 @@ TEST_F(CryptohomeAuthenticatorTest, FailLoginWithMissingSalt) {
   // Set up mock homedir methods to respond with key metadata indicating that a
   // pre-hashed key was used to create the cryptohome but without the required
   // salt.
-  ExpectGetKeyDataExCall(
-      base::WrapUnique(new int64_t(Key::KEY_TYPE_SALTED_SHA256)),
-      std::unique_ptr<std::string>());
+  ExpectGetKeyDataExCall(base::MakeUnique<int64_t>(Key::KEY_TYPE_SALTED_SHA256),
+                         std::unique_ptr<std::string>());
 
   auth_->AuthenticateToLogin(NULL, user_context_);
   base::RunLoop().Run();

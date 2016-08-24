@@ -717,9 +717,9 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
   // mount point. Legacy (--login-profile) value will be used for now.
   // http://crosbug.com/230859
   active_user_->SetStubImage(
-      base::WrapUnique(new user_manager::UserImage(
+      base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING))),
+              IDR_PROFILE_PICTURE_LOADING)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
   // Initializes wallpaper after active_user_ is set.
@@ -820,9 +820,9 @@ void ChromeUserManagerImpl::KioskAppLoggedIn(user_manager::User* user) {
 
   active_user_ = user;
   active_user_->SetStubImage(
-      base::WrapUnique(new user_manager::UserImage(
+      base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING))),
+              IDR_PROFILE_PICTURE_LOADING)),
       user_manager::User::USER_IMAGE_INVALID, false);
 
   const AccountId& kiosk_app_account_id = user->GetAccountId();
@@ -865,9 +865,9 @@ void ChromeUserManagerImpl::DemoAccountLoggedIn() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   active_user_ = user_manager::User::CreateKioskAppUser(login::DemoAccountId());
   active_user_->SetStubImage(
-      base::WrapUnique(new user_manager::UserImage(
+      base::MakeUnique<user_manager::UserImage>(
           *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_PROFILE_PICTURE_LOADING))),
+              IDR_PROFILE_PICTURE_LOADING)),
       user_manager::User::USER_IMAGE_INVALID, false);
   WallpaperManager::Get()->SetUserWallpaperNow(login::DemoAccountId());
 

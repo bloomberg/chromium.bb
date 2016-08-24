@@ -144,9 +144,9 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 
   event_router_->DispatchEventToExtension(
       extension_id,
-      base::WrapUnique(new extensions::Event(
+      base::MakeUnique<extensions::Event>(
           extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
-          event_name, std::move(internal_args))));
+          event_name, std::move(internal_args)));
   return true;
 }
 
@@ -194,10 +194,10 @@ bool CertificateProviderServiceFactory::ServiceIsNULLWhileTesting() const {
 KeyedService* CertificateProviderServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   CertificateProviderService* const service = new CertificateProviderService();
-  service->SetDelegate(base::WrapUnique(new DefaultDelegate(
+  service->SetDelegate(base::MakeUnique<DefaultDelegate>(
       service,
       extensions::ExtensionRegistryFactory::GetForBrowserContext(context),
-      extensions::EventRouterFactory::GetForBrowserContext(context))));
+      extensions::EventRouterFactory::GetForBrowserContext(context)));
   return service;
 }
 

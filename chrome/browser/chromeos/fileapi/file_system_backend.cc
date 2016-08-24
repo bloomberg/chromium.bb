@@ -283,8 +283,8 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     // MTP file operations run on MediaTaskRunner.
     return storage::FileSystemOperation::Create(
         url, context,
-        base::WrapUnique(new storage::FileSystemOperationContext(
-            context, MediaFileSystemBackend::MediaTaskRunner().get())));
+        base::MakeUnique<storage::FileSystemOperationContext>(
+            context, MediaFileSystemBackend::MediaTaskRunner().get()));
   }
 
   DCHECK(url.type() == storage::kFileSystemTypeNativeLocal ||
@@ -293,7 +293,7 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
          url.type() == storage::kFileSystemTypeProvided);
   return storage::FileSystemOperation::Create(
       url, context,
-      base::WrapUnique(new storage::FileSystemOperationContext(context)));
+      base::MakeUnique<storage::FileSystemOperationContext>(context));
 }
 
 bool FileSystemBackend::SupportsStreaming(

@@ -379,8 +379,8 @@ std::unique_ptr<CertificateProvider>
 CertificateProviderService::CreateCertificateProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return base::WrapUnique(new CertificateProviderImpl(
-      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr()));
+  return base::MakeUnique<CertificateProviderImpl>(
+      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
 }
 
 void CertificateProviderService::OnExtensionUnloaded(

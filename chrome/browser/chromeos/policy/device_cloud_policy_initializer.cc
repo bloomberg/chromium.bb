@@ -249,11 +249,11 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
 
 std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
     DeviceManagementService* device_management_service) {
-  return base::WrapUnique(new CloudPolicyClient(
+  return base::MakeUnique<CloudPolicyClient>(
       DeviceCloudPolicyManagerChromeOS::GetMachineID(),
       DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
       kPolicyVerificationKeyHash, device_management_service,
-      g_browser_process->system_request_context()));
+      g_browser_process->system_request_context());
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

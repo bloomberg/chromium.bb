@@ -49,8 +49,8 @@ bool Operation::SendEvent(int request_id,
                           extensions::events::HistogramValue histogram_value,
                           const std::string& event_name,
                           std::unique_ptr<base::ListValue> event_args) {
-  return dispatch_event_impl_.Run(base::WrapUnique(new extensions::Event(
-      histogram_value, event_name, std::move(event_args))));
+  return dispatch_event_impl_.Run(base::MakeUnique<extensions::Event>(
+      histogram_value, event_name, std::move(event_args)));
 }
 
 }  // namespace operations

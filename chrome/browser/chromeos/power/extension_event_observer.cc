@@ -132,7 +132,7 @@ void ExtensionEventObserver::OnBackgroundHostCreated(
     return;
 
   auto result =
-      keepalive_sources_.add(host, base::WrapUnique(new KeepaliveSources()));
+      keepalive_sources_.add(host, base::MakeUnique<KeepaliveSources>());
 
   if (result.second)
     host->AddObserver(this);

@@ -142,8 +142,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     // Mock out ARC bridge.
     fake_arc_bridge_instance_.reset(new FakeArcBridgeInstance);
     ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::WrapUnique(new ArcBridgeServiceImpl(base::WrapUnique(
-            new FakeArcBridgeBootstrap(fake_arc_bridge_instance_.get())))));
+        base::MakeUnique<ArcBridgeServiceImpl>(base::WrapUnique(
+            new FakeArcBridgeBootstrap(fake_arc_bridge_instance_.get()))));
   }
 
   void SetUpOnMainThread() override {

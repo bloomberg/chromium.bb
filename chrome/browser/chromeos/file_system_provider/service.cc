@@ -41,7 +41,7 @@ ProvidedFileSystemInterface* CreateProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info) {
   DCHECK(profile);
   return new ThrottledFileSystem(
-      base::WrapUnique(new ProvidedFileSystem(profile, file_system_info)));
+      base::MakeUnique<ProvidedFileSystem>(profile, file_system_info));
 }
 
 }  // namespace
@@ -284,10 +284,10 @@ bool Service::RequestMount(const std::string& extension_id) {
 
   event_router->DispatchEventToExtension(
       extension_id,
-      base::WrapUnique(new extensions::Event(
+      base::MakeUnique<extensions::Event>(
           extensions::events::FILE_SYSTEM_PROVIDER_ON_MOUNT_REQUESTED,
           extensions::api::file_system_provider::OnMountRequested::kEventName,
-          std::unique_ptr<base::ListValue>(new base::ListValue()))));
+          std::unique_ptr<base::ListValue>(new base::ListValue())));
 
   return true;
 }

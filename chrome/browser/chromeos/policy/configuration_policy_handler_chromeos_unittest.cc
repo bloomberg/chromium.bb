@@ -65,7 +65,7 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
 TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
   policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+              base::MakeUnique<base::FundamentalValue>(0), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
@@ -83,7 +83,7 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
 TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
   policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+              base::MakeUnique<base::FundamentalValue>(1), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
@@ -109,7 +109,7 @@ TEST(ExternalDataPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                 base::MakeUnique<base::FundamentalValue>(false), nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -237,7 +237,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
+                 base::MakeUnique<base::StringValue>(kTestONC), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -249,7 +249,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                 base::MakeUnique<base::FundamentalValue>(false), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -262,7 +262,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
+                 base::MakeUnique<base::StringValue>(kTestONC), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -288,7 +288,7 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
+                 base::MakeUnique<base::StringValue>(kTestONC), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -355,7 +355,7 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+                 base::MakeUnique<base::FundamentalValue>(false), nullptr);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));

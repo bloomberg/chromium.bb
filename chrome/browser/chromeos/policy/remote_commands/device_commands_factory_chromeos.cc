@@ -33,11 +33,11 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type) {
       return base::WrapUnique<RemoteCommandJob>(new DeviceCommandRebootJob(
           chromeos::DBusThreadManager::Get()->GetPowerManagerClient()));
     case em::RemoteCommand_Type_DEVICE_SCREENSHOT:
-      return base::WrapUnique<RemoteCommandJob>(new DeviceCommandScreenshotJob(
-          base::WrapUnique(new ScreenshotDelegate(
+      return base::WrapUnique<RemoteCommandJob>(
+          new DeviceCommandScreenshotJob(base::MakeUnique<ScreenshotDelegate>(
               content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
                   content::BrowserThread::GetBlockingPool()
-                      ->GetSequenceToken())))));
+                      ->GetSequenceToken()))));
     default:
       return nullptr;
   }

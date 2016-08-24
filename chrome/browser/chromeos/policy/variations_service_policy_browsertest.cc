@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(VariationsServiceDevicePolicyTest, VariationsURLValid) {
   // builds, so construct a VariationsService locally instead.
   std::unique_ptr<variations::VariationsService> service =
       variations::VariationsService::CreateForTesting(
-          base::WrapUnique(new ChromeVariationsServiceClient()),
+          base::MakeUnique<ChromeVariationsServiceClient>(),
           g_browser_process->local_state());
 
   // Device policy has updated the cros settings.

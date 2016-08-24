@@ -105,8 +105,8 @@ void BroadcastEvent(Profile* profile,
                     const std::string& event_name,
                     std::unique_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->BroadcastEvent(
-      base::WrapUnique(new extensions::Event(histogram_value, event_name,
-                                             std::move(event_args))));
+      base::MakeUnique<extensions::Event>(histogram_value, event_name,
+                                          std::move(event_args)));
 }
 
 // Sends an event named |event_name| with arguments |event_args| to an extension
@@ -118,8 +118,8 @@ void DispatchEventToExtension(
     const std::string& event_name,
     std::unique_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
-      extension_id, base::WrapUnique(new extensions::Event(
-                        histogram_value, event_name, std::move(event_args))));
+      extension_id, base::MakeUnique<extensions::Event>(
+                        histogram_value, event_name, std::move(event_args)));
 }
 
 file_manager_private::MountCompletedStatus
