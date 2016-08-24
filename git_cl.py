@@ -1025,7 +1025,7 @@ class Changelist(object):
   def GetCCList(self):
     """Return the users cc'd on this CL.
 
-    Return is a string suitable for passing to gcl with the --cc flag.
+    Return is a string suitable for passing to git cl with the --cc flag.
     """
     if self.cc is None:
       base_cc = settings.GetDefaultCCList()

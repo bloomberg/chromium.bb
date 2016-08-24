@@ -1009,32 +1009,6 @@ class SvnChange(Change):
   scm = 'svn'
   _changelists = None
 
-  def _GetChangeLists(self):
-    """Get all change lists."""
-    if self._changelists == None:
-      previous_cwd = os.getcwd()
-      os.chdir(self.RepositoryRoot())
-      # Need to import here to avoid circular dependency.
-      import gcl
-      self._changelists = gcl.GetModifiedFiles()
-      os.chdir(previous_cwd)
-    return self._changelists
-
-  def GetAllModifiedFiles(self):
-    """Get all modified files."""
-    changelists = self._GetChangeLists()
-    all_modified_files = []
-    for cl in changelists.values():
-      all_modified_files.extend(
-          [os.path.join(self.RepositoryRoot(), f[1]) for f in cl])
-    return all_modified_files
-
-  def GetModifiedFiles(self):
-    """Get modified files in the current CL."""
-    changelists = self._GetChangeLists()
-    return [os.path.join(self.RepositoryRoot(), f[1])
-            for f in changelists[self.Name()]]
-
   def AllFiles(self, root=None):
     """List all files under source control in the repo."""
     root = root or self.RepositoryRoot()
@@ -1413,7 +1387,7 @@ class PresubmitExecuter(object):
     """
     Args:
       change: The Change object.
-      committing: True if 'gcl commit' is running, False if 'gcl upload' is.
+      committing: True if 'git cl land' is running, False if 'git cl upload' is.
       rietveld_obj: rietveld.Rietveld client object.
       gerrit_obj: provides basic Gerrit codereview functionality.
       dry_run: if true, some Checks will be skipped.
@@ -1500,7 +1474,7 @@ def DoPresubmitChecks(change,
 
   Args:
     change: The Change object.
-    committing: True if 'gcl commit' is running, False if 'gcl upload' is.
+    committing: True if 'git cl land' is running, False if 'git cl upload' is.
     verbose: Prints debug info.
     output_stream: A stream to write output from presubmit tests to.
     input_stream: A stream to read input from the user.

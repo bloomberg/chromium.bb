@@ -1056,7 +1056,7 @@ class ExecutionQueue(object):
           work_queue.ready_cond.release()
 
 
-def GetEditor(git, git_editor=None):
+def GetEditor(git_editor=None):
   """Returns the most plausible editor to use.
 
   In order of preference:
@@ -1068,14 +1068,8 @@ def GetEditor(git, git_editor=None):
 
   In the case of git-cl, this matches git's behaviour, except that it does not
   include dumb terminal detection.
-
-  In the case of gcl, this matches svn's behaviour, except that it does not
-  accept a command-line flag or check the editor-cmd configuration variable.
   """
-  if git:
-    editor = os.environ.get('GIT_EDITOR') or git_editor
-  else:
-    editor = os.environ.get('SVN_EDITOR')
+  editor = os.environ.get('GIT_EDITOR') or git_editor
   if not editor:
     editor = os.environ.get('VISUAL')
   if not editor:
@@ -1105,7 +1099,7 @@ def RunEditor(content, git, git_editor=None):
   fileobj.close()
 
   try:
-    editor = GetEditor(git, git_editor=git_editor)
+    editor = GetEditor(git_editor=git_editor)
     if not editor:
       return None
     cmd = '%s %s' % (editor, filename)
