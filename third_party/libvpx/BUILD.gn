@@ -225,17 +225,21 @@ if (cpu_arch_full == "arm-neon-cpu-detect") {
   }
 }
 
-# Converts ARM assembly files to GAS style.
 if (current_cpu == "arm") {
+  if (cpu_arch_full == "arm-neon") {
+    arm_assembly_sources = libvpx_srcs_arm_neon_assembly
+  } else if (cpu_arch_full == "arm-neon-cpu-detect") {
+    arm_assembly_sources = libvpx_srcs_arm_neon_cpu_detect_assembly
+  } else {
+    arm_assembly_sources = libvpx_srcs_arm_assembly
+  }
+}
+
+# Converts ARM assembly files to GAS style.
+if (current_cpu == "arm" && arm_assembly_sources != []) {
   action_foreach("convert_arm_assembly") {
     script = "//third_party/libvpx/run_perl.py"
-    if (cpu_arch_full == "arm-neon") {
-      sources = libvpx_srcs_arm_neon_assembly
-    } else if (cpu_arch_full == "arm-neon-cpu-detect") {
-      sources = libvpx_srcs_arm_neon_cpu_detect_assembly
-    } else {
-      sources = libvpx_srcs_arm_assembly
-    }
+    sources = arm_assembly_sources
     outputs = [
       "$target_gen_dir/{{source_name_part}}.S",
     ]
@@ -322,7 +326,7 @@ static_library("libvpx") {
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
-  if (current_cpu == "arm") {
+  if (current_cpu == "arm" && arm_assembly_sources != []) {
     deps += [ ":libvpx_assembly_arm" ]
   }
 
