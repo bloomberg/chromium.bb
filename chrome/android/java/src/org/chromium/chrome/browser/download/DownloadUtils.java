@@ -10,9 +10,12 @@ import android.content.Intent;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -30,13 +33,21 @@ public class DownloadUtils {
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
      */
     public static void showDownloadManager(Activity activity, Tab tab) {
-        if (DeviceFormFactor.isTablet(activity)) {
-            tab.loadUrl(new LoadUrlParams(UrlConstants.DOWNLOADS_URL));
+        if (DeviceFormFactor.isTablet(activity) && activity instanceof ChromeTabbedActivity) {
+            // Download Home shows up inside a tab in the browser.
+            LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
+            if (tab == null || !tab.isInitialized()) {
+                TabDelegate delegate = new TabDelegate(false);
+                delegate.createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
+            } else {
+                tab.loadUrl(params);
+            }
         } else {
+            // Download Home sits on top as a new Activity.
             Intent intent = new Intent();
             intent.setClass(activity, DownloadActivity.class);
             intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
-            intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
+            if (tab != null) intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
             activity.startActivity(intent);
         }
     }

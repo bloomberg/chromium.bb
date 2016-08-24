@@ -51,6 +51,14 @@
         <item name="colorAccent">@color/light_active_color</item>
     </style>
 
+    <style name="DownloadActivityTheme" parent="FullscreenWhiteDialog">
+        <item name="colorPrimaryDark">@android:color/black</item>
+
+        <!-- Remove ActionBar -->
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
     <!-- Web app themes -->
     <style name="WebappTheme" parent="MainTheme">
         <item name="android:windowBackground">@null</item>
@@ -569,6 +577,9 @@
     <style name="RobotoMediumStyle">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textStyle">bold</item>
+    </style>
+    <style name="MaterialProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
+        <item name="android:progressDrawable">@drawable/material_progressbar</item>
     </style>
 
     <!-- New tab page RecyclerView overscroll color -->

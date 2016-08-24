@@ -26,17 +26,15 @@
         android:textColor="@color/descriptive_text_color"
         android:textSize="14sp" />
 
-    <!-- TODO(dfalcantara): Style this toolbar as Material on JB & KK.
-                            These are currently broken in the support library and look Holo.
-    -->
+    <!-- The widget ends up claiming 48dp of space, vertically. -->
     <ProgressBar
         android:id="@+id/space_bar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/MaterialProgressBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/drawer_margin_large"
-        android:paddingBottom="@dimen/drawer_margin_large"
-        android:paddingStart="@dimen/drawer_margin_large"
-        android:paddingEnd="@dimen/drawer_margin_large" />
+        android:layout_height="4dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="22dp"
+        android:layout_marginStart="@dimen/drawer_margin_large"
+        android:layout_marginEnd="@dimen/drawer_margin_large" />
 
 </merge>

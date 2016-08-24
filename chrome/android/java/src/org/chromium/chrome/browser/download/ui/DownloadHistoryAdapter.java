@@ -73,7 +73,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
-    private int mFilenameViewTextColor;
 
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
@@ -332,13 +331,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     }
 
     private void setItemViewStyle(ItemViewHolder holder, DownloadHistoryItemWrapper item) {
-        if (mFilenameViewTextColor == 0) {
-            // The color is not explicitly set in the XML. Programmatically retrieve the original
-            // color so that the color can be reset if it's changed due to the contained item
-            // being externally removed.
-            mFilenameViewTextColor = holder.mFilenameView.getTextColors().getDefaultColor();
-        }
-
         Context context = holder.itemView.getContext();
         Resources res = context.getResources();
         if (item.hasBeenExternallyRemoved()) {
@@ -351,7 +343,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                     | Paint.STRIKE_THRU_TEXT_FLAG);
             holder.mFilesizeView.setText(context.getString(R.string.download_manager_ui_deleted));
         } else {
-            holder.mHostnameView.setTextColor(mFilenameViewTextColor);
+            int sublabelColor = ApiCompatibilityUtils.getColor(res, R.color.google_grey_600);
+
+            holder.mHostnameView.setTextColor(sublabelColor);
             holder.mIconView.setBackgroundColor(ApiCompatibilityUtils.getColor(res,
                     R.color.light_active_color));
             holder.mFilenameView.setTextColor(ApiCompatibilityUtils.getColor(res,
