@@ -13,13 +13,13 @@
 
 namespace ui {
 
-class GpuServiceMus;
+class GpuServiceInternal;
 
 // This GpuMemoryBufferManager is for establishing a GpuChannelHost used by
 // mus locally.
 class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  MusGpuMemoryBufferManager(GpuServiceMus* gpu_service, int client_id);
+  MusGpuMemoryBufferManager(GpuServiceInternal* gpu_service, int client_id);
   ~MusGpuMemoryBufferManager() override;
 
   static MusGpuMemoryBufferManager* current();
@@ -47,7 +47,7 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
                               bool is_native,
                               const gpu::SyncToken& sync_token);
 
-  GpuServiceMus* gpu_service_;
+  GpuServiceInternal* gpu_service_;
   const int client_id_;
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 };

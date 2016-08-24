@@ -18,7 +18,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/common/switches.h"
-#include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/gpu/gpu_service_internal.h"
 #include "services/ui/surfaces/surfaces_context_provider_delegate.h"
 #include "ui/gl/gpu_preference.h"
 
@@ -26,7 +26,7 @@ namespace ui {
 
 SurfacesContextProvider::SurfacesContextProvider(gfx::AcceleratedWidget widget)
     : delegate_(nullptr), widget_(widget) {
-  GpuServiceMus* service = GpuServiceMus::GetInstance();
+  GpuServiceInternal* service = GpuServiceInternal::GetInstance();
   gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
   gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
   gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;

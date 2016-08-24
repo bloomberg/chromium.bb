@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_GPU_GPU_SERVICE_MUS_H_
-#define SERVICES_UI_GPU_GPU_SERVICE_MUS_H_
+#ifndef SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_
+#define SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_
 
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
@@ -40,12 +40,13 @@ namespace ui {
 
 class MusGpuMemoryBufferManager;
 
-// TODO(fsamuel): GpuServiceMus is intended to be the Gpu thread within Mus.
-// Similar to GpuChildThread, it is a GpuChannelManagerDelegate and will have a
-// GpuChannelManager.
-class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
-                      public gpu::GpuChannelHostFactory,
-                      public base::NonThreadSafe {
+// TODO(sad): GpuChannelManagerDelegate implementation should be in the gpu
+// process, and the GpuChannelHostFactory should be in the host process (i.e.
+// the window-server process). So the GpuChannelHostFactory parts of this should
+// be split out.
+class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
+                           public gpu::GpuChannelHostFactory,
+                           public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int client_id, mojo::ScopedMessagePipeHandle)>
       EstablishGpuChannelCallback;
@@ -109,13 +110,14 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
 
-  static GpuServiceMus* GetInstance();
+  // TODO(sad): This should not be a singleton.
+  static GpuServiceInternal* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<GpuServiceMus>;
+  friend struct base::DefaultSingletonTraits<GpuServiceInternal>;
 
-  GpuServiceMus();
-  ~GpuServiceMus() override;
+  GpuServiceInternal();
+  ~GpuServiceInternal() override;
 
   void Initialize();
   void InitializeOnGpuThread(mojo::ScopedMessagePipeHandle* channel_handle,
@@ -162,9 +164,9 @@ class GpuServiceMus : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuServiceMus);
+  DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_GPU_GPU_SERVICE_MUS_H_
+#endif  // SERVICES_UI_GPU_GPU_SERVICE_INTERNAL_H_

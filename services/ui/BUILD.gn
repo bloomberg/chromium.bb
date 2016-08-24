@@ -88,8 +88,6 @@ source_set("lib") {
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/clipboard:lib",
-    "//services/ui/gpu",
-    "//services/ui/gpu/display_compositor",
     "//services/ui/ime:lib",
     "//services/ui/input_devices",
     "//services/ui/public/interfaces",

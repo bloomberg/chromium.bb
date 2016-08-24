@@ -20,14 +20,13 @@
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/platform_screen.h"
-#include "services/ui/gpu/gpu_service_impl.h"
-#include "services/ui/gpu/gpu_service_mus.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/gpu_service_proxy.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_server.h"
@@ -182,7 +181,7 @@ void Service::OnStart(const shell::Identity& identity) {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  GpuServiceMus::GetInstance();
+  gpu_proxy_.reset(new GpuServiceProxy());
 
   // Gpu must be running before the PlatformScreen can be initialized.
   platform_screen_->Init();
@@ -287,7 +286,7 @@ void Service::Create(const shell::Identity& remote_identity,
 
 void Service::Create(const shell::Identity& remote_identity,
                      mojom::GpuServiceRequest request) {
-  new GpuServiceImpl(std::move(request));
+  gpu_proxy_->Add(std::move(request));
 }
 
 void Service::Create(const shell::Identity& remote_identity,

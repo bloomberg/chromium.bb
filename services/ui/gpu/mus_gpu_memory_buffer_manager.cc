@@ -10,7 +10,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "services/ui/common/generic_shared_memory_id_generator.h"
-#include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/gpu/gpu_service_internal.h"
 
 namespace ui {
 
@@ -39,8 +39,9 @@ MusGpuMemoryBufferManager* MusGpuMemoryBufferManager::current() {
   return g_gpu_memory_buffer_manager;
 }
 
-MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(GpuServiceMus* gpu_service,
-                                                     int client_id)
+MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
+    GpuServiceInternal* gpu_service,
+    int client_id)
     : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {
   DCHECK(!g_gpu_memory_buffer_manager);
   g_gpu_memory_buffer_manager = this;

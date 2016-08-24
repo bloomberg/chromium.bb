@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/gpu/gpu_service_internal.h"
 
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
@@ -43,12 +43,12 @@ const uint64_t kLocalGpuChannelClientTracingId = 1;
 void EstablishGpuChannelDone(
     int client_id,
     mojo::ScopedMessagePipeHandle* channel_handle,
-    const GpuServiceMus::EstablishGpuChannelCallback& callback) {
+    const GpuServiceInternal::EstablishGpuChannelCallback& callback) {
   callback.Run(client_id, std::move(*channel_handle));
 }
 }
 
-GpuServiceMus::GpuServiceMus()
+GpuServiceInternal::GpuServiceInternal()
     : next_client_id_(kLocalGpuChannelClientId),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -58,7 +58,7 @@ GpuServiceMus::GpuServiceMus()
   Initialize();
 }
 
-GpuServiceMus::~GpuServiceMus() {
+GpuServiceInternal::~GpuServiceInternal() {
   // Signal this event before destroying the child process.  That way all
   // background threads can cleanup.
   // For example, in the renderer the RenderThread instances will be able to
@@ -67,7 +67,7 @@ GpuServiceMus::~GpuServiceMus() {
   io_thread_.Stop();
 }
 
-void GpuServiceMus::EstablishGpuChannel(
+void GpuServiceInternal::EstablishGpuChannel(
     uint64_t client_tracing_id,
     bool preempts,
     bool allow_view_command_buffers,
@@ -84,7 +84,7 @@ void GpuServiceMus::EstablishGpuChannel(
   auto* channel_handle = new mojo::ScopedMessagePipeHandle;
   gpu_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GpuServiceMus::EstablishGpuChannelOnGpuThread,
+      base::Bind(&GpuServiceInternal::EstablishGpuChannelOnGpuThread,
                  base::Unretained(this), client_id, client_tracing_id, preempts,
                  allow_view_command_buffers, allow_real_time_streams,
                  base::Unretained(channel_handle)),
@@ -92,7 +92,7 @@ void GpuServiceMus::EstablishGpuChannel(
                  base::Owned(channel_handle), callback));
 }
 
-gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
+gfx::GpuMemoryBufferHandle GpuServiceInternal::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -104,57 +104,59 @@ gfx::GpuMemoryBufferHandle GpuServiceMus::CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle);
 }
 
-void GpuServiceMus::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                           int client_id,
-                                           const gpu::SyncToken& sync_token) {
+void GpuServiceInternal::DestroyGpuMemoryBuffer(
+    gfx::GpuMemoryBufferId id,
+    int client_id,
+    const gpu::SyncToken& sync_token) {
   DCHECK(CalledOnValidThread());
 
   if (gpu_channel_manager_)
     gpu_channel_manager_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
-void GpuServiceMus::DidCreateOffscreenContext(const GURL& active_url) {
+void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {
   NOTIMPLEMENTED();
 }
 
-void GpuServiceMus::DidDestroyChannel(int client_id) {
+void GpuServiceInternal::DidDestroyChannel(int client_id) {
   media_service_->RemoveChannel(client_id);
   NOTIMPLEMENTED();
 }
 
-void GpuServiceMus::DidDestroyOffscreenContext(const GURL& active_url) {
+void GpuServiceInternal::DidDestroyOffscreenContext(const GURL& active_url) {
   NOTIMPLEMENTED();
 }
 
-void GpuServiceMus::DidLoseContext(bool offscreen,
-                                   gpu::error::ContextLostReason reason,
-                                   const GURL& active_url) {
+void GpuServiceInternal::DidLoseContext(bool offscreen,
+                                        gpu::error::ContextLostReason reason,
+                                        const GURL& active_url) {
   NOTIMPLEMENTED();
 }
 
-void GpuServiceMus::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
+void GpuServiceInternal::GpuMemoryUmaStats(
+    const gpu::GPUMemoryUmaStats& params) {
   NOTIMPLEMENTED();
 }
 
-void GpuServiceMus::StoreShaderToDisk(int client_id,
-                                      const std::string& key,
-                                      const std::string& shader) {
+void GpuServiceInternal::StoreShaderToDisk(int client_id,
+                                           const std::string& key,
+                                           const std::string& shader) {
   NOTIMPLEMENTED();
 }
 
 #if defined(OS_WIN)
-void GpuServiceMus::SendAcceleratedSurfaceCreatedChildWindow(
+void GpuServiceInternal::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
   ::SetParent(child_window, parent_window);
 }
 #endif
 
-void GpuServiceMus::SetActiveURL(const GURL& url) {
+void GpuServiceInternal::SetActiveURL(const GURL& url) {
   // TODO(penghuang): implement this function.
 }
 
-void GpuServiceMus::Initialize() {
+void GpuServiceInternal::Initialize() {
   DCHECK(CalledOnValidThread());
   base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
@@ -173,7 +175,7 @@ void GpuServiceMus::Initialize() {
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GpuServiceMus::InitializeOnGpuThread,
+      FROM_HERE, base::Bind(&GpuServiceInternal::InitializeOnGpuThread,
                             base::Unretained(this), &channel_handle, &event));
   event.Wait();
 
@@ -185,7 +187,7 @@ void GpuServiceMus::Initialize() {
       gpu_memory_buffer_manager_local_.get());
 }
 
-void GpuServiceMus::InitializeOnGpuThread(
+void GpuServiceInternal::InitializeOnGpuThread(
     mojo::ScopedMessagePipeHandle* channel_handle,
     base::WaitableEvent* event) {
   gpu_info_.video_decode_accelerator_capabilities =
@@ -236,7 +238,7 @@ void GpuServiceMus::InitializeOnGpuThread(
   event->Signal();
 }
 
-void GpuServiceMus::EstablishGpuChannelOnGpuThread(
+void GpuServiceInternal::EstablishGpuChannelOnGpuThread(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
@@ -252,16 +254,16 @@ void GpuServiceMus::EstablishGpuChannelOnGpuThread(
   }
 }
 
-bool GpuServiceMus::IsMainThread() {
+bool GpuServiceInternal::IsMainThread() {
   return main_task_runner_->BelongsToCurrentThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-GpuServiceMus::GetIOThreadTaskRunner() {
+GpuServiceInternal::GetIOThreadTaskRunner() {
   return io_thread_.task_runner();
 }
 
-std::unique_ptr<base::SharedMemory> GpuServiceMus::AllocateSharedMemory(
+std::unique_ptr<base::SharedMemory> GpuServiceInternal::AllocateSharedMemory(
     size_t size) {
   std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
   if (!shm->CreateAnonymous(size))
@@ -270,9 +272,9 @@ std::unique_ptr<base::SharedMemory> GpuServiceMus::AllocateSharedMemory(
 }
 
 // static
-GpuServiceMus* GpuServiceMus::GetInstance() {
-  return base::Singleton<GpuServiceMus,
-                         base::LeakySingletonTraits<GpuServiceMus>>::get();
+GpuServiceInternal* GpuServiceInternal::GetInstance() {
+  return base::Singleton<GpuServiceInternal,
+                         base::LeakySingletonTraits<GpuServiceInternal>>::get();
 }
 
 }  // namespace ui

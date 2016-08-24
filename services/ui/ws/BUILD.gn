@@ -38,6 +38,8 @@ static_library("lib") {
     "focus_controller_observer.h",
     "frame_generator.cc",
     "frame_generator.h",
+    "gpu_service_proxy.cc",
+    "gpu_service_proxy.h",
     "modal_window_controller.cc",
     "modal_window_controller.h",
     "operation.cc",
@@ -99,6 +101,12 @@ static_library("lib") {
     "window_tree_factory.h",
     "window_tree_host_factory.cc",
     "window_tree_host_factory.h",
+  ]
+
+  deps = [
+    # TODO(sad): Temporary, until the GPU process is split out of ws.
+    "//services/ui/gpu",
+    "//services/ui/gpu/display_compositor",
   ]
 
   public_deps = [

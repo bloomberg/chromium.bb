@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/gpu_service_impl.h"
+#include "services/ui/ws/gpu_service_proxy.h"
 
 #include "services/shell/public/cpp/connection.h"
 #include "services/ui/common/gpu_type_converters.h"
-#include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/gpu/gpu_service_internal.h"
 
 namespace ui {
 
@@ -21,15 +21,17 @@ void EstablishGpuChannelDone(
 }
 }
 
-GpuServiceImpl::GpuServiceImpl(
-    mojo::InterfaceRequest<mojom::GpuService> request)
-    : binding_(this, std::move(request)) {}
+GpuServiceProxy::GpuServiceProxy()
+    : gpu_service_(GpuServiceInternal::GetInstance()) {}
 
-GpuServiceImpl::~GpuServiceImpl() {}
+GpuServiceProxy::~GpuServiceProxy() {}
 
-void GpuServiceImpl::EstablishGpuChannel(
+void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void GpuServiceProxy::EstablishGpuChannel(
     const mojom::GpuService::EstablishGpuChannelCallback& callback) {
-  GpuServiceMus* service = GpuServiceMus::GetInstance();
   // TODO(penghuang): crbug.com/617415 figure out how to generate a meaningful
   // tracing id.
   const uint64_t client_tracing_id = 0;
@@ -38,12 +40,12 @@ void GpuServiceImpl::EstablishGpuChannel(
   const bool preempts = false;
   const bool allow_view_command_buffers = false;
   const bool allow_real_time_streams = false;
-  service->EstablishGpuChannel(
+  gpu_service_->EstablishGpuChannel(
       client_tracing_id, preempts, allow_view_command_buffers,
       allow_real_time_streams, base::Bind(&EstablishGpuChannelDone, callback));
 }
 
-void GpuServiceImpl::CreateGpuMemoryBuffer(
+void GpuServiceProxy::CreateGpuMemoryBuffer(
     mojom::GpuMemoryBufferIdPtr id,
     const gfx::Size& size,
     gfx::BufferFormat format,
@@ -53,8 +55,8 @@ void GpuServiceImpl::CreateGpuMemoryBuffer(
   NOTIMPLEMENTED();
 }
 
-void GpuServiceImpl::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
-                                            const gpu::SyncToken& sync_token) {
+void GpuServiceProxy::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
+                                             const gpu::SyncToken& sync_token) {
   NOTIMPLEMENTED();
 }
 

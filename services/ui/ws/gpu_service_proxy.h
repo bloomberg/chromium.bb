@@ -2,21 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_GPU_GPU_SERVICE_IMPL_H_
-#define SERVICES_UI_GPU_GPU_SERVICE_IMPL_H_
+#ifndef SERVICES_UI_WS_GPU_SERVICE_PROXY_H_
+#define SERVICES_UI_WS_GPU_SERVICE_PROXY_H_
 
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace ui {
 
-class GpuServiceImpl : public mojom::GpuService {
- public:
-  GpuServiceImpl(mojo::InterfaceRequest<mojom::GpuService> request);
-  ~GpuServiceImpl() override;
+class GpuServiceInternal;
 
+// The proxy implementation that relays requests from clients to the real
+// service implementation in the GPU process over mojom.GpuServiceInternal.
+class GpuServiceProxy : public mojom::GpuService {
+ public:
+  GpuServiceProxy();
+  ~GpuServiceProxy() override;
+
+  void Add(mojom::GpuServiceRequest request);
+
+ private:
   // mojom::GpuService overrides:
   void EstablishGpuChannel(
       const mojom::GpuService::EstablishGpuChannelCallback& callback) override;
@@ -33,12 +40,12 @@ class GpuServiceImpl : public mojom::GpuService {
   void DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
                               const gpu::SyncToken& sync_token) override;
 
- private:
-  mojo::StrongBinding<GpuService> binding_;
+  GpuServiceInternal* gpu_service_;
+  mojo::BindingSet<GpuService> bindings_;
 
-  DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(GpuServiceProxy);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_GPU_GPU_SERVICE_IMPL_H_
+#endif  // SERVICES_UI_WS_GPU_SERVICE_PROXY_H_
