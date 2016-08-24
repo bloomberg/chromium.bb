@@ -1598,7 +1598,8 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public boolean shouldIgnoreSwipeGesture() {
-        return super.shouldIgnoreSwipeGesture() || mUrlExpansionPercent > 0f;
+        return super.shouldIgnoreSwipeGesture() || mUrlExpansionPercent > 0f
+                || mNtpSearchBoxTranslation.y < 0f;
     }
 
     private Property<TextView, Integer> buildUrlScrollProperty(
