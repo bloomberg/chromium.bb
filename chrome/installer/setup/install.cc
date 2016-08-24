@@ -188,7 +188,7 @@ installer::InstallStatus InstallNewVersion(
     bool is_downgrade_allowed) {
   DCHECK(current_version);
 
-  installer_state.UpdateStage(installer::BUILDING);
+  installer_state.SetStage(installer::BUILDING);
 
   current_version->reset(installer_state.GetCurrentVersion(original_state));
   installer::SetCurrentVersionCrashKey(current_version->get());
@@ -208,10 +208,10 @@ installer::InstallStatus InstallNewVersion(
   base::FilePath new_chrome_exe(
       installer_state.target_path().Append(installer::kChromeNewExe));
 
-  installer_state.UpdateStage(installer::EXECUTING);
+  installer_state.SetStage(installer::EXECUTING);
 
   if (!install_list->Do()) {
-    installer_state.UpdateStage(installer::ROLLINGBACK);
+    installer_state.SetStage(installer::ROLLINGBACK);
     installer::InstallStatus result =
         base::PathExists(new_chrome_exe) && current_version->get() &&
         new_version == *current_version->get() ?
@@ -223,7 +223,7 @@ installer::InstallStatus InstallNewVersion(
     return result;
   }
 
-  installer_state.UpdateStage(installer::REFRESHING_POLICY);
+  installer_state.SetStage(installer::REFRESHING_POLICY);
 
   installer::RefreshElevationPolicy();
 
@@ -592,7 +592,7 @@ InstallStatus InstallOrUpdateProduct(
   // Create VisualElementManifest.xml in |src_path| (if required) so that it
   // looks as if it had been extracted from the archive when calling
   // InstallNewVersion() below.
-  installer_state.UpdateStage(installer::CREATING_VISUAL_MANIFEST);
+  installer_state.SetStage(CREATING_VISUAL_MANIFEST);
   CreateVisualElementsManifest(src_path, new_version);
 
   std::unique_ptr<base::Version> existing_version;
@@ -604,18 +604,18 @@ InstallStatus InstallOrUpdateProduct(
   // TODO(robertshield): Everything below this line should instead be captured
   // by WorkItems.
   if (!InstallUtil::GetInstallReturnCode(result)) {
-    installer_state.UpdateStage(installer::UPDATING_CHANNELS);
+    installer_state.SetStage(UPDATING_CHANNELS);
 
     // Update the modifiers on the channel values for the product(s) being
     // installed and for the binaries in case of multi-install.
     installer_state.UpdateChannels();
 
-    installer_state.UpdateStage(installer::COPYING_PREFERENCES_FILE);
+    installer_state.SetStage(COPYING_PREFERENCES_FILE);
 
     if (result == FIRST_INSTALL_SUCCESS && !prefs_path.empty())
       CopyPreferenceFileForFirstRun(installer_state, prefs_path);
 
-    installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
+    installer_state.SetStage(CREATING_SHORTCUTS);
 
     const installer::Product* chrome_product =
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
@@ -650,7 +650,7 @@ InstallStatus InstallOrUpdateProduct(
 
     if (chrome_product) {
       // Register Chrome and, if requested, make Chrome the default browser.
-      installer_state.UpdateStage(installer::REGISTERING_CHROME);
+      installer_state.SetStage(REGISTERING_CHROME);
 
       bool make_chrome_default = false;
       prefs.GetBool(master_preferences::kMakeChromeDefault,
@@ -678,7 +678,7 @@ InstallStatus InstallOrUpdateProduct(
       }
     }
 
-    installer_state.UpdateStage(installer::REMOVING_OLD_VERSIONS);
+    installer_state.SetStage(REMOVING_OLD_VERSIONS);
 
     installer_state.RemoveOldVersionDirectories(
         new_version,

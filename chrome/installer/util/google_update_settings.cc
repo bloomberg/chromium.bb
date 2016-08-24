@@ -555,6 +555,19 @@ void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
   }
 }
 
+void GoogleUpdateSettings::SetProgress(bool system_install,
+                                       const base::string16& path,
+                                       int progress) {
+  DCHECK_GE(progress, 0);
+  DCHECK_LE(progress, 100);
+  const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  base::win::RegKey key(root, path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
+  if (key.Valid()) {
+    key.WriteValue(google_update::kRegInstallerProgress,
+                   static_cast<DWORD>(progress));
+  }
+}
+
 bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
     installer::ArchiveType archive_type, int install_return_code,
     installer::ChannelInfo* value) {

@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
+#include "chrome/installer/util/progress_calculator.h"
 #include "chrome/installer/util/util_constants.h"
 
 #if defined(OS_WIN)
@@ -195,8 +196,9 @@ class InstallerState {
   // and/or unregistered. The list may be empty.
   void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
 
-  // See InstallUtil::UpdateInstallerStage.
-  void UpdateStage(installer::InstallerStage stage) const;
+  // Sets the current stage of processing. This reports a progress value to
+  // Google Update for presentation to a user.
+  void SetStage(InstallerStage stage) const;
 
   // For a MULTI_INSTALL or MULTI_UPDATE operation, updates the Google Update
   // "ap" values for all products being operated on.
@@ -268,6 +270,7 @@ class InstallerState {
   ScopedVector<Product> products_;
   BrowserDistribution* multi_package_distribution_;
   base::Version critical_update_version_;
+  ProgressCalculator progress_calculator_;
   Level level_;
   PackageType package_type_;
 #if defined(OS_WIN)

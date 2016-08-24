@@ -255,7 +255,7 @@ bool UncompressAndPatchChromeArchive(
     installer::ArchiveType* archive_type,
     installer::InstallStatus* install_status,
     const base::Version& previous_version) {
-  installer_state.UpdateStage(installer::UNCOMPRESSING);
+  installer_state.SetStage(installer::UNCOMPRESSING);
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
@@ -316,9 +316,8 @@ bool UncompressAndPatchChromeArchive(
   // Patch application sometimes takes a very long time, so use 100 buckets for
   // up to an hour.
   start_time = base::TimeTicks::Now();
-  installer_state.UpdateStage(installer::ENSEMBLE_PATCHING);
+  installer_state.SetStage(installer::PATCHING);
   if (!archive_helper->EnsemblePatch()) {
-    installer_state.UpdateStage(installer::BINARY_PATCHING);
     if (!archive_helper->BinaryPatch()) {
       *install_status = installer::APPLY_DIFF_PATCH_FAILED;
       installer_state.WriteInstallerResult(
@@ -753,7 +752,7 @@ void UninstallBinariesIfUnused(
   }
 
   LOG(INFO) << "Uninstalling unused binaries";
-  installer_state.UpdateStage(installer::UNINSTALLING_BINARIES);
+  installer_state.SetStage(installer::UNINSTALLING_BINARIES);
 
   // Create an InstallerState that represents a force uninstall of Chrome
   // residing with the installed version of the binaries. This will result in
@@ -909,9 +908,9 @@ installer::InstallStatus InstallProducts(
   const bool system_install = installer_state->system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   installer::ArchiveType archive_type = installer::UNKNOWN_ARCHIVE_TYPE;
-  installer_state->UpdateStage(installer::PRECONDITIONS);
-  // The stage provides more fine-grained information than -multifail, so remove
-  // the -multifail suffix from the Google Update "ap" value.
+  installer_state->SetStage(installer::PRECONDITIONS);
+  // Remove any legacy "-multifail" or "-stage:*" values from the product's
+  // "ap" value.
   BrowserDistribution::GetSpecificDistribution(installer_state->state_type())->
       UpdateInstallStatus(system_install, archive_type, install_status);
 
@@ -960,7 +959,6 @@ installer::InstallStatus InstallProducts(
 
   RepairChromeIfBroken(original_state, *installer_state);
 
-  installer_state->UpdateStage(installer::NO_STAGE);
   return install_status;
 }
 
@@ -1116,6 +1114,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   // TODO(tommi): Split these checks up into functions and use a data driven
   // map of switch->function.
   if (cmd_line.HasSwitch(installer::switches::kUpdateSetupExe)) {
+    installer_state->SetStage(installer::UPDATING_SETUP);
     installer::InstallStatus status = installer::SETUP_PATCH_FAILED;
     // If --update-setup-exe command line option is given, we apply the given
     // patch to current exe, and store the resulting binary in the path
@@ -1150,8 +1149,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       installer_state->WriteInstallerResult(
           status, IDS_SETUP_PATCH_FAILED_BASE, NULL);
     }
-    // We will be exiting normally, so clear the stage indicator.
-    installer_state->UpdateStage(installer::NO_STAGE);
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
     // then the dialog is shown and regardless of the outcome setup exits here.
@@ -1390,7 +1387,7 @@ void UninstallMultiChromeFrameIfPresent(const base::CommandLine& cmd_line,
     return;
 
   LOG(INFO) << "Uninstalling multi-install Chrome Frame.";
-  installer_state->UpdateStage(installer::UNINSTALLING_CHROME_FRAME);
+  installer_state->SetStage(installer::UNINSTALLING_CHROME_FRAME);
 
   // Uninstall Chrome Frame without touching the multi-install binaries.
   // Simulate the uninstall as coming from the installed version.
@@ -1502,6 +1499,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   }
 
   // Unpack the uncompressed archive.
+  installer_state.SetStage(UNPACKING);
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (LzmaUtil::UnPackArchive(uncompressed_archive.value(),
                               unpack_path.value(),
@@ -1592,7 +1590,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
         }
       }
 
-      installer_state.UpdateStage(FINISHING);
+      installer_state.SetStage(FINISHING);
 
       // Only do Chrome-specific stuff (like launching the browser) if
       // Chrome was specifically requested (rather than being upgraded as

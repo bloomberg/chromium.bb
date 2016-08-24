@@ -203,12 +203,19 @@ class GoogleUpdateSettings {
   // There is no fall-back for full installer :)
   // - Unconditionally remove "-multifail" since we haven't crashed.
   // |state_key| should be obtained via InstallerState::state_key().
-  // - Unconditionally clear a legacy "-stage:" modifier since such information
-  // is now propagated through Google Update's InstallerExtraCode1 value.
+  // - Unconditionally clear a legacy "-stage:" modifier.
   static void UpdateInstallStatus(bool system_install,
                                   installer::ArchiveType archive_type,
                                   int install_return_code,
                                   const base::string16& product_guid);
+
+  // Sets the InstallerProgress value in the registry so that Google Update can
+  // provide informative user feedback. |path| is the full path to the app's
+  // ClientState key. |progress| should be a number between 0 and 100,
+  // inclusive.
+  static void SetProgress(bool system_install,
+                          const base::string16& path,
+                          int progress);
 
   // This method updates the value for Google Update "ap" key for Chrome
   // based on whether we are doing incremental install (or not) and whether
@@ -218,6 +225,8 @@ class GoogleUpdateSettings {
   //   not present already).
   // - If full installer failed, still remove this magic
   //   string (if it is present already).
+  // Additionally, any legacy "-multifail" or "-stage:*" values are
+  // unconditionally removed.
   //
   // archive_type: tells whether this is incremental install or not.
   // install_return_code: if 0, means installation was successful.

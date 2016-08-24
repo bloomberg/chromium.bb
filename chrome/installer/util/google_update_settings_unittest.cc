@@ -1043,6 +1043,42 @@ TEST_F(GoogleUpdateSettingsTest, GetDownloadPreference) {
   EXPECT_TRUE(GoogleUpdateSettings::GetDownloadPreference().empty());
 }
 
+class SetProgressTest : public GoogleUpdateSettingsTest,
+                        public testing::WithParamInterface<bool> {
+ protected:
+  SetProgressTest()
+      : system_install_(GetParam()),
+        root_key_(system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER) {}
+
+  const bool system_install_;
+  const HKEY root_key_;
+};
+
+TEST_P(SetProgressTest, SetProgress) {
+  base::string16 path(google_update::kRegPathClientState);
+  path += L"\\";
+  path += kTestProductGuid;
+
+  constexpr int kValues[] = {0, 25, 50, 99, 100};
+  for (int value : kValues) {
+    GoogleUpdateSettings::SetProgress(system_install_, path, value);
+    DWORD progress = 0;
+    base::win::RegKey key(root_key_, path.c_str(),
+                          KEY_QUERY_VALUE | KEY_WOW64_32KEY);
+    ASSERT_TRUE(key.Valid());
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.ReadValueDW(google_update::kRegInstallerProgress, &progress));
+    EXPECT_EQ(static_cast<DWORD>(value), progress);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(SetProgressUserLevel,
+                        SetProgressTest,
+                        testing::Values(false));
+INSTANTIATE_TEST_CASE_P(SetProgressSystemLevel,
+                        SetProgressTest,
+                        testing::Values(true));
+
 // Test GoogleUpdateSettings::GetUninstallCommandLine at system- or user-level,
 // according to the param.
 class GetUninstallCommandLine : public GoogleUpdateSettingsTest,

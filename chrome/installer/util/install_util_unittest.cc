@@ -107,54 +107,6 @@ TEST_F(InstallUtilTest, GetCurrentDate) {
   }
 }
 
-TEST_F(InstallUtilTest, UpdateInstallerStage) {
-  const bool system_level = false;
-  const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  std::wstring state_key_path(L"PhonyClientState");
-
-  // Update the stage when there's no "InstallerExtraCode1" value.
-  {
-    ResetRegistryOverrides();
-    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
-        .DeleteValue(installer::kInstallerExtraCode1);
-    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
-                                      installer::BUILDING);
-    DWORD value;
-    EXPECT_EQ(ERROR_SUCCESS,
-              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
-                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
-    EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
-  }
-
-  // Update the stage when there is an "InstallerExtraCode1" value.
-  {
-    ResetRegistryOverrides();
-    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
-        .WriteValue(installer::kInstallerExtraCode1,
-                    static_cast<DWORD>(installer::UNPACKING));
-    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
-                                      installer::BUILDING);
-    DWORD value;
-    EXPECT_EQ(ERROR_SUCCESS,
-              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
-                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
-    EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
-  }
-
-  // Clear the stage.
-  {
-    ResetRegistryOverrides();
-    RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
-        .WriteValue(installer::kInstallerExtraCode1, static_cast<DWORD>(5));
-    InstallUtil::UpdateInstallerStage(system_level, state_key_path,
-                                      installer::NO_STAGE);
-    DWORD value;
-    EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-              RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
-                  .ReadValueDW(installer::kInstallerExtraCode1, &value));
-  }
-}
-
 TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
   const HKEY root = HKEY_CURRENT_USER;
   std::wstring parent_key_path(L"SomeKey\\ToDelete");

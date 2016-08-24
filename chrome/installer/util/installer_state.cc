@@ -22,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
@@ -582,8 +583,9 @@ void InstallerState::AddComDllList(
     product->AddComDllList(com_dll_list);
 }
 
-void InstallerState::UpdateStage(installer::InstallerStage stage) const {
-  InstallUtil::UpdateInstallerStage(system_install(), state_key_, stage);
+void InstallerState::SetStage(InstallerStage stage) const {
+  GoogleUpdateSettings::SetProgress(system_install(), state_key_,
+                                    progress_calculator_.Calculate(stage));
 }
 
 void InstallerState::UpdateChannels() const {

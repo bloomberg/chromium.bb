@@ -279,37 +279,6 @@ void InstallUtil::AddInstallerResultItems(
   }
 }
 
-void InstallUtil::UpdateInstallerStage(bool system_install,
-                                       const base::string16& state_key_path,
-                                       installer::InstallerStage stage) {
-  DCHECK_LE(static_cast<installer::InstallerStage>(0), stage);
-  DCHECK_GT(installer::NUM_STAGES, stage);
-  const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  RegKey state_key;
-  LONG result =
-      state_key.Open(root,
-                     state_key_path.c_str(),
-                     KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_32KEY);
-  if (result == ERROR_SUCCESS) {
-    if (stage == installer::NO_STAGE) {
-      result = state_key.DeleteValue(installer::kInstallerExtraCode1);
-      LOG_IF(ERROR, result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
-          << "Failed deleting installer stage from " << state_key_path
-          << "; result: " << result;
-    } else {
-      const DWORD extra_code_1 = static_cast<DWORD>(stage);
-      result = state_key.WriteValue(installer::kInstallerExtraCode1,
-                                    extra_code_1);
-      LOG_IF(ERROR, result != ERROR_SUCCESS)
-          << "Failed writing installer stage to " << state_key_path
-          << "; result: " << result;
-    }
-  } else {
-    LOG(ERROR) << "Failed opening " << state_key_path
-               << " to update installer stage; result: " << result;
-  }
-}
-
 bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string env_program_files_path;
