@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gpu::mojom::MailboxHolder, gpu::MailboxHolder> {
+struct StructTraits<gpu::mojom::MailboxHolderDataView, gpu::MailboxHolder> {
   static const gpu::Mailbox& mailbox(const gpu::MailboxHolder& holder) {
     return holder.mailbox;
   }

@@ -23,7 +23,7 @@ struct EnumTraits<ui::mojom::InputDeviceType, ui::InputDeviceType> {
 };
 
 template <>
-struct StructTraits<ui::mojom::InputDevice, ui::InputDevice> {
+struct StructTraits<ui::mojom::InputDeviceDataView, ui::InputDevice> {
   static int32_t id(const ui::InputDevice& device) { return device.id; }
 
   static ui::InputDeviceType type(const ui::InputDevice& device) {
@@ -56,7 +56,8 @@ struct EnumTraits<ui::mojom::StylusState, ui::StylusState> {
 };
 
 template <>
-struct StructTraits<ui::mojom::TouchscreenDevice, ui::TouchscreenDevice> {
+struct StructTraits<ui::mojom::TouchscreenDeviceDataView,
+                    ui::TouchscreenDevice> {
   static const ui::InputDevice& input_device(
       const ui::TouchscreenDevice& device) {
     return static_cast<const ui::InputDevice&>(device);

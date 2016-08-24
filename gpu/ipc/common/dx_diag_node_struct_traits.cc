@@ -7,7 +7,7 @@
 namespace mojo {
 
 // static
-bool StructTraits<gpu::mojom::DxDiagNode, gpu::DxDiagNode>::Read(
+bool StructTraits<gpu::mojom::DxDiagNodeDataView, gpu::DxDiagNode>::Read(
     gpu::mojom::DxDiagNodeDataView data,
     gpu::DxDiagNode* out) {
   return data.ReadValues(&out->values) && data.ReadChildren(&out->children);

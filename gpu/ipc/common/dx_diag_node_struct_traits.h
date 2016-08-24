@@ -10,7 +10,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gpu::mojom::DxDiagNode, gpu::DxDiagNode> {
+struct StructTraits<gpu::mojom::DxDiagNodeDataView, gpu::DxDiagNode> {
   static bool Read(gpu::mojom::DxDiagNodeDataView data, gpu::DxDiagNode* out);
 
   static const std::map<std::string, std::string>& values(

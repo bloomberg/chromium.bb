@@ -7,7 +7,7 @@
 namespace mojo {
 
 // static
-bool StructTraits<device::mojom::SensorConfiguration,
+bool StructTraits<device::mojom::SensorConfigurationDataView,
                   device::PlatformSensorConfiguration>::
     Read(device::mojom::SensorConfigurationDataView data,
          device::PlatformSensorConfiguration* out) {

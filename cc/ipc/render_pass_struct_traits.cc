@@ -10,9 +10,10 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::Read(
-    cc::mojom::RenderPassDataView data,
-    std::unique_ptr<cc::RenderPass>* out) {
+bool StructTraits<cc::mojom::RenderPassDataView,
+                  std::unique_ptr<cc::RenderPass>>::
+    Read(cc::mojom::RenderPassDataView data,
+         std::unique_ptr<cc::RenderPass>* out) {
   *out = cc::RenderPass::Create();
   if (!data.ReadId(&(*out)->id) || !data.ReadOutputRect(&(*out)->output_rect) ||
       !data.ReadDamageRect(&(*out)->damage_rect) ||

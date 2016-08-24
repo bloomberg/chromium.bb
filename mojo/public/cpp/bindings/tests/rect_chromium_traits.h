@@ -12,7 +12,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<test::TypemappedRect, test::RectChromium> {
+struct StructTraits<test::TypemappedRectDataView, test::RectChromium> {
   static int x(const test::RectChromium& r) { return r.x(); }
   static int y(const test::RectChromium& r) { return r.y(); }
   static int width(const test::RectChromium& r) { return r.width(); }

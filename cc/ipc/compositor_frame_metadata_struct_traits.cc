@@ -11,7 +11,7 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::CompositorFrameMetadata,
+bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
                   cc::CompositorFrameMetadata>::
     Read(cc::mojom::CompositorFrameMetadataDataView data,
          cc::CompositorFrameMetadata* out) {

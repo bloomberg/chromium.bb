@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<arc::mojom::ScreenRect, gfx::Rect> {
+struct StructTraits<arc::mojom::ScreenRectDataView, gfx::Rect> {
   static int32_t left(const gfx::Rect& p) { return p.x(); }
   static int32_t top(const gfx::Rect& p) { return p.y(); }
   static int32_t right(const gfx::Rect& p) { return p.right(); }

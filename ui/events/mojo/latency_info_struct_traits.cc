@@ -179,28 +179,28 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
 }  // namespace
 
 // static
-int64_t
-StructTraits<ui::mojom::LatencyComponent, ui::LatencyInfo::LatencyComponent>::
+int64_t StructTraits<ui::mojom::LatencyComponentDataView,
+                     ui::LatencyInfo::LatencyComponent>::
     sequence_number(const ui::LatencyInfo::LatencyComponent& component) {
   return component.sequence_number;
 }
 
 // static
-base::TimeTicks
-StructTraits<ui::mojom::LatencyComponent, ui::LatencyInfo::LatencyComponent>::
+base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
+                             ui::LatencyInfo::LatencyComponent>::
     event_time(const ui::LatencyInfo::LatencyComponent& component) {
   return component.event_time;
 }
 
 // static
-uint32_t
-StructTraits<ui::mojom::LatencyComponent, ui::LatencyInfo::LatencyComponent>::
+uint32_t StructTraits<ui::mojom::LatencyComponentDataView,
+                      ui::LatencyInfo::LatencyComponent>::
     event_count(const ui::LatencyInfo::LatencyComponent& component) {
   return component.event_count;
 }
 
 // static
-bool StructTraits<ui::mojom::LatencyComponent,
+bool StructTraits<ui::mojom::LatencyComponentDataView,
                   ui::LatencyInfo::LatencyComponent>::
     Read(ui::mojom::LatencyComponentDataView data,
          ui::LatencyInfo::LatencyComponent* out) {
@@ -213,21 +213,21 @@ bool StructTraits<ui::mojom::LatencyComponent,
 
 // static
 ui::mojom::LatencyComponentType
-StructTraits<ui::mojom::LatencyComponentId,
+StructTraits<ui::mojom::LatencyComponentIdDataView,
              std::pair<ui::LatencyComponentType, int64_t>>::
     type(const std::pair<ui::LatencyComponentType, int64_t>& id) {
   return UILatencyComponentTypeToMojo(id.first);
 }
 
 // static
-int64_t StructTraits<ui::mojom::LatencyComponentId,
+int64_t StructTraits<ui::mojom::LatencyComponentIdDataView,
                      std::pair<ui::LatencyComponentType, int64_t>>::
     id(const std::pair<ui::LatencyComponentType, int64_t>& id) {
   return id.second;
 }
 
 // static
-bool StructTraits<ui::mojom::LatencyComponentId,
+bool StructTraits<ui::mojom::LatencyComponentIdDataView,
                   std::pair<ui::LatencyComponentType, int64_t>>::
     Read(ui::mojom::LatencyComponentIdDataView data,
          std::pair<ui::LatencyComponentType, int64_t>* out) {
@@ -238,39 +238,39 @@ bool StructTraits<ui::mojom::LatencyComponentId,
 
 // static
 const std::string&
-StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::trace_name(
+StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_name(
     const ui::LatencyInfo& info) {
   return info.trace_name_;
 }
 
 const ui::LatencyInfo::LatencyMap&
-StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::latency_components(
-    const ui::LatencyInfo& info) {
+StructTraits<ui::mojom::LatencyInfoDataView,
+             ui::LatencyInfo>::latency_components(const ui::LatencyInfo& info) {
   return info.latency_components();
 }
 InputCoordinateArray
-StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::input_coordinates(
-    const ui::LatencyInfo& info) {
+StructTraits<ui::mojom::LatencyInfoDataView,
+             ui::LatencyInfo>::input_coordinates(const ui::LatencyInfo& info) {
   return {info.input_coordinates_size_, ui::LatencyInfo::kMaxInputCoordinates,
           const_cast<gfx::PointF*>(info.input_coordinates_)};
 }
 
-int64_t StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::trace_id(
+int64_t StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_id(
     const ui::LatencyInfo& info) {
   return info.trace_id();
 }
 
-bool StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::coalesced(
+bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::coalesced(
     const ui::LatencyInfo& info) {
   return info.coalesced();
 }
 
-bool StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::terminated(
+bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::terminated(
     const ui::LatencyInfo& info) {
   return info.terminated();
 }
 
-bool StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>::Read(
+bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
   if (!data.ReadTraceName(&out->trace_name_))

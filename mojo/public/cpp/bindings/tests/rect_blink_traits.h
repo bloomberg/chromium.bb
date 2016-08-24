@@ -12,7 +12,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<test::blink::TypemappedRect, test::RectBlink> {
+struct StructTraits<test::blink::TypemappedRectDataView, test::RectBlink> {
   static int x(const test::RectBlink& r) { return r.x(); }
   static int y(const test::RectBlink& r) { return r.y(); }
   static int width(const test::RectBlink& r) { return r.width(); }

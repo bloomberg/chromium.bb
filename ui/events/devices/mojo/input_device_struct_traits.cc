@@ -44,7 +44,7 @@ bool EnumTraits<ui::mojom::InputDeviceType, ui::InputDeviceType>::FromMojom(
   return true;
 }
 
-bool StructTraits<ui::mojom::InputDevice, ui::InputDevice>::Read(
+bool StructTraits<ui::mojom::InputDeviceDataView, ui::InputDevice>::Read(
     ui::mojom::InputDeviceDataView data,
     ui::InputDevice* out) {
   out->id = data.id();
@@ -96,9 +96,9 @@ bool EnumTraits<ui::mojom::StylusState, ui::StylusState>::FromMojom(
   return true;
 }
 
-bool StructTraits<ui::mojom::TouchscreenDevice, ui::TouchscreenDevice>::Read(
-    ui::mojom::TouchscreenDeviceDataView data,
-    ui::TouchscreenDevice* out) {
+bool StructTraits<ui::mojom::TouchscreenDeviceDataView, ui::TouchscreenDevice>::
+    Read(ui::mojom::TouchscreenDeviceDataView data,
+         ui::TouchscreenDevice* out) {
   if (!data.ReadInputDevice(static_cast<ui::InputDevice*>(out)))
     return false;
 

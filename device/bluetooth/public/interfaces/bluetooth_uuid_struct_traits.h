@@ -13,7 +13,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<device::mojom::BluetoothUUID, device::BluetoothUUID> {
+struct StructTraits<device::mojom::BluetoothUUIDDataView,
+                    device::BluetoothUUID> {
   static const std::string& uuid(const device::BluetoothUUID& uuid) {
     return uuid.canonical_value();
   }

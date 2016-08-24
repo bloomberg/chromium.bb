@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::CompositorFrame, cc::CompositorFrame> {
+struct StructTraits<cc::mojom::CompositorFrameDataView, cc::CompositorFrame> {
   static const cc::CompositorFrameMetadata& metadata(
       const cc::CompositorFrame& input) {
     return input.metadata;

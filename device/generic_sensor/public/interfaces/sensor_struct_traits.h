@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<device::mojom::SensorConfiguration,
+struct StructTraits<device::mojom::SensorConfigurationDataView,
                     device::PlatformSensorConfiguration> {
   static double frequency(const device::PlatformSensorConfiguration& input) {
     return input.frequency();

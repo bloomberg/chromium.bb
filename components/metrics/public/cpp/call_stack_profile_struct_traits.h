@@ -17,7 +17,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<metrics::mojom::CallStackModule,
+struct StructTraits<metrics::mojom::CallStackModuleDataView,
                     base::StackSamplingProfiler::Module> {
   static uint64_t base_address(
       const base::StackSamplingProfiler::Module& module) {
@@ -50,7 +50,7 @@ struct StructTraits<metrics::mojom::CallStackModule,
 };
 
 template <>
-struct StructTraits<metrics::mojom::CallStackFrame,
+struct StructTraits<metrics::mojom::CallStackFrameDataView,
                     base::StackSamplingProfiler::Frame> {
   static uint64_t instruction_pointer(
       const base::StackSamplingProfiler::Frame& frame) {
@@ -80,7 +80,7 @@ struct StructTraits<metrics::mojom::CallStackFrame,
 };
 
 template <>
-struct StructTraits<metrics::mojom::CallStackProfile,
+struct StructTraits<metrics::mojom::CallStackProfileDataView,
                     base::StackSamplingProfiler::CallStackProfile> {
   static const std::vector<base::StackSamplingProfiler::Module>& modules(
       const base::StackSamplingProfiler::CallStackProfile& profile) {

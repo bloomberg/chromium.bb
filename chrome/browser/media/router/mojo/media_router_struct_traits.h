@@ -12,7 +12,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<media_router::mojom::RouteMessage,
+struct StructTraits<media_router::mojom::RouteMessageDataView,
                     media_router::RouteMessage> {
   static media_router::mojom::RouteMessage::Type type(
       const media_router::RouteMessage& msg) {

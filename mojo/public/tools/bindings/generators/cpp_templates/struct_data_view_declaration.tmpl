@@ -84,10 +84,10 @@ class {{struct.name}}DataView {
   }
 
 {%-   else %}
-  {{kind|cpp_wrapper_type}} {{name}}() const {
+  {{kind|cpp_field_type}} {{name}}() const {
 {%-     if pf.min_version != 0 %}
     if (data_->header_.version < {{pf.min_version}})
-      return {{kind|cpp_wrapper_type}}{};
+      return {{kind|cpp_field_type}}{};
 {%-     endif %}
     return data_->{{name}};
   }

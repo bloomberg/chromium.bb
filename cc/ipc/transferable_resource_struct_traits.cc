@@ -11,7 +11,8 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::TransferableResource, cc::TransferableResource>::
+bool StructTraits<cc::mojom::TransferableResourceDataView,
+                  cc::TransferableResource>::
     Read(cc::mojom::TransferableResourceDataView data,
          cc::TransferableResource* out) {
   if (!data.ReadSize(&out->size) ||

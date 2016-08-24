@@ -10,9 +10,10 @@
 namespace mojo {
 
 // static
-bool StructTraits<cc::mojom::CompositorFrame, cc::CompositorFrame>::Read(
-    cc::mojom::CompositorFrameDataView data,
-    cc::CompositorFrame* out) {
+bool StructTraits<cc::mojom::CompositorFrameDataView,
+                  cc::CompositorFrame>::Read(cc::mojom::CompositorFrameDataView
+                                                 data,
+                                             cc::CompositorFrame* out) {
   if (!data.ReadMetadata(&out->metadata))
     return false;
 

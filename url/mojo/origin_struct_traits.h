@@ -12,7 +12,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<url::mojom::Origin, url::Origin> {
+struct StructTraits<url::mojom::OriginDataView, url::Origin> {
   static const std::string& scheme(const url::Origin& r) { return r.scheme(); }
   static const std::string& host(const url::Origin& r) { return r.host(); }
   static uint16_t port(const url::Origin& r) {

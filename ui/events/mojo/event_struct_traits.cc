@@ -118,22 +118,24 @@ static_assert(ui::mojom::kEventFlagForwardMouseButton ==
                   static_cast<int32_t>(ui::EF_FORWARD_MOUSE_BUTTON),
               "EVENT_FLAGS must match");
 
-ui::mojom::EventType StructTraits<ui::mojom::Event, EventUniquePtr>::action(
+ui::mojom::EventType
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::action(
     const EventUniquePtr& event) {
   return UIEventTypeToMojo(event->type());
 }
 
-int32_t StructTraits<ui::mojom::Event, EventUniquePtr>::flags(
+int32_t StructTraits<ui::mojom::EventDataView, EventUniquePtr>::flags(
     const EventUniquePtr& event) {
   return event->flags();
 }
 
-int64_t StructTraits<ui::mojom::Event, EventUniquePtr>::time_stamp(
+int64_t StructTraits<ui::mojom::EventDataView, EventUniquePtr>::time_stamp(
     const EventUniquePtr& event) {
   return event->time_stamp().ToInternalValue();
 }
 
-ui::mojom::KeyDataPtr StructTraits<ui::mojom::Event, EventUniquePtr>::key_data(
+ui::mojom::KeyDataPtr
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
     const EventUniquePtr& event) {
   if (!event->IsKeyEvent())
     return nullptr;
@@ -154,7 +156,7 @@ ui::mojom::KeyDataPtr StructTraits<ui::mojom::Event, EventUniquePtr>::key_data(
 }
 
 ui::mojom::PointerDataPtr
-StructTraits<ui::mojom::Event, EventUniquePtr>::pointer_data(
+StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
     const EventUniquePtr& event) {
   if (!event->IsPointerEvent() && !event->IsMouseWheelEvent())
     return nullptr;
@@ -232,7 +234,7 @@ StructTraits<ui::mojom::Event, EventUniquePtr>::pointer_data(
   return pointer_data;
 }
 
-bool StructTraits<ui::mojom::Event, EventUniquePtr>::Read(
+bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
     ui::mojom::EventDataView event,
     EventUniquePtr* out) {
   switch (event.action()) {

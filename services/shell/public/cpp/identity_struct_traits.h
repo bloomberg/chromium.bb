@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<shell::mojom::Identity, shell::Identity> {
+struct StructTraits<shell::mojom::IdentityDataView, shell::Identity> {
   static const std::string& name(const shell::Identity& identity) {
     return identity.name();
   }

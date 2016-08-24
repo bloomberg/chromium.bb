@@ -107,52 +107,56 @@ skia::mojom::ColorProfileType SkColorSpaceToMojo(SkColorSpace* cs) {
 }  // namespace
 
 // static
-bool StructTraits<skia::mojom::Bitmap, SkBitmap>::IsNull(const SkBitmap& b) {
+bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::IsNull(
+    const SkBitmap& b) {
   return b.isNull();
 }
 
 // static
-void StructTraits<skia::mojom::Bitmap, SkBitmap>::SetToNull(SkBitmap* b) {
+void StructTraits<skia::mojom::BitmapDataView, SkBitmap>::SetToNull(
+    SkBitmap* b) {
   b->reset();
 }
 
 // static
-skia::mojom::ColorType StructTraits<skia::mojom::Bitmap, SkBitmap>::color_type(
-    const SkBitmap& b) {
+skia::mojom::ColorType StructTraits<skia::mojom::BitmapDataView,
+                                    SkBitmap>::color_type(const SkBitmap& b) {
   return SkColorTypeToMojo(b.colorType());
 }
 
 // static
-skia::mojom::AlphaType StructTraits<skia::mojom::Bitmap, SkBitmap>::alpha_type(
-    const SkBitmap& b) {
+skia::mojom::AlphaType StructTraits<skia::mojom::BitmapDataView,
+                                    SkBitmap>::alpha_type(const SkBitmap& b) {
   return SkAlphaTypeToMojo(b.alphaType());
 }
 
 // static
 skia::mojom::ColorProfileType
-StructTraits<skia::mojom::Bitmap, SkBitmap>::profile_type(const SkBitmap& b) {
+StructTraits<skia::mojom::BitmapDataView, SkBitmap>::profile_type(
+    const SkBitmap& b) {
   return SkColorSpaceToMojo(b.colorSpace());
 }
 
 // static
-uint32_t StructTraits<skia::mojom::Bitmap, SkBitmap>::width(const SkBitmap& b) {
+uint32_t StructTraits<skia::mojom::BitmapDataView, SkBitmap>::width(
+    const SkBitmap& b) {
   return b.width() < 0 ? 0 : static_cast<uint32_t>(b.width());
 }
 
 // static
-uint32_t StructTraits<skia::mojom::Bitmap, SkBitmap>::height(
+uint32_t StructTraits<skia::mojom::BitmapDataView, SkBitmap>::height(
     const SkBitmap& b) {
   return b.height() < 0 ? 0 : static_cast<uint32_t>(b.height());
 }
 
 // static
-BitmapBuffer StructTraits<skia::mojom::Bitmap, SkBitmap>::pixel_data(
+BitmapBuffer StructTraits<skia::mojom::BitmapDataView, SkBitmap>::pixel_data(
     const SkBitmap& b) {
   return {b.getSize(), b.getSize(), static_cast<uint8_t*>(b.getPixels())};
 }
 
 // static
-bool StructTraits<skia::mojom::Bitmap, SkBitmap>::Read(
+bool StructTraits<skia::mojom::BitmapDataView, SkBitmap>::Read(
     skia::mojom::BitmapDataView data,
     SkBitmap* b) {
   // TODO: Ensure width and height are reasonable, eg. <= kMaxBitmapSize?
@@ -186,14 +190,14 @@ bool StructTraits<skia::mojom::Bitmap, SkBitmap>::Read(
 }
 
 // static
-void* StructTraits<skia::mojom::Bitmap, SkBitmap>::SetUpContext(
+void* StructTraits<skia::mojom::BitmapDataView, SkBitmap>::SetUpContext(
     const SkBitmap& b) {
   b.lockPixels();
   return nullptr;
 }
 
 // static
-void StructTraits<skia::mojom::Bitmap, SkBitmap>::TearDownContext(
+void StructTraits<skia::mojom::BitmapDataView, SkBitmap>::TearDownContext(
     const SkBitmap& b,
     void* context) {
   b.unlockPixels();

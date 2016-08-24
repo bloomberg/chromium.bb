@@ -14,7 +14,7 @@ struct Context {
 }  // namespace
 
 // static
-void* StructTraits<test::NestedStructWithTraits,
+void* StructTraits<test::NestedStructWithTraitsDataView,
                    test::NestedStructWithTraitsImpl>::
     SetUpContext(const test::NestedStructWithTraitsImpl& input) {
   Context* context = new Context;
@@ -23,7 +23,7 @@ void* StructTraits<test::NestedStructWithTraits,
 }
 
 // static
-void StructTraits<test::NestedStructWithTraits,
+void StructTraits<test::NestedStructWithTraitsDataView,
                   test::NestedStructWithTraitsImpl>::
     TearDownContext(const test::NestedStructWithTraitsImpl& input,
                     void* context) {
@@ -33,7 +33,7 @@ void StructTraits<test::NestedStructWithTraits,
 }
 
 // static
-int32_t StructTraits<test::NestedStructWithTraits,
+int32_t StructTraits<test::NestedStructWithTraitsDataView,
                      test::NestedStructWithTraitsImpl>::
     value(const test::NestedStructWithTraitsImpl& input, void* context) {
   Context* context_obj = static_cast<Context*>(context);
@@ -42,7 +42,7 @@ int32_t StructTraits<test::NestedStructWithTraits,
 }
 
 // static
-bool StructTraits<test::NestedStructWithTraits,
+bool StructTraits<test::NestedStructWithTraitsDataView,
                   test::NestedStructWithTraitsImpl>::
     Read(test::NestedStructWithTraits::DataView data,
          test::NestedStructWithTraitsImpl* output) {
@@ -80,9 +80,9 @@ bool EnumTraits<test::EnumWithTraits, test::EnumWithTraitsImpl>::FromMojom(
 }
 
 // static
-bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
-    test::StructWithTraits::DataView data,
-    test::StructWithTraitsImpl* out) {
+bool StructTraits<test::StructWithTraitsDataView, test::StructWithTraitsImpl>::
+    Read(test::StructWithTraits::DataView data,
+         test::StructWithTraitsImpl* out) {
   test::EnumWithTraitsImpl f_enum;
   if (!data.ReadFEnum(&f_enum))
     return false;
@@ -126,7 +126,7 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
 }
 
 // static
-bool StructTraits<test::MoveOnlyStructWithTraits,
+bool StructTraits<test::MoveOnlyStructWithTraitsDataView,
                   test::MoveOnlyStructWithTraitsImpl>::
     Read(test::MoveOnlyStructWithTraits::DataView data,
          test::MoveOnlyStructWithTraitsImpl* out) {

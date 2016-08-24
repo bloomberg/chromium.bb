@@ -9,8 +9,8 @@
 
 namespace mojo {
 
-// This template is fully specialized as cc::mojom::SurfaceSequence and
-// as cc::mojom::blink::SurfaceSequence, in generated .mojom.h and
+// This template is fully specialized as cc::mojom::SurfaceSequenceDataView and
+// as cc::mojom::blink::SurfaceSequenceDataView, in generated .mojom.h and
 // .mojom-blink.h respectively.
 template <typename T>
 struct StructTraits<T, cc::SurfaceSequence> {
@@ -22,7 +22,7 @@ struct StructTraits<T, cc::SurfaceSequence> {
     return id.sequence;
   }
 
-  static bool Read(typename T::DataView data, cc::SurfaceSequence* out) {
+  static bool Read(T data, cc::SurfaceSequence* out) {
     *out = cc::SurfaceSequence(data.client_id(), data.sequence());
     return true;
   }

@@ -27,7 +27,7 @@ namespace ui {
 
 #if !defined(OS_IOS)
 namespace mojom {
-class LatencyInfo;
+class LatencyInfoDataView;
 }
 #endif
 
@@ -238,7 +238,8 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;
-  friend struct mojo::StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo>;
+  friend struct mojo::StructTraits<ui::mojom::LatencyInfoDataView,
+                                   ui::LatencyInfo>;
 #endif
 };
 

@@ -18,7 +18,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<test::NestedStructWithTraits,
+struct StructTraits<test::NestedStructWithTraitsDataView,
                     test::NestedStructWithTraitsImpl> {
   static void* SetUpContext(const test::NestedStructWithTraitsImpl& input);
   static void TearDownContext(const test::NestedStructWithTraitsImpl& input,
@@ -27,7 +27,7 @@ struct StructTraits<test::NestedStructWithTraits,
   static int32_t value(const test::NestedStructWithTraitsImpl& input,
                        void* context);
 
-  static bool Read(test::NestedStructWithTraits::DataView data,
+  static bool Read(test::NestedStructWithTraitsDataView data,
                    test::NestedStructWithTraitsImpl* output);
 };
 
@@ -39,9 +39,10 @@ struct EnumTraits<test::EnumWithTraits, test::EnumWithTraitsImpl> {
 };
 
 template <>
-struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
+struct StructTraits<test::StructWithTraitsDataView,
+                    test::StructWithTraitsImpl> {
   // Deserialization to test::StructTraitsImpl.
-  static bool Read(test::StructWithTraits::DataView data,
+  static bool Read(test::StructWithTraitsDataView data,
                    test::StructWithTraitsImpl* out);
 
   // Fields in test::StructWithTraits.
@@ -98,10 +99,10 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
 };
 
 template <>
-struct StructTraits<test::TrivialStructWithTraits,
+struct StructTraits<test::TrivialStructWithTraitsDataView,
                     test::TrivialStructWithTraitsImpl> {
   // Deserialization to test::TrivialStructTraitsImpl.
-  static bool Read(test::TrivialStructWithTraits::DataView data,
+  static bool Read(test::TrivialStructWithTraitsDataView data,
                    test::TrivialStructWithTraitsImpl* out) {
     out->value = data.value();
     return true;
@@ -115,10 +116,10 @@ struct StructTraits<test::TrivialStructWithTraits,
 };
 
 template <>
-struct StructTraits<test::MoveOnlyStructWithTraits,
+struct StructTraits<test::MoveOnlyStructWithTraitsDataView,
                     test::MoveOnlyStructWithTraitsImpl> {
   // Deserialization to test::MoveOnlyStructTraitsImpl.
-  static bool Read(test::MoveOnlyStructWithTraits::DataView data,
+  static bool Read(test::MoveOnlyStructWithTraitsDataView data,
                    test::MoveOnlyStructWithTraitsImpl* out);
 
   // Fields in test::MoveOnlyStructWithTraits.
@@ -129,13 +130,14 @@ struct StructTraits<test::MoveOnlyStructWithTraits,
 };
 
 template <>
-struct StructTraits<test::StructWithTraitsForUniquePtr, std::unique_ptr<int>> {
+struct StructTraits<test::StructWithTraitsForUniquePtrDataView,
+                    std::unique_ptr<int>> {
   static bool IsNull(const std::unique_ptr<int>& data) { return !data; }
   static void SetToNull(std::unique_ptr<int>* data) { data->reset(); }
 
   static int f_int32(const std::unique_ptr<int>& data) { return *data; }
 
-  static bool Read(test::StructWithTraitsForUniquePtr::DataView data,
+  static bool Read(test::StructWithTraitsForUniquePtrDataView data,
                    std::unique_ptr<int>* out) {
     out->reset(new int(data.f_int32()));
     return true;
@@ -143,7 +145,7 @@ struct StructTraits<test::StructWithTraitsForUniquePtr, std::unique_ptr<int>> {
 };
 
 template <>
-struct UnionTraits<test::UnionWithTraits,
+struct UnionTraits<test::UnionWithTraitsDataView,
                    std::unique_ptr<test::UnionWithTraitsBase>> {
   static bool IsNull(const std::unique_ptr<test::UnionWithTraitsBase>& data) {
     return !data;
@@ -152,12 +154,12 @@ struct UnionTraits<test::UnionWithTraits,
     data->reset();
   }
 
-  static test::UnionWithTraits::DataView::Tag GetTag(
+  static test::UnionWithTraitsDataView::Tag GetTag(
       const std::unique_ptr<test::UnionWithTraitsBase>& data) {
     if (data->type() == test::UnionWithTraitsBase::Type::INT32)
-      return test::UnionWithTraits::DataView::Tag::F_INT32;
+      return test::UnionWithTraitsDataView::Tag::F_INT32;
 
-    return test::UnionWithTraits::DataView::Tag::F_STRUCT;
+    return test::UnionWithTraitsDataView::Tag::F_STRUCT;
   }
 
   static int32_t f_int32(
@@ -170,14 +172,14 @@ struct UnionTraits<test::UnionWithTraits,
     return static_cast<test::UnionWithTraitsStruct*>(data.get())->get_struct();
   }
 
-  static bool Read(test::UnionWithTraits::DataView data,
+  static bool Read(test::UnionWithTraitsDataView data,
                    std::unique_ptr<test::UnionWithTraitsBase>* out) {
     switch (data.tag()) {
-      case test::UnionWithTraits::DataView::Tag::F_INT32: {
+      case test::UnionWithTraitsDataView::Tag::F_INT32: {
         out->reset(new test::UnionWithTraitsInt32(data.f_int32()));
         return true;
       }
-      case test::UnionWithTraits::DataView::Tag::F_STRUCT: {
+      case test::UnionWithTraitsDataView::Tag::F_STRUCT: {
         auto* struct_object = new test::UnionWithTraitsStruct();
         out->reset(struct_object);
         return data.ReadFStruct(&struct_object->get_mutable_struct());

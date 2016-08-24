@@ -92,7 +92,8 @@ bool EnumTraits<mojom::TranslateError, TranslateErrors::Type>::FromMojom(
 }
 
 // static
-bool StructTraits<mojom::LanguageDetectionDetails, LanguageDetectionDetails>::
+bool StructTraits<mojom::LanguageDetectionDetailsDataView,
+                  LanguageDetectionDetails>::
     Read(mojom::LanguageDetectionDetailsDataView data,
          LanguageDetectionDetails* out) {
   if (!data.ReadTime(&out->time))

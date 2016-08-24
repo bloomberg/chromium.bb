@@ -27,7 +27,7 @@ struct EnumTraits<display::mojom::TouchSupport,
 };
 
 template <>
-struct StructTraits<display::mojom::Display, display::Display> {
+struct StructTraits<display::mojom::DisplayDataView, display::Display> {
   static int64_t id(const display::Display& display) { return display.id(); }
 
   static const gfx::Rect& bounds(const display::Display& display) {

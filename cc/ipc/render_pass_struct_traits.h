@@ -14,7 +14,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>> {
+struct StructTraits<cc::mojom::RenderPassDataView,
+                    std::unique_ptr<cc::RenderPass>> {
   static const cc::RenderPassId& id(
       const std::unique_ptr<cc::RenderPass>& input) {
     return input->id;

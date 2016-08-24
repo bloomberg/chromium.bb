@@ -6,8 +6,9 @@
 
 namespace mojo {
 
-bool StructTraits<arc::mojom::ScreenRect, gfx::Rect>::Read(
-    arc::mojom::ScreenRectDataView data, gfx::Rect* out) {
+bool StructTraits<arc::mojom::ScreenRectDataView, gfx::Rect>::Read(
+    arc::mojom::ScreenRectDataView data,
+    gfx::Rect* out) {
   if (data.right() < data.left() || data.bottom() < data.top())
     return false;
 

@@ -49,7 +49,7 @@ bool EnumTraits<mojom::CredentialType, CredentialType>::FromMojom(
 }
 
 // static
-bool StructTraits<mojom::CredentialInfo, CredentialInfo>::Read(
+bool StructTraits<mojom::CredentialInfoDataView, CredentialInfo>::Read(
     mojom::CredentialInfoDataView data,
     CredentialInfo* out) {
   if (data.ReadType(&out->type) && data.ReadId(&out->id) &&

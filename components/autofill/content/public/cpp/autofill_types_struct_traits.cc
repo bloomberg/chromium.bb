@@ -329,7 +329,7 @@ bool EnumTraits<mojom::PasswordFormFieldPredictionType,
 }
 
 // static
-bool StructTraits<mojom::FormFieldData, FormFieldData>::Read(
+bool StructTraits<mojom::FormFieldDataDataView, FormFieldData>::Read(
     mojom::FormFieldDataDataView data,
     FormFieldData* out) {
   if (!data.ReadLabel(&out->label))
@@ -376,8 +376,9 @@ bool StructTraits<mojom::FormFieldData, FormFieldData>::Read(
 }
 
 // static
-bool StructTraits<mojom::FormData, FormData>::Read(mojom::FormDataDataView data,
-                                                   FormData* out) {
+bool StructTraits<mojom::FormDataDataView, FormData>::Read(
+    mojom::FormDataDataView data,
+    FormData* out) {
   if (!data.ReadName(&out->name))
     return false;
   if (!data.ReadOrigin(&out->origin))
@@ -395,7 +396,8 @@ bool StructTraits<mojom::FormData, FormData>::Read(mojom::FormDataDataView data,
 }
 
 // static
-bool StructTraits<mojom::FormFieldDataPredictions, FormFieldDataPredictions>::
+bool StructTraits<mojom::FormFieldDataPredictionsDataView,
+                  FormFieldDataPredictions>::
     Read(mojom::FormFieldDataPredictionsDataView data,
          FormFieldDataPredictions* out) {
   if (!data.ReadField(&out->field))
@@ -415,9 +417,10 @@ bool StructTraits<mojom::FormFieldDataPredictions, FormFieldDataPredictions>::
 }
 
 // static
-bool StructTraits<mojom::FormDataPredictions, FormDataPredictions>::Read(
-    mojom::FormDataPredictionsDataView data,
-    FormDataPredictions* out) {
+bool StructTraits<mojom::FormDataPredictionsDataView,
+                  FormDataPredictions>::Read(mojom::FormDataPredictionsDataView
+                                                 data,
+                                             FormDataPredictions* out) {
   if (!data.ReadData(&out->data))
     return false;
   if (!data.ReadSignature(&out->signature))
@@ -429,7 +432,7 @@ bool StructTraits<mojom::FormDataPredictions, FormDataPredictions>::Read(
 }
 
 // static
-bool StructTraits<mojom::PasswordAndRealm, PasswordAndRealm>::Read(
+bool StructTraits<mojom::PasswordAndRealmDataView, PasswordAndRealm>::Read(
     mojom::PasswordAndRealmDataView data,
     PasswordAndRealm* out) {
   if (!data.ReadPassword(&out->password))
@@ -441,9 +444,10 @@ bool StructTraits<mojom::PasswordAndRealm, PasswordAndRealm>::Read(
 }
 
 // static
-bool StructTraits<mojom::UsernamesCollectionKey, UsernamesCollectionKey>::Read(
-    mojom::UsernamesCollectionKeyDataView data,
-    UsernamesCollectionKey* out) {
+bool StructTraits<
+    mojom::UsernamesCollectionKeyDataView,
+    UsernamesCollectionKey>::Read(mojom::UsernamesCollectionKeyDataView data,
+                                  UsernamesCollectionKey* out) {
   if (!data.ReadUsername(&out->username))
     return false;
   if (!data.ReadPassword(&out->password))
@@ -455,7 +459,7 @@ bool StructTraits<mojom::UsernamesCollectionKey, UsernamesCollectionKey>::Read(
 }
 
 // static
-void* StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::
+void* StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
     SetUpContext(const PasswordFormFillData& r) {
   // Extracts keys vector and values vector from the map, saves them as a pair.
   auto* pair = new UsernamesCollectionKeysValuesPair();
@@ -468,15 +472,14 @@ void* StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::
 }
 
 // static
-void StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::
+void StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
     TearDownContext(const PasswordFormFillData& r, void* context) {
   delete static_cast<UsernamesCollectionKeysValuesPair*>(context);
 }
 
 // static
-bool StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::Read(
-    mojom::PasswordFormFillDataDataView data,
-    PasswordFormFillData* out) {
+bool StructTraits<mojom::PasswordFormFillDataDataView, PasswordFormFillData>::
+    Read(mojom::PasswordFormFillDataDataView data, PasswordFormFillData* out) {
   if (!data.ReadName(&out->name) || !data.ReadOrigin(&out->origin) ||
       !data.ReadAction(&out->action) ||
       !data.ReadUsernameField(&out->username_field) ||
@@ -506,7 +509,7 @@ bool StructTraits<mojom::PasswordFormFillData, PasswordFormFillData>::Read(
 }
 
 // static
-bool StructTraits<mojom::PasswordFormGenerationData,
+bool StructTraits<mojom::PasswordFormGenerationDataDataView,
                   PasswordFormGenerationData>::
     Read(mojom::PasswordFormGenerationDataDataView data,
          PasswordFormGenerationData* out) {
@@ -518,7 +521,7 @@ bool StructTraits<mojom::PasswordFormGenerationData,
 }
 
 // static
-bool StructTraits<mojom::PasswordForm, PasswordForm>::Read(
+bool StructTraits<mojom::PasswordFormDataView, PasswordForm>::Read(
     mojom::PasswordFormDataView data,
     PasswordForm* out) {
   if (!data.ReadScheme(&out->scheme) ||
@@ -581,7 +584,7 @@ bool StructTraits<mojom::PasswordForm, PasswordForm>::Read(
 }
 
 // static
-void* StructTraits<mojom::PasswordFormFieldPredictionMap,
+void* StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
                    PasswordFormFieldPredictionMap>::
     SetUpContext(const PasswordFormFieldPredictionMap& r) {
   // Extracts keys vector and values vector from the map, saves them as a pair.
@@ -595,14 +598,14 @@ void* StructTraits<mojom::PasswordFormFieldPredictionMap,
 }
 
 // static
-void StructTraits<mojom::PasswordFormFieldPredictionMap,
+void StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
                   PasswordFormFieldPredictionMap>::
     TearDownContext(const PasswordFormFieldPredictionMap& r, void* context) {
   delete static_cast<KeysValuesPair*>(context);
 }
 
 // static
-bool StructTraits<mojom::PasswordFormFieldPredictionMap,
+bool StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
                   PasswordFormFieldPredictionMap>::
     Read(mojom::PasswordFormFieldPredictionMapDataView data,
          PasswordFormFieldPredictionMap* out) {
@@ -623,7 +626,7 @@ bool StructTraits<mojom::PasswordFormFieldPredictionMap,
 }
 
 // static
-void* StructTraits<mojom::FormsPredictionsMap,
+void* StructTraits<mojom::FormsPredictionsMapDataView,
                    FormsPredictionsMap>::SetUpContext(const FormsPredictionsMap&
                                                           r) {
   // Extracts keys vector and values vector from the map, saves them as a pair.
@@ -637,15 +640,16 @@ void* StructTraits<mojom::FormsPredictionsMap,
 }
 
 // static
-void StructTraits<mojom::FormsPredictionsMap, FormsPredictionsMap>::
+void StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
     TearDownContext(const FormsPredictionsMap& r, void* context) {
   delete static_cast<KeysValuesPair*>(context);
 }
 
 // static
-bool StructTraits<mojom::FormsPredictionsMap, FormsPredictionsMap>::Read(
-    mojom::FormsPredictionsMapDataView data,
-    FormsPredictionsMap* out) {
+bool StructTraits<mojom::FormsPredictionsMapDataView,
+                  FormsPredictionsMap>::Read(mojom::FormsPredictionsMapDataView
+                                                 data,
+                                             FormsPredictionsMap* out) {
   // Combines keys vector and values vector to the map.
   std::vector<FormData> keys;
   if (!data.ReadKeys(&keys))

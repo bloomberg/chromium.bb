@@ -16,7 +16,7 @@ namespace mojo {
 using MailboxName = CArray<int8_t>;
 
 template <>
-struct StructTraits<gpu::mojom::Mailbox, gpu::Mailbox> {
+struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
   static MailboxName name(const gpu::Mailbox& mailbox);
   static bool Read(gpu::mojom::MailboxDataView data, gpu::Mailbox* out);
 };

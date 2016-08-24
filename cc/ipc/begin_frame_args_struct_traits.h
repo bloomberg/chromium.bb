@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::BeginFrameArgs, cc::BeginFrameArgs> {
+struct StructTraits<cc::mojom::BeginFrameArgsDataView, cc::BeginFrameArgs> {
   static base::TimeTicks frame_time(const cc::BeginFrameArgs& args) {
     return args.frame_time;
   }

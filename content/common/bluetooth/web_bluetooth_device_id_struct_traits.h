@@ -13,7 +13,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::WebBluetoothDeviceId,
+struct StructTraits<blink::mojom::WebBluetoothDeviceIdDataView,
                     content::WebBluetoothDeviceId> {
   static const std::string& device_id(
       const content::WebBluetoothDeviceId& device_id) {

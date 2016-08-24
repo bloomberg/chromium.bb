@@ -95,7 +95,7 @@ cc::FilterOperation::FilterType MojoFilterTypeToCC(
 using FilterOperationMatrix = CArray<float>;
 
 template <>
-struct StructTraits<cc::mojom::FilterOperation, cc::FilterOperation> {
+struct StructTraits<cc::mojom::FilterOperationDataView, cc::FilterOperation> {
   static cc::mojom::FilterType type(const cc::FilterOperation& op) {
     return CCFilterTypeToMojo(op.type());
   }

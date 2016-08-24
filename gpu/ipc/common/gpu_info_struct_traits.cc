@@ -10,7 +10,7 @@
 namespace mojo {
 
 // static
-bool StructTraits<gpu::mojom::GpuDevice, gpu::GPUInfo::GPUDevice>::Read(
+bool StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice>::Read(
     gpu::mojom::GpuDeviceDataView data,
     gpu::GPUInfo::GPUDevice* out) {
   out->vendor_id = data.vendor_id();
@@ -182,7 +182,7 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
 }
 
 // static
-bool StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfile,
+bool StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfileDataView,
                   gpu::VideoDecodeAcceleratorSupportedProfile>::
     Read(gpu::mojom::VideoDecodeAcceleratorSupportedProfileDataView data,
          gpu::VideoDecodeAcceleratorSupportedProfile* out) {
@@ -193,7 +193,7 @@ bool StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfile,
 }
 
 // static
-bool StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilities,
+bool StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
                   gpu::VideoDecodeAcceleratorCapabilities>::
     Read(gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView data,
          gpu::VideoDecodeAcceleratorCapabilities* out) {
@@ -202,7 +202,7 @@ bool StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilities,
 }
 
 // static
-bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfile,
+bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
                   gpu::VideoEncodeAcceleratorSupportedProfile>::
     Read(gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
          gpu::VideoEncodeAcceleratorSupportedProfile* out) {
@@ -212,7 +212,7 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfile,
          data.ReadMaxResolution(&out->max_resolution);
 }
 
-bool StructTraits<gpu::mojom::GpuInfo, gpu::GPUInfo>::Read(
+bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
     gpu::mojom::GpuInfoDataView data,
     gpu::GPUInfo* out) {
   out->optimus = data.optimus();

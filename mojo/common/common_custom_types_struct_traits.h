@@ -14,7 +14,7 @@ class Version;
 namespace mojo {
 
 template <>
-struct StructTraits<mojo::common::mojom::Version, base::Version> {
+struct StructTraits<mojo::common::mojom::VersionDataView, base::Version> {
   static bool IsNull(const base::Version& version) {
     return !version.IsValid();
   }

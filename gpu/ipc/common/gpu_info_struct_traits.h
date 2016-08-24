@@ -15,7 +15,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gpu::mojom::GpuDevice, gpu::GPUInfo::GPUDevice> {
+struct StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice> {
   static bool Read(gpu::mojom::GpuDeviceDataView data,
                    gpu::GPUInfo::GPUDevice* out);
 
@@ -60,7 +60,7 @@ struct EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile> {
 };
 
 template <>
-struct StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfile,
+struct StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfileDataView,
                     gpu::VideoDecodeAcceleratorSupportedProfile> {
   static bool Read(
       gpu::mojom::VideoDecodeAcceleratorSupportedProfileDataView data,
@@ -88,7 +88,7 @@ struct StructTraits<gpu::mojom::VideoDecodeAcceleratorSupportedProfile,
 };
 
 template <>
-struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilities,
+struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
                     gpu::VideoDecodeAcceleratorCapabilities> {
   static bool Read(gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView data,
                    gpu::VideoDecodeAcceleratorCapabilities* out);
@@ -99,7 +99,7 @@ struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilities,
 };
 
 template <>
-struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfile,
+struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
                     gpu::VideoEncodeAcceleratorSupportedProfile> {
   static bool Read(
       gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView data,
@@ -127,7 +127,7 @@ struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfile,
 };
 
 template <>
-struct StructTraits<gpu::mojom::GpuInfo, gpu::GPUInfo> {
+struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool Read(gpu::mojom::GpuInfoDataView data, gpu::GPUInfo* out);
 
   static base::TimeDelta initialization_time(const gpu::GPUInfo& input) {

@@ -8,7 +8,11 @@
 namespace mojo {
 
 // This must be specialized for any type |T| to be serialized/deserialized as
-// a mojom union of type |MojomType|.
+// a mojom union. |DataViewType| is the corresponding data view type of the
+// mojom union. For example, if the mojom union is example.Foo, |DataViewType|
+// will be example::FooDataView, which can also be referred to by
+// example::Foo::DataView (in chromium) and example::blink::Foo::DataView (in
+// blink).
 //
 // Similar to StructTraits, each specialization of UnionTraits implements the
 // following methods:
@@ -22,12 +26,12 @@ namespace mojo {
 //   5. A static GetTag() method indicating which field is the current active
 //      field for serialization:
 //
-//        static |MojomType|DataView::Tag GetTag(const T& input);
+//        static DataViewType::Tag GetTag(const T& input);
 //
 //      During serialization, only the field getter corresponding to this tag
 //      will be called.
 //
-template <typename MojomType, typename T>
+template <typename DataViewType, typename T>
 struct UnionTraits;
 
 }  // namespace mojo

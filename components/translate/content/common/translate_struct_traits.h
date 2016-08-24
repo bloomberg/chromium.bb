@@ -24,7 +24,7 @@ struct EnumTraits<translate::mojom::TranslateError,
 };
 
 template <>
-struct StructTraits<translate::mojom::LanguageDetectionDetails,
+struct StructTraits<translate::mojom::LanguageDetectionDetailsDataView,
                     translate::LanguageDetectionDetails> {
   static const base::Time& time(const translate::LanguageDetectionDetails& r) {
     return r.time;

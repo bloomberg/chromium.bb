@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::CompositorFrameMetadata,
+struct StructTraits<cc::mojom::CompositorFrameMetadataDataView,
                     cc::CompositorFrameMetadata> {
   static float device_scale_factor(
       const cc::CompositorFrameMetadata& metadata) {

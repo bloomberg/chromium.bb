@@ -38,7 +38,7 @@ struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
 };
 
 template <>
-struct StructTraits<ui::mojom::LatencyComponent,
+struct StructTraits<ui::mojom::LatencyComponentDataView,
                     ui::LatencyInfo::LatencyComponent> {
   static int64_t sequence_number(
       const ui::LatencyInfo::LatencyComponent& component);
@@ -51,7 +51,7 @@ struct StructTraits<ui::mojom::LatencyComponent,
 };
 
 template <>
-struct StructTraits<ui::mojom::LatencyComponentPair,
+struct StructTraits<ui::mojom::LatencyComponentPairDataView,
                     ui::LatencyInfo::LatencyMap::value_type> {
   static const std::pair<ui::LatencyComponentType, int64_t>& key(
       const ui::LatencyInfo::LatencyMap::value_type& input) {
@@ -67,7 +67,7 @@ struct StructTraits<ui::mojom::LatencyComponentPair,
 };
 
 template <>
-struct StructTraits<ui::mojom::LatencyComponentId,
+struct StructTraits<ui::mojom::LatencyComponentIdDataView,
                     std::pair<ui::LatencyComponentType, int64_t>> {
   static ui::mojom::LatencyComponentType type(
       const std::pair<ui::LatencyComponentType, int64_t>& id);
@@ -77,7 +77,7 @@ struct StructTraits<ui::mojom::LatencyComponentId,
 };
 
 template <>
-struct StructTraits<ui::mojom::LatencyInfo, ui::LatencyInfo> {
+struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static const std::string& trace_name(const ui::LatencyInfo& info);
   static const ui::LatencyInfo::LatencyMap& latency_components(
       const ui::LatencyInfo& info);

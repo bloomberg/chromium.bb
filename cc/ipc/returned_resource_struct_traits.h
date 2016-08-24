@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::ReturnedResource, cc::ReturnedResource> {
+struct StructTraits<cc::mojom::ReturnedResourceDataView, cc::ReturnedResource> {
   static uint32_t id(const cc::ReturnedResource& resource) {
     return resource.id;
   }

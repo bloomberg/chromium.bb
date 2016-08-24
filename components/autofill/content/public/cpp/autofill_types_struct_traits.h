@@ -93,7 +93,8 @@ struct EnumTraits<autofill::mojom::PasswordFormFieldPredictionType,
 };
 
 template <>
-struct StructTraits<autofill::mojom::FormFieldData, autofill::FormFieldData> {
+struct StructTraits<autofill::mojom::FormFieldDataDataView,
+                    autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
     return r.label;
   }
@@ -174,7 +175,7 @@ struct StructTraits<autofill::mojom::FormFieldData, autofill::FormFieldData> {
 };
 
 template <>
-struct StructTraits<autofill::mojom::FormData, autofill::FormData> {
+struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
   static const base::string16& name(const autofill::FormData& r) {
     return r.name;
   }
@@ -199,7 +200,7 @@ struct StructTraits<autofill::mojom::FormData, autofill::FormData> {
 };
 
 template <>
-struct StructTraits<autofill::mojom::FormFieldDataPredictions,
+struct StructTraits<autofill::mojom::FormFieldDataPredictionsDataView,
                     autofill::FormFieldDataPredictions> {
   static const autofill::FormFieldData& field(
       const autofill::FormFieldDataPredictions& r) {
@@ -236,7 +237,7 @@ struct StructTraits<autofill::mojom::FormFieldDataPredictions,
 };
 
 template <>
-struct StructTraits<autofill::mojom::FormDataPredictions,
+struct StructTraits<autofill::mojom::FormDataPredictionsDataView,
                     autofill::FormDataPredictions> {
   static const autofill::FormData& data(
       const autofill::FormDataPredictions& r) {
@@ -257,7 +258,7 @@ struct StructTraits<autofill::mojom::FormDataPredictions,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordAndRealm,
+struct StructTraits<autofill::mojom::PasswordAndRealmDataView,
                     autofill::PasswordAndRealm> {
   static const base::string16& password(const autofill::PasswordAndRealm& r) {
     return r.password;
@@ -272,7 +273,7 @@ struct StructTraits<autofill::mojom::PasswordAndRealm,
 };
 
 template <>
-struct StructTraits<autofill::mojom::UsernamesCollectionKey,
+struct StructTraits<autofill::mojom::UsernamesCollectionKeyDataView,
                     autofill::UsernamesCollectionKey> {
   static const base::string16& username(
       const autofill::UsernamesCollectionKey& r) {
@@ -293,7 +294,7 @@ struct StructTraits<autofill::mojom::UsernamesCollectionKey,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordFormFillData,
+struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
                     autofill::PasswordFormFillData> {
   using UsernamesCollectionKeysValuesPair =
       std::pair<std::vector<autofill::UsernamesCollectionKey>,
@@ -362,7 +363,7 @@ struct StructTraits<autofill::mojom::PasswordFormFillData,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordFormGenerationData,
+struct StructTraits<autofill::mojom::PasswordFormGenerationDataDataView,
                     autofill::PasswordFormGenerationData> {
   static const base::string16& name(
       const autofill::PasswordFormGenerationData& r) {
@@ -383,7 +384,8 @@ struct StructTraits<autofill::mojom::PasswordFormGenerationData,
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordForm, autofill::PasswordForm> {
+struct StructTraits<autofill::mojom::PasswordFormDataView,
+                    autofill::PasswordForm> {
   static autofill::PasswordForm::Scheme scheme(
       const autofill::PasswordForm& r) {
     return r.scheme;
@@ -533,7 +535,7 @@ struct StructTraits<autofill::mojom::PasswordForm, autofill::PasswordForm> {
 };
 
 template <>
-struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMap,
+struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
                     autofill::PasswordFormFieldPredictionMap> {
   using KeysValuesPair =
       std::pair<std::vector<autofill::FormFieldData>,
@@ -561,7 +563,7 @@ struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMap,
 };
 
 template <>
-struct StructTraits<autofill::mojom::FormsPredictionsMap,
+struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
                     autofill::FormsPredictionsMap> {
   using KeysValuesPair =
       std::pair<std::vector<autofill::FormData>,

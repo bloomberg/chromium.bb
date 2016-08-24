@@ -13,7 +13,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<url::mojom::blink::Url, ::blink::KURL> {
+struct StructTraits<url::mojom::blink::Url::DataView, ::blink::KURL> {
     static WTF::String url(const ::blink::KURL& blinkUrl)
     {
         if (!blinkUrl.isValid() || blinkUrl.getString().length() > url::kMaxURLChars) {
@@ -22,7 +22,7 @@ struct StructTraits<url::mojom::blink::Url, ::blink::KURL> {
 
         return blinkUrl.getString();
     }
-    static bool Read(url::mojom::blink::UrlDataView data, ::blink::KURL* out)
+    static bool Read(url::mojom::blink::Url::DataView data, ::blink::KURL* out)
     {
         WTF::String urlString;
         if (!data.ReadUrl(&urlString))

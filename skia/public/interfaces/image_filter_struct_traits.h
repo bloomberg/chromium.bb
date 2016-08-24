@@ -31,7 +31,7 @@ struct ArrayTraits<ImageFilterBuffer> {
 };
 
 template <>
-struct StructTraits<skia::mojom::ImageFilter, sk_sp<SkImageFilter>> {
+struct StructTraits<skia::mojom::ImageFilterDataView, sk_sp<SkImageFilter>> {
   static ImageFilterBuffer data(const sk_sp<SkImageFilter>& filter) {
     ImageFilterBuffer buffer;
     buffer.data = sk_sp<SkData>(SkValidatingSerializeFlattenable(filter.get()));

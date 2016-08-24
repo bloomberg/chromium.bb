@@ -11,7 +11,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gfx::mojom::AcceleratedWidget, gfx::AcceleratedWidget> {
+struct StructTraits<gfx::mojom::AcceleratedWidgetDataView,
+                    gfx::AcceleratedWidget> {
   static uint64_t widget(const gfx::AcceleratedWidget& widget) {
 #if defined(OS_WIN) || defined(USE_OZONE) || defined(USE_X11)
 #if defined(OS_WIN)

@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gpu::mojom::SyncToken, gpu::SyncToken> {
+struct StructTraits<gpu::mojom::SyncTokenDataView, gpu::SyncToken> {
   static bool verified_flush(const gpu::SyncToken& token) {
     return token.verified_flush();
   }

@@ -11,7 +11,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<shell::mojom::CapabilityRequest, shell::CapabilityRequest> {
+struct StructTraits<shell::mojom::CapabilityRequest::DataView,
+                    shell::CapabilityRequest> {
   static const shell::Classes& classes(
       const shell::CapabilityRequest& request) {
     return request.classes;
@@ -44,7 +45,8 @@ struct StructTraits<shell::mojom::CapabilityRequest, shell::CapabilityRequest> {
 };
 
 template <>
-struct StructTraits<shell::mojom::CapabilitySpec, shell::CapabilitySpec> {
+struct StructTraits<shell::mojom::CapabilitySpec::DataView,
+                    shell::CapabilitySpec> {
   static const std::map<shell::Class, shell::Interfaces>& provided(
       const shell::CapabilitySpec& spec) {
     return spec.provided;

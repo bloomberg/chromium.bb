@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::FilterOperations, cc::FilterOperations> {
+struct StructTraits<cc::mojom::FilterOperationsDataView, cc::FilterOperations> {
   static const std::vector<cc::FilterOperation>& operations(
       const cc::FilterOperations& operations) {
     return operations.operations();

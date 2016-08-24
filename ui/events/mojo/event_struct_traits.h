@@ -16,7 +16,7 @@ namespace mojo {
 using EventUniquePtr = std::unique_ptr<ui::Event>;
 
 template <>
-struct StructTraits<ui::mojom::Event, EventUniquePtr> {
+struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {
   static ui::mojom::EventType action(const EventUniquePtr& event);
   static int32_t flags(const EventUniquePtr& event);
   static int64_t time_stamp(const EventUniquePtr& event);

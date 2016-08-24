@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<media::mojom::PipelineStatistics,
+struct StructTraits<media::mojom::PipelineStatisticsDataView,
                     media::PipelineStatistics> {
   static uint64_t audio_bytes_decoded(const media::PipelineStatistics& input) {
     return input.audio_bytes_decoded;

@@ -15,7 +15,7 @@ struct OptSharedQuadState {
 };
 
 template <>
-struct StructTraits<cc::mojom::SharedQuadState, OptSharedQuadState> {
+struct StructTraits<cc::mojom::SharedQuadStateDataView, OptSharedQuadState> {
   static bool IsNull(const OptSharedQuadState& input) { return !input.sqs; }
 
   static void SetToNull(OptSharedQuadState* output) { output->sqs = nullptr; }
@@ -56,7 +56,7 @@ struct StructTraits<cc::mojom::SharedQuadState, OptSharedQuadState> {
 };
 
 template <>
-struct StructTraits<cc::mojom::SharedQuadState, cc::SharedQuadState> {
+struct StructTraits<cc::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
   static const gfx::Transform& quad_to_target_transform(
       const cc::SharedQuadState& sqs) {
     return sqs.quad_to_target_transform;

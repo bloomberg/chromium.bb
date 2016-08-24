@@ -22,7 +22,7 @@ struct EnumTraits<password_manager::mojom::CredentialType,
 };
 
 template <>
-struct StructTraits<password_manager::mojom::CredentialInfo,
+struct StructTraits<password_manager::mojom::CredentialInfoDataView,
                     password_manager::CredentialInfo> {
   static password_manager::CredentialType type(
       const password_manager::CredentialInfo& r) {

@@ -20,7 +20,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gfx::mojom::Insets, gfx::Insets> {
+struct StructTraits<gfx::mojom::InsetsDataView, gfx::Insets> {
   static int top(const gfx::Insets& p) { return p.top(); }
   static int left(const gfx::Insets& p) { return p.left(); }
   static int bottom(const gfx::Insets& p) { return p.bottom(); }
@@ -32,7 +32,7 @@ struct StructTraits<gfx::mojom::Insets, gfx::Insets> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::InsetsF, gfx::InsetsF> {
+struct StructTraits<gfx::mojom::InsetsFDataView, gfx::InsetsF> {
   static float top(const gfx::InsetsF& p) { return p.top(); }
   static float left(const gfx::InsetsF& p) { return p.left(); }
   static float bottom(const gfx::InsetsF& p) { return p.bottom(); }
@@ -44,7 +44,7 @@ struct StructTraits<gfx::mojom::InsetsF, gfx::InsetsF> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Point, gfx::Point> {
+struct StructTraits<gfx::mojom::PointDataView, gfx::Point> {
   static int x(const gfx::Point& p) { return p.x(); }
   static int y(const gfx::Point& p) { return p.y(); }
   static bool Read(gfx::mojom::PointDataView data, gfx::Point* out) {
@@ -54,7 +54,7 @@ struct StructTraits<gfx::mojom::Point, gfx::Point> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::PointF, gfx::PointF> {
+struct StructTraits<gfx::mojom::PointFDataView, gfx::PointF> {
   static float x(const gfx::PointF& p) { return p.x(); }
   static float y(const gfx::PointF& p) { return p.y(); }
   static bool Read(gfx::mojom::PointFDataView data, gfx::PointF* out) {
@@ -64,7 +64,7 @@ struct StructTraits<gfx::mojom::PointF, gfx::PointF> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Rect, gfx::Rect> {
+struct StructTraits<gfx::mojom::RectDataView, gfx::Rect> {
   static int x(const gfx::Rect& p) { return p.x(); }
   static int y(const gfx::Rect& p) { return p.y(); }
   static int width(const gfx::Rect& p) { return p.width(); }
@@ -79,7 +79,7 @@ struct StructTraits<gfx::mojom::Rect, gfx::Rect> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::RectF, gfx::RectF> {
+struct StructTraits<gfx::mojom::RectFDataView, gfx::RectF> {
   static float x(const gfx::RectF& p) { return p.x(); }
   static float y(const gfx::RectF& p) { return p.y(); }
   static float width(const gfx::RectF& p) { return p.width(); }
@@ -94,7 +94,7 @@ struct StructTraits<gfx::mojom::RectF, gfx::RectF> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Size, gfx::Size> {
+struct StructTraits<gfx::mojom::SizeDataView, gfx::Size> {
   static int width(const gfx::Size& p) { return p.width(); }
   static int height(const gfx::Size& p) { return p.height(); }
   static bool Read(gfx::mojom::SizeDataView data, gfx::Size* out) {
@@ -107,7 +107,7 @@ struct StructTraits<gfx::mojom::Size, gfx::Size> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::SizeF, gfx::SizeF> {
+struct StructTraits<gfx::mojom::SizeFDataView, gfx::SizeF> {
   static float width(const gfx::SizeF& p) { return p.width(); }
   static float height(const gfx::SizeF& p) { return p.height(); }
   static bool Read(gfx::mojom::SizeFDataView data, gfx::SizeF* out) {
@@ -120,7 +120,7 @@ struct StructTraits<gfx::mojom::SizeF, gfx::SizeF> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Vector2d, gfx::Vector2d> {
+struct StructTraits<gfx::mojom::Vector2dDataView, gfx::Vector2d> {
   static int x(const gfx::Vector2d& v) { return v.x(); }
   static int y(const gfx::Vector2d& v) { return v.y(); }
   static bool Read(gfx::mojom::Vector2dDataView data, gfx::Vector2d* out) {
@@ -131,7 +131,7 @@ struct StructTraits<gfx::mojom::Vector2d, gfx::Vector2d> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Vector2dF, gfx::Vector2dF> {
+struct StructTraits<gfx::mojom::Vector2dFDataView, gfx::Vector2dF> {
   static float x(const gfx::Vector2dF& v) { return v.x(); }
   static float y(const gfx::Vector2dF& v) { return v.y(); }
   static bool Read(gfx::mojom::Vector2dFDataView data, gfx::Vector2dF* out) {

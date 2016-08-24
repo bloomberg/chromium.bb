@@ -11,7 +11,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::RenderPassId, cc::RenderPassId> {
+struct StructTraits<cc::mojom::RenderPassIdDataView, cc::RenderPassId> {
   static int layer_id(const cc::RenderPassId& id) { return id.layer_id; }
 
   static uint32_t index(const cc::RenderPassId& id) { return id.index; }

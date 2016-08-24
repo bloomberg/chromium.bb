@@ -11,7 +11,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<cc::mojom::Selection, cc::Selection<gfx::SelectionBound>> {
+struct StructTraits<cc::mojom::SelectionDataView,
+                    cc::Selection<gfx::SelectionBound>> {
   static const gfx::SelectionBound& start(
       const cc::Selection<gfx::SelectionBound>& selection) {
     return selection.start;

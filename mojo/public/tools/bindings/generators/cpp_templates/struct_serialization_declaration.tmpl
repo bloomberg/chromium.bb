@@ -3,7 +3,7 @@
 {%- set data_type = struct|get_qualified_name_for_kind(internal=True) %}
 
 template <>
-struct {{export_attribute}} StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
+struct {{export_attribute}} StructTraits<{{mojom_type}}::DataView, {{mojom_type}}Ptr> {
   static bool IsNull(const {{mojom_type}}Ptr& input) { return !input; }
   static void SetToNull({{mojom_type}}Ptr* output) { output->reset(); }
 
@@ -23,7 +23,7 @@ struct {{export_attribute}} StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
 {%-   endif %}
 {%- endfor %}
 
-  static bool Read({{mojom_type}}DataView input, {{mojom_type}}Ptr* output);
+  static bool Read({{mojom_type}}::DataView input, {{mojom_type}}Ptr* output);
 };
 
 namespace internal {
@@ -31,7 +31,7 @@ namespace internal {
 template <typename MaybeConstUserType>
 struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using Traits = StructTraits<{{mojom_type}}, UserType>;
+  using Traits = StructTraits<{{mojom_type}}::DataView, UserType>;
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {
@@ -73,7 +73,7 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
     if (!input)
       return CallSetToNullIfExists<Traits>(output);
 
-    {{mojom_type}}DataView data_view(input, context);
+    {{mojom_type}}::DataView data_view(input, context);
     return Traits::Read(data_view, output);
   }
 };

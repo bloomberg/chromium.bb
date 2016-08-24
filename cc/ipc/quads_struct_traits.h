@@ -29,7 +29,7 @@ cc::DrawQuad* AllocateAndConstruct(
     cc::QuadList* list);
 
 template <>
-struct UnionTraits<cc::mojom::DrawQuadState, cc::DrawQuad> {
+struct UnionTraits<cc::mojom::DrawQuadStateDataView, cc::DrawQuad> {
   static cc::mojom::DrawQuadState::DataView::Tag GetTag(
       const cc::DrawQuad& quad) {
     switch (quad.material) {
@@ -115,7 +115,7 @@ struct UnionTraits<cc::mojom::DrawQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::DebugBorderQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::DebugBorderQuadStateDataView, cc::DrawQuad> {
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::DebugBorderDrawQuad* quad =
         cc::DebugBorderDrawQuad::MaterialCast(&input);
@@ -133,7 +133,7 @@ struct StructTraits<cc::mojom::DebugBorderQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::RenderPassQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
   static const cc::RenderPassId& render_pass_id(const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
@@ -182,7 +182,7 @@ struct StructTraits<cc::mojom::RenderPassQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::SolidColorQuadStateDataView, cc::DrawQuad> {
   static uint32_t color(const cc::DrawQuad& input) {
     const cc::SolidColorDrawQuad* quad =
         cc::SolidColorDrawQuad::MaterialCast(&input);
@@ -200,7 +200,7 @@ struct StructTraits<cc::mojom::SolidColorQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::StreamVideoQuadStateDataView, cc::DrawQuad> {
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::StreamVideoDrawQuad* quad =
         cc::StreamVideoDrawQuad::MaterialCast(&input);
@@ -225,7 +225,7 @@ struct StructTraits<cc::mojom::StreamVideoQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::SurfaceQuadStateDataView, cc::DrawQuad> {
   static const cc::SurfaceId& surface(const cc::DrawQuad& input) {
     const cc::SurfaceDrawQuad* quad = cc::SurfaceDrawQuad::MaterialCast(&input);
     return quad->surface_id;
@@ -235,7 +235,7 @@ struct StructTraits<cc::mojom::SurfaceQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::TextureQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::TextureQuadStateDataView, cc::DrawQuad> {
   static uint32_t resource_id(const cc::DrawQuad& input) {
     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
     return quad->resource_id();
@@ -285,7 +285,7 @@ struct StructTraits<cc::mojom::TextureQuadState, cc::DrawQuad> {
 };
 
 template <>
-struct StructTraits<cc::mojom::TileQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::TileQuadStateDataView, cc::DrawQuad> {
   static const gfx::RectF& tex_coord_rect(const cc::DrawQuad& input) {
     const cc::TileDrawQuad* quad = cc::TileDrawQuad::MaterialCast(&input);
     return quad->tex_coord_rect;
@@ -323,7 +323,7 @@ struct EnumTraits<cc::mojom::YUVColorSpace, cc::YUVVideoDrawQuad::ColorSpace> {
 };
 
 template <>
-struct StructTraits<cc::mojom::YUVVideoQuadState, cc::DrawQuad> {
+struct StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
   static const gfx::RectF& ya_tex_coord_rect(const cc::DrawQuad& input) {
     const cc::YUVVideoDrawQuad* quad =
         cc::YUVVideoDrawQuad::MaterialCast(&input);
@@ -407,7 +407,7 @@ struct DrawQuadWithSharedQuadState {
 };
 
 template <>
-struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
+struct StructTraits<cc::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
   static const gfx::Rect& rect(const DrawQuadWithSharedQuadState& input) {
     return input.quad->rect;
   }
@@ -438,7 +438,7 @@ struct StructTraits<cc::mojom::DrawQuad, DrawQuadWithSharedQuadState> {
 
 // This StructTraits is only used for deserialization within RenderPasses.
 template <>
-struct StructTraits<cc::mojom::DrawQuad, cc::DrawQuad> {
+struct StructTraits<cc::mojom::DrawQuadDataView, cc::DrawQuad> {
   static bool Read(cc::mojom::DrawQuadDataView data, cc::DrawQuad* out);
 };
 

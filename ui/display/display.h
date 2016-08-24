@@ -19,7 +19,7 @@ namespace display {
 
 #if !defined(OS_IOS)
 namespace mojom {
-class Display;
+class DisplayDataView;
 }
 #endif
 
@@ -186,7 +186,8 @@ class DISPLAY_EXPORT Display final {
   int depth_per_component_;
 
 #if !defined(OS_IOS)
-  friend struct mojo::StructTraits<display::mojom::Display, display::Display>;
+  friend struct mojo::StructTraits<display::mojom::DisplayDataView,
+                                   display::Display>;
 #endif
 };
 

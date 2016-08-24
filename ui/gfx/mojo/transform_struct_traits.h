@@ -26,7 +26,7 @@ struct ArrayTraits<SkMatrix44> {
 };
 
 template <>
-struct StructTraits<gfx::mojom::Transform, gfx::Transform> {
+struct StructTraits<gfx::mojom::TransformDataView, gfx::Transform> {
   static const SkMatrix44& matrix(const gfx::Transform& transform) {
     return transform.matrix();
   }

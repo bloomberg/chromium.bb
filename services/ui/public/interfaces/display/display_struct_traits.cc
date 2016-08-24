@@ -79,7 +79,7 @@ bool EnumTraits<display::mojom::TouchSupport, display::Display::TouchSupport>::
   return display::Display::TOUCH_SUPPORT_UNKNOWN;
 }
 
-bool StructTraits<display::mojom::Display, display::Display>::Read(
+bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(
     display::mojom::DisplayDataView data,
     display::Display* out) {
   out->set_id(data.id());

@@ -12,13 +12,13 @@ namespace mojo {
 
 // static
 const std::vector<uint32_t>&
-StructTraits<mojo::common::mojom::Version, base::Version>::components(
+StructTraits<mojo::common::mojom::VersionDataView, base::Version>::components(
     const base::Version& version) {
   return version.components();
 }
 
 // static
-bool StructTraits<mojo::common::mojom::Version, base::Version>::Read(
+bool StructTraits<mojo::common::mojom::VersionDataView, base::Version>::Read(
     mojo::common::mojom::VersionDataView data,
     base::Version* out) {
   std::vector<uint32_t> components;

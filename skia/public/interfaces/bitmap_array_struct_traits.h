@@ -13,7 +13,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<skia::mojom::BitmapArray, std::vector<SkBitmap>> {
+struct StructTraits<skia::mojom::BitmapArrayDataView, std::vector<SkBitmap>> {
   static const std::vector<SkBitmap>& bitmaps(
       const std::vector<SkBitmap>& bitmaps) {
     return bitmaps;

@@ -13,7 +13,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<url::mojom::Url, GURL> {
+struct StructTraits<url::mojom::UrlDataView, GURL> {
   static base::StringPiece url(const GURL& r) {
     if (r.possibly_invalid_spec().length() > url::kMaxURLChars ||
         !r.is_valid()) {
