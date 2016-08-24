@@ -56,6 +56,11 @@ public final class InfoBarControlLayout extends ViewGroup {
             mLabel = label;
         }
 
+        public InfoBarArrayAdapter(Context context, T[] objects) {
+            super(context, R.layout.infobar_control_spinner_drop_down, objects);
+            mLabel = null;
+        }
+
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
             TextView view;

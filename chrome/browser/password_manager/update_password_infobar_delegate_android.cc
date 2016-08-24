@@ -62,6 +62,15 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
     bool is_smartlock_branding_enabled)
     : is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
+  base::string16 message;
+  gfx::Range message_link_range = gfx::Range();
+  GetSavePasswordDialogTitleTextAndLinkRange(
+      web_contents->GetVisibleURL(), form_to_update->observed_form().origin,
+      is_smartlock_branding_enabled, PasswordTittleType::UPDATE_PASSWORD,
+      &message, &message_link_range);
+  SetMessage(message);
+  SetMessageLinkRange(message_link_range);
+
   // TODO(melandory): Add histograms, crbug.com/577129
   passwords_state_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));

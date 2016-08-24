@@ -147,8 +147,10 @@ public final class DualControlLayout extends ViewGroup {
         if (mSecondaryView != null) {
             // Measure the secondary View, allowing it to be as wide as the layout.
             measureChild(mSecondaryView, unspecifiedSpec, unspecifiedSpec);
-            int combinedWidth = mPrimaryView.getMeasuredWidth()
-                    + mHorizontalMarginBetweenViews + mSecondaryView.getMeasuredWidth();
+            int combinedWidth = mPrimaryView.getMeasuredWidth() + mSecondaryView.getMeasuredWidth();
+            if (mPrimaryView.getMeasuredWidth() > 0 && mSecondaryView.getMeasuredWidth() > 0) {
+                combinedWidth += mHorizontalMarginBetweenViews;
+            }
 
             if (combinedWidth > maxWidth) {
                 // Stack the Views on top of each other.
@@ -214,11 +216,17 @@ public final class DualControlLayout extends ViewGroup {
                 secondaryRight = secondaryLeft + mSecondaryView.getMeasuredWidth();
             } else if (isPrimaryOnRight) {
                 // Sit to the left of the primary View.
-                secondaryRight = primaryLeft - mHorizontalMarginBetweenViews;
+                secondaryRight = primaryLeft;
+                if (mPrimaryView.getMeasuredWidth() > 0) {
+                    secondaryRight -= mHorizontalMarginBetweenViews;
+                }
                 secondaryLeft = secondaryRight - mSecondaryView.getMeasuredWidth();
             } else {
                 // Sit to the right of the primary View.
-                secondaryLeft = primaryRight + mHorizontalMarginBetweenViews;
+                secondaryLeft = primaryRight;
+                if (mPrimaryView.getMeasuredWidth() > 0) {
+                    secondaryLeft += mHorizontalMarginBetweenViews;
+                }
                 secondaryRight = secondaryLeft + mSecondaryView.getMeasuredWidth();
             }
 

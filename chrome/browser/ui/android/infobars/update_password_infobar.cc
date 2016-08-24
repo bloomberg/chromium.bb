@@ -36,8 +36,8 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
   ScopedJavaLocalRef<jstring> cancel_button_text = ConvertUTF16ToJavaString(
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_CANCEL));
-  ScopedJavaLocalRef<jstring> branding_text =
-      ConvertUTF16ToJavaString(env, update_password_delegate->GetBranding());
+  ScopedJavaLocalRef<jstring> message_text =
+      ConvertUTF16ToJavaString(env, update_password_delegate->GetMessageText());
 
   std::vector<base::string16> usernames;
   if (update_password_delegate->ShowMultipleAccounts()) {
@@ -50,11 +50,11 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   base::android::ScopedJavaLocalRef<jobject> infobar;
   infobar.Reset(Java_UpdatePasswordInfoBar_show(
-      env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
-      base::android::ToJavaArrayOfStrings(env, usernames), ok_button_text,
-      cancel_button_text, branding_text,
-      update_password_delegate->ShowMultipleAccounts(),
-      update_password_delegate->is_smartlock_branding_enabled()));
+      env, GetEnumeratedIconId(),
+      base::android::ToJavaArrayOfStrings(env, usernames), message_text,
+      update_password_delegate->message_link_range().start(),
+      update_password_delegate->message_link_range().end(), ok_button_text,
+      cancel_button_text));
 
   java_infobar_.Reset(env, infobar.obj());
   return infobar;
