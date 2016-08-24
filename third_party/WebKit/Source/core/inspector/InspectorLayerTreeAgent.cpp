@@ -85,11 +85,13 @@ static std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> buildScrollRectsF
 {
     std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scrollRects = Array<protocol::LayerTree::ScrollRect>::create();
     WebLayer* webLayer = graphicsLayer->platformLayer();
-    for (size_t i = 0; i < webLayer->nonFastScrollableRegion().size(); ++i) {
-        scrollRects->addItem(buildScrollRect(webLayer->nonFastScrollableRegion()[i], protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
+    WebVector<WebRect> nonFastScrollableRects = webLayer->nonFastScrollableRegion();
+    for (size_t i = 0; i < nonFastScrollableRects.size(); ++i) {
+        scrollRects->addItem(buildScrollRect(nonFastScrollableRects[i], protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
     }
-    for (size_t i = 0; i < webLayer->touchEventHandlerRegion().size(); ++i) {
-        scrollRects->addItem(buildScrollRect(webLayer->touchEventHandlerRegion()[i], protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
+    WebVector<WebRect> touchEventHandlerRects = webLayer->touchEventHandlerRegion();
+    for (size_t i = 0; i < touchEventHandlerRects.size(); ++i) {
+        scrollRects->addItem(buildScrollRect(touchEventHandlerRects[i], protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));
     }
     if (reportWheelScrollers) {
         WebRect webRect(webLayer->position().x, webLayer->position().y, webLayer->bounds().width, webLayer->bounds().height);
