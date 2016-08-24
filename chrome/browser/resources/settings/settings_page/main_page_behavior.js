@@ -44,10 +44,15 @@ var MainPageBehaviorImpl = {
   currentRouteChanged: function(newRoute, oldRoute) {
     // Allow the page to load before expanding the section. TODO(michaelpg):
     // Time this better when refactoring settings-animated-pages.
-    if (!oldRoute && newRoute.isSubpage())
+    if (!oldRoute && newRoute.isSubpage()) {
       setTimeout(this.tryTransitionToSection_.bind(this));
-    else
-      this.tryTransitionToSection_();
+    } else {
+      doWhenReady(
+        function() {
+          return this.scrollHeight > 0;
+        }.bind(this),
+        this.tryTransitionToSection_.bind(this));
+    }
   },
 
   /**
@@ -82,14 +87,14 @@ var MainPageBehaviorImpl = {
         // based on the current scroll position. This bug existed before, and is
         // fixed in the next patch by making the card position: absolute.
         if (currentSection)
-          this.scrollToSection_();
+          currentSection.scrollIntoView();
       }
     } else if (currentSection) {
       // Expand the section into a subpage or scroll to it on the main page.
       if (currentRoute.isSubpage())
         promise = this.expandSection_(currentSection);
       else
-        this.scrollToSection_();
+        currentSection.scrollIntoView();
     }
 
     // When this animation ends, another may be necessary. Call this function
@@ -214,21 +219,6 @@ var MainPageBehaviorImpl = {
         'settings-section');
     for (var section of sections)
       section.hidden = hidden && (section.section != sectionName);
-  },
-
-  /** @private */
-  scrollToSection_: function() {
-    doWhenReady(
-        function() {
-          return this.scrollHeight > 0;
-        }.bind(this),
-        function() {
-          // If the current section changes while we are waiting for the page to
-          // be ready, scroll to the newest requested section.
-          var section = this.getSection(settings.getCurrentRoute().section);
-          if (section)
-            section.scrollIntoView();
-        }.bind(this));
   },
 
   /**
