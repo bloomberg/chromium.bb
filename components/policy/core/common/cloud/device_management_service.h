@@ -96,6 +96,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
   // Fires the job, to be filled in by implementations.
   virtual void Run() = 0;
 
+  JobType type_;
   ParameterMap query_params_;
   std::string gaia_token_;
   std::string dm_token_;

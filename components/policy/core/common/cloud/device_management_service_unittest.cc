@@ -683,6 +683,38 @@ TEST_F(DeviceManagementServiceTest, RetryOnNetworkChanges) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
 }
 
+TEST_F(DeviceManagementServiceTest, PolicyFetchRetryImmediately) {
+  // We must not wait before a policy fetch retry, so this must not time out.
+  policy::DeviceManagementService::SetRetryDelayForTesting(60000);
+
+  // Make a request.
+  EXPECT_CALL(*this, OnJobDone(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_));
+
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartPolicyFetchJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+  const GURL original_url(fetcher->GetOriginalURL());
+  const std::string original_upload_data(fetcher->upload_data());
+
+  // Make it fail with ERR_NETWORK_CHANGED.
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                            net::ERR_NETWORK_CHANGED));
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that a new URLFetcher was started that retries this job, after
+  // having called OnJobRetry.
+  Mock::VerifyAndClearExpectations(this);
+  fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(original_url, fetcher->GetOriginalURL());
+  EXPECT_EQ(original_upload_data, fetcher->upload_data());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
+}
+
 TEST_F(DeviceManagementServiceTest, RetryLimit) {
   std::unique_ptr<DeviceManagementRequestJob> request_job(
       StartRegistrationJob());
