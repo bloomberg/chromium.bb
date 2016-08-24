@@ -25,6 +25,7 @@ struct WebNotificationData {
     WebString lang;
     WebString body;
     WebString tag;
+    WebURL image;
     WebURL icon;
     WebURL badge;
     WebVector<int> vibrate;

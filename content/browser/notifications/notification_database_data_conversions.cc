@@ -52,6 +52,7 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   notification_data->lang = payload.lang();
   notification_data->body = base::UTF8ToUTF16(payload.body());
   notification_data->tag = payload.tag();
+  notification_data->image = GURL(payload.image());
   notification_data->icon = GURL(payload.icon());
   notification_data->badge = GURL(payload.badge());
 
@@ -127,6 +128,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   payload->set_lang(notification_data.lang);
   payload->set_body(base::UTF16ToUTF8(notification_data.body));
   payload->set_tag(notification_data.tag);
+  payload->set_image(notification_data.image.spec());
   payload->set_icon(notification_data.icon.spec());
   payload->set_badge(notification_data.badge.spec());
 

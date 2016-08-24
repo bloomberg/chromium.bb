@@ -12,6 +12,10 @@ namespace blink {
 
 // Structure representing the resources associated with a Web Notification.
 struct WebNotificationResources {
+    // Content image for the notification. The bitmap may be empty if the
+    // developer did not provide an image, or fetching of the image failed.
+    SkBitmap image;
+
     // Main icon for the notification. The bitmap may be empty if the developer
     // did not provide an icon, or fetching of the icon failed.
     SkBitmap icon;

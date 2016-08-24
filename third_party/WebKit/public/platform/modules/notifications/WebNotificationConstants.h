@@ -11,22 +11,27 @@ namespace blink {
 // be indicated by the embedder.
 
 // Maximum number of actions on a Platform Notification.
-static const size_t kWebNotificationMaxActions = 2;
+static constexpr size_t kWebNotificationMaxActions = 2;
 
 // TODO(mvanouwerkerk): Update the notification resource loader to get the
 // appropriate image sizes from the embedder.
 
+// The maximum reasonable image size, scaled from dip units to pixels using the
+// largest supported scaling factor. TODO(johnme): Check sizes are correct.
+static constexpr int kWebNotificationMaxImageWidthPx = 1800; // 450 dip * 4
+static constexpr int kWebNotificationMaxImageHeightPx = 900; // 225 dip * 4
+
 // The maximum reasonable notification icon size, scaled from dip units to
 // pixels using the largest supported scaling factor.
-static const int kWebNotificationMaxIconSizePx = 320; // 80 dip * 4
+static constexpr int kWebNotificationMaxIconSizePx = 320; // 80 dip * 4
 
 // The maximum reasonable badge size, scaled from dip units to pixels using the
 // largest supported scaling factor.
-static const int kWebNotificationMaxBadgeSizePx = 96; // 24 dip * 4
+static constexpr int kWebNotificationMaxBadgeSizePx = 96; // 24 dip * 4
 
 // The maximum reasonable action icon size, scaled from dip units to
 // pixels using the largest supported scaling factor.
-static const int kWebNotificationMaxActionIconSizePx = 128; // 32 dip * 4
+static constexpr int kWebNotificationMaxActionIconSizePx = 128; // 32 dip * 4
 
 } // namespace blink
 

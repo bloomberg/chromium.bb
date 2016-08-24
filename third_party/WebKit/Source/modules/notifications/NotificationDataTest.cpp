@@ -23,6 +23,7 @@ const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationEmptyTag[] = "";
+const char kNotificationImage[] = "https://example.com/image.jpg";
 const char kNotificationIcon[] = "https://example.com/icon.png";
 const char kNotificationIconInvalid[] = "https://invalid:icon:url";
 const char kNotificationBadge[] = "https://example.com/badge.png";
@@ -81,6 +82,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     options.setLang(kNotificationLang);
     options.setBody(kNotificationBody);
     options.setTag(kNotificationTag);
+    options.setImage(kNotificationImage);
     options.setIcon(kNotificationIcon);
     options.setBadge(kNotificationBadge);
     options.setVibrate(vibrationSequence);
@@ -185,6 +187,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls)
     }
 
     NotificationOptions options;
+    options.setImage(kNotificationIconInvalid);
     options.setIcon(kNotificationIconInvalid);
     options.setBadge(kNotificationIconInvalid);
     options.setActions(actions);
@@ -193,6 +196,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls)
     WebNotificationData notificationData = createWebNotificationData(getExecutionContext(), kNotificationTitle, options, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
 
+    EXPECT_TRUE(notificationData.image.isEmpty());
     EXPECT_TRUE(notificationData.icon.isEmpty());
     EXPECT_TRUE(notificationData.badge.isEmpty());
     for (const auto& action : notificationData.actions)

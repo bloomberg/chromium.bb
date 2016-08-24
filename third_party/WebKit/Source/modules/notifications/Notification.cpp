@@ -254,6 +254,11 @@ String Notification::tag() const
     return m_data.tag;
 }
 
+String Notification::image() const
+{
+    return m_data.image.string();
+}
+
 String Notification::icon() const
 {
     return m_data.icon.string();

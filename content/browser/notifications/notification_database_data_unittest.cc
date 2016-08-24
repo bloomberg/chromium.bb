@@ -29,6 +29,7 @@ const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
+const char kNotificationImageUrl[] = "https://example.com/image.jpg";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
 const char kNotificationBadgeUrl[] = "https://example.com/badge.png";
 const char kNotificationActionIconUrl[] = "https://example.com/action_icon.png";
@@ -51,6 +52,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   notification_data.lang = kNotificationLang;
   notification_data.body = base::ASCIIToUTF16(kNotificationBody);
   notification_data.tag = kNotificationTag;
+  notification_data.image = GURL(kNotificationImageUrl);
   notification_data.icon = GURL(kNotificationIconUrl);
   notification_data.badge = GURL(kNotificationBadgeUrl);
   notification_data.vibration_pattern = vibration_pattern;
@@ -101,6 +103,7 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   EXPECT_EQ(notification_data.lang, copied_notification_data.lang);
   EXPECT_EQ(notification_data.body, copied_notification_data.body);
   EXPECT_EQ(notification_data.tag, copied_notification_data.tag);
+  EXPECT_EQ(notification_data.image, copied_notification_data.image);
   EXPECT_EQ(notification_data.icon, copied_notification_data.icon);
   EXPECT_EQ(notification_data.badge, copied_notification_data.badge);
 

@@ -18,6 +18,10 @@ struct CONTENT_EXPORT NotificationResources {
   NotificationResources(const NotificationResources& other);
   ~NotificationResources();
 
+  // Image for the notification. The bitmap may be empty if the developer did
+  // not provide an image, or fetching of the image failed.
+  SkBitmap image;
+
   // Main icon for the notification. The bitmap may be empty if the developer
   // did not provide an icon, or fetching of the icon failed.
   SkBitmap notification_icon;

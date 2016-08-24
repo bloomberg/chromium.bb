@@ -83,6 +83,10 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // tag will replace the first displayed notification.
   std::string tag;
 
+  // URL of the image contents of the notification. May be empty if no url was
+  // specified.
+  GURL image;
+
   // URL of the icon which is to be displayed with the notification.
   GURL icon;
 

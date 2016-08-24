@@ -38,7 +38,7 @@ message NotificationDatabaseDataProto {
   // Actual data payload of the notification. This message is the protocol
   // buffer meant to serialize the content::PlatformNotificationData structure.
   //
-  // Next tag: 15
+  // Next tag: 16
   message NotificationData {
     enum Direction {
       LEFT_TO_RIGHT = 0;
@@ -51,6 +51,7 @@ message NotificationDatabaseDataProto {
     optional string lang = 3;
     optional string body = 4;
     optional string tag = 5;
+    optional string image = 15;
     optional string icon = 6;
     optional string badge = 14;
     repeated int32 vibration_pattern = 9 [packed=true];

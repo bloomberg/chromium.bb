@@ -30,6 +30,7 @@ int CurrentWorkerId() {
 NotificationResources ToNotificationResources(
     std::unique_ptr<blink::WebNotificationResources> web_resources) {
   NotificationResources resources;
+  resources.image = web_resources->image;
   resources.notification_icon = web_resources->icon;
   resources.badge = web_resources->badge;
   for (const auto& action_icon : web_resources->actionIcons)

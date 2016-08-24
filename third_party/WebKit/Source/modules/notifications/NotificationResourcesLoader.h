@@ -54,6 +54,7 @@ public:
 
 private:
     void loadImage(ExecutionContext*, const KURL&, std::unique_ptr<NotificationImageLoader::ImageCallback>);
+    void didLoadImage(const SkBitmap& image);
     void didLoadIcon(const SkBitmap& image);
     void didLoadBadge(const SkBitmap& image);
     void didLoadActionIcon(size_t actionIndex, const SkBitmap& image);
@@ -66,6 +67,7 @@ private:
     std::unique_ptr<CompletionCallback> m_completionCallback;
     int m_pendingRequestCount;
     HeapVector<Member<NotificationImageLoader>> m_imageLoaders;
+    SkBitmap m_image;
     SkBitmap m_icon;
     SkBitmap m_badge;
     Vector<SkBitmap> m_actionIcons;

@@ -459,9 +459,14 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
 
+  if (!notification_resources.image.drawsNothing()) {
+    notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);
+    notification.set_image(
+        gfx::Image::CreateFrom1xBitmap(notification_resources.image));
+  }
+
   // Badges are only supported on Android, primarily because it's the only
   // platform that makes good use of them in the status bar.
-  // TODO(mvanouwerkerk): ensure no badge is loaded when it will not be used.
 #if defined(OS_ANDROID)
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.

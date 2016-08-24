@@ -22,6 +22,7 @@ const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
 const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
+const char kNotificationImageUrl[] = "https://example.com/image.jpg";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
 const char kNotificationBadgeUrl[] = "https://example.com/badge.png";
 const int kNotificationVibrationPattern[] = {100, 200, 300};
@@ -42,6 +43,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   web_data.lang = blink::WebString::fromUTF8(kNotificationLang);
   web_data.body = blink::WebString::fromUTF8(kNotificationBody);
   web_data.tag = blink::WebString::fromUTF8(kNotificationTag);
+  web_data.image = blink::WebURL(GURL(kNotificationImageUrl));
   web_data.icon = blink::WebURL(GURL(kNotificationIconUrl));
   web_data.badge = blink::WebURL(GURL(kNotificationBadgeUrl));
   web_data.vibrate = blink::WebVector<int>(
@@ -74,6 +76,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_EQ(kNotificationLang, platform_data.lang);
   EXPECT_EQ(base::ASCIIToUTF16(kNotificationBody), platform_data.body);
   EXPECT_EQ(kNotificationTag, platform_data.tag);
+  EXPECT_EQ(kNotificationImageUrl, platform_data.image.spec());
   EXPECT_EQ(kNotificationIconUrl, platform_data.icon.spec());
   EXPECT_EQ(kNotificationBadgeUrl, platform_data.badge.spec());
   EXPECT_TRUE(platform_data.renotify);
@@ -118,6 +121,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;
+  platform_data.image = GURL(kNotificationImageUrl);
   platform_data.icon = GURL(kNotificationIconUrl);
   platform_data.badge = GURL(kNotificationBadgeUrl);
   platform_data.vibration_pattern = vibration_pattern;
@@ -146,6 +150,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   EXPECT_EQ(kNotificationLang, web_data.lang);
   EXPECT_EQ(kNotificationBody, web_data.body);
   EXPECT_EQ(kNotificationTag, web_data.tag);
+  EXPECT_EQ(kNotificationImageUrl, web_data.image.string());
   EXPECT_EQ(kNotificationIconUrl, web_data.icon.string());
   EXPECT_EQ(kNotificationBadgeUrl, web_data.badge.string());
 

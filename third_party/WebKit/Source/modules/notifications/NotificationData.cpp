@@ -59,6 +59,9 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
     webData.body = options.body();
     webData.tag = options.tag();
 
+    if (options.hasImage() && !options.image().isEmpty())
+        webData.image = completeURL(executionContext, options.image());
+
     if (options.hasIcon() && !options.icon().isEmpty())
         webData.icon = completeURL(executionContext, options.icon());
 

@@ -21,6 +21,7 @@
                 lang: "nl-NL",
                 body: "Hallo, wereld!",
                 tag: "notification",
+                image: "http://localhost/image.jpg",
                 icon: "http://localhost/my_icon.png",
                 badge: "http://localhost/badge.png",
                 timestamp: 621046800000,
@@ -37,6 +38,7 @@
             assert_equals(notification.lang, options.lang);
             assert_equals(notification.body, options.body);
             assert_equals(notification.tag, options.tag);
+            assert_equals(notification.image, options.image);
             assert_equals(notification.icon, options.icon);
             assert_equals(notification.badge, options.badge);
             assert_equals(notification.timestamp, options.timestamp);
@@ -58,6 +60,7 @@
             assert_equals(emptyNotification.lang, "");
             assert_equals(emptyNotification.body, "");
             assert_equals(emptyNotification.tag, "");
+            assert_equals(emptyNotification.image, "");
             assert_equals(emptyNotification.icon, "");
             assert_equals(emptyNotification.badge, "");
             assert_array_equals(emptyNotification.vibrate, []);
@@ -79,11 +82,13 @@
             assert_equals(equalNotification.vibrate, equalNotification.vibrate, '`vibrate` object equality');
 
             var serializedUrlNotification = new Notification("My Notification", {
+                image: "https://example.com/image.jpg",
                 icon: "https://example.com/icon.png",
                 badge: "https://example.com/badge.png"
             });
 
             // Icon URLs should be returned in serialized form.
+            assert_equals(serializedUrlNotification.image, "https://example.com/image.jpg");
             assert_equals(serializedUrlNotification.icon, "https://example.com/icon.png");
             assert_equals(serializedUrlNotification.badge, "https://example.com/badge.png");
 

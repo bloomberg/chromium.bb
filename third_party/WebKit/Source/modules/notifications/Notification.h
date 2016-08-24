@@ -90,6 +90,7 @@ public:
     String lang() const;
     String body() const;
     String tag() const;
+    String image() const;
     String icon() const;
     String badge() const;
     NavigatorVibration::VibrationPattern vibrate() const;

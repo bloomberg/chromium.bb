@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/notifications/page_notification_delegate.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 
 namespace content {
@@ -48,6 +50,16 @@ PlatformNotificationData SanitizeNotificationData(
 
 // Returns true when |resources| looks ok, false otherwise.
 bool ValidateNotificationResources(const NotificationResources& resources) {
+  // TODO(johnme): Remove this once https://crbug.com/614456 ships to stable.
+  if (!resources.image.drawsNothing() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return false;
+  }
+  if (resources.image.width() > blink::kWebNotificationMaxImageWidthPx ||
+      resources.image.height() > blink::kWebNotificationMaxImageHeightPx) {
+    return false;
+  }
   if (resources.notification_icon.width() >
           blink::kWebNotificationMaxIconSizePx ||
       resources.notification_icon.height() >
