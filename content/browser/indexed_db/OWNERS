@@ -1,4 +1,6 @@
-dgrogan@chromium.org
-michaeln@chromium.org
 jsbell@chromium.org
 cmumford@chromium.org
+
+# Secondary: only if other OWNERS are unavailable and something is urgent.
+dgrogan@chromium.org
+michaeln@chromium.org
