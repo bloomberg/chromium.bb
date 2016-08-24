@@ -19,6 +19,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -3874,27 +3875,28 @@ bool GLES2DecoderImpl::DeletePathsCHROMIUMHelper(GLuint first_client_id,
   return true;
 }
 
-void GLES2DecoderImpl::DeleteBuffersHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
+                                           const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    Buffer* buffer = GetBuffer(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    Buffer* buffer = GetBuffer(client_id);
     if (buffer && !buffer->IsDeleted()) {
       buffer->RemoveMappedRange();
       state_.RemoveBoundBuffer(buffer);
       transform_feedback_manager_->RemoveBoundBuffer(buffer);
-      RemoveBuffer(client_ids[ii]);
+      RemoveBuffer(client_id);
     }
   }
 }
 
-void GLES2DecoderImpl::DeleteFramebuffersHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteFramebuffersHelper(GLsizei n,
+                                                const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
      features().chromium_framebuffer_multisample;
 
   for (GLsizei ii = 0; ii < n; ++ii) {
-    Framebuffer* framebuffer =
-        GetFramebuffer(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    Framebuffer* framebuffer = GetFramebuffer(client_id);
     if (framebuffer && !framebuffer->IsDeleted()) {
       if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
         GLenum target = supports_separate_framebuffer_binds ?
@@ -3915,18 +3917,18 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
       OnFboChanged();
-      RemoveFramebuffer(client_ids[ii]);
+      RemoveFramebuffer(client_id);
     }
   }
 }
 
-void GLES2DecoderImpl::DeleteRenderbuffersHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteRenderbuffersHelper(GLsizei n,
+                                                 const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
      features().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
-    Renderbuffer* renderbuffer =
-        GetRenderbuffer(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    Renderbuffer* renderbuffer = GetRenderbuffer(client_id);
     if (renderbuffer && !renderbuffer->IsDeleted()) {
       if (state_.bound_renderbuffer.get() == renderbuffer) {
         state_.bound_renderbuffer = NULL;
@@ -3948,17 +3950,18 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
         }
       }
       framebuffer_state_.clear_state_dirty = true;
-      RemoveRenderbuffer(client_ids[ii]);
+      RemoveRenderbuffer(client_id);
     }
   }
 }
 
-void GLES2DecoderImpl::DeleteTexturesHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteTexturesHelper(GLsizei n,
+                                            const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
      features().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
-    TextureRef* texture_ref = GetTexture(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    TextureRef* texture_ref = GetTexture(client_id);
     if (texture_ref) {
       Texture* texture = texture_ref->texture();
       if (texture->IsAttachedToFramebuffer()) {
@@ -3983,29 +3986,31 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
               ->UnbindTexture(GL_FRAMEBUFFER, texture_ref);
         }
       }
-      RemoveTexture(client_ids[ii]);
+      RemoveTexture(client_id);
     }
   }
 }
 
-void GLES2DecoderImpl::DeleteSamplersHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteSamplersHelper(GLsizei n,
+                                            const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    Sampler* sampler = GetSampler(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    Sampler* sampler = GetSampler(client_id);
     if (sampler && !sampler->IsDeleted()) {
       // Unbind from current sampler units.
       state_.UnbindSampler(sampler);
 
-      RemoveSampler(client_ids[ii]);
+      RemoveSampler(client_id);
     }
   }
 }
 
 void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
-    GLsizei n, const GLuint* client_ids) {
+    GLsizei n,
+    const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    TransformFeedback* transform_feedback = GetTransformFeedback(
-        client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    TransformFeedback* transform_feedback = GetTransformFeedback(client_id);
     if (transform_feedback) {
       if (transform_feedback->active()) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glDeleteTransformFeedbacks",
@@ -4020,7 +4025,7 @@ void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
         state_.bound_transform_feedback =
             state_.default_transform_feedback.get();
       }
-      RemoveTransformFeedback(client_ids[ii]);
+      RemoveTransformFeedback(client_id);
     }
   }
 }
@@ -5691,10 +5696,15 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
   }
 }
 
-void GLES2DecoderImpl::InvalidateFramebufferImpl(
-    GLenum target, GLsizei count, const GLenum* attachments,
-    GLint x, GLint y, GLsizei width, GLsizei height,
-    const char* function_name, FramebufferOperation op) {
+void GLES2DecoderImpl::InvalidateFramebufferImpl(GLenum target,
+                                                 GLsizei count,
+                                                 const GLenum* attachments,
+                                                 GLint x,
+                                                 GLint y,
+                                                 GLsizei width,
+                                                 GLsizei height,
+                                                 const char* function_name,
+                                                 FramebufferOperation op) {
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
 
   // Because of performance issues, no-op if the format of the attachment is
@@ -5710,19 +5720,20 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   GLenum thresh0 = GL_COLOR_ATTACHMENT0 + group_->max_color_attachments();
   GLenum thresh1 = GL_COLOR_ATTACHMENT15;
   for (GLsizei i = 0; i < count; ++i) {
+    GLenum attachment = attachments[i];
     if (framebuffer) {
-      if (attachments[i] >= thresh0 && attachments[i] <= thresh1) {
+      if (attachment >= thresh0 && attachment <= thresh1) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, function_name, "invalid attachment");
         return;
       }
-      if (!validators_->attachment.IsValid(attachments[i])) {
-        LOCAL_SET_GL_ERROR_INVALID_ENUM(
-            function_name, attachments[i], "attachments");
+      if (!validators_->attachment.IsValid(attachment)) {
+        LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, attachment,
+                                        "attachments");
         return;
       }
       if (has_depth_stencil_format) {
-        switch(attachments[i]) {
+        switch (attachment) {
           case GL_DEPTH_ATTACHMENT:
             invalidate_depth = true;
             continue;
@@ -5736,13 +5747,13 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         }
       }
     } else {
-      if (!validators_->backbuffer_attachment.IsValid(attachments[i])) {
-        LOCAL_SET_GL_ERROR_INVALID_ENUM(
-            function_name, attachments[i], "attachments");
+      if (!validators_->backbuffer_attachment.IsValid(attachment)) {
+        LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, attachment,
+                                        "attachments");
         return;
       }
     }
-    validated_attachments[validated_count++] = attachments[i];
+    validated_attachments[validated_count++] = attachment;
   }
   if (invalidate_depth && invalidate_stencil) {
     validated_attachments[validated_count++] = GL_DEPTH_STENCIL_ATTACHMENT;
@@ -8245,8 +8256,9 @@ void GLES2DecoderImpl::DoUniform1i(GLint fake_location, GLint v0) {
   glUniform1i(real_location, v0);
 }
 
-void GLES2DecoderImpl::DoUniform1iv(
-    GLint fake_location, GLsizei count, const GLint *value) {
+void GLES2DecoderImpl::DoUniform1iv(GLint fake_location,
+                                    GLsizei count,
+                                    const GLint* values) {
   GLenum type = 0;
   GLint real_location = -1;
   if (!PrepForSetUniformByLocation(fake_location,
@@ -8257,16 +8269,19 @@ void GLES2DecoderImpl::DoUniform1iv(
                                    &count)) {
     return;
   }
+  auto values_copy = base::MakeUnique<GLint[]>(count);
+  GLint* safe_values = values_copy.get();
+  std::copy(values, values + count, safe_values);
   if (type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||
       type == GL_SAMPLER_CUBE || type == GL_SAMPLER_EXTERNAL_OES) {
     if (!state_.current_program->SetSamplers(
-          state_.texture_units.size(), fake_location, count, value)) {
+            state_.texture_units.size(), fake_location, count, safe_values)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_VALUE, "glUniform1iv", "texture unit out of range");
       return;
     }
   }
-  glUniform1iv(real_location, count, value);
+  glUniform1iv(real_location, count, safe_values);
 }
 
 void GLES2DecoderImpl::DoUniform1uiv(
@@ -9997,7 +10012,7 @@ void GLES2DecoderImpl::DoVertexAttrib1fv(GLuint index, const GLfloat* v) {
   if (SetVertexAttribValue("glVertexAttrib1fv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_FLOAT);
-    glVertexAttrib1fv(index, v);
+    glVertexAttrib1fv(index, t);
   }
 }
 
@@ -10006,7 +10021,7 @@ void GLES2DecoderImpl::DoVertexAttrib2fv(GLuint index, const GLfloat* v) {
   if (SetVertexAttribValue("glVertexAttrib2fv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_FLOAT);
-    glVertexAttrib2fv(index, v);
+    glVertexAttrib2fv(index, t);
   }
 }
 
@@ -10015,15 +10030,16 @@ void GLES2DecoderImpl::DoVertexAttrib3fv(GLuint index, const GLfloat* v) {
   if (SetVertexAttribValue("glVertexAttrib3fv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_FLOAT);
-    glVertexAttrib3fv(index, v);
+    glVertexAttrib3fv(index, t);
   }
 }
 
 void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
-  if (SetVertexAttribValue("glVertexAttrib4fv", index, v)) {
+  GLfloat t[4] = {v[0], v[1], v[2], v[3]};
+  if (SetVertexAttribValue("glVertexAttrib4fv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_FLOAT);
-    glVertexAttrib4fv(index, v);
+    glVertexAttrib4fv(index, t);
   }
 }
 
@@ -10038,10 +10054,11 @@ void GLES2DecoderImpl::DoVertexAttribI4i(
 }
 
 void GLES2DecoderImpl::DoVertexAttribI4iv(GLuint index, const GLint* v) {
-  if (SetVertexAttribValue("glVertexAttribI4iv", index, v)) {
+  GLint t[4] = {v[0], v[1], v[2], v[3]};
+  if (SetVertexAttribValue("glVertexAttribI4iv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_INT);
-    glVertexAttribI4iv(index, v);
+    glVertexAttribI4iv(index, t);
   }
 }
 
@@ -10056,10 +10073,11 @@ void GLES2DecoderImpl::DoVertexAttribI4ui(
 }
 
 void GLES2DecoderImpl::DoVertexAttribI4uiv(GLuint index, const GLuint* v) {
-  if (SetVertexAttribValue("glVertexAttribI4uiv", index, v)) {
+  GLuint t[4] = {v[0], v[1], v[2], v[3]};
+  if (SetVertexAttribValue("glVertexAttribI4uiv", index, t)) {
     state_.SetGenericVertexAttribBaseType(
         index, SHADER_VARIABLE_UINT);
-    glVertexAttribI4uiv(index, v);
+    glVertexAttribI4uiv(index, t);
   }
 }
 
@@ -14598,10 +14616,11 @@ bool GLES2DecoderImpl::GenQueriesEXTHelper(
   return true;
 }
 
-void GLES2DecoderImpl::DeleteQueriesEXTHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteQueriesEXTHelper(GLsizei n,
+                                              const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    query_manager_->RemoveQuery(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    query_manager_->RemoveQuery(client_id);
   }
 }
 
@@ -14872,16 +14891,16 @@ bool GLES2DecoderImpl::GenVertexArraysOESHelper(
   return true;
 }
 
-void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
-    GLsizei n, const GLuint* client_ids) {
+void GLES2DecoderImpl::DeleteVertexArraysOESHelper(GLsizei n,
+                                                   const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    VertexAttribManager* vao =
-        GetVertexAttribManager(client_ids[ii]);
+    GLuint client_id = client_ids[ii];
+    VertexAttribManager* vao = GetVertexAttribManager(client_id);
     if (vao && !vao->IsDeleted()) {
       if (state_.vertex_attrib_manager.get() == vao) {
         DoBindVertexArrayOES(0);
       }
-      RemoveVertexAttribManager(client_ids[ii]);
+      RemoveVertexAttribManager(client_id);
     }
   }
 }
@@ -15789,7 +15808,7 @@ void GLES2DecoderImpl::ProduceTextureRef(const char* func_name,
                                          TextureRef* texture_ref,
                                          GLenum target,
                                          const GLbyte* data) {
-  const Mailbox mailbox = *reinterpret_cast<const Mailbox*>(data);
+  Mailbox mailbox = *reinterpret_cast<const Mailbox*>(data);
   DLOG_IF(ERROR, !mailbox.Verify()) << func_name << " was passed a "
                                        "mailbox that was not generated by "
                                        "GenMailboxCHROMIUM.";
@@ -15828,7 +15847,7 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoConsumeTextureCHROMIUM",
       "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(data[0]));
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
+  Mailbox mailbox = *reinterpret_cast<const Mailbox*>(data);
   DLOG_IF(ERROR, !mailbox.Verify()) << "ConsumeTextureCHROMIUM was passed a "
                                        "mailbox that was not generated by "
                                        "GenMailboxCHROMIUM.";
@@ -15892,7 +15911,7 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(GLenum target,
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL",
       "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(data[0]));
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
+  Mailbox mailbox = *reinterpret_cast<const Mailbox*>(data);
   DLOG_IF(ERROR, !mailbox.Verify()) << "CreateAndConsumeTextureCHROMIUM was "
                                        "passed a mailbox that was not "
                                        "generated by GenMailboxCHROMIUM.";
@@ -16102,6 +16121,7 @@ void GLES2DecoderImpl::DoTraceEndCHROMIUM() {
 
 void GLES2DecoderImpl::DoDrawBuffersEXT(
     GLsizei count, const GLenum* bufs) {
+  DCHECK_LE(group_->max_draw_buffers(), 16u);
   if (count > static_cast<GLsizei>(group_->max_draw_buffers())) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
@@ -16111,34 +16131,37 @@ void GLES2DecoderImpl::DoDrawBuffersEXT(
 
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
   if (framebuffer) {
+    GLenum safe_bufs[16];
     for (GLsizei i = 0; i < count; ++i) {
-      if (bufs[i] != static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i) &&
-          bufs[i] != GL_NONE) {
+      GLenum buf = bufs[i];
+      if (buf != static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i) &&
+          buf != GL_NONE) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION,
             "glDrawBuffersEXT",
             "bufs[i] not GL_NONE or GL_COLOR_ATTACHMENTi_EXT");
         return;
       }
+      safe_bufs[i] = buf;
     }
-    glDrawBuffersARB(count, bufs);
-    framebuffer->SetDrawBuffers(count, bufs);
+    glDrawBuffersARB(count, safe_bufs);
+    framebuffer->SetDrawBuffers(count, safe_bufs);
   } else {  // backbuffer
-    if (count != 1 ||
-        (bufs[0] != GL_BACK && bufs[0] != GL_NONE)) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glDrawBuffersEXT",
-          "more than one buffer or bufs not GL_NONE or GL_BACK");
+    if (count != 1) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glDrawBuffersEXT",
+                         "invalid number of buffers");
       return;
     }
-    GLenum mapped_buf = bufs[0];
-    if (GetBackbufferServiceId() != 0 &&  // emulated backbuffer
-        bufs[0] == GL_BACK) {
-      mapped_buf = GL_COLOR_ATTACHMENT0;
+    GLenum buf = bufs[0];
+    if (buf != GL_BACK && buf != GL_NONE) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glDrawBuffersEXT",
+                         "buffer is not GL_NONE or GL_BACK");
+      return;
     }
-    glDrawBuffersARB(count, &mapped_buf);
-    back_buffer_draw_buffer_ = bufs[0];
+    back_buffer_draw_buffer_ = buf;
+    if (buf == GL_BACK && GetBackbufferServiceId() != 0)  // emulated backbuffer
+      buf = GL_COLOR_ATTACHMENT0;
+    glDrawBuffersARB(count, &buf);
   }
 }
 
@@ -16168,7 +16191,7 @@ void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,
   memcpy(target_matrix, matrix, sizeof(GLfloat) * 16);
   // The matrix_mode is either GL_PATH_MODELVIEW_NV or GL_PATH_PROJECTION_NV
   // since the values of the _NV and _CHROMIUM tokens match.
-  glMatrixLoadfEXT(matrix_mode, matrix);
+  glMatrixLoadfEXT(matrix_mode, target_matrix);
 }
 
 void GLES2DecoderImpl::DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode) {

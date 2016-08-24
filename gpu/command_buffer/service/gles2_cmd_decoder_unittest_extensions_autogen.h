@@ -21,10 +21,8 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
       0,
   };
   cmd.Init(GL_PATH_PROJECTION_CHROMIUM, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      MatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM,
-                     reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM,
+                                   PointsToArray(temp, 16)));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

@@ -2086,9 +2086,7 @@ TEST_P(GLES3DecoderTest, ClearBufferivImmediateValidArgs) {
       .RetiresOnSaturation();
   SetupExpectationsForApplyingDirtyState(
       false, false, false, 0x1111, false, false, 0, 0, false);
-  EXPECT_CALL(*gl_, ClearBufferiv(
-                        GL_COLOR, 0,
-                        reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, ClearBufferiv(GL_COLOR, 0, PointsToArray(temp, 4)));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -2120,10 +2118,7 @@ TEST_P(GLES3DecoderTest, ClearBufferuivImmediateValidArgs) {
       .RetiresOnSaturation();
   SetupExpectationsForApplyingDirtyState(
       false, false, false, 0x1111, false, false, 0, 0, false);
-  EXPECT_CALL(*gl_, ClearBufferuiv(
-                        GL_COLOR, 0,
-                        reinterpret_cast<GLuint*>(
-                            ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, ClearBufferuiv(GL_COLOR, 0, PointsToArray(temp, 4)));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -2161,10 +2156,7 @@ TEST_P(GLES3DecoderTest, ClearBufferfvImmediateValidArgs) {
       .RetiresOnSaturation();
   SetupExpectationsForApplyingDirtyState(
       true, true, false, 0x1110, true, true, 0, 0, false);
-  EXPECT_CALL(*gl_, ClearBufferfv(
-                        GL_DEPTH, 0,
-                        reinterpret_cast<GLfloat*>(
-                            ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, ClearBufferfv(GL_DEPTH, 0, PointsToArray(temp, 4)));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

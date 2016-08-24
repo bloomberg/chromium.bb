@@ -160,9 +160,13 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &max_color_attachments_);
     if (max_color_attachments_ < 1)
       max_color_attachments_ = 1;
+    if (max_color_attachments_ > 16)
+      max_color_attachments_ = 16;
     GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, &max_draw_buffers_);
     if (max_draw_buffers_ < 1)
       max_draw_buffers_ = 1;
+    if (max_draw_buffers_ > 16)
+      max_draw_buffers_ = 16;
   }
   if (feature_info_->feature_flags().ext_blend_func_extended) {
     GetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT,

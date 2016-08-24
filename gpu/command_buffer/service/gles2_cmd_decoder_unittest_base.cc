@@ -1597,6 +1597,7 @@ const GLint GLES2DecoderTestBase::kUniform4Size;
 const GLint GLES2DecoderTestBase::kUniform5Size;
 const GLint GLES2DecoderTestBase::kUniform6Size;
 const GLint GLES2DecoderTestBase::kUniform7Size;
+const GLint GLES2DecoderTestBase::kUniform8Size;
 const GLint GLES2DecoderTestBase::kUniform1RealLocation;
 const GLint GLES2DecoderTestBase::kUniform2RealLocation;
 const GLint GLES2DecoderTestBase::kUniform2ElementRealLocation;
@@ -1605,6 +1606,7 @@ const GLint GLES2DecoderTestBase::kUniform4RealLocation;
 const GLint GLES2DecoderTestBase::kUniform5RealLocation;
 const GLint GLES2DecoderTestBase::kUniform6RealLocation;
 const GLint GLES2DecoderTestBase::kUniform7RealLocation;
+const GLint GLES2DecoderTestBase::kUniform8RealLocation;
 const GLint GLES2DecoderTestBase::kUniform1FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform2ElementFakeLocation;
@@ -1613,6 +1615,7 @@ const GLint GLES2DecoderTestBase::kUniform4FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform5FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform6FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform7FakeLocation;
+const GLint GLES2DecoderTestBase::kUniform8FakeLocation;
 const GLint GLES2DecoderTestBase::kUniform1DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform2DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform3DesiredLocation;
@@ -1620,6 +1623,7 @@ const GLint GLES2DecoderTestBase::kUniform4DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform5DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform6DesiredLocation;
 const GLint GLES2DecoderTestBase::kUniform7DesiredLocation;
+const GLint GLES2DecoderTestBase::kUniform8DesiredLocation;
 const GLenum GLES2DecoderTestBase::kUniform1Type;
 const GLenum GLES2DecoderTestBase::kUniform2Type;
 const GLenum GLES2DecoderTestBase::kUniform3Type;
@@ -1627,6 +1631,7 @@ const GLenum GLES2DecoderTestBase::kUniform4Type;
 const GLenum GLES2DecoderTestBase::kUniform5Type;
 const GLenum GLES2DecoderTestBase::kUniform6Type;
 const GLenum GLES2DecoderTestBase::kUniform7Type;
+const GLenum GLES2DecoderTestBase::kUniform8Type;
 const GLenum GLES2DecoderTestBase::kUniformCubemapType;
 const GLint GLES2DecoderTestBase::kInvalidUniformLocation;
 const GLint GLES2DecoderTestBase::kBadUniformIndex;
@@ -1646,6 +1651,7 @@ const char* GLES2DecoderTestBase::kUniform4Name = "uniform4";
 const char* GLES2DecoderTestBase::kUniform5Name = "uniform5";
 const char* GLES2DecoderTestBase::kUniform6Name = "uniform6";
 const char* GLES2DecoderTestBase::kUniform7Name = "uniform7";
+const char* GLES2DecoderTestBase::kUniform8Name = "uniform8";
 
 const char* GLES2DecoderTestBase::kOutputVariable1Name = "gl_FragColor";
 const char* GLES2DecoderTestBase::kOutputVariable1NameESSL3 = "color";
@@ -1679,6 +1685,9 @@ void GLES2DecoderTestBase::SetupDefaultProgram() {
       { kUniform7Name, kUniform7Size, kUniform7Type,
         kUniform7FakeLocation, kUniform7RealLocation,
         kUniform7DesiredLocation },
+      { kUniform8Name, kUniform8Size, kUniform8Type,
+        kUniform8FakeLocation, kUniform8RealLocation,
+        kUniform8DesiredLocation },
     };
     SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                 client_program_id_, kServiceProgramId,

@@ -5982,10 +5982,13 @@ class GENnHandler(TypeHandler):
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     param_name = func.GetLastOriginalArg().name
-    f.write("  if (!CheckUniqueAndNonNullIds(n, %s) || !%sHelper(n, %s)) {\n"
+    f.write("  auto %(name)s_copy = base::MakeUnique<GLuint[]>(n);\n"
+            "  GLuint* %(name)s_safe = %(name)s_copy.get();\n"
+            "  std::copy(%(name)s, %(name)s + n, %(name)s_safe);\n"
+            "  if (!CheckUniqueAndNonNullIds(n, %(name)s_safe) ||\n"
+            "      !%(func)sHelper(n, %(name)s_safe)) {\n"
             "    return error::kInvalidArguments;\n"
-            "  }\n" %
-            (param_name, func.original_name, param_name))
+            "  }\n" % {'name': param_name, 'func': func.original_name})
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -7029,8 +7032,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmd.Init(%(gl_client_args)s, &temp[0]);
   EXPECT_CALL(
       *gl_,
-      %(gl_func_name)s(%(gl_args)s, %(data_ref)sreinterpret_cast<
-          %(data_type)s*>(ImmediateDataAddress(&cmd))));"""
+      %(gl_func_name)s(%(gl_args)s, %(expectation)s));"""
     if func.IsUnsafe():
       valid_test += """
   decoder_->set_unsafe_es3_apis_enabled(true);"""
@@ -7053,11 +7055,16 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
       arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()[0:-1]
     ]
     gl_any_strings = ["_"] * len(gl_arg_strings)
+    data_count = self.GetArrayCount(func)
+    if func.GetInfo('first_element_only'):
+      expectation = "temp[0]"
+    else:
+      expectation = "PointsToArray(temp, %s)" % data_count
 
     extra = {
-      'data_ref': ("*" if func.GetInfo('first_element_only') else ""),
+      'expectation': expectation,
       'data_type': self.GetArrayType(func),
-      'data_count': self.GetArrayCount(func),
+      'data_count': data_count,
       'data_value': func.GetInfo('data_value') or '0',
       'gl_client_args': ", ".join(gl_client_arg_strings),
       'gl_args': ", ".join(gl_arg_strings),
@@ -7352,12 +7359,12 @@ TEST_P(%(test_name)s, %(name)sValidArgsCountTooLarge) {
     valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s& cmd = *GetImmediateAs<cmds::%(name)s>();
+  SpecializedSetup<cmds::%(name)s, 0>(true);
+  %(data_type)s temp[%(data_count)s * 2] = { 0, };
   EXPECT_CALL(
       *gl_,
       %(gl_func_name)s(%(gl_args)s,
-          reinterpret_cast<%(data_type)s*>(ImmediateDataAddress(&cmd))));
-  SpecializedSetup<cmds::%(name)s, 0>(true);
-  %(data_type)s temp[%(data_count)s * 2] = { 0, };
+          PointsToArray(temp, %(data_count)s)));
   cmd.Init(%(args)s, &temp[0]);"""
     if func.IsUnsafe():
       valid_test += """
@@ -8991,9 +8998,8 @@ class ImmediatePointerArgument(Argument):
 
   def WriteGetCode(self, f):
     """Overridden from Argument."""
-    f.write(
-      "  %s %s = GetImmediateDataAs<%s>(\n" %
-      (self.type, self.name, self.type))
+    f.write("  %s %s = GetImmediateDataAs<%s>(\n" %
+            (self.type, self.name, self.type))
     f.write("      c, data_size, immediate_data_size);\n")
 
   def WriteValidationCode(self, f, func):

@@ -70,11 +70,6 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return reinterpret_cast<T*>(immediate_buffer_);
   }
 
-  template <typename T, typename Command>
-  T GetImmediateDataAs(Command* cmd) {
-    return reinterpret_cast<T>(ImmediateDataAddress(cmd));
-  }
-
   void ClearSharedMemory() {
     engine_->ClearSharedMemory();
   }
@@ -573,6 +568,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const char* kUniform5Name;
   static const char* kUniform6Name;
   static const char* kUniform7Name;
+  static const char* kUniform8Name;
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
@@ -580,6 +576,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLint kUniform5Size = 1;
   static const GLint kUniform6Size = 1;
   static const GLint kUniform7Size = 1;
+  static const GLint kUniform8Size = 2;
   static const GLint kUniform1RealLocation = 3;
   static const GLint kUniform2RealLocation = 10;
   static const GLint kUniform2ElementRealLocation = 12;
@@ -588,6 +585,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLint kUniform5RealLocation = 30;
   static const GLint kUniform6RealLocation = 32;
   static const GLint kUniform7RealLocation = 44;
+  static const GLint kUniform8RealLocation = 56;
   static const GLint kUniform1FakeLocation = 0;               // These are
   static const GLint kUniform2FakeLocation = 1;               // hardcoded
   static const GLint kUniform2ElementFakeLocation = 0x10001;  // to match
@@ -596,6 +594,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLint kUniform5FakeLocation = 4;               //
   static const GLint kUniform6FakeLocation = 5;               //
   static const GLint kUniform7FakeLocation = 6;               //
+  static const GLint kUniform8FakeLocation = 7;               //
   static const GLint kUniform1DesiredLocation = -1;
   static const GLint kUniform2DesiredLocation = -1;
   static const GLint kUniform3DesiredLocation = -1;
@@ -603,6 +602,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLint kUniform5DesiredLocation = -1;
   static const GLint kUniform6DesiredLocation = -1;
   static const GLint kUniform7DesiredLocation = -1;
+  static const GLint kUniform8DesiredLocation = -1;
   static const GLenum kUniform1Type = GL_SAMPLER_2D;
   static const GLenum kUniform2Type = GL_INT_VEC2;
   static const GLenum kUniform3Type = GL_FLOAT_VEC3;
@@ -610,6 +610,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const GLenum kUniform5Type = GL_UNSIGNED_INT_VEC2;
   static const GLenum kUniform6Type = GL_UNSIGNED_INT_VEC3;
   static const GLenum kUniform7Type = GL_UNSIGNED_INT_VEC4;
+  static const GLenum kUniform8Type = GL_INT;
   static const GLenum kUniformSamplerExternalType = GL_SAMPLER_EXTERNAL_OES;
   static const GLenum kUniformCubemapType = GL_SAMPLER_CUBE;
   static const GLint kInvalidUniformLocation = 30;
@@ -770,6 +771,14 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
 // SpecializedSetup specializations that are needed in multiple unittest files.
 template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::LinkProgram, 0>(bool valid);
+
+MATCHER_P2(PointsToArray, array, size, "") {
+  for (size_t i = 0; i < static_cast<size_t>(size); ++i) {
+    if (arg[i] != array[i])
+      return false;
+  }
+  return true;
+}
 
 }  // namespace gles2
 }  // namespace gpu

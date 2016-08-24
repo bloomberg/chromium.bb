@@ -1799,13 +1799,11 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1uiValidArgs) {
 
 TEST_P(GLES2DecoderWithShaderTest, Uniform1ivImmediateValidArgs) {
   Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
-  EXPECT_CALL(*gl_,
-              Uniform1iv(kUniform1RealLocation,
-                         1,
-                         reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
-  GLint temp[1 * 2] = {
+  GLint temp[1] = {
       0,
   };
+  EXPECT_CALL(*gl_,
+              Uniform1iv(kUniform1RealLocation, 1, PointsToArray(temp, 1)));
   cmd.Init(kUniform1FakeLocation, 1, &temp[0]);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
@@ -1847,16 +1845,33 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform1ivSamplerIsLimited) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderWithShaderTest, Uniform1ivArray) {
+  Uniform1ivImmediate& cmd = *GetImmediateAs<Uniform1ivImmediate>();
+  GLint temp[3] = {
+      0, 1, 2,
+  };
+  EXPECT_CALL(*gl_,
+              Uniform1iv(kUniform8RealLocation, 2, PointsToArray(temp, 2)));
+  cmd.Init(kUniform8FakeLocation, 2, &temp[0]);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_CALL(*gl_,
+              Uniform1iv(kUniform8RealLocation, 2, PointsToArray(temp, 2)));
+  cmd.Init(kUniform8FakeLocation, 3, &temp[0]);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+
 TEST_P(GLES2DecoderWithShaderTest, Uniform1uivImmediateValidArgs) {
   Uniform1uivImmediate& cmd =
       *GetImmediateAs<Uniform1uivImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      Uniform1uiv(kUniform4RealLocation, 1,
-                  reinterpret_cast<GLuint*>(ImmediateDataAddress(&cmd))));
-  GLuint temp[1 * 2] = {
+  GLuint temp[1] = {
       0,
   };
+  EXPECT_CALL(*gl_,
+              Uniform1uiv(kUniform4RealLocation, 1, PointsToArray(temp, 1)));
   cmd.Init(kUniform4FakeLocation, 1, &temp[0]);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -1902,13 +1917,11 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform2uiValidArgs) {
 TEST_P(GLES2DecoderWithShaderTest, Uniform2uivImmediateValidArgs) {
   Uniform2uivImmediate& cmd =
       *GetImmediateAs<Uniform2uivImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      Uniform2uiv(kUniform5RealLocation, 1,
-                  reinterpret_cast<GLuint*>(ImmediateDataAddress(&cmd))));
   GLuint temp[2 * 1] = {
       0,
   };
+  EXPECT_CALL(*gl_,
+              Uniform2uiv(kUniform5RealLocation, 1, PointsToArray(temp, 2)));
   cmd.Init(kUniform5FakeLocation, 1, &temp[0]);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -1931,13 +1944,11 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform3uiValidArgs) {
 TEST_P(GLES2DecoderWithShaderTest, Uniform3uivImmediateValidArgs) {
   Uniform3uivImmediate& cmd =
       *GetImmediateAs<Uniform3uivImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      Uniform3uiv(kUniform6RealLocation, 1,
-                  reinterpret_cast<GLuint*>(ImmediateDataAddress(&cmd))));
   GLuint temp[3 * 1] = {
       0,
   };
+  EXPECT_CALL(*gl_,
+              Uniform3uiv(kUniform6RealLocation, 1, PointsToArray(temp, 3)));
   cmd.Init(kUniform6FakeLocation, 1, &temp[0]);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
@@ -1960,13 +1971,11 @@ TEST_P(GLES2DecoderWithShaderTest, Uniform4uiValidArgs) {
 TEST_P(GLES2DecoderWithShaderTest, Uniform4uivImmediateValidArgs) {
   Uniform4uivImmediate& cmd =
       *GetImmediateAs<Uniform4uivImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      Uniform4uiv(kUniform7RealLocation, 1,
-                  reinterpret_cast<GLuint*>(ImmediateDataAddress(&cmd))));
   GLuint temp[4 * 1] = {
       0,
   };
+  EXPECT_CALL(*gl_,
+              Uniform4uiv(kUniform7RealLocation, 1, PointsToArray(temp, 4)));
   cmd.Init(kUniform7FakeLocation, 1, &temp[0]);
   decoder_->set_unsafe_es3_apis_enabled(true);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
