@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
@@ -23,8 +23,6 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
-#include "services/shell/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -230,11 +228,6 @@ void SetElementReadOnly(WebInputElement& element, bool read_only) {
                        read_only ? WebString::fromUTF8("true") : WebString());
 }
 
-enum PasswordFormSourceType {
-  PasswordFormSubmitted,
-  PasswordFormInPageNavigation,
-};
-
 }  // namespace
 
 namespace autofill {
@@ -249,8 +242,17 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // protected.
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
-    password_autofill_agent_->FillPasswordForm(kPasswordFillFormDataId,
-                                               fill_data);
+    AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
+    static_cast<IPC::Listener*>(password_autofill_agent_)
+        ->OnMessageReceived(msg);
+  }
+
+  // As above, but fills for an iframe.
+  void SimulateOnFillPasswordFormForFrame(
+      WebFrame* frame,
+      const PasswordFormFillData& fill_data) {
+    AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
+    content::RenderFrame::FromWebFrame(frame)->OnMessageReceived(msg);
   }
 
   // Simulates the show initial password account suggestions message being sent
@@ -323,18 +325,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::TearDown();
   }
 
-  void RegisterMainFrameRemoteInterfaces() override {
-    // We only use the fake driver for main frame
-    // because our test cases only involve the main frame.
-    shell::InterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    shell::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(
-        mojom::PasswordManagerDriver::Name_,
-        base::Bind(&PasswordAutofillAgentTest::BindPasswordManagerDriver,
-                   base::Unretained(this)));
-  }
-
   void SetFillOnAccountSelect() {
     base::FeatureList::ClearInstanceForTesting();
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
@@ -386,6 +376,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       const base::string16& password) {
     // This call is necessary to setup the autofill agent appropriate for the
     // user selection; simulates the menu actually popping up.
+    render_thread_->sink().ClearMessages();
     static_cast<autofill::PageClickListener*>(autofill_agent_)
         ->FormControlElementClicked(input, false);
 
@@ -458,56 +449,47 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   // the expected flag for the PasswordAutofillManager, whether to show all
   // suggestions, or only those starting with |username|.
   void CheckSuggestions(const std::string& username, bool show_all) {
-    base::RunLoop().RunUntilIdle();
-
-    ASSERT_TRUE(fake_driver_.called_show_pw_suggestions());
-    EXPECT_EQ(kPasswordFillFormDataId, fake_driver_.show_pw_suggestions_key());
-    ASSERT_TRUE(static_cast<bool>(fake_driver_.show_pw_suggestions_username()));
-    EXPECT_EQ(ASCIIToUTF16(username),
-              *(fake_driver_.show_pw_suggestions_username()));
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_ShowPasswordSuggestions::ID);
+    ASSERT_TRUE(message);
+    std::tuple<int, base::i18n::TextDirection, base::string16, int, gfx::RectF>
+        args;
+    AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
+    EXPECT_EQ(kPasswordFillFormDataId, std::get<0>(args));
+    EXPECT_EQ(ASCIIToUTF16(username), std::get<2>(args));
     EXPECT_EQ(show_all,
-              static_cast<bool>(fake_driver_.show_pw_suggestions_options() &
-                                autofill::SHOW_ALL));
+              static_cast<bool>(std::get<3>(args) & autofill::SHOW_ALL));
 
-    fake_driver_.reset_show_pw_suggestions();
-  }
-
-  bool GetCalledShowPasswordSuggestions() {
-    base::RunLoop().RunUntilIdle();
-    return fake_driver_.called_show_pw_suggestions();
+    render_thread_->sink().ClearMessages();
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value) {
-    base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(fake_driver_.called_password_form_submitted());
-    ASSERT_TRUE(static_cast<bool>(fake_driver_.password_form_submitted()));
-    const autofill::PasswordForm& form =
-        *(fake_driver_.password_form_submitted());
-    EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
-    EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
-    EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_PasswordFormSubmitted::ID);
+    ASSERT_TRUE(message);
+    std::tuple<autofill::PasswordForm> args;
+    AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
+    EXPECT_EQ(ASCIIToUTF16(username_value), std::get<0>(args).username_value);
+    EXPECT_EQ(ASCIIToUTF16(password_value), std::get<0>(args).password_value);
+    EXPECT_EQ(ASCIIToUTF16(new_password_value),
+              std::get<0>(args).new_password_value);
   }
 
   void ExpectFieldPropertiesMasks(
-      PasswordFormSourceType expected_type,
+      uint32_t expected_message_id,
       const std::map<base::string16, FieldPropertiesMask>&
           expected_properties_masks) {
-    base::RunLoop().RunUntilIdle();
-    autofill::PasswordForm form;
-    if (expected_type == PasswordFormSubmitted) {
-      ASSERT_TRUE(fake_driver_.called_password_form_submitted());
-      ASSERT_TRUE(static_cast<bool>(fake_driver_.password_form_submitted()));
-      form = *(fake_driver_.password_form_submitted());
-    } else {
-      ASSERT_EQ(PasswordFormInPageNavigation, expected_type);
-      ASSERT_TRUE(fake_driver_.called_inpage_navigation());
-      ASSERT_TRUE(
-          static_cast<bool>(fake_driver_.password_form_inpage_navigation()));
-      form = *(fake_driver_.password_form_inpage_navigation());
-    }
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(expected_message_id);
+    ASSERT_TRUE(message);
+    std::tuple<autofill::PasswordForm> args;
+    AutofillHostMsg_PasswordFormSubmitted::Read(message, &args);
+    const autofill::PasswordForm& form = std::get<0>(args);
 
     size_t unchecked_masks = expected_properties_masks.size();
     for (const FormFieldData& field : form.form_data.fields) {
@@ -526,23 +508,17 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value) {
-    base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(fake_driver_.called_inpage_navigation());
-    ASSERT_TRUE(
-        static_cast<bool>(fake_driver_.password_form_inpage_navigation()));
-    const autofill::PasswordForm& form =
-        *(fake_driver_.password_form_inpage_navigation());
-    EXPECT_EQ(ASCIIToUTF16(username_value), form.username_value);
-    EXPECT_EQ(ASCIIToUTF16(password_value), form.password_value);
-    EXPECT_EQ(ASCIIToUTF16(new_password_value), form.new_password_value);
+    const IPC::Message* message =
+        render_thread_->sink().GetFirstMessageMatching(
+            AutofillHostMsg_InPageNavigation::ID);
+    ASSERT_TRUE(message);
+    std::tuple<autofill::PasswordForm> args;
+    AutofillHostMsg_InPageNavigation::Read(message, &args);
+    EXPECT_EQ(ASCIIToUTF16(username_value), std::get<0>(args).username_value);
+    EXPECT_EQ(ASCIIToUTF16(password_value), std::get<0>(args).password_value);
+    EXPECT_EQ(ASCIIToUTF16(new_password_value),
+              std::get<0>(args).new_password_value);
   }
-
-  void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
-    fake_driver_.BindRequest(
-        mojo::MakeRequest<mojom::PasswordManagerDriver>(std::move(handle)));
-  }
-
-  FakeContentPasswordManagerDriver fake_driver_;
 
   base::string16 username1_;
   base::string16 username2_;
@@ -816,48 +792,52 @@ TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kVisibleFormWithNoUsernameHTML);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  const IPC::Message* message = render_thread_->sink()
+      .GetFirstMessageMatching(AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  std::tuple<std::vector<autofill::PasswordForm>, bool> param;
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_TRUE(std::get<0>(param).size());
 
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kEmptyFormHTML);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_FALSE(std::get<0>(param).size());
 
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kNonVisibleFormHTML);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(static_cast<bool>(fake_driver_.password_forms_rendered()));
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_FALSE(std::get<0>(param).size());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kEmptyWebpage);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID));
 
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kRedirectionWebpage);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID));
 
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kSimpleWebpage);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID));
 
-  fake_driver_.reset_password_forms_rendered();
+  render_thread_->sink().ClearMessages();
   LoadHTML(kWebpageWithDynamicContent);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID));
 }
 
 // Tests that a password will only be filled as a suggested and will not be
@@ -1212,37 +1192,52 @@ TEST_F(PasswordAutofillAgentTest,
 
 // Tests that logging is off by default.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_NoMessage) {
+  render_thread_->sink().ClearMessages();
   SendVisiblePasswordForms();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_record_save_progress());
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_FALSE(message);
 }
 
 // Test that logging can be turned on by a message.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Activated) {
   // Turn the logging on.
-  password_autofill_agent_->SetLoggingState(true);
+  AutofillMsg_SetLoggingState msg_activate(0, true);
+  // Up-cast to access OnMessageReceived, which is private in the agent.
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_agent_)
+                  ->OnMessageReceived(msg_activate));
 
+  render_thread_->sink().ClearMessages();
   SendVisiblePasswordForms();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_record_save_progress());
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_TRUE(message);
 }
 
 // Test that logging can be turned off by a message.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_Deactivated) {
   // Turn the logging on and then off.
-  password_autofill_agent_->SetLoggingState(true);
-  password_autofill_agent_->SetLoggingState(false);
+  AutofillMsg_SetLoggingState msg_activate(0, /*active=*/true);
+  // Up-cast to access OnMessageReceived, which is private in the agent.
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_agent_)
+                  ->OnMessageReceived(msg_activate));
+  AutofillMsg_SetLoggingState msg_deactivate(0, /*active=*/false);
+  EXPECT_TRUE(static_cast<IPC::Listener*>(password_autofill_agent_)
+                  ->OnMessageReceived(msg_deactivate));
 
+  render_thread_->sink().ClearMessages();
   SendVisiblePasswordForms();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(fake_driver_.called_record_save_progress());
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_RecordSavePasswordProgress::ID);
+  EXPECT_FALSE(message);
 }
 
 // Test that the agent sends an IPC call to get the current activity state of
 // password saving logging soon after construction.
 TEST_F(PasswordAutofillAgentTest, SendsLoggingStateUpdatePingOnConstruction) {
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(fake_driver_.called_agent_constructed());
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordAutofillAgentConstructed::ID);
+  EXPECT_TRUE(message);
 }
 
 // Tests that one user click on a username field is sufficient to bring up a
@@ -1281,6 +1276,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
 
   // Simulate a user clicking on the username element. This should produce a
   // message with all the usernames.
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, false);
   CheckSuggestions(std::string(), false);
@@ -1289,6 +1285,7 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
   // clicking on the username element. This should also produce a message with
   // all the usernames.
   SimulateUsernameChange("baz");
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, true);
   CheckSuggestions("baz", true);
@@ -1313,10 +1310,11 @@ TEST_F(PasswordAutofillAgentTest,
 
   // Simulate a user clicking on the password element. This should produce no
   // message.
-  fake_driver_.reset_show_pw_suggestions();
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(password_element_, false);
-  EXPECT_TRUE(GetCalledShowPasswordSuggestions());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
 }
 
 // Tests the autosuggestions that are given when a password element is clicked,
@@ -1347,6 +1345,7 @@ TEST_F(PasswordAutofillAgentTest,
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames and so username
   // filter will be the empty string.
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(password_element_, false);
   CheckSuggestions("", false);
@@ -1367,10 +1366,11 @@ TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
 
   // Simulate a user clicking on the password element. This should produce no
   // message.
-  fake_driver_.reset_show_pw_suggestions();
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(password_element_, false);
-  EXPECT_TRUE(GetCalledShowPasswordSuggestions());
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
 }
 
 // The user types in a username and a password, but then just before sending
@@ -1511,7 +1511,8 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnSubmit) {
   expected_properties_masks[ASCIIToUTF16("password")] =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
-  ExpectFieldPropertiesMasks(PasswordFormSubmitted, expected_properties_masks);
+  ExpectFieldPropertiesMasks(AutofillHostMsg_PasswordFormSubmitted::ID,
+                             expected_properties_masks);
 }
 
 TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
@@ -1532,7 +1533,7 @@ TEST_F(PasswordAutofillAgentTest, RememberFieldPropertiesOnInPageNavigation) {
   expected_properties_masks[ASCIIToUTF16("password")] =
       FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::HAD_FOCUS;
 
-  ExpectFieldPropertiesMasks(PasswordFormInPageNavigation,
+  ExpectFieldPropertiesMasks(AutofillHostMsg_InPageNavigation::ID,
                              expected_properties_masks);
 }
 
@@ -1771,7 +1772,8 @@ TEST_F(PasswordAutofillAgentTest, NotShowPopupPasswordField) {
 
   SimulateSuggestionChoiceOfUsernameAndPassword(
       password_element_, base::string16(), ASCIIToUTF16(kAlicePassword));
-  ASSERT_FALSE(GetCalledShowPasswordSuggestions());
+  ASSERT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
 }
 
 // Tests with fill-on-account-select enabled that if the username element is
@@ -1828,8 +1830,9 @@ TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
   predictions[form_data][form_data.fields[0]] = PREDICTION_USERNAME;
   predictions[form_data][form_data.fields[2]] = PREDICTION_NEW_PASSWORD;
-  password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
-      predictions);
+  AutofillMsg_AutofillUsernameAndPasswordDataReceived msg(0, predictions);
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->OnMessageReceived(msg);
 
   // The predictions should still match even if the form changes, as long
   // as the particular elements don't change.
@@ -1901,7 +1904,8 @@ TEST_F(PasswordAutofillAgentTest,
                                          GetMainFrame()->document(), 0, 2);
 
   base::string16 password = base::ASCIIToUTF16("NewPass22");
-  password_generation_->GeneratedPasswordAccepted(password);
+  AutofillMsg_GeneratedPasswordAccepted msg(0, password);
+  static_cast<IPC::Listener*>(password_generation_)->OnMessageReceived(msg);
 
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSendSubmitEvent(username_element_.form());
@@ -1942,7 +1946,9 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   // generation but not password autofill.
   SetFocused(password_element_);
   SimulateElementClick("new_password");
-  EXPECT_FALSE(GetCalledShowPasswordSuggestions());
+  EXPECT_EQ(nullptr,
+            render_thread_->sink().GetFirstMessageMatching(
+                AutofillHostMsg_ShowPasswordSuggestions::ID));
   EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_ShowPasswordGenerationPopup::ID));
 }
@@ -2004,6 +2010,7 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   // Simulate a user clicking on the username element. This should produce a
   // message.
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(username_element_, true);
   CheckSuggestions("", true);
@@ -2023,6 +2030,7 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   // Simulate a user clicking on the password element. This should produce a
   // message.
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(password_element_, true);
   CheckSuggestions("", false);
@@ -2051,16 +2059,18 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
   // Simulate Autofill predictions: the third field is not a password.
   std::map<autofill::FormData, PasswordFormFieldPredictionMap> predictions;
   predictions[form_data][form_data.fields[2]] = PREDICTION_NOT_PASSWORD;
-  password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
-      predictions);
+  AutofillMsg_AutofillUsernameAndPasswordDataReceived msg(0, predictions);
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->OnMessageReceived(msg);
 
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSendSubmitEvent(form_element);
   static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
       ->WillSubmitForm(form_element);
 
-  base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(fake_driver_.called_password_form_submitted());
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormSubmitted::ID);
+  ASSERT_FALSE(message);
 }
 
 // Tests that only the password field is autocompleted when the browser sends
@@ -2110,8 +2120,10 @@ TEST_F(PasswordAutofillAgentTest,
 
   password_autofill_agent_->AJAXSucceeded();
 
-  base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(fake_driver_.called_password_form_submitted());
+  const IPC::Message* message =
+      render_thread_->sink().GetFirstMessageMatching(
+          AutofillHostMsg_PasswordFormSubmitted::ID);
+  ASSERT_FALSE(message);
 }
 
 // Tests that credential suggestions are autofilled on a password (and change
@@ -2358,6 +2370,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
 
   // Simulate a user clicking on the password element. This should produce a
   // dropdown with suggestion of all available usernames.
+  render_thread_->sink().ClearMessages();
   static_cast<PageClickListener*>(autofill_agent_)
       ->FormControlElementClicked(password_element_, false);
   CheckSuggestions("", false);
@@ -2380,6 +2393,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
 
   // Simulate a user clicking on the password elements. This should produce
   // dropdowns with suggestion of all available usernames.
+  render_thread_->sink().ClearMessages();
   SimulateElementClick("password");
   CheckSuggestions("", false);
 
@@ -2395,11 +2409,13 @@ TEST_F(PasswordAutofillAgentTest, SuggestMultiplePasswordFields) {
       ASCIIToUTF16(kAlicePassword)));
 
   // Simulate a user clicking on not autofilled password fields. This should
-  // produce no suggestion dropdowns.
-  fake_driver_.reset_show_pw_suggestions();
+  // produce
+  // no suggestion dropdowns.
+  render_thread_->sink().ClearMessages();
   SimulateElementClick("newpassword");
   SimulateElementClick("confirmpassword");
-  EXPECT_FALSE(GetCalledShowPasswordSuggestions());
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_ShowPasswordSuggestions::ID));
 
   // But when the user clicks on the autofilled password field again it should
   // still produce a suggestion dropdown.

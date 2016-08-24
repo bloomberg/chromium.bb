@@ -21,7 +21,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -128,19 +127,10 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       editing_popup_shown_(false),
       enabled_(password_generation::IsPasswordGenerationEnabled()),
       form_classifier_enabled_(false),
-      password_agent_(password_agent),
-      binding_(this) {
+      password_agent_(password_agent) {
   VLOG(2) << "Password Generation is " << (enabled_ ? "Enabled" : "Disabled");
-  // PasswordGenerationAgent is guaranteed to outlive |render_frame|.
-  render_frame->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &PasswordGenerationAgent::BindRequest, base::Unretained(this)));
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
-
-void PasswordGenerationAgent::BindRequest(
-    mojom::PasswordGenerationAgentRequest request) {
-  binding_.Bind(std::move(request));
-}
 
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
   // Update stats for main frame navigation.
@@ -206,7 +196,7 @@ void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
 }
 
-void PasswordGenerationAgent::AllowToRunFormClassifier() {
+void PasswordGenerationAgent::OnAllowToRunFormClassifier() {
   form_classifier_enabled_ = true;
 }
 
@@ -217,8 +207,8 @@ void PasswordGenerationAgent::RunFormClassifierAndSaveVote(
 
   base::string16 generation_field;
   ClassifyFormAndFindGenerationField(web_form, &generation_field);
-  GetPasswordManagerDriver()->SaveGenerationFieldDetectedByClassifier(
-      form, generation_field);
+  Send(new AutofillHostMsg_SaveGenerationFieldDetectedByClassifier(
+      routing_id(), form, generation_field));
 }
 
 void PasswordGenerationAgent::FindPossibleGenerationForm() {
@@ -290,12 +280,30 @@ bool PasswordGenerationAgent::ShouldAnalyzeDocument() const {
   return true;
 }
 
-void PasswordGenerationAgent::FormNotBlacklisted(const PasswordForm& form) {
+bool PasswordGenerationAgent::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PasswordGenerationAgent, message)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FormNotBlacklisted,
+                        OnFormNotBlacklisted)
+    IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
+                        OnPasswordAccepted)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FoundFormsEligibleForGeneration,
+                        OnFormsEligibleForGenerationFound);
+    IPC_MESSAGE_HANDLER(AutofillMsg_UserTriggeredGeneratePassword,
+                        OnUserTriggeredGeneratePassword);
+    IPC_MESSAGE_HANDLER(AutofillMsg_AllowToRunFormClassifier,
+                        OnAllowToRunFormClassifier);
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void PasswordGenerationAgent::OnFormNotBlacklisted(const PasswordForm& form) {
   not_blacklisted_password_form_origins_.push_back(form.origin);
   DetermineGenerationElement();
 }
 
-void PasswordGenerationAgent::GeneratedPasswordAccepted(
+void PasswordGenerationAgent::OnPasswordAccepted(
     const base::string16& password) {
   password_is_generated_ = true;
   password_generation::LogPasswordGenerationEvent(
@@ -317,7 +325,8 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
   if (presaved_form) {
-    GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+    Send(new AutofillHostMsg_PresaveGeneratedPassword(routing_id(),
+                                                      *presaved_form));
   }
 }
 
@@ -345,8 +354,8 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
   return password_form;
 }
 
-void PasswordGenerationAgent::FoundFormsEligibleForGeneration(
-    const std::vector<PasswordFormGenerationData>& forms) {
+void PasswordGenerationAgent::OnFormsEligibleForGenerationFound(
+    const std::vector<autofill::PasswordFormGenerationData>& forms) {
   generation_enabled_forms_.insert(generation_enabled_forms_.end(),
                                    forms.begin(), forms.end());
   DetermineGenerationElement();
@@ -474,7 +483,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       std::unique_ptr<PasswordForm> presaved_form(
           CreatePasswordFormToPresave());
       if (presaved_form) {
-        GetPasswordManagerDriver()->PasswordNoLongerGenerated(*presaved_form);
+        Send(new AutofillHostMsg_PasswordNoLongerGenerated(routing_id(),
+                                                           *presaved_form));
       }
     }
 
@@ -491,7 +501,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
         &generation_form_data_->password_elements);
     std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
     if (presaved_form) {
-      GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+      Send(new AutofillHostMsg_PresaveGeneratedPassword(routing_id(),
+                                                        *presaved_form));
     }
   } else if (element.value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
@@ -535,7 +546,7 @@ void PasswordGenerationAgent::HidePopup() {
   Send(new AutofillHostMsg_HidePasswordGenerationPopup(routing_id()));
 }
 
-void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
+void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
   if (last_focused_password_element_.isNull() || !render_frame())
     return;
 
@@ -568,12 +579,6 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
       make_linked_ptr(password_form.release()), password_elements));
   is_manually_triggered_ = true;
   ShowGenerationPopup();
-}
-
-const mojom::PasswordManagerDriverPtr&
-PasswordGenerationAgent::GetPasswordManagerDriver() {
-  DCHECK(password_agent_);
-  return password_agent_->GetPasswordManagerDriver();
 }
 
 }  // namespace autofill

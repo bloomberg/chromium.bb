@@ -1,4 +1,4 @@
 include_rules = [
   "+content/public/common",
-  "+ipc",
+  "+third_party/WebKit/public/web",
 ]

@@ -66,11 +66,6 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // A public version of PreviewSuggestion(), only for use in tests.
   bool PreviewSuggestionForTest(int key, const base::string16& username);
 
-  // Only use in tests.
-  void set_autofill_client(autofill::AutofillClient* autofill_client) {
-    autofill_client_ = autofill_client;
-  }
-
  private:
   typedef std::map<int, autofill::PasswordFormFillData> LoginToPasswordInfoMap;
 
@@ -106,7 +101,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // The driver that owns |this|.
   PasswordManagerDriver* password_manager_driver_;
 
-  autofill::AutofillClient* autofill_client_;  // weak
+  autofill::AutofillClient* const autofill_client_;  // weak
 
   base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
 

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -253,12 +254,12 @@ void ContentAutofillDriver::NotifyFirstUserGestureObservedInTab() {
 
 const mojom::AutofillAgentPtr& ContentAutofillDriver::GetAutofillAgent() {
   // Here is a lazy binding, and will not reconnect after connection error.
-  if (!autofill_agent_) {
+  if (!mojo_autofill_agent_) {
     render_frame_host_->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&autofill_agent_));
+        mojo::GetProxy(&mojo_autofill_agent_));
   }
 
-  return autofill_agent_;
+  return mojo_autofill_agent_;
 }
 
 }  // namespace autofill

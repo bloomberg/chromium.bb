@@ -19,6 +19,7 @@ static_library("browser") {
   public_deps = [
     "//base",
     "//components/autofill/content/browser",
+    "//components/autofill/content/common",
     "//components/autofill/content/public/interfaces",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
@@ -28,6 +29,7 @@ static_library("browser") {
     "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
+    "//ipc",
     "//mojo/common:common_base",
     "//net",
   ]

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
+#include "ipc/ipc_message.h"
 
 namespace autofill {
 

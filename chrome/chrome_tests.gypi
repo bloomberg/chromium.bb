@@ -575,8 +575,6 @@
       'renderer/autofill/form_autofill_browsertest.cc',
       'renderer/autofill/form_classifier_browsertest.cc',
       'renderer/autofill/page_click_tracker_browsertest.cc',
-      'renderer/autofill/fake_content_password_manager_driver.cc',
-      'renderer/autofill/fake_content_password_manager_driver.h',
       'renderer/autofill/password_autofill_agent_browsertest.cc',
       'renderer/autofill/password_generation_agent_browsertest.cc',
       'renderer/autofill/password_generation_test_utils.cc',
