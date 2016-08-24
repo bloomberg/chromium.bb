@@ -204,7 +204,7 @@ function isUnexpectedDetachedRequest(name, details) {
 function captureEvent(name, details, callback) {
   // Ignore system-level requests like safebrowsing updates and favicon fetches
   // since they are unpredictable.
-  if (details.type == "other" ||
+  if ((details.type == "other" && !details.url.includes('dont-ignore-me')) ||
       isUnexpectedDetachedRequest(name, details) ||
       details.url.match(/\/favicon.ico$/) ||
       details.url.match(/https:\/\/dl.google.com/))

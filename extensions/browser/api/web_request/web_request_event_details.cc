@@ -39,6 +39,11 @@ WebRequestEventDetails::WebRequestEventDetails(const net::URLRequest* request,
     render_process_id_ = info->GetChildID();
     render_frame_id_ = info->GetRenderFrameID();
     resource_type = info->GetResourceType();
+  } else {
+    // Fallback for requests that are not allocated by a ResourceDispatcherHost,
+    // such as the TemplateURLFetcher.
+    content::ResourceRequestInfo::GetRenderFrameForRequest(
+        request, &render_process_id_, &render_frame_id_);
   }
 
   dict_.SetString(keys::kMethodKey, request->method());

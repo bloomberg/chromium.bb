@@ -14,11 +14,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_process_policy.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -157,6 +159,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_types.html")) << message_;
+}
+
+// Test that a request to an OpenSearch description document (OSDD) generates
+// an event with the expected details.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTestOSDD) {
+  // An OSDD request is only generated when a main frame at is loaded at /, so
+  // serve osdd/index.html from the root of the test server:
+  embedded_test_server()->ServeFilesFromDirectory(
+      test_data_dir_.AppendASCII("webrequest/osdd"));
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  search_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(profile()));
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_osdd.html")) << message_;
 }
 
 // Test that the webRequest events are dispatched with the expected details when
