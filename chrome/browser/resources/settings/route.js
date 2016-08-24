@@ -317,18 +317,19 @@ cr.define('settings', function() {
   };
 
   /**
-   * Navigates to the previous route, but will never exit Settings. If there is
-   * no previous route in the history, navigates to the immediate parent.
+   * Navigates to the previous route if it has an equal or lesser depth.
+   * If there is no previous route in history meeting those requirements,
+   * this navigates to the immediate parent. This will never exit Settings.
    */
   var navigateToPreviousRoute = function() {
     var previousRoute =
         window.history.state &&
         assert(getRouteForPath(/** @type {string} */ (window.history.state)));
 
-    if (previousRoute)
+    if (previousRoute && previousRoute.depth <= currentRoute_.depth)
       window.history.back();
     else
-      navigateTo(settings.getCurrentRoute().parent || Route.BASIC);
+      navigateTo(currentRoute_.parent || Route.BASIC);
   };
 
   window.addEventListener('popstate', function(event) {

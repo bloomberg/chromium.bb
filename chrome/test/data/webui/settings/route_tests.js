@@ -54,4 +54,71 @@ suite('route', function() {
       paths.add(route.path);
     });
   });
+
+  /**
+   * Tests a specific navigation situation.
+   * @param {!settings.Route} previousRoute
+   * @param {!settings.Route} currentRoute
+   * @param {!settings.Route} expectedNavigatePreviousResult
+   * @return {!Promise}
+   */
+  function testNavigateBackUsesHistory(previousRoute, currentRoute,
+                                       expectedNavigatePreviousResult) {
+    /**
+     * Returns a new promise that resolves after a window 'popstate' event.
+     * @return {!Promise}
+     */
+    function whenPopState() {
+      return new Promise(function(resolve) {
+        window.addEventListener('popstate', function callback() {
+          window.removeEventListener('popstate', callback);
+          resolve();
+        });
+      });
+    }
+
+    settings.navigateTo(previousRoute);
+    settings.navigateTo(currentRoute);
+    settings.navigateToPreviousRoute();
+
+    return whenPopState().then(function() {
+      assertEquals(expectedNavigatePreviousResult,
+                   settings.getCurrentRoute());
+    });
+  };
+
+  test('navigate back to parent previous route', function() {
+    return testNavigateBackUsesHistory(
+        settings.Route.BASIC,
+        settings.Route.PEOPLE,
+        settings.Route.BASIC);
+  });
+
+  test('navigate back to non-ancestor shallower route', function() {
+    return testNavigateBackUsesHistory(
+        settings.Route.ADVANCED,
+        settings.Route.PEOPLE,
+        settings.Route.ADVANCED);
+  });
+
+  test('navigate back to sibling route', function() {
+    return testNavigateBackUsesHistory(
+        settings.Route.APPEARANCE,
+        settings.Route.PEOPLE,
+        settings.Route.APPEARANCE);
+  });
+
+  test('navigate back to parent when previous route is deeper', function() {
+    settings.navigateTo(settings.Route.SYNC);
+    settings.navigateTo(settings.Route.PEOPLE);
+    settings.navigateToPreviousRoute();
+    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+  });
+
+  test('navigate back to BASIC when going back from root pages', function() {
+    settings.navigateTo(settings.Route.PEOPLE);
+    settings.navigateTo(settings.Route.ADVANCED);
+    settings.navigateToPreviousRoute();
+    assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
+  });
 });
