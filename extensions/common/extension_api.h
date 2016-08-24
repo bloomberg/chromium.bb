@@ -104,8 +104,7 @@ class ExtensionAPI {
   // Returns true if |name| is available to WebUI contexts on |url|.
   bool IsAvailableToWebUI(const std::string& name, const GURL& url);
 
-  // Gets the schema for the extension API with namespace |full_name|, or
-  // nullptr if the schema could not be loaded.
+  // Gets the schema for the extension API with namespace |full_name|.
   // Ownership remains with this object.
   const base::DictionaryValue* GetSchema(const std::string& full_name);
 

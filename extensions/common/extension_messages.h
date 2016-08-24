@@ -831,11 +831,6 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
                      int /* request_id */,
                      std::string /* extension_id */)
 
-// Notifies the browser that the specified extension API schema could not be
-// parsed.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_NotifyBadExtensionApiSchema,
-                     std::string /* api */)
-
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.
 IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
