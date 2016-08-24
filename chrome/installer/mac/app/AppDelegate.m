@@ -70,6 +70,7 @@
 - (void)downloader:(Downloader*)download
     onDownloadSuccess:(NSURL*)diskImagePath {
   [installerWindowController_ updateStatusDescription:@"Done."];
+  [installerWindowController_ enableLaunchButton];
   // TODO: replace the line of code below with real code someday
 }
 

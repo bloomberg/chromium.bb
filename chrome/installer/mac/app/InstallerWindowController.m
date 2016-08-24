@@ -10,6 +10,7 @@
   NSButton* importButton_;
   NSButton* defaultBrowserButton_;
   NSButton* optInButton_;
+  NSButton* launchButton_;
   NSTextField* statusDescription_;
   NSTextField* downloadProgressDescription_;
   NSProgressIndicator* progressBar_;
@@ -18,7 +19,7 @@
 
 @implementation InstallerWindowController
 
-// All buttons have the same style and differ only by their title, this method
+// Most buttons have the same style and differ only by their title, this method
 // simplifies styling the buttons and provides an argument for the title.
 - (void)stylizeButton:(NSButton*)button withTitle:(NSString*)title {
   button.buttonType = NSSwitchButton;
@@ -50,6 +51,13 @@
 
   optInButton_ = [[NSButton alloc] initWithFrame:NSMakeRect(30, 70, 300, 25)];
   [self stylizeButton:optInButton_ withTitle:@"Say yes to UMA."];
+
+  launchButton_ = [[NSButton alloc] initWithFrame:NSMakeRect(310, 6, 100, 50)];
+  launchButton_.buttonType = NSPushOnPushOffButton;
+  launchButton_.bezelStyle = NSRoundedBezelStyle;
+  launchButton_.title = @"Launch";
+  [launchButton_ setEnabled:NO];
+  [launchButton_ setAction:@selector(launchButtonClicked)];
 }
 
 // Positions and stylizes textfields.
@@ -68,7 +76,7 @@
 // Positions and stylizes the progressbar for download and install.
 - (void)setUpProgressBar {
   progressBar_ =
-      [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(20, 125, 400, 50)];
+      [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(15, 125, 400, 50)];
   progressBar_.indeterminate = NO;
   progressBar_.style = NSProgressIndicatorBarStyle;
   progressBar_.maxValue = 100.0;
@@ -92,6 +100,7 @@
     [window.contentView addSubview:importButton_];
     [window.contentView addSubview:defaultBrowserButton_];
     [window.contentView addSubview:optInButton_];
+    [window.contentView addSubview:launchButton_];
     [window.contentView addSubview:progressBar_];
     [window.contentView addSubview:statusDescription_];
     [window.contentView addSubview:downloadProgressDescription_];
@@ -112,6 +121,15 @@
 
 - (void)updateDownloadProgress:(double)progressPercent {
   progressBar_.doubleValue = progressPercent;
+}
+
+- (void)enableLaunchButton {
+  [launchButton_ setEnabled:YES];
+}
+
+- (void)launchButtonClicked {
+  // TODO: Launch the app and start ejecting disk.
+  [NSApp terminate:nil];
 }
 
 @end

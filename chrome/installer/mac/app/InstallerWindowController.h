@@ -12,7 +12,7 @@
 - (id)initWithWindow:(NSWindow*)window;
 - (void)updateStatusDescription:(NSString*)text;
 - (void)updateDownloadProgress:(double)progressPercent;
-
+- (void)enableLaunchButton;
 @end
 
 #endif  // CHROME_INSTALLER_MAC_APP_INSTALLERWINDOWCONTROLLER_H_
