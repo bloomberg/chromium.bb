@@ -60,6 +60,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         builds = self.rietveld.latest_try_jobs(issue_number, self._try_bots())
         if options.trigger_jobs:
             self.trigger_jobs_for_missing_builds(builds)
+        if not builds:
+            # TODO(qyearsley): Also check that there are *finished* builds.
+            # The current behavior would still proceed if there are queued
+            # or started builds.
+            _log.info('No builds to download baselines from.')
 
         if args:
             test_prefix_list = {}
@@ -81,7 +86,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         issue_number = self.git().get_issue_number()
         _log.debug('Issue number for current branch: %s', issue_number)
         if not issue_number.isdigit():
-            _log.error('No issue number given and no issue for current branch.')
+            _log.error('No issue number given and no issue for current branch. This tool requires a CL\n'
+                       'to operate on; please run `git cl upload` on this branch first, or use the --issue\n'
+                       'option to download baselines for another existing CL.')
             return None
         return int(issue_number)
 
@@ -96,7 +103,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         builders_without_builds = set(self._try_bots()) - builders_with_builds
         if not builders_without_builds:
             return
-        _log.info('Triggering try jobs for: %s', ', '.join(sorted(builders_without_builds)))
+        _log.info('Triggering try jobs for:')
+        for builder in sorted(builders_without_builds):
+            _log.info('  %s', builder)
         git_cl = GitCL(self._tool.executive)
         command = ['try']
         for builder in sorted(builders_without_builds):
@@ -161,7 +170,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def _log_test_prefix_list(test_prefix_list):
         """Logs the tests to download new baselines for."""
         if not test_prefix_list:
-            _log.info('No tests to rebaseline.')
+            _log.info('No tests to rebaseline; exiting.')
             return
         _log.info('Tests to rebaseline:')
         for test, builds in test_prefix_list.iteritems():

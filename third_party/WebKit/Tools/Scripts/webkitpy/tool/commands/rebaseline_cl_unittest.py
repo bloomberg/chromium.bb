@@ -96,7 +96,7 @@ class RebaselineCLTest(BaseTestCase):
             self.command.execute(self.command_options(), [], self.tool)
         finally:
             _, _, logs = oc.restore_output()
-        self.assertEqual(logs, 'No issue number given and no issue for current branch.\n')
+        self.assertTrue(logs.startswith('No issue number given and no issue for current branch.'))
 
     def test_execute_with_issue_number_from_branch(self):
         self.git.get_issue_number = lambda: '11112222'
@@ -144,7 +144,8 @@ class RebaselineCLTest(BaseTestCase):
         # A message is printed showing that some try jobs are triggered.
         self.assertMultiLineEqual(
             logs,
-            ('Triggering try jobs for: MOCK Try Linux\n'
+            ('Triggering try jobs for:\n'
+             '  MOCK Try Linux\n'
              'Tests to rebaseline:\n'
              '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n'
              '  fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n'
