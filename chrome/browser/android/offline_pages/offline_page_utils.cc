@@ -31,9 +31,6 @@ const OfflinePageItem* GetOfflinePageForOfflineURL(
     const GURL& offline_url) {
   DCHECK(browser_context);
 
-  if (!IsOfflinePagesEnabled())
-    return nullptr;
-
   // Note that we first check if the url likely points to an offline page
   // before calling GetPageByOfflineURL in order to avoid unnecessary lookup
   // cost.
