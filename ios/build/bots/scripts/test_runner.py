@@ -6,6 +6,7 @@
 
 import argparse
 import collections
+import errno
 import os
 import shutil
 import subprocess
@@ -36,7 +37,14 @@ class AppNotFoundError(TestRunnerError):
   """The requested app was not found."""
   def __init__(self, app_path):
     super(AppNotFoundError, self).__init__(
-        'App does not exist: %s' % app_path)
+      'App does not exist: %s' % app_path)
+
+
+class DeviceDetectionError(TestRunnerError):
+  """Unexpected number of devices detected."""
+  def __init__(self, udids):
+    super(DeviceDetectionError, self).__init__(
+      'Expected one device, found %s:\n%s' % (len(udids), '\n'.join(udids)))
 
 
 class SimulatorNotFoundError(TestRunnerError):
@@ -96,13 +104,15 @@ def get_gtest_filter(tests, invert=False):
 class TestRunner(object):
   """Base class containing common functionality."""
 
-  def __init__(self, app_path, xcode_version, out_dir, test_args=None):
+  def __init__(
+    self, app_path, xcode_version, out_dir, env_vars=None, test_args=None):
     """Initializes a new instance of this class.
 
     Args:
       app_path: Path to the compiled .app to run.
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
+      env_vars: List of environment variables to pass to the test itself.
       test_args: List of strings to pass as arguments to the test when
         launching.
 
@@ -126,9 +136,11 @@ class TestRunner(object):
         '-c', 'Print:CFBundleIdentifier',
         os.path.join(app_path, 'Info.plist'),
     ]).rstrip()
+    self.env_vars = env_vars or []
     self.logs = collections.OrderedDict()
     self.out_dir = out_dir
     self.test_args = test_args or []
+    self.xcode_version = xcode_version
 
   def get_launch_command(self, test_filter=None, invert=False):
     """Returns the command that can be used to launch the test app.
@@ -267,6 +279,7 @@ class SimulatorTestRunner(TestRunner):
       version,
       xcode_version,
       out_dir,
+      env_vars=None,
       test_args=None,
   ):
     """Initializes a new instance of this class.
@@ -280,6 +293,7 @@ class SimulatorTestRunner(TestRunner):
         can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
       xcode_version: Version of Xcode to use when running the test.
       out_dir: Directory to emit test data into.
+      env_vars: List of environment variables to pass to the test itself.
       test_args: List of strings to pass as arguments to the test when
         launching.
 
@@ -288,7 +302,12 @@ class SimulatorTestRunner(TestRunner):
       XcodeVersionNotFoundError: If the given Xcode version does not exist.
     """
     super(SimulatorTestRunner, self).__init__(
-        app_path, xcode_version, out_dir, test_args=test_args)
+        app_path,
+        xcode_version,
+        out_dir,
+        env_vars=env_vars,
+        test_args=test_args,
+    )
 
     if not os.path.exists(iossim_path):
       raise SimulatorNotFoundError(iossim_path)
@@ -417,9 +436,110 @@ class SimulatorTestRunner(TestRunner):
       kif_filter = get_kif_test_filter(test_filter, invert=invert)
       gtest_filter = get_gtest_filter(test_filter, invert=invert)
       cmd.extend(['-e', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
-      args.append('--gtest_filter=%s' % gtest_filter)
+
+      if self.xcode_version == '8.0':
+        args.extend(['-c', '--gtest_filter=%s' % gtest_filter])
+      else:
+        args.append('--gtest_filter=%s' % gtest_filter)
+
+    for env_var in self.env_vars:
+      cmd.extend(['-e', env_var])
 
     cmd.append(self.app_path)
     cmd.extend(self.test_args)
     cmd.extend(args)
+    return cmd
+
+
+class DeviceTestRunner(TestRunner):
+  """Class for running tests on devices."""
+
+  def __init__(
+    self, app_path, xcode_version, out_dir, env_vars=None, test_args=None):
+    """Initializes a new instance of this class.
+
+    Args:
+      app_path: Path to the compiled .app to run.
+      xcode_version: Version of Xcode to use when running the test.
+      out_dir: Directory to emit test data into.
+      env_vars: List of environment variables to pass to the test itself.
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+
+    Raises:
+      AppNotFoundError: If the given app does not exist.
+      XcodeVersionNotFoundError: If the given Xcode version does not exist.
+    """
+    super(DeviceTestRunner, self).__init__(
+      app_path, xcode_version, out_dir, env_vars=env_vars, test_args=test_args)
+
+    self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()
+    if len(self.udid.splitlines()) != 1:
+      raise DeviceDetectionError(self.udid)
+
+  def uninstall_apps(self):
+    """Uninstalls all apps found on the device."""
+    for app in subprocess.check_output(
+      ['idevicefs', '--udid', self.udid, 'ls', '@']).splitlines():
+      subprocess.check_call(
+        ['ideviceinstaller', '--udid', self.udid, '--uninstall', app])
+
+  def install_app(self):
+    """Installs the app."""
+    subprocess.check_call(
+      ['ideviceinstaller', '--udid', self.udid, '--install', self.app_path])
+
+  def set_up(self):
+    """Performs setup actions which must occur prior to every test launch."""
+    self.uninstall_apps()
+    self.install_app()
+
+  def extract_test_data(self):
+    """Extracts data emitted by the test."""
+    subprocess.check_call([
+      'idevicefs',
+      '--udid', self.udid,
+      'pull',
+      '@%s/Documents' % self.cfbundleid,
+      os.path.join(self.out_dir, 'Documents'),
+    ])
+
+  def tear_down(self):
+    """Performs cleanup actions which must occur after every test launch."""
+    self.extract_test_data()
+    self.screenshot_desktop()
+    self.uninstall_apps()
+
+  def get_launch_command(self, test_filter=None, invert=False):
+    """Returns the command that can be used to launch the test app.
+
+    Args:
+      test_filter: List of test cases to filter.
+      invert: Whether to invert the filter or not. Inverted, the filter will
+        match everything except the given test cases.
+
+    Returns:
+      A list of strings forming the command to launch the test.
+    """
+    cmd = [
+      'idevice-app-runner',
+      '--udid', self.udid,
+      '--start', self.cfbundleid,
+    ]
+    args = []
+
+    if test_filter:
+      kif_filter = get_kif_test_filter(test_filter, invert=invert)
+      gtest_filter = get_gtest_filter(test_filter, invert=invert)
+      cmd.extend(['-D', 'GKIF_SCENARIO_FILTER=%s' % kif_filter])
+      args.append('--gtest-filter=%s' % gtest_filter)
+
+    for env_var in self.env_vars:
+      cmd.extend(['-D', env_var])
+
+    if args or self.test_args:
+      cmd.append('--args')
+      cmd.extend(self.test_args)
+      cmd.extend(args)
+
     return cmd

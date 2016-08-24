@@ -33,15 +33,25 @@ def main(args, test_args):
     os.makedirs(args.out_dir)
 
   try:
-    tr = test_runner.SimulatorTestRunner(
-      args.app,
-      args.iossim,
-      args.platform,
-      args.version,
-      args.xcode_version,
-      args.out_dir,
-      test_args=test_args,
-    )
+    if args.iossim and args.platform and args.version:
+      tr = test_runner.SimulatorTestRunner(
+        args.app,
+        args.iossim,
+        args.platform,
+        args.version,
+        args.xcode_version,
+        args.out_dir,
+        env_vars=args.env_var,
+        test_args=test_args,
+      )
+    else:
+      tr = test_runner.DeviceTestRunner(
+        args.app,
+        args.xcode_version,
+        args.out_dir,
+        env_vars=args.env_var,
+        test_args=test_args,
+      )
 
     return 0 if tr.launch() else 1
   except test_runner.TestRunnerError as e:
@@ -72,11 +82,17 @@ if __name__ == '__main__':
     required=True,
   )
   parser.add_argument(
+    '-e',
+    '--env-var',
+    action='append',
+    help='Environment variable to pass to the test itself.',
+    metavar='ENV=val',
+  )
+  parser.add_argument(
     '-i',
     '--iossim',
     help='Compiled iossim to run the app on.',
     metavar='iossim',
-    required=True,
   )
   parser.add_argument(
     '-o',
@@ -90,14 +106,12 @@ if __name__ == '__main__':
     '--platform',
     help='Platform to simulate.',
     metavar='sim',
-    required=True,
   )
   parser.add_argument(
     '-v',
     '--version',
     help='Version of iOS the simulator should run.',
     metavar='ver',
-    required=True,
   )
   parser.add_argument(
     '-x',
@@ -107,4 +121,12 @@ if __name__ == '__main__':
     required=True,
   )
 
-  sys.exit(main(*parser.parse_known_args()))
+  args, test_args = parser.parse_known_args()
+  if args.iossim or args.platform or args.version:
+    # If any of --iossim, --platform, or --version
+    # are specified then they must all be specified.
+    if not (args.iossim and args.platform and args.version):
+      parser.error(
+        'must specify all or none of -i/--iossim, -p/--platform, -v/--version')
+
+  sys.exit(main(args, test_args))

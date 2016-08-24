@@ -282,7 +282,7 @@ class SimulatorTestRunnerTest(TestCase):
         'out-dir',
     )
     tr.launch()
-    self.failUnless(tr.summary['logs'])
+    self.failUnless(tr.logs)
 
 
 if __name__ == '__main__':
