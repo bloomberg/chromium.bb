@@ -188,6 +188,12 @@ int od_qm_offset(int bs, int xydec)
     return xydec*OD_QM_STRIDE + OD_QM_OFFSET(bs);
 }
 
+#if defined(OD_FLOAT_PVQ)
+#define OD_DEFAULT_MAG 1.0
+#else
+#define OD_DEFAULT_MAG OD_QM_SCALE
+#endif
+
 /* Initialize the quantization matrix. */
 // Note: When varying scan orders for hybrid transform is used by PVQ,
 // since AOM does not use magnitude compensation (i.e. simplay x16 for all coeffs),
@@ -209,20 +215,33 @@ void od_init_qm(int16_t *x, int16_t *x_inv, const int *qm) {
       x1_inv = x_inv + off;
       for (i = 0; i < 4 << bs; i++) {
         for (j = 0; j < 4 << bs; j++) {
-          double mag;
-          mag = 1.0;
-          if (i == 0 && j == 0) {
-            mag = 1.0;
-          }
-          else {
+          /*This will ultimately be clamped to fit in 16 bits.*/
+          od_val32 mag;
+          int16_t ytmp;
+          mag = OD_DEFAULT_MAG;
+          if (i != 0 || j != 0) {
+#if defined(OD_FLOAT_PVQ)
             mag /= 0.0625*qm[(i << 1 >> bs)*8 + (j << 1 >> bs)];
+#else
+            int qmv;
+            qmv = qm[(i << 1 >> bs)*8 + (j << 1 >> bs)];
+            mag *= 16;
+            mag = (mag + (qmv >> 1))/qmv;
+#endif
             OD_ASSERT(mag > 0.0);
           }
           /*Convert to fit in 16 bits.*/
+#if defined(OD_FLOAT_PVQ)
           y[i*(4 << bs) + j] = (int16_t)OD_MINI(OD_QM_SCALE_MAX,
            (int32_t)floor(.5 + mag*OD_QM_SCALE));
           y_inv[i*(4 << bs) + j] = (int16_t)floor(.5
            + OD_QM_SCALE*OD_QM_INV_SCALE/(double)y[i*(4 << bs) + j]);
+#else
+          y[i*(4 << bs) + j] = (int16_t)OD_MINI(OD_QM_SCALE_MAX, mag);
+          ytmp = y[i*(4 << bs) + j];
+          y_inv[i*(4 << bs) + j] = (int16_t)((OD_QM_SCALE*OD_QM_INV_SCALE
+           + (ytmp >> 1))/ytmp);
+#endif
         }
       }
       od_raster_to_coding_order_16(x1, 4 << bs, y, 4 << bs);
@@ -474,6 +493,19 @@ void od_apply_householder(od_val16 *out, const od_val16 *x, const od_val16 *r,
 }
 
 #if !defined(OD_FLOAT_PVQ)
+static od_val16 od_beta_rcp(od_val16 beta){
+  if (beta == OD_BETA(1.))
+    return OD_BETA(1.);
+  else if (beta == OD_BETA(1.5))
+    return OD_BETA(1./1.5);
+  else {
+    od_val16 rcp_beta;
+    /*Shift by 1 less, transposing beta to range [.5, .75] and thus < 32768.*/
+    rcp_beta = od_rcp(beta << (OD_RCP_INSHIFT - 1 - OD_BETA_SHIFT));
+    return OD_SHR_ROUND(rcp_beta, OD_RCP_OUTSHIFT + 1 - OD_BETA_SHIFT);
+  }
+}
+
 #define OD_EXP2_INSHIFT 15
 #define OD_EXP2_FRACSHIFT 15
 #define OD_EXP2_OUTSHIFT 15
@@ -543,17 +575,16 @@ static int32_t od_pow(int32_t x, od_val16 beta)
  */
 static od_val32 od_gain_compand(od_val32 g, int q0, od_val16 beta) {
 #if defined(OD_FLOAT_PVQ)
-  if (beta == 1) return OD_ROUND32(OD_CGAIN_SCALE*g/(double)q0);
+  if (beta == 1) return OD_CGAIN_SCALE*g/(double)q0;
   else {
-    return OD_ROUND32(OD_CGAIN_SCALE*OD_COMPAND_SCALE*pow(g*OD_COMPAND_SCALE_1,
-     1./beta)/(double)q0);
+    return OD_CGAIN_SCALE*OD_COMPAND_SCALE*pow(g*OD_COMPAND_SCALE_1,
+     1./beta)/(double)q0;
   }
 #else
   if (beta == OD_BETA(1)) return (OD_CGAIN_SCALE*g + (q0 >> 1))/q0;
   else {
     int32_t expr;
-    /*FIXME: This is 1/beta in Q(BETA_SHIFT), should use od_rcp() instead.*/
-    expr = od_pow(g, OD_ROUND16((1 << (2*OD_BETA_SHIFT))/(double)beta));
+    expr = od_pow(g, od_beta_rcp(beta));
     expr <<= OD_CGAIN_SHIFT + OD_COMPAND_SHIFT - OD_EXP2_OUTSHIFT;
     return (expr + (q0 >> 1))/q0;
   }
@@ -613,7 +644,7 @@ od_val32 od_gain_expand(od_val32 cg0, int q0, od_val16 beta) {
     double cg;
     cg = cg0*OD_CGAIN_SCALE_1;
     cg *= q0*OD_COMPAND_SCALE_1;
-    return OD_ROUND32(OD_COMPAND_SCALE*cg*sqrt(cg));
+    return OD_COMPAND_SCALE*cg*sqrt(cg);
 #else
     int32_t irt;
     int64_t tmp;
@@ -636,7 +667,7 @@ od_val32 od_gain_expand(od_val32 cg0, int q0, od_val16 beta) {
        OD_COMPAND_SCALE.*/
     double cg;
     cg = cg0*OD_CGAIN_SCALE_1;
-    return OD_ROUND32(OD_COMPAND_SCALE*pow(cg*q0*OD_COMPAND_SCALE_1, beta));
+    return OD_COMPAND_SCALE*pow(cg*q0*OD_COMPAND_SCALE_1, beta);
 #else
     int32_t expr;
     int32_t cg;
@@ -685,19 +716,6 @@ od_val32 od_pvq_compute_gain(const od_val16 *x, int n, int q0, od_val32 *g,
   return od_gain_compand(*g, q0, beta);
 }
 
-static od_val16 od_beta_rcp(od_val16 beta){
-  if (beta == OD_BETA(1.))
-    return OD_BETA(1.);
-  else if (beta == OD_BETA(1.5))
-    return OD_BETA(1./1.5);
-  else {
-    od_val16 rcp_beta;
-    /*Shift by 1 less, transposing beta to range [.5, .75] and thus < 32768.*/
-    rcp_beta = od_rcp(beta << (OD_RCP_INSHIFT - 1 - OD_BETA_SHIFT));
-    return OD_SHR_ROUND(rcp_beta, OD_RCP_OUTSHIFT + 1 - OD_BETA_SHIFT);
-  }
-}
-
 /** Compute theta quantization range from quantized/companded gain
  *
  * @param [in]      qcg    quantized companded gain value
@@ -735,6 +753,8 @@ od_val32 od_pvq_compute_theta(int t, int max_theta) {
   else return 0;
 }
 
+#define OD_SQRT_TBL_SHIFT (10)
+
 #define OD_ITHETA_SHIFT 15
 /** Compute the number of pulses used for PVQ encoding a vector from
  * available metrics (encode and decode side)
@@ -751,6 +771,14 @@ od_val32 od_pvq_compute_theta(int t, int max_theta) {
  */
 int od_pvq_compute_k(od_val32 qcg, int itheta, od_val32 theta, int noref, int n,
  od_val16 beta, int nodesync) {
+#if !defined(OD_FLOAT_PVQ)
+  /*Lookup table for sqrt(n+3/2) and sqrt(n+2/2) in Q10.
+    Real max values are 32792 and 32784, but clamped to stay within 16 bits.
+    Update with tools/gen_sqrt_tbl if needed.*/
+  static const od_val16 od_sqrt_table[2][13] = {
+   {0, 0, 0, 0, 2290, 2985, 4222, 0, 8256, 0, 16416, 0, 32767},
+   {0, 0, 0, 0, 2401, 3072, 4284, 0, 8287, 0, 16432, 0, 32767}};
+#endif
   if (noref) {
     if (qcg == 0) return 0;
     if (n == 15 && qcg == OD_CGAIN_SCALE && beta > OD_BETA(1.25)) {
@@ -761,13 +789,14 @@ int od_pvq_compute_k(od_val32 qcg, int itheta, od_val32 theta, int noref, int n,
       return OD_MAXI(1, (int)floor(.5 + (qcg*OD_CGAIN_SCALE_1 - .2)*
        sqrt((n + 3)/2)/beta));
 #else
-      od_val32 rt;
-      int sqrt_shift;
-      rt = od_sqrt((n + 3) >> 1, &sqrt_shift);
+      od_val16 rt;
+      OD_ASSERT(OD_ILOG(n + 1) < 13);
+      rt = od_sqrt_table[1][OD_ILOG(n + 1)];
       /*FIXME: get rid of 64-bit mul.*/
       return OD_MAXI(1, OD_SHR_ROUND((int64_t)((qcg
-       - (int64_t)OD_QCONST32(.2, OD_CGAIN_SHIFT))*rt/(beta*OD_BETA_SCALE_1)),
-       OD_CGAIN_SHIFT + sqrt_shift));
+       - (int64_t)OD_QCONST32(.2, OD_CGAIN_SHIFT))*
+       OD_MULT16_16_QBETA(od_beta_rcp(beta), rt)), OD_CGAIN_SHIFT
+       + OD_SQRT_TBL_SHIFT));
 #endif
     }
   }
@@ -783,13 +812,13 @@ int od_pvq_compute_k(od_val32 qcg, int itheta, od_val32 theta, int noref, int n,
 #if defined(OD_FLOAT_PVQ)
       return OD_MAXI(1, (int)floor(.5 + (itheta - .2)*sqrt((n + 2)/2)));
 #else
-      od_val32 rt;
-      int sqrt_outshift;
-      rt = od_sqrt((n + 2)/2, &sqrt_outshift);
+      od_val16 rt;
+      OD_ASSERT(OD_ILOG(n + 1) < 13);
+      rt = od_sqrt_table[0][OD_ILOG(n + 1)];
       /*FIXME: get rid of 64-bit mul.*/
       return OD_MAXI(1, OD_VSHR_ROUND(((OD_SHL(itheta, OD_ITHETA_SHIFT)
        - OD_QCONST32(.2, OD_ITHETA_SHIFT)))*(int64_t)rt,
-       sqrt_outshift + OD_ITHETA_SHIFT));
+       OD_SQRT_TBL_SHIFT + OD_ITHETA_SHIFT));
 #endif
     }
     else {
