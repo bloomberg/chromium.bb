@@ -58,6 +58,8 @@ public:
         start(interval, 0, caller);
     }
 
+    // Timer cancellation is supported but not free. Please be careful not to
+    // cause a flood of timer cancellations.
     void stop();
     bool isActive() const;
     const WebTraceLocation& location() const { return m_location; }
