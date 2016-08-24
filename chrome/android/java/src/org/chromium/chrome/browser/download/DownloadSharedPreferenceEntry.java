@@ -128,6 +128,10 @@ public class DownloadSharedPreferenceEntry {
         }
     }
 
+    public boolean isOfflinePage() {
+        return itemType == ITEM_TYPE_OFFLINE_PAGE;
+    }
+
     /**
      * Build a download item from this object.
      */
