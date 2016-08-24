@@ -1472,7 +1472,12 @@ void XMLHttpRequest::endLoading()
     InspectorInstrumentation::didFinishXHRLoading(getExecutionContext(), this, this, m_method, m_url);
 
     if (m_loader) {
+        const bool hasError = m_error;
+        // Set |m_error| in order to suppress the cancel notification (see
+        // XMLHttpRequest::didFail).
+        m_error = true;
         m_loader->cancel();
+        m_error = hasError;
         m_loader = nullptr;
     }
 
