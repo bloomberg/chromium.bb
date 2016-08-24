@@ -6244,6 +6244,77 @@ Polymer({
   behaviors: [ Polymer.PaperItemBehavior ]
 });
 
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+cr.define('md_history', function() {
+  function BrowserService() {
+    this.pendingDeleteItems_ = null;
+    this.pendingDeletePromise_ = null;
+  }
+  BrowserService.prototype = {
+    deleteItems: function(items) {
+      if (this.pendingDeleteItems_ != null) {
+        return new Promise(function(resolve, reject) {
+          reject(items);
+        });
+      }
+      var removalList = items.map(function(item) {
+        return {
+          url: item.url,
+          timestamps: item.allTimestamps
+        };
+      });
+      this.pendingDeleteItems_ = items;
+      this.pendingDeletePromise_ = new PromiseResolver();
+      chrome.send('removeVisits', removalList);
+      return this.pendingDeletePromise_.promise;
+    },
+    removeBookmark: function(url) {
+      chrome.send('removeBookmark', [ url ]);
+    },
+    openForeignSessionAllTabs: function(sessionTag) {
+      chrome.send('openForeignSession', [ sessionTag ]);
+    },
+    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
+      chrome.send('openForeignSession', [ sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey ]);
+    },
+    deleteForeignSession: function(sessionTag) {
+      chrome.send('deleteForeignSession', [ sessionTag ]);
+    },
+    openClearBrowsingData: function() {
+      chrome.send('clearBrowsingData');
+    },
+    recordHistogram: function(histogram, value, max) {
+      chrome.send('metricsHandler:recordInHistogram', [ histogram, value, max ]);
+    },
+    recordAction: function(action) {
+      if (action.indexOf('_') == -1) action = 'HistoryPage_' + action;
+      chrome.send('metricsHandler:recordAction', [ action ]);
+    },
+    resolveDelete_: function(successful) {
+      if (this.pendingDeleteItems_ == null || this.pendingDeletePromise_ == null) {
+        return;
+      }
+      if (successful) this.pendingDeletePromise_.resolve(this.pendingDeleteItems_); else this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
+      this.pendingDeleteItems_ = null;
+      this.pendingDeletePromise_ = null;
+    }
+  };
+  cr.addSingletonGetter(BrowserService);
+  return {
+    BrowserService: BrowserService
+  };
+});
+
+function deleteComplete() {
+  md_history.BrowserService.getInstance().resolveDelete_(true);
+}
+
+function deleteFailed() {
+  md_history.BrowserService.getInstance().resolveDelete_(false);
+}
+
 Polymer({
   is: 'iron-collapse',
   behaviors: [ Polymer.IronResizableBehavior ],
@@ -6568,76 +6639,6 @@ cr.define('cr.icon', function() {
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-cr.define('md_history', function() {
-  function BrowserService() {
-    this.pendingDeleteItems_ = null;
-    this.pendingDeletePromise_ = null;
-  }
-  BrowserService.prototype = {
-    deleteItems: function(items) {
-      if (this.pendingDeleteItems_ != null) {
-        return new Promise(function(resolve, reject) {
-          reject(items);
-        });
-      }
-      var removalList = items.map(function(item) {
-        return {
-          url: item.url,
-          timestamps: item.allTimestamps
-        };
-      });
-      this.pendingDeleteItems_ = items;
-      this.pendingDeletePromise_ = new PromiseResolver();
-      chrome.send('removeVisits', removalList);
-      return this.pendingDeletePromise_.promise;
-    },
-    removeBookmark: function(url) {
-      chrome.send('removeBookmark', [ url ]);
-    },
-    openForeignSessionAllTabs: function(sessionTag) {
-      chrome.send('openForeignSession', [ sessionTag ]);
-    },
-    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
-      chrome.send('openForeignSession', [ sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey ]);
-    },
-    deleteForeignSession: function(sessionTag) {
-      chrome.send('deleteForeignSession', [ sessionTag ]);
-    },
-    openClearBrowsingData: function() {
-      chrome.send('clearBrowsingData');
-    },
-    recordHistogram: function(histogram, value, max) {
-      chrome.send('metricsHandler:recordInHistogram', [ histogram, value, max ]);
-    },
-    recordAction: function(actionDesc) {
-      chrome.send('metricsHandler:recordAction', [ actionDesc ]);
-    },
-    resolveDelete_: function(successful) {
-      if (this.pendingDeleteItems_ == null || this.pendingDeletePromise_ == null) {
-        return;
-      }
-      if (successful) this.pendingDeletePromise_.resolve(this.pendingDeleteItems_); else this.pendingDeletePromise_.reject(this.pendingDeleteItems_);
-      this.pendingDeleteItems_ = null;
-      this.pendingDeletePromise_ = null;
-    }
-  };
-  cr.addSingletonGetter(BrowserService);
-  return {
-    BrowserService: BrowserService
-  };
-});
-
-function deleteComplete() {
-  md_history.BrowserService.getInstance().resolveDelete_(true);
-}
-
-function deleteFailed() {
-  md_history.BrowserService.getInstance().resolveDelete_(false);
-}
-
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 Polymer({
   is: 'history-searched-label',
   properties: {
@@ -6707,7 +6708,8 @@ cr.define('md_history', function() {
       numberOfItems: {
         type: Number
       },
-      path: String
+      path: String,
+      index: Number
     },
     onCheckboxSelected_: function(e) {
       this.fire('history-checkbox-select', {
@@ -6722,16 +6724,32 @@ cr.define('md_history', function() {
     onRemoveBookmarkTap_: function() {
       if (!this.item.starred) return;
       if (this.$$('#bookmark-star') == this.root.activeElement) this.$['menu-button'].focus();
-      md_history.BrowserService.getInstance().removeBookmark(this.item.url);
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.removeBookmark(this.item.url);
+      browserService.recordAction('BookmarkStarClicked');
       this.fire('remove-bookmark-stars', this.item.url);
     },
     onMenuButtonTap_: function(e) {
       this.fire('toggle-menu', {
         target: Polymer.dom(e).localTarget,
+        index: this.index,
         item: this.item,
         path: this.path
       });
       e.stopPropagation();
+    },
+    onLinkClick_: function() {
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.recordAction('EntryLinkClick');
+      if (this.searchTerm) browserService.recordAction('SearchResultClick');
+      if (this.index == undefined) return;
+      browserService.recordHistogram('HistoryPage.ClickPosition', this.index, UMA_MAX_BUCKET_VALUE);
+      if (this.index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+        browserService.recordHistogram('HistoryPage.ClickPositionSubset', this.index, UMA_MAX_SUBSET_BUCKET_VALUE);
+      }
+    },
+    onLinkRightClick_: function() {
+      md_history.BrowserService.getInstance().recordAction('EntryLinkRightClick');
     },
     showIcon_: function() {
       this.$.icon.style.backgroundImage = cr.icon.getFaviconImageSet(this.item.url);
@@ -6840,7 +6858,7 @@ var HistoryListBehavior = {
     });
     node.indexes.forEach(function(index) {
       if (node.leaf || this.removeItemsBeneathNode_(node.children[index])) {
-        var item = array.splice(index, 1);
+        var item = array.splice(index, 1)[0];
         splices.push({
           index: index,
           removed: [ item ],
@@ -8207,6 +8225,9 @@ Polymer({
   },
   deleteSelectedWithPrompt: function() {
     if (!loadTimeData.getBoolean('allowDeletingHistory')) return;
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('RemoveSelected');
+    if (this.queryState.searchTerm != '') browserService.recordAction('SearchResultRemove');
     this.$.dialog.get().then(function(dialog) {
       dialog.showModal();
     });
@@ -8232,11 +8253,13 @@ Polymer({
     }
   },
   onDialogConfirmTap_: function() {
+    md_history.BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
     this.getSelectedList_().deleteSelected();
     var dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
   },
   onDialogCancelTap_: function() {
+    md_history.BrowserService.getInstance().recordAction('CancelRemoveSelected');
     var dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
   },
@@ -8251,6 +8274,7 @@ Polymer({
     });
   },
   onMoreFromSiteTap_: function() {
+    md_history.BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
     var menu = assert(this.$.sharedMenu.getIfExists());
     this.fire('search-domain', {
       domain: menu.itemData.item.domain
@@ -8258,11 +8282,20 @@ Polymer({
     menu.closeMenu();
   },
   onRemoveFromHistoryTap_: function() {
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('EntryMenuRemoveFromHistory');
     var menu = assert(this.$.sharedMenu.getIfExists());
     var itemData = menu.itemData;
-    md_history.BrowserService.getInstance().deleteItems([ itemData.item ]).then(function(items) {
+    browserService.deleteItems([ itemData.item ]).then(function(items) {
       this.getSelectedList_().removeItemsByPath([ itemData.path ]);
       this.fire('unselect-all');
+      var index = itemData.index;
+      if (index == undefined) return;
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.recordHistogram('HistoryPage.RemoveEntryPosition', index, UMA_MAX_BUCKET_VALUE);
+      if (index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+        browserService.recordHistogram('HistoryPage.RemoveEntryPositionSubset', index, UMA_MAX_SUBSET_BUCKET_VALUE);
+      }
     }.bind(this));
     menu.closeMenu();
   },
@@ -8293,10 +8326,14 @@ Polymer({
   },
   openTab_: function(e) {
     var tab = e.model.tab;
-    md_history.BrowserService.getInstance().openForeignSessionTab(this.sessionTag, tab.windowId, tab.sessionId, e);
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_CLICKED, SyncedTabsHistogram.LIMIT);
+    browserService.openForeignSessionTab(this.sessionTag, tab.windowId, tab.sessionId, e);
     e.preventDefault();
   },
   toggleTabCard: function() {
+    var histogramValue = this.$.collapse.opened ? SyncedTabsHistogram.COLLAPSE_SESSION : SyncedTabsHistogram.EXPAND_SESSION;
+    md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, histogramValue, SyncedTabsHistogram.LIMIT);
     this.$.collapse.toggle();
     this.$['dropdown-indicator'].icon = this.$.collapse.opened ? 'cr:expand-less' : 'cr:expand-more';
   },
@@ -8323,6 +8360,9 @@ Polymer({
       tag: this.sessionTag
     });
     e.stopPropagation();
+  },
+  onLinkRightClick_: function() {
+    md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_RIGHT_CLICKED, SyncedTabsHistogram.LIMIT);
   }
 });
 
@@ -8359,7 +8399,8 @@ Polymer({
     fetchingSyncedTabs_: {
       type: Boolean,
       value: false
-    }
+    },
+    hasSeenForeignData_: Boolean
   },
   listeners: {
     'toggle-menu': 'onToggleMenu_',
@@ -8367,6 +8408,7 @@ Polymer({
   },
   attached: function() {
     chrome.send('otherDevicesInitialized');
+    md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED, SyncedTabsHistogram.LIMIT);
   },
   createInternalDevice_: function(session) {
     var tabs = [];
@@ -8414,16 +8456,23 @@ Polymer({
   onToggleMenu_: function(e) {
     this.$.menu.get().then(function(menu) {
       menu.toggleMenu(e.detail.target, e.detail.tag);
+      if (menu.menuOpen) {
+        md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU, SyncedTabsHistogram.LIMIT);
+      }
     });
   },
   onOpenAllTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
-    md_history.BrowserService.getInstance().openForeignSessionAllTabs(menu.itemData);
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL, SyncedTabsHistogram.LIMIT);
+    browserService.openForeignSessionAllTabs(menu.itemData);
     menu.closeMenu();
   },
   onDeleteSessionTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
-    md_history.BrowserService.getInstance().deleteForeignSession(menu.itemData);
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW, SyncedTabsHistogram.LIMIT);
+    browserService.deleteForeignSession(menu.itemData);
     menu.closeMenu();
   },
   clearDisplayedSyncedDevices_: function() {
@@ -8446,6 +8495,10 @@ Polymer({
   updateSyncedDevices: function(sessionList) {
     this.fetchingSyncedTabs_ = false;
     if (!sessionList) return;
+    if (sessionList.length > 0 && !this.hasSeenForeignData_) {
+      this.hasSeenForeignData_ = true;
+      md_history.BrowserService.getInstance().recordHistogram(SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA, SyncedTabsHistogram.LIMIT);
+    }
     var updateCount = Math.min(sessionList.length, this.syncedDevices_.length);
     for (var i = 0; i < updateCount; i++) {
       var oldDevice = this.syncedDevices_[i];
@@ -8505,8 +8558,9 @@ Polymer({
     this.fire('history-close-drawer');
   },
   onClearBrowsingDataTap_: function(e) {
-    md_history.BrowserService.getInstance().recordAction('HistoryPage_InitClearBrowsingData');
-    md_history.BrowserService.getInstance().openClearBrowsingData();
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('InitClearBrowsingData');
+    browserService.openClearBrowsingData();
     e.preventDefault();
   },
   getQueryString_: function(route) {
@@ -8642,6 +8696,7 @@ Polymer({
   searchTermChanged_: function(searchTerm) {
     this.set('queryParams_.q', searchTerm || null);
     this.$['history'].queryHistory(false);
+    if (this.queryState_.searchTerm) md_history.BrowserService.getInstance().recordAction('Search');
   },
   searchQueryParamChanged_: function(searchQuery) {
     this.$.toolbar.setSearchTerm(searchQuery || '');

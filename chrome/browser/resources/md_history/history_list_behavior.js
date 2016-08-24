@@ -164,7 +164,7 @@ var HistoryListBehavior = {
     node.indexes.sort(function(a, b) { return b - a; });
     node.indexes.forEach(function(index) {
       if (node.leaf || this.removeItemsBeneathNode_(node.children[index])) {
-        var item = array.splice(index, 1);
+        var item = array.splice(index, 1)[0];
         splices.push({
           index: index,
           removed: [item],

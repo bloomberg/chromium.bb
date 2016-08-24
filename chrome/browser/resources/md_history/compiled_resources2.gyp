@@ -66,6 +66,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'browser_service',
+        'constants',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

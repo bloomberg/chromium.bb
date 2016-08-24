@@ -55,7 +55,9 @@ Polymer({
     fetchingSyncedTabs_: {
       type: Boolean,
       value: false,
-    }
+    },
+
+    hasSeenForeignData_: Boolean,
   },
 
   listeners: {
@@ -67,6 +69,9 @@ Polymer({
   attached: function() {
     // Update the sign in state.
     chrome.send('otherDevicesInitialized');
+    md_history.BrowserService.getInstance().recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.INITIALIZED,
+        SyncedTabsHistogram.LIMIT);
   },
 
   /**
@@ -128,20 +133,32 @@ Polymer({
   onToggleMenu_: function(e) {
     this.$.menu.get().then(function(menu) {
       menu.toggleMenu(e.detail.target, e.detail.tag);
+      if (menu.menuOpen) {
+        md_history.BrowserService.getInstance().recordHistogram(
+            SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.SHOW_SESSION_MENU,
+            SyncedTabsHistogram.LIMIT);
+      }
     });
   },
 
   onOpenAllTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
-    md_history.BrowserService.getInstance().openForeignSessionAllTabs(
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
+        SyncedTabsHistogram.LIMIT);
+    browserService.openForeignSessionAllTabs(
         menu.itemData);
     menu.closeMenu();
   },
 
   onDeleteSessionTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
-    md_history.BrowserService.getInstance().deleteForeignSession(
-        menu.itemData);
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HIDE_FOR_NOW,
+        SyncedTabsHistogram.LIMIT);
+    browserService.deleteForeignSession(menu.itemData);
     menu.closeMenu();
   },
 
@@ -206,6 +223,13 @@ Polymer({
 
     if (!sessionList)
       return;
+
+    if (sessionList.length > 0 && !this.hasSeenForeignData_) {
+      this.hasSeenForeignData_ = true;
+      md_history.BrowserService.getInstance().recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
+        SyncedTabsHistogram.LIMIT);
+    }
 
     // First, update any existing devices that have changed.
     var updateCount = Math.min(sessionList.length, this.syncedDevices_.length);

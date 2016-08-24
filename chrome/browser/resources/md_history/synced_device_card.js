@@ -47,7 +47,11 @@ Polymer({
    */
   openTab_: function(e) {
     var tab = /** @type {ForeignSessionTab} */(e.model.tab);
-    md_history.BrowserService.getInstance().openForeignSessionTab(
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_CLICKED,
+        SyncedTabsHistogram.LIMIT);
+    browserService.openForeignSessionTab(
         this.sessionTag, tab.windowId, tab.sessionId, e);
     e.preventDefault();
   },
@@ -56,6 +60,14 @@ Polymer({
    * Toggles the dropdown display of synced tabs for each device card.
    */
   toggleTabCard: function() {
+    var histogramValue = this.$.collapse.opened ?
+        SyncedTabsHistogram.COLLAPSE_SESSION :
+        SyncedTabsHistogram.EXPAND_SESSION;
+
+    md_history.BrowserService.getInstance().recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, histogramValue,
+        SyncedTabsHistogram.LIMIT);
+
     this.$.collapse.toggle();
     this.$['dropdown-indicator'].icon =
         this.$.collapse.opened ? 'cr:expand-less' : 'cr:expand-more';
@@ -111,5 +123,11 @@ Polymer({
       tag: this.sessionTag
     });
     e.stopPropagation();  // Prevent iron-collapse.
+  },
+
+  onLinkRightClick_: function() {
+    md_history.BrowserService.getInstance().recordHistogram(
+        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_RIGHT_CLICKED,
+        SyncedTabsHistogram.LIMIT);
   },
 });

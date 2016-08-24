@@ -27,9 +27,9 @@ Polymer({
    * @private
    */
   onClearBrowsingDataTap_: function(e) {
-    md_history.BrowserService.getInstance().recordAction(
-        'HistoryPage_InitClearBrowsingData');
-    md_history.BrowserService.getInstance().openClearBrowsingData();
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('InitClearBrowsingData');
+    browserService.openClearBrowsingData();
     e.preventDefault();
   },
 

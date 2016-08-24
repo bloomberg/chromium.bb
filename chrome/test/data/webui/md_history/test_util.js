@@ -37,6 +37,8 @@ function replaceBody(element) {
 function replaceApp() {
   var app = document.createElement('history-app');
   app.id = 'history-app';
+  // Disable querying for tests by default.
+  app.queryState_.queryingDisabled = true;
   replaceBody(app);
   return app;
 }
@@ -154,4 +156,52 @@ function shiftClick(element) {
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
   element.dispatchEvent(new MouseEvent('click', props));
+}
+
+function disableLinkClicks() {
+  document.addEventListener('click', function(e) {
+    if (e.defaultPrevented)
+      return;
+
+    var eventPath = e.path;
+    var anchor = null;
+    if (eventPath) {
+      for (var i = 0; i < eventPath.length; i++) {
+        var element = eventPath[i];
+        if (element.tagName === 'A' && element.href) {
+          anchor = element;
+          break;
+        }
+      }
+    }
+
+    if (!anchor)
+      return;
+
+    e.preventDefault();
+  });
+}
+
+function createSession(name, windows) {
+  return {
+    collapsed: false,
+    deviceType: '',
+    name: name,
+    modifiedTime: '2 seconds ago',
+    tag: name,
+    timestamp: 0,
+    windows: windows
+  };
+}
+
+function createWindow(tabUrls) {
+  var tabs = tabUrls.map(function(tabUrl) {
+    return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
+  });
+
+  return {
+    tabs: tabs,
+    sessionId: '123',
+    userVisibleTimestamp: "A while ago"
+  };
 }

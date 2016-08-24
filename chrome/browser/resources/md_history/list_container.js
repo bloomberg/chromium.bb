@@ -113,6 +113,11 @@ Polymer({
   deleteSelectedWithPrompt: function() {
     if (!loadTimeData.getBoolean('allowDeletingHistory'))
       return;
+
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('RemoveSelected');
+    if (this.queryState.searchTerm != '')
+      browserService.recordAction('SearchResultRemove');
     this.$.dialog.get().then(function(dialog) {
       dialog.showModal();
     });
@@ -161,6 +166,9 @@ Polymer({
 
   /** @private */
   onDialogConfirmTap_: function() {
+    md_history.BrowserService.getInstance().recordAction(
+        'ConfirmRemoveSelected');
+
     this.getSelectedList_().deleteSelected();
     var dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
@@ -168,6 +176,9 @@ Polymer({
 
   /** @private */
   onDialogCancelTap_: function() {
+    md_history.BrowserService.getInstance().recordAction(
+        'CancelRemoveSelected');
+
     var dialog = assert(this.$.dialog.getIfExists());
     dialog.close();
   },
@@ -199,6 +210,9 @@ Polymer({
 
   /** @private */
   onMoreFromSiteTap_: function() {
+    md_history.BrowserService.getInstance().recordAction(
+        'EntryMenuShowMoreFromSite');
+
     var menu = assert(this.$.sharedMenu.getIfExists());
     this.fire('search-domain', {domain: menu.itemData.item.domain});
     menu.closeMenu();
@@ -206,16 +220,31 @@ Polymer({
 
   /** @private */
   onRemoveFromHistoryTap_: function() {
+    var browserService = md_history.BrowserService.getInstance();
+    browserService.recordAction('EntryMenuRemoveFromHistory');
     var menu = assert(this.$.sharedMenu.getIfExists());
     var itemData = menu.itemData;
-    md_history.BrowserService.getInstance()
-        .deleteItems([itemData.item])
+    browserService.deleteItems([itemData.item])
         .then(function(items) {
           this.getSelectedList_().removeItemsByPath([itemData.path]);
           // This unselect-all is to reset the toolbar when deleting a selected
           // item. TODO(tsergeant): Make this automatic based on observing list
           // modifications.
           this.fire('unselect-all');
+
+          var index = itemData.index;
+          if (index == undefined)
+            return;
+
+          var browserService = md_history.BrowserService.getInstance();
+          browserService.recordHistogram(
+              'HistoryPage.RemoveEntryPosition', index,
+              UMA_MAX_BUCKET_VALUE);
+          if (index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+            browserService.recordHistogram(
+                'HistoryPage.RemoveEntryPositionSubset', index,
+                UMA_MAX_SUBSET_BUCKET_VALUE);
+          }
         }.bind(this));
     menu.closeMenu();
   },

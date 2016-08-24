@@ -91,10 +91,12 @@ cr.define('md_history', function() {
 
     /**
     * Record an action in UMA.
-    * @param {string} actionDesc The name of the action to be logged.
+    * @param {string} action The name of the action to be logged.
     */
-    recordAction: function(actionDesc) {
-      chrome.send('metricsHandler:recordAction', [actionDesc]);
+    recordAction: function(action) {
+      if (action.indexOf('_') == -1)
+        action = 'HistoryPage_' + action;
+      chrome.send('metricsHandler:recordAction', [action]);
     },
 
     /**

@@ -3041,6 +3041,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   </dom-module>
+<link rel="import" href="chrome://history/constants.html">
 <dom-module id="iron-collapse" assetpath="chrome://resources/polymer/v1_0/iron-collapse/">
 
   <template>
@@ -3427,7 +3428,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <span id="time-accessed">[[item.readableTimestamp]]</span>
           <div class="website-icon" id="icon"></div>
           <div id="title-and-domain">
-            <a href="[[item.url]]" id="title" class="website-title" title="[[cropItemTitle_(item.title)]]">
+            <a href="[[item.url]]" id="title" class="website-title" title="[[cropItemTitle_(item.title)]]" on-click="onLinkClick_" on-contextmenu="onLinkRightClick_">
               <history-searched-label title="[[cropItemTitle_(item.title)]]" search-term="[[searchTerm]]"></history-searched-label>
             </a>
             <span id="domain">[[item.domain]]</span>
@@ -3448,7 +3449,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
   </dom-module>
-<link rel="import" href="chrome://history/constants.html">
 <dom-module id="history-grouped-list" assetpath="chrome://history/">
   <template>
     <style include="shared-style">
@@ -3621,7 +3621,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
     <iron-list items="{{historyData_}}" as="item" id="infinite-list" hidden$="[[!hasResults(historyData_.length)]]">
       <template>
-        <history-item item="[[item]]" selected="{{item.selected}}" is-first-item="[[isFirstItem_(index)]]" is-card-start="[[isCardStart_(item, index, historyData_.length)]]" is-card-end="[[isCardEnd_(item, index, historyData_.length)]]" has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]" search-term="[[searchedTerm]]" number-of-items="[[historyData_.length]]" path="[[pathForItem_(index)]]">
+        <history-item item="[[item]]" selected="{{item.selected}}" is-first-item="[[isFirstItem_(index)]]" is-card-start="[[isCardStart_(item, index, historyData_.length)]]" is-card-end="[[isCardEnd_(item, index, historyData_.length)]]" has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]" search-term="[[searchedTerm]]" number-of-items="[[historyData_.length]]" path="[[pathForItem_(index)]]" index="[[index]]">
         </history-item>
       </template>
     </iron-list>
@@ -3758,7 +3758,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template is="dom-repeat" items="[[tabs]]" as="tab" id="tab-list">
             <div id="item-container">
               <div id="icon" class="website-icon"></div>
-              <a href="[[tab.url]]" class="website-title" title="[[tab.title]]" on-click="openTab_">
+              <a href="[[tab.url]]" class="website-title" title="[[tab.title]]" on-click="openTab_" on-contextmenu="onLinkRightClick_">
                 <history-searched-label title="[[tab.title]]" search-term="[[searchTerm]]"></history-searched-label>
               </a>
             </div>

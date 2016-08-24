@@ -32,6 +32,8 @@ cr.define('md_history', function() {
 
       // The path of this history item inside its parent.
       path: String,
+
+      index: Number,
     },
 
     /**
@@ -70,8 +72,10 @@ cr.define('md_history', function() {
       if (this.$$('#bookmark-star') == this.root.activeElement)
         this.$['menu-button'].focus();
 
-      md_history.BrowserService.getInstance()
-        .removeBookmark(this.item.url);
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.removeBookmark(this.item.url);
+      browserService.recordAction('BookmarkStarClicked');
+
       this.fire('remove-bookmark-stars', this.item.url);
     },
 
@@ -82,12 +86,42 @@ cr.define('md_history', function() {
     onMenuButtonTap_: function(e) {
       this.fire('toggle-menu', {
         target: Polymer.dom(e).localTarget,
+        index: this.index,
         item: this.item,
         path: this.path,
       });
 
       // Stops the 'tap' event from closing the menu when it opens.
       e.stopPropagation();
+    },
+
+    /**
+     * Record metrics when a result is clicked. This is deliberately tied to
+   * on-click rather than on-tap, as on-click triggers from middle clicks.
+     */
+    onLinkClick_: function() {
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.recordAction('EntryLinkClick');
+
+      if (this.searchTerm)
+        browserService.recordAction('SearchResultClick');
+
+      if (this.index == undefined)
+        return;
+
+      browserService.recordHistogram(
+          'HistoryPage.ClickPosition', this.index, UMA_MAX_BUCKET_VALUE);
+
+      if (this.index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+        browserService.recordHistogram(
+            'HistoryPage.ClickPositionSubset', this.index,
+            UMA_MAX_SUBSET_BUCKET_VALUE);
+      }
+    },
+
+    onLinkRightClick_: function() {
+      md_history.BrowserService.getInstance().recordAction(
+          'EntryLinkRightClick');
     },
 
     /**

@@ -201,6 +201,9 @@ Polymer({
   searchTermChanged_: function(searchTerm) {
     this.set('queryParams_.q', searchTerm || null);
     this.$['history'].queryHistory(false);
+    // TODO(tsergeant): Ignore incremental searches in this metric.
+    if (this.queryState_.searchTerm)
+      md_history.BrowserService.getInstance().recordAction('Search');
   },
 
   /**

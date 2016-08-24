@@ -3,29 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('md_history.history_synced_tabs_test', function() {
-  function createSession(name, windows) {
-    return {
-      collapsed: false,
-      deviceType: '',
-      name: name,
-      modifiedTime: '2 seconds ago',
-      tag: name,
-      timestamp: 0,
-      windows: windows
-    };
-  }
-
-  function createWindow(tabUrls) {
-    var tabs = tabUrls.map(function(tabUrl) {
-      return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
-    });
-
-    return {
-      tabs: tabs,
-      sessionId: '123',
-      userVisibleTimestamp: "A while ago"
-    };
-  }
 
   function getCards(manager) {
     return polymerSelectAll(manager, 'history-synced-device-card');
