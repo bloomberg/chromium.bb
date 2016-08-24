@@ -30,6 +30,8 @@ class ProtoZeroMessageHandleBase;
 // performance. None of the methods require any dynamic memory allocation.
 class TRACING_EXPORT ProtoZeroMessage {
  public:
+  ProtoZeroMessage();
+
   // Clears up the state, allowing the message to be reused as a fresh one.
   void Reset(ScatteredStreamWriter*);
 
@@ -60,8 +62,6 @@ class TRACING_EXPORT ProtoZeroMessage {
 #endif
 
  protected:
-  ProtoZeroMessage();
-
   // Proto types: uint64, uint32, int64, int32, bool, enum.
   template <typename T>
   void AppendVarInt(uint32_t field_id, T value) {

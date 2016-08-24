@@ -10,7 +10,7 @@ namespace tracing {
 namespace v2 {
 
 TraceRingBuffer::TraceRingBuffer(uint8_t* begin, size_t size)
-    : num_chunks_(size / Chunk::kSize),
+    : num_chunks_(size / kChunkSize),
       num_chunks_taken_(0),
       current_chunk_idx_(0) {
   DCHECK_GT(num_chunks_, 0u);
@@ -19,7 +19,7 @@ TraceRingBuffer::TraceRingBuffer(uint8_t* begin, size_t size)
   uint8_t* chunk_begin = begin;
   for (size_t i = 0; i < num_chunks_; ++i) {
     chunks_[i].Initialize(chunk_begin);
-    chunk_begin += Chunk::kSize;
+    chunk_begin += kChunkSize;
   }
 }
 
@@ -43,7 +43,7 @@ TraceRingBuffer::Chunk* TraceRingBuffer::TakeChunk(uint32_t writer_id) {
 
   // Bankrupcy: there are more threads than chunks. All chunks were in flight.
   if (!bankrupcy_chunk_storage_) {
-    bankrupcy_chunk_storage_.reset(new uint8_t[Chunk::kSize]);
+    bankrupcy_chunk_storage_.reset(new uint8_t[kChunkSize]);
     bankrupcy_chunk_.Initialize(&bankrupcy_chunk_storage_.get()[0]);
   }
   bankrupcy_chunk_.Clear();

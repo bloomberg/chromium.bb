@@ -42,15 +42,15 @@ ProtoZeroMessageHandleBase::ProtoZeroMessageHandleBase(
 
 ProtoZeroMessageHandleBase& ProtoZeroMessageHandleBase::operator=(
     ProtoZeroMessageHandleBase&& other) {
+  // If the current handle was pointing to a message and is being reset to a new
+  // one, finalize the old message.
+  FinalizeMessageIfSet(message_);
+
   Move(&other);
   return *this;
 }
 
 void ProtoZeroMessageHandleBase::Move(ProtoZeroMessageHandleBase* other) {
-  // If the current handle was pointing to a message and is being reset to a new
-  // one, finalize the old message.
-  FinalizeMessageIfSet(message_);
-
   // In theory other->message_ could be nullptr, if |other| is a handle that has
   // been std::move-d (and hence empty). There isn't a legitimate use case for
   // doing so, though. Therefore this case is deliberately ignored (if hit, it

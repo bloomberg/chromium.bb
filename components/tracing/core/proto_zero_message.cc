@@ -82,7 +82,7 @@ size_t ProtoZeroMessage::Finalize() {
 #endif
     DCHECK_LT(size_, proto::kMaxMessageLength);
     DCHECK_EQ(proto::kMessageLengthFieldSize, size_field_.size());
-    proto::WriteRedundantLength(
+    proto::WriteRedundantVarInt(
         static_cast<uint32_t>(size_ - size_already_written_),
         size_field_.begin);
     size_field_.reset();

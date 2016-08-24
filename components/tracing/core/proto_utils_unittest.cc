@@ -114,20 +114,20 @@ TEST(ProtoUtilsTest, Serialization) {
 
   uint8_t buf[kMessageLengthFieldSize];
 
-  WriteRedundantLength(0, buf);
+  WriteRedundantVarInt(0, buf);
   EXPECT_EQ(0, memcmp("\x80\x80\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantLength(1, buf);
+  WriteRedundantVarInt(1, buf);
   EXPECT_EQ(0, memcmp("\x81\x80\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantLength(0x80, buf);
+  WriteRedundantVarInt(0x80, buf);
   EXPECT_EQ(0, memcmp("\x80\x81\x80\x00", buf, sizeof(buf)));
 
-  WriteRedundantLength(0x332211, buf);
+  WriteRedundantVarInt(0x332211, buf);
   EXPECT_EQ(0, memcmp("\x91\xC4\xCC\x01", buf, sizeof(buf)));
 
   // Largest allowed length.
-  WriteRedundantLength(0x0FFFFFFF, buf);
+  WriteRedundantVarInt(0x0FFFFFFF, buf);
   EXPECT_EQ(0, memcmp("\xFF\xFF\xFF\x7F", buf, sizeof(buf)));
 }
 
