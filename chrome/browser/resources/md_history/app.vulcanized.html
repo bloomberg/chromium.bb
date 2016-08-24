@@ -2556,6 +2556,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         height: 20px;
         width: 20px;
       }
+
+      button.more-vert-button {
+        height: 36px;
+        padding: 6px;
+        width: 36px;
+      }
+
+      button.more-vert-button div {
+        border: 2px solid var(--secondary-text-color);
+        border-radius: 2px;
+        margin: 1px 10px;
+        pointer-events: none;
+        transform: scale(0.8);
+      }
     </style>
   </template>
 </dom-module>
@@ -3440,8 +3454,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               </button>
             </template>
           </div>
-          <button is="paper-icon-button-light" id="menu-button" class="icon-button" title="$i18n{moreActionsButton}" on-tap="onMenuButtonTap_">
-            <iron-icon icon="cr:more-vert"></iron-icon>
+          <button is="paper-icon-button-light" id="menu-button" class="more-vert-button" title="$i18n{moreActionsButton}" on-tap="onMenuButtonTap_">
+            <div></div>
+            <div></div>
+            <div></div>
           </button>
         </div>
         <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
@@ -3743,8 +3759,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <span id="last-update-time">[[lastUpdateTime]]</span>
         </div>
         <div id="right-buttons">
-          <button is="paper-icon-button-light" id="menu-button" class="icon-button" on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
-            <iron-icon icon="cr:more-vert"></iron-icon>
+          <button is="paper-icon-button-light" id="menu-button" class="more-vert-button" on-tap="onMenuButtonTap_" title="$i18n{moreActionsButton}">
+            <div></div>
+            <div></div>
+            <div></div>
           </button>
           <button is="paper-icon-button-light" class="icon-button" title$="[[getCollapseTitle_(opened)]]">
             <iron-icon icon="[[getCollapseIcon_(opened)]]" id="dropdown-indicator">
