@@ -451,8 +451,16 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
 
     // If the text is truncated, let the thing being painted in the truncation
     // draw its own highlight.
-    int length = m_inlineTextBox.truncation() != cNoTruncation ? m_inlineTextBox.truncation() : m_inlineTextBox.len();
-    StringView string(m_inlineTextBox.getLineLayoutItem().text(), m_inlineTextBox.start(), static_cast<unsigned>(length));
+    unsigned start = m_inlineTextBox.start();
+    int length = m_inlineTextBox.len();
+    bool ltr = m_inlineTextBox.isLeftToRightDirection();
+    bool flowIsLTR = m_inlineTextBox.getLineLayoutItem().style()->isLeftToRightDirection();
+    if (m_inlineTextBox.truncation() != cNoTruncation) {
+        start = ltr == flowIsLTR ? m_inlineTextBox.start() : m_inlineTextBox.truncation();
+        length = ltr == flowIsLTR ? m_inlineTextBox.truncation() : m_inlineTextBox.len() - m_inlineTextBox.truncation();
+    }
+    StringView string(m_inlineTextBox.getLineLayoutItem().text(), start, static_cast<unsigned>(length));
+
 
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == length && m_inlineTextBox.hasHyphen();
@@ -491,6 +499,8 @@ void InlineTextBoxPainter::paintSelection(GraphicsContext& context, const Layout
         // TODO(crbug.com/638981): Is the conversion to int intentional?
         selectionRect.move(-selectionRect.width().toInt(), 0);
     }
+    if (!flowIsLTR && m_inlineTextBox.truncation() != cNoTruncation)
+        selectionRect.move(m_inlineTextBox.logicalWidth() - selectionRect.width(), LayoutUnit());
 
     context.fillRect(FloatRect(selectionRect), c);
 }

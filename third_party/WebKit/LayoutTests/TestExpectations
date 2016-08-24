@@ -569,6 +569,9 @@ crbug.com/617785 fast/borders/block-mask-overlay-image-outset.html [ Skip ]
 # Some SVG tests fail due to incorrect visual rects.
 crbug.com/598051 css3/filters/effect-reference-hidpi.html [ Skip ]
 
+crbug.com/634445 editing/selection/select-text-overflow-ellipsis-mixed-in-rtl.html [ NeedsRebaseline ]
+crbug.com/634445 editing/selection/select-text-overflow-ellipsis-mixed-in-ltr.html [ NeedsRebaseline ]
+
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
