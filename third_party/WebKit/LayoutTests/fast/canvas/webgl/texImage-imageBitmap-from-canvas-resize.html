@@ -21,8 +21,8 @@ var darkRed = [26, 0, 0];
 var darkGreen = [0, 26, 0];
 
 function setCanvasToRedGreen(ctx) {
-    ctx.canvas.width = 2;
-    ctx.canvas.height = 2;
+    ctx.canvas.width = 16;
+    ctx.canvas.height = 16;
     var width = ctx.canvas.width;
     var halfWidth = Math.floor(width / 2);
     var height = ctx.canvas.height;
@@ -63,7 +63,7 @@ promise_test(function() {
     var p8 = createImageBitmap(testCanvas, {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
     var p9 = createImageBitmap(testCanvas, {colorSpaceConversion: "none", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
     var p10 = createImageBitmap(testCanvas, {colorSpaceConversion: "default", resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"}).then(function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
-    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
+    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
         var alphaVal = 0.5;
         var testPassed = runTest(bitmaps, alphaVal, false);
         if (!testPassed)
