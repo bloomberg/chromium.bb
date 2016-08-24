@@ -148,6 +148,8 @@ class CHROMEOS_EXPORT DiskMountManager {
       mount_path_ = mount_path;
     }
 
+    void set_read_only(bool is_read_only) { is_read_only_ = is_read_only; }
+
     void clear_mount_path() { mount_path_.clear(); }
 
    private:

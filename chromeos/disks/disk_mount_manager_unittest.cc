@@ -20,6 +20,7 @@ using chromeos::FakeCrosDisksClient;
 using testing::_;
 using testing::Field;
 using testing::InSequence;
+using testing::InvokeWithoutArgs;
 
 namespace {
 
@@ -75,34 +76,56 @@ const TestDiskInfo kTestDisks[] = {
     "/device/prefix",
     chromeos::DEVICE_TYPE_USB,
     1073741824,  // size in bytes
-    false,  // is parent
-    false,  // is read only
-    true,   // has media
-    false,  // is on boot device
-    true,  // is on removable device
-    false  // is hidden
+    false,       // is parent
+    false,       // is read only
+    true,        // has media
+    false,       // is on boot device
+    true,        // is on removable device
+    false        // is hidden
+  },
+  {
+    "/device/source_path2",
+    "/device/mount_path2",
+    "/device/prefix/system_path2",
+    "/device/file_path2",
+    "/device/device_label2",
+    "/device/drive_label2",
+    "/device/vendor_id2",
+    "/device/vendor_name2",
+    "/device/product_id2",
+    "/device/product_name2",
+    "/device/fs_uuid2",
+    "/device/prefix2",
+    chromeos::DEVICE_TYPE_SD,
+    1073741824,  // size in bytes
+    false,       // is parent
+    false,       // is read only
+    true,        // has media
+    false,       // is on boot device
+    true,        // is on removable device
+    false        // is hidden
   },
   {
     kReadOnlyDeviceSource,
     kReadOnlyMountpath,
-    "/device/prefix/system_path_2",
-    "/device/file_path_2",
-    "/device/device_label_2",
-    "/device/drive_label_2",
-    "/device/vendor_id_2",
-    "/device/vendor_name_2",
-    "/device/product_id_2",
-    "/device/product_name_2",
-    "/device/fs_uuid_2",
+    "/device/prefix/system_path_3",
+    "/device/file_path_3",
+    "/device/device_label_3",
+    "/device/drive_label_3",
+    "/device/vendor_id_3",
+    "/device/vendor_name_3",
+    "/device/product_id_3",
+    "/device/product_name_3",
+    "/device/fs_uuid_3",
     "/device/prefix",
     chromeos::DEVICE_TYPE_USB,
     1073741824,  // size in bytes
-    false,  // is parent
-    true,  // is read only
-    true,  // has media
-    false,  // is on boot device
-    true,  // is on removable device
-    false  // is hidden
+    false,       // is parent
+    true,        // is read only
+    true,        // has media
+    false,       // is on boot device
+    true,        // is on removable device
+    false        // is hidden
   },
 };
 
@@ -146,6 +169,14 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
            chromeos::FormatError error_code,
            const std::string& device_path));
 };
+
+// Expect |is_read_only| value of a disk object keyed by |source_path|.
+void ExpectDiskReadOnly(const DiskMountManager* manager,
+                        const std::string& source_path,
+                        bool expected) {
+  EXPECT_EQ(expected,
+            manager->disks().find(source_path)->second->is_read_only());
+}
 
 class DiskMountManagerTest : public testing::Test {
  public:
@@ -618,6 +649,51 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   // Simulate cros_disks reporting success.
   fake_cros_disks_client_->SendFormatCompletedEvent(
       chromeos::FORMAT_ERROR_NONE, "/device/source_path");
+}
+
+TEST_F(DiskMountManagerTest, MountPath_RecordAccessMode) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const std::string kSourcePath1 = "/device/source_path";
+  const std::string kSourcePath2 = "/device/source_path2";
+  const std::string kSourceFormat = std::string();
+  const std::string kMountLabel = std::string();  // N/A for MOUNT_TYPE_DEVICE
+  // For MountCompleted. Must be non-empty strings.
+  const std::string kMountPath1 = "/media/foo";
+  const std::string kMountPath2 = "/media/bar";
+
+  EXPECT_CALL(
+      observer_,
+      OnMountEvent(
+          DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
+          Field(&DiskMountManager::MountPointInfo::mount_path, kMountPath1)));
+  // Observers should see updated disks_ object reflecting mount option.
+  EXPECT_CALL(
+      observer_,
+      OnMountEvent(
+          DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
+          Field(&DiskMountManager::MountPointInfo::mount_path, kMountPath2)))
+      .WillOnce(InvokeWithoutArgs(
+          [&]() { ExpectDiskReadOnly(manager, kSourcePath2, true); }));
+
+  manager->MountPath(kSourcePath1, kSourceFormat, std::string(),
+                     chromeos::MOUNT_TYPE_DEVICE,
+                     chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+  manager->MountPath(kSourcePath2, kSourceFormat, std::string(),
+                     chromeos::MOUNT_TYPE_DEVICE,
+                     chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
+  // Simulate cros_disks reporting mount completed.
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kSourcePath1, chromeos::MOUNT_TYPE_DEVICE,
+      kMountPath1);
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kSourcePath2, chromeos::MOUNT_TYPE_DEVICE,
+      kMountPath2);
+
+  const DiskMountManager::DiskMap& disks = manager->disks();
+  ASSERT_GT(disks.count(kSourcePath1), 0U);
+  EXPECT_FALSE(disks.find(kSourcePath1)->second->is_read_only());
+  ASSERT_GT(disks.count(kSourcePath2), 0U);
+  EXPECT_TRUE(disks.find(kSourcePath2)->second->is_read_only());
 }
 
 }  // namespace
