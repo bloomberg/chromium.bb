@@ -48,7 +48,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     """Tests that sending one metric calls flush once."""
     q = Queue.Queue()
     q.put(metrics.MetricCall('Boolean', [], {},
-                             'mock_name', ['arg1'], {'kwarg1': 'value'}))
+                             'mock_name', ['arg1'], {'kwarg1': 'value'},
+                             False))
     q.put(None)
 
     ts_mon_config._ConsumeMessages(q, [''], {})
@@ -56,7 +57,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 1)
-    ts_mon_config.metrics.Flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
         'arg1', kwarg1='value')
 
@@ -64,9 +65,11 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     """Tests that sending two metrics only calls flush once."""
     q = Queue.Queue()
     q.put(metrics.MetricCall('Boolean', [], {},
-                             'mock_name1', ['arg1'], {'kwarg1': 'value'}))
+                             'mock_name1', ['arg1'], {'kwarg1': 'value'},
+                             False))
     q.put(metrics.MetricCall('Boolean', [], {},
-                             'mock_name2', ['arg2'], {'kwarg2': 'value'}))
+                             'mock_name2', ['arg2'], {'kwarg2': 'value'},
+                             False))
     q.put(None)
 
     ts_mon_config._ConsumeMessages(q, [''], {})
@@ -74,7 +77,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(3, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 2)
-    ts_mon_config.metrics.Flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name1.assert_called_once_with(
         'arg1', kwarg1='value')
     self.mock_metric.return_value.mock_name2.assert_called_once_with(
@@ -93,7 +96,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     with ts_mon_config._CreateTsMonFlushingProcess([], {}) as q:
       q.put(metrics.MetricCall('Boolean', [], {},
-                               '__class__', [], {}))
+                               '__class__', [], {},
+                               False))
 
     # wait a bit for the process to close, since multiprocessing.Queue and
     # Process.join() is not synchronous.
@@ -112,7 +116,8 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     metrics.RaisesException = RaisesException
     q.put(metrics.MetricCall('RaisesException', [], {},
-                             'raiseException', ['arg1'], {'kwarg1': 'value1'}))
+                             'raiseException', ['arg1'], {'kwarg1': 'value1'},
+                             False))
     q.put(None)
 
     mock_logging = self.PatchObject(ts_mon_config.logging, 'exception')
@@ -123,4 +128,21 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.assertEqual(2, ts_mon_config.time.time.call_count)
     ts_mon_config.time.sleep.assert_called_once_with(
         ts_mon_config.FLUSH_INTERVAL - 1)
-    ts_mon_config.metrics.Flush.assert_called_once_with()
+    ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
+
+  def testResetAfter(self):
+    """Tests that metrics with reset_after set are cleared after."""
+    q = Queue.Queue()
+
+    q.put(metrics.MetricCall('Boolean', [], {},
+                             'mock_name', ['arg1'], {'kwarg1': 'value1'},
+                             reset_after=True))
+    q.put(None)
+
+    ts_mon_config._ConsumeMessages(q, [''], {})
+
+    self.assertEqual(
+        [self.mock_metric.return_value],
+        ts_mon_config.metrics.Flush.call_args[1]['reset_after'])
+    self.mock_metric.return_value.mock_name.assert_called_once_with(
+        'arg1', kwarg1='value1')

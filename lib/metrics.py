@@ -39,7 +39,9 @@ MESSAGE_QUEUE = None
 
 MetricCall = namedtuple(
     'MetricCall',
-    'metric_name metric_args metric_kwargs method method_args method_kwargs')
+    'metric_name metric_args metric_kwargs '
+    'method method_args method_kwargs '
+    'reset_after')
 
 
 class ProxyMetric(object):
@@ -47,13 +49,20 @@ class ProxyMetric(object):
   def __init__(self, metric, metric_args, metric_kwargs):
     self.metric = metric
     self.metric_args = metric_args
+    self.reset_after = metric_kwargs.pop('reset_after', False)
     self.metric_kwargs = metric_kwargs
 
   def __getattr__(self, method_name):
+    """Redirects all method calls to the MESSAGE_QUEUE."""
     def enqueue(*args, **kwargs):
       MESSAGE_QUEUE.put(MetricCall(
-          self.metric, self.metric_args, self.metric_kwargs,
-          method_name, args, kwargs))
+          metric_name=self.metric,
+          metric_args=self.metric_args,
+          metric_kwargs=self.metric_kwargs,
+          method=method_name,
+          method_args=args,
+          method_kwargs=kwargs,
+          reset_after=self.reset_after))
     return enqueue
 
 
@@ -68,6 +77,9 @@ def _Indirect(fn):
     if MESSAGE_QUEUE:
       return ProxyMetric(fn.__name__, args, kwargs)
     else:
+      # Whether to reset the metric after the flush; this is only used by
+      # |ProxyMetric|, so remove this from the kwargs.
+      kwargs.pop('reset_after', None)
       return fn(*args, **kwargs)
   return AddToQueueIfPresent
 
@@ -163,13 +175,19 @@ def SecondsDistribution(name):
   return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
 
 
-def Flush():
-  """Flushes metrics, but warns on transient errors."""
+def Flush(reset_after=()):
+  """Flushes metrics, but warns on transient errors.
+
+  Args:
+    reset_after: A list of metrics to reset after flushing.
+  """
   if not ts_mon:
     return
 
   try:
     ts_mon.flush()
+    while reset_after:
+      reset_after.pop().reset()
   except ssl.SSLError as e:
     logging.warning('Caught transient network error while flushing: %s', e)
   except Exception as e:

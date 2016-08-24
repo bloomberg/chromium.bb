@@ -148,18 +148,19 @@ def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):
         logging.warning("ts_mon_config flushing process did not exit cleanly.")
 
 
-def _WaitToFlush(last_flush):
+def _WaitToFlush(last_flush, reset_after=()):
   """Sleeps until the next time we can call metrics.Flush(), then flushes.
 
   Args:
     last_flush: timestamp of the last flush
+    reset_after: A list of metrics to reset after the flush.
   """
   time_delta = time.time() - last_flush
   time.sleep(max(0, FLUSH_INTERVAL - time_delta))
-  metrics.Flush()
+  metrics.Flush(reset_after=reset_after)
 
 
-def _FlushIfReady(pending, last_flush):
+def _FlushIfReady(pending, last_flush, reset_after=()):
   """Call metrics.Flush() if we are ready and have pending metrics.
 
   This allows us to only call flush every FLUSH_INTERVAL seconds.
@@ -167,13 +168,14 @@ def _FlushIfReady(pending, last_flush):
   Args:
     pending: bool indicating whether there are pending metrics to flush.
     last_flush: time stamp of the last time flush() was called.
+    reset_after: A list of metrics to reset after the flush.
   """
   now = time.time()
   time_delta = now - last_flush
   if time_delta > FLUSH_INTERVAL and pending:
     last_flush = now
     time_delta = 0
-    metrics.Flush()
+    metrics.Flush(reset_after=reset_after)
     pending = False
   else:
     pending = True
@@ -209,8 +211,11 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
   pending = False
 
   # If our parent dies, finish flushing before exiting.
+  reset_after = []
   parallel.ExitWithParent(signal.SIGHUP)
-  signal.signal(signal.SIGHUP, lambda _sig, _stack: _WaitToFlush(last_flush))
+  signal.signal(signal.SIGHUP,
+                lambda _sig, _stack: _WaitToFlush(last_flush,
+                                                  reset_after=reset_after))
 
   # Configure ts-mon, but don't start up a sending thread.
   setup_kwargs['auto_flush'] = False
@@ -221,6 +226,8 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
     try:
       cls = getattr(metrics, message.metric_name)
       metric = cls(*message.metric_args, **message.metric_kwargs)
+      if message.reset_after:
+        reset_after.append(metric)
       getattr(metric, message.method)(
           *message.method_args,
           **message.method_kwargs)
@@ -231,7 +238,8 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
                                         message.method_args,
                                         message.method_kwargs))
 
-    pending, last_flush, time_delta = _FlushIfReady(True, last_flush)
+    pending, last_flush, time_delta = _FlushIfReady(True, last_flush,
+                                                    reset_after=reset_after)
 
     try:
       # Only wait until the next flush time if we have pending metrics.
@@ -240,9 +248,10 @@ def _ConsumeMessages(message_q, setup_args, setup_kwargs):
     except Queue.Empty:
       # We had pending metrics, but we didn't get a new message. Flush and wait
       # indefinitely.
-      pending, last_flush, _ = _FlushIfReady(pending, last_flush)
+      pending, last_flush, _ = _FlushIfReady(pending, last_flush,
+                                             reset_after=reset_after)
       # Wait as long as we need to for the next metric.
       message = message_q.get()
 
   if pending:
-    _WaitToFlush(last_flush)
+    _WaitToFlush(last_flush, reset_after=reset_after)

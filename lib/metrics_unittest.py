@@ -30,4 +30,5 @@ class TestIndirectMetrics(cros_test_lib.MockTestCase):
     self.assertEqual(
         message,
         metrics.MetricCall(metric.__name__, ('foo',),
-                           {}, 'example', ('arg1', 'arg2'), {}))
+                           {}, 'example', ('arg1', 'arg2'), {},
+                           False))
