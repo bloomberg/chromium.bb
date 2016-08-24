@@ -39,10 +39,13 @@ class TodoMVCPage(page_module.Page):
         """
         this.becameIdle = false;
         this.idleCallback = function(deadline) {
-            if (deadline.timeRemaining() > 20)
+            let idletime = deadline.timeRemaining();
+            console.time("time remaining: " + idletime);
+            if (idletime > 20)
                 this.becameIdle = true;
             else
                 requestIdleCallback(this.idleCallback);
+            console.timeEnd("time remaining: " + idletime);
         };
         requestIdleCallback(this.idleCallback);
         """
