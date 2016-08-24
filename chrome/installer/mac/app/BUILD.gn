@@ -22,24 +22,36 @@ mac_app_bundle("mac_installer_app") {
   extra_substitutions = [ "MACOSX_DEPLOYMENT_TARGET=10.9" ]
   sources = [
     "AppDelegate.m",
+    "AuthorizedInstall.m",
     "InstallerWindowController.m",
     "main.m",
   ]
 
   deps = [
     ":mac_installer_base",
+    ":mac_installer_resources",
     ":mac_installer_xibs",
   ]
 
   libs = [
     "AppKit.framework",
     "CoreFoundation.framework",
+    "Security.framework",
   ]
 }
 
 mac_xib_bundle_data("mac_installer_xibs") {
   sources = [
     "MainMenu.xib",
+  ]
+}
+
+bundle_data("mac_installer_resources") {
+  sources = [
+    "copy_to_disk.sh",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/copy_to_disk.sh",
   ]
 }
 
