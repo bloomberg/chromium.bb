@@ -355,6 +355,19 @@ CdmWrapper* PpapiCdmAdapter::CreateCdmInstance(const std::string& key_system) {
   DLOG_TO_CONSOLE(message);
   CDM_DLOG() << message;
 
+  if (cdm) {
+    pp::UMAPrivate uma_interface(this);
+
+    // The interface version is relatively small. So using normal histogram
+    // instead of a sparse histogram is okay. The following DCHECK asserts this.
+    PP_DCHECK(cdm->GetInterfaceVersion() <= 30);
+    uma_interface.HistogramEnumeration(
+        "Media.EME.CdmInterfaceVersion", cdm->GetInterfaceVersion(),
+        // Sample value should always be less than the boundary. Hence use "+1".
+        // See the comment on HistogramEnumeration in ppb_uma_private.idl.
+        cdm::ContentDecryptionModule::kVersion + 1);
+  }
+
   return cdm;
 }
 

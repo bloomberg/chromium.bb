@@ -22521,6 +22521,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.CdmInterfaceVersion">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Chromium could support multiple versions of CDM interface. This metric
+    records the CDM interface version that the CDM created by Chromium uses.
+    This is recorded once per CDM instance.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey" enum="CdmPromiseResult">
   <owner>sandersd@chromium.org</owner>
   <summary>

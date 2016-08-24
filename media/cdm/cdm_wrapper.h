@@ -58,7 +58,10 @@ class CdmWrapper {
                             GetCdmHostFunc get_cdm_host_func,
                             void* user_data);
 
-  virtual ~CdmWrapper(){};
+  virtual ~CdmWrapper() {}
+
+  // Returns the version of the CDM interface that the created CDM uses.
+  virtual int GetInterfaceVersion() = 0;
 
   virtual void Initialize(bool allow_distinctive_identifier,
                           bool allow_persistent_state) = 0;
@@ -136,6 +139,8 @@ class CdmWrapperImpl : public CdmWrapper {
   }
 
   ~CdmWrapperImpl() override { cdm_->Destroy(); }
+
+  int GetInterfaceVersion() override { return CdmInterface::kVersion; }
 
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override {
