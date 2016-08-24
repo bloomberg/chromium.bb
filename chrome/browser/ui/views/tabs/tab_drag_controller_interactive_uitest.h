@@ -51,6 +51,10 @@ class TabDragControllerTest : public InProcessBrowserTest {
 
   const BrowserList* browser_list;
 
+ protected:
+  // InProcessBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabDragControllerTest);
 };
