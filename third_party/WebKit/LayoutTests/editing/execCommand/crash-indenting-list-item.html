@@ -1,8 +1,11 @@
-<div contentEditable><ul><li id='foo'></li></ul></div>
-<script src="../../resources/dump-as-markup.js"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-window.getSelection().setBaseAndExtent(foo, 0, foo, 0);
-// This test passes if it does not crash.
-document.execCommand('indent', false, null);
-document.getElementById("foo").innerText = "PASSED";
+    test(() => assert_selection(
+        '<div contentEditable><ul><li>|</li></ul></div>',
+        'indent',
+        '<div contenteditable><ul><ul><li></li></ul>|</ul></div>'),
+        'This is crash test');
 </script>
