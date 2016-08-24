@@ -1,3 +1,5 @@
+per-file chrome_features.cc=*
+per-file chrome_features.h=*
 per-file chrome_switches.cc=*
 per-file chrome_switches.h=*
 per-file pref_names.cc=*
