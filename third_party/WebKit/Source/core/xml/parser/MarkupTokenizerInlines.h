@@ -56,7 +56,7 @@ inline void advanceStringAndASSERT(SegmentedString& source, const char* expected
 #endif
 
 #define BEGIN_STATE(prefix, stateName) case prefix::stateName: stateName:
-#define END_STATE() ASSERT_NOT_REACHED(); break;
+#define END_STATE() NOTREACHED(); break;
 
 // We use this macro when the HTML5 spec says "reconsume the current input
 // character in the <mumble> state."

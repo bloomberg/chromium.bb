@@ -64,14 +64,14 @@ public:
             , m_data(o.m_data)
             , m_namespaceURI(o.m_namespaceURI)
         {
-            ASSERT(o.m_mergedPredicates.isEmpty());
+            DCHECK(o.m_mergedPredicates.isEmpty());
         }
         NodeTest& operator=(const NodeTest& o)
         {
             m_kind = o.m_kind;
             m_data = o.m_data;
             m_namespaceURI = o.m_namespaceURI;
-            ASSERT(o.m_mergedPredicates.isEmpty());
+            DCHECK(o.m_mergedPredicates.isEmpty());
             return *this;
         }
         DEFINE_INLINE_TRACE() { visitor->trace(m_mergedPredicates); }

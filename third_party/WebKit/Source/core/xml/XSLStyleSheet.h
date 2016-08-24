@@ -38,17 +38,17 @@ class XSLStyleSheet final : public StyleSheet {
 public:
     static XSLStyleSheet* create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentImport, originalURL, finalURL);
     }
     static XSLStyleSheet* create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentNode, originalURL, finalURL, false);
     }
     static XSLStyleSheet* createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(parentNode, finalURL.getString(), finalURL, true);
     }
 
@@ -57,7 +57,7 @@ public:
     // parent, in part by not exposing it to JavaScript.
     static XSLStyleSheet* createForXSLTProcessor(Document* document, Node* stylesheetRootNode, const String& originalURL, const KURL& finalURL)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLStyleSheet(document, stylesheetRootNode, originalURL, finalURL, false);
     }
 

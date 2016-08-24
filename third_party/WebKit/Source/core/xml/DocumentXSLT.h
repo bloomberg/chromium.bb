@@ -25,7 +25,7 @@ public:
 
     void setTransformSourceDocument(Document* document)
     {
-        ASSERT(document);
+        DCHECK(document);
         m_transformSourceDocument = document;
     }
 

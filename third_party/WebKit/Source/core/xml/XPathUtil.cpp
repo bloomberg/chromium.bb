@@ -84,7 +84,7 @@ bool isValidContextNode(Node* node)
     case Node::kTextNode:
         return !(node->parentNode() && node->parentNode()->isAttributeNode());
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 

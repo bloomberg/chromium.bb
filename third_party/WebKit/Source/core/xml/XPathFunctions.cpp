@@ -292,7 +292,7 @@ inline bool Interval::contains(int value) const
 
 void Function::setArguments(HeapVector<Member<Expression>>& args)
 {
-    ASSERT(!subExprCount());
+    DCHECK(!subExprCount());
 
     // Some functions use context node as implicit argument, so when explicit arguments are added, they may no longer be context node sensitive.
     if (m_name != "lang" && !args.isEmpty())
@@ -706,7 +706,7 @@ struct FunctionMapping {
 
 static void createFunctionMap()
 {
-    ASSERT(!functionMap);
+    DCHECK(!functionMap);
     const FunctionMapping functions[] = {
         { "boolean", { &createFunBoolean, 1 } },
         { "ceiling", { &createFunCeiling, 1 } },

@@ -155,7 +155,7 @@ static int writeToStringBuilder(void* context, const char* buffer, int len)
     const char* stringCurrent = buffer;
     WTF::Unicode::ConversionResult result = WTF::Unicode::convertUTF8ToUTF16(&stringCurrent, buffer + len, &bufferUChar, bufferUCharEnd);
     if (result != WTF::Unicode::conversionOK && result != WTF::Unicode::sourceExhausted) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return -1;
     }
 

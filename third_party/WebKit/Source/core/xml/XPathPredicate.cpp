@@ -101,7 +101,7 @@ Value NumericOp::evaluate(EvaluationContext& context) const
     case OP_Mod:
         return fmod(leftVal, rightVal);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0.0;
 }
 
@@ -164,7 +164,7 @@ bool EqTestOp::compare(EvaluationContext& context, const Value& lhs, const Value
             // function is true.
             return compare(context, lhs.toBoolean(), rhs);
         }
-        ASSERT(0);
+        NOTREACHED();
     }
     if (rhs.isNodeSet()) {
         const NodeSet& rhsSet = rhs.toNodeSet(&context);
@@ -184,7 +184,7 @@ bool EqTestOp::compare(EvaluationContext& context, const Value& lhs, const Value
         }
         if (lhs.isBoolean())
             return compare(context, lhs, rhs.toBoolean());
-        ASSERT(0);
+        NOTREACHED();
     }
 
     // Neither side is a NodeSet.
@@ -211,7 +211,7 @@ bool EqTestOp::compare(EvaluationContext& context, const Value& lhs, const Value
     case OpcodeLessOrEqual:
         return lhs.toNumber() <= rhs.toNumber();
     }
-    ASSERT(0);
+    NOTREACHED();
     return false;
 }
 
@@ -285,7 +285,7 @@ DEFINE_TRACE(Predicate)
 
 bool Predicate::evaluate(EvaluationContext& context) const
 {
-    ASSERT(m_expr);
+    DCHECK(m_expr);
 
     Value result(m_expr->evaluate(context));
 

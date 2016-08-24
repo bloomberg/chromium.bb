@@ -35,12 +35,12 @@ public:
 
     virtual void handleEvent(ScriptState* scriptState, Event* event)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        ASSERT(event->type() == "DOMContentLoaded");
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK_EQ(event->type(), "DOMContentLoaded");
         ScriptState::Scope scope(scriptState);
 
         Document& document = *toDocument(scriptState->getExecutionContext());
-        ASSERT(!document.parsing());
+        DCHECK(!document.parsing());
 
         // Processing instruction (XML documents only).
         // We don't support linking to embedded CSS stylesheets,
@@ -81,7 +81,7 @@ private:
 
     virtual v8::Local<v8::Value> callListenerFunction(ScriptState*, v8::Local<v8::Value>, Event*)
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return v8::Local<v8::Value>();
     }
 
@@ -98,7 +98,7 @@ DocumentXSLT::DocumentXSLT()
 
 void DocumentXSLT::applyXSLTransform(Document& document, ProcessingInstruction* pi)
 {
-    ASSERT(!pi->isLoading());
+    DCHECK(!pi->isLoading());
     UseCounter::count(document, UseCounter::XSLProcessingInstruction);
     XSLTProcessor* processor = XSLTProcessor::create(document);
     processor->setXSLStyleSheet(toXSLStyleSheet(pi->sheet()));
@@ -143,7 +143,7 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document,
         return false;
     DOMContentLoadedListener* listener = DOMContentLoadedListener::create(scriptState, pi);
     document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
-    ASSERT(!pi->eventListenerForXSLT());
+    DCHECK(!pi->eventListenerForXSLT());
     pi->setEventListenerForXSLT(listener);
     return true;
 }
@@ -156,7 +156,7 @@ bool DocumentXSLT::processingInstructionRemovedFromDocument(Document& document, 
     if (!pi->eventListenerForXSLT())
         return true;
 
-    ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    DCHECK(RuntimeEnabledFeatures::xsltEnabled());
     document.removeEventListener(EventTypeNames::DOMContentLoaded, pi->eventListenerForXSLT(), false);
     pi->clearEventListenerForXSLT();
     return true;

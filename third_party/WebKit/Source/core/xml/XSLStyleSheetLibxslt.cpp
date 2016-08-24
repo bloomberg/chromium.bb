@@ -239,7 +239,7 @@ xsltStylesheetPtr XSLStyleSheet::compileStyleSheet()
 
     // xsltParseStylesheetDoc makes the document part of the stylesheet
     // so we have to release our pointer to it.
-    ASSERT(!m_stylesheetDocTaken);
+    DCHECK(!m_stylesheetDocTaken);
     xsltStylesheetPtr result = xsltParseStylesheetDoc(m_stylesheetDoc);
     if (result)
         m_stylesheetDocTaken = true;
@@ -303,8 +303,8 @@ xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc, const 
 
 void XSLStyleSheet::markAsProcessed()
 {
-    ASSERT(!m_processed);
-    ASSERT(!m_stylesheetDocTaken);
+    DCHECK(!m_processed);
+    DCHECK(!m_stylesheetDocTaken);
     m_processed = true;
     m_stylesheetDocTaken = true;
 }

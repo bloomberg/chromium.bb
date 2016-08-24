@@ -44,7 +44,7 @@ class XSLTProcessor final : public GarbageCollectedFinalized<XSLTProcessor>, pub
 public:
     static XSLTProcessor* create(Document& document)
     {
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        DCHECK(RuntimeEnabledFeatures::xsltEnabled());
         return new XSLTProcessor(document);
     }
     ~XSLTProcessor();

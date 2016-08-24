@@ -59,7 +59,7 @@ XPathResult::XPathResult(EvaluationContext& context, const Value& value)
         m_domTreeVersion = m_document->domTreeVersion();
         return;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 DEFINE_TRACE(XPathResult)
@@ -166,7 +166,7 @@ bool XPathResult::invalidIteratorState() const
     if (resultType() != kUnorderedNodeIteratorType && resultType() != kOrderedNodeIteratorType)
         return false;
 
-    ASSERT(m_document);
+    DCHECK(m_document);
     return m_document->domTreeVersion() != m_domTreeVersion;
 }
 

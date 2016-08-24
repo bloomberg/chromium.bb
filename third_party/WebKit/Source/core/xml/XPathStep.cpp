@@ -90,8 +90,8 @@ bool optimizeStepPair(Step* first, Step* second)
         && !first->m_predicates.size()
         && !first->nodeTest().mergedPredicates().size()) {
 
-        ASSERT(first->nodeTest().data().isEmpty());
-        ASSERT(first->nodeTest().namespaceURI().isEmpty());
+        DCHECK(first->nodeTest().data().isEmpty());
+        DCHECK(first->nodeTest().namespaceURI().isEmpty());
 
         // Optimize the common case of "//" AKA
         // /descendant-or-self::node()/child::NodeTest to /descendant::NodeTest.
@@ -227,7 +227,7 @@ static inline bool nodeMatchesBasicTest(Node* node, Step::Axis axis, const Step:
         return element.hasLocalName(name) && namespaceURI == element.namespaceURI();
     }
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -257,7 +257,7 @@ static inline bool nodeMatches(EvaluationContext& evaluationContext, Node* node,
 // predicates) is applied.
 void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, NodeSet& nodes) const
 {
-    ASSERT(nodes.isEmpty());
+    DCHECK(nodes.isEmpty());
     switch (m_axis) {
     case ChildAxis:
         // In XPath model, attribute nodes do not have children.
@@ -431,7 +431,7 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext, Node* context, Node
         return;
     }
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 } // namespace XPath

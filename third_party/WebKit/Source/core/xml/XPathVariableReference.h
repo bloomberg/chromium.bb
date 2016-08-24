@@ -39,7 +39,7 @@ public:
 
 private:
     Value evaluate(EvaluationContext&) const override;
-    Value::Type resultType() const override { ASSERT_NOT_REACHED(); return Value::NumberValue; }
+    Value::Type resultType() const override { NOTREACHED(); return Value::NumberValue; }
 
     String m_name;
 };

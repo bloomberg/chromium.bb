@@ -84,7 +84,7 @@ bool Value::toBoolean() const
     case StringValue:
         return !m_data->m_string.isEmpty();
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
 }
 
@@ -116,7 +116,7 @@ double Value::toNumber() const
     case BooleanValue:
         return m_bool;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0.0;
 }
 
@@ -140,7 +140,7 @@ String Value::toString() const
     case BooleanValue:
         return m_bool ? "true" : "false";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 

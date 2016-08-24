@@ -51,14 +51,14 @@ NodeSet* NodeSet::create(const NodeSet& other)
 
 static inline Node* parentWithDepth(unsigned depth, const NodeSetVector& parents)
 {
-    ASSERT(parents.size() >= depth + 1);
+    DCHECK_GE(parents.size(), depth + 1);
     return parents[parents.size() - 1 - depth];
 }
 
 static void sortBlock(unsigned from, unsigned to, HeapVector<NodeSetVector>& parentMatrix, bool mayContainAttributeNodes)
 {
     // Should not call this function with less that two nodes to sort.
-    ASSERT(from + 1 < to);
+    DCHECK_LT(from + 1, to);
     unsigned minDepth = UINT_MAX;
     for (unsigned i = from; i < to; ++i) {
         unsigned depth = parentMatrix[i].size() - 1;
@@ -141,15 +141,15 @@ static void sortBlock(unsigned from, unsigned to, HeapVector<NodeSetVector>& par
             if (groupEnd - previousGroupEnd > 1)
                 sortBlock(previousGroupEnd, groupEnd, parentMatrix, mayContainAttributeNodes);
 
-            ASSERT(previousGroupEnd != groupEnd);
+            DCHECK_NE(previousGroupEnd, groupEnd);
             previousGroupEnd = groupEnd;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
             parentNodes.remove(n);
 #endif
         }
     }
 
-    ASSERT(parentNodes.isEmpty());
+    DCHECK(parentNodes.isEmpty());
 }
 
 void NodeSet::sort() const
@@ -214,7 +214,7 @@ void NodeSet::traversalSort() const
     bool containsAttributeNodes = false;
 
     unsigned nodeCount = m_nodes.size();
-    ASSERT(nodeCount > 1);
+    DCHECK_GT(nodeCount, 1u);
     for (unsigned i = 0; i < nodeCount; ++i) {
         Node* node = m_nodes[i].get();
         nodes.add(node);
@@ -241,7 +241,7 @@ void NodeSet::traversalSort() const
         }
     }
 
-    ASSERT(sortedNodes.size() == nodeCount);
+    DCHECK_EQ(sortedNodes.size(), nodeCount);
     const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
 }
 

@@ -100,7 +100,7 @@ void XSLImportRule::loadSheet()
     if (!resource || !resource->sheet())
         return;
 
-    ASSERT(!m_styleSheet);
+    DCHECK(!m_styleSheet);
     setXSLStyleSheet(absHref, resource->response().url(), resource->sheet());
 }
 
