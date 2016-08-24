@@ -68,6 +68,10 @@ int UDPServerSocket::SetSendBufferSize(int32_t size) {
   return socket_.SetSendBufferSize(size);
 }
 
+int UDPServerSocket::SetDoNotFragment() {
+  return socket_.SetDoNotFragment();
+}
+
 void UDPServerSocket::Close() {
   socket_.Close();
 }

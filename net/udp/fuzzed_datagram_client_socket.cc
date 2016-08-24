@@ -169,6 +169,10 @@ int FuzzedDatagramClientSocket::SetSendBufferSize(int32_t size) {
   return OK;
 }
 
+int FuzzedDatagramClientSocket::SetDoNotFragment() {
+  return OK;
+}
+
 void FuzzedDatagramClientSocket::OnReadComplete(
     const net::CompletionCallback& callback,
     int result) {

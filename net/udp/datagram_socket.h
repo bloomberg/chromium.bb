@@ -38,6 +38,13 @@ class NET_EXPORT_PRIVATE DatagramSocket {
   // before other calls.
   virtual void UseNonBlockingIO() = 0;
 
+  // Requests that packets sent by this socket not be fragment, either locally
+  // by the host, or by routers (via the DF bit in the IPv4 packet header).
+  // May not be supported by all platforms. Returns a return a network error
+  // code if there was a problem, but the socket will still be usable. Can not
+  // return ERR_IO_PENDING.
+  virtual int SetDoNotFragment() = 0;
+
   // Gets the NetLog for this socket.
   virtual const BoundNetLog& NetLog() const = 0;
 };

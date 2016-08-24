@@ -577,6 +577,50 @@ TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   EXPECT_EQ(rv, ERR_SOCKET_NOT_CONNECTED);
 }
 
+TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
+  for (std::string ip : {"127.0.0.1", "::1"}) {
+    LOG(INFO) << "ip: " << ip;
+    UDPClientSocket client(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+                           nullptr, NetLog::Source());
+    IPAddress ip_address;
+    EXPECT_TRUE(ip_address.AssignFromIPLiteral(ip));
+    IPEndPoint remote_address(ip_address, 80);
+    int rv = client.Connect(remote_address);
+    // May fail on IPv6 is IPv6 is not configured.
+    if (ip_address.IsIPv6() && rv == ERR_ADDRESS_UNREACHABLE)
+      return;
+    EXPECT_THAT(rv, IsOk());
+
+#if defined(OS_MACOSX)
+    EXPECT_EQ(ERR_NOT_IMPLEMENTED, client.SetDoNotFragment());
+#else
+    rv = client.SetDoNotFragment();
+    EXPECT_THAT(rv, IsOk());
+#endif
+  }
+}
+
+TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
+  for (std::string ip : {"127.0.0.1", "::1"}) {
+    LOG(INFO) << "ip: " << ip;
+    IPEndPoint bind_address;
+    CreateUDPAddress(ip, 0, &bind_address);
+    UDPServerSocket server(nullptr, NetLog::Source());
+    int rv = server.Listen(bind_address);
+    // May fail on IPv6 is IPv6 is not configure
+    if (bind_address.address().IsIPv6() && rv == ERR_ADDRESS_INVALID)
+      return;
+    EXPECT_THAT(rv, IsOk());
+
+#if defined(OS_MACOSX)
+    EXPECT_EQ(ERR_NOT_IMPLEMENTED, server.SetDoNotFragment());
+#else
+    rv = server.SetDoNotFragment();
+    EXPECT_THAT(rv, IsOk());
+#endif
+  }
+}
+
 // Close the socket while read is pending.
 TEST_F(UDPSocketTest, CloseWithPendingRead) {
   IPEndPoint bind_address;

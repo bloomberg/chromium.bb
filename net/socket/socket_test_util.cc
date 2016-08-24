@@ -1331,6 +1331,10 @@ int MockUDPClientSocket::SetSendBufferSize(int32_t size) {
   return OK;
 }
 
+int MockUDPClientSocket::SetDoNotFragment() {
+  return OK;
+}
+
 void MockUDPClientSocket::Close() {
   connected_ = false;
 }

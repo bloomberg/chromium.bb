@@ -47,6 +47,7 @@ class TestUDPClientSocket : public DatagramClientSocket {
   }
   int SetReceiveBufferSize(int32_t) override { return OK; }
   int SetSendBufferSize(int32_t) override { return OK; }
+  int SetDoNotFragment() override { return OK; }
 
   void Close() override {}
   int GetPeerAddress(IPEndPoint* address) const override {

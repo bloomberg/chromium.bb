@@ -55,6 +55,7 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
             const CompletionCallback& callback) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
+  int SetDoNotFragment() override;
 
  private:
   void OnReadComplete(const net::CompletionCallback& callback, int result);

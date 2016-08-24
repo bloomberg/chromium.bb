@@ -737,6 +737,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
             const CompletionCallback& callback) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
+  int SetDoNotFragment() override;
 
   // DatagramSocket implementation.
   void Close() override;
