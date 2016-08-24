@@ -33,9 +33,6 @@ PermissionRequestImpl::PermissionRequestImpl(
 PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_) {
-    PermissionDecisionAutoBlocker(profile_).RecordIgnore(request_origin_,
-                                                         permission_type_);
-
     PermissionUmaUtil::PermissionIgnored(permission_type_, GetGestureType(),
                                          request_origin_, profile_);
   }

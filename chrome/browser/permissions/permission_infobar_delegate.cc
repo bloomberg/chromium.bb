@@ -18,9 +18,6 @@ PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
         user_gesture_ ? PermissionRequestGestureType::GESTURE
                       : PermissionRequestGestureType::NO_GESTURE,
         requesting_origin_, profile_);
-
-    PermissionDecisionAutoBlocker(profile_).RecordIgnore(requesting_origin_,
-                                                         permission_type_);
   }
 }
 
