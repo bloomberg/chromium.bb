@@ -90,7 +90,7 @@ config("libvpx_external_config") {
   include_dirs = [ "//third_party/libvpx/source/libvpx" ]
 }
 
-if (current_cpu == "x86" || current_cpu == "x64") {
+if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
   yasm_assemble("libvpx_yasm") {
     if (current_cpu == "x86") {
       sources = libvpx_srcs_x86_assembly
@@ -113,7 +113,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
-if (current_cpu == "x86" || current_cpu == "x64") {
+if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
   # The following targets are deliberately source_set rather than
   # static_library. The :libvpx target exposes these intrinsic implementations
   # via global function pointer symbols, which hides the object dependency at
