@@ -42,13 +42,17 @@ struct ArrayTraits<std::vector<T>> {
     return input[index];
   }
 
-  static bool Resize(std::vector<T>& input, size_t size) {
+  static inline bool Resize(std::vector<T>& input, size_t size) {
+    // Instead of calling std::vector<T>::resize() directly, this is a hack to
+    // make compilers happy. Some compilers (e.g., Mac, Android, Linux MSan)
+    // currently don't allow resizing types like
+    // std::vector<std::vector<MoveOnlyType>>.
+    // Because the deserialization code doesn't care about the original contents
+    // of |input|, we discard them directly.
+    //
+    // The "inline" keyword of this method matters. Without it, we have observed
+    // significant perf regression with some tests on Mac. crbug.com/631415
     if (input.size() != size) {
-      // This is a hack to make compilers for Mac and Android happy. They
-      // currently don't allow resizing types like
-      // std::vector<std::vector<MoveOnlyType>>.
-      // Because the deserialization code doesn't care about the original
-      // contents of |input|, we discard them directly.
       std::vector<T> temp(size);
       input.swap(temp);
     }

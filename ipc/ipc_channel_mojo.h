@@ -83,11 +83,11 @@ class IPC_EXPORT ChannelMojo
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
   static MojoResult WriteToMessageAttachmentSet(
-      mojo::Array<mojom::SerializedHandlePtr> handle_buffer,
+      base::Optional<std::vector<mojom::SerializedHandlePtr>> handle_buffer,
       Message* message);
   static MojoResult ReadFromMessageAttachmentSet(
       Message* message,
-      mojo::Array<mojom::SerializedHandlePtr>* handles);
+      base::Optional<std::vector<mojom::SerializedHandlePtr>>* handles);
 
   // MojoBootstrapDelegate implementation
   void OnPipesAvailable(mojom::ChannelAssociatedPtr sender,

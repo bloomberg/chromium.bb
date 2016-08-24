@@ -95,10 +95,11 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
  private:
   // mojom::Channel:
   void SetPeerPid(int32_t peer_pid) override;
-  void Receive(mojo::Array<uint8_t> data,
-               mojo::Array<mojom::SerializedHandlePtr> handles) override;
+  void Receive(
+      const std::vector<uint8_t>& data,
+      base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) override;
   void GetAssociatedInterface(
-      const mojo::String& name,
+      const std::string& name,
       mojom::GenericInterfaceAssociatedRequest request) override;
 
   // |delegate_| is null once the message pipe is closed.

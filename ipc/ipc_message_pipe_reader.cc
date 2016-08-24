@@ -86,20 +86,20 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
                          "MessagePipeReader::Send",
                          message->flags(),
                          TRACE_EVENT_FLAG_FLOW_OUT);
-  mojo::Array<mojom::SerializedHandlePtr> handles(nullptr);
+  base::Optional<std::vector<mojom::SerializedHandlePtr>> handles;
   MojoResult result = MOJO_RESULT_OK;
   result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(), &handles);
   if (result != MOJO_RESULT_OK)
     return false;
 
-  mojo::Array<uint8_t> data(message->size());
+  std::vector<uint8_t> data(message->size());
   std::copy(reinterpret_cast<const uint8_t*>(message->data()),
             reinterpret_cast<const uint8_t*>(message->data()) + message->size(),
-            &data[0]);
+            data.data());
 
   MessageSerializer serializer;
   mojom::ChannelProxy proxy(&serializer);
-  proxy.Receive(std::move(data), std::move(handles));
+  proxy.Receive(data, std::move(handles));
   mojo::Message* mojo_message = serializer.message();
 
   size_t num_handles = mojo_message->handles()->size();
@@ -129,11 +129,11 @@ void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
 }
 
 void MessagePipeReader::Receive(
-    mojo::Array<uint8_t> data,
-    mojo::Array<mojom::SerializedHandlePtr> handles) {
+    const std::vector<uint8_t>& data,
+    base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) {
   DCHECK_NE(peer_pid_, base::kNullProcessId);
   Message message(
-      data.size() == 0 ? "" : reinterpret_cast<const char*>(&data[0]),
+      data.empty() ? "" : reinterpret_cast<const char*>(data.data()),
       static_cast<uint32_t>(data.size()));
   message.set_sender_pid(peer_pid_);
 
@@ -153,7 +153,7 @@ void MessagePipeReader::Receive(
 }
 
 void MessagePipeReader::GetAssociatedInterface(
-    const mojo::String& name,
+    const std::string& name,
     mojom::GenericInterfaceAssociatedRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (delegate_)
