@@ -57,47 +57,61 @@ public:
 
     /* Texture objects */
     void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, ImageData*);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*, GLuint);
+
     void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLintptr);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, ImageData*);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, ImageBitmap*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*, GLuint);
+
     // Have to re-declare/re-define the following tex{Sub}Image2D functions from base class.
     // This is because the above tex{Sub}Image2D() hides the name from base class.
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLsizei width, GLsizei height, GLint border,
-        GLenum format, GLenum type, DOMArrayBufferView*);
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, ImageData*);
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, HTMLImageElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, HTMLCanvasElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
-    void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLsizei width, GLsizei height,
-        GLenum format, GLenum type, DOMArrayBufferView*);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, ImageData*);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLImageElement*, ExceptionState&);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLCanvasElement*, ExceptionState&);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, ImageBitmap*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, ImageData*);
+    void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, ImageData*);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
 
     void texStorage2D(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
     void texStorage3D(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei);
     void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*, GLuint);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, ImageData*);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
     void texImage3D(GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLintptr);
-    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*, GLuint);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, GLintptr);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, ImageData*);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, ImageBitmap*, ExceptionState&);
+
+    // TODO(zmo): Obsolete, remove after WebGL2 conformance tests are updated.
+    void texImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, DOMArrayBufferView*);
+    void texSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, DOMArrayBufferView*);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData*);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageBitmap*, ExceptionState&);
+
     void copyTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei);
     void compressedTexImage3D(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, DOMArrayBufferView*);
     void compressedTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, DOMArrayBufferView*);

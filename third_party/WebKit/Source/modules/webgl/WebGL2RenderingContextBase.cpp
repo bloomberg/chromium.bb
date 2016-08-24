@@ -984,9 +984,46 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint
     contextGL()->TexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, reinterpret_cast<const void*>(offset));
 }
 
-void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, DOMArrayBufferView* data)
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, DOMArrayBufferView* data)
 {
     WebGLRenderingContextBase::texImage2D(target, level, internalformat, width, height, border, format, type, data);
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, DOMArrayBufferView* data, GLuint srcOffset)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, ImageData* imageData)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+    GLint border, GLenum format, GLenum type, ImageBitmap* imageBitMap, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLenum format, GLenum type, ImageData* imageData)
@@ -1018,6 +1055,42 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint
     GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     WebGLRenderingContextBase::texSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, ImageData* pixels)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemente.
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
+    GLsizei width, GLsizei height, GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -1066,12 +1139,20 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
     contextGL()->TexStorage3D(target, levels, internalformat, width, height, depth);
 }
 
-void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     texImageHelperDOMArrayBufferView(TexImage3D, target, level, internalformat, width, height, border, format, type, depth, 0, 0, 0, pixels);
 }
 
-void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, GLintptr offset)
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, GLintptr offset)
 {
     if (isContextLost())
         return;
@@ -1089,12 +1170,45 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     contextGL()->TexImage3D(target, level, convertTexInternalFormat(internalformat, type), width, height, depth, border, format, type, reinterpret_cast<const void *>(offset));
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels)
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, ImageData* imageData)
 {
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, ImageBitmap* imageBitMap, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
+{
+    // TODO(zmo): To be implemented.
     texImageHelperDOMArrayBufferView(TexSubImage3D, target, level, 0, width, height, 0, format, type, depth, xoffset, yoffset, zoffset, pixels);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, GLintptr offset)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, GLintptr offset)
 {
     if (isContextLost())
         return;
@@ -1112,27 +1226,61 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, reinterpret_cast<const void*>(offset));
 }
 
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, ImageData* pixels)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
+{
+    // TODO(zmo): To be implemented.
+}
+
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageData* pixels)
 {
     texImageHelperImageData(TexSubImage3D, target, level, 0, 0, format, type, 1, xoffset, yoffset, zoffset, pixels);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLenum format, GLenum type, HTMLImageElement* image, ExceptionState& exceptionState)
 {
     texImageHelperHTMLImageElement(TexSubImage3D, target, level, 0, format, type, xoffset, yoffset, zoffset, image, exceptionState);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLenum format, GLenum type, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
     texImageHelperHTMLCanvasElement(TexSubImage3D, target, level, 0, format, type, xoffset, yoffset, zoffset, canvas, exceptionState);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLenum format, GLenum type, HTMLVideoElement* video, ExceptionState& exceptionState)
 {
     texImageHelperHTMLVideoElement(TexSubImage3D, target, level, 0, format, type, xoffset, yoffset, zoffset, video, exceptionState);
 }
 
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLenum format, GLenum type, ImageBitmap* bitmap, ExceptionState& exceptionState)
 {
     texImageHelperImageBitmap(TexSubImage3D, target, level, 0, format, type, xoffset, yoffset, zoffset, bitmap, exceptionState);
 }
