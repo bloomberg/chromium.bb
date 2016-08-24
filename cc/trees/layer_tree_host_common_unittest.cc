@@ -8473,7 +8473,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->hide_layer_and_subtree = false;
 
-  child_ptr->OnOpacityAnimated(0.f);
+  child_ptr->layer_tree_impl()->property_trees()->effect_tree.OnOpacityAnimated(
+      0.f, child_ptr->effect_tree_index(), child_ptr->layer_tree_impl());
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->opacity = 1.f;

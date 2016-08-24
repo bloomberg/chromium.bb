@@ -95,7 +95,6 @@ class CC_EXPORT LayerImpl {
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
   void OnFilterAnimated(const FilterOperations& filters);
-  void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
   void OnTransformIsCurrentlyAnimatingChanged(bool is_currently_animating);
@@ -142,7 +141,6 @@ class CC_EXPORT LayerImpl {
 
   void UpdatePropertyTreeTransform(const gfx::Transform& transform);
   void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
-  void UpdatePropertyTreeOpacity(float opacity);
   void UpdatePropertyTreeScrollOffset();
 
   // For compatibility with Layer.

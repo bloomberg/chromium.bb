@@ -557,25 +557,6 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
   }
 }
 
-void LayerImpl::UpdatePropertyTreeOpacity(float opacity) {
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
-    // A LayerImpl's own current state is insufficient for determining whether
-    // it owns an OpacityNode, since this depends on the state of the
-    // corresponding Layer at the time of the last commit. For example, an
-    // opacity animation might have been in progress at the time the last commit
-    // started, but might have finished since then on the compositor thread.
-    EffectNode* node = property_trees->effect_tree.Node(
-        property_trees->effect_id_to_index_map[id()]);
-    if (node->opacity == opacity)
-      return;
-    node->opacity = opacity;
-    node->effect_changed = true;
-    property_trees->changed = true;
-    property_trees->effect_tree.set_needs_update(true);
-  }
-}
-
 void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
   if (scrollable())
     UpdatePropertyTreeScrollOffset();
@@ -604,12 +585,6 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
   property_trees->effect_tree.set_needs_update(true);
   SetNeedsPushProperties();
   layer_tree_impl()->set_needs_update_draw_properties();
-}
-
-void LayerImpl::OnOpacityAnimated(float opacity) {
-  UpdatePropertyTreeOpacity(opacity);
-  layer_tree_impl()->set_needs_update_draw_properties();
-  layer_tree_impl()->AddToOpacityAnimationsMap(id(), opacity);
 }
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
