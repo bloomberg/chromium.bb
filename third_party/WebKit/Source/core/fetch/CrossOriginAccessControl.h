@@ -33,6 +33,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -51,7 +52,7 @@ public:
     // - the URL has a CORS supported scheme and
     // - the URL does not contain the userinfo production.
     static bool isLegalRedirectLocation(const KURL&, String& errorDescription);
-    static bool handleRedirect(const SecurityOrigin*, ResourceRequest&, const ResourceResponse&, StoredCredentials, ResourceLoaderOptions&, String&);
+    static bool handleRedirect(PassRefPtr<SecurityOrigin>, ResourceRequest&, const ResourceResponse&, StoredCredentials, ResourceLoaderOptions&, String&);
 };
 
 CORE_EXPORT bool isOnAccessControlResponseHeaderWhitelist(const String&);

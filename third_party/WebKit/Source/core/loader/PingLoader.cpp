@@ -311,7 +311,7 @@ void PingLoaderImpl::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
     ResourceLoaderOptions options;
     // TODO(tyoshino): Save updated data in options.securityOrigin and pass it
     // on the next time.
-    if (!CrossOriginAccessControl::handleRedirect(m_origin.get(), newRequest, redirectResponse, AllowStoredCredentials, options, errorDescription)) {
+    if (!CrossOriginAccessControl::handleRedirect(m_origin, newRequest, redirectResponse, AllowStoredCredentials, options, errorDescription)) {
         if (LocalFrame* localFrame = frame()) {
             if (localFrame->document())
                 localFrame->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorDescription));

@@ -296,17 +296,19 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
     return true;
 }
 
-bool CrossOriginAccessControl::handleRedirect(const SecurityOrigin* securityOrigin, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
+bool CrossOriginAccessControl::handleRedirect(PassRefPtr<SecurityOrigin> securityOrigin, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
 {
     // http://www.w3.org/TR/cors/#redirect-steps terminology:
     const KURL& lastURL = redirectResponse.url();
     const KURL& newURL = newRequest.url();
 
-    const SecurityOrigin* securityOriginForHeader = securityOrigin;
+    RefPtr<SecurityOrigin> currentSecurityOrigin = securityOrigin;
+
+    RefPtr<SecurityOrigin> newSecurityOrigin = currentSecurityOrigin;
 
     // TODO(tyoshino): This should be fixed to check not only the last one but
     // all redirect responses.
-    if (!securityOrigin->canRequest(lastURL)) {
+    if (!currentSecurityOrigin->canRequest(lastURL)) {
         // Follow http://www.w3.org/TR/cors/#redirect-steps
         String errorDescription;
 
@@ -316,7 +318,7 @@ bool CrossOriginAccessControl::handleRedirect(const SecurityOrigin* securityOrig
         }
 
         // Step 5: perform resource sharing access check.
-        if (!passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription, newRequest.requestContext())) {
+        if (!passesAccessControlCheck(redirectResponse, withCredentials, currentSecurityOrigin.get(), errorDescription, newRequest.requestContext())) {
             errorMessage = "Redirect from '" + lastURL.getString() + "' has been blocked by CORS policy: " + errorDescription;
             return false;
         }
@@ -326,13 +328,13 @@ bool CrossOriginAccessControl::handleRedirect(const SecurityOrigin* securityOrig
         // the step 10 in https://fetch.spec.whatwg.org/#http-redirect-fetch.
         if (!lastOrigin->canRequest(newURL)) {
             options.securityOrigin = SecurityOrigin::createUnique();
-            securityOriginForHeader = options.securityOrigin.get();
+            newSecurityOrigin = options.securityOrigin;
         }
     }
 
-    if (!securityOrigin->canRequest(newURL)) {
+    if (!currentSecurityOrigin->canRequest(newURL)) {
         newRequest.clearHTTPOrigin();
-        newRequest.setHTTPOrigin(securityOriginForHeader);
+        newRequest.setHTTPOrigin(newSecurityOrigin.get());
 
         // Unset credentials flag if request's credentials mode is
         // "same-origin" as request's response tainting becomes "cors".

@@ -1088,8 +1088,8 @@ bool ResourceFetcher::willFollowRedirect(Resource* resource, ResourceRequest& ne
         if (!context().canRequest(resource->getType(), newRequest, newRequest.url(), resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
             return false;
         if (resource->options().corsEnabled == IsCORSEnabled) {
-            SecurityOrigin* sourceOrigin = resource->options().securityOrigin.get();
-            if (!sourceOrigin)
+            RefPtr<SecurityOrigin> sourceOrigin = resource->options().securityOrigin;
+            if (!sourceOrigin.get())
                 sourceOrigin = context().getSecurityOrigin();
 
             String errorMessage;
