@@ -84,7 +84,7 @@ static void writeDebugInfo(LayoutObject* layoutObject, const AtomicString& outpu
         node = toDocument(node)->documentElement();
     if (!node->isElementNode())
         return;
-    node->document().postTask(wrapUnique(new WriteDebugInfoTask(toElement(node), output)));
+    node->document().postTask(BLINK_FROM_HERE, wrapUnique(new WriteDebugInfoTask(toElement(node), output)));
 }
 
 void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
