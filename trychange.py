@@ -398,16 +398,16 @@ def _GenTSBotSpec(checkouts, change, changed_files, options):
         sys.stdout)
 
     # Compatibility for old checkouts and bots that were on tryserver.chromium.
-    trybots = masters.get('tryserver.chromium', [])
+    try_bots = masters.get('tryserver.chromium', [])
 
     # Compatibility for checkouts that are not using tryserver.chromium
     # but are stuck with git-try or gcl-try.
-    if not trybots and len(masters) == 1:
-      trybots = masters.values()[0]
+    if not try_bots and len(masters) == 1:
+      try_bots = masters.values()[0]
 
-    if trybots:
-      old_style = filter(lambda x: isinstance(x, basestring), trybots)
-      new_style = filter(lambda x: isinstance(x, tuple), trybots)
+    if try_bots:
+      old_style = filter(lambda x: isinstance(x, basestring), try_bots)
+      new_style = filter(lambda x: isinstance(x, tuple), try_bots)
 
       # _ParseBotList's testfilter is set to None otherwise it will complain.
       bot_spec = _ApplyTestFilter(options.testfilter,
@@ -722,7 +722,7 @@ def _SendChangeGerrit(bot_spec, options):
   that local revision matches the uploaded one, posts a try job in form of a
   message, sets Tryjob-Request label to 1.
 
-  Gerrit message format: starts with !tryjob, optionally followed by a tryjob
+  Gerrit message format: starts with !tryjob, optionally followed by a try job
   definition in JSON format:
       buildNames: list of strings specifying build names.
       build_properties: a dict of build properties.
@@ -802,7 +802,7 @@ def _SendChangeGerrit(bot_spec, options):
   PostTryjob(message)
   change_url = urlparse.urljoin(options.gerrit_url,
                                 '/#/c/%s' % changes[0]['_number'])
-  print('A tryjob was posted on change %s' % change_url)
+  print('A try job was posted on change %s' % change_url)
 
 def PrintSuccess(bot_spec, options):
   if not options.dry_run:
@@ -1026,7 +1026,7 @@ def gen_parser(prog):
                    help="Use Gerrit to talk to the try server")
   group.add_option("--gerrit_url",
                    metavar="GERRIT_URL",
-                   help="Gerrit url to post a tryjob to; --use_gerrit is "
+                   help="Gerrit url to post a try job to; --use_gerrit is "
                         "implied when using --gerrit_url")
   parser.add_option_group(group)
 

@@ -383,7 +383,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
       )
 
   _buildbucket_retry(
-      'triggering tryjobs',
+      'triggering try jobs',
       http,
       buildbucket_put_url,
       'PUT',
@@ -396,7 +396,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category):
 
 
 def fetch_try_jobs(auth_config, changelist, options):
-  """Fetches tryjobs from buildbucket.
+  """Fetches try jobs from buildbucket.
 
   Returns a map from build id to build info as json dictionary.
   """
@@ -424,7 +424,7 @@ def fetch_try_jobs(auth_config, changelist, options):
     url = 'https://{hostname}/_ah/api/buildbucket/v1/search?{params}'.format(
         hostname=options.buildbucket_host,
         params=urllib.urlencode(params))
-    content = _buildbucket_retry('fetching tryjobs', http, url, 'GET')
+    content = _buildbucket_retry('fetching try jobs', http, url, 'GET')
     for build in content.get('builds', []):
       builds[build['id']] = build
     if 'next_cursor' in content:
@@ -434,10 +434,10 @@ def fetch_try_jobs(auth_config, changelist, options):
   return builds
 
 
-def print_tryjobs(options, builds):
+def print_try_jobs(options, builds):
   """Prints nicely result of fetch_try_jobs."""
   if not builds:
-    print('No tryjobs scheduled')
+    print('No try jobs scheduled')
     return
 
   # Make a copy, because we'll be modifying builds dictionary.
@@ -530,7 +530,7 @@ def print_tryjobs(options, builds):
   pop(title='Other:',
       f=lambda b: (get_name(b), 'id=%s' % b['id']))
   assert len(builds) == 0
-  print('Total: %d tryjobs' % total)
+  print('Total: %d try jobs' % total)
 
 
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
@@ -4608,10 +4608,10 @@ def CMDtry(parser, args):
 
   props = cl.GetIssueProperties()
   if props.get('closed'):
-    parser.error('Cannot send tryjobs for a closed CL')
+    parser.error('Cannot send try jobs for a closed CL')
 
   if props.get('private'):
-    parser.error('Cannot use trybots with private issue')
+    parser.error('Cannot use try bots with private issue')
 
   if not options.name:
     options.name = cl.GetBranch()
@@ -4721,7 +4721,7 @@ def CMDtry(parser, args):
       return 1
     except Exception as e:
       stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-      print('ERROR: Exception when trying to trigger tryjobs: %s\n%s' %
+      print('ERROR: Exception when trying to trigger try jobs: %s\n%s' %
             (e, stacktrace))
       return 1
   else:
@@ -4782,10 +4782,10 @@ def CMDtry_results(parser, args):
     return 1
   except Exception as e:
     stacktrace = (''.join(traceback.format_stack()) + traceback.format_exc())
-    print('ERROR: Exception when trying to fetch tryjobs: %s\n%s' %
+    print('ERROR: Exception when trying to fetch try jobs: %s\n%s' %
           (e, stacktrace))
     return 1
-  print_tryjobs(options, jobs)
+  print_try_jobs(options, jobs)
   return 0
 
 
