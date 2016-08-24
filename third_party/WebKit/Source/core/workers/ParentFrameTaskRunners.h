@@ -6,8 +6,8 @@
 #define ParentFrameTaskRunners_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -26,7 +26,7 @@ class WebTaskRunner;
 //
 // This observes LocalFrame lifecycle only for in-process worker cases (i.e.
 // only when a non-null LocalFrame is given).
-class CORE_EXPORT ParentFrameTaskRunners final : public GarbageCollectedFinalized<ParentFrameTaskRunners>, public LocalFrameLifecycleObserver {
+class CORE_EXPORT ParentFrameTaskRunners final : public GarbageCollectedFinalized<ParentFrameTaskRunners>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
     WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 

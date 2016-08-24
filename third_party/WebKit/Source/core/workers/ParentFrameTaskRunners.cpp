@@ -4,8 +4,8 @@
 
 #include "core/workers/ParentFrameTaskRunners.h"
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -13,9 +13,9 @@
 namespace blink {
 
 ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
-    : LocalFrameLifecycleObserver(frame)
+    : ContextLifecycleObserver(frame ? frame->document() : nullptr)
 {
-    if (frame)
+    if (frame && frame->document())
         DCHECK(frame->document()->isContextThread());
 
     // For now we only support very limited task types.
@@ -32,7 +32,7 @@ WebTaskRunner* ParentFrameTaskRunners::get(TaskType type)
 
 DEFINE_TRACE(ParentFrameTaskRunners)
 {
-    LocalFrameLifecycleObserver::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 void ParentFrameTaskRunners::contextDestroyed()
