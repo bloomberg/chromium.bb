@@ -66768,6 +66768,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.CpuLimitedResolutionInPercent" units="%">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    Percentage of frames that are limited in resolution due to cpu for a sent
+    video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.CurrentDelayInMs" units="ms">
   <owner>asapersson@chromium.org</owner>
   <summary>
