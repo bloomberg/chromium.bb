@@ -23,21 +23,18 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * Service that handles the action of clicking on the incognito notification.
@@ -63,29 +60,10 @@ public class IncognitoNotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        boolean isDocumentMode = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return FeatureUtilities.isDocumentMode(IncognitoNotificationService.this);
-                    }
-                });
+        closeIncognitoTabsInRunningTabbedActivities();
 
-        boolean clearedIncognito = true;
-        if (isDocumentMode) {
-            // TODO(dfalcantara): Delete this when document mode goes away.
-            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
-                }
-            });
-        } else {
-            closeIncognitoTabsInRunningTabbedActivities();
-
-            clearedIncognito = deleteIncognitoStateFilesInDirectory(
-                    TabPersistentStore.getOrCreateStateDirectory());
-        }
+        boolean clearedIncognito = deleteIncognitoStateFilesInDirectory(
+                TabPersistentStore.getOrCreateStateDirectory());
 
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
         if (!clearedIncognito) return;

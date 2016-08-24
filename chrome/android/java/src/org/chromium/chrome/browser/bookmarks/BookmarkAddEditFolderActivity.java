@@ -117,8 +117,6 @@ public class BookmarkAddEditFolderActivity extends SynchronousInitializationActi
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        BookmarkUtils.setTaskDescriptionInDocumentMode(this,
-                getString(R.string.bookmark_action_bar_edit_folder));
         mModel = new BookmarkModel();
         mModel.addObserver(mBookmarkModelObserver);
         mIsAddMode = getIntent().getBooleanExtra(INTENT_IS_ADD_MODE, false);

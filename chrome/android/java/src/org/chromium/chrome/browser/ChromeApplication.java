@@ -311,26 +311,19 @@ public class ChromeApplication extends ContentApplication {
         IntentHandler.clearPendingReferrer();
         IntentHandler.clearPendingIncognitoUrl();
 
-        if (FeatureUtilities.isDocumentMode(this)) {
-            if (sDocumentTabModelSelector != null) {
-                RecordHistogram.recordCountHistogram("Tab.TotalTabCount.BeforeLeavingApp",
-                        sDocumentTabModelSelector.getTotalTabCount());
-            }
-        } else {
-            int totalTabCount = 0;
-            for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-                Activity activity = reference.get();
-                if (activity instanceof ChromeActivity) {
-                    TabModelSelector tabModelSelector =
-                            ((ChromeActivity) activity).getTabModelSelector();
-                    if (tabModelSelector != null) {
-                        totalTabCount += tabModelSelector.getTotalTabCount();
-                    }
+        int totalTabCount = 0;
+        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
+            Activity activity = reference.get();
+            if (activity instanceof ChromeActivity) {
+                TabModelSelector tabModelSelector =
+                        ((ChromeActivity) activity).getTabModelSelector();
+                if (tabModelSelector != null) {
+                    totalTabCount += tabModelSelector.getTotalTabCount();
                 }
             }
-            RecordHistogram.recordCountHistogram(
-                    "Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
         }
+        RecordHistogram.recordCountHistogram(
+                "Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
     }
 
     /**
@@ -809,14 +802,6 @@ public class ChromeApplication extends ContentApplication {
                     new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
         }
         return sDocumentTabModelSelector;
-    }
-
-    /**
-     * @return Whether or not the Singleton has been initialized.
-     */
-    @VisibleForTesting
-    public static boolean isDocumentTabModelSelectorInitializedForTests() {
-        return sDocumentTabModelSelector != null;
     }
 
     /**

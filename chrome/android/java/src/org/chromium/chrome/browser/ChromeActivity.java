@@ -1670,14 +1670,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         mUmaSessionStats.updateMetricsServiceState();
-        // In DocumentMode we need the application-level TabModelSelector instead of per
-        // activity which only manages a single tab.
-        if (FeatureUtilities.isDocumentMode(this)) {
-            mUmaSessionStats.startNewSession(
-                    ChromeApplication.getDocumentTabModelSelector());
-        } else {
-            mUmaSessionStats.startNewSession(getTabModelSelector());
-        }
+        mUmaSessionStats.startNewSession(getTabModelSelector());
     }
 
     /**

@@ -113,8 +113,6 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        BookmarkUtils.setTaskDescriptionInDocumentMode(this,
-                getString(R.string.bookmark_choose_folder));
         mModel = new BookmarkModel();
         mModel.addObserver(mBookmarkModelObserver);
         List<String> stringList = getIntent().getStringArrayListExtra(INTENT_BOOKMARKS_TO_MOVE);
@@ -152,10 +150,10 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
     }
 
     private void updateFolderList() {
-        List<BookmarkId> folderList = new ArrayList<BookmarkId>();
-        List<Integer> depthList = new ArrayList<Integer>();
+        List<BookmarkId> folderList = new ArrayList<>();
+        List<Integer> depthList = new ArrayList<>();
         mModel.getMoveDestinations(folderList, depthList, mBookmarksToMove);
-        List<FolderListEntry> entryList = new ArrayList<FolderListEntry>(folderList.size() + 3);
+        List<FolderListEntry> entryList = new ArrayList<>(folderList.size() + 3);
 
         if (!mIsCreatingFolder) {
             entryList.add(new FolderListEntry(null, 0,
@@ -265,7 +263,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
         private final int mBasePadding;
         private final int mPaddingIncrement;
 
-        List<FolderListEntry> mEntryList = new ArrayList<FolderListEntry>();
+        List<FolderListEntry> mEntryList = new ArrayList<>();
 
         public FolderListAdapter(Context context) {
             mBasePadding = context.getResources()

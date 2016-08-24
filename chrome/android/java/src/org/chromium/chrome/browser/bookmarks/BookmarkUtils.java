@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -267,16 +265,6 @@ public class BookmarkUtils {
         }
 
         IntentHandler.startActivityForTrustedIntent(intent, activity);
-    }
-
-    /**
-     * Updates the title of chrome shown in recent tasks. It only takes effect in document mode.
-     */
-    public static void setTaskDescriptionInDocumentMode(Activity activity, String description) {
-        if (FeatureUtilities.isDocumentMode(activity)) {
-            // Setting icon to be null and color to be 0 will means "take no effect".
-            ApiCompatibilityUtils.setTaskDescription(activity, description, null, 0);
-        }
     }
 
     /**

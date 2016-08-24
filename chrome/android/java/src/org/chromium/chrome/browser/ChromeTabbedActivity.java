@@ -870,15 +870,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     @Override
-    public boolean isStartedUpCorrectly(Intent intent) {
-        if (FeatureUtilities.isDocumentMode(this)) {
-            Log.e(TAG, "Discarding Intent: Starting ChromeTabbedActivity in Document mode");
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public void preInflationStartup() {
         super.preInflationStartup();
 

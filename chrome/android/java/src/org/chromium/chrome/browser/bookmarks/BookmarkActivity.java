@@ -31,10 +31,7 @@ public class BookmarkActivity extends SnackbarActivity {
         String url = getIntent().getDataString();
         if (TextUtils.isEmpty(url)) url = UrlConstants.BOOKMARKS_URL;
         mBookmarkManager.updateForUrl(url);
-
         setContentView(mBookmarkManager.getView());
-        BookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(R.string.bookmarks));
-
         // Hack to work around inferred theme false lint error: http://crbug.com/445633
         assert (R.layout.bookmark_main_content != 0);
     }
