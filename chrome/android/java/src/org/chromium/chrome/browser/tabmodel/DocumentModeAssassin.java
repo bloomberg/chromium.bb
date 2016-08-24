@@ -119,11 +119,10 @@ public class DocumentModeAssassin {
     }
 
     /** IDs of Tabs that have had their TabState files copied between directories successfully. */
-    private final Set<Integer> mMigratedTabIds = new HashSet<Integer>();
+    private final Set<Integer> mMigratedTabIds = new HashSet<>();
 
     /** Observers of the migration pipeline. */
-    private final ObserverList<DocumentModeAssassinObserver> mObservers =
-            new ObserverList<DocumentModeAssassinObserver>();
+    private final ObserverList<DocumentModeAssassinObserver> mObservers = new ObserverList<>();
 
     /** Current stage of the migration. */
     private int mStage = STAGE_UNINITIALIZED;
@@ -342,6 +341,14 @@ public class DocumentModeAssassin {
             @Override
             protected Boolean doInBackground(Void... params) {
                 if (mSerializedMetadata != null) {
+                    // If an old tab state file still exists when we run migration in TPS, then it
+                    // will overwrite the new tab state file that our document tabs migrated to.
+                    File oldMetadataFile = new File(
+                            getTabbedDataDirectory(), TabPersistentStore.SAVED_STATE_FILE);
+                    if (oldMetadataFile.exists() && !oldMetadataFile.delete()) {
+                        Log.e(TAG, "Failed to delete old tab state file: " + oldMetadataFile);
+                    }
+
                     TabPersistentStore.saveListToFile(
                             getTabbedDataDirectory(), TAB_MODEL_INDEX, mSerializedMetadata);
                     return true;

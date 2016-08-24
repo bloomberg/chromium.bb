@@ -189,7 +189,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         final CallbackHelper changeDoneCallback = new CallbackHelper();
         final CallbackHelper deletionStartedCallback = new CallbackHelper();
         final CallbackHelper deletionDoneCallback = new CallbackHelper();
-        final ArrayList<Integer> copiedIds = new ArrayList<Integer>();
+        final ArrayList<Integer> copiedIds = new ArrayList<>();
         final DocumentModeAssassinObserver observer = new DocumentModeAssassinObserver() {
             @Override
             public void onStageChange(int newStage) {
@@ -219,7 +219,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             }
         };
 
-        setUpDocumentDirectory();
+        setUpDirectories();
         final DocumentModeAssassin assassin = createAssassinForTesting(
                 DocumentModeAssassin.STAGE_UNINITIALIZED, true, true);
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -302,7 +302,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 DocumentModeAssassin.MAX_MIGRATION_ATTEMPTS_BEFORE_FAILURE);
         editor.apply();
 
-        setUpDocumentDirectory();
+        setUpDirectories();
         final DocumentModeAssassin assassin =
                 createAssassinForTesting(DocumentModeAssassin.STAGE_UNINITIALIZED, true, true);
         ThreadUtils.runOnUiThread(new Runnable() {
@@ -387,7 +387,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // one of them.  This forces the TabPersistentStore to improvise and use the initial URL
         // that we provide.
         final TabStateInfo failureCase = TestTabModelDirectory.V2_HAARETZ;
-        final Set<Integer> migratedTabIds = new HashSet<Integer>();
+        final Set<Integer> migratedTabIds = new HashSet<>();
         for (int i = 0; i < TAB_STATE_INFO.length; i++) {
             if (failureCase.tabId == TAB_STATE_INFO[i].tabId) continue;
             migratedTabIds.add(TAB_STATE_INFO[i].tabId);
@@ -496,7 +496,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         final CallbackHelper copyDoneCallback = new CallbackHelper();
         final CallbackHelper copyCallback = new CallbackHelper();
         final AtomicInteger firstCopiedId = new AtomicInteger(Tab.INVALID_TAB_ID);
-        final ArrayList<Integer> copiedIds = new ArrayList<Integer>();
+        final ArrayList<Integer> copiedIds = new ArrayList<>();
         final DocumentModeAssassinObserver observer = new DocumentModeAssassinObserver() {
             @Override
             public void onStageChange(int newStage) {
@@ -516,7 +516,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         };
 
         // Kick off copying the tab states.
-        setUpDocumentDirectory();
+        setUpDirectories();
         final DocumentModeAssassin assassin =
                 createAssassinForTesting(DocumentModeAssassin.STAGE_INITIALIZED, false, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -550,7 +550,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // Confirm that the legitimate TabState files were all copied over.
         File[] tabbedModeFilesAfter = mTabbedModeDirectory.getDataDirectory().listFiles();
         assertNotNull(tabbedModeFilesAfter);
-        assertEquals(TAB_STATE_INFO.length, tabbedModeFilesAfter.length);
+        // +1 is for the original tab_state file in the tabbed directory.
+        assertEquals(TAB_STATE_INFO.length + 1, tabbedModeFilesAfter.length);
 
         for (int i = 0; i < TAB_STATE_INFO.length; i++) {
             boolean found = false;
@@ -591,7 +592,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         editor.apply();
 
         // Kick off deleting everything.
-        setUpDocumentDirectory();
+        setUpDirectories();
         final DocumentModeAssassin assassin = createAssassinForTesting(
                 DocumentModeAssassin.STAGE_CHANGE_SETTINGS_DONE, false, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -647,8 +648,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         };
     }
 
-    /** Fills in the directory for document mode with a bunch of data. */
-    private void setUpDocumentDirectory() throws Exception {
+    /** Fills in the directories for document and tabbed mode with a bunch of data. */
+    private void setUpDirectories() throws Exception {
         // Write out all of the TabState files into the document mode directory.
         for (int i = 0; i < TAB_STATE_INFO.length; i++) {
             mDocumentModeDirectory.writeTabStateFile(TAB_STATE_INFO[i]);
@@ -659,5 +660,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         writeUselessFileToDirectory(mDocumentModeDirectory.getDataDirectory(),
                 TabState.SAVED_TAB_STATE_FILE_PREFIX + "_unparseable");
 
+        writeUselessFileToDirectory(mTabbedModeDirectory.getDataDirectory(),
+                TabPersistentStore.SAVED_STATE_FILE);
     }
 }
