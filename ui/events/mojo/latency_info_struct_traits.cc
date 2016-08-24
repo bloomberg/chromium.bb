@@ -276,12 +276,18 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   if (!data.ReadTraceName(&out->trace_name_))
     return false;
 
-  // TODO(fsamuel): Figure out how to optimize deserialization.
-  mojo::Array<ui::mojom::LatencyComponentPairPtr> components;
-  if (!data.ReadLatencyComponents(&components))
-    return false;
-  for (uint32_t i = 0; i < components.size(); ++i)
-    out->latency_components_[components[i]->key] = components[i]->value;
+  mojo::ArrayDataView<ui::mojom::LatencyComponentPairDataView> components;
+  data.GetLatencyComponentsDataView(&components);
+  for (uint32_t i = 0; i < components.size(); ++i) {
+    ui::mojom::LatencyComponentPairDataView component_pair;
+    components.GetDataView(i, &component_pair);
+    ui::LatencyInfo::LatencyMap::key_type key;
+    if (!component_pair.ReadKey(&key))
+      return false;
+    auto& value = out->latency_components_[key];
+    if (!component_pair.ReadValue(&value))
+      return false;
+  }
 
   InputCoordinateArray input_coordinate_array = {
       0, ui::LatencyInfo::kMaxInputCoordinates, out->input_coordinates_};
