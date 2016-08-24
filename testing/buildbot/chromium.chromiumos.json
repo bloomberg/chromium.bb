@@ -290,6 +290,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ozone_gl_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ozone_unittests"
       },
       {

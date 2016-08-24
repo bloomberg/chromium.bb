@@ -16,12 +16,4 @@ specific_include_rules = {
   "angle_platform_impl.h": [
     "+third_party/angle/include/platform/Platform.h",
   ],
-  "gl_image_ozone_native_pixmap_drm_unittest.cc": [
-    "+ui/ozone/gl",
-    "+ui/ozone/public",
-  ],
-  "gl_image_ozone_native_pixmap_unittest.cc": [
-    "+ui/ozone/gl",
-    "+ui/ozone/public",
-  ],
 }

@@ -2,6 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
+import("//testing/test.gni")
+
+if (target_os == "chromeos") {
+  pkg_config("libdrm") {
+    packages = [ "libdrm" ]
+  }
+}
+
 component("gl") {
   sources = [
     "gl_image_ozone_native_pixmap.cc",
@@ -15,5 +24,32 @@ component("gl") {
     "//ui/gfx",
     "//ui/gl",
     "//ui/ozone:ozone_base",
+  ]
+}
+
+test("ozone_gl_unittests") {
+  sources = [
+    "gl_image_ozone_native_pixmap_unittest.cc",
+  ]
+
+  if (target_os == "chromeos" && target_cpu != "arm") {
+    sources += [ "gl_image_ozone_native_pixmap_drm_unittest.cc" ]
+  }
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//ui/gl:run_all_unittests",
+    "//ui/gl:test_support",
+    "//ui/ozone",
+  ]
+
+  if (target_os == "chromeos") {
+    configs += [ ":libdrm" ]
+  }
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
   ]
 }

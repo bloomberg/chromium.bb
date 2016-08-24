@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/test/gl_image_test_template.h"

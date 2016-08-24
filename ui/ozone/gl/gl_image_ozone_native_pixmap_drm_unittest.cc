@@ -124,7 +124,6 @@ class GLImageOzoneNativePixmapDrmTestDelegate {
  private:
 };
 
-
 // TODO(crbug.com/618516) - The tests in this file can only be run
 // on a real device, and not on linux desktop builds, so they are
 // disabled until they can correctly detect the environment and do

@@ -14,12 +14,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-if (target_os == "chromeos") {
-  pkg_config("libdrm") {
-    packages = [ "libdrm" ]
-  }
-}
-
 config("gl_config") {
   defines = []
   if (use_glx) {
@@ -319,6 +313,26 @@ static_library("test_support") {
   }
 }
 
+source_set("run_all_unittests") {
+  testonly = true
+
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  public_deps = [
+    "//base/test:test_support",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+}
+
 test("gl_unittests") {
   sources = [
     "gl_api_unittest.cc",
@@ -326,7 +340,6 @@ test("gl_unittests") {
     "gl_image_shared_memory_unittest.cc",
     "gl_version_info_unittest.cc",
     "gpu_timing_unittest.cc",
-    "test/run_all_unittests.cc",
   ]
 
   if (use_egl) {
@@ -338,13 +351,6 @@ test("gl_unittests") {
 
   if (use_glx) {
     sources += [ "glx_api_unittest.cc" ]
-  }
-
-  if (use_ozone) {
-    sources += [ "gl_image_ozone_native_pixmap_unittest.cc" ]
-    if (target_os == "chromeos" && target_cpu != "arm") {
-      sources += [ "gl_image_ozone_native_pixmap_drm_unittest.cc" ]
-    }
   }
 
   if (is_mac) {
@@ -361,9 +367,9 @@ test("gl_unittests") {
   deps = [
     ":gl",
     ":gl_unittest_utils",
+    ":run_all_unittests",
     ":test_support",
     "//base",
-    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
@@ -371,17 +377,9 @@ test("gl_unittests") {
     "//ui/gl/init",
   ]
 
-  if (target_os == "chromeos") {
-    configs += [ ":libdrm" ]
-  }
-
   data_deps = [
     "//third_party/mesa:osmesa",
   ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
 }
 
 if (is_android) {
