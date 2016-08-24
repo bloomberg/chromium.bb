@@ -74,18 +74,10 @@
 //#define SK_CPU_BENDIAN
 //#define SK_CPU_LENDIAN
 
-/*  If zlib is available and you want to support the flate compression
-    algorithm (used in PDF generation), define SK_ZLIB_INCLUDE to be the
-    include path.
- */
-//#define SK_ZLIB_INCLUDE <zlib.h>
-#define SK_ZLIB_INCLUDE "third_party/zlib/zlib.h"
-
 /*  Define this to provide font subsetter for font subsetting when generating
     PDF documents.
  */
-#define SK_SFNTLY_SUBSETTER \
-    "third_party/sfntly/src/cpp/src/sample/chromium/font_subsetter.h"
+#define SK_SFNTLY_SUBSETTER "sample/chromium/font_subsetter.h"
 
 /*  To write debug messages to a console, skia will call SkDebugf(...) following
     printf conventions (e.g. const char* format, ...). If you want to redirect

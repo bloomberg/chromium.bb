@@ -7,6 +7,10 @@ declare_args() {
   build_sfntly_samples = false
 }
 
+config("sfntly_public_config") {
+  include_dirs = [ "src/cpp/src" ]
+}
+
 config("sfntly_common_config") {
   defines = [ "SFNTLY_NO_EXCEPTION" ]
   include_dirs = [ "src/cpp/src" ]
@@ -152,6 +156,7 @@ static_library("sfntly") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   configs += [ ":sfntly_common_config" ]
+  public_configs = [ ":sfntly_public_config" ]
   deps = [
     ":sfntly_chromium",
     "//third_party/icu:icuuc",
