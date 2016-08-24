@@ -46,7 +46,7 @@ TouchEventContext::TouchEventContext()
 
 void TouchEventContext::handleLocalEvents(Event& event) const
 {
-    ASSERT(event.isTouchEvent());
+    DCHECK(event.isTouchEvent());
     TouchEvent& touchEvent = toTouchEvent(event);
     touchEvent.setTouches(m_touches);
     touchEvent.setTargetTouches(m_targetTouches);

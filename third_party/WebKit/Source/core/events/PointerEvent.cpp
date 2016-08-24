@@ -80,7 +80,7 @@ DispatchEventResult PointerEventDispatchMediator::dispatchEvent(EventDispatcher&
     if (event().type().isEmpty())
         return DispatchEventResult::NotCanceled; // Shouldn't happen.
 
-    ASSERT(!event().target() || event().target() != event().relatedTarget());
+    DCHECK(!event().target() || event().target() != event().relatedTarget());
 
     event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
 

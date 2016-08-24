@@ -56,7 +56,7 @@ public:
     NodeEventContext& at(size_t index) { return m_nodeEventContexts[index]; }
     NodeEventContext& last() { return m_nodeEventContexts[size() - 1]; }
 
-    WindowEventContext& windowEventContext() { ASSERT(m_windowEventContext); return *m_windowEventContext; }
+    WindowEventContext& windowEventContext() { DCHECK(m_windowEventContext); return *m_windowEventContext; }
     void ensureWindowEventContext();
 
     bool isEmpty() const { return m_nodeEventContexts.isEmpty(); }
@@ -82,7 +82,7 @@ private:
     void calculateAdjustedTargets();
     void calculateTreeOrderAndSetNearestAncestorClosedTree();
 
-    void shrink(size_t newSize) { ASSERT(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
+    void shrink(size_t newSize) { DCHECK(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
 
     void retargetRelatedTarget(const Node& relatedTargetNode);
 
@@ -98,7 +98,7 @@ private:
     static void buildRelatedNodeMap(const Node&, RelatedTargetMap&);
     static EventTarget* findRelatedNode(TreeScope&, RelatedTargetMap&);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     static void checkReachability(TreeScope&, TouchList&);
 #endif
 

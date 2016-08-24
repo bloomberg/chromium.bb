@@ -50,7 +50,7 @@ GestureEvent* GestureEvent::create(AbstractView* view, const PlatformGestureEven
         source = GestureSourceTouchscreen;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     switch (event.type()) {

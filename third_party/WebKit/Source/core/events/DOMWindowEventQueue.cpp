@@ -86,11 +86,11 @@ bool DOMWindowEventQueue::enqueueEvent(Event* event)
     if (m_isClosed)
         return false;
 
-    ASSERT(event->target());
+    DCHECK(event->target());
     InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
 
     bool wasAdded = m_queuedEvents.add(event).isNewEntry;
-    ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
+    DCHECK(wasAdded); // It should not have already been in the list.
 
     if (!m_pendingEventTimer->isActive())
         m_pendingEventTimer->startOneShot(0, BLINK_FROM_HERE);
@@ -124,13 +124,13 @@ void DOMWindowEventQueue::close()
 
 void DOMWindowEventQueue::pendingEventTimerFired()
 {
-    ASSERT(!m_pendingEventTimer->isActive());
-    ASSERT(!m_queuedEvents.isEmpty());
+    DCHECK(!m_pendingEventTimer->isActive());
+    DCHECK(!m_queuedEvents.isEmpty());
 
     // Insert a marker for where we should stop.
-    ASSERT(!m_queuedEvents.contains(nullptr));
+    DCHECK(!m_queuedEvents.contains(nullptr));
     bool wasAdded = m_queuedEvents.add(nullptr).isNewEntry;
-    ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
+    DCHECK(wasAdded); // It should not have already been in the list.
 
     while (!m_queuedEvents.isEmpty()) {
         HeapListHashSet<Member<Event>, 16>::iterator iter = m_queuedEvents.begin();

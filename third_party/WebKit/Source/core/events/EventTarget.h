@@ -228,14 +228,14 @@ private:
     static EventListener* on##attribute(EventTarget& eventTarget) { \
         if (Node* node = eventTarget.toNode()) \
             return node->document().getWindowAttributeEventListener(EventTypeNames::attribute); \
-        ASSERT(eventTarget.toLocalDOMWindow()); \
+        DCHECK(eventTarget.toLocalDOMWindow()); \
         return eventTarget.getAttributeEventListener(EventTypeNames::attribute); \
     } \
     static void setOn##attribute(EventTarget& eventTarget, EventListener* listener) { \
         if (Node* node = eventTarget.toNode()) \
             node->document().setWindowAttributeEventListener(EventTypeNames::attribute, listener); \
         else { \
-            ASSERT(eventTarget.toLocalDOMWindow()); \
+            DCHECK(eventTarget.toLocalDOMWindow()); \
             eventTarget.setAttributeEventListener(EventTypeNames::attribute, listener); \
         } \
     }

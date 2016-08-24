@@ -67,7 +67,7 @@ public:
 private:
     friend class EventListenerIterator;
 
-    void assertNoActiveIterators();
+    void checkNoActiveIterators();
 
     // We use HeapVector instead of HeapHashMap because
     //  - HeapVector is much more space efficient than HeapHashMap.
@@ -75,8 +75,8 @@ private:
     //    HeapVector is faster in such cases.
     HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> m_entries;
 
-#if ENABLE(ASSERT)
-    int m_activeIteratorCount;
+#if DCHECK_IS_ON()
+    int m_activeIteratorCount = 0;
 #endif
 };
 
@@ -85,7 +85,7 @@ class EventListenerIterator {
     STACK_ALLOCATED();
 public:
     explicit EventListenerIterator(EventTarget*);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ~EventListenerIterator();
 #endif
 
@@ -99,8 +99,8 @@ private:
     unsigned m_index;
 };
 
-#if !ENABLE(ASSERT)
-inline void EventListenerMap::assertNoActiveIterators() { }
+#if !DCHECK_IS_ON()
+inline void EventListenerMap::checkNoActiveIterators() { }
 #endif
 
 } // namespace blink

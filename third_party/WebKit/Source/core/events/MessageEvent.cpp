@@ -60,7 +60,7 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
         m_source = initializer.source();
     if (initializer.hasPorts())
         m_ports = new MessagePortArray(initializer.ports());
-    ASSERT(isValidSource(m_source.get()));
+    DCHECK(isValidSource(m_source.get()));
 }
 
 MessageEvent::MessageEvent(const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray* ports, const String& suborigin)
@@ -71,7 +71,7 @@ MessageEvent::MessageEvent(const String& origin, const String& lastEventId, Even
     , m_source(source)
     , m_ports(ports)
 {
-    ASSERT(isValidSource(m_source.get()));
+    DCHECK(isValidSource(m_source.get()));
 }
 
 MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray* ports, const String& suborigin)
@@ -85,7 +85,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
 {
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
-    ASSERT(isValidSource(m_source.get()));
+    DCHECK(isValidSource(m_source.get()));
 }
 
 MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, std::unique_ptr<MessagePortChannelArray> channels, const String& suborigin)
@@ -100,7 +100,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
 {
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
-    ASSERT(isValidSource(m_source.get()));
+    DCHECK(isValidSource(m_source.get()));
 }
 
 MessageEvent::MessageEvent(const String& data, const String& origin, const String& suborigin)

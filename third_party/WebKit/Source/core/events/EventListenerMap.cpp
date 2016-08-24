@@ -36,7 +36,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #endif
@@ -45,24 +45,21 @@ using namespace WTF;
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static Mutex& activeIteratorCountMutex()
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex());
     return mutex;
 }
 
-void EventListenerMap::assertNoActiveIterators()
+void EventListenerMap::checkNoActiveIterators()
 {
     MutexLocker locker(activeIteratorCountMutex());
-    ASSERT(!m_activeIteratorCount);
+    DCHECK(!m_activeIteratorCount);
 }
 #endif
 
 EventListenerMap::EventListenerMap()
-#if ENABLE(ASSERT)
-    : m_activeIteratorCount(0)
-#endif
 {
 }
 
@@ -90,7 +87,7 @@ bool EventListenerMap::containsCapturing(const AtomicString& eventType) const
 
 void EventListenerMap::clear()
 {
-    assertNoActiveIterators();
+    checkNoActiveIterators();
 
     m_entries.clear();
 }
@@ -119,7 +116,7 @@ static bool addListenerToVector(EventListenerVector* vector, EventListener* list
 
 bool EventListenerMap::add(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsResolved& options, RegisteredEventListener* registeredListener)
 {
-    assertNoActiveIterators();
+    checkNoActiveIterators();
 
     for (const auto& entry : m_entries) {
         if (entry.first == eventType)
@@ -153,7 +150,7 @@ static bool removeListenerFromVector(EventListenerVector* listenerVector, const 
 
 bool EventListenerMap::remove(const AtomicString& eventType, const EventListener* listener, const EventListenerOptions& options, size_t* indexOfRemovedListener, RegisteredEventListener* registeredListener)
 {
-    assertNoActiveIterators();
+    checkNoActiveIterators();
 
     for (unsigned i = 0; i < m_entries.size(); ++i) {
         if (m_entries[i].first == eventType) {
@@ -169,7 +166,7 @@ bool EventListenerMap::remove(const AtomicString& eventType, const EventListener
 
 EventListenerVector* EventListenerMap::find(const AtomicString& eventType)
 {
-    assertNoActiveIterators();
+    checkNoActiveIterators();
 
     for (const auto& entry : m_entries) {
         if (entry.first == eventType)
@@ -189,7 +186,7 @@ EventListenerIterator::EventListenerIterator(EventTarget* target)
     , m_entryIndex(0)
     , m_index(0)
 {
-    ASSERT(target);
+    DCHECK(target);
     EventTargetData* data = target->eventTargetData();
 
     if (!data)
@@ -197,7 +194,7 @@ EventListenerIterator::EventListenerIterator(EventTarget* target)
 
     m_map = &data->eventListenerMap;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     {
         MutexLocker locker(activeIteratorCountMutex());
         m_map->m_activeIteratorCount++;
@@ -205,7 +202,7 @@ EventListenerIterator::EventListenerIterator(EventTarget* target)
 #endif
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 EventListenerIterator::~EventListenerIterator()
 {
     if (m_map) {

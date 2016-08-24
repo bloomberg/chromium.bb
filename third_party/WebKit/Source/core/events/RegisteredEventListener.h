@@ -102,16 +102,16 @@ public:
     bool matches(const EventListener* listener, const EventListenerOptions& options) const
     {
         // Equality is soley based on the listener and useCapture flags.
-        ASSERT(m_listener);
-        ASSERT(listener);
+        DCHECK(m_listener);
+        DCHECK(listener);
         return *m_listener == *listener && static_cast<bool>(m_useCapture) == options.capture();
     }
 
     bool operator==(const RegisteredEventListener& other) const
     {
         // Equality is soley based on the listener and useCapture flags.
-        ASSERT(m_listener);
-        ASSERT(other.m_listener);
+        DCHECK(m_listener);
+        DCHECK(other.m_listener);
         return *m_listener == *other.m_listener && m_useCapture == other.m_useCapture;
     }
 

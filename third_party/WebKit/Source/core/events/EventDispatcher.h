@@ -76,8 +76,8 @@ private:
     Member<Node> m_node;
     Member<Event> m_event;
     Member<FrameView> m_view;
-#if ENABLE(ASSERT)
-    bool m_eventDispatched;
+#if DCHECK_IS_ON()
+    bool m_eventDispatched = false;
 #endif
 };
 

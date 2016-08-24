@@ -46,7 +46,9 @@ namespace blink {
 DispatchEventResult EventDispatcher::dispatchEvent(Node& node, EventDispatchMediator* mediator)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatchEvent");
-    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+    DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
     EventDispatcher dispatcher(node, &mediator->event());
     return mediator->dispatchEvent(dispatcher);
 }
@@ -54,11 +56,8 @@ DispatchEventResult EventDispatcher::dispatchEvent(Node& node, EventDispatchMedi
 EventDispatcher::EventDispatcher(Node& node, Event* event)
     : m_node(node)
     , m_event(event)
-#if ENABLE(ASSERT)
-    , m_eventDispatched(false)
-#endif
 {
-    ASSERT(m_event.get());
+    DCHECK(m_event.get());
     m_view = node.document().view();
     m_event->initEventPath(*m_node);
 }
@@ -107,8 +106,8 @@ DispatchEventResult EventDispatcher::dispatch()
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatch");
 
-#if ENABLE(ASSERT)
-    ASSERT(!m_eventDispatched);
+#if DCHECK_IS_ON()
+    DCHECK(!m_eventDispatched);
     m_eventDispatched = true;
 #endif
     if (event().eventPath().isEmpty()) {
@@ -118,8 +117,10 @@ DispatchEventResult EventDispatcher::dispatch()
     m_event->eventPath().ensureWindowEventContext();
 
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
-    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
-    ASSERT(m_event->target());
+#if DCHECK_IS_ON()
+    DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
+    DCHECK(m_event->target());
     TRACE_EVENT1("devtools.timeline", "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));
     EventDispatchHandlingState* preDispatchEventHandlerResult = nullptr;
     if (dispatchEventPreProcess(preDispatchEventHandlerResult) == ContinueDispatching) {
@@ -227,7 +228,7 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
         // Non-bubbling events call only one default event handler, the one for the target.
         m_node->willCallDefaultEventHandler(*m_event);
         m_node->defaultEventHandler(m_event.get());
-        ASSERT(!m_event->defaultPrevented());
+        DCHECK(!m_event->defaultPrevented());
         // For bubbling events, call default event handlers on the same targets in the
         // same order as the bubbling phase.
         if (!m_event->defaultHandled() && m_event->bubbles()) {
@@ -235,7 +236,7 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
             for (size_t i = 1; i < size; ++i) {
                 m_event->eventPath()[i].node()->willCallDefaultEventHandler(*m_event);
                 m_event->eventPath()[i].node()->defaultEventHandler(m_event.get());
-                ASSERT(!m_event->defaultPrevented());
+                DCHECK(!m_event->defaultPrevented());
                 if (m_event->defaultHandled())
                     break;
             }

@@ -51,7 +51,7 @@ public:
 protected:
     explicit EventDispatchMediator(Event*);
     EventDispatchMediator() { }
-    void setEvent(Event* event) { ASSERT(event); m_event = event; }
+    void setEvent(Event* event) { DCHECK(event); m_event = event; }
 
 private:
     Member<Event> m_event;

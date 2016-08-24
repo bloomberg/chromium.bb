@@ -18,7 +18,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(ScriptState* state, const AtomicStr
     , m_scriptState(state)
 {
     ThreadState::current()->registerPreFinalizer(this);
-    ASSERT(initializer.hasPromise());
+    DCHECK(initializer.hasPromise());
     m_promise.set(initializer.promise().isolate(), initializer.promise().v8Value());
     m_promise.setPhantom();
     if (initializer.hasReason()) {

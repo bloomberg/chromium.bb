@@ -52,7 +52,9 @@ bool TreeScopeEventContext::isUnclosedTreeOf(const TreeScopeEventContext& other)
         return !containingClosedShadowTree()->isDescendantOf(other);
 
     // (4) |this| and |other| must be in exclusive branches.
-    ASSERT(other.isExclusivePartOf(*this));
+#if DCHECK_IS_ON()
+    DCHECK(other.isExclusivePartOf(*this));
+#endif
     return false;
 }
 

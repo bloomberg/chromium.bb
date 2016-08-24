@@ -313,7 +313,7 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, Ev
                 return (*m_eventPath)[i].treeScopeEventContext().ensureEventPath(*m_eventPath);
             }
         }
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     // Returns [window] for events that are directly dispatched to the window object;

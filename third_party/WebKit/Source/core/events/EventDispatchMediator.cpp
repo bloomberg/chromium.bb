@@ -52,7 +52,7 @@ DEFINE_TRACE(EventDispatchMediator)
 
 DispatchEventResult EventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    ASSERT(m_event.get() == &dispatcher.event());
+    DCHECK_EQ(m_event.get(), &dispatcher.event());
     return dispatcher.dispatch();
 }
 

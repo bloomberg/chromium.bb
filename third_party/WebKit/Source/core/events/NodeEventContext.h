@@ -48,7 +48,7 @@ public:
     Node* node() const { return m_node.get(); }
 
     void setTreeScopeEventContext(TreeScopeEventContext* treeScopeEventContext) { m_treeScopeEventContext = treeScopeEventContext; }
-    TreeScopeEventContext& treeScopeEventContext() { ASSERT(m_treeScopeEventContext); return *m_treeScopeEventContext; }
+    TreeScopeEventContext& treeScopeEventContext() { DCHECK(m_treeScopeEventContext); return *m_treeScopeEventContext; }
 
     EventTarget* target() const { return m_treeScopeEventContext->target(); }
     EventTarget* relatedTarget() const { return m_treeScopeEventContext->relatedTarget(); }

@@ -92,8 +92,8 @@ bool GenericEventQueue::cancelEvent(Event* event)
 
 void GenericEventQueue::timerFired(TimerBase*)
 {
-    ASSERT(!m_timer.isActive());
-    ASSERT(!m_pendingEvents.isEmpty());
+    DCHECK(!m_timer.isActive());
+    DCHECK(!m_pendingEvents.isEmpty());
 
     HeapVector<Member<Event>> pendingEvents;
     m_pendingEvents.swap(pendingEvents);

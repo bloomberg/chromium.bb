@@ -64,7 +64,7 @@ public:
 
     bool isInclusiveAncestorOf(const TreeScopeEventContext&) const;
     bool isDescendantOf(const TreeScopeEventContext&) const;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool isExclusivePartOf(const TreeScopeEventContext&) const;
 #endif
     void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
@@ -78,9 +78,7 @@ public:
 private:
     TreeScopeEventContext(TreeScope&);
 
-#if ENABLE(ASSERT)
-    bool isUnreachableNode(EventTarget&);
-#endif
+    void checkReachableNode(EventTarget&);
 
     bool isUnclosedTreeOf(const TreeScopeEventContext& other);
 
@@ -97,44 +95,61 @@ private:
     int m_postOrder;
 };
 
-#if ENABLE(ASSERT)
-inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
+#if DCHECK_IS_ON()
+inline void TreeScopeEventContext::checkReachableNode(EventTarget& target)
 {
+    if (!target.toNode())
+        return;
     // FIXME: Checks also for SVG elements.
-    return target.toNode() && !target.toNode()->isSVGElement() && !target.toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope());
+    if (target.toNode()->isSVGElement())
+        return;
+    DCHECK(target.toNode()->treeScope().isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(treeScope()));
+}
+#else
+inline void TreeScopeEventContext::checkReachableNode(EventTarget&)
+{
 }
 #endif
 
 inline void TreeScopeEventContext::setTarget(EventTarget* target)
 {
-    ASSERT(target);
-    ASSERT(!isUnreachableNode(*target));
+    DCHECK(target);
+    checkReachableNode(*target);
     m_target = target;
 }
 
 inline void TreeScopeEventContext::setRelatedTarget(EventTarget* relatedTarget)
 {
-    ASSERT(relatedTarget);
-    ASSERT(!isUnreachableNode(*relatedTarget));
+    DCHECK(relatedTarget);
+    checkReachableNode(*relatedTarget);
     m_relatedTarget = relatedTarget;
 }
 
 inline bool TreeScopeEventContext::isInclusiveAncestorOf(const TreeScopeEventContext& other) const
 {
-    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    DCHECK_NE(m_preOrder, -1);
+    DCHECK_NE(m_postOrder, -1);
+    DCHECK_NE(other.m_preOrder, -1);
+    DCHECK_NE(other.m_postOrder, -1);
     return m_preOrder <= other.m_preOrder && other.m_postOrder <= m_postOrder;
 }
 
 inline bool TreeScopeEventContext::isDescendantOf(const TreeScopeEventContext& other) const
 {
-    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    DCHECK_NE(m_preOrder, -1);
+    DCHECK_NE(m_postOrder, -1);
+    DCHECK_NE(other.m_preOrder, -1);
+    DCHECK_NE(other.m_postOrder, -1);
     return other.m_preOrder < m_preOrder && m_postOrder < other.m_postOrder;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 inline bool TreeScopeEventContext::isExclusivePartOf(const TreeScopeEventContext& other) const
 {
-    ASSERT(m_preOrder != -1 && m_postOrder != -1 && other.m_preOrder != -1 && other.m_postOrder != -1);
+    DCHECK_NE(m_preOrder, -1);
+    DCHECK_NE(m_postOrder, -1);
+    DCHECK_NE(other.m_preOrder, -1);
+    DCHECK_NE(other.m_postOrder, -1);
     return (m_preOrder < other.m_preOrder && m_postOrder < other.m_preOrder)
         || (m_preOrder > other.m_preOrder && m_preOrder > other.m_postOrder);
 }

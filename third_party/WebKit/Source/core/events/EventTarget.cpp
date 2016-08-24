@@ -510,7 +510,9 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
 
 DispatchEventResult EventTarget::fireEventListeners(Event* event)
 {
-    ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+    DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
     DCHECK(event);
     DCHECK(event->wasInitialized());
 
@@ -655,7 +657,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
         event->setHandlingPassive(false);
 
-        RELEASE_ASSERT(i <= size);
+        CHECK_LE(i, size);
     }
     d->firingEventIterators->removeLast();
     return firedListener;

@@ -69,7 +69,7 @@ ErrorEvent::ErrorEvent(const String& message, std::unique_ptr<SourceLocation> lo
 
 void ErrorEvent::setUnsanitizedMessage(const String& message)
 {
-    ASSERT(m_unsanitizedMessage.isEmpty());
+    DCHECK(m_unsanitizedMessage.isEmpty());
     m_unsanitizedMessage = message;
 }
 

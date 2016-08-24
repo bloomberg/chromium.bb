@@ -45,7 +45,7 @@ static inline const AtomicString& eventTypeForKeyboardEventType(PlatformEvent::E
         default:
             break;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return EventTypeNames::keydown;
 }
 

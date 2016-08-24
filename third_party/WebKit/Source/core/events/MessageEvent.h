@@ -96,15 +96,15 @@ public:
         DataTypeArrayBuffer
     };
     DataType getDataType() const { return m_dataType; }
-    ScriptValue dataAsScriptValue() const { ASSERT(m_dataType == DataTypeScriptValue); return m_dataAsScriptValue; }
-    SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
-    String dataAsString() const { ASSERT(m_dataType == DataTypeString); return m_dataAsString; }
-    Blob* dataAsBlob() const { ASSERT(m_dataType == DataTypeBlob); return m_dataAsBlob.get(); }
-    DOMArrayBuffer* dataAsArrayBuffer() const { ASSERT(m_dataType == DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
+    ScriptValue dataAsScriptValue() const { DCHECK_EQ(m_dataType, DataTypeScriptValue); return m_dataAsScriptValue; }
+    SerializedScriptValue* dataAsSerializedScriptValue() const { DCHECK_EQ(m_dataType, DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
+    String dataAsString() const { DCHECK_EQ(m_dataType, DataTypeString); return m_dataAsString; }
+    Blob* dataAsBlob() const { DCHECK_EQ(m_dataType, DataTypeBlob); return m_dataAsBlob.get(); }
+    DOMArrayBuffer* dataAsArrayBuffer() const { DCHECK_EQ(m_dataType, DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
 
     void setSerializedData(PassRefPtr<SerializedScriptValue> data)
     {
-        ASSERT(!m_dataAsSerializedScriptValue);
+        DCHECK(!m_dataAsSerializedScriptValue);
         m_dataAsSerializedScriptValue = data;
     }
 

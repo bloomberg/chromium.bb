@@ -35,7 +35,7 @@ static const String& errorReasonToString(WebApplicationCacheHost::ErrorReason re
     case WebApplicationCacheHost::UnknownError:
         return errorUnknown;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyString();
 }
 
