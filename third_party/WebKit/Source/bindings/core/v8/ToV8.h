@@ -37,7 +37,9 @@ inline v8::Local<v8::Value> toV8(ScriptWrappable* impl, v8::Local<v8::Object> cr
     if (!wrapper.IsEmpty())
         return wrapper;
 
-    return impl->wrap(isolate, creationContext);
+    wrapper = impl->wrap(isolate, creationContext);
+    DCHECK(!wrapper.IsEmpty());
+    return wrapper;
 }
 
 inline v8::Local<v8::Value> toV8(Node* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
@@ -48,7 +50,9 @@ inline v8::Local<v8::Value> toV8(Node* impl, v8::Local<v8::Object> creationConte
     if (!wrapper.IsEmpty())
         return wrapper;
 
-    return ScriptWrappable::fromNode(impl)->wrap(isolate, creationContext);
+    wrapper = ScriptWrappable::fromNode(impl)->wrap(isolate, creationContext);
+    DCHECK(!wrapper.IsEmpty());
+    return wrapper;
 }
 
 // Special versions for DOMWindow, WorkerOrWorkletGlobalScope and EventTarget
