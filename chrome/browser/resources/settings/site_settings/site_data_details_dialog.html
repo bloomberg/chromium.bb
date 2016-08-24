@@ -25,7 +25,7 @@
                 <template is="dom-repeat" items="[[entries_]]">
                   <button class="dropdown-item" role="option"
                       picker-value$="[[item.id]]">
-                    [[item.title]]
+                    [[getEntryDescription(item)]]
                   </button>
                 </template>
               </paper-listbox>

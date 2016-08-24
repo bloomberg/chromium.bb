@@ -39,6 +39,31 @@ var CookieList;
  */
 var CookieRemovePacket;
 
+var categoryLabels = {
+  'app_cache': loadTimeData.getString('cookieAppCache'),
+  'cache_storage': loadTimeData.getString('cookieCacheStorage'),
+  'channel_id': loadTimeData.getString('cookieChannelId'),
+  'cookie': loadTimeData.getString('cookieSingular'),
+  'database': loadTimeData.getString('cookieDatabaseStorage'),
+  'file_system': loadTimeData.getString('cookieFileSystem'),
+  'flash_lso': loadTimeData.getString('cookieFlashLso'),
+  'indexed_db': loadTimeData.getString('cookieLocalStorage'),
+  'local_storage': loadTimeData.getString('cookieLocalStorage'),
+  'service_worker': loadTimeData.getString('cookieServiceWorker'),
+};
+
+/**
+ * Retrieves the human friendly text to show for the type of cookie.
+ * @param {string} dataType The datatype to look up.
+ * @param {string} totalUsage How much data is being consumed.
+ * @return {string} The human-friendly description for this cookie.
+ */
+function getCookieDataCategoryText(dataType, totalUsage) {
+  if (dataType == 'quota')
+    return totalUsage;
+  return categoryLabels[dataType];
+}
+
 cr.define('settings', function() {
   'use strict';
 
@@ -153,34 +178,15 @@ cr.define('settings', function() {
           else
             dataType = descriptionNode.children_[0].data_.type;
 
-          var category = '';
-          if (dataType == 'cookie') {
-            var cookieCount = descriptionNode.children_.length;
-            if (cookieCount > 1)
-              category = loadTimeData.getStringF('cookiePlural', cookieCount);
-            else
-              category = loadTimeData.getString('cookieSingular');
-          } else if (dataType == 'database') {
-            category = loadTimeData.getString('cookieDatabaseStorage');
-          } else if (dataType == 'local_storage' || dataType == 'indexed_db') {
-            category = loadTimeData.getString('cookieLocalStorage');
-          } else if (dataType == 'app_cache') {
-            category = loadTimeData.getString('cookieAppCache');
-          } else if (dataType == 'file_system') {
-            category = loadTimeData.getString('cookieFileSystem');
-          } else if (dataType == 'quota') {
-            category = descriptionNode.data_.totalUsage;
-          } else if (dataType == 'channel_id') {
-            category = loadTimeData.getString('cookieChannelId');
-          } else if (dataType == 'service_worker') {
-            category = loadTimeData.getString('cookieServiceWorker');
-          } else if (dataType == 'cache_storage') {
-            category = loadTimeData.getString('cookieCacheStorage');
-          } else if (dataType == 'flash_lso') {
-            category = loadTimeData.getString('cookieFlashLso');
+          var count =
+              (dataType == 'cookie') ? descriptionNode.children_.length : 0;
+          if (count > 1) {
+            description += loadTimeData.getStringF('cookiePlural', count);
+          } else {
+            description += getCookieDataCategoryText(
+                dataType, descriptionNode.data_.totalUsage);
           }
 
-          description += category;
         }
         list.push({ site: title, id: id, localData: description });
       }

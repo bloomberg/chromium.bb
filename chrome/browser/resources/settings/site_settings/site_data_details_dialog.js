@@ -157,6 +157,16 @@ Polymer({
     }
   },
 
+  getEntryDescription: function(item) {
+    // Frequently there are multiple cookies per site. To avoid showing a list
+    // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
+    // cookie to differentiate them.
+    if (item.data.type == 'cookie')
+      return item.title;
+
+    return getCookieDataCategoryText(item.data.type, item.data.totalUsage);
+  },
+
   /**
    * A handler for when the user opts to remove a single cookie.
    * @private
