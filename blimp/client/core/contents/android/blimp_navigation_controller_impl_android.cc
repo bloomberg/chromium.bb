@@ -63,6 +63,12 @@ BlimpNavigationControllerImplAndroid::GetURL(JNIEnv* env, jobject jobj) {
   return base::android::ConvertUTF8ToJavaString(env, url.spec());
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+BlimpNavigationControllerImplAndroid::GetTitle(JNIEnv* env, jobject jobj) {
+  std::string title = blimp_navigation_controller_impl_->GetTitle();
+  return base::android::ConvertUTF8ToJavaString(env, title);
+}
+
 jboolean BlimpNavigationControllerImplAndroid::CanGoBack(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

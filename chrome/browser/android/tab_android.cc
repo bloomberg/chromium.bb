@@ -11,7 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
+#include "blimp/client/public/blimp_client_context.h"
+#include "blimp/client/public/contents/blimp_contents.h"
+#include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "cc/layers/layer.h"
+#include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
@@ -30,6 +34,7 @@
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -414,6 +419,20 @@ void TabAndroid::InitWebContents(
   content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
 }
 
+base::android::ScopedJavaLocalRef<jobject> TabAndroid::InitBlimpContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile.obj());
+  DCHECK(!profile->IsOffTheRecord());
+  blimp::client::BlimpClientContext* context =
+      BlimpClientContextFactory::GetForBrowserContext(profile);
+  DCHECK(context);
+  blimp_contents_ = context->CreateBlimpContents();
+  DCHECK(blimp_contents_);
+  return blimp_contents_->GetJavaObject();
+}
+
 void TabAndroid::UpdateDelegates(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -555,6 +574,11 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     // typing chrome://history as well as selecting from the drop down menu.
     if (fixed_url.spec() == chrome::kChromeUIHistoryURL) {
       content::RecordAction(base::UserMetricsAction("ShowHistory"));
+    }
+
+    if (blimp_contents()) {
+      blimp_contents()->GetNavigationController().LoadURL(fixed_url);
+      return DEFAULT_PAGE_LOAD;
     }
 
     content::NavigationController::LoadURLParams load_params(fixed_url);

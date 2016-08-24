@@ -20,6 +20,7 @@ BlimpClientContextFactory* BlimpClientContextFactory::GetInstance() {
 blimp::client::BlimpClientContext*
 BlimpClientContextFactory::GetForBrowserContext(
     content::BrowserContext* context) {
+  DCHECK(!context->IsOffTheRecord());
   return static_cast<blimp::client::BlimpClientContext*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }

@@ -28,6 +28,11 @@ public interface BlimpClientContext {
     boolean isBlimpSupported();
 
     /**
+     * @return If Blimp is enabled by the user.
+     */
+    boolean isBlimpEnabled();
+
+    /**
      * Attach blimp settings UI to a {@link PreferenceFragment}
      * @param fragment PreferenceFragment that blimp settings UI attached to.
      * @param callback Chrome layer callbacks that passed to Blimp.

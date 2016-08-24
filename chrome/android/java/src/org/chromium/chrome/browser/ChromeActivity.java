@@ -469,6 +469,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void initializeState() {
         super.initializeState();
+        mBlimpClientContextDelegate =
+                ChromeBlimpClientContextDelegate.createAndSetDelegateForContext(
+                        Profile.getLastUsedProfile().getOriginalProfile());
+
         IntentHandler.setTestIntentsEnabled(
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS));
         mIntentHandler = new IntentHandler(createIntentHandlerDelegate(), getPackageName());
@@ -962,9 +966,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         DownloadManagerService.getDownloadManagerService(
                 getApplicationContext()).onActivityLaunched();
-
-        mBlimpClientContextDelegate = ChromeBlimpClientContextDelegate
-                .createAndSetDelegateForContext(Profile.getLastUsedProfile().getOriginalProfile());
 
         super.finishNativeInitialization();
     }

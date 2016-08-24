@@ -30,7 +30,8 @@ class BlimpClientContextFactory : public BrowserContextKeyedServiceFactory {
   // Returns singleton instance of BlimpClientContextFactory.
   static BlimpClientContextFactory* GetInstance();
 
-  // Returns the BlimpClientContext associated with |context|.
+  // Returns the BlimpClientContext associated with |context| or creates a new
+  // one if it doesn't exist.
   static blimp::client::BlimpClientContext* GetForBrowserContext(
       content::BrowserContext* context);
 

@@ -50,6 +50,12 @@ public class BlimpNavigationControllerImpl implements BlimpNavigationController 
     }
 
     @Override
+    public String getTitle() {
+        if (mNativeBlimpNavigationControllerImplAndroid == 0) return "";
+        return nativeGetTitle(mNativeBlimpNavigationControllerImplAndroid);
+    }
+
+    @Override
     public boolean canGoBack() {
         if (mNativeBlimpNavigationControllerImplAndroid == 0) return false;
         return nativeCanGoBack(mNativeBlimpNavigationControllerImplAndroid);
@@ -74,7 +80,7 @@ public class BlimpNavigationControllerImpl implements BlimpNavigationController 
     }
 
     @Override
-    public void reload(boolean checkForRepost) {
+    public void reload() {
         if (mNativeBlimpNavigationControllerImplAndroid == 0) return;
         nativeReload(mNativeBlimpNavigationControllerImplAndroid);
     }
@@ -86,4 +92,5 @@ public class BlimpNavigationControllerImpl implements BlimpNavigationController 
     private native boolean nativeCanGoForward(long nativeBlimpNavigationControllerImplAndroid);
     private native void nativeLoadURL(long nativeBlimpNavigationControllerImplAndroid, String url);
     private native String nativeGetURL(long nativeBlimpNavigationControllerImplAndroid);
+    private native String nativeGetTitle(long nativeBlimpNavigationControllerImplAndroid);
 }

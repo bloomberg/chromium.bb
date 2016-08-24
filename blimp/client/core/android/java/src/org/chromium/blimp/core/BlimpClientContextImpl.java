@@ -67,8 +67,13 @@ public class BlimpClientContextImpl implements BlimpClientContext {
     }
 
     @Override
-    public void attachBlimpPreferences(PreferenceFragment fragment,
-            BlimpSettingsCallbacks callbacks) {
+    public boolean isBlimpEnabled() {
+        return false;
+    }
+
+    @Override
+    public void attachBlimpPreferences(
+            PreferenceFragment fragment, BlimpSettingsCallbacks callbacks) {
         AboutBlimpPreferences.addBlimpPreferences(fragment);
         AboutBlimpPreferences.registerCallback(callbacks);
     }

@@ -38,6 +38,7 @@ class BlimpNavigationControllerImpl
   void GoBack() override;
   void GoForward() override;
   const GURL& GetURL() override;
+  const std::string& GetTitle();
 
  private:
   // NavigationFeatureDelegate implementation.
@@ -58,6 +59,9 @@ class BlimpNavigationControllerImpl
 
   // The currently active URL.
   GURL current_url_;
+
+  // Title of the currently active page.
+  std::string current_title_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpNavigationControllerImpl);
 };

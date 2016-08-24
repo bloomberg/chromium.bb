@@ -9,6 +9,10 @@
 #include "base/supports_user_data.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace blimp {
 namespace client {
 
@@ -30,6 +34,12 @@ class BlimpContents : public base::SupportsUserData {
   // Enables adding and removing observers to this BlimpContents.
   virtual void AddObserver(BlimpContentsObserver* observer) = 0;
   virtual void RemoveObserver(BlimpContentsObserver* observer) = 0;
+
+#if defined(OS_ANDROID)
+  // Returns a Java object of the type BlimpContents for the given
+  // BlimpContents.
+  virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+#endif
 
  protected:
   BlimpContents() {}

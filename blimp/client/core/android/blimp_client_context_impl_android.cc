@@ -68,7 +68,7 @@ BlimpClientContextImplAndroid::CreateBlimpContentsJava(JNIEnv* env,
   // This intentionally releases the ownership and gives it to Java.
   BlimpContentsImpl* blimp_contents_impl =
       static_cast<BlimpContentsImpl*>(blimp_contents.release());
-  return blimp_contents_impl->GetJavaBlimpContentsImpl();
+  return blimp_contents_impl->GetJavaObject();
 }
 
 GURL BlimpClientContextImplAndroid::GetAssignerURL() {

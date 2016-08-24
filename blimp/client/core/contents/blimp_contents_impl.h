@@ -35,7 +35,7 @@ class BlimpContentsImpl : public BlimpContents,
   ~BlimpContentsImpl() override;
 
 #if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaBlimpContentsImpl();
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   BlimpContentsImplAndroid* GetBlimpContentsImplAndroid();
 #endif  // defined(OS_ANDROID)
 

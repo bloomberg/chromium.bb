@@ -87,6 +87,8 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     @Override
     public String getText() {
+        if (mTab != null && mTab.isBlimpTab()) return mTab.getUrl().trim();
+
         String displayText = super.getText();
 
         if (mTab == null || mTab.isFrozen()) return displayText;

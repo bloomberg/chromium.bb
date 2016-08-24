@@ -35,8 +35,7 @@ BlimpContentsImpl::~BlimpContentsImpl() {
 
 #if defined(OS_ANDROID)
 
-base::android::ScopedJavaLocalRef<jobject>
-BlimpContentsImpl::GetJavaBlimpContentsImpl() {
+base::android::ScopedJavaLocalRef<jobject> BlimpContentsImpl::GetJavaObject() {
   return GetBlimpContentsImplAndroid()->GetJavaObject();
 }
 

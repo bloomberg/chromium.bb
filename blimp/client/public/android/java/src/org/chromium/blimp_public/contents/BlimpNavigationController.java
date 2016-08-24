@@ -28,6 +28,11 @@ public interface BlimpNavigationController {
     String getUrl();
 
     /**
+     * Returns the title of the currently visible page.
+     */
+    String getTitle();
+
+    /**
      * @return Whether back navigation is possible from the "current entry".
      */
     boolean canGoBack();
@@ -48,10 +53,7 @@ public interface BlimpNavigationController {
     void goForward();
 
     /**
-     * Reload the current page. If |checkForRepost| is true and the current entry has POST data the
-     * user is prompted to see if they really want to reload the page. In nearly all cases pass in
-     * true.
-     * @param checkForRepost Prompts the user if they want to reload the page.
+     * Reloads the current page.
      */
-    public void reload(boolean checkForRepost);
+    public void reload();
 }

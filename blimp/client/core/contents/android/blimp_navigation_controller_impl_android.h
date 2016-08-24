@@ -32,6 +32,8 @@ class BlimpNavigationControllerImplAndroid {
                jobject jobj,
                const base::android::JavaParamRef<jstring>& jurl);
   base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject jobj);
+  base::android::ScopedJavaLocalRef<jstring> GetTitle(JNIEnv* env,
+                                                      jobject jobj);
   jboolean CanGoBack(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
   jboolean CanGoForward(JNIEnv* env,

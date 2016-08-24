@@ -54,9 +54,13 @@ public class DummyBlimpClientContext implements BlimpClientContext {
     }
 
     @Override
-    public void attachBlimpPreferences(PreferenceFragment fragment,
-            BlimpSettingsCallbacks callbacks) {
+    public boolean isBlimpEnabled() {
+        return false;
     }
+
+    @Override
+    public void attachBlimpPreferences(
+            PreferenceFragment fragment, BlimpSettingsCallbacks callbacks) {}
 
     @Override
     public void setDelegate(BlimpClientContextDelegate delegate) {

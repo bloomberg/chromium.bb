@@ -40,6 +40,7 @@ TEST(BlimpNavigationControllerImplTest, BackForwardNavigation) {
   EXPECT_CALL(delegate, OnNavigationStateChanged());
 
   navigation_controller.LoadURL(kExampleURL);
+  loop.RunUntilIdle();
   EXPECT_EQ(kExampleURL, navigation_controller.GetURL());
 
   EXPECT_CALL(feature, GoBack(_));

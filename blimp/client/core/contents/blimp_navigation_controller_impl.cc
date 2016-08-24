@@ -42,12 +42,12 @@ void BlimpNavigationControllerImpl::Reload() {
 
 bool BlimpNavigationControllerImpl::CanGoBack() const {
   NOTIMPLEMENTED();
-  return false;
+  return true;
 }
 
 bool BlimpNavigationControllerImpl::CanGoForward() const {
   NOTIMPLEMENTED();
-  return false;
+  return true;
 }
 
 void BlimpNavigationControllerImpl::GoBack() {
@@ -62,7 +62,12 @@ const GURL& BlimpNavigationControllerImpl::GetURL() {
   return current_url_;
 }
 
+const std::string& BlimpNavigationControllerImpl::GetTitle() {
+  return current_title_;
+}
+
 void BlimpNavigationControllerImpl::OnUrlChanged(int tab_id, const GURL& url) {
+  current_url_ = url;
   delegate_->OnNavigationStateChanged();
 }
 
@@ -73,6 +78,7 @@ void BlimpNavigationControllerImpl::OnFaviconChanged(int tab_id,
 
 void BlimpNavigationControllerImpl::OnTitleChanged(int tab_id,
                                                    const std::string& title) {
+  current_title_ = title;
   delegate_->OnNavigationStateChanged();
 }
 
