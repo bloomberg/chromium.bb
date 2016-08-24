@@ -60,7 +60,7 @@ class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
   std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
       int render_widget_id,
       BlimpCompositorClient* client) override {
-    return base::WrapUnique(new MockBlimpCompositor(render_widget_id));
+    return base::MakeUnique<MockBlimpCompositor>(render_widget_id);
   }
 };
 

@@ -39,9 +39,9 @@ class EngineConnectionManagerTest : public testing::Test {
   ~EngineConnectionManagerTest() override {}
 
   std::unique_ptr<BlimpConnection> CreateConnection() {
-    return base::WrapUnique(
-        new BlimpConnection(base::WrapUnique(new MockPacketReader),
-                            base::WrapUnique(new MockPacketWriter)));
+    return base::MakeUnique<BlimpConnection>(
+        base::WrapUnique(new MockPacketReader),
+        base::WrapUnique(new MockPacketWriter));
   }
 
  protected:

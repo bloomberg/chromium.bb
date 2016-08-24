@@ -147,8 +147,7 @@ BlimpGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
     return nullptr;
 
   return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format,
-      base::WrapUnique(new base::SharedMemory(handle.handle, false)),
+      size, format, base::MakeUnique<base::SharedMemory>(handle.handle, false),
       handle.offset, handle.stride));
 }
 

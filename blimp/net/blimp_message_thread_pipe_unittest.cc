@@ -32,7 +32,7 @@ class BlimpMessageThreadPipeTest : public testing::Test {
     // Note that none of this will "touch" the target processor, so it's
     // safe to do here, before EXPECT_CALL() expectations are set up.
     ASSERT_TRUE(thread_.Start());
-    pipe_ = base::WrapUnique(new BlimpMessageThreadPipe(thread_.task_runner()));
+    pipe_ = base::MakeUnique<BlimpMessageThreadPipe>(thread_.task_runner());
     proxy_ = pipe_->CreateProxy();
 
     thread_.task_runner()->PostTask(

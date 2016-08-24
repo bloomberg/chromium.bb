@@ -103,8 +103,8 @@ BlimpMessageThreadPipe::~BlimpMessageThreadPipe() {
 }
 
 std::unique_ptr<BlimpMessageProcessor> BlimpMessageThreadPipe::CreateProxy() {
-  return base::WrapUnique(new BlimpMessageThreadProxy(
-      target_task_runner_, weak_factory_.GetWeakPtr()));
+  return base::MakeUnique<BlimpMessageThreadProxy>(target_task_runner_,
+                                                   weak_factory_.GetWeakPtr());
 }
 
 void BlimpMessageThreadPipe::set_target_processor(

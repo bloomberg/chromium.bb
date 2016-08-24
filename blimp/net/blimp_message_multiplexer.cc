@@ -55,7 +55,7 @@ BlimpMessageMultiplexer::~BlimpMessageMultiplexer() {}
 
 std::unique_ptr<BlimpMessageProcessor> BlimpMessageMultiplexer::CreateSender(
     BlimpMessage::FeatureCase feature_case) {
-  return base::WrapUnique(
-      new MultiplexedSender(output_weak_factory_.GetWeakPtr(), feature_case));
+  return base::MakeUnique<MultiplexedSender>(output_weak_factory_.GetWeakPtr(),
+                                             feature_case);
 }
 }  // namespace blimp

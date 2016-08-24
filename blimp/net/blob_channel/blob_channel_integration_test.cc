@@ -71,7 +71,7 @@ class BlobChannelIntegrationTest : public testing::Test {
 
     sender_.reset(new BlobChannelSenderImpl(
         base::WrapUnique(new InMemoryBlobCache),
-        base::WrapUnique(new SenderDelegateProxy(receiver_.get()))));
+        base::MakeUnique<SenderDelegateProxy>(receiver_.get())));
   }
 
   ~BlobChannelIntegrationTest() override {}

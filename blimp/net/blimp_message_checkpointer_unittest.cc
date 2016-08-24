@@ -51,8 +51,8 @@ class BlimpMessageCheckpointerTest : public testing::Test {
   }
 
   void SetUp() override {
-    checkpointer_ = base::WrapUnique(new BlimpMessageCheckpointer(
-        &incoming_processor_, &outgoing_processor_, &checkpoint_observer_));
+    checkpointer_ = base::MakeUnique<BlimpMessageCheckpointer>(
+        &incoming_processor_, &outgoing_processor_, &checkpoint_observer_);
   }
 
   MOCK_METHOD1(IncomingCompletionCallback, void(int));

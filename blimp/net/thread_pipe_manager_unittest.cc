@@ -99,8 +99,8 @@ class FakeBrowserConnectionHandler : public BrowserConnectionHandler {
       BlimpMessage::FeatureCase feature_case,
       BlimpMessageProcessor* incoming_processor) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    return base::WrapUnique(
-        new FakeFeaturePeer(feature_case, incoming_processor, task_runner_));
+    return base::MakeUnique<FakeFeaturePeer>(feature_case, incoming_processor,
+                                             task_runner_);
   }
 
  private:
@@ -117,10 +117,10 @@ class ThreadPipeManagerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(thread_.Start());
-    connection_handler_ = base::WrapUnique(
-        new FakeBrowserConnectionHandler(thread_.task_runner()));
-    pipe_manager_ = base::WrapUnique(new ThreadPipeManager(
-        thread_.task_runner(), connection_handler_.get()));
+    connection_handler_ =
+        base::MakeUnique<FakeBrowserConnectionHandler>(thread_.task_runner());
+    pipe_manager_ = base::MakeUnique<ThreadPipeManager>(
+        thread_.task_runner(), connection_handler_.get());
 
     input_feature_.reset(
         new FakeFeature(BlimpMessage::kInput, pipe_manager_.get()));

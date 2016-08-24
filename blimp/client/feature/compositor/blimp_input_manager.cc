@@ -113,8 +113,8 @@ void BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread(
     return;
 
   DCHECK(!input_handler_wrapper_);
-  input_handler_wrapper_ = base::WrapUnique(new BlimpInputHandlerWrapper(
-      main_task_runner_, input_manager_weak_ptr, input_handler.get()));
+  input_handler_wrapper_ = base::MakeUnique<BlimpInputHandlerWrapper>(
+      main_task_runner_, input_manager_weak_ptr, input_handler.get());
 }
 
 void BlimpInputManager::HandleWebGestureEventOnCompositorThread(

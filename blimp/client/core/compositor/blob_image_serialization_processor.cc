@@ -91,8 +91,8 @@ BlobImageSerializationProcessor::CreateEnginePictureCache() {
 
 std::unique_ptr<cc::ClientPictureCache>
 BlobImageSerializationProcessor::CreateClientPictureCache() {
-  return base::WrapUnique(new BlimpClientPictureCache(
-      &BlobImageSerializationProcessor::InstallPixelRefProc));
+  return base::MakeUnique<BlimpClientPictureCache>(
+      &BlobImageSerializationProcessor::InstallPixelRefProc);
 }
 
 }  // namespace client

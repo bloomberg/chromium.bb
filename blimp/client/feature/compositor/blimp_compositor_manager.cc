@@ -73,7 +73,7 @@ void BlimpCompositorManager::GenerateLayerTreeSettings(
 std::unique_ptr<BlimpCompositor> BlimpCompositorManager::CreateBlimpCompositor(
     int render_widget_id,
     BlimpCompositorClient* client) {
-  return base::WrapUnique(new BlimpCompositor(render_widget_id, client));
+  return base::MakeUnique<BlimpCompositor>(render_widget_id, client);
 }
 
 void BlimpCompositorManager::OnRenderWidgetCreated(int render_widget_id) {

@@ -187,8 +187,8 @@ void EngineNetworkComponents::Initialize(
       base::MakeUnique<EngineAuthenticationHandler>(this, client_token);
 
   // Plumb unauthenticated connections to |authentication_handler_|.
-  connection_manager_ = base::WrapUnique(
-      new EngineConnectionManager(authentication_handler_.get()));
+  connection_manager_ =
+      base::MakeUnique<EngineConnectionManager>(authentication_handler_.get());
 
   blob_channel_service_ =
       base::MakeUnique<BlobChannelService>(blob_channel_sender, ui_task_runner);
@@ -580,9 +580,9 @@ void BlimpEngineSession::PlatformSetContents(
     parent->AddChild(content);
   content->Show();
 
-  tab_ = base::WrapUnique(new Tab(std::move(new_contents), target_tab_id,
-                                  &render_widget_feature_,
-                                  navigation_message_sender_.get()));
+  tab_ = base::MakeUnique<Tab>(std::move(new_contents), target_tab_id,
+                               &render_widget_feature_,
+                               navigation_message_sender_.get());
 }
 
 }  // namespace engine

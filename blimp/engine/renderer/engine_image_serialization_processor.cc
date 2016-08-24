@@ -100,7 +100,7 @@ EngineImageSerializationProcessor::~EngineImageSerializationProcessor() {
 
 std::unique_ptr<cc::EnginePictureCache>
 EngineImageSerializationProcessor::CreateEnginePictureCache() {
-  return base::WrapUnique(new BlimpEnginePictureCache(this));
+  return base::MakeUnique<BlimpEnginePictureCache>(this);
 }
 
 std::unique_ptr<cc::ClientPictureCache>

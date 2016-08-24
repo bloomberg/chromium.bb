@@ -62,8 +62,7 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
 std::unique_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(accepted_socket_);
-  return base::WrapUnique(
-      new StreamSocketConnection(std::move(accepted_socket_)));
+  return base::MakeUnique<StreamSocketConnection>(std::move(accepted_socket_));
 }
 
 const char* TCPEngineTransport::GetName() const {

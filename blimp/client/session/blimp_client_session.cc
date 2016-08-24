@@ -47,9 +47,8 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
   net_components_.reset(new ClientNetworkComponents(
-      base::WrapUnique(new CrossThreadNetworkEventObserver(
-          weak_factory_.GetWeakPtr(),
-          base::SequencedTaskRunnerHandle::Get()))));
+      base::MakeUnique<CrossThreadNetworkEventObserver>(
+          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get())));
 
   assignment_source_.reset(new AssignmentSource(
       assigner_endpoint, io_thread_.task_runner(), io_thread_.task_runner()));
@@ -105,9 +104,8 @@ void BlimpClientSession::OnAssignmentConnectionAttempted(
     const Assignment& assignment) {}
 
 void BlimpClientSession::RegisterFeatures() {
-  thread_pipe_manager_ = base::WrapUnique(
-      new ThreadPipeManager(io_thread_.task_runner(),
-                            net_components_->GetBrowserConnectionHandler()));
+  thread_pipe_manager_ = base::MakeUnique<ThreadPipeManager>(
+      io_thread_.task_runner(), net_components_->GetBrowserConnectionHandler());
 
   // Register features' message senders and receivers.
   tab_control_feature_->set_outgoing_message_processor(

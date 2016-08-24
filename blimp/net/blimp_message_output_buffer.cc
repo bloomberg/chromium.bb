@@ -74,7 +74,7 @@ void BlimpMessageOutputBuffer::ProcessMessage(
                   << " bytes.";
 
   write_buffer_.push_back(
-      base::WrapUnique(new BufferEntry(std::move(message), callback)));
+      base::MakeUnique<BufferEntry>(std::move(message), callback));
 
   // Write the message
   if (write_buffer_.size() == 1 && output_processor_) {

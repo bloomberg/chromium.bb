@@ -31,7 +31,7 @@ class BlimpGeolocationDelegate : public device::GeolocationDelegate {
 
   std::unique_ptr<device::LocationProvider> OverrideSystemLocationProvider()
       final {
-    return base::WrapUnique(new BlimpLocationProvider(feature_delegate_));
+    return base::MakeUnique<BlimpLocationProvider>(feature_delegate_);
   }
 
  private:
