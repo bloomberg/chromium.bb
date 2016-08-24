@@ -205,7 +205,7 @@ MockDataReductionProxyService::MockDataReductionProxyService(
     : DataReductionProxyService(settings,
                                 prefs,
                                 request_context,
-                                base::WrapUnique(new TestDataStore()),
+                                base::MakeUnique<TestDataStore>(),
                                 task_runner,
                                 task_runner,
                                 task_runner,
@@ -581,14 +581,14 @@ std::unique_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     DataReductionProxySettings* settings) {
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
-    return base::WrapUnique(new MockDataReductionProxyService(
+    return base::MakeUnique<MockDataReductionProxyService>(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
-        task_runner_));
+        task_runner_);
   } else {
-    return base::WrapUnique(new DataReductionProxyService(
+    return base::MakeUnique<DataReductionProxyService>(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
         base::WrapUnique(new TestDataStore()), task_runner_, task_runner_,
-        task_runner_, base::TimeDelta()));
+        task_runner_, base::TimeDelta());
   }
 }
 
@@ -599,13 +599,13 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
   // |request_context_storage| takes ownership of the network delegate.
   request_context_storage->set_network_delegate(
       io_data()->CreateNetworkDelegate(
-          base::WrapUnique(new net::TestNetworkDelegate()), true));
+          base::MakeUnique<net::TestNetworkDelegate>(), true));
 
   request_context_storage->set_job_factory(
-      base::WrapUnique(new net::URLRequestInterceptingJobFactory(
+      base::MakeUnique<net::URLRequestInterceptingJobFactory>(
           std::unique_ptr<net::URLRequestJobFactory>(
               new net::URLRequestJobFactoryImpl()),
-          io_data()->CreateInterceptor())));
+          io_data()->CreateInterceptor()));
 }
 
 void DataReductionProxyTestContext::

@@ -656,7 +656,7 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
   for (const auto& connection_usage : data_usage->connection_usage()) {
     for (const auto& site_usage : connection_usage.site_usage()) {
       data_usage_map_.set(site_usage.hostname(),
-                          base::WrapUnique(new PerSiteDataUsage(site_usage)));
+                          base::MakeUnique<PerSiteDataUsage>(site_usage));
     }
   }
 
@@ -1144,7 +1144,7 @@ void DataReductionProxyCompressionStats::RecordDataUsage(
 
   std::string normalized_host = NormalizeHostname(data_usage_host);
   auto j = data_usage_map_.add(normalized_host,
-                               base::WrapUnique(new PerSiteDataUsage()));
+                               base::MakeUnique<PerSiteDataUsage>());
   PerSiteDataUsage* per_site_usage = j.first->second;
   per_site_usage->set_hostname(normalized_host);
   per_site_usage->set_original_size(per_site_usage->original_size() +
@@ -1201,7 +1201,7 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // This use case is unlikely to occur in practice since current data usage
     // should have sufficient time to load before user tries to view data usage.
     get_data_usage_callback.Run(
-        base::WrapUnique(new std::vector<DataUsageBucket>()));
+        base::MakeUnique<std::vector<DataUsageBucket>>());
     return;
   }
 

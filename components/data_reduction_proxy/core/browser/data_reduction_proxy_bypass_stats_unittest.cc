@@ -107,8 +107,8 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
  protected:
   std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
-    return base::WrapUnique(new DataReductionProxyBypassStats(
-        test_context_->config(), test_context_->unreachable_callback()));
+    return base::MakeUnique<DataReductionProxyBypassStats>(
+        test_context_->config(), test_context_->unreachable_callback());
   }
 
   net::URLRequest* url_request() {

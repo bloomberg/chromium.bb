@@ -462,8 +462,9 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
   };
   std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
   for (MockRead* mock_reads : mock_reads_array) {
-    socket_data_providers.push_back(base::WrapUnique(
-        new net::StaticSocketDataProvider(mock_reads, 3, nullptr, 0)));
+    socket_data_providers.push_back(
+        base::MakeUnique<net::StaticSocketDataProvider>(mock_reads, 3, nullptr,
+                                                        0));
     mock_socket_factory()->AddSocketDataProvider(
         socket_data_providers.back().get());
   }

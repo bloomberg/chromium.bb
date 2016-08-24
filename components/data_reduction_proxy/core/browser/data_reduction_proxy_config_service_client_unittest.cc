@@ -300,25 +300,25 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   void AddMockSuccess() {
     socket_data_providers_.push_back(
-        (base::WrapUnique(new net::StaticSocketDataProvider(
-            success_reads_, arraysize(success_reads_), nullptr, 0))));
+        (base::MakeUnique<net::StaticSocketDataProvider>(
+            success_reads_, arraysize(success_reads_), nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }
 
   void AddMockPreviousSuccess() {
     socket_data_providers_.push_back(
-        (base::WrapUnique(new net::StaticSocketDataProvider(
+        (base::MakeUnique<net::StaticSocketDataProvider>(
             previous_success_reads_, arraysize(previous_success_reads_),
-            nullptr, 0))));
+            nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }
 
   void AddMockFailure() {
     socket_data_providers_.push_back(
-        (base::WrapUnique(new net::StaticSocketDataProvider(
-            not_found_reads_, arraysize(not_found_reads_), nullptr, 0))));
+        (base::MakeUnique<net::StaticSocketDataProvider>(
+            not_found_reads_, arraysize(not_found_reads_), nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
   }

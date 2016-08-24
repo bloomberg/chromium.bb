@@ -33,9 +33,8 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(
-          base::WrapUnique(
-              new TestDataReductionProxyParams(params_flags,
-                                               params_definitions)),
+          base::MakeUnique<TestDataReductionProxyParams>(params_flags,
+                                                         params_definitions),
           io_task_runner,
           net_log,
           configurator,
@@ -78,8 +77,8 @@ void TestDataReductionProxyConfig::GetNetworkList(
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
-  config_values_ = base::WrapUnique(new TestDataReductionProxyParams(
-      flags, TestDataReductionProxyParams::HAS_EVERYTHING));
+  config_values_ = base::MakeUnique<TestDataReductionProxyParams>(
+      flags, TestDataReductionProxyParams::HAS_EVERYTHING);
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {

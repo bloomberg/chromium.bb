@@ -223,9 +223,9 @@ void DataReductionProxyIOData::SetPingbackReportingFraction(
 std::unique_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return base::WrapUnique(new DataReductionProxyInterceptor(
+  return base::MakeUnique<DataReductionProxyInterceptor>(
       config_.get(), config_client_.get(), bypass_stats_.get(),
-      event_creator_.get()));
+      event_creator_.get());
 }
 
 std::unique_ptr<DataReductionProxyNetworkDelegate>
@@ -250,9 +250,9 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 std::unique_ptr<DataReductionProxyDelegate>
 DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return base::WrapUnique(new DataReductionProxyDelegate(
+  return base::MakeUnique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_));
+      bypass_stats_.get(), net_log_);
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.
