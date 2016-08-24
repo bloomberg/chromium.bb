@@ -269,6 +269,10 @@ void PaletteTray::HidePalette() {
   bubble_.reset();
 }
 
+bool PaletteTray::ShouldBlockShelfAutoHide() const {
+  return !!bubble_;
+}
+
 void PaletteTray::OnActiveToolChanged() {
   UpdateTrayIcon();
 }

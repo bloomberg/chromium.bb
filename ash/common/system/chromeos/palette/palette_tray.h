@@ -53,6 +53,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // PaletteToolManager::Delegate:
   void HidePalette() override;
 
+  // Returns true if the shelf should not autohide.
+  bool ShouldBlockShelfAutoHide() const;
+
  private:
   // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;

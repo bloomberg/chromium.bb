@@ -171,6 +171,11 @@ bool StatusAreaWidget::ShouldShowShelf() const {
        web_notification_tray_->ShouldBlockShelfAutoHide()))
     return true;
 
+#if defined(OS_CHROMEOS)
+  if (palette_tray_ && palette_tray_->ShouldBlockShelfAutoHide())
+    return true;
+#endif
+
   if (!wm_shelf_->IsVisible())
     return false;
 
