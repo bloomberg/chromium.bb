@@ -62,14 +62,9 @@ WidevineCdm\_platform_specific\win_x86\widevinecdmadapter.dll: %(VersionDir)s\Wi
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
 WidevineCdm\_platform_specific\win_x64\widevinecdmadapter.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
 #
-# Pepper Flash sub-dir.
+# Win8+ sub-dir.
 #
-PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
-PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
-#
-# Win8 sub-dir.
-#
-# All or none of the following 3 files need to be present as the creation of
+# All or none of the following files need to be present as the creation of
 # VisualElementsManifest.xml is based on the existence of
 # %(VersionDir)\VisualElements. On a similar note, no other files should be
 # packaged in this directory.

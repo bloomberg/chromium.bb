@@ -255,14 +255,14 @@ if (!is_android && !is_mac) {
       ":packed_extra_resources",
       ":packed_resources",
     ]
-    deps += [
-      "//components/startup_metric_utils/browser:lib",
+    deps += [ "//components/startup_metric_utils/browser:lib" ]
 
-      # Precompiled plugins that need to get copied to the output directory.
-      # On Mac, internal plugins go inside the framework, so these
-      # dependencies are on chrome.dll.
-      "//third_party/adobe/flash:flapper_binaries",
-    ]
+    # Precompiled plugins that need to get copied to the output directory.
+    # On Mac, internal plugins go inside the framework, so these
+    # dependencies are on chrome.dll. On Windows, these are not bundled.
+    if (!is_win) {
+      deps += [ "//third_party/adobe/flash:flapper_binaries" ]
+    }
 
     data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]
 
