@@ -67,10 +67,10 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
   const aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size][type][ref];
   const aom_prob *prob;
-#if CONFIG_RANS
-  const rans_lut(*coef_cdfs)[COEFF_CONTEXTS] =
+#if CONFIG_RANS || CONFIG_DAALA_EC
+  const aom_cdf_prob (*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       fc->coef_cdfs[tx_size][type][ref];
-  const rans_lut *cdf;
+  const aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
 #endif  // CONFIG_RANS
   unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS];
@@ -146,7 +146,7 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
       prob = coef_probs[band][ctx];
     }
 
-#if CONFIG_RANS
+#if CONFIG_RANS || CONFIG_DAALA_EC
     cdf = &coef_cdfs[band][ctx];
     token =
         ONE_TOKEN + aom_read_symbol(r, *cdf, CATEGORY6_TOKEN - ONE_TOKEN + 1);

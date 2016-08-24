@@ -176,9 +176,10 @@ typedef unsigned int av1_coeff_count_model
 
 void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
 
-#if CONFIG_RANS
-typedef rans_lut coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS];
-extern const AnsP10
+#if CONFIG_RANS || CONFIG_DAALA_EC
+typedef aom_cdf_prob
+    coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][ENTROPY_TOKENS];
+extern const aom_cdf_prob
     av1_pareto8_token_probs[COEFF_PROB_MODELS][ENTROPY_TOKENS - 2];
 struct frame_contexts;
 void av1_coef_pareto_cdfs(struct frame_contexts *fc);

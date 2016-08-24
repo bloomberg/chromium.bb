@@ -391,14 +391,14 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
   while (p < stop && p->token != EOSB_TOKEN) {
     const uint8_t token = p->token;
     aom_tree_index index = 0;
-#if !CONFIG_RANS
+#if !CONFIG_RANS && !CONFIG_DAALA_EC
     const struct av1_token *const coef_encoding = &av1_coef_encodings[token];
     int coef_value = coef_encoding->value;
     int coef_length = coef_encoding->len;
 #endif  // !CONFIG_RANS
     const av1_extra_bit *const extra_bits = &extra_bits_table[token];
 
-#if CONFIG_RANS
+#if CONFIG_RANS || CONFIG_DAALA_EC
     if (!p->skip_eob_node) aom_write(w, token != EOB_TOKEN, p->context_tree[0]);
 
     if (token != EOB_TOKEN) {
@@ -1229,7 +1229,7 @@ static void update_coef_probs_common(aom_writer *const bc, AV1_COMP *cpi,
     }
     default: assert(0);
   }
-#if CONFIG_RANS
+#if CONFIG_RANS || CONFIG_DAALA_EC
   av1_coef_pareto_cdfs(cpi->common.fc);
 #endif  // CONFIG_RANS
 }
