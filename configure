@@ -266,6 +266,7 @@ EXPERIMENT_LIST="
     daala_ec
     parallel_deblocking
     cb4x4
+    palette
 "
 CONFIG_LIST="
     dependency_tracking

@@ -28,6 +28,14 @@ extern "C" {
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
 
+#if CONFIG_PALETTE
+#define PALETTE_COLOR_CONTEXTS 16
+#define PALETTE_MAX_SIZE 8
+#define PALETTE_BLOCK_SIZES (BLOCK_64X64 - BLOCK_8X8 + 1)
+#define PALETTE_Y_MODE_CONTEXTS 3
+#define PALETTE_MAX_BLOCK_SIZE (64 * 64)
+#endif  // CONFIG_PALETTE
+
 struct AV1Common;
 
 struct tx_probs {
@@ -151,6 +159,20 @@ typedef struct FRAME_COUNTS {
 extern const aom_prob
     av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
 
+#if CONFIG_PALETTE
+extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
+                                                     [PALETTE_Y_MODE_CONTEXTS];
+extern const aom_prob av1_default_palette_uv_mode_prob[2];
+extern const aom_prob
+    av1_default_palette_y_size_prob[PALETTE_BLOCK_SIZES][PALETTE_SIZES - 1];
+extern const aom_prob
+    av1_default_palette_uv_size_prob[PALETTE_BLOCK_SIZES][PALETTE_SIZES - 1];
+extern const aom_prob av1_default_palette_y_color_prob
+    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1];
+extern const aom_prob av1_default_palette_uv_color_prob
+    [PALETTE_MAX_SIZE - 1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1];
+#endif  // CONFIG_PALETTE
+
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
 #if CONFIG_MOTION_VAR
@@ -159,6 +181,12 @@ extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
 extern const aom_tree_index
     av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
+
+#if CONFIG_PALETTE
+extern const aom_tree_index av1_palette_size_tree[TREE_SIZE(PALETTE_SIZES)];
+extern const aom_tree_index
+    av1_palette_color_tree[PALETTE_MAX_SIZE - 1][TREE_SIZE(PALETTE_COLORS)];
+#endif  // CONFIG_PALETTE
 
 #if CONFIG_DAALA_EC
 extern int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
@@ -191,6 +219,11 @@ static INLINE int av1_ceil_log2(int n) {
   }
   return i;
 }
+
+#if CONFIG_PALETTE
+int av1_get_palette_color_context(const uint8_t *color_map, int cols, int r,
+                                  int c, int n, int *color_order);
+#endif  // CONFIG_PALETTE
 
 #ifdef __cplusplus
 }  // extern "C"

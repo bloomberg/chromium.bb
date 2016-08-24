@@ -493,6 +493,15 @@ typedef struct AV1_COMP {
   int switchable_interp_costs[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
   int partition_cost[PARTITION_CONTEXTS][PARTITION_TYPES];
 
+#if CONFIG_PALETTE
+  int palette_y_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
+  int palette_uv_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
+  int palette_y_color_cost[PALETTE_MAX_SIZE -
+                           1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS];
+  int palette_uv_color_cost[PALETTE_MAX_SIZE -
+                            1][PALETTE_COLOR_CONTEXTS][PALETTE_COLORS];
+#endif  // CONFIG_PALETTE
+
   int multi_arf_allowed;
   int multi_arf_enabled;
   int multi_arf_last_grp_enabled;

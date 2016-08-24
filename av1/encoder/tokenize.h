@@ -54,6 +54,11 @@ int av1_has_high_freq_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 struct AV1_COMP;
 struct ThreadData;
 
+#if CONFIG_PALETTE
+void av1_tokenize_palette_sb(struct ThreadData *const td, BLOCK_SIZE bsize,
+                             int plane, TOKENEXTRA **t);
+#endif  // CONFIG_PALETTE
+
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      TOKENEXTRA **t, int dry_run, BLOCK_SIZE bsize);
 

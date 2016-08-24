@@ -492,6 +492,12 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
   if (!is_inter_block(mbmi)) {
     int plane;
+#if CONFIG_PALETTE
+    for (plane = 0; plane <= 1; ++plane) {
+      if (mbmi->palette_mode_info.palette_size[plane])
+        av1_decode_palette_tokens(xd, plane, r);
+    }
+#endif  // CONFIG_PALETTE
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size =
@@ -1280,6 +1286,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
+#if CONFIG_PALETTE
+      tile_data->xd.plane[0].color_index_map = tile_data->color_index_map[0];
+      tile_data->xd.plane[1].color_index_map = tile_data->color_index_map[1];
+#endif  // CONFIG_PALETTE
     }
   }
 
@@ -1504,6 +1514,10 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
+#if CONFIG_PALETTE
+      tile_data->xd.plane[0].color_index_map = tile_data->color_index_map[0];
+      tile_data->xd.plane[1].color_index_map = tile_data->color_index_map[1];
+#endif  // CONFIG_PALETTE
 
       worker->had_error = 0;
       if (i == num_workers - 1 || n == tile_cols - 1) {
@@ -1727,6 +1741,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
       pbi->need_resync = 0;
     }
+#if CONFIG_PALETTE
+    if (frame_is_intra_only(cm))
+      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#endif  // CONFIG_PALETTE
   } else {
     cm->intra_only = cm->show_frame ? 0 : aom_rb_read_bit(rb);
 

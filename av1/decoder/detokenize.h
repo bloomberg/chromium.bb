@@ -20,6 +20,10 @@
 extern "C" {
 #endif
 
+#if CONFIG_PALETTE
+void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane, aom_reader *r);
+#endif  // CONFIG_PALETTE
+
 int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const SCAN_ORDER *sc,
                             int x, int y, TX_SIZE tx_size, aom_reader *r,
                             int seg_id);

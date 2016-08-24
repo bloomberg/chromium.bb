@@ -49,6 +49,41 @@ static struct av1_token partition_encodings[PARTITION_TYPES];
 #if !CONFIG_REF_MV
 static struct av1_token inter_mode_encodings[INTER_MODES];
 #endif
+
+#if CONFIG_PALETTE
+static const struct av1_token palette_size_encodings[] = {
+  { 0, 1 }, { 2, 2 }, { 6, 3 }, { 14, 4 }, { 30, 5 }, { 62, 6 }, { 63, 6 },
+};
+static const struct av1_token
+    palette_color_encodings[PALETTE_MAX_SIZE - 1][PALETTE_MAX_SIZE] = {
+      { { 0, 1 }, { 1, 1 } },                                  // 2 colors
+      { { 0, 1 }, { 2, 2 }, { 3, 2 } },                        // 3 colors
+      { { 0, 1 }, { 2, 2 }, { 6, 3 }, { 7, 3 } },              // 4 colors
+      { { 0, 1 }, { 2, 2 }, { 6, 3 }, { 14, 4 }, { 15, 4 } },  // 5 colors
+      { { 0, 1 },
+        { 2, 2 },
+        { 6, 3 },
+        { 14, 4 },
+        { 30, 5 },
+        { 31, 5 } },  // 6 colors
+      { { 0, 1 },
+        { 2, 2 },
+        { 6, 3 },
+        { 14, 4 },
+        { 30, 5 },
+        { 62, 6 },
+        { 63, 6 } },  // 7 colors
+      { { 0, 1 },
+        { 2, 2 },
+        { 6, 3 },
+        { 14, 4 },
+        { 30, 5 },
+        { 62, 6 },
+        { 126, 7 },
+        { 127, 7 } },  // 8 colors
+    };
+#endif  // CONFIG_PALETTE
+
 #if CONFIG_MOTION_VAR
 static struct av1_token motion_mode_encodings[MOTION_MODES];
 #endif  // CONFIG_MOTION_VAR
@@ -320,6 +355,22 @@ static void update_ext_tx_probs(AV1_COMMON *cm, aom_writer *w) {
   }
 }
 
+#if CONFIG_PALETTE
+static void pack_palette_tokens(aom_writer *w, TOKENEXTRA **tp, int n,
+                                int num) {
+  int i;
+  TOKENEXTRA *p = *tp;
+
+  for (i = 0; i < num; ++i) {
+    av1_write_token(w, av1_palette_color_tree[n - 2], p->context_tree,
+                    &palette_color_encodings[n - 2][p->token]);
+    ++p;
+  }
+
+  *tp = p;
+}
+#endif  // CONFIG_PALETTE
+
 static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx) {
@@ -510,7 +561,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_EXT_INTRA
+#if CONFIG_EXT_INTRA || CONFIG_PALETTE
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
   const int l = get_unsigned_bits(n);
   const int m = (1 << l) - n;
@@ -523,7 +574,9 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
     aom_write_literal(w, (v - m) & 1, 1);
   }
 }
+#endif  // CONFIG_EXT_INTRA || CONFIG_PALETTE
 
+#if CONFIG_EXT_INTRA
 static void write_intra_angle_info(const MB_MODE_INFO *const mbmi,
                                    aom_writer *w) {
   if (mbmi->sb_type < BLOCK_8X8) return;
@@ -567,6 +620,53 @@ static void write_switchable_interp_filter(AV1_COMP *const cpi,
     ++cpi->interp_filter_selected[0][mbmi->interp_filter];
   }
 }
+
+#if CONFIG_PALETTE
+static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                                    const MODE_INFO *const mi, aom_writer *w) {
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  int palette_ctx = 0;
+  int n, i;
+  if (mbmi->mode == DC_PRED) {
+    n = pmi->palette_size[0];
+    if (above_mi)
+      palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    if (left_mi)
+      palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    aom_write(w, n > 0,
+              av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx]);
+    if (n > 0) {
+      av1_write_token(w, av1_palette_size_tree,
+                      av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
+                      &palette_size_encodings[n - 2]);
+      for (i = 0; i < n; ++i)
+        aom_write_literal(w, pmi->palette_colors[i], cm->bit_depth);
+      write_uniform(w, n, pmi->palette_first_color_idx[0]);
+    }
+  }
+  if (mbmi->uv_mode == DC_PRED) {
+    n = pmi->palette_size[1];
+    aom_write(w, n > 0,
+              av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0]);
+    if (n > 0) {
+      av1_write_token(w, av1_palette_size_tree,
+                      av1_default_palette_uv_size_prob[bsize - BLOCK_8X8],
+                      &palette_size_encodings[n - 2]);
+      for (i = 0; i < n; ++i) {
+        aom_write_literal(w, pmi->palette_colors[PALETTE_MAX_SIZE + i],
+                          cm->bit_depth);
+        aom_write_literal(w, pmi->palette_colors[2 * PALETTE_MAX_SIZE + i],
+                          cm->bit_depth);
+      }
+      write_uniform(w, n, pmi->palette_first_color_idx[1]);
+    }
+  }
+}
+#endif  // CONFIG_PALETTE
 
 static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
                                 aom_writer *w) {
@@ -631,6 +731,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_EXT_INTRA
     write_intra_angle_info(mbmi, w);
 #endif  // CONFIG_EXT_INTRA
+
+#if CONFIG_PALETTE
+    if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+      write_palette_mode_info(cm, xd, mi, w);
+#endif  // CONFIG_PALETTE
   } else {
     int16_t mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
     write_ref_frames(cm, xd, w);
@@ -784,6 +889,11 @@ static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   write_intra_angle_info(mbmi, w);
 #endif  // CONFIG_EXT_INTRA
 
+#if CONFIG_PALETTE
+  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+    write_palette_mode_info(cm, xd, mi, w);
+#endif  // CONFIG_PALETTE
+
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     av1_write_token(
@@ -816,6 +926,21 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
   } else {
     pack_inter_mode_mvs(cpi, m, w);
   }
+
+#if CONFIG_PALETTE
+  for (plane = 0; plane <= 1; ++plane) {
+    if (m->mbmi.palette_mode_info.palette_size[plane] > 0) {
+      const int rows = (4 * num_4x4_blocks_high_lookup[m->mbmi.sb_type]) >>
+                       (xd->plane[plane].subsampling_y);
+      const int cols = (4 * num_4x4_blocks_wide_lookup[m->mbmi.sb_type]) >>
+                       (xd->plane[plane].subsampling_x);
+      assert(*tok < tok_end);
+      pack_palette_tokens(w, tok, m->mbmi.palette_mode_info.palette_size[plane],
+                          rows * cols - 1);
+      assert(*tok < tok_end);
+    }
+  }
+#endif  // CONFIG_PALETTE
 
   if (!m->mbmi.skip) {
     assert(*tok < tok_end);
@@ -1649,6 +1774,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     write_sync_code(wb);
     write_bitdepth_colorspace_sampling(cm, wb);
     write_frame_size(cm, wb);
+#if CONFIG_PALETTE
+    if (frame_is_intra_only(cm))
+      aom_wb_write_bit(wb, cm->allow_screen_content_tools);
+#endif  // CONFIG_PALETTE
   } else {
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
 

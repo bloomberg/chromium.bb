@@ -944,6 +944,10 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
     p[i].eobs = ctx->eobs[i];
   }
 
+#if CONFIG_PALETTE
+  for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
+#endif  // CONFIG_PALETTE
+
   // Restore the coding context of the MB to that that was in place
   // when the mode was picked for it
   for (y = 0; y < mi_height; y++)
@@ -1016,6 +1020,10 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     pd[i].dqcoeff = ctx->dqcoeff[i];
     p[i].eobs = ctx->eobs[i];
   }
+
+#if CONFIG_PALETTE
+  for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
+#endif  // CONFIG_PALETTE
 
   ctx->skippable = 0;
   ctx->pred_pixel_ready = 0;
@@ -2997,7 +3005,19 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     mbmi->skip = 1;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane)
       av1_encode_intra_block_plane(x, AOMMAX(bsize, BLOCK_8X8), plane);
-
+#if CONFIG_PALETTE
+    if (bsize >= BLOCK_8X8 && output_enabled) {
+      for (plane = 0; plane <= 1; ++plane) {
+        if (mbmi->palette_mode_info.palette_size[plane] > 0) {
+          mbmi->palette_mode_info.palette_first_color_idx[plane] =
+              xd->plane[plane].color_index_map[0];
+          // TODO(huisu): this increases the use of token buffer. Needs stretch
+          // test to verify.
+          av1_tokenize_palette_sb(td, bsize, plane, t);
+        }
+      }
+    }
+#endif  // CONFIG_PALETTE
     av1_tokenize_sb(cpi, td, t, !output_enabled, AOMMAX(bsize, BLOCK_8X8));
   } else {
     int ref;

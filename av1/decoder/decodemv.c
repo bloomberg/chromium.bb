@@ -329,7 +329,7 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
   }
 }
 
-#if CONFIG_EXT_INTRA
+#if CONFIG_EXT_INTRA || CONFIG_PALETTE
 static INLINE int read_uniform(aom_reader *r, int n) {
   const int l = get_unsigned_bits(n);
   const int m = (1 << l) - n;
@@ -338,7 +338,60 @@ static INLINE int read_uniform(aom_reader *r, int n) {
   assert(l != 0);
   return (v < m) ? v : ((v << 1) - m + aom_read_literal(r, 1));
 }
+#endif  // CONFIG_EXT_INTRA || CONFIG_PALETTE
 
+#if CONFIG_PALETTE
+static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                                   aom_reader *r) {
+  MODE_INFO *const mi = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  int i, n, palette_ctx = 0;
+  PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+
+  if (mbmi->mode == DC_PRED) {
+    if (above_mi)
+      palette_ctx += (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    if (left_mi)
+      palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    if (aom_read(
+            r,
+            av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx])) {
+      pmi->palette_size[0] =
+          aom_read_tree(r, av1_palette_size_tree,
+                        av1_default_palette_y_size_prob[bsize - BLOCK_8X8]) +
+          2;
+      n = pmi->palette_size[0];
+      for (i = 0; i < n; ++i)
+        pmi->palette_colors[i] = aom_read_literal(r, cm->bit_depth);
+      xd->plane[0].color_index_map[0] = read_uniform(r, n);
+      assert(xd->plane[0].color_index_map[0] < n);
+    }
+  }
+  if (mbmi->uv_mode == DC_PRED) {
+    if (aom_read(r,
+                 av1_default_palette_uv_mode_prob[pmi->palette_size[0] > 0])) {
+      pmi->palette_size[1] =
+          aom_read_tree(r, av1_palette_size_tree,
+                        av1_default_palette_uv_size_prob[bsize - BLOCK_8X8]) +
+          2;
+      n = pmi->palette_size[1];
+      for (i = 0; i < n; ++i) {
+        pmi->palette_colors[PALETTE_MAX_SIZE + i] =
+            aom_read_literal(r, cm->bit_depth);
+        pmi->palette_colors[2 * PALETTE_MAX_SIZE + i] =
+            aom_read_literal(r, cm->bit_depth);
+      }
+      xd->plane[1].color_index_map[0] = read_uniform(r, n);
+      assert(xd->plane[1].color_index_map[0] < n);
+    }
+  }
+}
+#endif  // CONFIG_PALETTE
+
+#if CONFIG_EXT_INTRA
 static void read_intra_angle_info(MB_MODE_INFO *const mbmi, aom_reader *r) {
   mbmi->intra_angle_delta[0] = 0;
   mbmi->intra_angle_delta[1] = 0;
@@ -409,6 +462,13 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(mbmi, r);
 #endif  // CONFIG_EXT_INTRA
+
+#if CONFIG_PALETTE
+  mbmi->palette_mode_info.palette_size[0] = 0;
+  mbmi->palette_mode_info.palette_size[1] = 0;
+  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+    read_palette_mode_info(cm, xd, r);
+#endif  // CONFIG_PALETTE
 
   if (mbmi->tx_size < TX_32X32 && cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -643,6 +703,13 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   }
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
+#if CONFIG_PALETTE
+  mbmi->palette_mode_info.palette_size[0] = 0;
+  mbmi->palette_mode_info.palette_size[1] = 0;
+  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+    read_palette_mode_info(cm, xd, r);
+#endif  // CONFIG_PALETTE
+
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(mbmi, r);
 #endif  // CONFIG_EXT_INTRA
@@ -761,6 +828,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int ref, is_compound;
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t mode_ctx = 0;
+
+#if CONFIG_PALETTE
+  mbmi->palette_mode_info.palette_size[0] = 0;
+  mbmi->palette_mode_info.palette_size[1] = 0;
+#endif  // CONFIG_PALETTE
 
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   is_compound = has_second_ref(mbmi);

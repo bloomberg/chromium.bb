@@ -101,6 +101,22 @@ typedef struct {
 
 typedef int8_t MV_REFERENCE_FRAME;
 
+#if CONFIG_PALETTE
+typedef struct {
+  // Number of base colors for Y (0) and UV (1)
+  uint8_t palette_size[2];
+// Value of base colors for Y, U, and V
+#if CONFIG_AOM_HIGHBITDEPTH
+  uint16_t palette_colors[3 * PALETTE_MAX_SIZE];
+#else
+  uint8_t palette_colors[3 * PALETTE_MAX_SIZE];
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  // Only used by encoder to store the color index of the top left pixel.
+  // TODO(huisu): move this to encoder
+  uint8_t palette_first_color_idx[2];
+} PALETTE_MODE_INFO;
+#endif  // CONFIG_PALETTE
+
 #if CONFIG_REF_MV
 #define MODE_CTX_REF_FRAMES (MAX_REF_FRAMES + COMP_REFS)
 #else
@@ -122,6 +138,10 @@ typedef struct {
 
   // Only for INTRA blocks
   PREDICTION_MODE uv_mode;
+#if CONFIG_PALETTE
+  PALETTE_MODE_INFO palette_mode_info;
+#endif  // CONFIG_PALETTE
+
 #if CONFIG_EXT_INTRA
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t intra_angle_delta[2];
@@ -185,6 +205,9 @@ struct macroblockd_plane {
   ENTROPY_CONTEXT *above_context;
   ENTROPY_CONTEXT *left_context;
   int16_t seg_dequant[MAX_SEGMENTS][2];
+#if CONFIG_PALETTE
+  uint8_t *color_index_map;
+#endif  // CONFIG_PALETTE
 
   // number of 4x4s in current block
   uint16_t n4_w, n4_h;
