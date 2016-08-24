@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.content.ComponentName;
 import android.os.Bundle;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
@@ -38,5 +39,10 @@ public class DownloadActivity extends SnackbarActivity {
     protected void onDestroy() {
         mDownloadManagerUi.onDestroyed();
         super.onDestroy();
+    }
+
+    @VisibleForTesting
+    DownloadManagerUi getDownloadManagerUiForTests() {
+        return mDownloadManagerUi;
     }
 }

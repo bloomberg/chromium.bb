@@ -28,6 +28,12 @@ public interface BackendProvider {
 
         /** See {@link DownloadManagerService#getAllDownloads}. */
         void getAllDownloads(boolean isOffTheRecord);
+
+        /** See {@link DownloadManagerService#checkForExternallyRemovedDownloads}. */
+        void checkForExternallyRemovedDownloads(boolean isOffTheRecord);
+
+        /** See {@link DownloadManagerService#removeDownload}. */
+        void removeDownload(String guid, boolean isOffTheRecord);
     }
 
     /** Interacts with the Offline Pages backend. */

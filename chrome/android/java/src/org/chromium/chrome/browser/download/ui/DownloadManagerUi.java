@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -50,7 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Displays and manages the UI for the download manager.
  */
 
-public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvider {
+public class DownloadManagerUi implements OnMenuItemClickListener {
 
     /**
      * Interface to observe the changes in the download manager ui. This should be implemented by
@@ -68,13 +70,43 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         public void onManagerDestroyed();
     }
 
+    private static class DownloadBackendProvider implements BackendProvider {
+        private OfflinePageDownloadBridge mOfflinePageBridge;
+        private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
+
+        DownloadBackendProvider() {
+            mOfflinePageBridge = new OfflinePageDownloadBridge(
+                    Profile.getLastUsedProfile().getOriginalProfile());
+            mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
+        }
+
+        @Override
+        public DownloadDelegate getDownloadDelegate() {
+            return DownloadManagerService.getDownloadManagerService(
+                    ContextUtils.getApplicationContext());
+        }
+
+        @Override
+        public OfflinePageDownloadBridge getOfflinePageBridge() {
+            return mOfflinePageBridge;
+        }
+
+        @Override
+        public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
+            return mSelectionDelegate;
+        }
+    }
+
     private static final String TAG = "download_ui";
     private static final String DEFAULT_MIME_TYPE = "*/*";
     private static final String MIME_TYPE_DELIMITER = "/";
 
+    private static BackendProvider sProviderForTests;
+
     private final DownloadHistoryAdapter mHistoryAdapter;
     private final FilterAdapter mFilterAdapter;
     private final ObserverList<DownloadUiObserver> mObservers = new ObserverList<>();
+    private final BackendProvider mBackendProvider;
 
     private final Activity mActivity;
     private final boolean mIsOffTheRecord;
@@ -85,23 +117,19 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
     private final RecyclerView mRecyclerView;
 
     private BasicNativePage mNativePage;
-    private OfflinePageDownloadBridge mOfflinePageBridge;
-    private SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
     private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
 
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
         mActivity = activity;
         mIsOffTheRecord = isOffTheRecord;
-        mOfflinePageBridge = new OfflinePageDownloadBridge(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        mBackendProvider =
+                sProviderForTests == null ? new DownloadBackendProvider() : sProviderForTests;
 
         mMainView = (ViewGroup) LayoutInflater.from(activity).inflate(R.layout.download_main, null);
 
-        mSelectionDelegate = new SelectionDelegate<DownloadHistoryItemWrapper>();
-
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
-        mHistoryAdapter.initialize(this);
+        mHistoryAdapter.initialize(mBackendProvider);
         addObserver(mHistoryAdapter);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
@@ -119,8 +147,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
             drawerLayout = (DrawerLayout) mMainView;
             addDrawerListener(drawerLayout);
         }
-        mToolbar.initialize(mSelectionDelegate, 0, drawerLayout, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group);
+        mToolbar.initialize(mBackendProvider.getSelectionDelegate(), 0, drawerLayout,
+                R.id.normal_menu_group, R.id.selection_mode_menu_group);
         addObserver(mToolbar);
 
         mFilterView = (ListView) mMainView.findViewById(R.id.section_list);
@@ -160,10 +188,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
             removeObserver(observer);
         }
 
-        if (mOfflinePageBridge != null) {
-            mOfflinePageBridge.destroy();
-            mOfflinePageBridge = null;
-        }
+        mBackendProvider.getOfflinePageBridge().destroy();
 
         mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
     }
@@ -181,8 +206,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
                 return true;
             }
         }
-        if (mSelectionDelegate.isSelectionEnabled()) {
-            mSelectionDelegate.clearSelection();
+        if (mBackendProvider.getSelectionDelegate().isSelectionEnabled()) {
+            mBackendProvider.getSelectionDelegate().clearSelection();
             return true;
         }
         return false;
@@ -193,22 +218,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
      */
     public ViewGroup getView() {
         return mMainView;
-    }
-
-    @Override
-    public DownloadDelegate getDownloadDelegate() {
-        return DownloadManagerService.getDownloadManagerService(
-                ContextUtils.getApplicationContext());
-    }
-
-    @Override
-    public OfflinePageDownloadBridge getOfflinePageBridge() {
-        return mOfflinePageBridge;
-    }
-
-    @Override
-    public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
-        return mSelectionDelegate;
     }
 
     /**
@@ -235,11 +244,21 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
     }
 
     /**
+     * @see DrawerLayout#openDrawer(int)
+     */
+    @VisibleForTesting
+    public void openDrawer() {
+        if (mMainView instanceof DrawerLayout) {
+            ((DrawerLayout) mMainView).openDrawer(GravityCompat.START);
+        }
+    }
+
+    /**
      * @see DrawerLayout#closeDrawer(int)
      */
     void closeDrawer() {
         if (mMainView instanceof DrawerLayout) {
-            ((DrawerLayout) mMainView).closeDrawer(Gravity.START);
+            ((DrawerLayout) mMainView).closeDrawer(GravityCompat.START);
         }
     }
 
@@ -252,7 +271,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
 
     /** Called when the filter has been changed by the user. */
     void onFilterChanged(int filter) {
-        mSelectionDelegate.clearSelection();
+        mBackendProvider.getSelectionDelegate().clearSelection();
 
         for (DownloadUiObserver observer : mObservers) {
             observer.onFilterChanged(filter);
@@ -282,7 +301,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
     }
 
     private void shareSelectedItems() {
-        List<DownloadHistoryItemWrapper> selectedItems = mSelectionDelegate.getSelectedItems();
+        List<DownloadHistoryItemWrapper> selectedItems =
+                mBackendProvider.getSelectionDelegate().getSelectedItems();
         assert selectedItems.size() > 0;
 
         Intent shareIntent = new Intent();
@@ -382,7 +402,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
         // TODO(twellington): ideally the intent chooser would be started with
         //                    startActivityForResult() and the selection would only be cleared after
         //                    receiving an OK response. See crbug.com/638916.
-        mSelectionDelegate.clearSelection();
+        mBackendProvider.getSelectionDelegate().clearSelection();
 
         recordShareHistograms(selectedItems.size(), selectedItemsFilterType);
     }
@@ -412,7 +432,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
     }
 
     private void deleteSelectedItems() {
-        List<DownloadHistoryItemWrapper> selectedItems = mSelectionDelegate.getSelectedItems();
+        List<DownloadHistoryItemWrapper> selectedItems =
+                mBackendProvider.getSelectionDelegate().getSelectedItems();
         mNumberOfFilesBeingDeleted.addAndGet(selectedItems.size());
 
         for (int i = 0; i < selectedItems.size(); i++) {
@@ -427,14 +448,12 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
                     int remaining = mNumberOfFilesBeingDeleted.decrementAndGet();
                     if (remaining != 0) return;
 
-                    DownloadManagerService service =
-                            DownloadManagerService.getDownloadManagerService(
-                                    mActivity.getApplicationContext());
-                    service.checkForExternallyRemovedDownloads(mIsOffTheRecord);
+                    mBackendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(
+                            mIsOffTheRecord);
                 }
             });
         }
-        mSelectionDelegate.clearSelection();
+        mBackendProvider.getSelectionDelegate().clearSelection();
 
         RecordUserAction.record("Android.DownloadManager.Delete");
     }
@@ -466,5 +485,23 @@ public class DownloadManagerUi implements OnMenuItemClickListener, BackendProvid
 
         RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
                 count, 1, 20, 20);
+    }
+
+    /** Returns the {@link DownloadManagerToolbar}. */
+    @VisibleForTesting
+    public DownloadManagerToolbar getDownloadManagerToolbarForTests() {
+        return mToolbar;
+    }
+
+    /** Returns the {@link DownloadHistoryAdapter}. */
+    @VisibleForTesting
+    public DownloadHistoryAdapter getDownloadHistoryAdapterForTests() {
+        return mHistoryAdapter;
+    }
+
+    /** Sets a BackendProvider that is used in place of a real one. */
+    @VisibleForTesting
+    public static void setProviderForTests(BackendProvider provider) {
+        sProviderForTests = provider;
     }
 }

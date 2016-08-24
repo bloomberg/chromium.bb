@@ -1164,6 +1164,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param downloadGuid GUID of the download.
      * @param isOffTheRecord Whether the download is off the record.
      */
+    @Override
     public void removeDownload(String downloadGuid, boolean isOffTheRecord) {
         nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
         removeDownloadProgress(downloadGuid);
@@ -1519,6 +1520,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Checks if the files associated with any downloads have been removed by an external action.
      * @param isOffTheRecord Whether or not to check downloads for the off the record profile.
      */
+    @Override
     public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
         nativeCheckForExternallyRemovedDownloads(getNativeDownloadManagerService(), isOffTheRecord);
     }

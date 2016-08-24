@@ -18,8 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
-import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.ui.widget.Toast;
@@ -28,10 +26,15 @@ import java.io.File;
 import java.util.Locale;
 
 /** Wraps different classes that contain information about downloads. */
-abstract class DownloadHistoryItemWrapper implements TimedItem {
+public abstract class DownloadHistoryItemWrapper implements TimedItem {
     private static final String TAG = "download_ui";
 
+    protected final BackendProvider mBackendProvider;
     private Long mStableId;
+
+    private DownloadHistoryItemWrapper(BackendProvider provider) {
+        mBackendProvider = provider;
+    }
 
     @Override
     public long getStableId() {
@@ -103,10 +106,11 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         private static final String MIMETYPE_DOCUMENT = "text";
 
         private final DownloadItem mItem;
-        private boolean mIsOffTheRecord;
+        private final boolean mIsOffTheRecord;
         private File mFile;
 
-        DownloadItemWrapper(DownloadItem item, boolean isOffTheRecord) {
+        DownloadItemWrapper(DownloadItem item, boolean isOffTheRecord, BackendProvider provider) {
+            super(provider);
             mItem = item;
             mIsOffTheRecord = isOffTheRecord;
         }
@@ -199,9 +203,7 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public void delete(final Callback<Void> callback) {
             // Tell the DownloadManager to remove the file from history.
-            DownloadManagerService service = DownloadManagerService.getDownloadManagerService(
-                    ContextUtils.getApplicationContext());
-            service.removeDownload(getId(), mIsOffTheRecord);
+            mBackendProvider.getDownloadDelegate().removeDownload(getId(), mIsOffTheRecord);
 
             // Delete the file from storage.
             new AsyncTask<Void, Void, Void>() {
@@ -250,14 +252,13 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
     /** Wraps a {@link OfflinePageDownloadItem}. */
     static class OfflinePageItemWrapper extends DownloadHistoryItemWrapper {
         private final OfflinePageDownloadItem mItem;
-        private final OfflinePageDelegate mBridge;
         private final ComponentName mComponent;
         private File mFile;
 
-        OfflinePageItemWrapper(OfflinePageDownloadItem item, OfflinePageDelegate bridge,
+        OfflinePageItemWrapper(OfflinePageDownloadItem item, BackendProvider provider,
                 ComponentName component) {
+            super(provider);
             mItem = item;
-            mBridge = bridge;
             mComponent = component;
         }
 
@@ -320,13 +321,13 @@ abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public void open() {
-            mBridge.openItem(getId(), mComponent);
+            mBackendProvider.getOfflinePageBridge().openItem(getId(), mComponent);
             recordOpenSuccess();
         }
 
         @Override
         public void delete(Callback<Void> callback) {
-            mBridge.deleteItem(getId());
+            mBackendProvider.getOfflinePageBridge().deleteItem(getId());
             callback.onResult(null);
         }
 

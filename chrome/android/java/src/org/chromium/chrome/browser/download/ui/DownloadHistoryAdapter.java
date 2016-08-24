@@ -40,7 +40,7 @@ import java.util.List;
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
 
     /** Holds onto a View that displays information about a downloaded file. */
-    static class ItemViewHolder extends RecyclerView.ViewHolder {
+    public static class ItemViewHolder extends RecyclerView.ViewHolder {
         public DownloadItemView mItemView;
         public ImageView mIconView;
         public TextView mFilenameView;
@@ -101,7 +101,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         list.clear();
         int[] mItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
         for (DownloadItem item : result) {
-            DownloadItemWrapper wrapper = new DownloadItemWrapper(item, isOffTheRecord);
+            DownloadItemWrapper wrapper = createDownloadItemWrapper(item, isOffTheRecord);
             list.add(wrapper);
             mItemCounts[wrapper.getFilterType()]++;
         }
@@ -123,14 +123,18 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 result.size());
     }
 
-    /** Returns the total size of all the downloaded items. */
+    /** Returns the total size of all non-deleted downloaded items. */
     public long getTotalDownloadSize() {
         long totalSize = 0;
         for (DownloadHistoryItemWrapper wrapper : mDownloadItems) {
-            totalSize += wrapper.getFileSize();
+            assert wrapper instanceof DownloadItemWrapper;
+            DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
+            if (!downloadWrapper.hasBeenExternallyRemoved()) totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mDownloadOffTheRecordItems) {
-            totalSize += wrapper.getFileSize();
+            assert wrapper instanceof DownloadItemWrapper;
+            DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
+            if (!downloadWrapper.hasBeenExternallyRemoved()) totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mOfflinePageItems) {
             totalSize += wrapper.getFileSize();
@@ -206,10 +210,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         int index = findItemIndex(list, item.getId());
         if (index == INVALID_INDEX) {
             // Add a new entry.
-            list.add(new DownloadItemWrapper(item, isOffTheRecord));
+            list.add(createDownloadItemWrapper(item, isOffTheRecord));
         } else {
             // Update the old one.
-            list.set(index, new DownloadItemWrapper(item, isOffTheRecord));
+            list.set(index, createDownloadItemWrapper(item, isOffTheRecord));
         }
 
         filter(mFilter);
@@ -376,8 +380,13 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         return false;
     }
 
+    private DownloadItemWrapper createDownloadItemWrapper(
+            DownloadItem item, boolean isOffTheRecord) {
+        return new DownloadItemWrapper(item, isOffTheRecord, mBackendProvider);
+    }
+
     private OfflinePageItemWrapper createOfflinePageItemWrapper(OfflinePageDownloadItem item) {
-        return new OfflinePageItemWrapper(item, getOfflinePageBridge(), mParentComponent);
+        return new OfflinePageItemWrapper(item, mBackendProvider, mParentComponent);
     }
 
     private void recordDownloadCountHistograms(int[] itemCounts, int totalCount) {
