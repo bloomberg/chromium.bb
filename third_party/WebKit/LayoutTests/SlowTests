@@ -253,7 +253,6 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Slow ]
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Slow ]
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
-
 crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
 
 crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Slow ]
@@ -293,6 +292,7 @@ crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ 
 
 crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
 
+crbug.com/614910 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Slow ]
 crbug.com/614910 virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Slow ]
 
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]

@@ -60,8 +60,6 @@ crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure 
 crbug.com/598051 svg/custom/absolute-sized-content-with-resources.xhtml [ Skip ]
 crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
 
-crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
-
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash Pass ]
 
 crbug.com/619103 fast/repaint/background-resize-width.html [ Failure ]
