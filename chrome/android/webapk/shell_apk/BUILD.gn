@@ -19,7 +19,7 @@ declare_args() {
   webapk_start_url = "https://www.template.com/home_page"
   webapk_name = "Longer Sample WebAPK Name"
   webapk_short_name = "Sample WebAPK"
-  webapk_scope_url = "https://www.template.com"
+  webapk_scope_url = "https://www.template.com/"
   webapk_display_mode = "standalone"
   webapk_orientation = "portrait"
   webapk_theme_color = "2147483648L"  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
@@ -35,6 +35,9 @@ declare_args() {
 
   # Host part of |webapk_scope_url|.
   webapk_scope_url_host = "www.template.com"
+
+  # Path part of |webapk_scope_url|.
+  webapk_scope_url_path = "/"
 
   # Android version code for the WebAPK.
   webapk_version_code = "1"
@@ -66,6 +69,7 @@ jinja_template("shell_apk_manifest") {
     "icon_url=$webapk_icon_url",
     "icon_murmur2_hash=$webapk_icon_murmur2_hash",
     "scope_url_host=$webapk_scope_url_host",
+    "scope_url_path=$webapk_scope_url_path",
     "web_manifest_url=$webapk_web_manifest_url",
     "version_code=$webapk_version_code",
     "version_name=$webapk_version_name",

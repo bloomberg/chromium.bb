@@ -27,7 +27,7 @@
                 <action android:name="android.intent.action.VIEW"></action>
                 <category android:name="android.intent.category.DEFAULT"></category>
                 <category android:name="android.intent.category.BROWSABLE"></category>
-                <data android:scheme="https" android:host="{{ scope_url_host }}" android:pathPrefix="/"></data>
+                <data android:scheme="https" android:host="{{ scope_url_host }}" android:pathPattern="{{ scope_url_path }}.*"></data>
             </intent-filter>
         </activity>
         <activity android:name="org.chromium.webapk.shell_apk.NotificationSettingsLauncherActivity">
