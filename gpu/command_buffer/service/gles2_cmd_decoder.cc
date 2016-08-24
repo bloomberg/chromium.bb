@@ -13032,9 +13032,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       GLint destX = dx;
       GLint destY = dy;
       if (requires_luma_blit) {
-        copy_tex_image_blit_->DoCopyTexSubImage2DToLUMACompatibilityTexture(
+        copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
             this, texture->service_id(), texture->target(), target, format,
-            type, level, destX, destY, copyX, copyY, copyWidth, copyHeight,
+            type, level, destX, destY, 0, copyX, copyY, copyWidth, copyHeight,
             GetBoundReadFrameBufferServiceId(),
             GetBoundReadFrameBufferInternalFormat());
       } else {
@@ -13206,9 +13206,10 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
       if (!InitializeCopyTexImageBlitter("glCopyTexSubImage2D")) {
         return;
       }
-      copy_tex_image_blit_->DoCopyTexSubImage2DToLUMACompatibilityTexture(
+      copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
           this, texture->service_id(), texture->target(), target,
-          internal_format, type, level, xoffset, yoffset, x, y, width, height,
+          internal_format, type, level, destX, destY, 0,
+          copyX, copyY, copyWidth, copyHeight,
           GetBoundReadFrameBufferServiceId(),
           GetBoundReadFrameBufferInternalFormat());
     } else {
@@ -13295,12 +13296,22 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
     DCHECK(texture->IsLevelCleared(target, level));
   }
 
-  // TODO(yunchao): Follow-up CLs are necessary. For instance:
-  // 1. emulation of unsized formats in core profile
-
   if (copyHeight > 0 && copyWidth > 0) {
-    glCopyTexSubImage3D(target, level, destX, destY, zoffset,
-                        copyX, copyY, copyWidth, copyHeight);
+    if (CopyTexImageResourceManager::CopyTexImageRequiresBlit(
+            feature_info_.get(), internal_format)) {
+      if (!InitializeCopyTexImageBlitter(func_name)) {
+        return;
+      }
+      copy_tex_image_blit_->DoCopyTexSubImageToLUMACompatibilityTexture(
+          this, texture->service_id(), texture->target(), target,
+          internal_format, type, level, destX, destY, zoffset,
+          copyX, copyY, copyWidth, copyHeight,
+          GetBoundReadFrameBufferServiceId(),
+          GetBoundReadFrameBufferInternalFormat());
+    } else {
+      glCopyTexSubImage3D(target, level, destX, destY, zoffset,
+                          copyX, copyY, copyWidth, copyHeight);
+    }
   }
 
   // This may be a slow command.  Exit command processing to allow for
