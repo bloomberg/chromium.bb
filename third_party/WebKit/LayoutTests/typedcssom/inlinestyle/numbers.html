@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement">text</div>
+
+<script>
+
+var gettingProperties = [
+  'animation-iteration-count',
+  'column-count',
+  'line-height',
+  'opacity',
+  'orphans',
+  'widows',
+  'z-index'
+];
+
+test(function() {
+  for (var i = 0; i < gettingProperties.length; i++) {
+    var value = 10 * (i + 1);
+    testElement.style[gettingProperties[i]] = "" + value;
+    var result = testElement.styleMap.get(gettingProperties[i]);
+    assert_true(result instanceof CSSNumberValue, "result from " + gettingProperties[i]);
+    assert_equals(result.value, value);
+  }
+}, "Single valued CSSNumberValues can be retrieved from Inline StyleMap");
+
+test(function() {
+  testElement.style.animationIterationCount = "6.2, 9.8, 1";
+
+  var result = testElement.styleMap.getAll('animation-iteration-count');
+  assert_equals(result.length, 3);
+  assert_true(result[0] instanceof CSSNumberValue);
+  assert_true(result[1] instanceof CSSNumberValue);
+  assert_true(result[2] instanceof CSSNumberValue);
+  assert_equals(result[0].value, 6.2);
+  assert_equals(result[1].value, 9.8);
+  assert_equals(result[2].value, 1);
+}, "Can retrieve list of CSSNumberValues from list-valued property");
+
+</script>

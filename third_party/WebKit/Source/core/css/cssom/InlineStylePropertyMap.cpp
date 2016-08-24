@@ -28,6 +28,35 @@ const CSSValue* styleValueToCSSValue(CSSPropertyID propertyID, const CSSStyleVal
     return styleValue.toCSSValueWithProperty(propertyID);
 }
 
+const CSSValue* singleStyleValueAsCSSValue(CSSPropertyID propertyID, const CSSStyleValue& styleValue)
+{
+    if (!CSSPropertyMetadata::propertySupportsMultiple(propertyID))
+        return styleValueToCSSValue(propertyID, styleValue);
+
+    const CSSValue* cssValue = styleValueToCSSValue(propertyID, styleValue);
+    if (!cssValue)
+        return nullptr;
+
+    // TODO(meade): Determine the correct separator for each property.
+    CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+    valueList->append(*cssValue);
+    return valueList;
+}
+
+CSSValueList* asCSSValueList(CSSPropertyID propertyID, const CSSStyleValueVector& styleValueVector)
+{
+    // TODO(meade): Determine the correct separator for each property.
+    CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+    for (const CSSStyleValue* value : styleValueVector) {
+        const CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
+        if (!cssValue) {
+            return nullptr;
+        }
+        valueList->append(*cssValue);
+    }
+    return valueList;
+}
+
 } // namespace
 
 CSSStyleValueVector InlineStylePropertyMap::getAllInternal(CSSPropertyID propertyID)
@@ -74,38 +103,27 @@ Vector<String> InlineStylePropertyMap::getProperties()
 
 void InlineStylePropertyMap::set(CSSPropertyID propertyID, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
 {
+    const CSSValue* cssValue = nullptr;
     if (item.isCSSStyleValue()) {
-        const CSSValue* cssValue = styleValueToCSSValue(propertyID, *item.getAsCSSStyleValue());
-        if (!cssValue) {
-            exceptionState.throwTypeError("Invalid type for property");
-            return;
-        }
-        m_ownerElement->setInlineStyleProperty(propertyID, cssValue);
+        cssValue = singleStyleValueAsCSSValue(propertyID, *item.getAsCSSStyleValue());
     } else if (item.isCSSStyleValueSequence()) {
         if (!CSSPropertyMetadata::propertySupportsMultiple(propertyID)) {
             exceptionState.throwTypeError("Property does not support multiple values");
             return;
         }
-
-        // TODO(meade): This won't always work. Figure out what kind of CSSValueList to create properly.
-        CSSValueList* valueList = CSSValueList::createSpaceSeparated();
-        CSSStyleValueVector styleValueVector = item.getAsCSSStyleValueSequence();
-        for (const Member<CSSStyleValue> value : styleValueVector) {
-            const CSSValue* cssValue = styleValueToCSSValue(propertyID, *value);
-            if (!cssValue) {
-                exceptionState.throwTypeError("Invalid type for property");
-                return;
-            }
-            valueList->append(*cssValue);
-        }
-
-        m_ownerElement->setInlineStyleProperty(propertyID, valueList);
+        cssValue = asCSSValueList(propertyID, item.getAsCSSStyleValueSequence());
     } else {
         // Parse it.
         DCHECK(item.isString());
         // TODO(meade): Implement this.
         exceptionState.throwTypeError("Not implemented yet");
+        return;
     }
+    if (!cssValue) {
+        exceptionState.throwTypeError("Invalid type for property");
+        return;
+    }
+    m_ownerElement->setInlineStyleProperty(propertyID, cssValue);
 }
 
 void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSSStyleValueSequenceOrString& item, ExceptionState& exceptionState)
@@ -117,7 +135,10 @@ void InlineStylePropertyMap::append(CSSPropertyID propertyID, CSSStyleValueOrCSS
 
     const CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     CSSValueList* cssValueList = nullptr;
-    if (cssValue->isValueList()) {
+    if (!cssValue) {
+        // TODO(meade): Determine the correct separator for each property.
+        cssValueList = CSSValueList::createSpaceSeparated();
+    } else if (cssValue->isValueList()) {
         cssValueList = toCSSValueList(cssValue)->copy();
     } else {
         // TODO(meade): Figure out what the correct behaviour here is.

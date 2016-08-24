@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<div id="testElement">text</div>
+
+<script>
+
+EPSILON = 0.000001;
+
+var properties = {
+  'animation-iteration-count': 1,
+  'column-count': 2,
+  'opacity': 0.3,
+  'orphans': 4,
+  'widows': 5,
+};
+
+var computedMap = getComputedStyleMap(testElement);
+
+test(function() {
+  for (var property in properties) {
+    var value = properties[property];
+    testElement.style[property] = "" + value;
+    var result = computedMap.get(property);
+    assert_true(result instanceof CSSNumberValue);
+    assert_approx_equals(result.value, value, EPSILON);
+  }
+}, "Single valued CSSNumberValues can be retrieved from Computed StyleMap");
+
+test(function() {
+  testElement.style.animationIterationCount = "6.2, 9.8, 1";
+
+  var result = computedMap.getAll('animation-iteration-count');
+  assert_equals(result.length, 3);
+  assert_true(result[0] instanceof CSSNumberValue);
+  assert_true(result[1] instanceof CSSNumberValue);
+  assert_true(result[2] instanceof CSSNumberValue);
+  assert_approx_equals(result[0].value, 6.2, EPSILON);
+  assert_approx_equals(result[1].value, 9.8, EPSILON);
+  assert_approx_equals(result[2].value, 1, EPSILON);
+}, "Can retrieve list of CSSNumberValues from list-valued property");
+
+</script>
