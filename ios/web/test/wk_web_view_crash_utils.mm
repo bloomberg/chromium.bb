@@ -17,7 +17,7 @@
 
 namespace {
 
-// Returns an OCMocked WKWebView whose |evaluateJavaScript:stringResultHandler:|
+// Returns an OCMocked WKWebView whose |evaluateJavaScript:completionHandler:|
 // method has been mocked to execute |block| instead. |block| cannot be nil.
 WKWebView* CreateMockWKWebViewWithStubbedJSEvalFunction(
     void (^block)(NSInvocation*)) {
