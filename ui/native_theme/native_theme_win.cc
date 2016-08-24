@@ -493,6 +493,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     // Dialogs
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
+      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+        break;
       return color_utils::IsInvertedColorScheme() ?
           color_utils::InvertColor(kDialogBackgroundColor) :
           kDialogBackgroundColor;

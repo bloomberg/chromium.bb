@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/shadow_value.h"
@@ -131,7 +132,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_WindowBackground:
       return NSSystemColorToSkColor([NSColor windowBackgroundColor]);
     case kColorId_DialogBackground:
-      return kDialogBackgroundColor;
+      return ui::MaterialDesignController::IsSecondaryUiMaterial()
+                ? GetAuraColor(color_id, this)
+                : kDialogBackgroundColor;
     case kColorId_BubbleBackground:
       return SK_ColorWHITE;
 
