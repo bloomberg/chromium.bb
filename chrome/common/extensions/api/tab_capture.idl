@@ -50,7 +50,9 @@ namespace tabCapture {
   interface Functions {
     // Captures the visible area of the currently active tab.  Capture can
     // only be started on the currently active tab after the extension has been
-    // <em>invoked</em>.  Capture is maintained across page navigations within
+    // <em>invoked</em>, similar to the way that
+    // <a href="activeTab#invoking-activeTab">activeTab</a> works.
+    //  Capture is maintained across page navigations within
     // the tab, and stops when the tab is closed, or the media stream is closed
     // by the extension.
     //
