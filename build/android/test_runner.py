@@ -38,9 +38,6 @@ from pylib.junit import setup as junit_setup
 from pylib.junit import test_dispatcher as junit_dispatcher
 from pylib.monkey import setup as monkey_setup
 from pylib.monkey import test_options as monkey_test_options
-from pylib.perf import setup as perf_setup
-from pylib.perf import test_options as perf_test_options
-from pylib.perf import test_runner as perf_test_runner
 from pylib.results import json_results
 from pylib.results import report_results
 
@@ -620,29 +617,6 @@ def AddPerfTestOptions(parser):
   AddDeviceOptions(parser)
 
 
-def ProcessPerfTestOptions(args):
-  """Processes all perf test options.
-
-  Args:
-    args: argparse.Namespace object.
-
-  Returns:
-    A PerfOptions named tuple which contains all options relevant to
-    perf tests.
-  """
-  # TODO(jbudorick): Move single_step handling down into the perf tests.
-  if args.single_step:
-    args.single_step = ' '.join(args.single_step_command)
-  # TODO(jbudorick): Get rid of PerfOptions.
-  return perf_test_options.PerfOptions(
-      args.steps, args.flaky_steps, args.output_json_list,
-      args.print_step, args.no_timeout, args.test_filter,
-      args.dry_run, args.single_step, args.collect_chartjson_data,
-      args.output_chartjson_data, args.get_output_dir_archive,
-      args.max_battery_temp, args.min_battery_level,
-      args.known_devices_file)
-
-
 def AddPythonTestOptions(parser):
   group = parser.add_argument_group('Python Test Options')
   group.add_argument(
@@ -706,50 +680,6 @@ def _RunMonkeyTests(args, devices):
     json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   return exit_code
-
-
-def _RunPerfTests(args, active_devices):
-  """Subcommand of RunTestsCommands which runs perf tests."""
-  perf_options = ProcessPerfTestOptions(args)
-
-  # Just save a simple json with a list of test names.
-  if perf_options.output_json_list:
-    return perf_test_runner.OutputJsonList(
-        perf_options.steps, perf_options.output_json_list)
-
-  # Just print the results from a single previously executed step.
-  if perf_options.print_step:
-    return perf_test_runner.PrintTestOutput(
-        perf_options.print_step, perf_options.output_chartjson_data,
-        perf_options.get_output_dir_archive)
-
-  runner_factory, tests, devices = perf_setup.Setup(
-      perf_options, active_devices)
-
-  # shard=False means that each device will get the full list of tests
-  # and then each one will decide their own affinity.
-  # shard=True means each device will pop the next test available from a queue,
-  # which increases throughput but have no affinity.
-  results, _ = test_dispatcher.RunTests(
-      tests, runner_factory, devices, shard=False, test_timeout=None,
-      num_retries=args.num_retries)
-
-  report_results.LogFull(
-      results=results,
-      test_type='Perf',
-      test_package='Perf')
-
-  if args.json_results_file:
-    json_results.GenerateJsonResultsFile([results], args.json_results_file)
-
-  if perf_options.single_step:
-    return perf_test_runner.PrintTestOutput('single_step')
-
-  perf_test_runner.PrintSummary(tests)
-
-  # Always return 0 on the sharding stage. Individual tests exit_code
-  # will be returned on the print_step stage.
-  return 0
 
 
 def _RunPythonTests(args):
@@ -843,8 +773,6 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
     return _RunJUnitTests(args)
   elif command == 'monkey':
     return _RunMonkeyTests(args, get_devices())
-  elif command == 'perf':
-    return _RunPerfTests(args, get_devices())
   elif command == 'python':
     return _RunPythonTests(args)
   else:

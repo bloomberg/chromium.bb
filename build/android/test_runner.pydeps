@@ -116,9 +116,6 @@ pylib/monkey/test_options.py
 pylib/monkey/test_runner.py
 pylib/perf/__init__.py
 pylib/perf/perf_test_instance.py
-pylib/perf/setup.py
-pylib/perf/test_options.py
-pylib/perf/test_runner.py
 pylib/remote/__init__.py
 pylib/remote/device/__init__.py
 pylib/remote/device/appurify_constants.py
@@ -141,7 +138,6 @@ pylib/utils/__init__.py
 pylib/utils/isolator.py
 pylib/utils/proguard.py
 pylib/utils/repo_utils.py
-pylib/utils/test_environment.py
 pylib/valgrind_tools.py
 test_runner.py
 tombstones.py
