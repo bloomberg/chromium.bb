@@ -632,10 +632,6 @@ group = parser.add_option_group("Patch options")
 group.add_option("-i", "--issue", type="int", action="store",
                  metavar="ISSUE", default=None,
                  help="Issue number to which to add. Defaults to new issue.")
-group.add_option("--base_url", action="store", dest="base_url", default=None,
-                 help="Base URL path for files (listed as \"Base URL\" when "
-                 "viewing issue).  If omitted, will be guessed automatically "
-                 "for SVN repos and left blank for others.")
 group.add_option("--target_ref", action="store", dest="target_ref",
                  default=None,
                  help="The target ref that is transitively tracked by the "
@@ -2373,19 +2369,7 @@ def RealMain(argv, data=None):
 
   vcs = GuessVCS(options)
 
-  base = options.base_url
-  if isinstance(vcs, SubversionVCS):
-    # Guessing the base field is only supported for Subversion.
-    # Note: Fetching base files may become deprecated in future releases.
-    guessed_base = vcs.GuessBase(options.download_base)
-    if base:
-      if guessed_base and base != guessed_base:
-        print("Using base URL \"%s\" from --base_url instead of \"%s\"" %
-              (base, guessed_base))
-    else:
-      base = guessed_base
-
-  if not base and options.download_base:
+  if options.download_base:
     options.download_base = True
     LOGGER.info("Enabled upload of base file")
   if not options.assume_yes:
@@ -2408,14 +2392,6 @@ def RealMain(argv, data=None):
   repo_guid = vcs.GetGUID()
   if repo_guid:
     form_fields.append(("repo_guid", repo_guid))
-  if base:
-    b = urlparse.urlparse(base)
-    username, netloc = urllib.splituser(b.netloc)
-    if username:
-      LOGGER.info("Removed username from base URL")
-      base = urlparse.urlunparse((b.scheme, netloc, b.path, b.params,
-                                  b.query, b.fragment))
-    form_fields.append(("base", base))
   if options.issue:
     form_fields.append(("issue", str(options.issue)))
   if options.email:

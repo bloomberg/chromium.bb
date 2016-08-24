@@ -2013,7 +2013,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           remote_url = '%s@%s' % (self.GetRemoteUrl(),
                                   self.GetUpstreamBranch().split('/')[-1])
     if remote_url:
-      upload_args.extend(['--base_url', remote_url])
       remote, remote_branch = self.GetRemoteBranch()
       target_ref = GetTargetRef(remote, remote_branch, options.target_branch,
                                 settings.GetPendingRefPrefix())
