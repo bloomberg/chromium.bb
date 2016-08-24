@@ -12,7 +12,13 @@
 #include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "ui/display/display_observer.h"
+
+namespace display {
+class Screen;
+}
 
 namespace views {
 class Label;
@@ -26,7 +32,8 @@ class WindowCycleView;
 
 // Tracks a set of Windows that can be stepped through. This class is used by
 // the WindowCycleController.
-class ASH_EXPORT WindowCycleList : public WmWindowObserver {
+class ASH_EXPORT WindowCycleList : public WmWindowObserver,
+                                   public display::DisplayObserver {
  public:
   using WindowList = std::vector<WmWindow*>;
 
@@ -52,6 +59,12 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   // take care of that even if it is not intended for the user to close a window
   // while window cycling.
   void OnWindowDestroying(WmWindow* window) override;
+
+  // display::DisplayObserver overrides:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // Returns true if the window list overlay should be shown.
   bool ShouldShowUi();
@@ -83,6 +96,9 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
 
   // The widget that hosts the window cycle UI.
   std::unique_ptr<views::Widget> cycle_ui_widget_;
+
+  // The window list will dismiss if the display metrics change.
+  ScopedObserver<display::Screen, display::DisplayObserver> screen_observer_;
 
   // A timer to delay showing the UI. Quick Alt+Tab should not flash a UI.
   base::OneShotTimer show_ui_timer_;

@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -462,7 +463,8 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows),
       current_index_(0),
       initial_direction_(WindowCycleController::FORWARD),
-      cycle_view_(nullptr) {
+      cycle_view_(nullptr),
+      screen_observer_(this) {
   if (!ShouldShowUi())
     WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
@@ -563,6 +565,24 @@ void WindowCycleList::OnWindowDestroying(WmWindow* window) {
   }
 }
 
+void WindowCycleList::OnDisplayAdded(const display::Display& new_display) {}
+
+void WindowCycleList::OnDisplayRemoved(const display::Display& old_display) {}
+
+void WindowCycleList::OnDisplayMetricsChanged(const display::Display& display,
+                                              uint32_t changed_metrics) {
+  if (cycle_ui_widget_ &&
+      display.id() ==
+          display::Screen::GetScreen()
+              ->GetDisplayNearestWindow(cycle_ui_widget_->GetNativeView())
+              .id() &&
+      (changed_metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION))) {
+    WmShell::Get()->window_cycle_controller()->StopCycling();
+    // |this| is deleted.
+    return;
+  }
+}
+
 bool WindowCycleList::ShouldShowUi() {
   return windows_.size() > 1;
 }
@@ -574,7 +594,6 @@ void WindowCycleList::InitWindowCycleView() {
   cycle_view_ = new WindowCycleView(windows_, initial_direction_);
   cycle_view_->SetTargetWindow(windows_[current_index_]);
 
-  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.delegate = cycle_view_;
@@ -585,11 +604,12 @@ void WindowCycleList::InitWindowCycleView() {
   params.name = "WindowCycleList (Alt+Tab)";
   // TODO(estade): make sure nothing untoward happens when the lock screen
   // or a system modal dialog is shown.
+  WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_OverlayContainer, &params);
   widget->Init(params);
 
-  // TODO(estade): If the display metrics change, cancel the UI.
+  screen_observer_.Add(display::Screen::GetScreen());
   gfx::Rect widget_rect = root_window->GetDisplayNearestWindow().bounds();
   int widget_height = cycle_view_->GetPreferredSize().height();
   widget_rect.set_y((widget_rect.height() - widget_height) / 2);
