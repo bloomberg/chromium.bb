@@ -21,6 +21,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -33,7 +35,8 @@ class PasswordManagerClient;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
 // between a given form, the per-tab PasswordManager, and the PasswordStore.
-class PasswordFormManager : public PasswordStoreConsumer {
+class PasswordFormManager : public PasswordStoreConsumer,
+                            public FormFetcher::Consumer {
  public:
   // |password_manager| owns this object
   // |form_on_page| is the form that may be submitted and could need login data.
@@ -228,19 +231,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
     return blacklisted_matches_;
   }
 
-  const std::vector<const InteractionsStats*>& interactions_stats() const {
-    return interactions_stats_;
-  }
-
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 
   bool is_possible_change_password_form_without_username() const {
     return is_possible_change_password_form_without_username_;
   }
 
-  const std::vector<const autofill::PasswordForm*>& federated_matches() const {
-    return federated_matches_;
-  }
+  const FormFetcher* form_fetcher() { return form_fetcher_; }
 
   // Use this to wipe copies of |pending_credentials_| from the password store
   // (and |best_matches_| as well. It will only wipe if:
@@ -324,9 +321,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
     kFoundGenerationElement
   };
 
-  // State of waiting for a response from a PasswordStore.
-  enum class State { NOT_WAITING, WAITING };
-
   // The maximum number of combinations of the three preceding enums.
   // This is used when recording the actions taken by the form in UMA.
   static const int kMaxNumActionsTaken =
@@ -339,10 +333,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Trigger filling of HTTP auth dialog and update |manager_action_|.
   void ProcessLoginPrompt();
 
-  // Determines if we need to autofill given the results of the query.
-  // Takes ownership of the elements in |result|.
-  void OnRequestDone(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> result);
+  // FormFetcher::Consumer:
+  void ProcessMatches(
+      const std::vector<const autofill::PasswordForm*>& non_federated,
+      size_t filtered_count) override;
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
@@ -471,35 +465,31 @@ class PasswordFormManager : public PasswordStoreConsumer {
       std::vector<autofill::PasswordForm>* credentials_to_update);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
-  // being managed by this.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> best_matches_owned_;
-  // Weak copy for sharing, indexed by username.
+  // being managed by |this|, indexed by username. They are owned by
+  // |form_fetcher_|.
   std::map<base::string16, const autofill::PasswordForm*> best_matches_;
 
   // Set of forms from PasswordStore that correspond to the current site and
-  // that are not in |best_matches_|, and their weak copy for sharing.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> not_best_matches_owned_;
+  // that are not in |best_matches_|. They are owned by |form_fetcher_|.
   std::vector<const autofill::PasswordForm*> not_best_matches_;
 
-  // Federated credentials relevant to the observed form. They are neither
-  // filled not saved by this PasswordFormManager, so they are kept separately
-  // from |best_matches_|. The PasswordFormManager passes them further to
-  // PasswordManager to show them in the UI. Also weak copy for sharing.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_matches_owned_;
-  std::vector<const autofill::PasswordForm*> federated_matches_;
-
   // Set of blacklisted forms from the PasswordStore that best match the current
-  // form, and their weak copy for sharing.
-  std::vector<std::unique_ptr<autofill::PasswordForm>>
-      blacklisted_matches_owned_;
+  // form. They are owned by |form_fetcher_|, with the exception that if
+  // |new_blacklisted_| is not null, the address of that form is also inside
+  // |blacklisted_matches_|..
   std::vector<const autofill::PasswordForm*> blacklisted_matches_;
+
+  // If the observed form gets blacklisted through |this|, the blacklist entry
+  // gets stored in |new_blacklisted_| until data is potentially refreshed by
+  // reading from PasswordStore again. |blacklisted_matches_| will contain
+  // |new_blacklisted_.get()| in that case. The PasswordForm will usually get
+  // accessed via |blacklisted_matches_|, this unique_ptr is only used to store
+  // it (unlike the rest of forms being pointed to in |blacklisted_matches_|,
+  // which are owned by |form_fetcher_|.
+  std::unique_ptr<autofill::PasswordForm> new_blacklisted_;
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
-
-  // Statistics for the current domain and their weak copy for sharing.
-  std::vector<std::unique_ptr<InteractionsStats>> interactions_stats_owned_;
-  std::vector<const InteractionsStats*> interactions_stats_;
 
   // Stores a submitted form.
   std::unique_ptr<const autofill::PasswordForm> provisionally_saved_form_;
@@ -585,11 +575,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // local heuristics.
   bool does_look_like_signup_form_ = false;
 
-  // State of matching process, used to verify that we don't call methods
-  // assuming we've already processed the request for matching logins,
-  // when we actually haven't.
-  State state_;
-
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -619,6 +604,14 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // FormSaver instance used by |this| to all tasks related to storing
   // credentials.
   std::unique_ptr<FormSaver> form_saver_;
+
+  // TODO(crbug.com/621355) Remove this, ultimately the form fetcher will not be
+  // owned by PasswordFormManager. Temporarily, this is the object which
+  // |form_fetcher_| points to.
+  FormFetcherImpl form_fetcher_impl_;
+
+  // FormFetcher instance which owns the login data from PasswordStore.
+  FormFetcher* const form_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

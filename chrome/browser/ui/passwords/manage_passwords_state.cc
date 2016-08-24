@@ -80,7 +80,7 @@ void ManagePasswordsState::OnPendingPassword(
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_ = DeepCopyMapToVector(form_manager_->best_matches());
-  AppendDeepCopyVector(form_manager_->federated_matches(),
+  AppendDeepCopyVector(form_manager_->form_fetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_STATE);
@@ -91,7 +91,7 @@ void ManagePasswordsState::OnUpdatePassword(
   ClearData();
   form_manager_ = std::move(form_manager);
   local_credentials_forms_ = DeepCopyMapToVector(form_manager_->best_matches());
-  AppendDeepCopyVector(form_manager_->federated_matches(),
+  AppendDeepCopyVector(form_manager_->form_fetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
@@ -139,7 +139,7 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
     local_credentials_forms_.push_back(base::MakeUnique<autofill::PasswordForm>(
         form_manager_->pending_credentials()));
   }
-  AppendDeepCopyVector(form_manager_->federated_matches(),
+  AppendDeepCopyVector(form_manager_->form_fetcher()->GetFederatedMatches(),
                        &local_credentials_forms_);
   origin_ = form_manager_->observed_form().origin;
   SetState(password_manager::ui::CONFIRMATION_STATE);

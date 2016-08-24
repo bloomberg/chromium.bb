@@ -902,9 +902,9 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   result.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   form_manager.OnGetPasswordStoreResults(std::move(result));
   EXPECT_TRUE(form_manager.IsBlacklisted());
-  EXPECT_THAT(
-      form_manager.blacklisted_matches(),
-      ElementsAre(Pointee(blacklisted_match), Pointee(blacklisted_match2)));
+  EXPECT_THAT(form_manager.blacklisted_matches(),
+              UnorderedElementsAre(Pointee(blacklisted_match),
+                                   Pointee(blacklisted_match2)));
   EXPECT_EQ(1u, form_manager.best_matches().size());
   EXPECT_EQ(*saved_match(), *form_manager.preferred_match());
 }
@@ -2578,7 +2578,7 @@ TEST_F(PasswordFormManagerTest, FetchStatistics) {
   form_manager()->FetchDataFromPasswordStore();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(form_manager()->interactions_stats(),
+  EXPECT_THAT(form_manager()->form_fetcher()->GetInteractionsStats(),
               ElementsAre(Pointee(stats)));
 }
 #else
@@ -2944,8 +2944,9 @@ TEST_F(PasswordFormManagerTest, FederatedCredentialsFiltered) {
   results.push_back(base::MakeUnique<PasswordForm>(*saved_match()));
   form_manager()->OnGetPasswordStoreResults(std::move(results));
 
-  EXPECT_EQ(1u, form_manager()->federated_matches().size());
-  EXPECT_EQ(*form_manager()->federated_matches()[0], federated);
+  EXPECT_EQ(1u, form_manager()->form_fetcher()->GetFederatedMatches().size());
+  EXPECT_EQ(*form_manager()->form_fetcher()->GetFederatedMatches()[0],
+            federated);
   EXPECT_EQ(1u, form_manager()->best_matches().size());
   EXPECT_EQ(*(form_manager()->best_matches().begin()->second), *saved_match());
 }

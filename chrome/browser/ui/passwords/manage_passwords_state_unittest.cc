@@ -138,10 +138,11 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
   }
   test_form_manager->OnGetPasswordStoreResults(std::move(test_stored_forms_));
   EXPECT_EQ(include_federated ? 1u : 0u,
-            test_form_manager->federated_matches().size());
+            test_form_manager->form_fetcher()->GetFederatedMatches().size());
   if (include_federated) {
-    EXPECT_EQ(test_local_federated_form(),
-              *test_form_manager->federated_matches().front());
+    EXPECT_EQ(
+        test_local_federated_form(),
+        *test_form_manager->form_fetcher()->GetFederatedMatches().front());
   }
   return test_form_manager;
 }

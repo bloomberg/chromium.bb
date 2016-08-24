@@ -247,7 +247,7 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   return password_manager::FindStatsByUsername(
-      form_manager->interactions_stats(),
+      form_manager->form_fetcher()->GetInteractionsStats(),
       form_manager->pending_credentials().username_value);
 }
 

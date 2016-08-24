@@ -10,10 +10,8 @@
 #include <map>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
@@ -24,11 +22,9 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
-#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -88,23 +84,6 @@ bool DoesStringContainOnlyDigits(const base::string16& s) {
 // Heuristics to determine that a string is very unlikely to be a username.
 bool IsProbablyNotUsername(const base::string16& s) {
   return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
-}
-
-// Splits federated matches from |store_results| into a separate vector and
-// returns that.
-std::vector<std::unique_ptr<PasswordForm>> SplitFederatedMatches(
-    std::vector<std::unique_ptr<PasswordForm>>* store_results) {
-  auto first_federated =
-      std::partition(store_results->begin(), store_results->end(),
-                     [](const std::unique_ptr<PasswordForm>& form) {
-                       return form->federation_origin.unique();
-                     });
-
-  std::vector<std::unique_ptr<PasswordForm>> federated_matches(
-      store_results->end() - first_federated);
-  std::move(first_federated, store_results->end(), federated_matches.begin());
-  store_results->erase(first_federated, store_results->end());
-  return federated_matches;
 }
 
 bool ShouldShowInitialPasswordAccountSuggestions() {
@@ -198,19 +177,21 @@ PasswordFormManager::PasswordFormManager(
       is_ignorable_change_password_form_(false),
       is_possible_change_password_form_without_username_(
           observed_form.IsPossibleChangePasswordFormWithoutUsername()),
-      state_(State::NOT_WAITING),
       client_(client),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified),
       need_to_refetch_(false),
-      form_saver_(std::move(form_saver)) {
+      form_saver_(std::move(form_saver)),
+      form_fetcher_impl_(client),
+      form_fetcher_(&form_fetcher_impl_) {
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
             driver != nullptr);
   if (driver)
     drivers_.push_back(driver);
   FetchDataFromPasswordStore();
+  form_fetcher_->AddConsumer(this);
 }
 
 PasswordFormManager::~PasswordFormManager() {
@@ -302,22 +283,23 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
-  DCHECK_EQ(State::NOT_WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   return !blacklisted_matches_.empty();
 }
 
 void PasswordFormManager::PermanentlyBlacklist() {
-  DCHECK_EQ(State::NOT_WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsOffTheRecord());
 
-  blacklisted_matches_owned_.push_back(
-      base::MakeUnique<PasswordForm>(observed_form_));
-  blacklisted_matches_.push_back(blacklisted_matches_owned_.back().get());
-  form_saver_->PermanentlyBlacklist(blacklisted_matches_owned_.back().get());
+  if (!new_blacklisted_) {
+    new_blacklisted_ = base::MakeUnique<PasswordForm>(observed_form_);
+    blacklisted_matches_.push_back(new_blacklisted_.get());
+  }
+  form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
 }
 
 bool PasswordFormManager::IsNewLogin() const {
-  DCHECK_EQ(State::NOT_WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   return is_new_login_;
 }
 
@@ -348,7 +330,7 @@ void PasswordFormManager::ProvisionallySave(
 }
 
 void PasswordFormManager::Save() {
-  DCHECK_EQ(State::NOT_WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsOffTheRecord());
 
   if ((user_action_ == kUserActionNone) &&
@@ -405,7 +387,7 @@ void PasswordFormManager::Update(
 }
 
 void PasswordFormManager::FetchDataFromPasswordStore() {
-  if (state_ == State::WAITING) {
+  if (form_fetcher_->GetState() == FormFetcher::State::WAITING) {
     // There is currently a password store query in progress, need to re-fetch
     // store results later.
     need_to_refetch_ = true;
@@ -418,11 +400,11 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     logger->LogMessage(Logger::STRING_FETCH_LOGINS_METHOD);
     logger->LogNumber(Logger::STRING_FORM_MANAGER_STATE,
-                      static_cast<int>(state_));
+                      static_cast<int>(form_fetcher_->GetState()));
   }
 
   provisionally_saved_form_.reset();
-  state_ = State::WAITING;
+  form_fetcher_impl_.set_state(FormFetcher::State::WAITING);
 
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
@@ -444,7 +426,7 @@ void PasswordFormManager::FetchDataFromPasswordStore() {
 }
 
 bool PasswordFormManager::HasCompletedMatching() const {
-  return state_ == State::NOT_WAITING;
+  return form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING;
 }
 
 void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
@@ -480,92 +462,102 @@ void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
   }
 }
 
-void PasswordFormManager::OnRequestDone(
-    std::vector<std::unique_ptr<PasswordForm>> logins_result) {
+void PasswordFormManager::ProcessMatches(
+    const std::vector<const PasswordForm*>& non_federated,
+    size_t filtered_count) {
   preferred_match_ = nullptr;
   best_matches_.clear();
-  best_matches_owned_.clear();
   not_best_matches_.clear();
-  not_best_matches_owned_.clear();
   blacklisted_matches_.clear();
-  blacklisted_matches_owned_.clear();
-  const size_t logins_result_size = logins_result.size();
+  new_blacklisted_.reset();
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
+    logger->LogMessage(Logger::STRING_PROCESS_MATCHES_METHOD);
   }
 
-  // Remove credentials which need to be ignored from |logins_result|.
-  logins_result =
-      client_->GetStoreResultFilter()->FilterResults(std::move(logins_result));
+  // Create a copy of |non_federated| which we can reorder and prune.
+  std::vector<const PasswordForm*> all_matches(non_federated);
 
-  // Deal with blacklisted forms.
-  auto begin_blacklisted =
-      std::partition(logins_result.begin(), logins_result.end(),
-                     [](const std::unique_ptr<PasswordForm>& form) {
-                       return !form->blacklisted_by_user;
-                     });
-  for (auto it = begin_blacklisted; it != logins_result.end(); ++it) {
-    if (IsBlacklistMatch(**it)) {
-      blacklisted_matches_.push_back(it->get());
-      blacklisted_matches_owned_.push_back(std::move(*it));
-    }
-  }
-  logins_result.erase(begin_blacklisted, logins_result.end());
-  if (logins_result.empty())
-    return;
+  // The next step is to reorder |all_matches| into three consequent blocks:
+  // (A) relevant blacklist entries
+  // (B) non-relevant blacklist entries
+  // (C) non-blacklisted matches
 
-  // Now compute scores for the remaining credentials in |login_result|.
-  std::vector<uint32_t> credential_scores;
-  credential_scores.reserve(logins_result.size());
+  auto begin_nonblacklisted =  // start of block (C)
+      std::partition(
+          all_matches.begin(), all_matches.end(),
+          [](const PasswordForm* form) { return form->blacklisted_by_user; });
+
+  auto begin_nonrelevant =  // start of block (B)
+      std::partition(
+          all_matches.begin(), begin_nonblacklisted,
+          [this](const PasswordForm* form) { return IsBlacklistMatch(*form); });
+
+  // Now compute scores for forms in block (C).
+  const size_t non_blacklist_count = all_matches.end() - begin_nonblacklisted;
+  std::vector<uint32_t> credential_scores;  // scores for forms from (C)
+  credential_scores.reserve(non_blacklist_count);
   uint32_t best_score = 0;
-  std::map<base::string16, uint32_t> best_scores;
-  for (const auto& login : logins_result) {
-    uint32_t current_score = ScoreResult(*login);
+  std::map<base::string16, uint32_t> best_scores;  // best scores for usernames
+  for (auto it = begin_nonblacklisted; it != all_matches.end(); ++it) {
+    const PasswordForm& login = **it;
+    uint32_t current_score = ScoreResult(login);
     best_score = std::max(best_score, current_score);
-    best_scores[login->username_value] =
-        std::max(best_scores[login->username_value], current_score);
+    best_scores[login.username_value] =
+        std::max(best_scores[login.username_value], current_score);
     credential_scores.push_back(current_score);
   }
 
+  not_best_matches_.reserve(non_blacklist_count - best_scores.size());
   // Fill |best_matches_| with the best-scoring credentials for each username.
-  for (size_t i = 0; i < logins_result.size(); ++i) {
-    auto login = std::move(logins_result[i]);
+  for (size_t i = 0; i < non_blacklist_count; ++i) {
+    const PasswordForm* login = *(begin_nonblacklisted + i);
     DCHECK(!login->blacklisted_by_user);
     const base::string16& username = login->username_value;
 
     if (credential_scores[i] < best_scores[username]) {
-      not_best_matches_.push_back(login.get());
-      not_best_matches_owned_.push_back(std::move(login));
+      not_best_matches_.push_back(login);
       continue;
     }
 
     if (!preferred_match_ && credential_scores[i] == best_score)
-      preferred_match_ = login.get();
+      preferred_match_ = login;
 
     // If there is another best-score match for the same username then leave it
     // and add the current form to |not_best_matches_|.
     auto best_match_username = best_matches_.find(username);
     if (best_match_username == best_matches_.end()) {
-      best_matches_.insert(std::make_pair(username, login.get()));
-      best_matches_owned_.push_back(std::move(login));
+      best_matches_.insert(std::make_pair(username, login));
     } else {
-      not_best_matches_.push_back(login.get());
-      not_best_matches_owned_.push_back(std::move(login));
+      not_best_matches_.push_back(login);
     }
   }
 
-  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
-                       logins_result_size - best_matches_.size());
+  all_matches.erase(begin_nonrelevant, all_matches.end());
+  blacklisted_matches_ = std::move(all_matches);
+
+  UMA_HISTOGRAM_COUNTS(
+      "PasswordManager.NumPasswordsNotShown",
+      non_federated.size() + filtered_count - best_matches_.size());
+
+  // If password store was slow and provisionally saved form is already here
+  // then create pending credentials (see http://crbug.com/470322).
+  if (provisionally_saved_form_)
+    CreatePendingCredentials();
+
+  for (auto const& driver : drivers_)
+    ProcessFrameInternal(driver);
+  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
+    ProcessLoginPrompt();
 }
 
 void PasswordFormManager::ProcessFrame(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form_.scheme);
-  if (state_ == State::NOT_WAITING)
+  if (form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING)
     ProcessFrameInternal(driver);
 
   for (auto const& old_driver : drivers_) {
@@ -622,8 +614,8 @@ void PasswordFormManager::ProcessFrameInternal(
     // If fill-on-account-select is not enabled, continue with autofilling any
     // password forms as traditionally has been done.
     password_manager_->Autofill(driver.get(), observed_form_, best_matches_,
-                                federated_matches_, *preferred_match_,
-                                wait_for_username);
+                                form_fetcher_->GetFederatedMatches(),
+                                *preferred_match_, wait_for_username);
   }
 }
 
@@ -638,11 +630,11 @@ void PasswordFormManager::ProcessLoginPrompt() {
 
 void PasswordFormManager::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  DCHECK_EQ(State::WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
 
   if (need_to_refetch_) {
     // The received results are no longer up to date, need to re-request.
-    state_ = State::NOT_WAITING;
+    form_fetcher_impl_.set_state(FormFetcher::State::NOT_WAITING);
     FetchDataFromPasswordStore();
     need_to_refetch_ = false;
     return;
@@ -656,43 +648,18 @@ void PasswordFormManager::OnGetPasswordStoreResults(
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }
 
-  federated_matches_owned_ = SplitFederatedMatches(&results);
-  federated_matches_.resize(federated_matches_owned_.size());
-  std::transform(
-      federated_matches_owned_.begin(), federated_matches_owned_.end(),
-      federated_matches_.begin(),
-      [](const std::unique_ptr<PasswordForm>& form) { return form.get(); });
-
-  if (!results.empty())
-    OnRequestDone(std::move(results));
-  state_ = State::NOT_WAITING;
-
-  // If password store was slow and provisionally saved form is already here
-  // then create pending credentials (see http://crbug.com/470322).
-  if (provisionally_saved_form_)
-    CreatePendingCredentials();
-
-  for (auto const& driver : drivers_)
-    ProcessFrameInternal(driver);
-  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
-    ProcessLoginPrompt();
+  form_fetcher_impl_.SetResults(std::move(results));
 }
 
 void PasswordFormManager::OnGetSiteStatistics(
     std::vector<std::unique_ptr<InteractionsStats>> stats) {
   // On Windows the password request may be resolved after the statistics due to
   // importing from IE.
-  interactions_stats_owned_.swap(stats);
-  interactions_stats_.resize(interactions_stats_owned_.size());
-  std::transform(interactions_stats_owned_.begin(),
-                 interactions_stats_owned_.end(), interactions_stats_.begin(),
-                 [](const std::unique_ptr<InteractionsStats>& stat) {
-                   return stat.get();
-                 });
+  form_fetcher_impl_.SetStats(std::move(stats));
 }
 
 void PasswordFormManager::ProcessUpdate() {
-  DCHECK_EQ(State::NOT_WAITING, state_);
+  DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(preferred_match_ || !pending_credentials_.federation_origin.unique());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
@@ -1133,7 +1100,6 @@ void PasswordFormManager::CreatePendingCredentials() {
 }
 
 uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
-  DCHECK_EQ(State::WAITING, state_);
   DCHECK(!candidate.blacklisted_by_user);
   // For scoring of candidate login data:
   // The most important element that should match is the signon_realm followed
@@ -1229,9 +1195,9 @@ const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
   if (password.empty())
     return nullptr;
 
-  for (auto it = best_matches_.begin(); it != best_matches_.end(); ++it) {
-    if (it->second->password_value == password)
-      return it->second;
+  for (const auto& key_value : best_matches_) {
+    if (key_value.second->password_value == password)
+      return key_value.second;
   }
   return nullptr;
 }
