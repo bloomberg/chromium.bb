@@ -1378,29 +1378,6 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsByEachUsernameAreIncluded) {
   EXPECT_EQ(2u, fill_data.additional_logins.size());
 }
 
-TEST_F(PasswordFormManagerTest,
-       TestForceInclusionOfGeneratedPasswords_NoMatch) {
-  // Same thing, except this time the credentials that don't match quite as
-  // well are generated. They should now be sent to Autofill().
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
-
-  std::vector<std::unique_ptr<PasswordForm>> simulated_results;
-  simulated_results.push_back(CreateSavedMatch(false));
-  simulated_results.push_back(CreateSavedMatch(false));
-  simulated_results[0]->username_value = ASCIIToUTF16("other@gmail.com");
-  simulated_results[0]->password_element = ASCIIToUTF16("signup_password");
-  simulated_results[0]->username_element = ASCIIToUTF16("signup_username");
-  simulated_results[0]->type = PasswordForm::TYPE_GENERATED;
-
-  autofill::PasswordFormFillData fill_data;
-  EXPECT_CALL(*client()->mock_driver(), FillPasswordForm(_))
-      .WillOnce(SaveArg<0>(&fill_data));
-
-  form_manager()->OnGetPasswordStoreResults(std::move(simulated_results));
-  EXPECT_EQ(2u, form_manager()->best_matches().size());
-  EXPECT_EQ(1u, fill_data.additional_logins.size());
-}
-
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   const base::string16 kUsernameOther = ASCIIToUTF16("other username");
 
@@ -1761,27 +1738,40 @@ TEST_F(PasswordFormManagerTest, OriginCheck_OnlyOriginsMatch) {
                 PasswordFormManager::RESULT_ORIGINS_MATCH);
 }
 
+// Test that if multiple credentials with the same username are stored, and the
+// user updates the password, then all of the stored passwords get updated as
+// long as they have the same password value.
 TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
 
-  // Add two credentials with the same username. Both should score the same
-  // and be seen as candidates to autofill.
   PasswordForm first(*saved_match());
   first.action = observed_form()->action;
   first.password_value = ASCIIToUTF16("first");
   first.preferred = true;
 
+  // The second credential has the same password value, but it has a different
+  // |username_element| to make a different unique key for the database
+  // (otherwise the two credentials could not be stored at the same time). The
+  // different unique key results in a slightly lower score than for |first|.
   PasswordForm second(first);
-  second.password_value = ASCIIToUTF16("second");
+  second.username_element.clear();
   second.preferred = false;
+
+  // The third credential has a different password value. It also has a
+  // different |password_element| to make a different unique key for the
+  // database again.
+  PasswordForm third(first);
+  third.password_element.clear();
+  third.password_value = ASCIIToUTF16("second");
+  third.preferred = false;
 
   std::vector<std::unique_ptr<PasswordForm>> result;
   result.push_back(base::MakeUnique<PasswordForm>(first));
   result.push_back(base::MakeUnique<PasswordForm>(second));
+  result.push_back(base::MakeUnique<PasswordForm>(third));
   form_manager()->OnGetPasswordStoreResults(std::move(result));
 
-  // We always take the first credential with a particular username, regardless
-  // of which ones are labeled preferred.
+  // |first| scored slightly higher.
   EXPECT_EQ(ASCIIToUTF16("first"),
             form_manager()->preferred_match()->password_value);
 
@@ -1795,15 +1785,25 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   EXPECT_FALSE(form_manager()->IsNewLogin());
 
   PasswordForm saved_result;
+  std::vector<PasswordForm> credentials_to_update;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
-      .WillOnce(testing::SaveArg<0>(&saved_result));
+      .WillOnce(testing::DoAll(SaveArg<0>(&saved_result),
+                               SaveArgPointee<2>(&credentials_to_update)));
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
               StartUploadRequest(_, false, _, _, true));
 
   form_manager()->Save();
 
-  // Make sure that the password is updated appropriately.
+  // What was |first| above should be the main credential updated.
   EXPECT_EQ(ASCIIToUTF16("third"), saved_result.password_value);
+  EXPECT_FALSE(saved_result.password_element.empty());
+  EXPECT_FALSE(saved_result.username_element.empty());
+
+  // What was |second| above should be another credential updated.
+  ASSERT_EQ(1u, credentials_to_update.size());
+  EXPECT_EQ(ASCIIToUTF16("third"), credentials_to_update[0].password_value);
+  EXPECT_FALSE(credentials_to_update[0].password_element.empty());
+  EXPECT_TRUE(credentials_to_update[0].username_element.empty());
 }
 
 TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
