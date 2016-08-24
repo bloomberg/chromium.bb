@@ -61,6 +61,8 @@ extern const base::Feature kPreferHtmlOverPlugins;
 
 extern const base::Feature kOverrideYouTubeFlashEmbed;
 
+extern const base::Feature kPushMessagingBackgroundMode;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kRuntimeMemoryLeakDetector;
 #endif  // defined(OS_CHROMEOS)

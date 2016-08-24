@@ -12,8 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +26,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_observer.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -94,14 +95,12 @@ void UnregisterCallbackToClosure(const base::Closure& closure,
 bool UseBackgroundMode() {
   // Note: if push is ever enabled in incognito, the background mode integration
   // should not be enabled for it.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PushApiBackgroundMode");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePushApiBackgroundMode))
     return false;
   if (command_line->HasSwitch(switches::kEnablePushApiBackgroundMode))
     return true;
-  return group_name == "Enabled";
+  return base::FeatureList::IsEnabled(features::kPushMessagingBackgroundMode);
 }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND)
 

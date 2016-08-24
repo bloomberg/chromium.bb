@@ -88,6 +88,11 @@ const base::Feature kMaterialDesignExtensions{
 const base::Feature kOverrideYouTubeFlashEmbed{
     "OverrideYouTubeFlashEmbed", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables push subscriptions keeping Chrome running in the
+// background when closed.
+const base::Feature kPushMessagingBackgroundMode{
+    "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Material Design version of chrome://history.
 const base::Feature kMaterialDesignHistory{
     "MaterialDesignHistory", base::FEATURE_ENABLED_BY_DEFAULT};
