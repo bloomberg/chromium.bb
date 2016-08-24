@@ -1,11 +1,4 @@
-# Extension and apps team owners. Use file history to guide reviewer selection
-# as this list is randomized. If editing, see chrome/browser/extensions/OWNERS
-mek@chromium.org
-reillyg@chromium.org
-benwells@chromium.org
-rdevlin.cronin@chromium.org
-finnur@chromium.org
-asargent@chromium.org
+file://extensions/OWNERS
 
 # Additional ChromeOS-specific reviewers
 tbarzic@chromium.org
