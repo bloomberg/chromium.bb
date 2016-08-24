@@ -3864,6 +3864,9 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
     Resource** resource,
     DrawingFrame* external_frame,
     gfx::RectF* new_bounds) {
+  // Don't carry over any GL state from previous RenderPass draw operations.
+  ReinitializeGLState();
+
   ScopedResource* contents_texture =
       render_pass_textures_[ca_layer_overlay->rpdq->render_pass_id].get();
   DCHECK(contents_texture);
@@ -3967,11 +3970,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   // Clear to 0 to ensure the background is transparent.
   gl_->ClearColor(0, 0, 0, 0);
-  if (is_scissor_enabled_)
-    gl_->Disable(GL_SCISSOR_TEST);
   gl_->Clear(GL_COLOR_BUFFER_BIT);
-  if (is_scissor_enabled_)
-    gl_->Enable(GL_SCISSOR_TEST);
 
   UpdateRPDQTexturesForSampling(&params);
   UpdateRPDQBlendMode(&params);
