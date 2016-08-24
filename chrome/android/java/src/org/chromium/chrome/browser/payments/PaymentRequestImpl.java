@@ -736,6 +736,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     providePaymentInformation();
                 } else {
                     if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
+                    mCardEditor.updateBillingAddress(completeAddress);
                     mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
                 }
             }

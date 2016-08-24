@@ -74,10 +74,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
 
     /**
      * The map from GUIDs to profiles that can be used for billing address. This cache avoids
-     * re-reading profiles from disk, which may have changed due to sync, for example. Note that
-     * this cache prevents the user from adding a shipping address and then immediately using it as
-     * a billing address. This is consistent with the rest of the PaymentRequest UI, because adding
-     * a billing address does not enable its immediate use as a shipping address either.
+     * re-reading profiles from disk, which may have changed due to sync, for example.
+     * updateBillingAddress() updates this cache.
      */
     private final Map<String, AutofillProfile> mProfilesForBillingAddress;
 
@@ -315,6 +313,17 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument> {
         });
 
         mEditorView.show(editor);
+    }
+
+    /**
+     * Adds the given billing address to the list of billing addresses. If the address is already
+     * known, then updates the existing address. Should be called before opening the card editor.
+     *
+     * @param billingAddress The billing address to add or update. Should not be null. Should be
+     *                       complete.
+     */
+    public void updateBillingAddress(AutofillAddress billingAddress) {
+        mProfilesForBillingAddress.put(billingAddress.getIdentifier(), billingAddress.getProfile());
     }
 
     /**
