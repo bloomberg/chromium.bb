@@ -22,16 +22,18 @@ import org.chromium.net.test.EmbeddedTestServer;
  */
 public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTestBase {
 
-    private static final String PAGE_URL1 = "/chrome/test/data/webapps/manifest_test_page.html";
-    private static final String PAGE_URL2 = "/chrome/test/data/webapps/manifest_test_page2.html";
+    private static final String PAGE_URL1 = "/chrome/test/data/banners/manifest_test_page.html";
+    private static final String PAGE_URL2 =
+            "/chrome/test/data/banners/manifest_short_name_only_test_page.html";
 
     // Data for {@link PAGE_URL1}'s Web Manifest.
-    private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/webapps/manifest.json";
+    private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
     private static final String WEB_MANIFEST_NAME1 = "Manifest test app";
 
     // Data for {@link PAGE_URL2}'s Web Manifest.
-    private static final String WEB_MANIFEST_URL2 = "/chrome/test/data/webapps/manifest2.json";
-    private static final String WEB_MANIFEST_NAME2 = "Manifest test app2";
+    private static final String WEB_MANIFEST_URL2 =
+            "/chrome/test/data/banners/manifest_short_name_only.json";
+    private static final String WEB_MANIFEST_NAME2 = "Manifest";
 
     // Scope for {@link PAGE_URL1} and {@link PAGE_URL2}.
     private static final String WEB_MANIFEST_SCOPE = "/chrome/test/data";

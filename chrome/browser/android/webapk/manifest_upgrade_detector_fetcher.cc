@@ -109,6 +109,7 @@ void ManifestUpgradeDetectorFetcher::DidFinishLoad(
       ShortcutHelper::GetIdealHomescreenIconSizeInDp();
   params.minimum_icon_size_in_dp =
       ShortcutHelper::GetMinimumHomescreenIconSizeInDp();
+  params.check_installable = true;
   params.fetch_valid_icon = true;
   InstallableManager::CreateForWebContents(web_contents());
   InstallableManager* installable_manager =
@@ -130,6 +131,11 @@ void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
   // web developers to change the Web Manifest location. When it does
   // change, we will treat the new Web Manifest as the one of another WebAPK.
   if (data.manifest.IsEmpty() || web_manifest_url_ != data.manifest_url)
+    return;
+
+  // TODO(pkotwicz): Tell Java side that the Web Manifest was fetched but the
+  // Web Manifest is not WebAPK-compatible. (http://crbug.com/639536)
+  if (!data.is_installable)
     return;
 
   ShortcutInfo info(GURL::EmptyGURL());
