@@ -3926,10 +3926,12 @@ void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer)
-    tree->property_trees()->effect_tree.OnOpacityAnimated(
-        opacity, layer->effect_tree_index(), tree);
+  const int layer_id = tree->LayerIdByElementId(element_id);
+  const int effect_id =
+      tree->property_trees()->effect_id_to_index_map[layer_id];
+  if (effect_id != EffectTree::kInvalidNodeId)
+    tree->property_trees()->effect_tree.OnOpacityAnimated(opacity, effect_id,
+                                                          tree);
 }
 
 void LayerTreeHostImpl::SetTreeLayerTransformMutated(
@@ -3939,9 +3941,15 @@ void LayerTreeHostImpl::SetTreeLayerTransformMutated(
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerByElementId(element_id);
+  const int layer_id = tree->LayerIdByElementId(element_id);
+  const int transform_id =
+      tree->property_trees()->transform_id_to_index_map[layer_id];
+  if (transform_id != TransformTree::kInvalidNodeId)
+    tree->property_trees()->transform_tree.OnTransformAnimated(
+        transform, transform_id, tree);
+  LayerImpl* layer = tree->LayerById(layer_id);
   if (layer)
-    layer->OnTransformAnimated(transform);
+    layer->set_was_ever_ready_since_last_transform_animation(false);
 }
 
 void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(

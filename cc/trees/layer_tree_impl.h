@@ -294,7 +294,8 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* LayerById(int id) const;
 
-  // TODO(vollick): this is deprecated. It is used by
+  int LayerIdByElementId(ElementId element_id) const;
+  // TODO(jaydasika): this is deprecated. It is used by
   // animation/compositor-worker to look up layers to mutate, but in future, we
   // will update property trees.
   LayerImpl* LayerByElementId(ElementId element_id) const;
@@ -497,7 +498,7 @@ class CC_EXPORT LayerTreeImpl {
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
-  std::unordered_map<ElementId, LayerImpl*, ElementIdHash> element_layers_map_;
+  std::unordered_map<ElementId, int, ElementIdHash> element_layers_map_;
 
   std::unordered_map<int, float> opacity_animations_map_;
   std::unordered_map<int, gfx::Transform> transform_animations_map_;

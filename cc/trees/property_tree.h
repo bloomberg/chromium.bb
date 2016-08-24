@@ -154,6 +154,9 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                         int dest_id,
                         gfx::Transform* transform) const;
 
+  void OnTransformAnimated(const gfx::Transform& transform,
+                           int id,
+                           LayerTreeImpl* layer_tree_impl);
   // Computes the change of basis transform from node |source_id| to |dest_id|.
   // This is used by scroll children to compute transform from their scroll
   // parent space (source) to their parent space (destination) and it can atmost

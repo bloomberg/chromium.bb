@@ -218,6 +218,22 @@ bool TransformTree::ComputeTranslation(int source_id,
   return true;
 }
 
+void TransformTree::OnTransformAnimated(const gfx::Transform& transform,
+                                        int id,
+                                        LayerTreeImpl* layer_tree_impl) {
+  TransformNode* node = Node(id);
+  layer_tree_impl->AddToTransformAnimationsMap(node->owner_id, transform);
+  if (node->local == transform) {
+    return;
+  }
+  node->local = transform;
+  node->needs_local_transform_update = true;
+  node->transform_changed = true;
+  property_trees()->changed = true;
+  set_needs_update(true);
+  layer_tree_impl->set_needs_update_draw_properties();
+}
+
 bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
   return (source_to_parent_updates_allowed() &&
           node->parent_id != node->source_node_id);
@@ -917,6 +933,7 @@ void EffectTree::OnOpacityAnimated(float opacity,
                                    int id,
                                    LayerTreeImpl* layer_tree_impl) {
   EffectNode* node = Node(id);
+  layer_tree_impl->AddToOpacityAnimationsMap(node->owner_id, opacity);
   if (node->opacity == opacity)
     return;
   node->opacity = opacity;
@@ -924,7 +941,6 @@ void EffectTree::OnOpacityAnimated(float opacity,
   property_trees()->changed = true;
   property_trees()->effect_tree.set_needs_update(true);
   layer_tree_impl->set_needs_update_draw_properties();
-  layer_tree_impl->AddToOpacityAnimationsMap(node->owner_id, opacity);
 }
 
 void EffectTree::UpdateEffects(int id) {

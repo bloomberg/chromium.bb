@@ -6285,15 +6285,21 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
                   ->hidden_by_backface_visibility);
 
-  back_facing->OnTransformAnimated(gfx::Transform());
-  render_surface2->OnTransformAnimated(rotate_about_y);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      gfx::Transform(), back_facing->transform_tree_index(),
+      root->layer_tree_impl());
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      rotate_about_y, render_surface2->transform_tree_index(),
+      root->layer_tree_impl());
   ExecuteCalculateDrawProperties(root);
   EXPECT_FALSE(tree.Node(render_surface1->effect_tree_index())
                    ->hidden_by_backface_visibility);
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
                   ->hidden_by_backface_visibility);
 
-  render_surface1->OnTransformAnimated(rotate_about_y);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      rotate_about_y, render_surface1->transform_tree_index(),
+      root->layer_tree_impl());
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
                   ->hidden_by_backface_visibility);
@@ -7692,7 +7698,11 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
 
   // Correctly updates animation scale when layer property changes.
   child1_layer->test_properties()->transform = gfx::Transform();
-  child1_layer->UpdatePropertyTreeTransform(gfx::Transform());
+  root_layer->layer_tree_impl()
+      ->property_trees()
+      ->transform_tree.OnTransformAnimated(gfx::Transform(),
+                                           child1_layer->transform_tree_index(),
+                                           root_layer->layer_tree_impl());
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = false;
   ExecuteCalculateDrawProperties(root_layer);
   EXPECT_FLOAT_EQ(8.f, GetMaximumAnimationScale(child2_layer));
@@ -7971,7 +7981,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   gfx::Transform zero_matrix;
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
-  animated->OnTransformAnimated(zero_matrix);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      zero_matrix, animated->transform_tree_index(), root->layer_tree_impl());
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root);
 
   // The animated layer maps to the empty rect in clipped target space, so is

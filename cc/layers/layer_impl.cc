@@ -499,35 +499,6 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
       ->num_copy_requests_in_subtree;
 }
 
-void LayerImpl::UpdatePropertyTreeTransform(const gfx::Transform& transform) {
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                       id())) {
-    // A LayerImpl's own current state is insufficient for determining whether
-    // it owns a TransformNode, since this depends on the state of the
-    // corresponding Layer at the time of the last commit. For example, a
-    // transform animation might have been in progress at the time the last
-    // commit started, but might have finished since then on the compositor
-    // thread.
-    TransformNode* node = property_trees->transform_tree.Node(
-        property_trees->transform_id_to_index_map[id()]);
-    if (node->local != transform) {
-      node->local = transform;
-      node->needs_local_transform_update = true;
-      node->transform_changed = true;
-      property_trees->changed = true;
-      property_trees->transform_tree.set_needs_update(true);
-      layer_tree_impl()->set_needs_update_draw_properties();
-      // TODO(ajuma): The current criteria for creating clip nodes means that
-      // property trees may need to be rebuilt when the new transform isn't
-      // axis-aligned wrt the old transform (see Layer::SetTransform). Since
-      // rebuilding property trees every frame of a transform animation is
-      // something we should try to avoid, change property tree-building so that
-      // it doesn't depend on axis aliginment.
-    }
-  }
-}
-
 void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
@@ -585,12 +556,6 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
   property_trees->effect_tree.set_needs_update(true);
   SetNeedsPushProperties();
   layer_tree_impl()->set_needs_update_draw_properties();
-}
-
-void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
-  UpdatePropertyTreeTransform(transform);
-  was_ever_ready_since_last_transform_animation_ = false;
-  layer_tree_impl()->AddToTransformAnimationsMap(id(), transform);
 }
 
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {

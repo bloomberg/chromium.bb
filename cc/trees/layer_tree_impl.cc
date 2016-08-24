@@ -508,12 +508,16 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
   return layer_list_.rend();
 }
 
-LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
+int LayerTreeImpl::LayerIdByElementId(ElementId element_id) const {
   auto iter = element_layers_map_.find(element_id);
   if (iter == element_layers_map_.end())
-    return nullptr;
+    return Layer::INVALID_ID;
 
   return iter->second;
+}
+
+LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
+  return LayerById(LayerIdByElementId(element_id));
 }
 
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
@@ -525,7 +529,7 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
                layer->element_id().AsValue().release(), "layer_id",
                layer->id());
 
-  element_layers_map_[layer->element_id()] = layer;
+  element_layers_map_[layer->element_id()] = layer->id();
 
   layer_tree_host_impl_->animation_host()->RegisterElement(
       layer->element_id(),

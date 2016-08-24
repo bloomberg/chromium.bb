@@ -965,7 +965,10 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         transform.Translate(10, 10);
-        root->OnTransformAnimated(transform);
+        impl->active_tree()
+            ->property_trees()
+            ->transform_tree.OnTransformAnimated(
+                transform, root->transform_tree_index(), impl->active_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case FILTER:
@@ -1153,8 +1156,8 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
     rotate20.Rotate(20.f);
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
-            rotate20);
+        impl->sync_tree()->property_trees()->transform_tree.OnTransformAnimated(
+            rotate20, node->id, impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
@@ -1163,8 +1166,8 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_EQ(node->local, rotate20);
-        impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
-            rotate20);
+        impl->sync_tree()->property_trees()->transform_tree.OnTransformAnimated(
+            rotate20, node->id, impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
@@ -1244,7 +1247,8 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
     if (impl->active_tree()->source_frame_number() == 0) {
       gfx::Transform scale;
       scale.Scale(2.0, 2.0);
-      impl->active_tree()->LayerById(child_->id())->OnTransformAnimated(scale);
+      impl->active_tree()->property_trees()->transform_tree.OnTransformAnimated(
+          scale, child_->transform_tree_index(), impl->active_tree());
     }
   }
 

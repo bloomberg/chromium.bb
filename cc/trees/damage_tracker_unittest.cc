@@ -465,7 +465,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // With the anchor on the layer's center, now we can test the rotation more
   // intuitively, since it applies about the layer's anchor.
   ClearDamageForAllSurfaces(root);
-  child->OnTransformAnimated(rotation);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      rotation, child->transform_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
 
   // Since the child layer is square, rotation by 45 degrees about the center

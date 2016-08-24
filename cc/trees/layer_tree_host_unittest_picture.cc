@@ -250,7 +250,11 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
         // Make the bottom of the layer visible.
         gfx::Transform transform;
         transform.Translate(0.f, -100000.f + 100.f);
-        picture_impl->OnTransformAnimated(transform);
+        impl->active_tree()
+            ->property_trees()
+            ->transform_tree.OnTransformAnimated(
+                transform, picture_impl->transform_tree_index(),
+                impl->active_tree());
         impl->SetNeedsRedraw();
         break;
       }
@@ -261,7 +265,11 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
         EXPECT_FALSE(tiling->TileAt(0, 0));
 
         // Make the top of the layer visible again.
-        picture_impl->OnTransformAnimated(gfx::Transform());
+        impl->active_tree()
+            ->property_trees()
+            ->transform_tree.OnTransformAnimated(
+                gfx::Transform(), picture_impl->transform_tree_index(),
+                impl->active_tree());
         impl->SetNeedsRedraw();
         break;
       }

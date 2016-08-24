@@ -188,7 +188,11 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
           arbitrary_number, root->effect_tree_index(),
           host_impl.active_tree()));
   EXECUTE_AND_VERIFY_NO_NEED_TO_PUSH_PROPERTIES_AND_SUBTREE_CHANGED(
-      root->OnTransformAnimated(arbitrary_transform));
+      host_impl.active_tree()
+          ->property_trees()
+          ->transform_tree.OnTransformAnimated(arbitrary_transform,
+                                               root->transform_tree_index(),
+                                               host_impl.active_tree()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->ScrollBy(arbitrary_vector2d);
                                      root->SetNeedsPushProperties());
   // SetBoundsDelta changes subtree only when masks_to_bounds is true and it
@@ -327,7 +331,11 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
           arbitrary_number, layer->effect_tree_index(),
           host_impl.active_tree()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer->OnTransformAnimated(arbitrary_transform));
+      host_impl.active_tree()
+          ->property_trees()
+          ->transform_tree.OnTransformAnimated(arbitrary_transform,
+                                               layer->transform_tree_index(),
+                                               host_impl.active_tree()));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(arbitrary_size);
                                       layer->NoteLayerPropertyChanged());
 

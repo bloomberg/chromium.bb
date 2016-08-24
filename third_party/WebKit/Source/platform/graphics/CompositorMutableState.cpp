@@ -40,7 +40,7 @@ void CompositorMutableState::setTransform(const SkMatrix44& matrix)
 {
     if (!m_mainLayer)
         return;
-    m_mainLayer->OnTransformAnimated(gfx::Transform(matrix));
+    m_mainLayer->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(gfx::Transform(matrix), m_mainLayer->transform_tree_index(), m_mainLayer->layer_tree_impl());
     m_mutation->setTransform(matrix);
 }
 
