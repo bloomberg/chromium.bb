@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -169,6 +170,30 @@ void OnGetAllRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
   ScopedJavaLocalRef<jobjectArray> j_result_obj =
       CreateJavaSavePageRequests(env, all_requests);
   base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
+}
+
+void OnRemoveRequestsDone(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const RequestQueue::UpdateMultipleRequestResults& removed_request_results) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  std::vector<int> update_request_results;
+  std::vector<int64_t> update_request_ids;
+
+  for (std::pair<int64_t, RequestQueue::UpdateRequestResult> remove_result :
+       removed_request_results) {
+    update_request_ids.emplace_back(std::get<0>(remove_result));
+    update_request_results.emplace_back(
+        static_cast<int>(std::get<1>(remove_result)));
+  }
+
+  ScopedJavaLocalRef<jlongArray> j_result_ids =
+      base::android::ToJavaLongArray(env, update_request_ids);
+  ScopedJavaLocalRef<jintArray> j_result_codes =
+      base::android::ToJavaIntArray(env, update_request_results);
+
+  Java_RequestsRemovedCallback_onResult(env, j_callback_obj, j_result_ids,
+                                        j_result_codes);
 }
 
 }  // namespace
@@ -472,6 +497,31 @@ void OfflinePageBridge::GetRequestsInQueue(
 
   coordinator->GetAllRequests(
       base::Bind(&OnGetAllRequestsDone, j_callback_ref));
+}
+
+void OfflinePageBridge::RemoveRequestsFromQueue(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jlongArray>& j_request_ids_array,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  std::vector<int64_t> request_ids;
+  base::android::JavaLongArrayToInt64Vector(env, j_request_ids_array,
+                                            &request_ids);
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+
+  RequestCoordinator* coordinator =
+      offline_pages::RequestCoordinatorFactory::GetInstance()
+          ->GetForBrowserContext(browser_context_);
+
+  if (!coordinator) {
+    // Callback with null to signal that results are unavailable.
+    const JavaParamRef<jobject> empty_result(nullptr);
+    base::android::RunCallbackAndroid(j_callback_obj, empty_result);
+    return;
+  }
+
+  coordinator->RemoveRequests(
+      request_ids, base::Bind(&OnRemoveRequestsDone, j_callback_ref));
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

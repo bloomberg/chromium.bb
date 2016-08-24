@@ -65,10 +65,16 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
   bool SavePageLater(
       const GURL& url, const ClientId& client_id, bool user_reqeusted);
 
+  // Callback specifying which request IDs were actually removed.
+  typedef base::Callback<void(
+      const RequestQueue::UpdateMultipleRequestResults&)>
+      RemoveRequestsCallback;
+
   // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, but does not cancel an in-progress pre-render.
   // TODO(petewil): Add code to cancel an in-progress pre-render.
-  void RemoveRequests(const std::vector<int64_t>& request_ids);
+  void RemoveRequests(const std::vector<int64_t>& request_ids,
+                      const RemoveRequestsCallback& callback);
 
   // Pause a list of requests by |request_id|.  This will change the state
   // in the request queue so the request cannot be started.
@@ -164,7 +170,12 @@ class RequestCoordinator : public KeyedService, public RequestNotifier {
       const RequestQueue::UpdateMultipleRequestResults& result,
       const std::vector<SavePageRequest>& requests);
 
-  void RemoveRequestsCallback(
+  void HandleRemovedRequestsAndCallback(
+      const RemoveRequestsCallback& callback,
+      const RequestQueue::UpdateMultipleRequestResults& results,
+      const std::vector<SavePageRequest>& requests);
+
+  void HandleRemovedRequests(
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 

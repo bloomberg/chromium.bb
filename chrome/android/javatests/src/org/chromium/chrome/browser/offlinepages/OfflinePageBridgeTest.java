@@ -253,6 +253,35 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         assertEquals(null, mOfflinePageBridge);
     }
 
+    @SmallTest
+    public void testRemoveRequestsFromQueue() throws Exception {
+        String url = "https://www.google.com/";
+        String namespace = "custom_tabs";
+        savePageLater(url, namespace);
+
+        String url2 = "https://mail.google.com/";
+        String namespace2 = "last_n";
+        savePageLater(url2, namespace2);
+
+        SavePageRequest[] requests = getRequestsInQueue();
+        assertEquals(2, requests.length);
+
+        List<Long> requestsToRemove = new ArrayList<>();
+        requestsToRemove.add(Long.valueOf(requests[1].getRequestId()));
+
+        List<OfflinePageBridge.RequestRemovedResult> removed =
+                removeRequestsFromQueue(requestsToRemove);
+        assertEquals(requests[1].getRequestId(), removed.get(0).getRequestId());
+        assertEquals(org.chromium.components.offlinepages.background.UpdateRequestResult.SUCCESS,
+                removed.get(0).getUpdateRequestResult());
+
+        SavePageRequest[] remaining = getRequestsInQueue();
+        assertEquals(1, remaining.length);
+
+        assertEquals(requests[0].getRequestId(), remaining[0].getRequestId());
+        assertEquals(requests[0].getUrl(), remaining[0].getUrl());
+    }
+
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
@@ -398,6 +427,29 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                         semaphore.release();
                     }
                 });
+            }
+        });
+        assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        return ref.get();
+    }
+
+    private List<OfflinePageBridge.RequestRemovedResult> removeRequestsFromQueue(
+            final List<Long> requestsToRemove) throws InterruptedException {
+        final AtomicReference<List<OfflinePageBridge.RequestRemovedResult>> ref =
+                new AtomicReference<>();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.removeRequestsFromQueue(requestsToRemove,
+                        new Callback<List<OfflinePageBridge.RequestRemovedResult>>() {
+                            @Override
+                            public void onResult(
+                                    List<OfflinePageBridge.RequestRemovedResult> removedRequests) {
+                                ref.set(removedRequests);
+                                semaphore.release();
+                            }
+                        });
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

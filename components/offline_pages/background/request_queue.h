@@ -36,6 +36,7 @@ class RequestQueue {
                         // reached a quota of active requests.
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages.background
   enum class UpdateRequestResult {
     SUCCESS,
     STORE_FAILURE,

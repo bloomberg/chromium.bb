@@ -214,6 +214,10 @@ class RequestCoordinatorTest
   void GetRequestsDone(RequestQueue::GetRequestsResult result,
                        const std::vector<SavePageRequest>& requests);
 
+  // Callback for removing requests.
+  void RemoveRequestsDone(
+      const RequestQueue::UpdateMultipleRequestResults& results);
+
   // Callback for getting request statuses.
   void GetQueuedRequestsDone(const std::vector<SavePageRequest>& requests);
 
@@ -226,6 +230,11 @@ class RequestCoordinatorTest
 
   const std::vector<SavePageRequest>& last_requests() const {
     return last_requests_;
+  }
+
+  const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
+      const {
+    return last_remove_results_;
   }
 
   void EnableOfflinerCallback(bool enable) {
@@ -259,6 +268,7 @@ class RequestCoordinatorTest
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
   std::vector<SavePageRequest> last_requests_;
+  RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<RequestCoordinator> coordinator_;
@@ -302,6 +312,12 @@ void RequestCoordinatorTest::GetRequestsDone(
     const std::vector<SavePageRequest>& requests) {
   last_get_requests_result_ = result;
   last_requests_ = requests;
+}
+
+void RequestCoordinatorTest::RemoveRequestsDone(
+    const RequestQueue::UpdateMultipleRequestResults& results) {
+  last_remove_results_ = results;
+  waiter_.Signal();
 }
 
 void RequestCoordinatorTest::GetQueuedRequestsDone(
@@ -631,7 +647,9 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
 
   // Remove the request while it is processing.
   std::vector<int64_t> request_ids{kRequestId1};
-  coordinator()->RemoveRequests(request_ids);
+  coordinator()->RemoveRequests(
+      request_ids, base::Bind(&RequestCoordinatorTest::RemoveRequestsDone,
+                              base::Unretained(this)));
 
   // Let the async callbacks in the cancel run.
   PumpLoop();
@@ -789,7 +807,7 @@ TEST_F(RequestCoordinatorTest, PauseAndResumeObserver) {
   EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
 }
 
-TEST_F(RequestCoordinatorTest, ObserverdRemoveRequest) {
+TEST_F(RequestCoordinatorTest, RemoveRequest) {
   // Add a request to the queue.
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           base::Time::Now(), kUserRequested);
@@ -801,12 +819,19 @@ TEST_F(RequestCoordinatorTest, ObserverdRemoveRequest) {
   // Remove the request.
   std::vector<int64_t> request_ids;
   request_ids.push_back(kRequestId1);
-  coordinator()->RemoveRequests(request_ids);
+  coordinator()->RemoveRequests(
+      request_ids, base::Bind(&RequestCoordinatorTest::RemoveRequestsDone,
+                              base::Unretained(this)));
+
+  PumpLoop();
+  WaitForCallback();
   PumpLoop();
 
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::SavePageStatus::REMOVED,
             observer().last_status());
+  EXPECT_EQ(1UL, last_remove_results().size());
+  EXPECT_EQ(kRequestId1, std::get<0>(last_remove_results().at(0)));
 }
 
 }  // namespace offline_pages

@@ -244,6 +244,69 @@ public class OfflinePageBridge {
         nativeGetRequestsInQueue(mNativeOfflinePageBridge, callback);
     }
 
+    private static class RequestsRemovedCallback {
+        private Callback<List<RequestRemovedResult>> mCallback;
+
+        public RequestsRemovedCallback(Callback<List<RequestRemovedResult>> callback) {
+            mCallback = callback;
+        }
+
+        @CalledByNative("RequestsRemovedCallback")
+        public void onResult(long[] resultIds, int[] resultCodes) {
+            assert resultIds.length == resultCodes.length;
+
+            List<RequestRemovedResult> results = new ArrayList<>();
+            for (int i = 0; i < resultIds.length; i++) {
+                results.add(new RequestRemovedResult(resultIds[i], resultCodes[i]));
+            }
+
+            mCallback.onResult(results);
+        }
+    }
+
+    /**
+     * Contains a result for a remove page request.
+     */
+    public static class RequestRemovedResult {
+        private long mRequestId;
+        private int mUpdateRequestResult;
+
+        public RequestRemovedResult(long requestId, int requestResult) {
+            mRequestId = requestId;
+            mUpdateRequestResult = requestResult;
+        }
+
+        /** Request ID as found in the SavePageRequest. */
+        public long getRequestId() {
+            return mRequestId;
+        }
+
+        /** {@see org.chromium.components.offlinepages.background.UpdateRequestResult} enum. */
+        public int getUpdateRequestResult() {
+            return mUpdateRequestResult;
+        }
+    }
+
+    /**
+     * Removes SavePageRequests from the request queue.
+     *
+     * The callback will be called with |null| in the case that the queue is unavailable.  This can
+     * happen in incognito, for example.
+     *
+     * @param requestIds The IDs of the requests to remove.
+     * @param callback Called when the removal is done, with the SavePageRequest objects that were
+     *     actually removed.
+     */
+    public void removeRequestsFromQueue(
+            List<Long> requestIdList, Callback<List<RequestRemovedResult>> callback) {
+        long[] requestIds = new long[requestIdList.size()];
+        for (int i = 0; i < requestIdList.size(); i++) {
+            requestIds[i] = requestIdList.get(i).longValue();
+        }
+        nativeRemoveRequestsFromQueue(
+                mNativeOfflinePageBridge, requestIds, new RequestsRemovedCallback(callback));
+    }
+
     private List<OfflinePageItem> getPagesByClientIdInternal(ClientId clientId) {
         Set<Long> ids = getOfflineIdsForClientId(clientId);
         List<OfflinePageItem> result = new ArrayList<>();
@@ -550,6 +613,10 @@ public class OfflinePageBridge {
     @VisibleForTesting
     native void nativeGetRequestsInQueue(
             long nativeOfflinePageBridge, Callback<SavePageRequest[]> callback);
+
+    @VisibleForTesting
+    native void nativeRemoveRequestsFromQueue(
+            long nativeOfflinePageBridge, long[] requestIds, RequestsRemovedCallback callback);
 
     @VisibleForTesting
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);

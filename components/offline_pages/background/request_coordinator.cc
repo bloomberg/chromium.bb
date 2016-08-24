@@ -152,11 +152,13 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
 }
 
 void RequestCoordinator::RemoveRequests(
-    const std::vector<int64_t>& request_ids) {
+    const std::vector<int64_t>& request_ids,
+    const RemoveRequestsCallback& callback) {
   bool canceled = CancelActiveRequestIfItMatches(request_ids);
-  queue_->RemoveRequests(request_ids,
-                         base::Bind(&RequestCoordinator::RemoveRequestsCallback,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  queue_->RemoveRequests(
+      request_ids,
+      base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
   if (canceled)
     TryNextRequest();
 }
@@ -210,7 +212,15 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
     NotifyChanged(request);
 }
 
-void RequestCoordinator::RemoveRequestsCallback(
+void RequestCoordinator::HandleRemovedRequestsAndCallback(
+    const RemoveRequestsCallback& callback,
+    const RequestQueue::UpdateMultipleRequestResults& results,
+    const std::vector<SavePageRequest>& requests) {
+  callback.Run(results);
+  HandleRemovedRequests(results, requests);
+}
+
+void RequestCoordinator::HandleRemovedRequests(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   for (SavePageRequest request : requests)
@@ -356,7 +366,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     std::vector<int64_t> remove_requests;
     remove_requests.push_back(request.request_id());
     queue_->RemoveRequests(
-        remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
+        remove_requests, base::Bind(&RequestCoordinator::HandleRemovedRequests,
                                     weak_ptr_factory_.GetWeakPtr()));
     NotifyCompleted(request, SavePageStatus::SUCCESS);
   } else if (request.completed_attempt_count() + 1 >=
@@ -368,7 +378,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     std::vector<int64_t> remove_requests;
     remove_requests.push_back(request.request_id());
     queue_->RemoveRequests(
-        remove_requests, base::Bind(&RequestCoordinator::RemoveRequestsCallback,
+        remove_requests, base::Bind(&RequestCoordinator::HandleRemovedRequests,
                                     weak_ptr_factory_.GetWeakPtr()));
     NotifyCompleted(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
   } else {
