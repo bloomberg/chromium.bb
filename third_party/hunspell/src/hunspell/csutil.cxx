@@ -96,10 +96,10 @@ char * u16_u8(char * dest, int size, const w_char * src, int srclen) {
 
 /* only UTF-16 (BMP) implementation */
 int u8_u16(w_char * dest, int size, const char * src) {
-    const signed char * u8 = (const signed char *)src;
+    const unsigned char * u8 = (const unsigned char*)src;
     w_char * u2 = dest;
     w_char * u2_max = u2 + size;
-    
+
     while ((u2 < u2_max) && *u8) {
     switch ((*u8) & 0xf0) {
         case 0x00:
@@ -118,7 +118,7 @@ int u8_u16(w_char * dest, int size, const char * src) {
         case 0x90:
         case 0xa0:
         case 0xb0: {
-            HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Unexpected continuation bytes in %ld. character position\n%s\n", static_cast<long>(u8 - (signed char *)src), src);    
+            HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Unexpected continuation bytes in %ld. character position\n%s\n", static_cast<long>(u8 - (const unsigned char*)src), src);
             u2->h = 0xff;
             u2->l = 0xfd;
             break;
@@ -130,7 +130,7 @@ int u8_u16(w_char * dest, int size, const char * src) {
                 u2->l = (*u8 << 6) + (*(u8+1) & 0x3f);
                 u8++;
             } else {
-                HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (signed char *)src), src);
+                HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (const unsigned char*)src), src);
                 u2->h = 0xff;
                 u2->l = 0xfd;
             }
@@ -144,12 +144,12 @@ int u8_u16(w_char * dest, int size, const char * src) {
                     u2->l = (*u8 << 6) + (*(u8+1) & 0x3f);
                     u8++;
                 } else {
-                    HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (signed char *)src), src);
+                    HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (const unsigned char*)src), src);
                     u2->h = 0xff;
                     u2->l = 0xfd;
                 }
             } else {
-                HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (signed char *)src), src);
+                HUNSPELL_WARNING(stderr, "UTF-8 encoding error. Missing continuation byte in %ld. character position:\n%s\n", static_cast<long>(u8 - (const unsigned char*)src), src);
                 u2->h = 0xff;
                 u2->l = 0xfd;
             }
