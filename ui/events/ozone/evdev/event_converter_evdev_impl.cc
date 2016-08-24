@@ -237,7 +237,7 @@ void EventConverterEvdevImpl::OnButtonChange(int code,
   mouse_button_state_.set(button_offset, down);
 
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      input_device_.id, cursor_->GetLocation(), code, down,
+      input_device_.id, EF_NONE, cursor_->GetLocation(), code, down,
       /* allow_remap */ true,
       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), timestamp));
 }
@@ -249,7 +249,7 @@ void EventConverterEvdevImpl::FlushEvents(const input_event& input) {
   cursor_->MoveCursor(gfx::Vector2dF(x_offset_, y_offset_));
 
   dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(input_device_.id, cursor_->GetLocation(),
+      MouseMoveEventParams(input_device_.id, EF_NONE, cursor_->GetLocation(),
                            PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
                            TimeTicksFromInputEvent(input)));
 

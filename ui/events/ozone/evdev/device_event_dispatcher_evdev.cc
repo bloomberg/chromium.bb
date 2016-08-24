@@ -24,10 +24,12 @@ KeyEventParams::~KeyEventParams() {
 }
 
 MouseMoveEventParams::MouseMoveEventParams(int device_id,
+                                           int flags,
                                            const gfx::PointF& location,
                                            const PointerDetails& details,
                                            base::TimeTicks timestamp)
     : device_id(device_id),
+      flags(flags),
       location(location),
       pointer_details(details),
       timestamp(timestamp) {}
@@ -39,6 +41,7 @@ MouseMoveEventParams::~MouseMoveEventParams() {
 }
 
 MouseButtonEventParams::MouseButtonEventParams(int device_id,
+                                               int flags,
                                                const gfx::PointF& location,
                                                unsigned int button,
                                                bool down,
@@ -46,6 +49,7 @@ MouseButtonEventParams::MouseButtonEventParams(int device_id,
                                                const PointerDetails& details,
                                                base::TimeTicks timestamp)
     : device_id(device_id),
+      flags(flags),
       location(location),
       button(button),
       down(down),

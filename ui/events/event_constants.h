@@ -127,13 +127,15 @@ enum KeyEventFlags {
 
 // Flags specific to mouse events
 enum MouseEventFlags {
-  EF_IS_DOUBLE_CLICK     = 1 << 15,
-  EF_IS_TRIPLE_CLICK     = 1 << 16,
-  EF_IS_NON_CLIENT       = 1 << 17,
-  EF_FROM_TOUCH          = 1 << 18,  // Indicates this mouse event is generated
+  EF_IS_DOUBLE_CLICK = 1 << 15,
+  EF_IS_TRIPLE_CLICK = 1 << 16,
+  EF_IS_NON_CLIENT = 1 << 17,
+  EF_FROM_TOUCH = 1 << 18,           // Indicates this mouse event is generated
                                      // from an unconsumed touch/gesture event.
   EF_TOUCH_ACCESSIBILITY = 1 << 19,  // Indicates this event was generated from
                                      // touch accessibility mode.
+  EF_DIRECT_INPUT = 1 << 20,         // Mouse event coming from direct,
+                                     // on-screen input.
 };
 
 // Result of dispatching an event.

@@ -128,6 +128,32 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
   base::WeakPtr<EventFactoryEvdev> event_factory_evdev_;
 };
 
+template <typename T>
+gfx::PointF GetTransformedEventLocation(const T& params) {
+  float x = params.location.x();
+  float y = params.location.y();
+
+  // Transform the event to align touches to the image based on display mode.
+  DeviceDataManager::GetInstance()->ApplyTouchTransformer(params.device_id, &x,
+                                                          &y);
+  return gfx::PointF(x, y);
+}
+
+template <typename T>
+PointerDetails GetTransformedEventPointerDetails(const T& params) {
+  double radius_x = params.pointer_details.radius_x;
+  double radius_y = params.pointer_details.radius_y;
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
+                                                          &radius_x);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
+                                                          &radius_y);
+
+  PointerDetails details = params.pointer_details;
+  details.radius_x = radius_x;
+  details.radius_y = radius_y;
+  return details;
+}
+
 }  // namespace
 
 EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
@@ -179,13 +205,24 @@ void EventFactoryEvdev::DispatchMouseMoveEvent(
     const MouseMoveEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchMouseMoveEvent", "device",
                params.device_id);
+
+  gfx::PointF location = params.location;
+  PointerDetails details = params.pointer_details;
+
+  if (params.flags & EF_DIRECT_INPUT) {
+    details = GetTransformedEventPointerDetails(params);
+    cursor_->MoveCursorTo(GetTransformedEventLocation(params));
+    location = cursor_->GetLocation();
+  }
+
   MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
-                   params.timestamp, modifiers_.GetModifierFlags(),
+                   params.timestamp,
+                   modifiers_.GetModifierFlags() | params.flags,
                    /* changed_button_flags */ 0);
-  event.set_location_f(params.location);
-  event.set_root_location_f(params.location);
+  event.set_location_f(location);
+  event.set_root_location_f(location);
   event.set_source_device_id(params.device_id);
-  event.set_pointer_details(params.pointer_details);
+  event.set_pointer_details(details);
   DispatchUiEvent(&event);
 }
 
@@ -193,6 +230,15 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
     const MouseButtonEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchMouseButtonEvent", "device",
                params.device_id);
+
+  gfx::PointF location = params.location;
+  PointerDetails details = params.pointer_details;
+
+  if (params.flags & EF_DIRECT_INPUT) {
+    details = GetTransformedEventPointerDetails(params);
+    cursor_->MoveCursorTo(GetTransformedEventLocation(params));
+    location = cursor_->GetLocation();
+  }
 
   // Mouse buttons can be remapped, touchpad taps & clicks cannot.
   unsigned int button = params.button;
@@ -232,12 +278,12 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
 
   MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
                    gfx::Point(), gfx::Point(), params.timestamp,
-                   modifiers_.GetModifierFlags() | flag,
+                   modifiers_.GetModifierFlags() | flag | params.flags,
                    /* changed_button_flags */ flag);
-  event.set_location_f(params.location);
-  event.set_root_location_f(params.location);
+  event.set_location_f(location);
+  event.set_root_location_f(location);
   event.set_source_device_id(params.device_id);
-  event.set_pointer_details(params.pointer_details);
+  event.set_pointer_details(details);
   DispatchUiEvent(&event);
 }
 
@@ -283,22 +329,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchTouchEvent", "device",
                params.device_id);
 
-  float x = params.location.x();
-  float y = params.location.y();
-  double radius_x = params.pointer_details.radius_x;
-  double radius_y = params.pointer_details.radius_y;
-
-  // Transform the event to align touches to the image based on display mode.
-  DeviceDataManager::GetInstance()->ApplyTouchTransformer(params.device_id, &x,
-                                                          &y);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
-                                                          &radius_x);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(params.device_id,
-                                                          &radius_y);
-
-  PointerDetails details = params.pointer_details;
-  details.radius_x = radius_x;
-  details.radius_y = radius_y;
+  gfx::PointF location = GetTransformedEventLocation(params);
+  PointerDetails details = GetTransformedEventPointerDetails(params);
 
   // params.slot is guaranteed to be < kNumTouchEvdevSlots.
   int touch_id = touch_id_generator_.GetGeneratedID(
@@ -307,8 +339,8 @@ void EventFactoryEvdev::DispatchTouchEvent(const TouchEventParams& params) {
       params.type, gfx::Point(), modifiers_.GetModifierFlags(), touch_id,
       params.timestamp, /* radius_x */ 0.f, /* radius_y */ 0.f,
       /* angle */ 0.f, /* force */ 0.f);
-  touch_event.set_location_f(gfx::PointF(x, y));
-  touch_event.set_root_location_f(gfx::PointF(x, y));
+  touch_event.set_location_f(location);
+  touch_event.set_root_location_f(location);
   touch_event.set_source_device_id(params.device_id);
   touch_event.set_pointer_details(details);
   DispatchUiEvent(&touch_event);
@@ -408,7 +440,7 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
       base::Bind(&EventFactoryEvdev::DispatchMouseMoveEvent,
                  weak_ptr_factory_.GetWeakPtr(),
                  MouseMoveEventParams(
-                     -1 /* device_id */, cursor_->GetLocation(),
+                     -1 /* device_id */, EF_NONE, cursor_->GetLocation(),
                      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
                      EventTimeForNow())));
 }

@@ -28,6 +28,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
                  bool suppress_auto_repeat,
                  base::TimeTicks timestamp);
   KeyEventParams(const KeyEventParams& other);
+  KeyEventParams() {}
   ~KeyEventParams();
 
   int device_id;
@@ -39,13 +40,16 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
   MouseMoveEventParams(int device_id,
+                       int flags,
                        const gfx::PointF& location,
                        const PointerDetails& details,
                        base::TimeTicks timestamp);
   MouseMoveEventParams(const MouseMoveEventParams& other);
+  MouseMoveEventParams() {}
   ~MouseMoveEventParams();
 
   int device_id;
+  int flags;
   gfx::PointF location;
   PointerDetails pointer_details;
   base::TimeTicks timestamp;
@@ -53,6 +57,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseMoveEventParams {
 
 struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
   MouseButtonEventParams(int device_id,
+                         int flags,
                          const gfx::PointF& location,
                          unsigned int button,
                          bool down,
@@ -60,9 +65,11 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseButtonEventParams {
                          const PointerDetails& details,
                          base::TimeTicks timestamp);
   MouseButtonEventParams(const MouseButtonEventParams& other);
+  MouseButtonEventParams() {}
   ~MouseButtonEventParams();
 
   int device_id;
+  int flags;
   gfx::PointF location;
   unsigned int button;
   bool down;
@@ -77,6 +84,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT MouseWheelEventParams {
                         const gfx::Vector2d& delta,
                         base::TimeTicks timestamp);
   MouseWheelEventParams(const MouseWheelEventParams& other);
+  MouseWheelEventParams() {}
   ~MouseWheelEventParams();
 
   int device_id;
@@ -92,6 +100,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT PinchEventParams {
                    float scale,
                    const base::TimeTicks timestamp);
   PinchEventParams(const PinchEventParams& other);
+  PinchEventParams() {}
   ~PinchEventParams();
 
   int device_id;
@@ -110,6 +119,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT ScrollEventParams {
                     int finger_count,
                     const base::TimeTicks timestamp);
   ScrollEventParams(const ScrollEventParams& other);
+  ScrollEventParams() {}
   ~ScrollEventParams();
 
   int device_id;
@@ -129,6 +139,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT TouchEventParams {
                    const PointerDetails& pointer_details,
                    const base::TimeTicks& timestamp);
   TouchEventParams(const TouchEventParams& other);
+  TouchEventParams() {}
   ~TouchEventParams();
 
   int device_id;

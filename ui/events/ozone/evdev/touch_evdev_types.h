@@ -39,6 +39,14 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   float radius_y = 0;
   float pressure = 0;
   int tool_code = 0;
+
+  struct ButtonState {
+    bool down = false;
+    bool changed = false;
+  };
+  ButtonState btn_left;
+  ButtonState btn_right;
+  ButtonState btn_middle;
 };
 
 }  // namespace ui

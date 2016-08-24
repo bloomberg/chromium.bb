@@ -48,7 +48,7 @@ void InputInjectorEvdev::InjectMouseButton(EventFlags button, bool down) {
   }
 
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      kDeviceIdForInjection, cursor_->GetLocation(), code, down,
+      kDeviceIdForInjection, EF_NONE, cursor_->GetLocation(), code, down,
       false /* allow_remap */,
       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), EventTimeForNow()));
 }
@@ -66,7 +66,7 @@ void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
   cursor_->MoveCursorTo(location);
 
   dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
-      kDeviceIdForInjection, cursor_->GetLocation(),
+      kDeviceIdForInjection, EF_NONE, cursor_->GetLocation(),
       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE), EventTimeForNow()));
 }
 
