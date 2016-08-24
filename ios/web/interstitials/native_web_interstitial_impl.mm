@@ -63,4 +63,10 @@ void NativeWebInterstitialImpl::EvaluateJavaScript(
   NOTREACHED() << "JavaScript cannot be evaluated on native interstitials.";
 }
 
+void NativeWebInterstitialImpl::ExecuteJavaScript(
+    NSString* script,
+    JavaScriptResultBlock completion_handler) {
+  NOTREACHED() << "JavaScript cannot be executed on native interstitials.";
+}
+
 }  // namespace web

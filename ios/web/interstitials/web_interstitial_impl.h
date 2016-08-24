@@ -77,8 +77,15 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   // Evaluates the given |script| on interstitial's web view if there is one.
   // Calls |completionHandler| with results of the evaluation.
   // The |completionHandler| can be nil. Must be used only for testing.
+  // DEPRECATED. TODO(crbug.com/595761): Remove this method.
   virtual void EvaluateJavaScript(NSString* script,
                                   JavaScriptCompletion completionHandler) = 0;
+
+  // Executes the given |script| on interstitial's web view if there is one.
+  // Calls |completionHandler| with results of the evaluation.
+  // The |completionHandler| can be nil. Must be used only for testing.
+  virtual void ExecuteJavaScript(NSString* script,
+                                 JavaScriptResultBlock completion_handler) = 0;
 
  private:
   // The navigation manager corresponding to the WebState the interstiatial was

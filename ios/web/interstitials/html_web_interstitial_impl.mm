@@ -135,4 +135,10 @@ void HtmlWebInterstitialImpl::EvaluateJavaScript(
   web::EvaluateJavaScript(web_view_, script, completionHandler);
 }
 
+void HtmlWebInterstitialImpl::ExecuteJavaScript(
+    NSString* script,
+    JavaScriptResultBlock completion_handler) {
+  web::ExecuteJavaScript(web_view_, script, completion_handler);
+}
+
 }  // namespace web

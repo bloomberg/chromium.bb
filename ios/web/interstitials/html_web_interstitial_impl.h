@@ -41,6 +41,8 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
   WebInterstitialDelegate* GetDelegate() const override;
   void EvaluateJavaScript(NSString* script,
                           JavaScriptCompletion completionHandler) override;
+  void ExecuteJavaScript(NSString* script,
+                         JavaScriptResultBlock completion_handler) override;
 
  private:
   // The HTML interstitial delegate.
