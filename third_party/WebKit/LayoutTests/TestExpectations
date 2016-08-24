@@ -58,7 +58,6 @@ crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure 
 
 # Some SVG tests fail due to incorrect visual rects.
 crbug.com/598051 svg/custom/absolute-sized-content-with-resources.xhtml [ Skip ]
-crbug.com/598051 svg/overflow/overflow-on-foreignObject.svg [ Skip ]
 crbug.com/598051 svg/zoom/page/zoom-foreignObject.svg [ Skip ]
 
 crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
