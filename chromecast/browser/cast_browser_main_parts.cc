@@ -59,6 +59,7 @@
 #include "device/geolocation/geolocation_provider.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/native_theme/native_theme_switches.h"
 
@@ -73,7 +74,6 @@
 #if defined(OS_ANDROID)
 #include "chromecast/app/android/crash_handler.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#include "media/base/media_switches.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #else
 #include "chromecast/net/network_change_notifier_factory_cast.h"
@@ -220,6 +220,8 @@ DefaultCommandLineSwitch g_default_switches[] = {
 #else
   // GPU shader disk cache disabling is largely to conserve disk space.
   { switches::kDisableGpuShaderDiskCache, "" },
+  // Enable media sessions by default (even on non-Android platforms).
+  { switches::kEnableDefaultMediaSession, "" },
 #endif
 #if BUILDFLAG(DISABLE_DISPLAY)
   { switches::kDisableGpu, "" },
