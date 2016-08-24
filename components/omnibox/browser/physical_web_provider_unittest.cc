@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/physical_web/data_source/physical_web_listener.h"
 #include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +41,11 @@ class MockPhysicalWebDataSource : public PhysicalWebDataSource {
   bool HasUnresolvedDiscoveries() override {
     return false;
   }
+
+  void RegisterListener(PhysicalWebListener* physical_web_listener) override {}
+
+  void UnregisterListener(
+      PhysicalWebListener* physical_web_listener) override {}
 
   // for testing
   void SetMetadata(std::unique_ptr<base::ListValue> metadata) {

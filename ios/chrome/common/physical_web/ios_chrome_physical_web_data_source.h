@@ -12,6 +12,7 @@
 namespace base {
 class ListValue;
 }
+class PhysicalWebListener;
 
 @class PhysicalWebScanner;
 
@@ -35,6 +36,12 @@ class IOSChromePhysicalWebDataSource : public PhysicalWebDataSource {
   // Returns boolean |true| if network requests are disabled and there are one
   // or more discovered URLs that have not been sent to the resolution service.
   bool HasUnresolvedDiscoveries() override;
+
+  // Register for changes to Physical Web URLs and associated page metadata.
+  void RegisterListener(PhysicalWebListener* physical_web_listener) override;
+
+  // Unregister for changes to Physical Web URLs and associated page metadata.
+  void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
 
  private:
   // Scanner for nearby Physical Web URL devices.

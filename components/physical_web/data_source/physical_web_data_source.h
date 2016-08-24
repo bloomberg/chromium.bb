@@ -11,6 +11,8 @@ namespace base {
 class ListValue;
 }
 
+class PhysicalWebListener;
+
 // Helper class for accessing Physical Web metadata and controlling the scanner.
 class PhysicalWebDataSource {
  public:
@@ -35,6 +37,13 @@ class PhysicalWebDataSource {
   // If discovery is inactive or network requests are enabled, it will always
   // return false.
   virtual bool HasUnresolvedDiscoveries() = 0;
+
+  // Register for changes to Physical Web URLs and associated page metadata.
+  virtual void RegisterListener(PhysicalWebListener* physical_web_listener) = 0;
+
+  // Unregister for changes to Physical Web URLs and associated page metadata.
+  virtual void UnregisterListener(
+      PhysicalWebListener* physical_web_listener) = 0;
 };
 
 #endif  // COMPONENTS_PHYSICAL_WEB_DATA_SOURCE_PHYSICAL_WEB_DATA_SOURCE_H_
