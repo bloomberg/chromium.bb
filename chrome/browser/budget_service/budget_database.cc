@@ -27,6 +27,15 @@ constexpr double kBudgetDurationInHours = 72;
 
 }  // namespace
 
+BudgetDatabase::BudgetInfo::BudgetInfo() {}
+
+BudgetDatabase::BudgetInfo::BudgetInfo(const BudgetInfo&& other)
+    : last_engagement_award(other.last_engagement_award) {
+  chunks = std::move(other.chunks);
+}
+
+BudgetDatabase::BudgetInfo::~BudgetInfo() {}
+
 BudgetDatabase::BudgetDatabase(
     const base::FilePath& database_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -72,9 +81,90 @@ void BudgetDatabase::AddBudget(const GURL& origin,
   // Add a new chunk of budget for the origin at the default expiration time.
   base::Time expiration =
       clock_->Now() + base::TimeDelta::FromHours(kBudgetDurationInHours);
-  budget_map_[origin.spec()].emplace_back(amount, expiration);
+  budget_map_[origin.spec()].chunks.emplace_back(amount, expiration);
 
   // Now that the cache is updated, write the data to the database.
+  WriteCachedValuesToDatabase(origin, callback);
+}
+
+void BudgetDatabase::AddEngagementBudget(const GURL& origin,
+                                         double score,
+                                         const StoreBudgetCallback& callback) {
+  DCHECK_EQ(origin.GetOrigin(), origin);
+
+  // By default we award the "full" award. Then that ratio is decreased if
+  // there have been other awards recently.
+  double ratio = 1.0;
+
+  // Calculate how much budget should be awarded. If the origin is not cached,
+  // then we award a full amount.
+  if (IsCached(origin)) {
+    base::TimeDelta elapsed =
+        clock_->Now() - budget_map_[origin.spec()].last_engagement_award;
+    int elapsed_hours = elapsed.InHours();
+    if (elapsed_hours == 0) {
+      // Don't give engagement awards for periods less than an hour.
+      callback.Run(true);
+      return;
+    }
+    if (elapsed_hours < kBudgetDurationInHours)
+      ratio = elapsed_hours / kBudgetDurationInHours;
+  }
+
+  // Update the last_engagement_award to the current time. If the origin wasn't
+  // already in the map, this adds a new entry for it.
+  budget_map_[origin.spec()].last_engagement_award = clock_->Now();
+
+  // Pass to the base AddBudget to update the cache and write to the database.
+  AddBudget(origin, score * ratio, callback);
+}
+
+void BudgetDatabase::SpendBudget(const GURL& origin,
+                                 double amount,
+                                 const StoreBudgetCallback& callback) {
+  DCHECK_EQ(origin.GetOrigin(), origin);
+
+  // First, cleanup any expired budget chunks for the origin.
+  CleanupExpiredBudget(origin);
+
+  if (!IsCached(origin)) {
+    callback.Run(false);
+    return;
+  }
+
+  // Walk the list of budget chunks to see if the origin has enough budget.
+  double total = 0;
+  BudgetInfo& info = budget_map_[origin.spec()];
+  for (const BudgetChunk& chunk : info.chunks)
+    total += chunk.amount;
+
+  if (total < amount) {
+    callback.Run(false);
+    return;
+  }
+
+  // Walk the chunks and remove enough budget to cover the needed amount.
+  double bill = amount;
+  for (auto iter = info.chunks.begin(); iter != info.chunks.end();) {
+    if (iter->amount > bill) {
+      iter->amount -= bill;
+      bill = 0;
+      ++iter;
+      break;
+    }
+    bill -= iter->amount;
+    iter = info.chunks.erase(iter);
+  }
+
+  // There should have been enough budget to cover the entire bill.
+  DCHECK_EQ(0, bill);
+
+  // Now that the cache is updated, write the data to the database.
+  // TODO(harkness): Consider adding a second parameter to the callback so the
+  // caller can distinguish between not enough budget and a failed database
+  // write.
+  // TODO(harkness): If the database write fails, the cache will be out of sync
+  // with the database. Consider ways to mitigate this.
   WriteCachedValuesToDatabase(origin, callback);
 }
 
@@ -99,13 +189,14 @@ void BudgetDatabase::AddToCache(
 
   // Add the data to the cache, converting from the proto format to an STL
   // format which is better for removing things from the list.
-  BudgetChunks chunks;
+  BudgetInfo& info = budget_map_[origin.spec()];
   for (const auto& chunk : budget_proto->budget()) {
-    chunks.emplace_back(chunk.amount(),
-                        base::Time::FromInternalValue(chunk.expiration()));
+    info.chunks.emplace_back(chunk.amount(),
+                             base::Time::FromInternalValue(chunk.expiration()));
   }
 
-  budget_map_[origin.spec()] = std::move(chunks);
+  info.last_engagement_award =
+      base::Time::FromInternalValue(budget_proto->engagement_last_updated());
 
   callback.Run(success);
 }
@@ -114,9 +205,9 @@ void BudgetDatabase::DidGetBudget(const GURL& origin,
                                   const GetBudgetDetailsCallback& callback,
                                   bool success) {
   // If the database wasn't able to read the information, return the
-  // failure and an empty BudgetExpectation.
+  // failure and an empty BudgetPrediction.
   if (!success) {
-    callback.Run(success, BudgetExpectation());
+    callback.Run(success, BudgetPrediction());
     return;
   }
 
@@ -125,25 +216,25 @@ void BudgetDatabase::DidGetBudget(const GURL& origin,
 
   // Now, build up the BudgetExpection. This is different from the format
   // in which the cache stores the data. The cache stores chunks of budget and
-  // when that budget expires. The BudgetExpectation describes a set of times
+  // when that budget expires. The BudgetPrediction describes a set of times
   // and the budget at those times.
-  BudgetExpectation expectation;
+  BudgetPrediction prediction;
   double total = 0;
 
   if (IsCached(origin)) {
     // Starting with the chunks that expire the farthest in the future, build up
-    // the budget expectations for those future times.
-    const BudgetChunks& chunks = budget_map_[origin.spec()];
+    // the budget predictions for those future times.
+    const BudgetChunks& chunks = budget_map_[origin.spec()].chunks;
     for (const auto& chunk : base::Reversed(chunks)) {
-      expectation.emplace_front(total, chunk.expiration);
+      prediction.emplace_front(total, chunk.expiration);
       total += chunk.amount;
     }
   }
 
   // Always add one entry at the front of the list for the total budget now.
-  expectation.emplace_front(total, clock_->Now());
+  prediction.emplace_front(total, clock_->Now());
 
-  callback.Run(true /* success */, expectation);
+  callback.Run(true /* success */, prediction);
 }
 
 void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
@@ -169,12 +260,14 @@ void BudgetDatabase::WriteCachedValuesToDatabase(
   if (IsCached(origin)) {
     // Build the Budget proto object.
     budget_service::Budget budget;
-    const BudgetChunks& chunks = budget_map_[origin.spec()];
-    for (const auto& chunk : chunks) {
+    const BudgetInfo& info = budget_map_[origin.spec()];
+    for (const auto& chunk : info.chunks) {
       budget_service::BudgetChunk* budget_chunk = budget.add_budget();
       budget_chunk->set_amount(chunk.amount);
       budget_chunk->set_expiration(chunk.expiration.ToInternalValue());
     }
+    budget.set_engagement_last_updated(
+        info.last_engagement_award.ToInternalValue());
     entries->push_back(std::make_pair(origin.spec(), budget));
   } else {
     // If the origin doesn't exist in the cache, this is a remove operation.
@@ -191,14 +284,17 @@ void BudgetDatabase::CleanupExpiredBudget(const GURL& origin) {
 
   base::Time now = clock_->Now();
 
-  BudgetChunks& chunks = budget_map_[origin.spec()];
+  BudgetChunks& chunks = budget_map_[origin.spec()].chunks;
   auto cleanup_iter = chunks.begin();
 
   // This relies on the list of chunks being in timestamp order.
   while (cleanup_iter != chunks.end() && cleanup_iter->expiration <= now)
     cleanup_iter = chunks.erase(cleanup_iter);
 
-  // If the entire budget is empty now, cleanup the map.
-  if (chunks.empty())
+  // If the entire budget is empty now AND there have been no engagements
+  // in the last kBudgetDurationInHours hours, remove this from the cache.
+  if (chunks.empty() &&
+      budget_map_[origin.spec()].last_engagement_award <
+          clock_->Now() - base::TimeDelta::FromHours(kBudgetDurationInHours))
     budget_map_.erase(origin.spec());
 }

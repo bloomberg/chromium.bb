@@ -9,10 +9,14 @@ package budget_service;
 // Chrome requires this.
 option optimize_for = LITE_RUNTIME;
 
-// Next available id: 2
+// Next available id: 3
 message Budget {
   // The sequence of budget chunks and their expiration times.
   repeated BudgetChunk budget = 1;
+
+  // The timestamp of the last time that new engagement budget was awarded.
+  // This stores the internal value needed to construct a base::Time object.
+  optional int64 engagement_last_updated = 2;
 }
 
 // Next available id: 3

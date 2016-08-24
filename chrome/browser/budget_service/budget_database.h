@@ -8,7 +8,6 @@
 #include <list>
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -44,15 +43,15 @@ class BudgetDatabase {
     base::Time time;
   };
 
-  // Data structure for returing the budget decay expectations to the caller.
-  using BudgetExpectation = std::list<BudgetStatus>;
+  // Data structure for returing the budget decay prediction to the caller.
+  using BudgetPrediction = std::list<BudgetStatus>;
 
   // Callback for setting a budget value.
   using StoreBudgetCallback = base::Callback<void(bool success)>;
 
   // Callback for getting a list of all budget chunks.
   using GetBudgetDetailsCallback =
-      base::Callback<void(bool success, const BudgetExpectation& expectation)>;
+      base::Callback<void(bool success, const BudgetPrediction& prediction)>;
 
   // The database_dir specifies the location of the budget information on
   // disk. The task_runner is used by the ProtoDatabase to handle all blocking
@@ -74,6 +73,23 @@ class BudgetDatabase {
                  double amount,
                  const StoreBudgetCallback& callback);
 
+  // Add budget based on engagement with an origin. The caller specifies the
+  // engagement score of the origin, and the method calculates when engagement
+  // budget was last awarded and awards a portion of the score based on that.
+  // Callback is invoked after the value is written to storage. This should
+  // only be called after the budget has been read from the database.
+  void AddEngagementBudget(const GURL& origin,
+                           double score,
+                           const StoreBudgetCallback& callback);
+
+  // Spend a particular amount of budget for an origin. The callback takes
+  // a boolean which indicates whether the origin had enough budget to spend.
+  // If it returns success, then the budget was deducted and the result written
+  // to the database. This should only be called after the budget has been read.
+  void SpendBudget(const GURL& origin,
+                   double amount,
+                   const StoreBudgetCallback& callback);
+
  private:
   friend class BudgetDatabaseTest;
 
@@ -93,7 +109,21 @@ class BudgetDatabase {
   };
 
   // Data structure for caching budget information.
-  using BudgetChunks = std::vector<BudgetChunk>;
+  using BudgetChunks = std::list<BudgetChunk>;
+
+  // Holds information about the overall budget for a site. This includes the
+  // time the budget was last incremented, as well as a list of budget chunks
+  // which have been awarded.
+  struct BudgetInfo {
+    BudgetInfo();
+    BudgetInfo(const BudgetInfo&& other);
+    ~BudgetInfo();
+
+    base::Time last_engagement_award;
+    BudgetChunks chunks;
+
+    DISALLOW_COPY_AND_ASSIGN(BudgetInfo);
+  };
 
   using AddToCacheCallback = base::Callback<void(bool success)>;
 
@@ -119,7 +149,7 @@ class BudgetDatabase {
   std::unique_ptr<leveldb_proto::ProtoDatabase<budget_service::Budget>> db_;
 
   // Cached data for the origins which have been loaded.
-  std::unordered_map<std::string, BudgetChunks> budget_map_;
+  std::unordered_map<std::string, BudgetInfo> budget_map_;
 
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
