@@ -13,6 +13,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "media/filters/h264_parser.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
@@ -665,10 +666,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       std::unique_ptr<AVCDecoderConfigurationRecord> avcConfig(
           new AVCDecoderConfigurationRecord());
       RCHECK(reader->ReadChild(avcConfig.get()));
+      video_codec = kCodecH264;
+      video_codec_profile = H264Parser::ProfileIDCToVideoCodecProfile(
+          avcConfig->profile_indication);
       frame_bitstream_converter =
           make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
-      video_codec = kCodecH264;
-      video_codec_profile = H264PROFILE_MAIN;
       break;
     }
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

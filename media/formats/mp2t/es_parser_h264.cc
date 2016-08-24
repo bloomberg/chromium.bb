@@ -22,37 +22,6 @@
 namespace media {
 namespace mp2t {
 
-namespace {
-
-VideoCodecProfile ProfileIDCToVideoCodecProfile(int profile_idc) {
-  switch (profile_idc) {
-    case H264SPS::kProfileIDCBaseline:
-      return H264PROFILE_BASELINE;
-    case H264SPS::kProfileIDCMain:
-      return H264PROFILE_MAIN;
-    case H264SPS::kProfileIDCHigh:
-      return H264PROFILE_HIGH;
-    case H264SPS::kProfileIDHigh10:
-      return H264PROFILE_HIGH10PROFILE;
-    case H264SPS::kProfileIDHigh422:
-      return H264PROFILE_HIGH422PROFILE;
-    case H264SPS::kProfileIDHigh444Predictive:
-      return H264PROFILE_HIGH444PREDICTIVEPROFILE;
-    case H264SPS::kProfileIDScalableBaseline:
-      return H264PROFILE_SCALABLEBASELINE;
-    case H264SPS::kProfileIDScalableHigh:
-      return H264PROFILE_SCALABLEHIGH;
-    case H264SPS::kProfileIDStereoHigh:
-      return H264PROFILE_STEREOHIGH;
-    case H264SPS::kProfileIDSMultiviewHigh:
-      return H264PROFILE_MULTIVIEWHIGH;
-  }
-  NOTREACHED() << "unknown video profile: " << profile_idc;
-  return VIDEO_CODEC_PROFILE_UNKNOWN;
-}
-
-}  // namespace
-
 // An AUD NALU is at least 4 bytes:
 // 3 bytes for the start code + 1 byte for the NALU type.
 const int kMinAUDSize = 4;
@@ -325,7 +294,7 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
     return false;
 
   VideoDecoderConfig video_decoder_config(
-      kCodecH264, ProfileIDCToVideoCodecProfile(sps->profile_idc),
+      kCodecH264, H264Parser::ProfileIDCToVideoCodecProfile(sps->profile_idc),
       PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709, coded_size, visible_rect,
       natural_size, EmptyExtraData(), scheme);
 

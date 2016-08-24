@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
+#include "media/base/video_codecs.h"
 #include "media/filters/h264_bit_reader.h"
 
 namespace media {
@@ -360,6 +361,9 @@ class MEDIA_EXPORT H264Parser {
                                          const Ranges<const uint8_t*>& ranges,
                                          off_t* offset,
                                          off_t* start_code_size);
+
+  static VideoCodecProfile ProfileIDCToVideoCodecProfile(int profile_idc);
+
   H264Parser();
   ~H264Parser();
 

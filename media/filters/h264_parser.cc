@@ -305,6 +305,33 @@ bool H264Parser::FindStartCodeInClearRanges(
   return true;
 }
 
+VideoCodecProfile H264Parser::ProfileIDCToVideoCodecProfile(int profile_idc) {
+  switch (profile_idc) {
+    case H264SPS::kProfileIDCBaseline:
+      return H264PROFILE_BASELINE;
+    case H264SPS::kProfileIDCMain:
+      return H264PROFILE_MAIN;
+    case H264SPS::kProfileIDCHigh:
+      return H264PROFILE_HIGH;
+    case H264SPS::kProfileIDHigh10:
+      return H264PROFILE_HIGH10PROFILE;
+    case H264SPS::kProfileIDHigh422:
+      return H264PROFILE_HIGH422PROFILE;
+    case H264SPS::kProfileIDHigh444Predictive:
+      return H264PROFILE_HIGH444PREDICTIVEPROFILE;
+    case H264SPS::kProfileIDScalableBaseline:
+      return H264PROFILE_SCALABLEBASELINE;
+    case H264SPS::kProfileIDScalableHigh:
+      return H264PROFILE_SCALABLEHIGH;
+    case H264SPS::kProfileIDStereoHigh:
+      return H264PROFILE_STEREOHIGH;
+    case H264SPS::kProfileIDSMultiviewHigh:
+      return H264PROFILE_MULTIVIEWHIGH;
+  }
+  NOTREACHED() << "unknown video profile: " << profile_idc;
+  return VIDEO_CODEC_PROFILE_UNKNOWN;
+}
+
 H264Parser::Result H264Parser::ReadUE(int* val) {
   int num_bits = -1;
   int bit;

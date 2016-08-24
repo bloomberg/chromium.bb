@@ -187,10 +187,9 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DVLOG(1) << (previously_initialized ? "Reinitializing" : "Initializing")
            << " GVD with config: " << config.AsHumanReadableString();
 
-  // TODO(posciak): destroy and create a new VDA on codec/profile change
-  // (http://crbug.com/260224).
-  if (previously_initialized && (config_.profile() != config.profile())) {
-    DVLOG(1) << "Codec or profile changed, cannot reinitialize.";
+  // Disallow codec changes between configuration changes.
+  if (previously_initialized && config_.codec() != config.codec()) {
+    DVLOG(1) << "Codec changed, cannot reinitialize.";
     bound_init_cb.Run(false);
     return;
   }
