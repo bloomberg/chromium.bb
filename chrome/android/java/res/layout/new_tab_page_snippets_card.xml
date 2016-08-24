@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/snippets_padding_and_peeking_card_height"
-    android:background="@drawable/ntp_card">
+    android:background="@drawable/ntp_card_single">
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/article_headline"

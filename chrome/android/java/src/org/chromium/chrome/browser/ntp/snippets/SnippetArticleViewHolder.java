@@ -53,7 +53,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class SnippetArticleViewHolder extends CardViewHolder
         implements MenuItem.OnMenuItemClickListener {
-    private static final String TAG = "NtpSnippets";
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};

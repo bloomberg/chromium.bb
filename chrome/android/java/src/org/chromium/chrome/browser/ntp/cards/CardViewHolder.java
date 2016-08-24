@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.support.annotation.DrawableRes;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +25,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.util.ViewUtils;
 
 /**
  * Holder for a generic card.
@@ -34,7 +36,7 @@ import org.chromium.chrome.browser.util.MathUtils;
  *   limit.
  *
  * - When peeking, tapping on cards will make them request a scroll up (see
- *   {@link NewTabPageRecyclerView#scrollToFirstCard(int)}). Tap events in non-peeking state will be
+ *   {@link NewTabPageRecyclerView#scrollToFirstCard()}). Tap events in non-peeking state will be
  *   routed through {@link #onCardTapped()} for subclasses to override.
  *
  * - Cards will get some lateral margins when the viewport is sufficiently wide.
@@ -70,6 +72,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
     private float mPeekingPercentage;
 
     private boolean mCanPeek = false;
+
+    @DrawableRes
+    private int mBackground;
 
     /**
      * @param layoutId resource id of the layout to inflate and to use as card.
@@ -139,30 +144,25 @@ public class CardViewHolder extends NewTabPageViewHolder {
 
     @Override
     public void updateLayoutParams() {
-        // Each card has the full elevation effect so we will remove bottom margin to overlay and
-        // hide the bottom shadow of the previous card to give the effect of a divider instead of a
-        // shadow.
-        // Notes:
-        //  - An alternative way to check that 2 cards are coming one after the other would be to
-        //    check the item's ViewType, but we decided against for now to avoid having to maintain
-        //    a separate listing of all the view types that are cards. Their ViewHolders are all
-        //    CardViewHolder so it's a robust way to do the check.
-        //  - The drawback of using ViewHolders is that they are not instantiated yet for all the
-        //    items in the list. At a given moment, the below code will not properly adjust the
-        //    margin of cards for which the next card ViewHolder has not yet been created and added
-        //    to the RecyclerView. It doesn't matter still because a layout pass will be requested
-        //    when that ViewHolder is added, calling this method again and fixing the margins
-        //    before they enter the view.
-        ViewHolder previousViewHolder =
-                mRecyclerView.findViewHolderForAdapterPosition(getAdapterPosition() - 1);
-        if (previousViewHolder instanceof CardViewHolder) {
-            ((CardViewHolder) previousViewHolder).getParams().bottomMargin =
-                    -mCards9PatchAdjustment;
-        }
+        // Nothing to do for dismissed cards.
+        if (getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
-        // Reset the margin to 0 here. If it should take the 9-patch adjustment into account, the
-        // next card will set the value, since the method is called on the cards in layout order.
-        getParams().bottomMargin = 0;
+        // Each card has the full elevation effect (the shadow) in the 9-patch. If the next item is
+        // a card a negative bottom margin is set so the next card is overlaid slightly on top of
+        // this one and hides the bottom shadow.
+        boolean hasCardAbove =
+                isCard(mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() - 1));
+        boolean hasCardBelow =
+                isCard(mRecyclerView.getAdapter().getItemViewType(getAdapterPosition() + 1));
+
+        getParams().bottomMargin = hasCardBelow ? -mCards9PatchAdjustment : 0;
+
+        @DrawableRes
+        int selectedBackground = selectBackground(hasCardAbove, hasCardBelow);
+        if (mBackground != selectedBackground) {
+            mBackground = selectedBackground;
+            ViewUtils.setNinePatchBackgroundResource(itemView, selectedBackground);
+        }
     }
 
     /**
@@ -305,5 +305,30 @@ public class CardViewHolder extends NewTabPageViewHolder {
             }
         });
         animation.start();
+    }
+
+    private static boolean isCard(@NewTabPageItem.ViewType int type) {
+        switch (type) {
+            case NewTabPageItem.VIEW_TYPE_SNIPPET:
+            case NewTabPageItem.VIEW_TYPE_STATUS:
+            case NewTabPageItem.VIEW_TYPE_ACTION:
+                return true;
+            case NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD:
+            case NewTabPageItem.VIEW_TYPE_HEADER:
+            case NewTabPageItem.VIEW_TYPE_SPACING:
+            case NewTabPageItem.VIEW_TYPE_PROGRESS:
+                return false;
+            default:
+                assert false;
+        }
+        return false;
+    }
+
+    @DrawableRes
+    private static int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
+        if (hasCardAbove && hasCardBelow) return R.drawable.ntp_card_middle;
+        if (!hasCardAbove && hasCardBelow) return R.drawable.ntp_card_top;
+        if (hasCardAbove && !hasCardBelow) return R.drawable.ntp_card_bottom;
+        return R.drawable.ntp_card_single;
     }
 }
