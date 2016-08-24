@@ -364,13 +364,13 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return "Navigating in the unload handler is deprecated and will be removed.";
 
     case UseCounter::TouchStartUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchstart events", 54, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchstart events", 55, "5649871251963904");
 
     case UseCounter::TouchMoveUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchmove events", 54, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchmove events", 55, "5649871251963904");
 
     case UseCounter::TouchEndDuringScrollUserGestureUtilized:
-        return willBeRemoved("Performing operations that require explicit user interaction on touchend events that occur as part of a scroll", 54, "5649871251963904");
+        return willBeRemoved("Performing operations that require explicit user interaction on touchend events that occur as part of a scroll", 55, "5649871251963904");
 
     case UseCounter::MIDIMessageEventReceivedTime:
         return willBeRemoved("MIDIMessageEvent.receivedTime", 56, "5665772797952000");
