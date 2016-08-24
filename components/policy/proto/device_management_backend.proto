@@ -89,6 +89,11 @@ message DeviceRegisterRequest {
     FLAVOR_ENROLLMENT_RECOVERY = 6;
     // User policy registration for a logged-in user.
     FLAVOR_USER_REGISTRATION = 7;
+    // Attestation-based with the option to use a different authentication
+    // mechanism.
+    FLAVOR_ENROLLMENT_ATTESTATION = 8;
+    // Attestation-based enrollment.
+    FLAVOR_ENROLLMENT_ATTESTATION_FORCED = 9;
   };
 
   // Indicates the registration flavor. This is passed to the server FYI when

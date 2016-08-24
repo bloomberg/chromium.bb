@@ -90,14 +90,19 @@ class EnterpriseEnrollmentHelper {
   // If |fetch_additional_token| is true, the helper fetches an additional token
   // and passes it to the |status_consumer| on successful enrollment.
   // EnrollUsingAuthCode can be called only once during this object's lifetime,
-  // and only if neither of EnrollUsing* methods was called before.
+  // and only if none of the EnrollUsing* methods was called before.
   virtual void EnrollUsingAuthCode(const std::string& auth_code,
                                    bool fetch_additional_token) = 0;
 
   // Starts enterprise enrollment using |token|.
   // EnrollUsingToken can be called only once during this object's lifetime, and
-  // only if neither of EnrollUsing* was called before.
+  // only if none of the EnrollUsing* was called before.
   virtual void EnrollUsingToken(const std::string& token) = 0;
+
+  // Starts enterprise enrollment using PCA attestation.
+  // EnrollUsingAttestation can be called only once during the object's
+  // lifetime, and only if none of the EnrollUsing* was called before.
+  virtual void EnrollUsingAttestation() = 0;
 
   // Starts device attribute update process. First tries to get
   // permission to update device attributes for current user

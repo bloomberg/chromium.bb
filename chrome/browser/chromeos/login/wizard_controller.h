@@ -333,8 +333,11 @@ class WizardController : public BaseScreenDelegate,
   void OnSetHostNetworkFailed();
 
   // Start the enrollment screen using the config from
-  // |prescribed_enrollment_config_|.
-  void StartEnrollmentScreen();
+  // |prescribed_enrollment_config_|. If |force_interactive| is true,
+  // the user will be presented with a manual enrollment screen requiring
+  // Gaia credentials. If it is false, the screen may return after trying
+  // attestation-based enrollment if appropriate.
+  void StartEnrollmentScreen(bool force_interactive);
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).

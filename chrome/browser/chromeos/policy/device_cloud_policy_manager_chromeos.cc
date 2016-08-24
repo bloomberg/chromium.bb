@@ -141,7 +141,6 @@ void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
                  base::Unretained(this)));
 
   InitializeRequisition();
-  InitializeEnrollment();
 }
 
 void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
@@ -361,17 +360,6 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
                            false));
       }
     }
-  }
-}
-
-void DeviceCloudPolicyManagerChromeOS::InitializeEnrollment() {
-  // Enrollment happens during OOBE only.
-  if (chromeos::StartupUtils::IsOobeCompleted())
-    return;
-
-  if (DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() ==
-      ZeroTouchEnrollmentMode::FORCED) {
-    SetDeviceEnrollmentAutoStart();
   }
 }
 

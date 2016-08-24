@@ -28,6 +28,10 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 class CryptohomeClient;
+
+namespace attestation {
+class AttestationFlow;
+}
 }
 
 namespace cryptohome {
@@ -125,13 +129,16 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_FINISHED,            // Enrollment process finished, no further action.
   };
 
-  // Handles the response to the attestation flow requesting a registration
-  // certificate.
+  // Handles the response to a request for server-backed state keys.
+  void HandleStateKeysResult(const std::vector<std::string>& state_keys);
+
+  // Starts attestation based enrollment flow.
+  void StartAttestationBasedEnrollmentFlow();
+
+  // Handles the response to a request for a registration certificate.
   void HandleRegistrationCertificateResult(
       bool success,
       const std::string& pem_certificate_chain);
-  // Handles the response to a request for server-backed state keys.
-  void HandleStateKeysResult(const std::vector<std::string>& state_keys);
 
   // Starts registration if the store is initialized.
   void StartRegistration();
@@ -173,6 +180,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
 
   EnrollmentConfig enrollment_config_;
   std::string auth_token_;

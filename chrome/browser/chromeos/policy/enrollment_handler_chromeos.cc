@@ -23,11 +23,7 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "components/signin/core/account_id/account_id.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 
@@ -61,6 +57,10 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_SERVER_ADVERTISED;
     case policy::EnrollmentConfig::MODE_RECOVERY:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
+    case policy::EnrollmentConfig::MODE_ATTESTATION:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION;
+    case policy::EnrollmentConfig::MODE_ATTESTATION_FORCED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION_FORCED;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
@@ -103,14 +103,9 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       weak_ptr_factory_(this) {
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
-  CHECK_NE(enrollment_config_.auth_mechanism,
-           EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE);
-  CHECK((enrollment_config_.auth_mechanism ==
-             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION &&
-         auth_token_.empty()) ||
-        (enrollment_config_.auth_mechanism ==
-             EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE &&
-         !auth_token_.empty()));
+  CHECK((enrollment_config_.mode == EnrollmentConfig::MODE_ATTESTATION ||
+         enrollment_config_.mode ==
+             EnrollmentConfig::MODE_ATTESTATION_FORCED) == auth_token_.empty());
   CHECK(enrollment_config_.auth_mechanism !=
             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION ||
         (async_method_caller_ != nullptr && cryptohome_client_ != nullptr));
@@ -276,38 +271,43 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
     return;
   }
   enrollment_step_ = STEP_REGISTRATION;
-  if (enrollment_config_.auth_mechanism ==
-      EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE) {
+  if (enrollment_config_.should_enroll_with_attestation()) {
+    StartAttestationBasedEnrollmentFlow();
+  } else {
     client_->Register(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         auth_token_, client_id_, requisition_, current_state_key_);
-  } else {
+  }
+}
+
+void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
+  if (!attestation_flow_) {
     std::unique_ptr<chromeos::attestation::ServerProxy> attestation_ca_client(
         new chromeos::attestation::AttestationCAClient());
-    chromeos::attestation::AttestationFlow flow(
+    attestation_flow_.reset(new chromeos::attestation::AttestationFlow(
         async_method_caller_, cryptohome_client_,
-        std::move(attestation_ca_client));
-    chromeos::attestation::AttestationFlow::CertificateCallback callback =
-        base::Bind(
-            &EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult,
-            weak_ptr_factory_.GetWeakPtr());
-    flow.GetCertificate(
-        chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-        EmptyAccountId(), "" /* request_origin */, false /* force_new_key */,
-        callback);
+        std::move(attestation_ca_client)));
   }
+  const chromeos::attestation::AttestationFlow::CertificateCallback callback =
+      base::Bind(
+          &EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult,
+          weak_ptr_factory_.GetWeakPtr());
+  attestation_flow_->GetCertificate(
+      chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
+      EmptyAccountId(), "" /* request_origin */, false /* force_new_key */,
+      callback);
 }
 
 void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
     bool success,
     const std::string& pem_certificate_chain) {
-  LOG(ERROR) << "Attestation enrollment not implemented.";
+  LOG(WARNING) << "Enrolling with a registration certificate"
+                  " is not supported yet.";
   // TODO(drcrash): Invert success/fail tests, mocking as always failed now.
   if (success) {
     // TODO(drcrash): Implement new call in client_ to register with cert.
   }
-  // TODO(drcrash): Use STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED.
   ReportResult(EnrollmentStatus::ForStatus(
       EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED));
 }

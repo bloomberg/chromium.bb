@@ -27,6 +27,7 @@ class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
   MOCK_METHOD2(EnrollUsingAuthCode,
                void(const std::string& auth_code, bool fetch_additional_token));
   MOCK_METHOD1(EnrollUsingToken, void(const std::string& token));
+  MOCK_METHOD0(EnrollUsingAttestation, void());
   MOCK_METHOD0(GetDeviceAttributeUpdatePermission, void());
   MOCK_METHOD2(UpdateDeviceAttributes,
                void(const std::string& asset_id, const std::string& location));

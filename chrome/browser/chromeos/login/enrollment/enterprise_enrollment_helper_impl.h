@@ -37,6 +37,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   void EnrollUsingAuthCode(const std::string& auth_code,
                            bool fetch_additional_token) override;
   void EnrollUsingToken(const std::string& token) override;
+  void EnrollUsingAttestation() override;
   void ClearAuth(const base::Closure& callback) override;
   void GetDeviceAttributeUpdatePermission() override;
   void UpdateDeviceAttributes(const std::string& asset_id,
@@ -48,7 +49,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAttributePromptPageGetsLoaded);
 
-  void DoEnrollUsingToken(const std::string& token);
+  void DoEnroll(const std::string& token);
 
   // Handles completion of the OAuth2 token fetch attempt.
   void OnTokenFetched(bool is_additional_token,
@@ -79,12 +80,16 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   const std::string enrolling_user_domain_;
   bool fetch_additional_token_;
 
-  bool started_;
   std::string additional_token_;
-  bool finished_;
-  bool success_;
-  bool auth_data_cleared_;
+  enum {
+    OAUTH_NOT_STARTED,
+    OAUTH_STARTED_WITH_AUTH_CODE,
+    OAUTH_STARTED_WITH_TOKEN,
+    OAUTH_FINISHED
+  } oauth_status_ = OAUTH_NOT_STARTED;
+  bool oauth_data_cleared_ = false;
   std::string oauth_token_;
+  bool success_ = false;
 
   std::unique_ptr<policy::PolicyOAuth2TokenFetcher> oauth_fetcher_;
 

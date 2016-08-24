@@ -56,9 +56,11 @@ std::string EnrollmentModeToUIMode(policy::EnrollmentConfig::Mode mode) {
     case policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT:
     case policy::EnrollmentConfig::MODE_LOCAL_ADVERTISED:
     case policy::EnrollmentConfig::MODE_SERVER_ADVERTISED:
+    case policy::EnrollmentConfig::MODE_ATTESTATION:
       return kEnrollmentModeUIManual;
     case policy::EnrollmentConfig::MODE_LOCAL_FORCED:
     case policy::EnrollmentConfig::MODE_SERVER_FORCED:
+    case policy::EnrollmentConfig::MODE_ATTESTATION_FORCED:
       return kEnrollmentModeUIForced;
     case policy::EnrollmentConfig::MODE_RECOVERY:
       return kEnrollmentModeUIRecovery;
@@ -143,7 +145,7 @@ void EnrollmentScreenHandler::RegisterMessages() {
 void EnrollmentScreenHandler::SetParameters(
     Controller* controller,
     const policy::EnrollmentConfig& config) {
-  CHECK_NE(policy::EnrollmentConfig::MODE_NONE, config.mode);
+  CHECK(config.should_enroll());
   controller_ = controller;
   config_ = config;
 }
@@ -264,7 +266,7 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED,
-                false);
+                true);
       return;
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
       ShowErrorMessage(

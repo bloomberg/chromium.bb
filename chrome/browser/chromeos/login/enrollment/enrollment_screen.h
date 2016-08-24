@@ -83,6 +83,10 @@ class EnrollmentScreen
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
+  FRIEND_TEST_ALL_PREFIXES(AttestationAuthEnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(ForcedAttestationAuthEnrollmentScreenTest,
+                           TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(MultiAuthEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestProperPageGetsLoadedOnEnrollmentSuccess);
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
@@ -90,7 +94,16 @@ class EnrollmentScreen
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAuthCodeGetsProperlyReceivedFromGaia);
 
-  // Creates an enrollment helper.
+  // The authentication mechanisms that this class can use.
+  enum Auth {
+    AUTH_ATTESTATION,
+    AUTH_OAUTH,
+  };
+
+  // Sets the current config to use for enrollment.
+  void SetConfig();
+
+  // Creates an enrollment helper if needed.
   void CreateEnrollmentHelper();
 
   // Clears auth in |enrollment_helper_|. Deletes |enrollment_helper_| and runs
@@ -112,6 +125,12 @@ class EnrollmentScreen
   // |enrollment_mode_|.
   void UMA(policy::MetricEnrollment sample);
 
+  // Do attestation based enrollment.
+  void AuthenticateUsingAttestation();
+
+  // Shows the interactive screen. Resets auth then shows the signin screen.
+  void ShowInteractiveScreen();
+
   // Shows the signin screen. Used as a callback to run after auth reset.
   void ShowSigninScreen();
 
@@ -119,13 +138,20 @@ class EnrollmentScreen
   // Used as a callback to run after successful enrollment.
   void ShowAttributePromptScreen();
 
+  // Handle enrollment errors.
   void OnAnyEnrollmentError();
 
-  pairing_chromeos::ControllerPairingController* shark_controller_;
+  // Advance to the next authentication mechanism if possible.
+  bool AdvanceToNextAuth();
+
+  pairing_chromeos::ControllerPairingController* shark_controller_ = nullptr;
 
   EnrollmentScreenActor* actor_;
+  policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
-  bool enrollment_failed_once_;
+  Auth current_auth_ = AUTH_OAUTH;
+  Auth last_auth_ = AUTH_OAUTH;
+  bool enrollment_failed_once_ = false;
   std::string enrolling_user_domain_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
   std::unique_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;

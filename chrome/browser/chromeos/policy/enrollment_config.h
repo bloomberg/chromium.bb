@@ -35,6 +35,10 @@ struct EnrollmentConfig {
     MODE_SERVER_ADVERTISED,
     // Recover from "spontaneous unenrollment", user can't skip.
     MODE_RECOVERY,
+    // Start attestation-based enrollment.
+    MODE_ATTESTATION,
+    // Start attestation-based enrollment and only uses that.
+    MODE_ATTESTATION_FORCED,
   };
 
   // An enumeration of authentication mechanisms that can be used for
@@ -50,13 +54,39 @@ struct EnrollmentConfig {
   };
 
   // Whether enrollment should be triggered.
-  bool should_enroll() const { return mode != MODE_NONE; }
+  bool should_enroll() const {
+    return should_enroll_with_attestation() || should_enroll_interactively();
+  }
+
+  // Whether attestation enrollment should be triggered.
+  bool should_enroll_with_attestation() const {
+    return auth_mechanism != AUTH_MECHANISM_INTERACTIVE;
+  }
+
+  // Whether interactive enrollment should be triggered.
+  bool should_enroll_interactively() const { return mode != MODE_NONE; }
 
   // Whether enrollment is forced. The user can't skip the enrollment step
   // during OOBE if this returns true.
   bool is_forced() const {
     return mode == MODE_LOCAL_FORCED || mode == MODE_SERVER_FORCED ||
-           mode == MODE_RECOVERY;
+           mode == MODE_RECOVERY || is_attestation_forced();
+  }
+
+  // Whether attestation-based enrollment is forced. The user can't skip
+  // the enrollment step during OOBE if this returns true.
+  bool is_attestation_forced() const {
+    return auth_mechanism == AUTH_MECHANISM_ATTESTATION;
+  }
+
+  // Whether this configuration is in attestation mode.
+  bool is_mode_attestation() const {
+    return mode == MODE_ATTESTATION || mode == MODE_ATTESTATION_FORCED;
+  }
+
+  // Whether this configuration is in OAuth mode.
+  bool is_mode_oauth() const {
+    return mode != MODE_NONE && !is_mode_attestation();
   }
 
   // Indicates the enrollment flow variant to trigger during OOBE.

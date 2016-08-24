@@ -461,7 +461,7 @@ void WizardController::ShowEnrollmentScreen() {
   prescribed_enrollment_config_ = g_browser_process->platform_part()
                                       ->browser_policy_connector_chromeos()
                                       ->GetPrescribedEnrollmentConfig();
-  StartEnrollmentScreen();
+  StartEnrollmentScreen(false);
 }
 
 void WizardController::ShowResetScreen() {
@@ -791,7 +791,7 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
     ShowDeviceDisabledScreen();
   } else if (skip_update_enroll_after_eula_ ||
              prescribed_enrollment_config_.should_enroll()) {
-    StartEnrollmentScreen();
+    StartEnrollmentScreen(skip_update_enroll_after_eula_);
   } else {
     PerformOOBECompletedActions();
     ShowLoginScreen(LoginScreenContext());
@@ -1384,14 +1384,16 @@ void WizardController::OnSetHostNetworkFailed() {
       pairing_chromeos::HostPairingController::CONNECTIVITY_NONE);
 }
 
-void WizardController::StartEnrollmentScreen() {
-  VLOG(1) << "Showing enrollment screen.";
+void WizardController::StartEnrollmentScreen(bool force_interactive) {
+  VLOG(1) << "Showing enrollment screen."
+          << " Forcing interactive enrollment: " << force_interactive << ".";
 
   // Determine the effective enrollment configuration. If there is a valid
   // prescribed configuration, use that. If not, figure out which variant of
   // manual enrollment is taking place.
   policy::EnrollmentConfig effective_config = prescribed_enrollment_config_;
-  if (!effective_config.should_enroll()) {
+  if (!effective_config.should_enroll() ||
+      (force_interactive && !effective_config.should_enroll_interactively())) {
     effective_config.mode =
         prescribed_enrollment_config_.management_domain.empty()
             ? policy::EnrollmentConfig::MODE_MANUAL
