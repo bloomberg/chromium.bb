@@ -172,7 +172,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
 
-  if (data.icon && !data.icon->drawsNothing()) {
+  if (data.icon) {
     // TODO(hanxi): implement WebAPK path if shortcut_info_.url has a secure
     // scheme and data.is_installable is true.
     shortcut_info_.icon_url = data.icon_url;

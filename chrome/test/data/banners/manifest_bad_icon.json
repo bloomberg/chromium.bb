@@ -1,0 +1,13 @@
+{
+  "name": "Manifest test app",
+  "icons": [
+    {
+      "src": "corrupted_icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": "manifest_bad_icon_test_page.html",
+  "display": "standalone",
+  "orientation": "landscape"
+}

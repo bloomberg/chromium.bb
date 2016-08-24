@@ -515,6 +515,26 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckManifestCorruptedIcon) {
+  // Verify that the returned InstallableData::icon is null if the web manifest
+  // points to a corrupt icon.
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(tester.get(), GetIconParams(),
+                                   "/banners/manifest_bad_icon_test_page.html");
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  EXPECT_TRUE(tester->icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->icon());
+  EXPECT_FALSE(tester->is_installable());
+  EXPECT_EQ(NO_ICON_AVAILABLE, tester->error_code());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckChangeInIconDimensions) {
   // Verify that a follow-up request for an icon with a different size works.
   {
