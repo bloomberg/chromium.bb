@@ -117,10 +117,8 @@ void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
                     WorkerReadyForInspection(host.get()));
 
   // Then bring up UI for the ones not picked by other clients.
-  if (host->IsPausedForDebugOnStart() && !host->IsAttached()) {
-    host->Inspect(RenderProcessHost::FromID(worker_process_id)->
-        GetBrowserContext());
-  }
+  if (host->IsPausedForDebugOnStart() && !host->IsAttached())
+    host->Inspect();
 }
 
 void ServiceWorkerDevToolsManager::WorkerVersionInstalled(int worker_process_id,

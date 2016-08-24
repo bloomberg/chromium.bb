@@ -762,13 +762,13 @@ void DevToolsUIBindings::PerformActionOnRemotePage(const std::string& page_id,
   if (!target)
     return;
   if (action == kRemotePageActionInspect)
-    target->Inspect(profile_);
+    target->GetAgentHost()->Inspect();
   if (action == kRemotePageActionReload)
-    target->Reload();
+    target->GetAgentHost()->Reload();
   if (action == kRemotePageActionActivate)
-    target->Activate();
+    target->GetAgentHost()->Activate();
   if (action == kRemotePageActionClose)
-    target->Close();
+    target->GetAgentHost()->Close();
 }
 
 void DevToolsUIBindings::OpenRemotePage(const std::string& browser_id,

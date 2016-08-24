@@ -33,13 +33,19 @@ class ForwardingAgentHost
   bool DispatchProtocolMessage(const std::string& message) override;
 
   // DevToolsAgentHost implementation
-  Type GetType() override;
+  std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
+  GURL GetFaviconURL() override;
   bool Activate() override;
+  bool Inspect() override;
+  void Reload() override;
   bool Close() override;
 
   std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
+  std::string type_;
+  std::string title_;
+  GURL url_;
 };
 
 }  // namespace content

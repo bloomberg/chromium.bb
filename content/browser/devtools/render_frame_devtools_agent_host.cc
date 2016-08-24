@@ -13,6 +13,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
@@ -860,15 +861,45 @@ void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host));
 }
 
-DevToolsAgentHost::Type RenderFrameDevToolsAgentHost::GetType() {
-  return IsChildFrame() ? TYPE_FRAME : TYPE_WEB_CONTENTS;
+std::string RenderFrameDevToolsAgentHost::GetParentId() {
+  if (IsChildFrame()) {
+    RenderFrameHostImpl* frame_host = current_->host();
+    while (frame_host && !ShouldCreateDevToolsFor(frame_host))
+      frame_host = frame_host->GetParent();
+    if (frame_host)
+      return DevToolsAgentHost::GetOrCreateFor(frame_host)->GetId();
+  }
+
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
+  if (!contents)
+    return "";
+  contents = contents->GetOuterWebContents();
+  if (contents)
+    return DevToolsAgentHost::GetOrCreateFor(contents)->GetId();
+  return "";
+}
+
+std::string RenderFrameDevToolsAgentHost::GetType() {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->delegate())
+    return manager->delegate()->GetTargetType(current_->host());
+  return kTypeOther;
 }
 
 std::string RenderFrameDevToolsAgentHost::GetTitle() {
-  if (IsChildFrame())
-    return GetURL().spec();
-  if (WebContents* web_contents = GetWebContents())
-    return base::UTF16ToUTF8(web_contents->GetTitle());
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  std::string result;
+  if (manager->delegate())
+    result = manager->delegate()->GetTargetTitle(current_->host());
+  if (!result.empty())
+    return result;
+  content::WebContents* web_contents = GetWebContents();
+  if (web_contents)
+    result = base::UTF16ToUTF8(web_contents->GetTitle());
+  return GetURL().spec();
+}
+
+std::string RenderFrameDevToolsAgentHost::GetDescription() {
   return "";
 }
 
@@ -884,6 +915,10 @@ GURL RenderFrameDevToolsAgentHost::GetURL() {
   return GURL();
 }
 
+GURL RenderFrameDevToolsAgentHost::GetFaviconURL() {
+  return GURL();
+}
+
 bool RenderFrameDevToolsAgentHost::Activate() {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(web_contents());
   if (wc) {
@@ -893,12 +928,24 @@ bool RenderFrameDevToolsAgentHost::Activate() {
   return false;
 }
 
+void RenderFrameDevToolsAgentHost::Reload() {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(web_contents());
+  if (wc)
+    wc->GetController().Reload(true);
+}
+
 bool RenderFrameDevToolsAgentHost::Close() {
   if (web_contents()) {
     web_contents()->ClosePage();
     return true;
   }
   return false;
+}
+
+base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
+  if (content::WebContents* contents = web_contents())
+    return contents->GetLastActiveTime();
+  return base::TimeTicks();
 }
 
 void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
@@ -955,8 +1002,7 @@ void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
   if (IsAttached() && sender->GetRoutingID() != new_routing_id && frame_host) {
     scoped_refptr<DevToolsAgentHost> agent =
         DevToolsAgentHost::GetOrCreateFor(frame_host);
-    success = static_cast<DevToolsAgentHostImpl*>(agent.get())->
-        Inspect(agent->GetBrowserContext());
+    success = agent->Inspect();
   }
 
   sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(

@@ -31,6 +31,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/browser_resources.h"
 
+using content::DevToolsAgentHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -276,17 +277,17 @@ void InspectUI::InitUI() {
 
 void InspectUI::Inspect(const std::string& source_id,
                         const std::string& target_id) {
-  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
     const std::string target_type = target->GetType();
-    target->Inspect(Profile::FromWebUI(web_ui()));
+    target->Inspect();
     ForceUpdateIfNeeded(source_id, target_type);
   }
 }
 
 void InspectUI::Activate(const std::string& source_id,
                          const std::string& target_id) {
-  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
     const std::string target_type = target->GetType();
     target->Activate();
@@ -296,7 +297,7 @@ void InspectUI::Activate(const std::string& source_id,
 
 void InspectUI::Close(const std::string& source_id,
                       const std::string& target_id) {
-  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
     const std::string target_type = target->GetType();
     target->Close();
@@ -306,7 +307,7 @@ void InspectUI::Close(const std::string& source_id,
 
 void InspectUI::Reload(const std::string& source_id,
                        const std::string& target_id) {
-  DevToolsTargetImpl* target = FindTarget(source_id, target_id);
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
     const std::string target_type = target->GetType();
     target->Reload();
@@ -498,14 +499,15 @@ void InspectUI::AddTargetUIHandler(
 DevToolsTargetsUIHandler* InspectUI::FindTargetHandler(
     const std::string& source_id) {
   TargetHandlerMap::iterator it = target_handlers_.find(source_id);
-     return it != target_handlers_.end() ? it->second : NULL;
+     return it != target_handlers_.end() ? it->second : nullptr;
 }
 
-DevToolsTargetImpl* InspectUI::FindTarget(
+scoped_refptr<content::DevToolsAgentHost> InspectUI::FindTarget(
     const std::string& source_id, const std::string& target_id) {
   TargetHandlerMap::iterator it = target_handlers_.find(source_id);
-  return it != target_handlers_.end() ?
-         it->second->GetTarget(target_id) : NULL;
+  DevToolsTargetImpl* target = it != target_handlers_.end() ?
+      it->second->GetTarget(target_id) : nullptr;
+  return target ? target->GetAgentHost() : nullptr;
 }
 
 void InspectUI::PopulateTargets(const std::string& source,
@@ -518,7 +520,7 @@ void InspectUI::ForceUpdateIfNeeded(const std::string& source_id,
                                     const std::string& target_type) {
   // TODO(dgozman): remove this after moving discovery to protocol.
   // See crbug.com/398049.
-  if (target_type != DevToolsTargetImpl::kTargetTypeServiceWorker)
+  if (target_type != content::DevToolsAgentHost::kTypeServiceWorker)
     return;
   DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
   if (handler)

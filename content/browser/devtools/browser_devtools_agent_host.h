@@ -33,10 +33,12 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   void Detach() override;
 
   // DevToolsAgentHost implementation.
-  Type GetType() override;
+  std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
   bool Activate() override;
+  bool Inspect() override;
+  void Reload() override;
   bool Close() override;
   bool DispatchProtocolMessage(const std::string& message) override;
 

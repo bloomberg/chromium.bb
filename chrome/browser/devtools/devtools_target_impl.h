@@ -20,40 +20,9 @@ class WebContents;
 
 class DevToolsTargetImpl : public devtools_discovery::BasicTargetDescriptor {
  public:
-  static const char kTargetTypeApp[];
-  static const char kTargetTypeBackgroundPage[];
-  static const char kTargetTypePage[];
-  static const char kTargetTypeWorker[];
-  static const char kTargetTypeWebView[];
-  static const char kTargetTypeIFrame[];
-  static const char kTargetTypeNode[];
-  static const char kTargetTypeOther[];
-  static const char kTargetTypeServiceWorker[];
-
   explicit DevToolsTargetImpl(
       scoped_refptr<content::DevToolsAgentHost> agent_host);
   ~DevToolsTargetImpl() override;
-
-  // Returns the WebContents associated with the target on NULL if there is
-  // not any.
-  content::WebContents* GetWebContents() const;
-
-  // Returns the tab id if the target is associated with a tab, -1 otherwise.
-  virtual int GetTabId() const;
-
-  // Returns the extension id if the target is associated with an extension
-  // background page.
-  virtual std::string GetExtensionId() const;
-
-  // Open a new DevTools window or activate the existing one.
-  virtual void Inspect(Profile* profile) const;
-
-  // Reload the target page.
-  virtual void Reload() const;
-
-  // Creates a new target associated with tab.
-  static std::unique_ptr<DevToolsTargetImpl> CreateForTab(
-      content::WebContents* web_contents);
 
   // Caller takes ownership of returned objects.
   static std::vector<DevToolsTargetImpl*> EnumerateAll();

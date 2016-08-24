@@ -227,6 +227,17 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 
   void Detach() override { recordEvent("Detach"); };
 
+  std::string GetType() override { return ""; }
+  std::string GetTitle() override { return ""; }
+  std::string GetDescription() override { return ""; }
+  GURL GetURL() override { return GURL(); }
+  GURL GetFaviconURL() override { return GURL(); }
+
+  bool Activate() override { return false; };
+  bool Inspect() override { return false; };
+  void Reload() override { };
+  bool Close() override { return false; };
+
   void SendMessageToBackend(const std::string& message) override {
     recordEvent(std::string("SendMessageToBackend.") + message);
   };

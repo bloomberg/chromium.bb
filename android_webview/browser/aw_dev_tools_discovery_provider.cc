@@ -40,25 +40,6 @@ std::string GetViewDescription(WebContents* web_contents) {
   return json;
 }
 
-class TargetDescriptor : public devtools_discovery::BasicTargetDescriptor {
- public:
-  explicit TargetDescriptor(scoped_refptr<DevToolsAgentHost> agent_host);
-
-  // devtools_discovery::BasicTargetDescriptor overrides.
-  std::string GetDescription() const override { return description_; }
-
- private:
-  std::string description_;
-
-  DISALLOW_COPY_AND_ASSIGN(TargetDescriptor);
-};
-
-TargetDescriptor::TargetDescriptor(scoped_refptr<DevToolsAgentHost> agent_host)
-    : BasicTargetDescriptor(agent_host) {
-  if (WebContents* web_contents = agent_host->GetWebContents())
-    description_ = GetViewDescription(web_contents);
-}
-
 }  // namespace
 
 namespace android_webview {
@@ -82,8 +63,11 @@ AwDevToolsDiscoveryProvider::GetDescriptors() {
   DevToolsAgentHost::List agent_hosts = DevToolsAgentHost::GetOrCreateAll();
   devtools_discovery::DevToolsTargetDescriptor::List result;
   result.reserve(agent_hosts.size());
-  for (const auto& agent_host : agent_hosts)
-    result.push_back(new TargetDescriptor(agent_host));
+  for (auto& agent_host : agent_hosts) {
+    agent_host->SetDescriptionOverride(
+        GetViewDescription(agent_host->GetWebContents()));
+    result.push_back(new devtools_discovery::BasicTargetDescriptor(agent_host));
+  }
   return result;
 }
 

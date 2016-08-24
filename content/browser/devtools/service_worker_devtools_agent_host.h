@@ -32,10 +32,11 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   void UnregisterWorker();
 
   // DevToolsAgentHost overrides.
-  Type GetType() override;
+  std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
   bool Activate() override;
+  void Reload() override;
   bool Close() override;
 
   // WorkerDevToolsAgentHost overrides.
