@@ -7,8 +7,7 @@
         <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video id="video"></video>
-        <div id="log"></div>
+        <video></video>
         <script>
             // Wait for an 'encrypted' event as a promise.
             function wait_for_encrypted_event(video)
@@ -54,7 +53,7 @@
 
             promise_test(function(test)
             {
-                var video = document.getElementById('video');
+                var video = document.querySelector('video');
                 var content = '../content/test-encrypted.webm';
                 var access;
                 var mediaKeys1;

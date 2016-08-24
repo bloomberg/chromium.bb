@@ -7,8 +7,7 @@
         <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video id="testVideo" controls></video>
-        <div id="log"></div>
+        <video></video>
         <script>
             var expectedInitData = stringToUint8Array('0123456789012345');
 
@@ -17,7 +16,7 @@
 
             async_test(function(test)
             {
-                var video = document.getElementById('testVideo');
+                var video = document.querySelector('video');
                 var content = '../content/test-encrypted.webm';
 
                 var onEncrypted = function(event)

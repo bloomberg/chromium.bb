@@ -7,12 +7,11 @@
         <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video id="testVideo"></video>
-        <div id="log"></div>
+        <video></video>
         <script>
             async_test(function(test)
             {
-                var video = document.getElementById('testVideo');
+                var video = document.querySelector('video');
                 var isUpdatePromiseResolved = false;
                 var encryptedEventCount = 0;
                 var playbackCount = 0;

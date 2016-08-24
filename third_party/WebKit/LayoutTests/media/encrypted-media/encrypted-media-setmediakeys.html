@@ -7,13 +7,12 @@
         <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video id="video"></video>
-        <div id="log"></div>
+        <video></video>
         <script>
             async_test(function(test)
             {
                 var mediaKeys;
-                var video = document.getElementById('video');
+                var video = document.querySelector('video');
                 assert_not_equals(video, null);
 
                 // Test MediaKeys assignment.
