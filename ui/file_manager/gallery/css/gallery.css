@@ -353,12 +353,12 @@ files-toggle-ripple::shadow .ripple.activated {
   margin: 8px 0;
   min-width: 160px;
   padding: 4px 0;
-  text-overflow: ellipsis;
   width: -webkit-fit-content;
 }
 
 #rename-input > input {
   color: white;
+  text-overflow: ellipsis;
 }
 
 /* Bubble */
