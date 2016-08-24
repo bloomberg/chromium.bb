@@ -2350,12 +2350,15 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   if (compositor) {
     if (compositor->BindToInstance(this)) {
       bound_compositor_ = compositor;
+      bound_compositor_->set_viewport_to_dip_scale(viewport_to_dip_scale_);
       UpdateLayer(true);
       return PP_TRUE;
     }
   } else if (graphics_2d) {
     if (graphics_2d->BindToInstance(this)) {
       bound_graphics_2d_platform_ = graphics_2d;
+      bound_graphics_2d_platform_->set_viewport_to_dip_scale(
+          viewport_to_dip_scale_);
       UpdateLayer(true);
       return PP_TRUE;
     }
