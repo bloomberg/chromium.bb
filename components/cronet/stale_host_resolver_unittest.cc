@@ -79,7 +79,7 @@ class StaleHostResolverTest : public testing::Test {
         resolve_pending_(false),
         resolve_complete_(false) {}
 
-  ~StaleHostResolverTest() {}
+  ~StaleHostResolverTest() override {}
 
   void SetStaleDelay(int stale_delay_sec) {
     DCHECK(!resolver_);
