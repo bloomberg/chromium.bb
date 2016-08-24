@@ -275,20 +275,62 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::TryCatch block(isolate);
     for (size_t i = 0; i < keyPathElements.size(); ++i) {
-        if (v8Value->IsString() && keyPathElements[i] == "length") {
+        const String& element = keyPathElements[i];
+
+        // Special cases from https://w3c.github.io/IndexedDB/#key-path-construct
+        // These access special or non-own properties directly, to avoid side
+        // effects.
+
+        if (v8Value->IsString() && element == "length") {
             int32_t length = v8Value.As<v8::String>()->Length();
             v8Value = v8::Number::New(isolate, length);
-        } else if (!v8Value->IsObject()) {
+            continue;
+        }
+
+        if (v8Value->IsArray() && element == "length") {
+            int32_t length = v8Value.As<v8::Array>()->Length();
+            v8Value = v8::Number::New(isolate, length);
+            continue;
+        }
+
+        if (!v8Value->IsObject())
             return nullptr;
-        } else {
-            v8::Local<v8::Object> object = v8Value.As<v8::Object>();
-            v8::Local<v8::String> key = v8String(isolate, keyPathElements[i]);
-            if (!v8CallBoolean(object->Has(context, key)))
-                return nullptr;
-            if (!v8Call(object->Get(context, key), v8Value, block)) {
-                exceptionState.rethrowV8Exception(block.Exception());
-                return nullptr;
+        v8::Local<v8::Object> object = v8Value.As<v8::Object>();
+
+        if (V8Blob::hasInstance(object, isolate)) {
+            if (element == "size") {
+                v8Value = v8::Number::New(isolate, V8Blob::toImpl(object)->size());
+                continue;
             }
+            if (element == "type") {
+                v8Value = v8String(isolate, V8Blob::toImpl(object)->type());
+                continue;
+            }
+            // Fall through.
+        }
+
+        if (V8File::hasInstance(object, isolate)) {
+            if (element == "name") {
+                v8Value = v8String(isolate, V8File::toImpl(object)->name());
+                continue;
+            }
+            if (element == "lastModified") {
+                v8Value = v8::Number::New(isolate, V8File::toImpl(object)->lastModified());
+                continue;
+            }
+            if (element == "lastModifiedDate") {
+                v8Value = v8::Date::New(isolate, V8File::toImpl(object)->lastModifiedDate());
+                continue;
+            }
+            // Fall through.
+        }
+
+        v8::Local<v8::String> key = v8String(isolate, element);
+        if (!v8CallBoolean(object->HasOwnProperty(context, key)))
+            return nullptr;
+        if (!v8Call(object->Get(context, key), v8Value, block)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return nullptr;
         }
     }
     return createIDBKeyFromValue(isolate, v8Value, exceptionState, allowExperimentalTypes);

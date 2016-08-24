@@ -29,7 +29,7 @@ function throwing_key(name) {
         var err = new Error('throwing from getter');
         err.name = name;
         throw err;
-    }});
+    }, enumerable: true});
     return throws;
 }
 
@@ -115,16 +115,18 @@ simple_idb_test(function(t, db) {
         var cursor = request.result;
         assert_not_equals(cursor, null, 'cursor should find a value');
 
-        // Put property on prototype because the keypath is
-        // evaluated against a structured clone, not the passed value.
         var value = {};
-
-        value.__proto__.prop = throwing_key('getter');
-        assert_throws({name:'getter'}, function() {
+        value.prop = throwing_key('getter');
+        assert_throws({name: 'getter'}, function() {
             cursor.update(value);
-        }, 'key conversion with throwing getter should rethrow');
+        }, 'throwing getter should rethrow during clone');
 
-        value.__proto__.prop = invalid_key;
+        // Throwing from the getter during key conversion is
+        // not possible since (1) a clone is used, (2) only own
+        // properties are cloned, and (3) only own properties
+        // are used for key path evaluation.
+
+        value.prop = invalid_key;
         assert_throws('DataError', function() {
             cursor.update(value);
         }, 'key conversion with invalid key should throw DataError');
@@ -156,16 +158,18 @@ test(function(t) {
             out_of_line[method]('value', invalid_key);
         }, 'key conversion with invalid key should throw DataError');
 
-        // Put property on prototype because the keypath is
-        // evaluated against a structured clone, not the passed value.
         var value = {};
-
-        value.__proto__.prop = throwing_key('getter');
+        value.prop = throwing_key('getter');
         assert_throws({name:'getter'}, function() {
             in_line[method](value);
-        }, 'key conversion with throwing getter should rethrow');
+        }, 'throwing getter should rethrow during clone');
 
-        value.__proto__.prop = invalid_key;
+        // Throwing from the getter during key conversion is
+        // not possible since (1) a clone is used, (2) only own
+        // properties are cloned, and (3) only own properties
+        // are used for key path evaluation.
+
+        value.prop = invalid_key;
         assert_throws('DataError', function() {
             in_line[method](value);
         }, 'key conversion with invalid key should throw DataError');
