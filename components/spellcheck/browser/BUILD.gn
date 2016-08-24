@@ -34,16 +34,18 @@ source_set("browser") {
     "word_trimmer.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//components/data_use_measurement/core:core",
-    "//components/prefs:prefs",
     "//components/spellcheck/common",
-    "//components/user_prefs:user_prefs",
+  ]
+  deps = [
+    "//components/data_use_measurement/core",
+    "//components/prefs",
+    "//components/user_prefs",
     "//content/public/browser",
     "//content/public/common",
-    "//google_apis:google_apis",
-    "//net:net",
+    "//google_apis",
+    "//net",
   ]
 
   if (is_android) {
@@ -72,7 +74,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/spellcheck/common",
-    "//components/variations:variations",
+    "//components/variations",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",

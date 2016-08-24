@@ -21,9 +21,11 @@ component("chrome_apps") {
     "chrome_apps_resource_util.cc",
     "chrome_apps_resource_util.h",
   ]
-  deps = [
+
+  defines = [ "CHROME_APPS_IMPLEMENTATION" ]
+
+  public_deps = [
     ":resources",
     "//base",
   ]
-  defines = [ "CHROME_APPS_IMPLEMENTATION" ]
 }

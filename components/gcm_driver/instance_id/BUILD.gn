@@ -17,10 +17,8 @@ static_library("instance_id") {
 
   deps = [
     "//base",
-    "//components/gcm_driver",
     "//crypto",
   ]
-  allow_circular_includes_from = [ "//components/gcm_driver" ]
 
   if (is_android) {
     sources -= [

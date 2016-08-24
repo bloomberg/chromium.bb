@@ -65,11 +65,11 @@ static_library("database_manager") {
     ":hit_report",
     ":util",
     ":v4_get_hash_protocol_manager",
-    "//base:base",
+    "//base",
     "//content/public/browser",
     "//content/public/common",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -80,8 +80,8 @@ static_library("hit_report") {
   ]
   deps = [
     ":util",
-    "//components/metrics:metrics",
-    "//url:url",
+    "//components/metrics",
+    "//url",
   ]
 }
 
@@ -109,7 +109,7 @@ static_library("remote_database_manager") {
     "//components/variations",
     "//content/public/browser",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -120,8 +120,8 @@ source_set("safe_browsing_api_handler") {
   ]
   deps = [
     ":util",
-    "//base:base",
-    "//url:url",
+    "//base",
+    "//url",
   ]
 }
 
@@ -133,7 +133,7 @@ static_library("safe_browsing_api_handler_util") {
   deps = [
     ":metadata_proto",
     ":util",
-    "//base:base",
+    "//base",
   ]
 }
 
@@ -157,10 +157,9 @@ static_library("util") {
   deps = [
     ":v4_protocol_manager_util",
     "//base",
-    "//base:base",
     "//crypto",
     "//net",
-    "//url:url",
+    "//url",
   ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -197,7 +196,7 @@ static_library("v4_get_hash_protocol_manager") {
     ":v4_protocol_manager_util",
     "//base",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -216,7 +215,7 @@ static_library("v4_local_database_manager") {
     "//base",
     "//content/public/browser",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -229,7 +228,7 @@ source_set("v4_protocol_manager_util") {
     ":safebrowsing_proto",
     "//base",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 
@@ -272,7 +271,7 @@ static_library("v4_update_protocol_manager") {
     ":v4_protocol_manager_util",
     "//base",
     "//net",
-    "//url:url",
+    "//url",
   ]
 }
 

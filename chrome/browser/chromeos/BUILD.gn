@@ -116,7 +116,7 @@ source_set("chromeos") {
     "//ui/app_list/presenter:mojom",
     "//ui/aura",
     "//ui/base",
-    "//ui/chromeos:ui_chromeos",
+    "//ui/chromeos",
     "//ui/compositor",
     "//ui/display",
     "//ui/events:dom_keycode_converter",
@@ -132,6 +132,8 @@ source_set("chromeos") {
     "//url",
     "//v8",
   ]
+
+  allow_circular_includes_from = [ "//chrome/browser/extensions" ]
 
   sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,

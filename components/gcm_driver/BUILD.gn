@@ -59,11 +59,14 @@ static_library("gcm_driver") {
     "system_encryptor.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//components/crx_file",
     "//components/gcm_driver/common",
     "//components/gcm_driver/crypto",
+    "//components/gcm_driver/instance_id",
+  ]
+  deps = [
+    "//components/crx_file",
     "//components/keyed_service/core",
     "//components/os_crypt",
     "//components/pref_registry",
@@ -76,7 +79,13 @@ static_library("gcm_driver") {
     "//net",
     "//url:url",
   ]
-  allow_circular_includes_from = [ "//components/gcm_driver/crypto" ]
+
+  # This target goes with these other deps and they can include headers from
+  # each other.
+  allow_circular_includes_from = [
+    "//components/gcm_driver/crypto",
+    "//components/gcm_driver/instance_id",
+  ]
 
   if (is_chromeos) {
     deps += [ "//components/timers" ]

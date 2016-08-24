@@ -24,8 +24,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/window.h"  // nogncheck
+#include "ui/aura/window_observer.h"  // nogncheck
 #endif
 
 using content::BrowserThread;

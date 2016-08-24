@@ -4,7 +4,10 @@
 
 import("//testing/test.gni")
 
-component("ui_chromeos") {
+assert(is_chromeos)
+
+component("chromeos") {
+  output_name = "ui_chromeos"
   sources = [
     "accelerometer/accelerometer_util.cc",
     "accelerometer/accelerometer_util.h",
@@ -80,7 +83,7 @@ test("ui_chromeos_unittests") {
     "touch_exploration_controller_unittest.cc",
   ]
   deps = [
-    ":ui_chromeos",
+    ":chromeos",
     "//base/test:test_support",
     "//chromeos",
     "//skia",

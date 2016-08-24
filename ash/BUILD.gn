@@ -115,7 +115,7 @@ component("ash") {
       # TODO(msw): Remove this; only ash_with_content should depend on webkit.
       "//third_party/WebKit/public:blink_headers",
       "//third_party/qcms",
-      "//ui/chromeos:ui_chromeos",
+      "//ui/chromeos",
       "//ui/chromeos/resources",
       "//ui/chromeos/strings",
       "//ui/display/util",
@@ -438,7 +438,7 @@ test("ash_unittests") {
       "//components/quirks",
       "//device/bluetooth",
       "//net:net",
-      "//ui/chromeos:ui_chromeos",
+      "//ui/chromeos",
       "//ui/display",
       "//ui/display:test_support",
       "//ui/display:test_util",

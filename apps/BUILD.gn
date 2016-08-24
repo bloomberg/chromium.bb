@@ -8,55 +8,49 @@ import("//build/config/ui.gni")
 assert(!is_android && !is_ios)
 
 static_library("apps") {
-  sources = [
-    "app_lifetime_monitor.cc",
-    "app_lifetime_monitor.h",
-    "app_lifetime_monitor_factory.cc",
-    "app_lifetime_monitor_factory.h",
-    "app_load_service.cc",
-    "app_load_service.h",
-    "app_load_service_factory.cc",
-    "app_load_service_factory.h",
-    "app_restore_service.cc",
-    "app_restore_service.h",
-    "app_restore_service_factory.cc",
-    "app_restore_service_factory.h",
-    "browser_context_keyed_service_factories.cc",
-    "browser_context_keyed_service_factories.h",
-    "custom_launcher_page_contents.cc",
-    "custom_launcher_page_contents.h",
-    "launcher.cc",
-    "launcher.h",
-    "metrics_names.h",
-    "saved_files_service.cc",
-    "saved_files_service.h",
-    "saved_files_service_factory.cc",
-    "saved_files_service_factory.h",
-    "switches.cc",
-    "switches.h",
-  ]
+  sources = []
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-  deps = [
-    "//chrome/app/theme:theme_resources",
-    "//chrome/browser/extensions",
-    "//chrome/common/extensions/api:api",
-    "//components/web_modal",
-    "//skia",
-  ]
-
-  if (is_chromeos) {
-    #deps += [ "browser_chromeos" ]  TODO(GYP)
-  }
-
-  if (!enable_extensions) {
-    # When extensions are disabled, only the sizer file below is included.
-    deps -= [
-      "//chrome/browser/extensions",
-      "//chrome/common/extensions/api:api",
+  if (enable_extensions) {
+    sources += [
+      "app_lifetime_monitor.cc",
+      "app_lifetime_monitor.h",
+      "app_lifetime_monitor_factory.cc",
+      "app_lifetime_monitor_factory.h",
+      "app_load_service.cc",
+      "app_load_service.h",
+      "app_load_service_factory.cc",
+      "app_load_service_factory.h",
+      "app_restore_service.cc",
+      "app_restore_service.h",
+      "app_restore_service_factory.cc",
+      "app_restore_service_factory.h",
+      "browser_context_keyed_service_factories.cc",
+      "browser_context_keyed_service_factories.h",
+      "custom_launcher_page_contents.cc",
+      "custom_launcher_page_contents.h",
+      "launcher.cc",
+      "launcher.h",
+      "metrics_names.h",
+      "saved_files_service.cc",
+      "saved_files_service.h",
+      "saved_files_service_factory.cc",
+      "saved_files_service_factory.h",
+      "switches.cc",
+      "switches.h",
     ]
-    sources = []
+
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+    deps = [
+      "//chrome/app/theme:theme_resources",
+      "//chrome/browser/extensions",
+      "//chrome/common/extensions/api",
+      "//components/web_modal",
+      "//skia",
+    ]
+
+    # TODO: This top level directory should not have an include cycle.
+    allow_circular_includes_from = [ "//chrome/browser/extensions" ]
   }
 
   if (toolkit_views) {

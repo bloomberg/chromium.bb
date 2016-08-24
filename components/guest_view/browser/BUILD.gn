@@ -19,9 +19,11 @@ static_library("browser") {
     "//components/guest_view/browser/guest_view_message_filter.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//components/guest_view/common",
+  ]
+  deps = [
     "//components/zoom",
     "//content/public/browser",
     "//content/public/common",

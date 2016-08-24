@@ -74,6 +74,10 @@ static_library("browser") {
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
+  public_deps = [
+    "//components/signin/core/account_id",
+    "//components/signin/core/common",
+  ]
   deps = [
     "//base",
     "//base:i18n",
@@ -86,8 +90,6 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/account_id",
-    "//components/signin/core/common",
     "//components/webdata/common",
     "//crypto",
     "//google_apis",

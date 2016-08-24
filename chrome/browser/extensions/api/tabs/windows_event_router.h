@@ -18,8 +18,8 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
-#if !defined(OS_MACOSX)
-#include "ui/views/focus/widget_focus_manager.h"
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#include "ui/views/focus/widget_focus_manager.h"  // nogncheck
 #endif
 
 class Profile;
@@ -40,7 +40,7 @@ class WindowControllerList;
 // same profile.
 class WindowsEventRouter : public AppWindowRegistry::Observer,
                            public WindowControllerListObserver,
-#if !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
                            public views::WidgetFocusChangeListener,
 #endif
                            public content::NotificationObserver {
@@ -61,7 +61,7 @@ class WindowsEventRouter : public AppWindowRegistry::Observer,
   void OnWindowControllerAdded(WindowController* window_controller) override;
   void OnWindowControllerRemoved(WindowController* window) override;
 
-#if !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
   void OnNativeFocusChanged(gfx::NativeView focused_now) override;
 #endif
 

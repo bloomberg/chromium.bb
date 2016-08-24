@@ -159,7 +159,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
 }
 
 WindowsEventRouter::~WindowsEventRouter() {
-#if !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #endif
 }
@@ -214,7 +214,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
                 window_controller, std::move(args));
 }
 
-#if !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(nullptr);
