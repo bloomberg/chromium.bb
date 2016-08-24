@@ -2508,12 +2508,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .card-title {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
         -webkit-padding-start: 20px;
+        align-items: center;
         border-bottom: 1px solid var(--card-border-color);
         border-radius: 2px 2px 0 0;
         color: var(--primary-text-color);
+        display: flex;
         font-size: 14px;
         font-weight: 500;
         height: 48px;
@@ -2594,8 +2594,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #overlay-buttons,
       #overlay-wrapper,
       #toolbar-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
         width: 100%;
       }
 
@@ -2630,7 +2630,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #number-selected {
-        @apply(--layout-flex);
+        flex: 1;
       }
 
       #cancel-icon-button {
@@ -2660,8 +2660,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #grouped-buttons-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
       }
 
       #grouped-range-buttons {
@@ -2669,11 +2669,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #grouped-nav-container {
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
-        @apply(--layout-flex);
-        @apply(--layout-horizontal);
         -webkit-margin-end: 24px;
+        align-items: center;
+        display: flex;
+        flex: 1;
+        justify-content: flex-end;
         overflow: hidden;
         transition: opacity 150ms;
       }
@@ -3344,8 +3344,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #item-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
         min-height: var(--item-height);
       }
 
@@ -3358,9 +3358,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #title-and-domain {
-        @apply(--layout-center);
-        @apply(--layout-flex);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
+        flex: 1;
         height: var(--item-height);
         overflow: hidden;
       }
@@ -3717,8 +3717,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #card-heading {
-        @apply(--layout-justified);
         cursor: pointer;
+        justify-content: space-between;
       }
 
       #tab-item-list {
@@ -3748,8 +3748,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       #item-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
         margin: 0 20px;
         min-height: var(--item-height);
       }

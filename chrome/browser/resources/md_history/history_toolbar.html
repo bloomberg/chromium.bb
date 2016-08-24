@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tab.html">
@@ -23,8 +22,8 @@
       #overlay-buttons,
       #overlay-wrapper,
       #toolbar-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
         width: 100%;
       }
 
@@ -59,7 +58,7 @@
       }
 
       #number-selected {
-        @apply(--layout-flex);
+        flex: 1;
       }
 
       #cancel-icon-button {
@@ -89,8 +88,8 @@
       }
 
       #grouped-buttons-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
       }
 
       #grouped-range-buttons {
@@ -98,11 +97,11 @@
       }
 
       #grouped-nav-container {
-        @apply(--layout-center);
-        @apply(--layout-end-justified);
-        @apply(--layout-flex);
-        @apply(--layout-horizontal);
         -webkit-margin-end: 24px;
+        align-items: center;
+        display: flex;
+        flex: 1;
+        justify-content: flex-end;
         overflow: hidden;
         transition: opacity 150ms;
       }

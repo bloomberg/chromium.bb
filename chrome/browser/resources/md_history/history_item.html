@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
@@ -48,8 +47,8 @@
       }
 
       #item-container {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
         min-height: var(--item-height);
       }
 
@@ -62,9 +61,9 @@
       }
 
       #title-and-domain {
-        @apply(--layout-center);
-        @apply(--layout-flex);
-        @apply(--layout-horizontal);
+        align-items: center;
+        display: flex;
+        flex: 1;
         height: var(--item-height);
         overflow: hidden;
       }
