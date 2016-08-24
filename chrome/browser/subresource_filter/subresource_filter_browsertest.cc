@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -20,6 +21,7 @@
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,12 +57,38 @@ using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
 using subresource_filter::testing::TestRulesetCreator;
 using subresource_filter::testing::TestRulesetPair;
 
+// SubresourceFilterDisabledBrowserTest ---------------------------------------
+
+using SubresourceFilterDisabledBrowserTest = InProcessBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterDisabledBrowserTest,
+                       RulesetServiceNotCreatedByDefault) {
+  EXPECT_FALSE(g_browser_process->subresource_filter_ruleset_service());
+}
+
+// SubresourceFilterBrowserTest -----------------------------------------------
+
 class SubresourceFilterBrowserTest : public InProcessBrowserTest {
  public:
   SubresourceFilterBrowserTest() {}
   ~SubresourceFilterBrowserTest() override {}
 
  protected:
+  // It would be too late to enable the feature in SetUpOnMainThread(), as it is
+  // called after ChromeBrowserMainParts::PreBrowserStart(), which instantiates
+  // the RulesetService.
+  //
+  // On the other hand, setting up field trials in this method would be too
+  // early, as it is called before BrowserMain, which expects no FieldTrialList
+  // singleton to exist. There are no other hooks we could use either.
+  //
+  // As a workaround, enable the feature here, then enable the feature once
+  // again + set up the field trials later.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    kSafeBrowsingSubresourceFilter.name);
+  }
+
   void SetUpOnMainThread() override {
     scoped_feature_toggle_.reset(new ScopedSubresourceFilterFeatureToggle(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
@@ -150,6 +178,23 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
     ASSERT_TRUE(frame);
     EXPECT_FALSE(WasScriptResourceLoaded(frame));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       PRE_MainFrameActivationOnStartup) {
+  SetRulesetToDisallowURLsWithPathSuffix("included_script.js");
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       MainFrameActivationOnStartup) {
+  const GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(FILE_PATH_LITERAL("subresource_filter")),
+      base::FilePath(FILE_PATH_LITERAL("frame_with_included_script.html"))));
+
+  // Verify that the ruleset persisted in the previous session is used for this
+  // page load right after start-up.
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
 }
 
 }  // namespace subresource_filter

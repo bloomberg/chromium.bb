@@ -1515,6 +1515,12 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   g_browser_process->GetTabManager()->Start();
 #endif
+
+  // The RulesetService will make the filtering rules available to renderers
+  // immediately after its construction, provided that the rules are already
+  // available at no cost in an indexed format. This enables activating
+  // subresource filtering, if needed, also for page loads on start-up.
+  g_browser_process->subresource_filter_ruleset_service();
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {

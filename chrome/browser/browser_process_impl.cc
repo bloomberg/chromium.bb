@@ -101,6 +101,7 @@
 #include "components/subresource_filter/content/browser/content_ruleset_distributor.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -1146,6 +1147,11 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
 void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
   DCHECK(!subresource_filter_ruleset_service_);
   created_subresource_filter_ruleset_service_ = true;
+
+  if (!base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
+    return;
+  }
 
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
