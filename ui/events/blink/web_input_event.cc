@@ -38,6 +38,7 @@ blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
     case EventPointerType::POINTER_TYPE_MOUSE:
       return blink::WebPointerProperties::PointerType::Mouse;
     case EventPointerType::POINTER_TYPE_PEN:
+    case EventPointerType::POINTER_TYPE_ERASER:
       return blink::WebPointerProperties::PointerType::Pen;
     case EventPointerType::POINTER_TYPE_TOUCH:
       return blink::WebPointerProperties::PointerType::Touch;
