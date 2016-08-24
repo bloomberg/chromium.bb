@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <iterator>
+
 #include "cc/base/contiguous_container.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -226,6 +228,15 @@ TEST(ContiguousContainerTest, ForwardIteration) {
 
   static_assert(std::is_same<decltype(*list.begin()), Point2D&>::value,
                 "Non-const iteration should produce non-const references.");
+}
+
+TEST(ContiguousContainerTest, ForwardIterationEmpty) {
+  ContiguousContainer<Point2D, kPointAlignment> list(kMaxPointSize);
+
+  // ContiguousContainer allocates memory for elements lazily at first append
+  // operation, so at this point memory is not allocated. Check that iteration
+  // doesn't crash and produces zero elements.
+  EXPECT_EQ(0, std::distance(list.begin(), list.end()));
 }
 
 TEST(ContiguousContainerTest, ConstForwardIteration) {
@@ -509,6 +520,32 @@ TEST(ContiguousContainerTest, CapacityInBytesAfterClear) {
   list.AllocateAndConstruct<Point2D>();
   list.Clear();
   EXPECT_EQ(empty_capacity, list.GetCapacityInBytes());
+}
+
+TEST(ContiguousContainerTest, MemoryUsageInBytes) {
+  constexpr size_t initial_size1 = 10 * kMaxPointSize;
+  ContiguousContainer<Point2D, kPointAlignment> list1(kMaxPointSize,
+                                                      initial_size1);
+
+  constexpr size_t initial_size2 = 10000 * kMaxPointSize;
+  ContiguousContainer<Point2D, kPointAlignment> list2(kMaxPointSize,
+                                                      initial_size2);
+
+  // Memory is allocated lazily, so even though lists were created with
+  // different initial_size values, they'll have the same memory usage here.
+  size_t memory_usage1 = list1.MemoryUsageInBytes();
+  size_t memory_usage2 = list2.MemoryUsageInBytes();
+  EXPECT_EQ(memory_usage1, memory_usage2);
+
+  // Trigger memory allocation.
+  list1.AllocateAndConstruct<Point2D>();
+  list2.AllocateAndConstruct<Point2D>();
+
+  // Same object was created in both lists, but their memory usages grew
+  // differently, based on initial_size values lists were created with.
+  EXPECT_NE(list1.MemoryUsageInBytes(), list2.MemoryUsageInBytes());
+  EXPECT_GE(list1.MemoryUsageInBytes(), memory_usage1 + initial_size1);
+  EXPECT_GE(list2.MemoryUsageInBytes(), memory_usage2 + initial_size2);
 }
 
 TEST(ContiguousContainerTest, Alignment) {
