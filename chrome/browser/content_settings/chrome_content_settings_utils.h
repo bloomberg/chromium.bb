@@ -13,7 +13,8 @@ class GURL;
 
 namespace content_settings {
 
-// UMA statistics for the mixed content shield
+// UMA histogram for the mixed script shield. The enum values correspond to
+// histogram entries, so do not remove any existing values.
 enum MixedScriptAction {
   MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD = 0,
   MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE,
@@ -23,6 +24,21 @@ enum MixedScriptAction {
 };
 
 void RecordMixedScriptAction(MixedScriptAction action);
+
+// UMA histogram for the plugins broken puzzle piece. The enum values
+// correspond to histogram entries, so do not remove any existing values.
+enum PluginsAction {
+  PLUGINS_ACTION_TOTAL_NAVIGATIONS = 0,
+  PLUGINS_ACTION_DISPLAYED_BLOCKED_ICON_IN_OMNIBOX,
+  PLUGINS_ACTION_DISPLAYED_BUBBLE,
+  PLUGINS_ACTION_CLICKED_RUN_ALL_PLUGINS_THIS_TIME,
+  PLUGINS_ACTION_CLICKED_ALWAYS_ALLOW_PLUGINS_ON_ORIGIN,
+  PLUGINS_ACTION_CLICKED_MANAGE_PLUGIN_BLOCKING,
+  PLUGINS_ACTION_CLICKED_LEARN_MORE,
+  PLUGINS_ACTION_COUNT
+};
+
+void RecordPluginsAction(PluginsAction action);
 
 }  // namespace content_settings
 

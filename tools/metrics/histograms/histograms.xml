@@ -6911,6 +6911,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Plugins" enum="ContentSettingPluginsAction">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Tracks whether the plugin content blocked puzzle piece was shown in the
+    Omnibox, and how the user interacted with it.
+  </summary>
+</histogram>
+
 <histogram name="ContextMenu.SaveLinkType" enum="ContextMenuSaveLinkType">
   <owner>qinmin@chromium.org</owner>
   <summary>
@@ -72304,6 +72312,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Displayed bubble"/>
   <int value="2" label="Clicked 'Load unsafe scripts'"/>
   <int value="3" label="Clicked 'Learn more'"/>
+</enum>
+
+<enum name="ContentSettingPluginsAction" type="int">
+  <int value="0" label="Total number of navigations"/>
+  <int value="1" label="Displayed plugin-blocked icon in Omnibox"/>
+  <int value="2" label="Displayed bubble"/>
+  <int value="3" label="Clicked 'Run all plugins this time'"/>
+  <int value="4" label="Clicked 'Always allow plugins on this origin'"/>
+  <int value="5" label="Clicked 'Manage plugin blocking'"/>
+  <int value="6" label="Clicked 'Learn more'"/>
 </enum>
 
 <enum name="ContentSettingScheme" type="int">

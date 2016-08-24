@@ -183,6 +183,11 @@ void ContentSettingSimpleBubbleModel::SetManageLink() {
 void ContentSettingSimpleBubbleModel::OnManageLinkClicked() {
   if (delegate())
     delegate()->ShowContentSettingsPage(content_type());
+
+  if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    content_settings::RecordPluginsAction(
+        content_settings::PLUGINS_ACTION_CLICKED_MANAGE_PLUGIN_BLOCKING);
+  }
 }
 
 void ContentSettingSimpleBubbleModel::SetCustomLink() {
@@ -448,6 +453,8 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
  private:
   void OnLearnMoreLinkClicked() override;
   void OnCustomLinkClicked() override;
+
+  void RunPluginsOnPage();
 };
 
 ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
@@ -482,21 +489,38 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
   }
 
   set_learn_more_link(l10n_util::GetStringUTF8(IDS_LEARN_MORE));
+
+  content_settings::RecordPluginsAction(
+      content_settings::PLUGINS_ACTION_DISPLAYED_BUBBLE);
 }
 
 ContentSettingPluginBubbleModel::~ContentSettingPluginBubbleModel() {
   // If the user elected to allow all plugins then run plugins at this time.
-  if (settings_changed() && selected_item() == kAllowButtonIndex)
-    OnCustomLinkClicked();
+  if (settings_changed() && selected_item() == kAllowButtonIndex) {
+    content_settings::RecordPluginsAction(
+        content_settings::
+            PLUGINS_ACTION_CLICKED_ALWAYS_ALLOW_PLUGINS_ON_ORIGIN);
+    RunPluginsOnPage();
+  }
 }
 
 void ContentSettingPluginBubbleModel::OnLearnMoreLinkClicked() {
   if (delegate())
     delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_PLUGINS);
+
+  content_settings::RecordPluginsAction(
+      content_settings::PLUGINS_ACTION_CLICKED_LEARN_MORE);
 }
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
+  content_settings::RecordPluginsAction(
+      content_settings::PLUGINS_ACTION_CLICKED_RUN_ALL_PLUGINS_THIS_TIME);
+
+  RunPluginsOnPage();
+}
+
+void ContentSettingPluginBubbleModel::RunPluginsOnPage() {
   // Web contents can be NULL if the tab was closed while the plugins
   // settings bubble is visible.
   if (!web_contents())
@@ -507,8 +531,8 @@ void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
       web_contents(), true, std::string());
 #endif
   set_custom_link_enabled(false);
-  TabSpecificContentSettings::FromWebContents(web_contents())->
-      set_load_plugins_link_enabled(false);
+  TabSpecificContentSettings::FromWebContents(web_contents())
+      ->set_load_plugins_link_enabled(false);
 }
 
 // ContentSettingPopupBubbleModel ----------------------------------------------

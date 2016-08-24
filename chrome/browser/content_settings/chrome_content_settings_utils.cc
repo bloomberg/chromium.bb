@@ -13,4 +13,9 @@ void RecordMixedScriptAction(MixedScriptAction action) {
                             MIXED_SCRIPT_ACTION_COUNT);
 }
 
+void RecordPluginsAction(PluginsAction action) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.Plugins", action,
+                            PLUGINS_ACTION_COUNT);
+}
+
 }  // namespace content_settings
