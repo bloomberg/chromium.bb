@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   int maj, min, build, rev;
 
   mkvparser::GetVersion(maj, min, build, rev);
-  printf("\t\t libmkv verison: %d.%d.%d.%d\n", maj, min, build, rev);
+  printf("\t\t libwebm version: %d.%d.%d.%d\n", maj, min, build, rev);
 
   long long pos = 0;
 
