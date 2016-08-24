@@ -4097,16 +4097,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
        "viewport ? viewport.content : '';";
   base::WeakNSObject<CRWWebController> weakSelf(self);
   int itemID = currentItem->GetUniqueID();
-  [self evaluateJavaScript:kViewportContentQuery
-       stringResultHandler:^(NSString* viewportContent, NSError*) {
-         web::NavigationItem* item = [weakSelf currentNavItem];
-         if (item && item->GetUniqueID() == itemID) {
-           web::PageViewportState viewportState(viewportContent);
-           completion(&viewportState);
-         } else {
-           completion(nullptr);
-         }
-       }];
+  [self executeJavaScript:kViewportContentQuery
+        completionHandler:^(id viewportContent, NSError*) {
+          web::NavigationItem* item = [weakSelf currentNavItem];
+          if (item && item->GetUniqueID() == itemID) {
+            web::PageViewportState viewportState(
+                base::mac::ObjCCast<NSString>(viewportContent));
+            completion(&viewportState);
+          } else {
+            completion(nullptr);
+          }
+        }];
 }
 
 - (void)orientationDidChange {
