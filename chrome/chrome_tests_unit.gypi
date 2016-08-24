@@ -1587,6 +1587,7 @@
       'browser/ui/window_sizer/window_sizer_unittest.cc',
       'browser/ui/zoom/zoom_controller_unittest.cc',
       'browser/usb/usb_chooser_context_unittest.cc',
+      'browser/usb/usb_chooser_controller_unittest.cc',
       'browser/usb/web_usb_detector_unittest.cc',
       # The importer code is not used on Android.
       'common/importer/firefox_importer_utils_unittest.cc',
