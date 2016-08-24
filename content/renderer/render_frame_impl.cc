@@ -2828,6 +2828,11 @@ void RenderFrameImpl::frameDetached(blink::WebLocalFrame* frame,
   // called on the parent frame.
   DCHECK_EQ(frame_, frame);
 
+#if defined(ENABLE_PLUGINS)
+  if (focused_pepper_plugin_)
+    GetRenderWidget()->set_focused_pepper_plugin(nullptr);
+#endif
+
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
