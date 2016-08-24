@@ -64,6 +64,7 @@ class AbstractRebaseliningCommand(Command):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
         self._scm_changes = {'add': [], 'delete': [], 'remove-lines': []}
+        self._tool = None
 
     def _add_to_scm_later(self, path):
         self._scm_changes['add'].append(path)
@@ -172,6 +173,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
                 self._add_to_scm_later(new_baseline)
 
     def execute(self, options, args, tool):
+        self._tool = tool
         for suffix in options.suffixes.split(','):
             self._copy_existing_baseline(options.builder, options.test, suffix)
         self._print_scm_changes()
@@ -222,6 +224,7 @@ class RebaselineTest(BaseInternalRebaselineCommand):
         self._scm_changes['remove-lines'].append({'builder': options.builder, 'test': options.test})
 
     def execute(self, options, args, tool):
+        self._tool = tool
         self._rebaseline_test_and_update_expectations(options)
         self._print_scm_changes()
 
@@ -534,6 +537,7 @@ class RebaselineJson(AbstractParallelRebaselineCommand):
         ])
 
     def execute(self, options, args, tool):
+        self._tool = tool
         self._rebaseline(options, json.loads(sys.stdin.read()))
 
 
@@ -574,6 +578,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             self._test_prefix_list[test_name][Build(builder_name)] = suffixes
 
     def execute(self, options, args, tool):
+        self._tool = tool
         options.results_directory = None
         self._test_prefix_list = {}
         port_names = tool.port_factory.all_port_names(options.platform)
@@ -608,6 +613,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             "Which builder to pull results from:", self._release_builders(), can_choose_multiple=True)
 
     def execute(self, options, args, tool):
+        self._tool = tool
         if not args:
             _log.error("Must list tests to rebaseline.")
             return

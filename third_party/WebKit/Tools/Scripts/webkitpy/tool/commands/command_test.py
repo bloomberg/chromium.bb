@@ -50,6 +50,5 @@ class CommandsTest(unittest.TestCase):
         options.update_changelogs = False
         options.quiet = True
         options.reviewer = 'MOCK reviewer'
-        command.bind_to_tool(tool)
         OutputCapture().assert_outputs(self, command.execute, [options, args, tool], expected_stdout=expected_stdout,
                                        expected_stderr=expected_stderr, expected_exception=expected_exception, expected_logs=expected_logs)

@@ -51,7 +51,6 @@ class PrintExpectationsTest(unittest.TestCase):
             'test-win-win10', 'test-win-win7'
         ]
         command = PrintExpectations()
-        command.bind_to_tool(tool)
 
         oc = OutputCapture()
         try:
@@ -140,7 +139,6 @@ class PrintBaselinesTest(unittest.TestCase):
 
     def test_basic(self):
         command = PrintBaselines()
-        command.bind_to_tool(self.tool)
         self.capture_output()
         options = optparse.Values({'all': False, 'include_virtual_tests': False, 'csv': False, 'platform': None})
         command.execute(options, ['passes/text.html'], self.tool)
@@ -152,7 +150,6 @@ class PrintBaselinesTest(unittest.TestCase):
 
     def test_multiple(self):
         command = PrintBaselines()
-        command.bind_to_tool(self.tool)
         self.capture_output()
         options = optparse.Values({'all': False, 'include_virtual_tests': False, 'csv': False, 'platform': 'test-win-*'})
         command.execute(options, ['passes/text.html'], self.tool)
@@ -168,7 +165,6 @@ class PrintBaselinesTest(unittest.TestCase):
 
     def test_csv(self):
         command = PrintBaselines()
-        command.bind_to_tool(self.tool)
         self.capture_output()
         options = optparse.Values({'all': False, 'platform': '*win7', 'csv': True, 'include_virtual_tests': False})
         command.execute(options, ['passes/text.html'], self.tool)

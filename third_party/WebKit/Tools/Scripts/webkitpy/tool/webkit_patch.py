@@ -98,10 +98,6 @@ class WebKitPatch(Host):
         ]
         self.help_command = HelpCommand()
         self.commands.append(self.help_command)
-        # FIXME: Since tool is passed to Command.execute, it may not be necessary to set a tool attribute on the
-        # command objects here - maybe this should be done inside of Command.execute for commands that use self._tool.
-        for command in self.commands:
-            command.bind_to_tool(self)
 
     def main(self, argv=None):
         argv = argv or sys.argv

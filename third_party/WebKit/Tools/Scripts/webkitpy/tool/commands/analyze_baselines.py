@@ -31,9 +31,7 @@ import optparse
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
-from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
-
 
 _log = logging.getLogger(__name__)
 
@@ -52,6 +50,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
         self._optimizer_class = BaselineOptimizer  # overridable for testing
         self._baseline_optimizer = None
         self._port = None
+        self._tool = None
 
     def _write(self, msg):
         print msg
@@ -67,6 +66,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
                 self._write("%s: (no baselines found)" % name)
 
     def execute(self, options, args, tool):
+        self._tool = tool
         self._baseline_suffix_list = options.suffixes.split(',')
         port_names = tool.port_factory.all_port_names(options.platform)
         if not port_names:

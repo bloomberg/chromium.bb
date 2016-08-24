@@ -210,6 +210,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         return 'unknown'
 
     def execute(self, options, args, tool):
+        self._tool = tool
         if tool.scm().executable_name == "svn":
             _log.error("Auto rebaseline only works with a git checkout.")
             return

@@ -51,8 +51,10 @@ class PrettyDiff(Command):
                                        "includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch."))
         ]
         super(PrettyDiff, self).__init__(options)
+        self._tool = None
 
     def execute(self, options, args, tool):
+        self._tool = tool
         pretty_diff_file = self._show_pretty_diff(options)
         if pretty_diff_file:
             diff_correct = tool.user.confirm("Was that diff correct?")

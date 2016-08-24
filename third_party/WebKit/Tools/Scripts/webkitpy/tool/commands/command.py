@@ -47,7 +47,6 @@ class Command(object):
         self.required_arguments = self._parse_required_arguments(self.argument_names)
         self.options = options
         self.requires_local_commits = requires_local_commits
-        self._tool = None
         # option_parser can be overridden by the tool using set_option_parser
         # This default parser will be used for standalone_help printing.
         self.option_parser = HelpPrintingOptionParser(
@@ -69,13 +68,6 @@ class Command(object):
         options = self.options or []
         for option in options:
             self.option_parser.add_option(option)
-
-    # The tool calls bind_to_tool on each Command after adding it to its list.
-    def bind_to_tool(self, tool):
-        # Command instances can only be bound to one tool at a time.
-        if self._tool and tool != self._tool:
-            raise Exception("Command already bound to tool!")
-        self._tool = tool
 
     @staticmethod
     def _parse_required_arguments(argument_names):

@@ -52,7 +52,7 @@ class AbstractLocalServerCommand(Command):
 
         if options.show_results:
             # FIXME: This seems racy.
-            threading.Timer(0.1, lambda: self._tool.user.open_url(server_url)).start()
+            threading.Timer(0.1, lambda: tool.user.open_url(server_url)).start()
 
         httpd = self.server(httpd_port=options.httpd_port, config=config)  # pylint: disable=E1102
         httpd.serve_forever()

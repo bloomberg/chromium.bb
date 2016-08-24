@@ -39,6 +39,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         return files_to_delete, files_to_add
 
     def execute(self, options, args, tool):
+        self._tool = tool
         self._baseline_suffix_list = options.suffixes.split(',')
         port_names = tool.port_factory.all_port_names(options.platform)
         if not port_names:

@@ -39,8 +39,3 @@ class WebKitPatchTest(unittest.TestCase):
         self.assertTrue(out.startswith('Usage: '))
         self.assertEqual('', err)
         self.assertEqual('', logs)
-
-    def test_constructor_calls_bind_to_tool(self):
-        tool = WebKitPatch('path')
-        self.assertEqual(tool.commands[0]._tool, tool)
-        self.assertEqual(tool.commands[1]._tool, tool)

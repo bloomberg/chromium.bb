@@ -48,6 +48,7 @@ class HelpCommand(Command):
         super(HelpCommand, self).__init__(options)
         # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.
         self.show_all_commands = False
+        self._tool = None
 
     def _help_epilog(self):
         # Only show commands which are relevant to this checkout's SCM system.  Might this be confusing to some users?
@@ -72,6 +73,7 @@ class HelpCommand(Command):
             self.option_parser.remove_option(option.get_opt_string())
 
     def execute(self, options, args, tool):
+        self._tool = tool
         if args:
             command = self._tool.command_by_name(args[0])
             if command:

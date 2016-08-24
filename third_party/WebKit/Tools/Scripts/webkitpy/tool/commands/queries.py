@@ -110,7 +110,8 @@ class PrintExpectations(Command):
 
         tests = set(default_port.tests(args))
         for port_name in port_names:
-            model = self._model(options, port_name, tests)
+            port = tool.port_factory.get(port_name, options)
+            model = TestExpectations(port, tests).model()
             tests_to_print = self._filter_tests(options, model, tests)
             lines = [model.get_expectation_line(test) for test in sorted(tests_to_print)]
             if port_name != port_names[0]:
@@ -141,10 +142,6 @@ class PrintExpectations(Command):
             for line in lines:
                 output.append("%s" % line.to_string(None, include_modifiers, include_expectations, include_comment=False))
         return output
-
-    def _model(self, options, port_name, tests):
-        port = self._tool.port_factory.get(port_name, options)
-        return TestExpectations(port, tests).model()
 
 
 class PrintBaselines(Command):

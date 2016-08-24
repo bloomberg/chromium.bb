@@ -28,6 +28,7 @@ class BaseTestCase(unittest.TestCase):
         self.tool = MockWebKitPatch()
         # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
         self.command = self.command_constructor()
+        self.command._tool = self.tool
         self.tool.builders = BuilderList({
             "MOCK Mac10.10 (dbg)": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Debug"]},
             "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": ["Mac10.10", "Release"]},
@@ -42,7 +43,6 @@ class BaseTestCase(unittest.TestCase):
             "MOCK Win7 (dbg)(2)": {"port_name": "test-win-win7", "specifiers": ["Win7", "Debug"]},
             "MOCK Win7": {"port_name": "test-win-win7", "specifiers": ["Win7", "Release"]},
         })
-        self.command.bind_to_tool(self.tool)
         self.mac_port = self.tool.port_factory.get_from_builder_name("MOCK Mac10.11")
 
         self.mac_expectations_path = self.mac_port.path_to_generic_test_expectations_file()
@@ -406,7 +406,6 @@ class TestRebaselineJson(BaseTestCase):
 
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
-
         self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         self.assertEqual(self.tool.executive.calls, [])
@@ -449,8 +448,6 @@ class TestRebaselineJson(BaseTestCase):
 
     def test_no_optimize(self):
         self._setup_mock_build_data()
-        print self.tool.buildbot._canned_results
-
         self._write("userscripts/first-test.html", "Dummy test contents")
         self.command._rebaseline(
             self.options(optimize=False),
@@ -468,7 +465,6 @@ class TestRebaselineJson(BaseTestCase):
 
     def test_results_directory(self):
         self._setup_mock_build_data()
-
         self._write("userscripts/first-test.html", "Dummy test contents")
         self.command._rebaseline(
             self.options(optimize=False, results_directory='/tmp'),
@@ -526,11 +522,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
-
         self.command._rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
-
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
             new_expectations, "Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n")

@@ -52,6 +52,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self.rietveld = Rietveld(Web())
 
     def execute(self, options, args, tool):
+        self._tool = tool
         issue_number = self._get_issue_number(options)
         if not issue_number:
             return
