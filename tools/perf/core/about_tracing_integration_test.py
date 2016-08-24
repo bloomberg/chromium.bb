@@ -12,10 +12,13 @@ class AboutTracingIntegrationTest(tab_test_case.TabTestCase):
   def testBasicTraceRecording(self):
     action_runner = self._tab.action_runner
     action_runner.Navigate('chrome://tracing')
+    record_button_js = (
+        "document.querySelector('tr-ui-timeline-view').shadowRoot."
+        "querySelector('#record-button')")
 
     # Click 'record' to trigger record selection diaglog.
-    action_runner.WaitForElement(selector='#record-button')
-    action_runner.ClickElement(selector='#record-button')
+    action_runner.WaitForElement(element_function=record_button_js)
+    action_runner.ClickElement(element_function=record_button_js)
 
     # Wait for record selection diaglog to pop up, then click record.
     action_runner.WaitForElement(selector='.overlay')
