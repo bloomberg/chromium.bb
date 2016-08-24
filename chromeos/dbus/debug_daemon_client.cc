@@ -39,32 +39,11 @@ const char kCrOSTraceLabel[] = "systemTraceEvents";
 // Because the cheets logs are very huge, we set the D-Bus timeout to 2 minutes.
 const int kBigLogsDBusTimeoutMS = 120 * 1000;
 
-// The type of the callback to be invoked once the pipe reader has been
-// initialized and a D-Bus file descriptor has been created for it.
-using OnPipeReaderInitializedCallback =
-    base::Callback<void(dbus::ScopedFileDescriptor)>;
-
 // Used in DebugDaemonClient::EmptyStopAgentTracingCallback().
 void EmptyStopAgentTracingCallbackBody(
     const std::string& agent_name,
     const std::string& events_label,
     const scoped_refptr<base::RefCountedString>& unused_result) {}
-
-// Creates a D-Bus file descriptor from a base::File.
-dbus::ScopedFileDescriptor CreateFileDescriptorForPipeWriteEnd(
-    base::File pipe_write_end) {
-  if (!pipe_write_end.IsValid()) {
-    VLOG(1) << "Cannot create pipe reader";
-    // NB: continue anyway; toss the data
-    pipe_write_end.Initialize(base::FilePath(FILE_PATH_LITERAL("/dev/null")),
-                              base::File::FLAG_OPEN | base::File::FLAG_WRITE);
-    // TODO(afakhry): If this fails AppendFileDescriptor will abort.
-  }
-  dbus::ScopedFileDescriptor file_descriptor(new dbus::FileDescriptor);
-  file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
-  file_descriptor->CheckValidity();
-  return file_descriptor;
-}
 
 // A self-deleting object that wraps the pipe reader operations for reading the
 // big feedback logs. It will delete itself once the pipe stream has been
@@ -80,14 +59,7 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
                      base::Bind(&PipeReaderWrapper::OnIOComplete, AsWeakPtr())),
         callback_(callback) {}
 
-  void Initialize(const OnPipeReaderInitializedCallback& on_initialized) {
-    base::File pipe_write_end = pipe_reader_.StartIO();
-    base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
-        base::Bind(&CreateFileDescriptorForPipeWriteEnd,
-                   base::Passed(&pipe_write_end)),
-        on_initialized);
-  }
+  base::ScopedFD Initialize() { return pipe_reader_.StartIO(); }
 
   void OnIOComplete() {
     std::string pipe_data;
@@ -137,22 +109,18 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   // DebugDaemonClient override.
   void DumpDebugLogs(bool is_compressed,
-                     base::File file,
-                     scoped_refptr<base::TaskRunner> task_runner,
+                     int file_descriptor,
                      const GetDebugLogsCallback& callback) override {
-    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor;
-    file_descriptor->PutValue(file.TakePlatformFile());
-    // Punt descriptor validity check to a worker thread; on return we'll
-    // issue the D-Bus request to stop tracing and collect results.
-    task_runner->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&dbus::FileDescriptor::CheckValidity,
-                   base::Unretained(file_descriptor)),
-        base::Bind(&DebugDaemonClientImpl::OnCheckValidityGetDebugLogs,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   is_compressed,
-                   base::Owned(file_descriptor),
-                   callback));
+    // Issue the dbus request to get debug logs.
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kDumpDebugLogs);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(is_compressed);
+    writer.AppendFileDescriptor(file_descriptor);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void SetDebugMode(const std::string& subsystem,
@@ -242,7 +210,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
-                     dbus::ScopedFileDescriptor file_descriptor,
+                     int file_descriptor,
                      const DBusMethodErrorCallback& error_callback) override {
     DCHECK(file_descriptor);
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -250,7 +218,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(duration.InSeconds());
     writer.AppendArrayOfStrings(perf_args);
-    writer.AppendFileDescriptor(*file_descriptor);
+    writer.AppendFileDescriptor(file_descriptor);
 
     debugdaemon_proxy_->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -277,8 +245,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // long time to be processed and a new request should never be ignored nor
     // cancels the on-going one.
     PipeReaderWrapper* pipe_reader = new PipeReaderWrapper(callback);
-    pipe_reader->Initialize(
-        base::Bind(&DebugDaemonClientImpl::OnBigLogsPipeReaderReady,
+    base::ScopedFD pipe_write_end = pipe_reader->Initialize();
+
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetBigFeedbackLogs);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(pipe_write_end.get());
+
+    DVLOG(1) << "Requesting big feedback logs";
+    debugdaemon_proxy_->CallMethod(
+        &method_call, kBigLogsDBusTimeoutMS,
+        base::Bind(&DebugDaemonClientImpl::OnBigFeedbackLogsResponse,
                    weak_ptr_factory_.GetWeakPtr(), pipe_reader->AsWeakPtr()));
   }
 
@@ -341,16 +318,21 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                                 base::Bind(&DebugDaemonClientImpl::OnIOComplete,
                                            weak_ptr_factory_.GetWeakPtr())));
 
-    base::File pipe_write_end = pipe_reader_->StartIO();
-    // Create dbus::FileDescriptor on the worker thread; on return we'll
-    // issue the D-Bus request to stop tracing and collect results.
-    base::PostTaskAndReplyWithResult(
-        stop_agent_tracing_task_runner_.get(), FROM_HERE,
-        base::Bind(&CreateFileDescriptorForPipeWriteEnd,
-                   base::Passed(&pipe_write_end)),
-        base::Bind(
-            &DebugDaemonClientImpl::OnCreateFileDescriptorRequestStopSystem,
-            weak_ptr_factory_.GetWeakPtr(), callback));
+    base::ScopedFD pipe_write_end = pipe_reader_->StartIO();
+    DCHECK(pipe_write_end.is_valid());
+    // Issue the dbus request to stop system tracing
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSystraceStop);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(pipe_write_end.get());
+
+    callback_ = callback;
+
+    DVLOG(1) << "Requesting a systrace stop";
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnStopAgentTracing,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   void SetStopAgentTracingTaskRunner(
@@ -468,25 +450,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  private:
-  // Called when a CheckValidity response is received.
-  void OnCheckValidityGetDebugLogs(bool is_compressed,
-                                   dbus::FileDescriptor* file_descriptor,
-                                   const GetDebugLogsCallback& callback) {
-    // Issue the dbus request to get debug logs.
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kDumpDebugLogs);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendBool(is_compressed);
-    writer.AppendFileDescriptor(*file_descriptor);
-
-    debugdaemon_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback));
-  }
-
   // Called when a response for GetDebugLogs() is received.
   void OnGetDebugLogs(const GetDebugLogsCallback& callback,
                       dbus::Response* response) {
@@ -589,22 +552,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     return OnGetAllLogs(callback, response);
   }
 
-  void OnBigLogsPipeReaderReady(base::WeakPtr<PipeReaderWrapper> pipe_reader,
-                                dbus::ScopedFileDescriptor file_descriptor) {
-    DCHECK(file_descriptor);
-
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetBigFeedbackLogs);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendFileDescriptor(*file_descriptor);
-
-    DVLOG(1) << "Requesting big feedback logs";
-    debugdaemon_proxy_->CallMethod(
-        &method_call, kBigLogsDBusTimeoutMS,
-        base::Bind(&DebugDaemonClientImpl::OnBigFeedbackLogsResponse,
-                   weak_ptr_factory_.GetWeakPtr(), pipe_reader));
-  }
-
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,
                                  dbus::Response* response) {
     if (!response && pipe_reader.get()) {
@@ -667,28 +614,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       return;
 
     callback.Run(response != NULL);
-  }
-
-  // Called when a CheckValidity response is received.
-  void OnCreateFileDescriptorRequestStopSystem(
-      const StopAgentTracingCallback& callback,
-      dbus::ScopedFileDescriptor file_descriptor) {
-    DCHECK(file_descriptor);
-
-    // Issue the dbus request to stop system tracing
-    dbus::MethodCall method_call(
-        debugd::kDebugdInterface,
-        debugd::kSystraceStop);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendFileDescriptor(*file_descriptor);
-
-    callback_ = callback;
-
-    DVLOG(1) << "Requesting a systrace stop";
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnStopAgentTracing,
-                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Called when a response for StopAgentTracing() is received.

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/files/file.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -47,7 +47,7 @@ class CHROMEOS_EXPORT PipeReader {
   // On success data will automatically be accumulated into a string that
   // can be retrieved with PipeReader::data().  To shutdown collection delete
   // the instance and/or use PipeReader::OnDataReady(-1).
-  base::File StartIO();
+  base::ScopedFD StartIO();
 
   // Called when pipe data are available.  Can also be used to shutdown
   // data collection by passing -1 for |byte_count|.

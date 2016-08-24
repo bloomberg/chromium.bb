@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
-#include "dbus/file_descriptor.h"
 
 namespace {
 
@@ -39,8 +38,7 @@ void FakeDebugDaemonClient::Init(dbus::Bus* bus) {}
 
 void FakeDebugDaemonClient::DumpDebugLogs(
     bool is_compressed,
-    base::File file,
-    scoped_refptr<base::TaskRunner> task_runner,
+    int file_descriptor,
     const GetDebugLogsCallback& callback) {
   callback.Run(true);
 }
@@ -111,10 +109,8 @@ void FakeDebugDaemonClient::GetNetworkInterfaces(
 void FakeDebugDaemonClient::GetPerfOutput(
     base::TimeDelta duration,
     const std::vector<std::string>& perf_args,
-    dbus::ScopedFileDescriptor file_descriptor,
-    const DBusMethodErrorCallback& error_callback) {
-  // Nothing to do but close the file descriptor, which its dtor will do.
-}
+    int file_descriptor,
+    const DBusMethodErrorCallback& error_callback) {}
 
 void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;

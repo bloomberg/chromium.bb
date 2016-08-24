@@ -62,7 +62,7 @@ void WriteDebugLogToFileCompleted(
 
 // Stores into |file_path| debug logs in the .tgz format. Calls
 // |callback| upon completion.
-void WriteDebugLogToFile(base::File* file,
+void WriteDebugLogToFile(std::unique_ptr<base::File> file,
                          const std::string& sequence_token_name,
                          const base::FilePath& file_path,
                          bool should_compress,
@@ -74,12 +74,15 @@ void WriteDebugLogToFile(base::File* file,
                << "error: " << file->error_details();
     return;
   }
-  scoped_refptr<base::TaskRunner> task_runner =
-      GetSequencedTaskRunner(sequence_token_name);
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->DumpDebugLogs(
-      should_compress, std::move(*file), task_runner,
+      should_compress, file->GetPlatformFile(),
       base::Bind(&WriteDebugLogToFileCompleted, file_path, sequence_token_name,
                  callback));
+
+  // Close the file on an IO-allowed thread.
+  GetSequencedTaskRunner(sequence_token_name)
+      ->PostTask(FROM_HERE,
+                 base::Bind(&base::DeletePointer<base::File>, file.release()));
 }
 
 // Runs command with its parameters as defined in |argv|.
@@ -200,9 +203,9 @@ void OnSystemLogsAdded(const DebugLogWriter::StoreLogsCallback& callback,
                  callback));
 }
 
-void IntializeLogFile(base::File* file,
-                      const base::FilePath& file_path,
-                      uint32_t flags) {
+void InitializeLogFile(base::File* file,
+                       const base::FilePath& file_path,
+                       uint32_t flags) {
   base::FilePath dir = file_path.DirName();
   if (!base::DirectoryExists(dir)) {
     if (!base::CreateDirectory(dir)) {
@@ -224,16 +227,15 @@ void StartLogRetrieval(const base::FilePath& file_name_template,
       logging::GenerateTimestampedName(file_name_template, base::Time::Now());
 
   int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
-  base::File* file = new base::File;
-  GetSequencedTaskRunner(sequence_token_name)->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&IntializeLogFile, base::Unretained(file), file_path, flags),
-      base::Bind(&WriteDebugLogToFile,
-                 base::Owned(file),
-                 sequence_token_name,
-                 file_path,
-                 should_compress,
-                 callback));
+  std::unique_ptr<base::File> file(new base::File);
+  base::File* file_ptr = file.get();
+  GetSequencedTaskRunner(sequence_token_name)
+      ->PostTaskAndReply(
+          FROM_HERE, base::Bind(&InitializeLogFile, base::Unretained(file_ptr),
+                                file_path, flags),
+          base::Bind(&WriteDebugLogToFile, base::Passed(&file),
+                     sequence_token_name, file_path, should_compress,
+                     callback));
 }
 
 const char kDefaultSequenceName[] = "DebugLogWriter";

@@ -714,6 +714,11 @@ void MessageWriter::AppendVariantOfBasic(int dbus_type, const void* value) {
   CloseContainer(&variant_writer);
 }
 
+void MessageWriter::AppendFileDescriptor(int value) {
+  CHECK(IsDBusTypeUnixFdSupported());
+  AppendBasic(DBUS_TYPE_UNIX_FD, &value);  // This duplicates the FD.
+}
+
 void MessageWriter::AppendFileDescriptor(const FileDescriptor& value) {
   CHECK(IsDBusTypeUnixFdSupported());
 
@@ -1014,6 +1019,18 @@ bool MessageReader::PopVariantOfBasic(int dbus_type, void* value) {
   if (!PopVariant(&variant_reader))
     return false;
   return variant_reader.PopBasic(dbus_type, value);
+}
+
+bool MessageReader::PopFileDescriptor(base::ScopedFD* value) {
+  CHECK(IsDBusTypeUnixFdSupported());
+
+  int fd = -1;
+  const bool success = PopBasic(DBUS_TYPE_UNIX_FD, &fd);
+  if (!success)
+    return false;
+
+  *value = base::ScopedFD(fd);
+  return true;
 }
 
 bool MessageReader::PopFileDescriptor(FileDescriptor* value) {

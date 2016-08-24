@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/pipe_reader.h"
-#include "dbus/file_descriptor.h"
 
 // Class for handling getting output from perf over DBus. Manages the
 // asynchronous DBus call and retrieving data from quipper over a pipe.
@@ -36,7 +35,6 @@ class PerfOutputCall {
 
  private:
   // Internal callbacks.
-  void OnFileDescriptorCreated(dbus::ScopedFileDescriptor file_descriptor);
   void OnIOComplete();
   void OnGetPerfOutputError(const std::string& error_name,
                             const std::string& error_message);

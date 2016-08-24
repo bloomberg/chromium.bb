@@ -32,14 +32,13 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
   ~TestDebugDaemonClient() override {}
 
   void DumpDebugLogs(bool is_compressed,
-                     base::File file,
-                     scoped_refptr<base::TaskRunner> task_runner,
+                     int file_descriptor,
                      const GetDebugLogsCallback& callback) override {
-    base::File* file_param = new base::File(std::move(file));
-    task_runner->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(
-            &GenerateTestLogDumpFile, test_file_, base::Owned(file_param)),
+    // dup() is needed as the file descriptor will be closed on the client side.
+    base::File* file_param = new base::File(dup(file_descriptor));
+    content::BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE, base::Bind(&GenerateTestLogDumpFile, test_file_,
+                              base::Owned(file_param)),
         base::Bind(callback, true));
   }
 

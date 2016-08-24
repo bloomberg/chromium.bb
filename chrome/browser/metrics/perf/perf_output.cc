@@ -4,25 +4,9 @@
 
 #include "chrome/browser/metrics/perf/perf_output.h"
 
-#include <memory>
-
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/task_runner_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-
-namespace {
-
-// Create a dbus::FileDescriptor from a base::File.
-dbus::ScopedFileDescriptor CreateFileDescriptor(base::File pipe_write_end) {
-  dbus::ScopedFileDescriptor file_descriptor(new dbus::FileDescriptor);
-  file_descriptor->PutValue(pipe_write_end.TakePlatformFile());
-  file_descriptor->CheckValidity();
-  return file_descriptor;
-}
-
-}  // namespace
 
 PerfOutputCall::PerfOutputCall(
     scoped_refptr<base::TaskRunner> blocking_task_runner,
@@ -40,28 +24,15 @@ PerfOutputCall::PerfOutputCall(
       blocking_task_runner_,
       base::Bind(&PerfOutputCall::OnIOComplete, weak_factory_.GetWeakPtr())));
 
-  base::File pipe_write_end = perf_data_pipe_reader_->StartIO();
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateFileDescriptor, base::Passed(&pipe_write_end)),
-      base::Bind(&PerfOutputCall::OnFileDescriptorCreated,
-                 weak_factory_.GetWeakPtr()));
-}
-
-PerfOutputCall::~PerfOutputCall() {}
-
-void PerfOutputCall::OnFileDescriptorCreated(
-    dbus::ScopedFileDescriptor file_descriptor) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(file_descriptor);
-
+  base::ScopedFD pipe_write_end = perf_data_pipe_reader_->StartIO();
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-
-  client->GetPerfOutput(duration_, perf_args_, std::move(file_descriptor),
+  client->GetPerfOutput(duration_, perf_args_, pipe_write_end.get(),
                         base::Bind(&PerfOutputCall::OnGetPerfOutputError,
                                    weak_factory_.GetWeakPtr()));
 }
+
+PerfOutputCall::~PerfOutputCall() {}
 
 void PerfOutputCall::OnIOComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());

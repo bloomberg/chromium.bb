@@ -24,8 +24,7 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
 
   void Init(dbus::Bus* bus) override;
   void DumpDebugLogs(bool is_compressed,
-                     base::File file,
-                     scoped_refptr<base::TaskRunner> task_runner,
+                     int file_descriptor,
                      const GetDebugLogsCallback& callback) override;
   void SetDebugMode(const std::string& subsystem,
                     const SetDebugModeCallback& callback) override;
@@ -46,7 +45,7 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const GetNetworkInterfacesCallback& callback) override;
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
-                     dbus::ScopedFileDescriptor file_descriptor,
+                     int file_descriptor,
                      const DBusMethodErrorCallback& error_callback) override;
   void GetScrubbedLogs(const GetLogsCallback& callback) override;
   void GetScrubbedBigLogs(const GetLogsCallback& callback) override;

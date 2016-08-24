@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "dbus/dbus_export.h"
 #include "dbus/file_descriptor.h"
@@ -285,6 +286,13 @@ class CHROME_DBUS_EXPORT MessageWriter {
   void AppendDouble(double value);
   void AppendString(const std::string& value);
   void AppendObjectPath(const ObjectPath& value);
+
+  // Appends a file descriptor to the message.
+  // The FD will be duplicated so you still have to close the original FD.
+  void AppendFileDescriptor(int value);
+
+  // DEPRECATED: Use the method with the same name above instead.
+  // TODO(hashimoto): Remove this. crbug.com/621841
   void AppendFileDescriptor(const FileDescriptor& value);
 
   // Opens an array. The array contents can be added to the array with
@@ -398,6 +406,10 @@ class CHROME_DBUS_EXPORT MessageReader {
   bool PopDouble(double* value);
   bool PopString(std::string* value);
   bool PopObjectPath(ObjectPath* value);
+  bool PopFileDescriptor(base::ScopedFD* value);
+
+  // DEPRECATED: Use the method with the same name above.
+  // TODO(hashimoto): Remove this. crbug.com/621841
   bool PopFileDescriptor(FileDescriptor* value);
 
   // Sets up the given message reader to read an array at the current

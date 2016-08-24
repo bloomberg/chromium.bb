@@ -23,15 +23,15 @@ PipeReader::PipeReader(const scoped_refptr<base::TaskRunner>& task_runner,
 PipeReader::~PipeReader() {
 }
 
-base::File PipeReader::StartIO() {
+base::ScopedFD PipeReader::StartIO() {
   // Use a pipe to collect data
   int pipe_fds[2];
   const int status = HANDLE_EINTR(pipe(pipe_fds));
   if (status < 0) {
     PLOG(ERROR) << "pipe";
-    return base::File();
+    return base::ScopedFD();
   }
-  base::File pipe_write_end(pipe_fds[1]);
+  base::ScopedFD pipe_write_end(pipe_fds[1]);
   // Pass ownership of pipe_fds[0] to data_stream_, which will close it.
   data_stream_.reset(new net::FileStream(
       base::File(pipe_fds[0]), task_runner_));
@@ -42,7 +42,7 @@ base::File PipeReader::StartIO() {
       base::Bind(&PipeReader::OnDataReady, weak_ptr_factory_.GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING) {
     LOG(ERROR) << "Unable to post initial read";
-    return base::File();
+    return base::ScopedFD();
   }
   return pipe_write_end;
 }

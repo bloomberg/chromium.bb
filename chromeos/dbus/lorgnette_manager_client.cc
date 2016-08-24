@@ -72,9 +72,10 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     // Owned by the callback created in scan_to_string_completion->Start().
     ScanToStringCompletion* scan_to_string_completion =
         new ScanToStringCompletion();
-    base::File file;
+    base::ScopedFD fd;
     ScanImageToFileCallback file_callback =
-        scan_to_string_completion->Start(callback, &file);
+        scan_to_string_completion->Start(callback, &fd);
+    base::File file(fd.release());
     ScanImageToFile(device_name, properties, file_callback, &file);
   }
 
@@ -96,7 +97,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     // of |this| to a returned callback that can be handed to a
     // ScanImageToFile invocation.
     ScanImageToFileCallback Start(const ScanImageToStringCallback& callback,
-                                  base::File *file) {
+                                  base::ScopedFD* fd) {
       CHECK(!pipe_reader_.get());
       const bool kTasksAreSlow = true;
       scoped_refptr<base::TaskRunner> task_runner =
@@ -106,7 +107,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
               task_runner,
               base::Bind(&ScanToStringCompletion::OnScanToStringDataCompleted,
                        base::Unretained(this))));
-      *file = pipe_reader_->StartIO();
+      *fd = pipe_reader_->StartIO();
 
       return base::Bind(&ScanToStringCompletion::OnScanToStringCompleted,
                         base::Owned(this), callback);
