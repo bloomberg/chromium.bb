@@ -585,9 +585,6 @@ void ArcAppListPrefs::OnInstanceReady() {
 
   app_instance->Init(binding_.CreateInterfacePtrAndBind());
   app_instance->RefreshAppList();
-
-  // Start ArcPackageSyncService.
-  sync_service_->SyncStarted();
 }
 
 void ArcAppListPrefs::OnInstanceClosed() {
@@ -989,6 +986,13 @@ void ArcAppListPrefs::OnPackageListRefreshed(
     if (!current_packages.count(package_name))
       RemovePackageFromPrefs(prefs_, package_name);
   }
+
+  // Start ArcPackageSyncService ASAP. This is the call_back of
+  // app_instance->RefreshAppList() in OnInstanceReady(). SyncStarted() should
+  // only be called after packagelist refresh is completed. SyncStarted() is
+  // no-op after first time setup or if sync is disabled.
+  DCHECK(sync_service_);
+  sync_service_->SyncStarted();
 }
 
 std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs() const {

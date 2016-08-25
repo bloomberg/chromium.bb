@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PACKAGE_SYNC_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
@@ -31,7 +32,15 @@ class ArcPackageSyncDataTypeController
   // DataTypeController is RefCounted.
   ~ArcPackageSyncDataTypeController() override;
 
+  void OnArcAppsSyncPrefChanged();
+
+  void OnArcEnabledPrefChanged();
+
   Profile* const profile_;
+
+  sync_driver::SyncClient* sync_client_;
+
+  PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPackageSyncDataTypeController);
 };

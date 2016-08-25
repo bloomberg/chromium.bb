@@ -15,6 +15,7 @@
 #include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_data.h"
 #include "components/sync/api/sync_merge_result.h"
+#include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -229,8 +230,14 @@ bool ArcPackageSyncableService::SyncStarted() {
 
   sync_driver::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
-  if (sync_service)
-    sync_service->ReenableDatatype(syncer::ARC_PACKAGE);
+  // ArcPackage sync service is controlled by apps checkbox in sync settings.
+  bool arc_package_sync_should_enable = profile_->GetPrefs()->GetBoolean(
+      sync_driver::SyncPrefs::GetPrefNameForDataType(syncer::ARC_PACKAGE));
+
+  if (!sync_service || !arc_package_sync_should_enable)
+    return false;
+
+  sync_service->ReenableDatatype(syncer::ARC_PACKAGE);
 
   if (flare_.is_null()) {
     VLOG(2) << this << ": SyncStarted: Flare.";
