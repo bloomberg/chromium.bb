@@ -541,6 +541,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   struct UIResourceData {
     ResourceId resource_id;
+    gfx::Size size;
     bool opaque;
   };
 

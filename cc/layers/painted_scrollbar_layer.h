@@ -72,6 +72,9 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
     return true;
   }
 
+  int MaxTextureSize();
+  float ClampScaleToMaxTextureSize(float scale);
+
   UIResourceBitmap RasterizeScrollbarPart(const gfx::Rect& layer_rect,
                                           const gfx::Rect& content_rect,
                                           ScrollbarPart part);
