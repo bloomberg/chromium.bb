@@ -33,7 +33,10 @@ public:
     void setZoom(MediaSettingsRange* value) { m_zoom = value; }
 
     String focusMode() const;
-    void setFocusMode(media::mojom::blink::FocusMode focusMode) { m_focusMode = focusMode; }
+    void setFocusMode(media::mojom::blink::MeteringMode focusMode) { m_focusMode = focusMode; }
+
+    String exposureMode() const;
+    void setExposureMode(media::mojom::blink::MeteringMode exposureMode) { m_exposureMode = exposureMode; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -44,7 +47,8 @@ private:
     Member<MediaSettingsRange> m_imageHeight;
     Member<MediaSettingsRange> m_imageWidth;
     Member<MediaSettingsRange> m_zoom;
-    media::mojom::blink::FocusMode m_focusMode = media::mojom::blink::FocusMode::UNAVAILABLE;
+    media::mojom::blink::MeteringMode m_focusMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
+    media::mojom::blink::MeteringMode m_exposureMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
 };
 
 } // namespace blink

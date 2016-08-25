@@ -338,28 +338,39 @@ public abstract class VideoCaptureCamera
 
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
         // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
-        int jniFocusMode = AndroidFocusMode.UNAVAILABLE;
+        int jniFocusMode = AndroidMeteringMode.UNAVAILABLE;
         if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
                 || focusMode.equals(
                            android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF)) {
-            jniFocusMode = AndroidFocusMode.CONTINUOUS;
+            jniFocusMode = AndroidMeteringMode.CONTINUOUS;
         } else if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO)
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_MACRO)) {
-            jniFocusMode = AndroidFocusMode.SINGLE_SHOT;
+            jniFocusMode = AndroidMeteringMode.SINGLE_SHOT;
         } else if (focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)) {
-            jniFocusMode = AndroidFocusMode.FIXED;
+            jniFocusMode = AndroidMeteringMode.FIXED;
         }
+
+        // Exposure is usually continuously updated except it not available at all, or if the
+        // exposure compensation is locked, in which case we consider it as FIXED.
+        int jniExposureMode = parameters.getMaxNumMeteringAreas() == 0
+                ? AndroidMeteringMode.UNAVAILABLE
+                : AndroidMeteringMode.CONTINUOUS;
+        if (parameters.isAutoExposureLockSupported() && parameters.getAutoExposureLock()) {
+            jniExposureMode = AndroidMeteringMode.FIXED;
+        }
+        // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
+        // values using getMinExposureCompensation() and getMaxExposureCompensation().
 
         return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
                 currentSize.height, maxWidth, minWidth, currentSize.width, maxZoom, minZoom,
-                currentZoom, jniFocusMode);
+                currentZoom, jniFocusMode, jniExposureMode);
     }
 
     @Override
-    public void setPhotoOptions(
-            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D) {
+    public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
+            float[] pointsOfInterest2D) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -374,19 +385,34 @@ public abstract class VideoCaptureCamera
             parameters.setZoom(i - 1);
         }
 
-        if (focusMode == AndroidFocusMode.FIXED) {
+        if (focusMode == AndroidMeteringMode.FIXED) {
             parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED);
-        } else if (focusMode == AndroidFocusMode.SINGLE_SHOT) {
+        } else if (focusMode == AndroidMeteringMode.SINGLE_SHOT) {
             parameters.setFocusMode(android.hardware.Camera.Parameters.FOCUS_MODE_AUTO);
-        } else if (focusMode == AndroidFocusMode.CONTINUOUS) {
+        } else if (focusMode == AndroidMeteringMode.CONTINUOUS) {
             parameters.setFocusMode(
                     android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         }
+
+        if (parameters.isAutoExposureLockSupported()) {
+            if (exposureMode == AndroidMeteringMode.FIXED) {
+                parameters.setAutoExposureLock(true);
+            } else if (exposureMode != AndroidMeteringMode.UNAVAILABLE) {
+                parameters.setAutoExposureLock(false);
+            }
+        }
+        // TODO(mcasas): https://crbug.com/518807 set the exposure compensation.
+
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
 
         // Upon new |zoom| configuration, clear up the previous |mAreaOfInterest| if any.
         if (mAreaOfInterest != null && !mAreaOfInterest.rect.isEmpty() && zoom > 0) {
+            mAreaOfInterest = null;
+        }
+        // Also clear |mAreaOfInterest| if the user sets it as UNAVAILABLE.
+        if (focusMode == AndroidMeteringMode.UNAVAILABLE
+                || exposureMode == AndroidMeteringMode.UNAVAILABLE) {
             mAreaOfInterest = null;
         }
 
@@ -414,11 +440,12 @@ public abstract class VideoCaptureCamera
         }
         if (mAreaOfInterest != null) {
             parameters.setFocusAreas(Arrays.asList(mAreaOfInterest));
+            parameters.setMeteringAreas(Arrays.asList(mAreaOfInterest));
         }
 
         mCamera.setParameters(parameters);
 
-        if (focusMode != AndroidFocusMode.SINGLE_SHOT) return;
+        if (focusMode != AndroidMeteringMode.SINGLE_SHOT) return;
         mCamera.autoFocus(new android.hardware.Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, android.hardware.Camera camera) {

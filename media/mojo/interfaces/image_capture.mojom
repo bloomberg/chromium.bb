@@ -13,8 +13,8 @@ struct Range {
   uint32 current;
 };
 
-// https://w3c.github.io/mediacapture-image/#idl-def-FocusMode
-enum FocusMode { UNAVAILABLE, MANUAL, SINGLE_SHOT, CONTINUOUS };
+// https://w3c.github.io/mediacapture-image/#idl-def-MeteringMode
+enum MeteringMode { UNAVAILABLE, MANUAL, SINGLE_SHOT, CONTINUOUS };
 
 // Equivalent to idl PhotoCapabilities,
 // https://w3c.github.io/mediacapture-image/#photocapabilities
@@ -23,7 +23,8 @@ struct PhotoCapabilities {
   Range height;
   Range width;
   Range zoom;
-  FocusMode focus_mode;
+  MeteringMode focus_mode;
+  MeteringMode exposure_mode;
 };
 
 // Equivalent to idl Point2D.
@@ -44,7 +45,9 @@ struct PhotoSettings {
   bool has_height;
   uint32 height;
   bool has_focus_mode;
-  FocusMode focus_mode;
+  MeteringMode focus_mode;
+  bool has_exposure_mode;
+  MeteringMode exposure_mode;
   array<Point2D> points_of_interest;
 };
 

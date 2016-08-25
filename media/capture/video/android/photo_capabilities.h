@@ -14,10 +14,12 @@ namespace media {
 
 class PhotoCapabilities {
  public:
-  // Focus modes from Java side, equivalent to media.mojom::FocusMode.
+  // Focus modes from Java side, equivalent to media.mojom::MeteringMode, except
+  // NOT_SET, which is used to signify absence of setting configuration.
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
-  enum class AndroidFocusMode {
+  enum class AndroidMeteringMode {
+    NOT_SET,
     UNAVAILABLE,
     FIXED,
     SINGLE_SHOT,
@@ -39,7 +41,8 @@ class PhotoCapabilities {
   int getMinZoom() const;
   int getMaxZoom() const;
   int getCurrentZoom() const;
-  AndroidFocusMode getFocusMode() const;
+  AndroidMeteringMode getFocusMode() const;
+  AndroidMeteringMode getExposureMode() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;

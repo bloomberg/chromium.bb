@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/mediacapture-image/index.html#idl-def-PhotoCapabilities
 
-enum FocusMode {
+enum MeteringMode {
     "unavailable",
     "manual",
     "single-shot",
@@ -15,12 +15,11 @@ enum FocusMode {
     RuntimeEnabled=ImageCapture,
 ] interface PhotoCapabilities {
     readonly attribute MediaSettingsRange iso;
-    // TODO(mcasas): Replace these two with supported and current resolutions.
-    // https://github.com/w3c/mediacapture-image/issues/30
     readonly attribute MediaSettingsRange imageHeight;
     readonly attribute MediaSettingsRange imageWidth;
     readonly attribute MediaSettingsRange zoom;
-    readonly attribute FocusMode focusMode;
+    readonly attribute MeteringMode focusMode;
+    readonly attribute MeteringMode exposureMode;
     // TODO(mcasas): Implement all other PhotoCapabilities fields
     // https://crbug.com/518807
 };

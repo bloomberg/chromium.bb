@@ -35,6 +35,17 @@ bool trackIsInactive(const MediaStreamTrack& track)
     return track.readyState() != "live" || !track.enabled() || track.muted();
 }
 
+media::mojom::blink::MeteringMode parseMeteringMode(const String& blinkMode)
+{
+    if (blinkMode == "manual")
+        return media::mojom::blink::MeteringMode::MANUAL;
+    if (blinkMode == "single-shot")
+        return media::mojom::blink::MeteringMode::SINGLE_SHOT;
+    if (blinkMode == "continuous")
+        return media::mojom::blink::MeteringMode::CONTINUOUS;
+    return media::mojom::blink::MeteringMode::UNAVAILABLE;
+}
+
 } // anonymous namespace
 
 ImageCapture* ImageCapture::create(ExecutionContext* context, MediaStreamTrack* track, ExceptionState& exceptionState)
@@ -125,16 +136,11 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     if (settings->has_width)
         settings->width = photoSettings.imageWidth();
     settings->has_focus_mode = photoSettings.hasFocusMode();
-    if (settings->has_focus_mode) {
-        if (photoSettings.focusMode() == "manual")
-            settings->focus_mode = media::mojom::blink::FocusMode::MANUAL;
-        else if (photoSettings.focusMode() == "single-shot")
-            settings->focus_mode = media::mojom::blink::FocusMode::SINGLE_SHOT;
-        else if (photoSettings.focusMode() == "continuous")
-            settings->focus_mode = media::mojom::blink::FocusMode::CONTINUOUS;
-        else
-            settings->has_focus_mode = false;
-    }
+    if (settings->has_focus_mode)
+        settings->focus_mode = parseMeteringMode(photoSettings.focusMode());
+    settings->has_exposure_mode = photoSettings.hasExposureMode();
+    if (settings->has_exposure_mode)
+        settings->exposure_mode = parseMeteringMode(photoSettings.exposureMode());
     if (photoSettings.hasPointsOfInterest()) {
         for (const auto& point : photoSettings.pointsOfInterest()) {
             auto mojoPoint = media::mojom::blink::Point2D::New();
@@ -232,6 +238,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setImageWidth(width);
         caps->setZoom(zoom);
         caps->setFocusMode(capabilities->focus_mode);
+        caps->setExposureMode(capabilities->exposure_mode);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

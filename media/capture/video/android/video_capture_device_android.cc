@@ -29,6 +29,43 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
+namespace {
+
+mojom::MeteringMode ToMojomMeteringMode(
+    PhotoCapabilities::AndroidMeteringMode android_mode) {
+  switch (android_mode) {
+    case PhotoCapabilities::AndroidMeteringMode::FIXED:
+      return mojom::MeteringMode::MANUAL;
+    case PhotoCapabilities::AndroidMeteringMode::SINGLE_SHOT:
+      return mojom::MeteringMode::SINGLE_SHOT;
+    case PhotoCapabilities::AndroidMeteringMode::CONTINUOUS:
+      return mojom::MeteringMode::CONTINUOUS;
+    case PhotoCapabilities::AndroidMeteringMode::UNAVAILABLE:
+      return mojom::MeteringMode::UNAVAILABLE;
+    case PhotoCapabilities::AndroidMeteringMode::NOT_SET:
+      NOTREACHED();
+  }
+  return mojom::MeteringMode::UNAVAILABLE;
+}
+
+PhotoCapabilities::AndroidMeteringMode ToAndroidMeteringMode(
+    mojom::MeteringMode mojom_mode) {
+  switch (mojom_mode) {
+    case mojom::MeteringMode::MANUAL:
+      return PhotoCapabilities::AndroidMeteringMode::FIXED;
+    case mojom::MeteringMode::SINGLE_SHOT:
+      return PhotoCapabilities::AndroidMeteringMode::SINGLE_SHOT;
+    case mojom::MeteringMode::CONTINUOUS:
+      return PhotoCapabilities::AndroidMeteringMode::CONTINUOUS;
+    case mojom::MeteringMode::UNAVAILABLE:
+      return PhotoCapabilities::AndroidMeteringMode::UNAVAILABLE;
+  }
+  NOTREACHED();
+  return PhotoCapabilities::AndroidMeteringMode::NOT_SET;
+}
+
+}  // anonymous namespace
+
 // static
 bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -434,20 +471,10 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->zoom->current = caps.getCurrentZoom();
   photo_capabilities->zoom->max = caps.getMaxZoom();
   photo_capabilities->zoom->min = caps.getMinZoom();
-  switch (caps.getFocusMode()) {
-    case PhotoCapabilities::AndroidFocusMode::UNAVAILABLE:
-      photo_capabilities->focus_mode = mojom::FocusMode::UNAVAILABLE;
-      break;
-    case PhotoCapabilities::AndroidFocusMode::FIXED:
-      photo_capabilities->focus_mode = mojom::FocusMode::MANUAL;
-      break;
-    case PhotoCapabilities::AndroidFocusMode::SINGLE_SHOT:
-      photo_capabilities->focus_mode = mojom::FocusMode::SINGLE_SHOT;
-      break;
-    case PhotoCapabilities::AndroidFocusMode::CONTINUOUS:
-      photo_capabilities->focus_mode = mojom::FocusMode::CONTINUOUS;
-      break;
-  }
+  photo_capabilities->focus_mode = ToMojomMeteringMode(caps.getFocusMode());
+  photo_capabilities->exposure_mode =
+      ToMojomMeteringMode(caps.getExposureMode());
+
   callback.Run(std::move(photo_capabilities));
 }
 
@@ -468,24 +495,15 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   const int height = settings->has_height ? settings->height : 0;
   const int zoom = settings->has_zoom ? settings->zoom : 0;
 
-  PhotoCapabilities::AndroidFocusMode focus_mode =
-      PhotoCapabilities::AndroidFocusMode::UNAVAILABLE;
-  if (settings->has_focus_mode) {
-    switch (settings->focus_mode) {
-      case mojom::FocusMode::MANUAL:
-        focus_mode = PhotoCapabilities::AndroidFocusMode::FIXED;
-        break;
-      case mojom::FocusMode::SINGLE_SHOT:
-        focus_mode = PhotoCapabilities::AndroidFocusMode::SINGLE_SHOT;
-        break;
-      case mojom::FocusMode::CONTINUOUS:
-        focus_mode = PhotoCapabilities::AndroidFocusMode::CONTINUOUS;
-        break;
-      case mojom::FocusMode::UNAVAILABLE:
-        focus_mode = PhotoCapabilities::AndroidFocusMode::UNAVAILABLE;
-        break;
-    }
-  }
+  const PhotoCapabilities::AndroidMeteringMode focus_mode =
+      settings->has_focus_mode
+          ? ToAndroidMeteringMode(settings->focus_mode)
+          : PhotoCapabilities::AndroidMeteringMode::NOT_SET;
+
+  const PhotoCapabilities::AndroidMeteringMode exposure_mode =
+      settings->has_exposure_mode
+          ? ToAndroidMeteringMode(settings->exposure_mode)
+          : PhotoCapabilities::AndroidMeteringMode::NOT_SET;
 
   std::vector<float> points_of_interest_marshalled;
   for (const auto& point : settings->points_of_interest) {
@@ -495,9 +513,9 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   ScopedJavaLocalRef<jfloatArray> points_of_interest =
       base::android::ToJavaFloatArray(env, points_of_interest_marshalled);
 
-  Java_VideoCapture_setPhotoOptions(env, j_capture_, zoom,
-                                    static_cast<int>(focus_mode), width, height,
-                                    points_of_interest);
+  Java_VideoCapture_setPhotoOptions(
+      env, j_capture_, zoom, static_cast<int>(focus_mode),
+      static_cast<int>(exposure_mode), width, height, points_of_interest);
 
   callback.Run(true);
 }

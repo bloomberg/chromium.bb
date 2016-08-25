@@ -25,10 +25,12 @@ class PhotoCapabilities {
     public final int minZoom;
     public final int currentZoom;
     public final int focusMode;
+    public final int exposureMode;
 
+    // TODO(mcasas): Add a PhotoCapabilitiesBuilder to this class.
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
-            int minZoom, int currentZoom, int focusMode) {
+            int minZoom, int currentZoom, int focusMode, int exposureMode) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -42,6 +44,7 @@ class PhotoCapabilities {
         this.minZoom = minZoom;
         this.currentZoom = currentZoom;
         this.focusMode = focusMode;
+        this.exposureMode = exposureMode;
     }
 
     @CalledByNative
@@ -107,5 +110,10 @@ class PhotoCapabilities {
     @CalledByNative
     public int getFocusMode() {
         return focusMode;
+    }
+
+    @CalledByNative
+    public int getExposureMode() {
+        return exposureMode;
     }
 }

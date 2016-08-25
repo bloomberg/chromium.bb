@@ -246,7 +246,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CameraState mCameraState = CameraState.STOPPED;
     private final float mMaxZoom;
     private Rect mCropRect = new Rect();
-    private int mFocusMode = AndroidFocusMode.CONTINUOUS;
+    private int mFocusMode = AndroidMeteringMode.CONTINUOUS;
+    private int mExposureMode = AndroidMeteringMode.CONTINUOUS;
     private int mPhotoWidth = 0;
     private int mPhotoHeight = 0;
     private MeteringRectangle mAreaOfInterest;
@@ -307,11 +308,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
         previewRequestBuilder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_FAST);
         previewRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
                 CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
-        if (mFocusMode == AndroidFocusMode.CONTINUOUS) {
+        if (mFocusMode == AndroidMeteringMode.CONTINUOUS) {
             Log.d(TAG, "Focus: CONTROL_AF_MODE_CONTINUOUS_PICTURE");
             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        } else if (mFocusMode == AndroidFocusMode.SINGLE_SHOT) {
+        } else if (mFocusMode == AndroidMeteringMode.SINGLE_SHOT) {
             Log.d(TAG, "Focus: triggering a single shot");
             previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
@@ -319,13 +320,21 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
 
-        if (mAreaOfInterest != null) {
-            MeteringRectangle[] array = {mAreaOfInterest};
-            Log.d(TAG, "Area of interest (set) %s", mAreaOfInterest.toString());
-            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
+        if (mExposureMode == AndroidMeteringMode.FIXED) {
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
+        } else {
+            previewRequestBuilder.set(
+                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
         }
 
-        // SENSOR_EXPOSURE_TIME ?
+        if (mAreaOfInterest != null) {
+            MeteringRectangle[] array = {mAreaOfInterest};
+            Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, array);
+        }
+
         if (!mCropRect.isEmpty()) {
             previewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
         }
@@ -601,30 +610,40 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 / mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
 
         final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
-        Log.d(TAG, "focusMode: %s", focusMode);
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
         // autoFocus(AutoFocusCallback) to configure region(s) to focus onto.
-        int jniFocusMode = AndroidFocusMode.UNAVAILABLE;
+        int jniFocusMode = AndroidMeteringMode.UNAVAILABLE;
         if (focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO
                 || focusMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
-            jniFocusMode = AndroidFocusMode.CONTINUOUS;
+            jniFocusMode = AndroidMeteringMode.CONTINUOUS;
         } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_AUTO
                 || focusMode == CameraMetadata.CONTROL_AF_MODE_MACRO) {
-            jniFocusMode = AndroidFocusMode.SINGLE_SHOT;
+            jniFocusMode = AndroidMeteringMode.SINGLE_SHOT;
         } else if (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF) {
-            jniFocusMode = AndroidFocusMode.FIXED;
+            jniFocusMode = AndroidMeteringMode.FIXED;
         } else {
             assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
         }
 
+        int jniExposureMode = AndroidMeteringMode.CONTINUOUS;
+        if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)
+                == CameraMetadata.CONTROL_AE_MODE_OFF) {
+            jniExposureMode = AndroidMeteringMode.UNAVAILABLE;
+        }
+        if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
+            jniExposureMode = AndroidMeteringMode.FIXED;
+        }
+        // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
+        // values using CONTROL_AE_COMPENSATION_RANGE.
+
         return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
                 currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
-                jniFocusMode);
+                jniFocusMode, jniExposureMode);
     }
 
     @Override
-    public void setPhotoOptions(
-            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D) {
+    public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
+            float[] pointsOfInterest2D) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -640,13 +659,21 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.d(TAG, "zoom level %f, rectangle: %s", normalizedZoom, mCropRect.toString());
         }
 
-        mFocusMode = focusMode;
+        if (focusMode != AndroidMeteringMode.NOT_SET) mFocusMode = focusMode;
+        if (exposureMode != AndroidMeteringMode.NOT_SET) mExposureMode = exposureMode;
+
+        // TODO(mcasas): https://crbug.com/518807 support exposure compensation.
 
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
 
         // Upon new |zoom| configuration, clear up the previous |mAreaOfInterest| if any.
         if (mAreaOfInterest != null && !mAreaOfInterest.getRect().isEmpty() && zoom > 0) {
+            mAreaOfInterest = null;
+        }
+        // Also clear |mAreaOfInterest| if the user sets it as UNAVAILABLE.
+        if (mFocusMode == AndroidMeteringMode.UNAVAILABLE
+                || mExposureMode == AndroidMeteringMode.UNAVAILABLE) {
             mAreaOfInterest = null;
         }
         // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
@@ -729,19 +756,29 @@ public class VideoCaptureCamera2 extends VideoCapture {
             photoRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
         }
 
-        if (mFocusMode == AndroidFocusMode.CONTINUOUS) {
+        if (mFocusMode == AndroidMeteringMode.CONTINUOUS) {
             photoRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        } else if (mFocusMode == AndroidFocusMode.SINGLE_SHOT) {
-            Log.d(TAG, "triggering auto focus (maybe?)");
+        } else if (mFocusMode == AndroidMeteringMode.SINGLE_SHOT) {
             photoRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
 
+        if (mExposureMode == AndroidMeteringMode.FIXED) {
+            photoRequestBuilder.set(
+                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_OFF);
+        } else {
+            photoRequestBuilder.set(
+                    CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
+            // TODO(mcasas): set to CONTROL_AE_MODE_ON_{AUTO,ALWAYS}_FLASH{,_REDEYE} depending on
+            // other options that need to be wired and passed to setPhotoOptions().
+        }
+
         if (mAreaOfInterest != null) {
             MeteringRectangle[] array = {mAreaOfInterest};
-            Log.d(TAG, "Area of interest (set) %s", mAreaOfInterest.toString());
+            Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
             photoRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, array);
+            photoRequestBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, array);
         }
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();

@@ -6,6 +6,27 @@
 
 namespace blink {
 
+namespace {
+
+String meteringModeToString(media::mojom::blink::MeteringMode mode)
+{
+    switch (mode) {
+    case media::mojom::blink::MeteringMode::UNAVAILABLE:
+        return "unavailable";
+    case media::mojom::blink::MeteringMode::MANUAL:
+        return "manual";
+    case media::mojom::blink::MeteringMode::SINGLE_SHOT:
+        return "single-shot";
+    case media::mojom::blink::MeteringMode::CONTINUOUS:
+        return "continuous";
+    default:
+        NOTREACHED();
+    }
+    return emptyString();
+}
+
+} // anonymous namespace
+
 // static
 PhotoCapabilities* PhotoCapabilities::create()
 {
@@ -14,19 +35,12 @@ PhotoCapabilities* PhotoCapabilities::create()
 
 String PhotoCapabilities::focusMode() const
 {
-    switch (m_focusMode) {
-    case media::mojom::blink::FocusMode::UNAVAILABLE:
-        return "unavailable";
-    case media::mojom::blink::FocusMode::MANUAL:
-        return "manual";
-    case media::mojom::blink::FocusMode::SINGLE_SHOT:
-        return "single-shot";
-    case media::mojom::blink::FocusMode::CONTINUOUS:
-        return "continuous";
-    default:
-        NOTREACHED();
-    }
-    return emptyString();
+    return meteringModeToString(m_focusMode);
+}
+
+String PhotoCapabilities::exposureMode() const
+{
+    return meteringModeToString(m_exposureMode);
 }
 
 DEFINE_TRACE(PhotoCapabilities)

@@ -80,10 +80,16 @@ int PhotoCapabilities::getCurrentZoom() const {
   return Java_PhotoCapabilities_getCurrentZoom(AttachCurrentThread(), object_);
 }
 
-PhotoCapabilities::AndroidFocusMode PhotoCapabilities::getFocusMode() const {
+PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getFocusMode() const {
   DCHECK(!object_.is_null());
-  return static_cast<AndroidFocusMode>(
+  return static_cast<AndroidMeteringMode>(
       Java_PhotoCapabilities_getFocusMode(AttachCurrentThread(), object_));
 }
 
+PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getExposureMode()
+    const {
+  DCHECK(!object_.is_null());
+  return static_cast<AndroidMeteringMode>(
+      Java_PhotoCapabilities_getExposureMode(AttachCurrentThread(), object_));
+}
 }  // namespace media

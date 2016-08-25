@@ -59,8 +59,8 @@ public abstract class VideoCapture {
     * x coordinate first followed by the y coordinate.
     */
     @CalledByNative
-    public abstract void setPhotoOptions(
-            int zoom, int focusMode, int width, int height, float[] pointsOfInterest2D);
+    public abstract void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width,
+            int height, float[] pointsOfInterest2D);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);
