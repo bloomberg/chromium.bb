@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
