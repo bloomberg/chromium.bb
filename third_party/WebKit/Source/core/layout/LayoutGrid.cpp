@@ -441,10 +441,9 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
         // TODO(svillar): we won't need to do this once the intrinsic width computation is isolated
         // from the LayoutGrid object state (it should not touch any attribute) (see crbug.com/627812)
-        size_t autoRepeatColumnsCount = computeAutoRepeatTracksCount(ForColumns);
-        if (m_autoRepeatColumns && m_autoRepeatColumns != autoRepeatColumnsCount)
+        if (m_autoRepeatColumns && m_autoRepeatColumns != computeAutoRepeatTracksCount(ForColumns, TrackSizing))
             dirtyGrid();
-        placeItemsOnGrid(autoRepeatColumnsCount);
+        placeItemsOnGrid(TrackSizing);
 
         GridSizingData sizingData(gridColumnCount(), gridRowCount());
 
@@ -575,7 +574,7 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t st
 
 void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    const_cast<LayoutGrid*>(this)->placeItemsOnGrid(styleRef().gridAutoRepeatColumns().size());
+    const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
@@ -1384,7 +1383,7 @@ void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridArea& area)
     }
 }
 
-size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection direction) const
+size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection direction, SizingOperation sizingOperation) const
 {
     bool isRowAxis = direction == ForColumns;
     const auto& autoRepeatTracks = isRowAxis ? styleRef().gridAutoRepeatColumns() : styleRef().gridAutoRepeatRows();
@@ -1393,18 +1392,18 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     if (!autoRepeatTrackListLength)
         return 0;
 
-    LayoutUnit availableSize = isRowAxis ? availableLogicalWidth() : computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
-    if (availableSize == -1) {
-        const Length& maxLength = isRowAxis ? styleRef().logicalMaxWidth() : styleRef().logicalMaxHeight();
-        if (!maxLength.isMaxSizeNone()) {
-            availableSize = isRowAxis
-                ? computeLogicalWidthUsing(MaxSize, maxLength, containingBlockLogicalWidthForContent(), containingBlock())
-                : computeContentLogicalHeight(MaxSize, maxLength, LayoutUnit(-1));
-        }
+    LayoutUnit availableSize;
+    if (isRowAxis) {
+        availableSize = sizingOperation == IntrinsicSizeComputation ? LayoutUnit(-1) : availableLogicalWidth();
     } else {
-        availableSize = isRowAxis
-            ? constrainLogicalWidthByMinMax(availableSize, availableLogicalWidth(), containingBlock())
-            : constrainLogicalHeightByMinMax(availableSize, LayoutUnit(-1));
+        availableSize = computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
+        if (availableSize == -1) {
+            const Length& maxLength = styleRef().logicalMaxHeight();
+            if (!maxLength.isMaxSizeNone())
+                availableSize = computeContentLogicalHeight(MaxSize, maxLength, LayoutUnit(-1));
+        } else {
+            availableSize = constrainLogicalHeightByMinMax(availableSize, LayoutUnit(-1));
+        }
     }
 
     bool needsToFulfillMinimumSize = false;
@@ -1491,15 +1490,19 @@ std::unique_ptr<LayoutGrid::OrderedTrackIndexSet> LayoutGrid::computeEmptyTracks
     return emptyTrackIndexes;
 }
 
-void LayoutGrid::placeItemsOnGrid(size_t autoRepeatColumnsCount)
+void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation)
 {
     if (!m_gridIsDirty)
         return;
 
-    ASSERT(m_gridItemArea.isEmpty());
+    DCHECK(m_gridItemArea.isEmpty());
+    DCHECK(m_gridItemsIndexesMap.isEmpty());
 
-    m_autoRepeatColumns = autoRepeatColumnsCount;
-    m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows);
+    if (sizingOperation == IntrinsicSizeComputation)
+        m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().size();
+    else
+        m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns, sizingOperation);
+    m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows, sizingOperation);
 
     populateExplicitGridAndOrderIterator();
 
