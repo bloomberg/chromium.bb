@@ -142,7 +142,6 @@ void CloudPolicyClient::RegisterWithCertificate(
     const std::string& current_state_key) {
   DCHECK(signing_service_);
   DCHECK(service_);
-  DCHECK(!pem_certificate_chain.empty());
   DCHECK(!is_registered());
 
   SetClientId(client_id);
