@@ -4,17 +4,26 @@
 
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_locking_manager.h"
+#include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/logging.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+
+// static
+WmShelf* WmShelf::ForWindow(WmWindow* window) {
+  return window->GetRootWindowController()->GetShelf();
+}
 
 void WmShelf::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_);
@@ -155,12 +164,55 @@ gfx::Rect WmShelf::GetUserWorkAreaBounds() const {
                                : gfx::Rect();
 }
 
-void WmShelf::UpdateIconPositionForWindow(WmWindow* window) {
-  shelf_->UpdateIconPositionForWindow(window);
+void WmShelf::UpdateIconPositionForPanel(WmWindow* panel) {
+  shelf_layout_manager_->shelf_widget()->UpdateIconPositionForPanel(panel);
 }
 
 gfx::Rect WmShelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
-  return shelf_->GetScreenBoundsOfItemIconForWindow(window);
+  if (!shelf_layout_manager_)
+    return gfx::Rect();
+  return shelf_layout_manager_->shelf_widget()
+      ->GetScreenBoundsOfItemIconForWindow(window);
+}
+
+// static
+void WmShelf::LaunchShelfItem(int item_index) {
+  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
+  const ShelfItems& items = shelf_model->items();
+  int item_count = shelf_model->item_count();
+  int indexes_left = item_index >= 0 ? item_index : item_count;
+  int found_index = -1;
+
+  // Iterating until we have hit the index we are interested in which
+  // is true once indexes_left becomes negative.
+  for (int i = 0; i < item_count && indexes_left >= 0; i++) {
+    if (items[i].type != TYPE_APP_LIST) {
+      found_index = i;
+      indexes_left--;
+    }
+  }
+
+  // There are two ways how found_index can be valid: a.) the nth item was
+  // found (which is true when indexes_left is -1) or b.) the last item was
+  // requested (which is true when index was passed in as a negative number).
+  if (found_index >= 0 && (indexes_left == -1 || item_index < 0)) {
+    // Then set this one as active (or advance to the next item of its kind).
+    ActivateShelfItem(found_index);
+  }
+}
+
+// static
+void WmShelf::ActivateShelfItem(int item_index) {
+  // We pass in a keyboard event which will then trigger a switch to the
+  // next item if the current one is already active.
+  ui::KeyEvent event(ui::ET_KEY_RELEASED,
+                     ui::VKEY_UNKNOWN,  // The actual key gets ignored.
+                     ui::EF_NONE);
+
+  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
+  const ShelfItem& item = shelf_model->items()[item_index];
+  ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
+  item_delegate->ItemSelected(event);
 }
 
 bool WmShelf::ProcessGestureEvent(const ui::GestureEvent& event) {

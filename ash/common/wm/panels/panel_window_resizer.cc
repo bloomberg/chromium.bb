@@ -198,7 +198,7 @@ void PanelWindowResizer::UpdateLauncherPosition() {
   if (panel_container_) {
     PanelLayoutManager::Get(panel_container_)
         ->shelf()
-        ->UpdateIconPositionForWindow(GetTarget());
+        ->UpdateIconPositionForPanel(GetTarget());
   }
 }
 

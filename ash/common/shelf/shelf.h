@@ -6,8 +6,6 @@
 #define ASH_COMMON_SHELF_SHELF_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "base/macros.h"
 
@@ -50,26 +48,7 @@ class ASH_EXPORT Shelf {
   // TODO(jamescook): Remove this.
   WmShelf* wm_shelf() { return wm_shelf_; }
 
-  // Returns the screen bounds of the item for the specified window. If there is
-  // no item for the specified window an empty rect is returned.
-  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
-
-  // Updates the icon position given the current window bounds. This is used
-  // when dragging panels to reposition them with respect to the other panels.
-  void UpdateIconPositionForWindow(WmWindow* window);
-
-  // Activates the the shelf item specified by the index in the list of shelf
-  // items.
-  void ActivateShelfItem(int index);
-
-  // Cycles the window focus linearly over the current shelf items.
-  void CycleWindowLinear(CycleDirection direction);
-
   AppListButton* GetAppListButton() const;
-
-  // Launch a 0-indexed shelf item in the shelf.
-  // A negative index launches the last shelf item in the shelf.
-  void LaunchAppIndexAt(int item_index);
 
   ShelfWidget* shelf_widget() { return shelf_widget_; }
 
@@ -78,15 +57,8 @@ class ASH_EXPORT Shelf {
     return shelf_widget_->shelf_layout_manager();
   }
 
-  // Returns rectangle bounding all visible shelf items. Used screen coordinate
-  // system.
-  gfx::Rect GetVisibleItemsBoundsInScreen() const;
-
   // Returns ApplicationDragAndDropHost for this shelf.
   app_list::ApplicationDragAndDropHost* GetDragAndDropHostForAppList();
-
-  // Updates the background for the shelf items.
-  void UpdateShelfItemBackground(int alpha);
 
   ShelfView* shelf_view_for_testing() { return shelf_view_; }
 

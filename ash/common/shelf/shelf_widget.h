@@ -90,6 +90,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);
 
+  // See WmShelf::UpdateIconPositionForPanel().
+  void UpdateIconPositionForPanel(WmWindow* panel);
+
+  // See WmShelf::GetScreenBoundsOfItemIconForWindow().
+  gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
+
   // Overridden from views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 

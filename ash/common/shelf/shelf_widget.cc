@@ -18,9 +18,11 @@
 #include "ash/common/system/status_area_layout_manager.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/common/wm_window_property.h"
 #include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -499,6 +501,24 @@ void ShelfWidget::Shutdown() {
 
 void ShelfWidget::ForceUndimming(bool force) {
   delegate_view_->ForceUndimming(force);
+}
+
+void ShelfWidget::UpdateIconPositionForPanel(WmWindow* panel) {
+  WmWindow* shelf_window = WmLookup::Get()->GetWindowForWidget(this);
+  shelf_view_->UpdatePanelIconPosition(
+      panel->GetIntProperty(WmWindowProperty::SHELF_ID),
+      shelf_window->ConvertRectFromScreen(panel->GetBoundsInScreen())
+          .CenterPoint());
+}
+
+gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
+  ShelfID id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
+  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
+  gfx::Point screen_origin;
+  views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
+  return gfx::Rect(screen_origin.x() + bounds.x(),
+                   screen_origin.y() + bounds.y(), bounds.width(),
+                   bounds.height());
 }
 
 void ShelfWidget::OnWidgetActivationChanged(views::Widget* widget,

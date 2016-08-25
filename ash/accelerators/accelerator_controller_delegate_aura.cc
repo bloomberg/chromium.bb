@@ -18,6 +18,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf.h"
 #include "ash/common/shelf/shelf_widget.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/status_area_widget.h"
@@ -142,12 +143,12 @@ void HandleFocusShelf() {
 
 void HandleLaunchAppN(int n) {
   base::RecordAction(UserMetricsAction("Accel_Launch_App"));
-  Shelf::ForPrimaryDisplay()->LaunchAppIndexAt(n);
+  WmShelf::LaunchShelfItem(n);
 }
 
 void HandleLaunchLastApp() {
   base::RecordAction(UserMetricsAction("Accel_Launch_Last_App"));
-  Shelf::ForPrimaryDisplay()->LaunchAppIndexAt(-1);
+  WmShelf::LaunchShelfItem(-1);
 }
 
 bool CanHandleMagnifyScreen() {

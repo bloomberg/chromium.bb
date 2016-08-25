@@ -36,6 +36,10 @@ class WmWindow;
 // controller. Note that the shelf widget may not be created until after login.
 class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
  public:
+  // Returns the shelf for the display that |window| is on. Note that the shelf
+  // widget may not exist, or the shelf may not be visible.
+  static WmShelf* ForWindow(WmWindow* window);
+
   void SetShelf(Shelf* shelf);
   void ClearShelf();
   Shelf* shelf() const { return shelf_; }
@@ -99,11 +103,20 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
 
   gfx::Rect GetUserWorkAreaBounds() const;
 
-  void UpdateIconPositionForWindow(WmWindow* window);
+  // Updates the icon position given the current window bounds. This is used
+  // when dragging panels to reposition them with respect to the other panels.
+  void UpdateIconPositionForPanel(WmWindow* window);
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(WmWindow* window);
+
+  // Launch a 0-indexed shelf item in the shelf. A negative index launches the
+  // last shelf item in the shelf.
+  static void LaunchShelfItem(int item_index);
+
+  // Activates the shelf item specified by the index in the list of shelf items.
+  static void ActivateShelfItem(int item_index);
 
   // Handles a gesture |event| coming from a source outside the shelf widget
   // (e.g. the status area widget). Allows support for behaviors like toggling

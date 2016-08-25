@@ -5,6 +5,7 @@
 #include "ash/common/shelf/shelf_widget.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_view.h"
