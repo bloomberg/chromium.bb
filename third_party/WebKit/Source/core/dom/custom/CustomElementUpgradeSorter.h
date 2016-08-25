@@ -34,6 +34,12 @@ private:
     using ChildSet = HeapHashSet<Member<Node>>;
     using ParentChildMap = HeapHashMap<Member<Node>, ChildSet>;
 
+    enum AddResult {
+        kParentAlreadyExistsInMap,
+        kParentAddedToMap
+    };
+
+    AddResult addToParentChildMap(Node* parent, Node* child);
     void visit(
         HeapVector<Member<Element>>* result,
         ChildSet&,

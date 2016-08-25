@@ -43,3 +43,8 @@ function assert_array_equals_callback_invocations(actual, expected, description)
     assert_array_equals(actual[i][2], expected[i][2], callback + ' should be invoked with the arguments ' + expected[i][2]);
   }
 }
+
+function assert_is_upgraded(element, className, description) {
+  assert_true(element.matches(':defined'), description);
+  assert_equals(Object.getPrototypeOf(element), className.prototype, description);
+}

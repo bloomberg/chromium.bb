@@ -762,7 +762,7 @@ bool Document::haveImportsLoaded() const
     return !m_importsController->shouldBlockScriptExecution(*this);
 }
 
-LocalDOMWindow* Document::executingWindow()
+LocalDOMWindow* Document::executingWindow() const
 {
     if (LocalDOMWindow* owningWindow = domWindow())
         return owningWindow;

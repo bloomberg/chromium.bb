@@ -1012,7 +1012,7 @@ public:
 
     void addConsoleMessage(ConsoleMessage*) final;
 
-    LocalDOMWindow* executingWindow() final;
+    LocalDOMWindow* executingWindow() const final;
     LocalFrame* executingFrame();
 
     DocumentLifecycle& lifecycle() { return m_lifecycle; }

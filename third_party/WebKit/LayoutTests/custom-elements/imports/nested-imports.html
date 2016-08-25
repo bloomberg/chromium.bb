@@ -3,6 +3,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 'use strict';
+
 let constructors = [];
 </script>
 <a-a></a-a>
@@ -15,5 +16,5 @@ test(() => {
   let types = constructors.map(e => e.type);
   assert_array_equals(types, ['nested-level3', 'nested-level2', 'nested-level1'],
                       'The constructor order should be script execution order of definition.');
-}, 'Custom Elements definition in nested imports should work.');
+}, 'custom element definitions in nested imports should work.');
 </script>

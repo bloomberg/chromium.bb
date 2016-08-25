@@ -8,6 +8,9 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/HTMLLinkElement.h"
+#include "core/html/imports/HTMLImportChild.h"
+#include "core/html/imports/HTMLImportLoader.h"
 
 namespace blink {
 
@@ -17,6 +20,29 @@ CustomElementUpgradeSorter::CustomElementUpgradeSorter()
 {
 }
 
+static HTMLLinkElement* getLinkElementForImport(const Document& import)
+{
+    if (HTMLImportLoader* loader = import.importLoader())
+        return loader->firstImport()->link();
+    return nullptr;
+}
+
+CustomElementUpgradeSorter::AddResult CustomElementUpgradeSorter::addToParentChildMap(
+    Node* parent,
+    Node* child)
+{
+    ParentChildMap::iterator it = m_parentChildMap->find(parent);
+    if (it != m_parentChildMap->end()) {
+        it->value.add(child);
+        // The entry for the parent exists; so must its parents.
+        return kParentAlreadyExistsInMap;
+    }
+    ParentChildMap::AddResult result =
+        m_parentChildMap->add(parent, HeapHashSet<Member<Node>>());
+    result.storedValue->value.add(child);
+    return kParentAddedToMap;
+}
+
 void CustomElementUpgradeSorter::add(Element* element)
 {
     m_elements->add(element);
@@ -24,16 +50,17 @@ void CustomElementUpgradeSorter::add(Element* element)
     for (Node* n = element, *parent = n->parentOrShadowHostNode();
         parent;
         n = parent, parent = parent->parentOrShadowHostNode()) {
-
-        ParentChildMap::iterator it = m_parentChildMap->find(parent);
-        if (it == m_parentChildMap->end()) {
-            ParentChildMap::AddResult result =
-                m_parentChildMap->add(parent, HeapHashSet<Member<Node>>());
-            result.storedValue->value.add(n);
-        } else {
-            it->value.add(n);
-            // The entry for the parent exists; so must its parents.
+        if (addToParentChildMap(parent, n) == kParentAlreadyExistsInMap)
             break;
+
+        // Create parent-child link between <link rel="import"> and its imported
+        // document so that the content of the imported document be visited as if
+        // the imported document were inserted in the link element.
+        if (parent->isDocumentNode()) {
+            Element* link = getLinkElementForImport(*toDocument(parent));
+            if (!link || addToParentChildMap(link, parent) == kParentAlreadyExistsInMap)
+                break;
+            parent = link;
         }
     }
 }

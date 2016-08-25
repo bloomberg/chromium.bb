@@ -24,9 +24,10 @@ CustomElementsRegistry* CustomElement::registry(const Element& element)
 {
     return registry(element.document());
 }
+
 CustomElementsRegistry* CustomElement::registry(const Document& document)
 {
-    if (LocalDOMWindow* window = document.domWindow())
+    if (LocalDOMWindow* window = document.executingWindow())
         return window->customElements();
     return nullptr;
 }
