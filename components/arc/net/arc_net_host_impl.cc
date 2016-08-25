@@ -450,7 +450,8 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
 
   properties->SetStringWithoutPathExpansion(onc::network_config::kType,
                                             onc::network_config::kWiFi);
-  wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID, cfg->hexssid);
+  wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID,
+                                           cfg->hexssid.get());
   wifi_dict->SetBooleanWithoutPathExpansion(onc::wifi::kAutoConnect,
                                             details->autoconnect);
   if (cfg->security.get().empty()) {
@@ -458,10 +459,10 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                              onc::wifi::kSecurityNone);
   } else {
     wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
-                                             cfg->security);
+                                             cfg->security.get());
     if (!details->passphrase.is_null()) {
       wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kPassphrase,
-                                               details->passphrase);
+                                               details->passphrase.get());
     }
   }
   properties->SetWithoutPathExpansion(onc::network_config::kWiFi,

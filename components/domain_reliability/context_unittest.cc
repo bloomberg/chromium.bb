@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/strings/string_piece.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/dispatcher.h"
 #include "components/domain_reliability/scheduler.h"
@@ -60,8 +61,8 @@ std::unique_ptr<DomainReliabilityBeacon> MakeBeacon(MockableTime* time) {
 }
 
 template <typename ValueType,
-          bool (DictionaryValue::* GetValueType)(const std::string&,
-                                                 ValueType*) const>
+          bool (DictionaryValue::*GetValueType)(base::StringPiece, ValueType*)
+              const>
 struct HasValue {
   bool operator()(const DictionaryValue& dict,
                   const std::string& key,

@@ -171,7 +171,7 @@ void PluginsPageHandler::SetPluginAlwaysAllowed(const mojo::String& plugin,
   // whitelisted by the user from automatically whitelisted ones.
   DictionaryPrefUpdate update(profile->GetPrefs(),
                               prefs::kContentSettingsPluginWhitelist);
-  update->SetBoolean(plugin, allowed);
+  update->SetBoolean(plugin.get(), allowed);
 }
 
 void PluginsPageHandler::GetPluginsData(
