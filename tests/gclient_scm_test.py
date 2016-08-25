@@ -16,6 +16,7 @@ import os
 import re
 import sys
 import tempfile
+import threading
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -967,6 +968,67 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(scm.revinfo(options, (), None),
                       '069c602044c5388d2d15c3f875b057c852003458')
     self.checkstdout('________ unmanaged solution; skipping .\n')
+
+
+class GitHungTest(BaseGitWrapperTestCase):
+  def setUp(self):
+    super(GitHungTest, self).setUp()
+    self.old = gclient_scm.gclient_utils.CheckCallAndFilter
+    self.old2 = gclient_scm.gclient_utils.subprocess2.Popen
+    self.options = self.Options()
+    self.options.verbose = False
+    self.scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                     relpath=self.relpath)
+    os.environ['GCLIENT_KILL_GIT_FETCH_AFTER'] = '1.0'
+
+  def tearDown(self):
+    os.environ.pop('GCLIENT_KILL_GIT_FETCH_AFTER')
+    gclient_scm.gclient_utils.CheckCallAndFilter = self.old
+    gclient_scm.gclient_utils.subprocess2.Popen = self.old2
+    super(GitHungTest, self).tearDown()
+
+  def testGitFetchOk(self):
+    def subprocess_git_fetch_run(_, filter_fn, kill_timeout, **__):
+      self.assertEqual(kill_timeout, 1.0)
+      filter_fn('remote: something')
+    gclient_scm.gclient_utils.CheckCallAndFilter = subprocess_git_fetch_run
+    self.scm._Fetch(self.options)
+    self.checkstdout('remote: something\n')
+
+  def testGitFetchHungAndRetry(self):
+    class Process(object):
+      # First process will hang, second process will exit with 0 quickly.
+      cv = threading.Condition()
+      count = -1
+      killed = []
+      def __init__(self):
+        self.count += 1
+        self.stdout = self
+        self.data = list('retry' if self.count > 0 else 'hung')
+        self.data.reverse()
+        self.this_killed = False
+      def read(self, _):
+        if self.data:
+          return self.data.pop()
+        if self.count == 0:
+          # Simulate hung process.
+          with self.cv:
+            self.cv.wait(timeout=0)
+        return ''
+      def kill(self):
+        self.this_killed = True
+        self.killed.append(self.count)
+        with self.cv:
+          self.cv.notify()
+      def wait(self):
+        if self.this_killed:
+          return 1
+        return 0
+
+    gclient_scm.gclient_utils.subprocess2.Popen = lambda *_, **__: Process()
+    self.scm._Capture = lambda *_, **__: None
+    self.scm._Fetch(self.options)
+    self.checkstdout('hung\n')
 
 
 if __name__ == '__main__':

@@ -459,9 +459,64 @@ class GClientChildren(object):
           print >> sys.stderr, '  ', zombie.pid
 
 
+class _KillTimer(object):
+  """Timer that kills child process after certain interval since last poke or
+  creation.
+  """
+  # TODO(tandrii): we really want to make use of subprocess42 here, and not
+  # re-invent the wheel, but it's too much work :(
+
+  def __init__(self, timeout, child):
+    self._timeout = timeout
+    self._child = child
+
+    self._cv = threading.Condition()
+    # All items below are protected by condition above.
+    self._kill_at = None
+    self._working = True
+    self._thread = None
+
+    # Start the timer immediately.
+    if self._timeout:
+      self._kill_at = time.time() + self._timeout
+      self._thread = threading.Thread(name='_KillTimer', target=self._work)
+      self._thread.daemon = True
+      self._thread.start()
+
+  def poke(self):
+    if not self._timeout:
+      return
+    with self._cv:
+      self._kill_at = time.time() + self._timeout
+
+  def cancel(self):
+    with self._cv:
+      self._working = False
+      self._cv.notifyAll()
+
+  def _work(self):
+    if not self._timeout:
+      return
+    while True:
+      with self._cv:
+        if not self._working:
+          return
+        left = self._kill_at - time.time()
+        if left > 0:
+          self._cv.wait(timeout=left)
+          continue
+        try:
+          logging.warn('killing child %s because of no output for %fs',
+                       self._child, self._timeout)
+          self._child.kill()
+        except OSError:
+          logging.exception('failed to kill child %s', self._child)
+        return
+
+
 def CheckCallAndFilter(args, stdout=None, filter_fn=None,
                        print_stdout=None, call_filter_on_first_line=False,
-                       retry=False, **kwargs):
+                       retry=False, kill_timeout=None, **kwargs):
   """Runs a command and calls back a filter function if needed.
 
   Accepts all subprocess2.Popen() parameters plus:
@@ -472,10 +527,16 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
     stdout: Can be any bufferable output.
     retry: If the process exits non-zero, sleep for a brief interval and try
            again, up to RETRY_MAX times.
+    kill_timeout: (float) if given, number of seconds after which process would
+           be killed if there is no output. Must not be used with shell=True as
+           only shell process would be killed, but not processes spawned by
+           shell.
 
   stderr is always redirected to stdout.
   """
   assert print_stdout or filter_fn
+  assert not kwargs.get('shell', False) or not kill_timeout, (
+      'kill_timeout should not be used with shell=True')
   stdout = stdout or sys.stdout
   output = cStringIO.StringIO()
   filter_fn = filter_fn or (lambda x: None)
@@ -497,12 +558,14 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
     # normally buffering is done for each line, but if svn requests input, no
     # end-of-line character is output after the prompt and it would not show up.
     try:
+      timeout_killer = _KillTimer(kill_timeout, kid)
       in_byte = kid.stdout.read(1)
       if in_byte:
         if call_filter_on_first_line:
           filter_fn(None)
         in_line = ''
         while in_byte:
+          timeout_killer.poke()
           output.write(in_byte)
           if print_stdout:
             stdout.write(in_byte)
@@ -517,6 +580,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
         if len(in_line):
           filter_fn(in_line)
       rv = kid.wait()
+      timeout_killer.cancel()
 
       # Don't put this in a 'finally,' since the child may still run if we get
       # an exception.

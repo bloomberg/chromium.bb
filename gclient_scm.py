@@ -1199,6 +1199,7 @@ class GitWrapper(SCMWrapper):
     return self._Capture(checkout_args)
 
   def _Fetch(self, options, remote=None, prune=False, quiet=False):
+    kill_timeout = float(os.getenv('GCLIENT_KILL_GIT_FETCH_AFTER', 0))
     cfg = gclient_utils.DefaultIndexPackConfig(self.url)
     fetch_cmd =  cfg + [
         'fetch',
@@ -1211,7 +1212,8 @@ class GitWrapper(SCMWrapper):
       fetch_cmd.append('--verbose')
     elif quiet:
       fetch_cmd.append('--quiet')
-    self._Run(fetch_cmd, options, show_header=options.verbose, retry=True)
+    self._Run(fetch_cmd, options, show_header=options.verbose, retry=True,
+              kill_timeout=kill_timeout)
 
     # Return the revision that was fetched; this will be stored in 'FETCH_HEAD'
     return self._Capture(['rev-parse', '--verify', 'FETCH_HEAD'])
