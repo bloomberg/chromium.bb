@@ -20,6 +20,10 @@ import zipfile
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
+# Files that can't be processed by zap_timestamp.exe.
+_ZAP_TIMESTAMP_BLACKLIST = {
+  'mini_installer.exe',
+}
 
 def get_files_to_clean(build_dir, recursive=False):
   """Get the list of files to clean."""
@@ -67,7 +71,8 @@ def remove_pe_metadata(filename):
   """Remove the build metadata from a PE file."""
   # Only run zap_timestamp on the PE files for which we have a PDB.
   ret = 0
-  if os.path.exists(filename + '.pdb'):
+  if ((not os.path.basename(filename) in _ZAP_TIMESTAMP_BLACKLIST) and
+      os.path.exists(filename + '.pdb')):
     ret = run_zap_timestamp(filename)
   return ret
 
