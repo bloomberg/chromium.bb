@@ -208,21 +208,6 @@ void SVGAnimateElement::resetAnimatedType()
     m_animatedProperty = m_animator.constructFromString(baseValue);
 }
 
-static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSPropertyID id, const String& value)
-{
-    MutableStylePropertySet* propertySet = targetElement->ensureAnimatedSMILStyleProperties();
-    if (!propertySet->setProperty(id, value, false, 0))
-        return;
-
-    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
-}
-
-static inline void removeCSSPropertyFromTarget(SVGElement* targetElement, CSSPropertyID id)
-{
-    targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
-    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
-}
-
 static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElement, const QualifiedName& attributeName, const String& valueAsString)
 {
     ASSERT(targetElement);
@@ -230,16 +215,11 @@ static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElemen
         return;
 
     CSSPropertyID id = cssPropertyID(attributeName.localName());
+    MutableStylePropertySet* propertySet = targetElement->ensureAnimatedSMILStyleProperties();
+    if (!propertySet->setProperty(id, valueAsString, false, 0))
+        return;
 
-    SVGElement::InstanceUpdateBlocker blocker(targetElement);
-    applyCSSPropertyToTarget(targetElement, id, valueAsString);
-
-    // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const HeapHashSet<WeakMember<SVGElement>>& instances = targetElement->instancesForElement();
-    for (SVGElement* shadowTreeElement : instances) {
-        if (shadowTreeElement)
-            applyCSSPropertyToTarget(shadowTreeElement, id, valueAsString);
-    }
+    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
 
 static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetElement, const QualifiedName& attributeName)
@@ -249,16 +229,8 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
         return;
 
     CSSPropertyID id = cssPropertyID(attributeName.localName());
-
-    SVGElement::InstanceUpdateBlocker blocker(targetElement);
-    removeCSSPropertyFromTarget(targetElement, id);
-
-    // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    const HeapHashSet<WeakMember<SVGElement>>& instances = targetElement->instancesForElement();
-    for (SVGElement* shadowTreeElement : instances) {
-        if (shadowTreeElement)
-            removeCSSPropertyFromTarget(shadowTreeElement, id);
-    }
+    targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
+    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
 
 static inline void notifyTargetAboutAnimValChange(SVGElement* targetElement, const QualifiedName& attributeName)
