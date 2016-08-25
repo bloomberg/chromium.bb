@@ -40,6 +40,8 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 // - media/test/data/eme_player_js/globals.js
 // - AddExternalClearKey() in chrome_key_systems.cc
 // - CreateCdmInstance() in clear_key_cdm.cc
+const char kExternalClearKeyRenewalKeySystem[] =
+    "org.chromium.externalclearkey.renewal";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
@@ -292,12 +294,12 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                           false, PlayTwice::NO, expected_title);
   }
 
-  void TestPlaybackCase(const std::string& session_to_load,
+  void TestPlaybackCase(const std::string& key_system,
+                        const std::string& session_to_load,
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
-                          kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
-                          session_to_load, false, PlayTwice::NO,
-                          expected_title);
+                          kWebMVideoOnly, key_system, SRC, session_to_load,
+                          false, PlayTwice::NO, expected_title);
   }
 
  protected:
@@ -643,12 +645,17 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, OutputProtectionTest) {
                        kUnitTestSuccess);
 }
 
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, Renewal) {
+  TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad, kEnded);
+}
+
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
-  TestPlaybackCase(kLoadableSession, kEnded);
+  TestPlaybackCase(kExternalClearKeyKeySystem, kLoadableSession, kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
-  TestPlaybackCase(kUnknownSession, kEmeSessionNotFound);
+  TestPlaybackCase(kExternalClearKeyKeySystem, kUnknownSession,
+                   kEmeSessionNotFound);
 }
 
 #endif  // defined(ENABLE_PEPPER_CDMS)

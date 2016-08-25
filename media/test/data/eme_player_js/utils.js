@@ -186,14 +186,7 @@ Utils.installTitleEventHandler = function(element, event) {
 };
 
 Utils.isRenewalMessage = function(message) {
-  if (message.messageType != 'license-renewal')
-    return false;
-
-  if (!Utils.hasPrefix(message.message, EME_RENEWAL_MESSAGE_HEADER)) {
-    Utils.failTest('license-renewal message doesn\'t contain expected header',
-                   EME_RENEWAL_MISSING_HEADER);
-  }
-  return true;
+  return (message.messageType == 'license-renewal');
 };
 
 Utils.resetTitleChange = function() {

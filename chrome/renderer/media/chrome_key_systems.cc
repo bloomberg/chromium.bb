@@ -132,6 +132,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey";
   static const char kExternalClearKeyDecryptOnlyKeySystem[] =
       "org.chromium.externalclearkey.decryptonly";
+  static const char kExternalClearKeyRenewalKeySystem[] =
+      "org.chromium.externalclearkey.renewal";
   static const char kExternalClearKeyFileIOTestKeySystem[] =
       "org.chromium.externalclearkey.fileiotest";
   static const char kExternalClearKeyOutputProtectionTestKeySystem[] =
@@ -155,6 +157,10 @@ static void AddExternalClearKey(
   // Add support of decrypt-only mode in ClearKeyCdm.
   concrete_key_systems->emplace_back(
       new ExternalClearKeyProperties(kExternalClearKeyDecryptOnlyKeySystem));
+
+  // A key system that triggers renewal message in ClearKeyCdm.
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyRenewalKeySystem));
 
   // A key system that triggers the FileIO test in ClearKeyCdm.
   concrete_key_systems->emplace_back(

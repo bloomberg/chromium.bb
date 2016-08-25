@@ -34,9 +34,10 @@ var EME_RENEWAL_MISSING_HEADER = 'EME_RENEWAL_MISSING_HEADER';
 var UNIT_TEST_RESULT_HEADER = 'UNIT_TEST_RESULT';
 
 // Available EME key systems to use.
+var WIDEVINE_KEYSYSTEM = 'com.widevine.alpha';
 var CLEARKEY = 'org.w3.clearkey';
 var EXTERNAL_CLEARKEY = 'org.chromium.externalclearkey';
-var WIDEVINE_KEYSYSTEM = 'com.widevine.alpha';
+var EXTERNAL_CLEARKEY_RENEWAL = 'org.chromium.externalclearkey.renewal';
 var FILE_IO_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.fileiotest';
 var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.outputprotectiontest';

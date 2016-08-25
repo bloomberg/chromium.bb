@@ -74,16 +74,14 @@
       Utils.timeLog('timeupdate @ ' + video.currentTime);
       if (video.currentTime < 1)
         return;
-      // For loadSession() tests, addKey() will not be called after
-      // loadSession() (the key is loaded internally). Do not check keyadded
-      // and renewal message for these tests.
-      if (!testConfig.sessionToLoad) {
-        // keyadded may be fired around the start of playback; check for it
-        // after a delay to avoid timing issues.
-        if (testConfig.keySystem == EXTERNAL_CLEARKEY &&
-            !video.receivedRenewalMessage)
-          Utils.failTest('license-renewal message not received.');
+
+      // Renewal message may be fired around the start of playback; check for it
+      // after a delay to avoid timing issues.
+      if (testConfig.keySystem == EXTERNAL_CLEARKEY_RENEWAL &&
+          !video.receivedRenewalMessage) {
+        Utils.failTest('license-renewal message not received.');
       }
+
       Utils.timeLog('waiting for video to end.');
       video.removeEventListener('ended', Utils.failTest);
       Utils.installTitleEventHandler(video, 'ended');

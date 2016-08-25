@@ -62,6 +62,8 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 // Variants of External Clear Key key system to test different scenarios.
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
+const char kExternalClearKeyRenewalKeySystem[] =
+    "org.chromium.externalclearkey.renewal";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyOutputProtectionTestKeySystem[] =
@@ -82,10 +84,6 @@ const int64_t kSecondsPerMinute = 60;
 const int64_t kMsPerSecond = 1000;
 const int64_t kInitialTimerDelayMs = 200;
 const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
-// Renewal message header. For prefixed EME, if a key message starts with
-// |kRenewalHeader|, it's a renewal message. Otherwise, it's a key request.
-// FIXME(jrummell): Remove this once prefixed EME goes away.
-const char kRenewalHeader[] = "RENEWAL";
 
 // CDM unit test result header. Must be in sync with UNIT_TEST_RESULT_HEADER in
 // media/test/data/eme_player_js/globals.js.
@@ -237,6 +235,7 @@ void* CreateCdmInstance(int cdm_interface_version,
   std::string key_system_string(key_system, key_system_size);
   if (key_system_string != kExternalClearKeyKeySystem &&
       key_system_string != kExternalClearKeyDecryptOnlyKeySystem &&
+      key_system_string != kExternalClearKeyRenewalKeySystem &&
       key_system_string != kExternalClearKeyFileIOTestKeySystem &&
       key_system_string != kExternalClearKeyOutputProtectionTestKeySystem &&
       key_system_string != kExternalClearKeyCrashKeySystem) {
@@ -378,7 +377,7 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
       web_session_str, std::vector<uint8_t>(response, response + response_size),
       std::move(promise));
 
-  if (!renewal_timer_set_) {
+  if (key_system_ == kExternalClearKeyRenewalKeySystem && !renewal_timer_set_) {
     ScheduleNextRenewal();
     renewal_timer_set_ = true;
   }
@@ -655,7 +654,7 @@ void ClearKeyCdm::Destroy() {
 void ClearKeyCdm::ScheduleNextRenewal() {
   // Prepare the next renewal message and set timer.
   std::ostringstream msg_stream;
-  msg_stream << kRenewalHeader << " from ClearKey CDM set at time "
+  msg_stream << "Renewal from ClearKey CDM set at time "
              << host_->GetCurrentWallTime() << ".";
   next_renewal_message_ = msg_stream.str();
 

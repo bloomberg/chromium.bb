@@ -144,8 +144,9 @@ PlayerUtils.createPlayer = function(video, testConfig) {
     switch (keySystem) {
       case WIDEVINE_KEYSYSTEM:
         return WidevinePlayer;
-      case EXTERNAL_CLEARKEY:
       case CLEARKEY:
+      case EXTERNAL_CLEARKEY:
+      case EXTERNAL_CLEARKEY_RENEWAL:
         return ClearKeyPlayer;
       case FILE_IO_TEST_KEYSYSTEM:
       case OUTPUT_PROTECTION_TEST_KEYSYSTEM:
