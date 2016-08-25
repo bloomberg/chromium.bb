@@ -41,16 +41,23 @@ function Banners(
   chrome.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
   this.warningDismissedCounter_ = 0;
+  this.downloadsWarningDismissedTime_ = 0;
 
   this.ready_ = Promise.all([
     new Promise(function(resolve, reject) {
       chrome.storage.local.get(
-          [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+          [
+            WELCOME_HEADER_COUNTER_KEY,
+            DRIVE_WARNING_DISMISSED_KEY,
+            DOWNLOADS_WARNING_DISMISSED_KEY
+          ],
           function(values) {
             this.welcomeHeaderCounter_ =
                 parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
             this.warningDismissedCounter_ =
-                parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
+                parseInt(values[DRIVE_WARNING_DISMISSED_KEY], 10) || 0;
+            this.downloadsWarningDismissedTime_ =
+                parseInt(values[DOWNLOADS_WARNING_DISMISSED_KEY], 10) || 0;
 
             // If it's in test, override the counter to show the header by
             // force.
@@ -96,12 +103,39 @@ var WELCOME_HEADER_COUNTER_KEY = 'driveWelcomeHeaderCounter';
 // If the warning was dismissed before, this key stores the quota value
 // (as of the moment of dismissal).
 // If the warning was never dismissed or was reset this key stores 0.
-var WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
+var DRIVE_WARNING_DISMISSED_KEY = 'driveSpaceWarningDismissed';
+
+/**
+ * If the warning was dismissed before, this key stores the moment of dismissal
+ * in milliseconds since the UNIX epoch (i.e. the value of Date.now()).
+ * @const {string}
+ */
+var DOWNLOADS_WARNING_DISMISSED_KEY = 'downloadsSpaceWarningDismissed';
 
 /**
  * Maximum times Drive Welcome banner could have shown.
  */
 var WELCOME_HEADER_COUNTER_LIMIT = 25;
+
+/**
+ * If the remaining space in Drive is less than 10%, we'll show a warning.
+ * @const {number}
+ */
+var DRIVE_SPACE_WARNING_THRESHOLD_RATIO = 0.1;
+
+/**
+ * If the remaining space in Downloads is less than 1GB, we'll show a warning.
+ * This value is in bytes.
+ * @const {number}
+ */
+var DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE = 1 * 1024 * 1024 * 1024;
+
+/**
+ * After the warning banner is dismissed, we won't show it for 36 hours.
+ * This value is in milliseconds.
+ * @const {number}
+ */
+var DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
 
 /**
  * Initializes the banner to promote DRIVE.
@@ -132,7 +166,7 @@ Banners.prototype.setWelcomeHeaderCounter_ = function(value) {
  */
 Banners.prototype.setWarningDismissedCounter_ = function(value) {
   var values = {};
-  values[WARNING_DISMISSED_KEY] = value;
+  values[DRIVE_WARNING_DISMISSED_KEY] = value;
   chrome.storage.local.set(values);
 };
 
@@ -146,8 +180,13 @@ Banners.prototype.onStorageChange_ = function(changes, areaName) {
   if (areaName == 'local' && WELCOME_HEADER_COUNTER_KEY in changes) {
     this.welcomeHeaderCounter_ = changes[WELCOME_HEADER_COUNTER_KEY].newValue;
   }
-  if (areaName == 'local' && WARNING_DISMISSED_KEY in changes) {
-    this.warningDismissedCounter_ = changes[WARNING_DISMISSED_KEY].newValue;
+  if (areaName == 'local' && DRIVE_WARNING_DISMISSED_KEY in changes) {
+    this.warningDismissedCounter_ =
+        changes[DRIVE_WARNING_DISMISSED_KEY].newValue;
+  }
+  if (areaName == 'local' && DOWNLOADS_WARNING_DISMISSED_KEY in changes) {
+    this.downloadsWarningDismissedTime_ =
+        changes[DOWNLOADS_WARNING_DISMISSED_KEY].newValue;
   }
 };
 
@@ -298,7 +337,7 @@ Banners.prototype.showLowDriveSpaceWarning_ = function(show, opt_sizeStats) {
     box.appendChild(close);
     close.addEventListener('click', function(total) {
       var values = {};
-      values[WARNING_DISMISSED_KEY] = total;
+      values[DRIVE_WARNING_DISMISSED_KEY] = total;
       chrome.storage.local.set(values);
       box.hidden = true;
       this.requestRelayout_(100);
@@ -536,15 +575,12 @@ Banners.prototype.privateOnDirectoryChanged_ = function(event) {
  */
 Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
   // TODO(kaznacheev): Unify the two low space warning.
-  var threshold = 0;
   switch (volume.volumeType) {
     case VolumeManagerCommon.VolumeType.DOWNLOADS:
       this.showLowDriveSpaceWarning_(false);
-      threshold = 0.2;
       break;
     case VolumeManagerCommon.VolumeType.DRIVE:
       this.showLowDownloadsSpaceWarning_(false);
-      threshold = 0.1;
       break;
     default:
       // If the current file system is neither the DOWNLOAD nor the DRIVE,
@@ -572,12 +608,16 @@ Banners.prototype.maybeShowLowSpaceWarning_ = function(volume) {
         if (!sizeStats || sizeStats.totalSize == 0)
           return;
 
-        var remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
-        var isLowDiskSpace = remainingRatio < threshold;
-        if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS)
-          this.showLowDownloadsSpaceWarning_(isLowDiskSpace);
-        else
-          this.showLowDriveSpaceWarning_(isLowDiskSpace, sizeStats);
+        if (volume.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS) {
+          // Show the warning banner when the available space is less than 1GB.
+          this.showLowDownloadsSpaceWarning_(
+              sizeStats.remainingSize < DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE);
+        } else {
+          // Show the warning banner when the available space ls less than 10%.
+          var remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
+          this.showLowDriveSpaceWarning_(
+              remainingRatio < DRIVE_SPACE_WARNING_THRESHOLD_RATIO, sizeStats);
+        }
       }.bind(this));
 };
 
@@ -609,12 +649,22 @@ Banners.prototype.requestRelayout_ = function(delay) {
 Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
   var box = this.document_.querySelector('.downloads-warning');
 
-  if (box.hidden == !show) return;
+  if (box.hidden == !show)
+    return;
 
+  if (this.downloadsWarningDismissedTime_) {
+    if (Date.now() - this.downloadsWarningDismissedTime_ <
+        DOWNLOADS_SPACE_WARNING_DISMISS_DURATION) {
+      show = false;
+    }
+  }
+
+  box.textContent = '';
   if (show) {
     var icon = this.document_.createElement('div');
     icon.className = 'warning-icon';
     var message = this.document_.createElement('div');
+    message.className = 'warning-message';
     message.innerHTML = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
     box.appendChild(icon);
     box.appendChild(message);
@@ -622,8 +672,17 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
       util.visitURL(str('DOWNLOADS_LOW_SPACE_WARNING_HELP_URL'));
       e.preventDefault();
     });
-  } else {
-    box.innerHTML = '';
+
+    var close = this.document_.createElement('div');
+    close.className = 'banner-close';
+    box.appendChild(close);
+    close.addEventListener('click', function() {
+      var values = {};
+      values[DOWNLOADS_WARNING_DISMISSED_KEY] = Date.now();
+      chrome.storage.local.set(values);
+      box.hidden = true;
+      this.requestRelayout_(100);
+    }.bind(this));
   }
 
   box.hidden = !show;

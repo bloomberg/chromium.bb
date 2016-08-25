@@ -1251,6 +1251,10 @@ html[dir='rtl'] .breadcrumbs .separator {
   width: 16px;
 }
 
+.downloads-warning .warning-message {
+  -webkit-margin-end: 40px;
+}
+
 .downloads-warning[hidden] {
   display: flex !important;  /* Overrides [hidden] for animation. */
   height: 0;
