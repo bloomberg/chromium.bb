@@ -28,7 +28,8 @@ public:
     // Reset existing metadata, to allow setting new data.
     virtual void clearCachedMetadata(CacheType = CacheLocally) = 0;
     // Returns cached metadata of the given type associated with this resource.
-    virtual CachedMetadata* cachedMetadata(unsigned dataTypeID) const = 0;
+    // This cached metadata can be pruned at any time.
+    virtual PassRefPtr<CachedMetadata> cachedMetadata(unsigned dataTypeID) const = 0;
     // Returns the encoding to which the cache is specific.
     virtual String encoding() const = 0;
 

@@ -45,7 +45,7 @@ void ServiceWorkerScriptCachedMetadataHandler::clearCachedMetadata(CacheType typ
     ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->clearCachedMetadata(m_scriptURL);
 }
 
-CachedMetadata* ServiceWorkerScriptCachedMetadataHandler::cachedMetadata(unsigned dataTypeID) const
+PassRefPtr<CachedMetadata> ServiceWorkerScriptCachedMetadataHandler::cachedMetadata(unsigned dataTypeID) const
 {
     if (!m_cachedMetadata || m_cachedMetadata->dataTypeID() != dataTypeID)
         return nullptr;

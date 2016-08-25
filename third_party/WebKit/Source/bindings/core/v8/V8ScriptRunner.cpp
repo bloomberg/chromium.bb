@@ -138,10 +138,9 @@ v8::MaybeLocal<v8::Script> compileWithoutOptions(V8CompileHistogram::Cacheabilit
 }
 
 // Compile a script, and consume a V8 cache that was generated previously.
-v8::MaybeLocal<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
+static v8::MaybeLocal<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler, PassRefPtr<CachedMetadata> cachedMetadata, v8::ScriptCompiler::CompileOptions compileOptions, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
-    CachedMetadata* cachedMetadata = cacheHandler->cachedMetadata(tag);
     const char* data = cachedMetadata->data();
     int length = cachedMetadata->size();
     v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
@@ -179,8 +178,9 @@ v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHa
 // given resource already has cached data available.
 v8::MaybeLocal<v8::Script> compileAndConsumeOrProduce(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Local<v8::String> code, v8::ScriptOrigin origin)
 {
-    return cacheHandler->cachedMetadata(tag)
-        ? compileAndConsumeCache(cacheHandler, tag, consumeOptions, isolate, code, origin)
+    RefPtr<CachedMetadata> codeCache(cacheHandler->cachedMetadata(tag));
+    return codeCache.get()
+        ? compileAndConsumeCache(cacheHandler, codeCache, consumeOptions, isolate, code, origin)
         : compileAndProduceCache(cacheHandler, tag, produceOptions, cacheType, isolate, code, origin);
 }
 
@@ -212,7 +212,7 @@ bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 {
     const double cacheWithinSeconds = hotHours * 60 * 60;
     unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
-    CachedMetadata* cachedMetadata = cacheHandler->cachedMetadata(tag);
+    RefPtr<CachedMetadata> cachedMetadata = cacheHandler->cachedMetadata(tag);
     if (!cachedMetadata)
         return false;
     double timeStamp;
@@ -276,7 +276,7 @@ std::unique_ptr<CompileFn> bind(const A&... args)
 
 // Select a compile function from any of the above, mainly depending on
 // cacheOptions.
-std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, v8::Local<v8::String> code, V8CompileHistogram::Cacheability cacheabilityIfNoHandler)
+static std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, PassRefPtr<CachedMetadata> codeCache, v8::Local<v8::String> code, V8CompileHistogram::Cacheability cacheabilityIfNoHandler)
 {
     static const int minimalCodeLength = 1024;
     static const int hotHours = 72;
@@ -305,14 +305,13 @@ std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, Ca
     case V8CacheOptionsAlways: {
         // Use code caching for recently seen resources.
         // Use compression depending on the cache option.
-        unsigned codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
-        CachedMetadata* codeCache = cacheHandler->cachedMetadata(codeCacheTag);
         if (codeCache)
-            return bind(compileAndConsumeCache, wrapPersistent(cacheHandler), codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache);
+            return bind(compileAndConsumeCache, wrapPersistent(cacheHandler), codeCache, v8::ScriptCompiler::kConsumeCodeCache);
         if (cacheOptions != V8CacheOptionsAlways && !isResourceHotForCaching(cacheHandler, hotHours)) {
             V8ScriptRunner::setCacheTimeStamp(cacheHandler);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }
+        unsigned codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
         return bind(compileAndProduceCache, wrapPersistent(cacheHandler), codeCacheTag, v8::ScriptCompiler::kProduceCodeCache, CachedMetadataHandler::SendToPlatform);
         break;
     }
@@ -385,9 +384,10 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> c
     if (!cacheHandler && (scriptStartPosition.m_line.zeroBasedInt() == 0) && (scriptStartPosition.m_column.zeroBasedInt() == 0))
         cacheabilityIfNoHandler = V8CompileHistogram::Cacheability::InlineScript;
 
+    RefPtr<CachedMetadata> codeCache(cacheHandler ? cacheHandler->cachedMetadata(cacheTag(CacheTagCode, cacheHandler)) : nullptr);
     std::unique_ptr<CompileFn> compileFn = streamer
         ? selectCompileFunction(cacheOptions, resource, streamer)
-        : selectCompileFunction(cacheOptions, cacheHandler, code, cacheabilityIfNoHandler);
+        : selectCompileFunction(cacheOptions, cacheHandler, codeCache, code, cacheabilityIfNoHandler);
 
     return (*compileFn)(isolate, code, origin);
 }

@@ -25,7 +25,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CacheType) override;
     void clearCachedMetadata(CacheType) override;
-    CachedMetadata* cachedMetadata(unsigned dataTypeID) const override;
+    PassRefPtr<CachedMetadata> cachedMetadata(unsigned dataTypeID) const override;
     String encoding() const override;
 
 private:

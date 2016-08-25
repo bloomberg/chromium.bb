@@ -9,6 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/PendingScript.h"
+#include "core/fetch/CachedMetadata.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
@@ -288,7 +289,8 @@ private:
         }
 
         CachedMetadataHandler* cacheHandler = streamer->resource()->cacheHandler();
-        if (cacheHandler && cacheHandler->cachedMetadata(V8ScriptRunner::tagForCodeCache(cacheHandler))) {
+        RefPtr<CachedMetadata> codeCache(cacheHandler ? cacheHandler->cachedMetadata(V8ScriptRunner::tagForCodeCache(cacheHandler)) : nullptr);
+        if (codeCache.get())  {
             // The resource has a code cache, so it's unnecessary to stream and
             // parse the code. Cancel the streaming and resume the non-streaming
             // code path.

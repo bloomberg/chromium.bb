@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/MemoryCoordinator.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -54,7 +55,8 @@ class SecurityOrigin;
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from ResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
-class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource> {
+class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>, public MemoryCoordinatorClient {
+    USING_GARBAGE_COLLECTED_MIXIN(Resource);
     WTF_MAKE_NONCOPYABLE(Resource);
 public:
     // |Type| enum values are used in UMAs, so do not change the values of
@@ -310,6 +312,9 @@ private:
     size_t calculateOverheadSize() const;
 
     String reasonNotDeletable() const;
+
+    // MemoryCoordinatorClient overrides:
+    void prepareToSuspend() override;
 
     Member<CachedMetadataHandlerImpl> m_cacheHandler;
     RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;

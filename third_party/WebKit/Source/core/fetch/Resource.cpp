@@ -104,7 +104,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void setCachedMetadata(unsigned, const char*, size_t, CacheType) override;
     void clearCachedMetadata(CacheType) override;
-    CachedMetadata* cachedMetadata(unsigned) const override;
+    PassRefPtr<CachedMetadata> cachedMetadata(unsigned) const override;
     String encoding() const override;
     // Sets the serialized metadata retrieved from the platform's cache.
     void setSerializedCachedMetadata(const char*, size_t);
@@ -149,7 +149,7 @@ void Resource::CachedMetadataHandlerImpl::clearCachedMetadata(CachedMetadataHand
         sendToPlatform();
 }
 
-CachedMetadata* Resource::CachedMetadataHandlerImpl::cachedMetadata(unsigned dataTypeID) const
+PassRefPtr<CachedMetadata> Resource::CachedMetadataHandlerImpl::cachedMetadata(unsigned dataTypeID) const
 {
     if (!m_cachedMetadata || m_cachedMetadata->dataTypeID() != dataTypeID)
         return nullptr;
@@ -319,6 +319,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     // Currently we support the metadata caching only for HTTP family.
     if (m_resourceRequest.url().protocolIsInHTTPFamily())
         m_cacheHandler = CachedMetadataHandlerImpl::create(this);
+    MemoryCoordinator::instance().registerClient(this);
 }
 
 Resource::~Resource()
@@ -330,6 +331,7 @@ DEFINE_TRACE(Resource)
 {
     visitor->trace(m_loader);
     visitor->trace(m_cacheHandler);
+    MemoryCoordinatorClient::trace(visitor);
 }
 
 void Resource::setLoader(ResourceLoader* loader)
@@ -814,6 +816,14 @@ void Resource::finishPendingClients()
 void Resource::prune()
 {
     destroyDecodedDataIfPossible();
+}
+
+void Resource::prepareToSuspend()
+{
+    prune();
+    if (!m_cacheHandler)
+        return;
+    m_cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
 }
 
 void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump) const
