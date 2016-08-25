@@ -19,8 +19,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 
-import junit.framework.Assert;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -51,7 +49,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
+import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -1380,7 +1378,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             try {
                 selectCallback.waitForCallback(0);
             } catch (TimeoutException e) {
-                Assert.fail("Tab selected event was never received");
+                fail("Tab selected event was never received");
             }
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
@@ -1658,7 +1656,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     public void testIncognitoTabsNotRestoredAfterSwipe() throws Exception {
         newIncognitoTabFromMenu();
 
-        File tabStateDir = TabPersistentStore.getOrCreateStateDirectory();
+        File tabStateDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
         TabModel normalModel = getActivity().getTabModelSelector().getModel(false);
         TabModel incognitoModel = getActivity().getTabModelSelector().getModel(true);
         File normalTabFile = new File(tabStateDir,

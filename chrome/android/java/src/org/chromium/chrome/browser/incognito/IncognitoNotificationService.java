@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -63,7 +63,7 @@ public class IncognitoNotificationService extends IntentService {
         closeIncognitoTabsInRunningTabbedActivities();
 
         boolean clearedIncognito = deleteIncognitoStateFilesInDirectory(
-                TabPersistentStore.getOrCreateStateDirectory());
+                TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory());
 
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
         if (!clearedIncognito) return;

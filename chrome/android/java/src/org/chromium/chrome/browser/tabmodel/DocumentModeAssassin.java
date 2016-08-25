@@ -344,13 +344,16 @@ public class DocumentModeAssassin {
                     // If an old tab state file still exists when we run migration in TPS, then it
                     // will overwrite the new tab state file that our document tabs migrated to.
                     File oldMetadataFile = new File(
-                            getTabbedDataDirectory(), TabPersistentStore.SAVED_STATE_FILE);
+                            getTabbedDataDirectory(),
+                            TabbedModeTabPersistencePolicy.SAVED_STATE_FILE);
                     if (oldMetadataFile.exists() && !oldMetadataFile.delete()) {
                         Log.e(TAG, "Failed to delete old tab state file: " + oldMetadataFile);
                     }
 
                     TabPersistentStore.saveListToFile(
-                            getTabbedDataDirectory(), TAB_MODEL_INDEX, mSerializedMetadata);
+                            getTabbedDataDirectory(),
+                            TabbedModeTabPersistencePolicy.getStateFileName(TAB_MODEL_INDEX),
+                            mSerializedMetadata);
                     return true;
                 } else {
                     return false;
@@ -552,7 +555,7 @@ public class DocumentModeAssassin {
 
     /** @return Where tabbed mode data is stored. */
     protected File getTabbedDataDirectory() {
-        return TabPersistentStore.getOrCreateStateDirectory();
+        return TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
     }
 
     /** @return True if the user is not in document mode. */

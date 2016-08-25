@@ -68,9 +68,10 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
 
         // Make sure file migrations don't run as they are unnecessary since app data was cleared.
         ContextUtils.getAppSharedPreferences().edit().putBoolean(
-                TabPersistentStore.PREF_HAS_RUN_FILE_MIGRATION, true).apply();
+                TabbedModeTabPersistencePolicy.PREF_HAS_RUN_FILE_MIGRATION, true).apply();
         ContextUtils.getAppSharedPreferences().edit().putBoolean(
-                TabPersistentStore.PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, true).apply();
+                TabbedModeTabPersistencePolicy.PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, true)
+                        .apply();
 
         // Some of the logic for when to trigger a merge depends on whether the activity is in
         // multi-window mode. Set isInMultiWindowMode to true to avoid merging unexpectedly.

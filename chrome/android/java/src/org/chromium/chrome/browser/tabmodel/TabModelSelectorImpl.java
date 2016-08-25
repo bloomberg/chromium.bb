@@ -61,21 +61,12 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     private ChromeTabCreator mIncognitoTabCreator;
 
     /**
-     * @see #TabModelSelectorImpl(ChromeActivity, int, WindowAndroid, boolean)
-     */
-    public TabModelSelectorImpl(ChromeActivity activity, int selectorIndex,
-            WindowAndroid windowAndroid) {
-        this(activity, selectorIndex, windowAndroid, true);
-    }
-
-    /**
      * Builds a {@link TabModelSelectorImpl} instance.
      * @param activity      The {@link ChromeActivity} this model selector lives in.
-     * @param selectorIndex The index this selector represents in the list of selectors.
      * @param windowAndroid The {@link WindowAndroid} associated with this model selector.
      * @param supportUndo   Whether a tab closure can be undone.
      */
-    public TabModelSelectorImpl(ChromeActivity activity, int selectorIndex,
+    public TabModelSelectorImpl(ChromeActivity activity, TabPersistencePolicy persistencePolicy,
             WindowAndroid windowAndroid, boolean supportUndo) {
         super();
         mActivity = activity;
@@ -114,7 +105,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 && mActivity.getClass().equals(ChromeTabbedActivity.class)
                 && TabWindowManager.getInstance().getNumberOfAssignedTabModelSelectors() == 0;
 
-        mTabSaver = new TabPersistentStore(this, selectorIndex, mActivity, mActivity,
+        mTabSaver = new TabPersistentStore(persistencePolicy, this, mActivity, mActivity,
                 persistentStoreObserver, mergeTabs);
         mOrderController = new TabModelOrderController(this);
         mRegularTabCreator = new ChromeTabCreator(

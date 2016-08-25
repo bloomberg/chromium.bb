@@ -48,7 +48,8 @@ public class ContextMenuLoadUrlParamsTest extends ChromeTabbedActivityTestBase {
 
         public RecordingTabModelSelector(ChromeActivity activity, int selectorIndex,
                 WindowAndroid windowAndroid) {
-            super(activity, selectorIndex, windowAndroid);
+            super(activity, new TabbedModeTabPersistencePolicy(activity, selectorIndex),
+                    windowAndroid, true);
         }
     }
 

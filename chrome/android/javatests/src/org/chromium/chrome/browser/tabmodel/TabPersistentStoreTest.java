@@ -143,11 +143,20 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         private final MockTabCreatorManager mTabCreatorManager;
         private final TabModelOrderController mTabModelOrderController;
 
-        public TestTabModelSelector(Context context) throws Exception {
+        public TestTabModelSelector(final Context context) throws Exception {
             mTabCreatorManager = new MockTabCreatorManager(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
-            mTabPersistentStore = new TabPersistentStore(
-                    this, 0, context, mTabCreatorManager, mTabPersistentStoreObserver, true);
+            mTabPersistentStore = ThreadUtils.runOnUiThreadBlocking(
+                    new Callable<TabPersistentStore>() {
+                        @Override
+                        public TabPersistentStore call() {
+                            TabPersistencePolicy persistencePolicy =
+                                    new TabbedModeTabPersistencePolicy(context, 0);
+                            return new TabPersistentStore(
+                                    persistencePolicy, TestTabModelSelector.this, context,
+                                    mTabCreatorManager, mTabPersistentStoreObserver, true);
+                        }
+                    });
             mTabModelOrderController = new TabModelOrderController(this);
 
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
@@ -292,6 +301,18 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         super.tearDown();
     }
 
+    private TabPersistentStore buildTabPersistentStore(final TabPersistencePolicy persistencePolicy,
+            final TabModelSelector modelSelector, final TabCreatorManager creatorManager,
+            final TabPersistentStoreObserver observer) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TabPersistentStore>() {
+            @Override
+            public TabPersistentStore call() throws Exception {
+                return new TabPersistentStore(persistencePolicy, modelSelector, mAppContext,
+                        creatorManager, observer, false);
+            }
+        });
+    }
+
     @SmallTest
     @Feature({"TabPersistentStore"})
     public void testBasic() throws Exception {
@@ -305,9 +326,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabCreator regularCreator = mockManager.getTabCreator(false);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
-        TabPersistentStore store =
-                new TabPersistentStore(mockSelector, 0, mAppContext, mockManager, mockObserver,
-                        false);
+        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(mAppContext, 0);
+        TabPersistentStore store = buildTabPersistentStore(
+                persistencePolicy, mockSelector, mockManager, mockObserver);
 
         // Should not prefetch with no prior active tab preference stored.
         assertNull(store.mPrefetchActiveTabTask);
@@ -354,8 +375,10 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabModelSelector firstSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager firstManager = new MockTabCreatorManager(firstSelector);
         MockTabPersistentStoreObserver firstObserver = new MockTabPersistentStoreObserver();
-        final TabPersistentStore firstStore = new TabPersistentStore(
-                firstSelector, 0, mAppContext, firstManager, firstObserver, false);
+        TabPersistencePolicy firstPersistencePolicy = new TabbedModeTabPersistencePolicy(
+                mAppContext, 0);
+        final TabPersistentStore firstStore = buildTabPersistentStore(
+                firstPersistencePolicy, firstSelector, firstManager, firstObserver);
         firstStore.loadState(false /* ignoreIncognitoFiles */);
         firstObserver.initializedCallback.waitForCallback(0, 1);
         assertEquals(numExpectedTabs, firstObserver.mTabCountAtStartup);
@@ -373,8 +396,11 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabCreatorManager secondManager = new MockTabCreatorManager(secondSelector);
         MockTabCreator secondCreator = secondManager.getTabCreator(false);
         MockTabPersistentStoreObserver secondObserver = new MockTabPersistentStoreObserver();
-        TabPersistentStore secondStore = new TabPersistentStore(
-                secondSelector, 0, mAppContext, secondManager, secondObserver, false);
+        TabPersistencePolicy secondPersistencePolicy = new TabbedModeTabPersistencePolicy(
+                mAppContext, 0);
+
+        TabPersistentStore secondStore = buildTabPersistentStore(
+                secondPersistencePolicy, secondSelector, secondManager, secondObserver);
 
         // The second TabPersistentStore reads the file written by the first TabPersistentStore.
         // Make sure that all of the Tabs appear in the new one -- even though the new file was
@@ -431,8 +457,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
-        TabPersistentStore store = new TabPersistentStore(
-                mockSelector, 0, mAppContext, mockManager, mockObserver, false);
+        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(mAppContext, 0);
+        TabPersistentStore store = buildTabPersistentStore(
+                persistencePolicy, mockSelector, mockManager, mockObserver);
 
         // Make sure the metadata file loads properly and in order.
         store.loadState(false /* ignoreIncognitoFiles */);
@@ -474,8 +501,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
-        TabPersistentStore store = new TabPersistentStore(
-                mockSelector, 0, mAppContext, mockManager, mockObserver, false);
+        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(mAppContext, 0);
+        TabPersistentStore store = buildTabPersistentStore(
+                persistencePolicy, mockSelector, mockManager, mockObserver);
 
         // Load the TabModel metadata.
         store.loadState(false /* ignoreIncognitoFiles */);
@@ -508,8 +536,10 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         MockTabModelSelector mockSelector = new MockTabModelSelector(0, 0, null);
         MockTabCreatorManager mockManager = new MockTabCreatorManager(mockSelector);
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
-        final TabPersistentStore store = new TabPersistentStore(
-                mockSelector, 0, mAppContext, mockManager, mockObserver, false);
+        TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(mAppContext, 0);
+        final TabPersistentStore store = buildTabPersistentStore(
+                persistencePolicy, mockSelector, mockManager, mockObserver);
+        store.waitForMigrationToFinish();
 
         assertNotNull(store.mPrefetchActiveTabTask);
 
