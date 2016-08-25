@@ -41,6 +41,9 @@ class LayerControlView : public views::View {
   // Overrides views::View.
   void Layout() override {
     WmWindow* window = WmLookup::Get()->GetWindowForWidget(GetWidget());
+    // Keep |this| at the bottom since there may be other windows on top of the
+    // background view such as an overview mode shield.
+    window->GetParent()->StackChildAtBottom(window);
     display::Display display = window->GetDisplayNearestWindow();
     DisplayInfo info = WmShell::Get()->GetDisplayInfo(display.id());
     float ui_scale = info.GetEffectiveUIScale();

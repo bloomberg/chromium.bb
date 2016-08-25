@@ -853,6 +853,7 @@ void WindowGrid::InitShieldWidget() {
       WmLookup::Get()->GetWindowForWidget(shield_widget_.get());
   const gfx::Rect bounds = widget_window->GetParent()->GetBounds();
   widget_window->SetBounds(bounds);
+  widget_window->SetName("OverviewModeShield");
 
   ui::ScopedLayerAnimationSettings animation_settings(
       widget_window->GetLayer()->GetAnimator());
@@ -884,6 +885,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   gfx::Vector2d fade_out_direction =
       GetSlideVectorForFadeIn(direction, target_bounds);
   widget_window->SetBounds(target_bounds - fade_out_direction);
+  widget_window->SetName("OverviewModeSelector");
 
   if (material) {
     selector_shadow_.reset(new ::wm::Shadow());

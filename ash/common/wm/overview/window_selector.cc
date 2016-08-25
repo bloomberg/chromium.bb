@@ -206,6 +206,7 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = true;
   params.bounds = GetTextFilterPosition(root_window);
+  params.name = "OverviewModeTextFilter";
   *text_filter_bottom = params.bounds.bottom();
   root_window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
       widget, kShellWindowId_StatusContainer, &params);

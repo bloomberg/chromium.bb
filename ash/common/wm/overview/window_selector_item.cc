@@ -275,6 +275,7 @@ WindowSelectorItem::WindowSelectorItem(WmWindow* window,
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.name = "OverviewModeCloseButton";
     close_button_widget_.reset(new views::Widget);
     close_button_widget_->set_focus_on_creation(false);
     window->GetRootWindowController()->ConfigureWidgetInitParamsForContainer(
@@ -519,6 +520,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.visible_on_all_workspaces = true;
+  params.name = "OverviewModeLabel";
   window_label_->set_focus_on_creation(false);
   root_window_->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
@@ -560,6 +562,7 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     window_label_selector_.reset(new views::Widget);
     params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
     params.accept_events = false;
+    params.name = "OverviewModeLabelSelector";
     window_label_selector_->Init(params);
     window_label_selector_->set_focus_on_creation(false);
     window_label_selector_->SetContentsView(background_view);
