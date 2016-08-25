@@ -316,7 +316,7 @@ void SavedFilesService::SavedFiles::RegisterFileEntry(
     return;
 
   registered_file_entries_.add(
-      id, base::WrapUnique(new SavedFileEntry(id, file_path, is_directory, 0)));
+      id, base::MakeUnique<SavedFileEntry>(id, file_path, is_directory, 0));
 }
 
 void SavedFilesService::SavedFiles::EnqueueFileEntry(const std::string& id) {
