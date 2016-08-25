@@ -92,12 +92,9 @@ class ToolbarActionView : public views::MenuButton,
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
 
-  bool wants_to_run_for_testing() const { return wants_to_run_; }
+  bool IsMenuRunningForTesting() const;
 
-  // Set a callback to be called directly before the context menu is shown.
-  // The toolbar action opening the menu will be passed in.
-  static void set_context_menu_callback_for_testing(
-      ContextMenuCallback* callback);
+  bool wants_to_run_for_testing() const { return wants_to_run_; }
 
   views::MenuItemView* menu_for_testing() { return menu_; }
 

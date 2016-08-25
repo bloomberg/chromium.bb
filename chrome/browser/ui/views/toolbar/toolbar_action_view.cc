@@ -43,10 +43,6 @@ namespace {
 // handled directly by the Image.
 const int kBorderInset = 0;
 
-// The callback to call directly before showing the context menu.
-ToolbarActionView::ContextMenuCallback* context_menu_callback_for_test =
-    nullptr;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,6 +163,10 @@ void ToolbarActionView::OnMenuButtonClicked(views::MenuButton* sender,
   }
 }
 
+bool ToolbarActionView::IsMenuRunningForTesting() const {
+  return IsMenuRunning();
+}
+
 void ToolbarActionView::OnMenuClosed() {
   menu_runner_.reset();
   menu_ = nullptr;
@@ -176,11 +176,6 @@ void ToolbarActionView::OnMenuClosed() {
 
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
   return GetImage(views::Button::STATE_NORMAL);
-}
-
-void ToolbarActionView::set_context_menu_callback_for_testing(
-    base::Callback<void(ToolbarActionView*)>* callback) {
-  context_menu_callback_for_test = callback;
 }
 
 gfx::Size ToolbarActionView::GetPreferredSize() const {
@@ -302,8 +297,6 @@ void ToolbarActionView::DoShowContextMenu(
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  if (context_menu_callback_for_test)
-    context_menu_callback_for_test->Run(this);
   ignore_result(
       menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
                               views::MENU_ANCHOR_TOPLEFT, source_type));
