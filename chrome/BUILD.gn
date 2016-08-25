@@ -1251,11 +1251,17 @@ if (is_win) {
 # GYP version: chrome/chrome_exe.gypi:visual_elements_resources
 copy("visual_elements_resources") {
   sources = [
-    "app/visual_elements_resources/Logo.png",
-    "app/visual_elements_resources/SecondaryTile.png",
-    "app/visual_elements_resources/SmallLogo.png",
+    "//chrome/app/theme/$branding_path_component/win/tiles/Logo.png",
+    "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogo.png",
     "app/visual_elements_resources/chrome.VisualElementsManifest.xml",
   ]
+
+  if (is_chrome_branded) {
+    sources += [
+      "//chrome/app/theme/$branding_path_component/win/tiles/LogoCanary.png",
+      "//chrome/app/theme/$branding_path_component/win/tiles/SmallLogoCanary.png",
+    ]
+  }
 
   outputs = [
     "$root_out_dir/{{source_file_part}}",

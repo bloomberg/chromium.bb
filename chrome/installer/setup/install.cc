@@ -43,7 +43,6 @@
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
-
 namespace {
 
 void LogShortcutOperation(ShellUtil::ShortcutLocation location,
@@ -390,9 +389,9 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
             "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
         "  <VisualElements\r\n"
         "      ShowNameOnSquare150x150Logo='on'\r\n"
-        "      Square150x150Logo='%ls\\Logo.png'\r\n"
-        "      Square70x70Logo='%ls\\SmallLogo.png'\r\n"
-        "      Square44x44Logo='%ls\\SmallLogo.png'\r\n"
+        "      Square150x150Logo='%ls\\Logo%ls.png'\r\n"
+        "      Square70x70Logo='%ls\\SmallLogo%ls.png'\r\n"
+        "      Square44x44Logo='%ls\\SmallLogo%ls.png'\r\n"
         "      ForegroundText='light'\r\n"
         "      BackgroundColor='#212121'/>\r\n"
         "</Application>\r\n";
@@ -408,9 +407,11 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
     EscapeXmlAttributeValueInSingleQuotes(&display_name);
 
     // Fill the manifest with the desired values.
-    base::string16 manifest16(
-        base::StringPrintf(manifest_template.c_str(), elements_dir.c_str(),
-                           elements_dir.c_str(), elements_dir.c_str()));
+    const base::char16* canary_str =
+        InstallUtil::IsChromeSxSProcess() ? L"Canary" : L"";
+    base::string16 manifest16(base::StringPrintf(
+        manifest_template.c_str(), elements_dir.c_str(), canary_str,
+        elements_dir.c_str(), canary_str, elements_dir.c_str(), canary_str));
 
     // Write the manifest to |src_path|.
     const std::string manifest(base::UTF16ToUTF8(manifest16));
