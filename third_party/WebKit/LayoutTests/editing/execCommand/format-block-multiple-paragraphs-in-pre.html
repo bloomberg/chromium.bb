@@ -1,47 +1,59 @@
-<!DOCTYPE html>
-<html>
-<body>
-<script src="../../resources/dump-as-markup.js"></script>
-<div id="test" contenteditable>
-<pre>
-hello
-
-world
-
-webkit
-</pre>
-</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<pre>',
+                    '^hello\n\nworld\n\nwebkit\n|',
+                '</pre>',
+            '</div>',
+        ].join(''),
+        'formatBlock h3',
+        [
+            '<div contenteditable>',
+                '<h3>',
+                    'hello<br>\nworld<br>\nwebkit',
+                '</h3>|',
+            '</div>',
+        ].join('')),
+        'formatBlock on all contents with H3');
 
-Markup.description('This tests ensures formatBlock removes a pre when formatting multiple paragraphs inside the pre.');
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<pre>',
+                    '^hello\n\nworld\n\n|webkit\n',
+                '</pre>',
+            '</div>',
+        ].join(''),
+        'formatBlock h3',
+        [
+            '<div contenteditable>',
+                '<pre>',
+                    '<h3>^hello\nworld\n</h3>|webkit\n',
+                '</pre>',
+            '</div>',
+        ].join('')),
+        'formatBlock on last paragraph with H3');
 
-var test = document.getElementById('test');
-var original = test.innerHTML;
-window.getSelection().selectAllChildren(test);
-document.execCommand('formatBlock', false, 'h3');
-Markup.dump(test, 'Formatting all paragraphs by h3 yields');
-
-document.execCommand('undo', false, null);
-Markup.dump(test, 'Undo yields');
-window.getSelection().collapse(test, 0);
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-document.execCommand('formatBlock', false, 'h3');
-Markup.dump(test, 'Formatting all but the last paragraph by h3 yields');
-
-document.execCommand('undo', false, null);
-Markup.dump(test, 'Undo yields');
-window.getSelection().collapse(test, 0);
-window.getSelection().modify('move', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-window.getSelection().modify('extend', 'forward', 'line');
-document.execCommand('formatBlock', false, 'h3');
-Markup.dump(test, 'Formatting all but the first paragraph by h3 yields');
-
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<pre>',
+                    'hello\n^\nworld\n\nwebkit\n|',
+                '</pre>',
+            '</div>',
+        ].join(''),
+        'formatBlock h3',
+        [
+            '<div contenteditable>',
+                '<pre>',
+                    'hello\n<h3>\nworld\nwebkit</h3>|',
+                '</pre>',
+            '</div>',
+        ].join('')),
+        'formatBlock all but the first paragraph with H3');
 </script>
-</body>
-</html>
