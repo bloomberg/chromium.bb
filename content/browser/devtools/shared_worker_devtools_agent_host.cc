@@ -29,8 +29,8 @@ SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
       shared_worker_(new SharedWorkerInstance(shared_worker)) {
 }
 
-std::string SharedWorkerDevToolsAgentHost::GetType() {
-  return kTypeSharedWorker;
+DevToolsAgentHost::Type SharedWorkerDevToolsAgentHost::GetType() {
+  return TYPE_SHARED_WORKER;
 }
 
 std::string SharedWorkerDevToolsAgentHost::GetTitle() {
@@ -43,9 +43,6 @@ GURL SharedWorkerDevToolsAgentHost::GetURL() {
 
 bool SharedWorkerDevToolsAgentHost::Activate() {
   return false;
-}
-
-void SharedWorkerDevToolsAgentHost::Reload() {
 }
 
 bool SharedWorkerDevToolsAgentHost::Close() {

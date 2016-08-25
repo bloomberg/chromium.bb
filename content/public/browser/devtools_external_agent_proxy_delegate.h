@@ -16,43 +16,16 @@ class DevToolsExternalAgentProxy;
 // Describes the interface for sending messages to an external DevTools agent.
 class DevToolsExternalAgentProxyDelegate {
  public:
-  virtual ~DevToolsExternalAgentProxyDelegate() {}
+   virtual ~DevToolsExternalAgentProxyDelegate() {}
 
-  // Informs the agent that a client host has attached.
-  virtual void Attach(DevToolsExternalAgentProxy* proxy) = 0;
+   // Informs the agent that a client host has attached.
+   virtual void Attach(DevToolsExternalAgentProxy* proxy) = 0;
 
-  // Informs the agent that a client host has detached.
-  virtual void Detach() = 0;
+   // Informs the agent that a client host has detached.
+   virtual void Detach() = 0;
 
-  // Returns agent host type.
-  virtual std::string GetType() = 0;
-
-  // Returns agent host title.
-  virtual std::string GetTitle() = 0;
-
-  // Returns the agent host description.
-  virtual std::string GetDescription() = 0;
-
-  // Returns url associated with agent host.
-  virtual GURL GetURL() = 0;
-
-  // Returns the favicon url for this agent host.
-  virtual GURL GetFaviconURL() = 0;
-
-  // Activates agent host.
-  virtual bool Activate() = 0;
-
-  // Initiates external agent host inspection.
-  virtual bool Inspect() = 0;
-
-  // Reloads agent host.
-  virtual void Reload() = 0;
-
-  // Reloads agent host.
-  virtual bool Close() = 0;
-
-  // Sends a message to the agent.
-  virtual void SendMessageToBackend(const std::string& message) = 0;
+   // Sends a message to the agent.
+   virtual void SendMessageToBackend(const std::string& message) = 0;
 };
 
 }  // namespace content

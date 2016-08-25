@@ -220,7 +220,6 @@ class DevToolsAndroidBridge : public KeyedService {
   using TCPProviderCallback =
       base::Callback<void(scoped_refptr<TCPDeviceProvider>)>;
   void set_tcp_provider_callback_for_test(TCPProviderCallback callback);
-
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;

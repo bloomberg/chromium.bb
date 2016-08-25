@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "content/public/browser/devtools_agent_host.h"
 
 namespace {
 
@@ -21,12 +20,7 @@ CreateNewChromeTab(const GURL& url) {
   chrome::Navigate(&params);
   if (!params.target_contents)
     return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
-
-  if (!params.target_contents)
-    return nullptr;
-  scoped_refptr<content::DevToolsAgentHost> host =
-      content::DevToolsAgentHost::GetOrCreateFor(params.target_contents);
-  return std::unique_ptr<DevToolsTargetImpl>(new DevToolsTargetImpl(host));
+  return DevToolsTargetImpl::CreateForTab(params.target_contents);
 }
 
 }  // namespace

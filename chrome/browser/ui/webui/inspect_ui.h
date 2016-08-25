@@ -22,10 +22,6 @@ class Value;
 class ListValue;
 }
 
-namespace content {
-class DevToolsAgentHost;
-}
-
 class Browser;
 class DevToolsTargetsUIHandler;
 class DevToolsTargetImpl;
@@ -75,9 +71,8 @@ class InspectUI : public content::WebUIController,
 
   DevToolsTargetsUIHandler* FindTargetHandler(
       const std::string& source_id);
-  scoped_refptr<content::DevToolsAgentHost> FindTarget(
-      const std::string& source_id,
-      const std::string& target_id);
+  DevToolsTargetImpl* FindTarget(const std::string& source_id,
+                                 const std::string& target_id);
 
   void PopulateTargets(const std::string& source_id,
                        const base::ListValue& targets);

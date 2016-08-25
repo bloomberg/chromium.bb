@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserGetTargets) {
   EXPECT_TRUE(target_info->GetString("type", &type));
   EXPECT_TRUE(target_info->GetString("title", &title));
   EXPECT_TRUE(target_info->GetString("url", &url));
-  EXPECT_EQ(type, "page");
+  EXPECT_EQ(type, "web_contents");
   EXPECT_EQ(title, "about:blank");
   EXPECT_EQ(url, "about:blank");
 }

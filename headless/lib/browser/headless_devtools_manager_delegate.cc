@@ -61,16 +61,6 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   return result.release();
 }
 
-std::string HeadlessDevToolsManagerDelegate::GetTargetType(
-    contents::RenderFrameHost* host) {
-  return DevToolsAgentHost::kTypePage;
-}
-
-std::string HeadlessDevToolsManagerDelegate::GetTargetTitle(
-    contents::RenderFrameHost* host) {
-  return "";
-}
-
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(
     const base::DictionaryValue* params) {
   std::string url;

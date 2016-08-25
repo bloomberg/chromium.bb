@@ -563,7 +563,7 @@ void DevToolsWindow::InspectElement(
   base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
-  if (agent->GetType() == content::DevToolsAgentHost::kTypePage) {
+  if (agent->GetType() == content::DevToolsAgentHost::TYPE_WEB_CONTENTS) {
     OpenDevToolsWindow(agent->GetWebContents());
   } else {
     OpenDevToolsWindow(Profile::FromBrowserContext(agent->GetBrowserContext()),

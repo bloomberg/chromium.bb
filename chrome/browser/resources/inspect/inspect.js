@@ -121,7 +121,7 @@ function populateLocalTargets(data) {
       addToExtensionsList(data[i]);
     else if (data[i].type === 'app')
       addToAppsList(data[i]);
-    else if (data[i].type === 'shared_worker')
+    else if (data[i].type === 'worker')
       addToWorkersList(data[i]);
     else if (data[i].type === 'service_worker')
       addToServiceWorkersList(data[i]);

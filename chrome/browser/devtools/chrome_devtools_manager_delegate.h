@@ -15,21 +15,17 @@ class DevToolsNetworkProtocolHandler;
 
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
-  static char kTypeApp[];
-  static char kTypeBackgroundPage[];
-
   ChromeDevToolsManagerDelegate();
   ~ChromeDevToolsManagerDelegate() override;
 
   // content::DevToolsManagerDelegate implementation.
-  void Inspect(content::DevToolsAgentHost* agent_host) override;
+  void Inspect(content::BrowserContext* browser_context,
+               content::DevToolsAgentHost* agent_host) override;
   void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
                                  bool attached) override;
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
-  std::string GetTargetType(content::RenderFrameHost* host) override;
-  std::string GetTargetTitle(content::RenderFrameHost* host) override;
 
  private:
   std::unique_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;

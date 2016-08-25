@@ -236,16 +236,14 @@ void LocalTargetsUIHandler::SendTargets(
 
   base::STLDeleteValues(&targets_);
   for (DevToolsTargetImpl* target : targets) {
-    scoped_refptr<content::DevToolsAgentHost> host = target->GetAgentHost();
-    targets_[host->GetId()] = target;
-    id_to_descriptor[host->GetId()] = Serialize(*target);
+    targets_[target->GetId()] = target;
+    id_to_descriptor[target->GetId()] = Serialize(*target);
   }
 
   for (TargetMap::iterator it(targets_.begin()); it != targets_.end(); ++it) {
     DevToolsTargetImpl* target = it->second;
-    scoped_refptr<content::DevToolsAgentHost> host = target->GetAgentHost();
-    base::DictionaryValue* descriptor = id_to_descriptor[host->GetId()];
-    std::string parent_id = host->GetParentId();
+    base::DictionaryValue* descriptor = id_to_descriptor[target->GetId()];
+    std::string parent_id = target->GetParentId();
     if (parent_id.empty() || id_to_descriptor.count(parent_id) == 0) {
       list_value.Append(descriptor);
     } else {
@@ -369,19 +367,18 @@ void AdbTargetsUIHandler::DeviceListChanged(
             browser_data->Set(kAdbPagesList, page_list);
       for (const auto& page : browser->pages()) {
         DevToolsTargetImpl* target = android_bridge_->CreatePageTarget(page);
-        scoped_refptr<content::DevToolsAgentHost> host = target->GetAgentHost();
         base::DictionaryValue* target_data = Serialize(*target);
         target_data->SetBoolean(
             kAdbAttachedForeignField,
-            host->IsAttached() &&
-                !android_bridge_->HasDevToolsWindow(host->GetId()));
+            target->IsAttached() &&
+                !android_bridge_->HasDevToolsWindow(target->GetId()));
         // Pass the screen size in the target object to make sure that
         // the caching logic does not prevent the target item from updating
         // when the screen size changes.
         gfx::Size screen_size = device->screen_size();
         target_data->SetInteger(kAdbScreenWidthField, screen_size.width());
         target_data->SetInteger(kAdbScreenHeightField, screen_size.height());
-        targets_[host->GetId()] = target;
+        targets_[target->GetId()] = target;
         page_list->Append(target_data);
       }
       browser_list->Append(std::move(browser_data));
@@ -444,15 +441,14 @@ DevToolsTargetsUIHandler::GetBrowserAgentHost(const std::string& browser_id) {
 base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(
     const DevToolsTargetImpl& target) {
   base::DictionaryValue* target_data = new base::DictionaryValue();
-  scoped_refptr<content::DevToolsAgentHost> host = target.GetAgentHost();
   target_data->SetString(kTargetSourceField, source_id_);
-  target_data->SetString(kTargetIdField, host->GetId());
-  target_data->SetString(kTargetTypeField, host->GetType());
-  target_data->SetBoolean(kAttachedField, host->IsAttached());
-  target_data->SetString(kUrlField, host->GetURL().spec());
-  target_data->SetString(kNameField, host->GetTitle());
-  target_data->SetString(kFaviconUrlField, host->GetFaviconURL().spec());
-  target_data->SetString(kDescriptionField, host->GetDescription());
+  target_data->SetString(kTargetIdField, target.GetId());
+  target_data->SetString(kTargetTypeField, target.GetType());
+  target_data->SetBoolean(kAttachedField, target.IsAttached());
+  target_data->SetString(kUrlField, target.GetURL().spec());
+  target_data->SetString(kNameField, target.GetTitle());
+  target_data->SetString(kFaviconUrlField, target.GetFaviconURL().spec());
+  target_data->SetString(kDescriptionField, target.GetDescription());
   return target_data;
 }
 

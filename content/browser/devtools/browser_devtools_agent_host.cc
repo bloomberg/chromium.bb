@@ -55,8 +55,8 @@ void BrowserDevToolsAgentHost::Attach() {
 void BrowserDevToolsAgentHost::Detach() {
 }
 
-std::string BrowserDevToolsAgentHost::GetType() {
-  return kTypeBrowser;
+DevToolsAgentHost::Type BrowserDevToolsAgentHost::GetType() {
+  return TYPE_BROWSER;
 }
 
 std::string BrowserDevToolsAgentHost::GetTitle() {
@@ -71,15 +71,8 @@ bool BrowserDevToolsAgentHost::Activate() {
   return false;
 }
 
-bool BrowserDevToolsAgentHost::Inspect() {
-  return false;
-}
-
 bool BrowserDevToolsAgentHost::Close() {
   return false;
-}
-
-void BrowserDevToolsAgentHost::Reload() {
 }
 
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(

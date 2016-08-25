@@ -8,6 +8,14 @@ namespace content {
 namespace devtools {
 namespace browser {
 
+namespace {
+const char kTargetTypeWebContents[] = "web_contents";
+const char kTargetTypeFrame[] = "frame";
+const char kTargetTypeSharedWorker[] = "shared_worker";
+const char kTargetTypeServiceWorker[] = "service_worker";
+const char kTargetTypeServiceOther[] = "other";
+}
+
 using Response = DevToolsProtocolClient::Response;
 
 BrowserHandler::BrowserHandler() {
@@ -18,6 +26,21 @@ BrowserHandler::~BrowserHandler() {
 
 void BrowserHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
+}
+
+static std::string GetTypeString(DevToolsAgentHost* agent_host) {
+  switch (agent_host->GetType()) {
+    case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+      return kTargetTypeWebContents;
+    case DevToolsAgentHost::TYPE_FRAME:
+      return kTargetTypeFrame;
+    case DevToolsAgentHost::TYPE_SHARED_WORKER:
+      return kTargetTypeSharedWorker;
+    case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+      return kTargetTypeServiceWorker;
+    default:
+      return kTargetTypeServiceOther;
+  }
 }
 
 Response BrowserHandler::CreateBrowserContext(std::string* out_context_id) {
@@ -61,7 +84,7 @@ Response BrowserHandler::GetTargets(TargetInfos* infos) {
     scoped_refptr<devtools::browser::TargetInfo> info =
         devtools::browser::TargetInfo::Create()->
             set_target_id(agent_host->GetId())->
-            set_type(agent_host->GetType())->
+            set_type(GetTypeString(agent_host))->
             set_title(agent_host->GetTitle())->
             set_url(agent_host->GetURL().spec());
     infos->push_back(info);

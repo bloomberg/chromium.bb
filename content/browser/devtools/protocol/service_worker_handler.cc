@@ -244,6 +244,26 @@ Response CreateInvalidVersionIdErrorResponse() {
   return Response::InternalError("Invalid version ID");
 }
 
+const std::string GetDevToolsAgentHostTypeString(
+    content::DevToolsAgentHost::Type type) {
+  switch (type) {
+    case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+      return "web_contents";
+    case DevToolsAgentHost::TYPE_FRAME:
+      return "frame";
+    case DevToolsAgentHost::TYPE_SHARED_WORKER:
+      return "shared_worker";
+    case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+      return "service_worker";
+    case DevToolsAgentHost::TYPE_EXTERNAL:
+      return "external";
+    case DevToolsAgentHost::TYPE_BROWSER:
+      return "browser";
+  }
+  NOTREACHED() << type;
+  return std::string();
+}
+
 void DidFindRegistrationForDispatchSyncEventOnIO(
     scoped_refptr<BackgroundSyncContext> sync_context,
     const std::string& tag,
@@ -526,7 +546,7 @@ Response ServiceWorkerHandler::GetTargetInfo(
   *target_info =
       TargetInfo::Create()
           ->set_id(agent_host->GetId())
-          ->set_type(agent_host->GetType())
+          ->set_type(GetDevToolsAgentHostTypeString(agent_host->GetType()))
           ->set_title(agent_host->GetTitle())
           ->set_url(agent_host->GetURL().spec());
   return Response::OK();
@@ -548,7 +568,7 @@ void ServiceWorkerHandler::OpenNewDevToolsWindow(int process_id,
           ->GetDevToolsAgentHostForWorker(process_id, devtools_agent_route_id));
   if (!agent_host.get())
     return;
-  agent_host->Inspect();
+  agent_host->Inspect(render_frame_host_->GetProcess()->GetBrowserContext());
 }
 
 void ServiceWorkerHandler::OnWorkerRegistrationUpdated(

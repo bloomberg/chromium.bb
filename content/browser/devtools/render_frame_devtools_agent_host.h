@@ -81,18 +81,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void ConnectWebContents(WebContents* web_contents) override;
   BrowserContext* GetBrowserContext() override;
   WebContents* GetWebContents() override;
-  std::string GetParentId() override;
-  std::string GetType() override;
+  Type GetType() override;
   std::string GetTitle() override;
-  std::string GetDescription() override;
   GURL GetURL() override;
-  GURL GetFaviconURL() override;
   bool Activate() override;
-  void Reload() override;
-
   bool Close() override;
-  base::TimeTicks GetLastActivityTime() override;
-
   bool DispatchProtocolMessage(const std::string& message) override;
 
  private:

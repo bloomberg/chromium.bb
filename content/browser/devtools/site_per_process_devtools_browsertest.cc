@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(1U, list.size());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[0]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
 
   // Load same-site page into iframe.
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(1U, list.size());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[0]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
 
   // Load cross-site page into iframe.
@@ -96,9 +96,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(2U, list.size());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[0]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[1]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_FRAME, list[1]->GetType());
   EXPECT_EQ(cross_site_url.spec(), list[1]->GetURL().spec());
 
   // Attaching to both agent hosts.
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
 
   list = DevToolsAgentHost::GetOrCreateAll();
   EXPECT_EQ(1U, list.size());
-  EXPECT_EQ(DevToolsAgentHost::kTypePage, list[0]->GetType());
+  EXPECT_EQ(DevToolsAgentHost::TYPE_WEB_CONTENTS, list[0]->GetType());
   EXPECT_EQ(main_url.spec(), list[0]->GetURL().spec());
   EXPECT_TRUE(child_client.closed());
   child_host->DetachClient(&child_client);

@@ -82,7 +82,7 @@ DevToolsDiscoveryManager::HandleCreateTargetCommand(
     result->SetInteger("id", id);
     std::unique_ptr<base::DictionaryValue> cmd_result(
         new base::DictionaryValue());
-    cmd_result->SetString("targetId", descriptor->GetAgentHost()->GetId());
+    cmd_result->SetString("targetId", descriptor->GetId());
     result->Set("result", std::move(cmd_result));
     return result;
   }

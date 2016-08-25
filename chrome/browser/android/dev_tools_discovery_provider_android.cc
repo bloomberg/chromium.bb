@@ -17,74 +17,106 @@
 #include "components/devtools_discovery/basic_target_descriptor.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_agent_host_client.h"
-#include "content/public/browser/devtools_external_agent_proxy.h"
-#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 using content::DevToolsAgentHost;
 using content::WebContents;
-using devtools_discovery::DevToolsTargetDescriptor;
 
 namespace {
 
-class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
-                         public content::DevToolsAgentHostClient {
+GURL GetFaviconURLForContents(WebContents* web_contents) {
+  content::NavigationController& controller = web_contents->GetController();
+  content::NavigationEntry* entry = controller.GetActiveEntry();
+  if (entry != NULL && entry->GetURL().is_valid())
+    return entry->GetFavicon().url;
+  return GURL();
+}
+
+class TabDescriptor : public devtools_discovery::DevToolsTargetDescriptor {
  public:
-  TabProxyDelegate(int tab_id, const base::string16& title, const GURL& url)
-      : tab_id_(tab_id),
-        title_(base::UTF16ToUTF8(title)),
-        url_(url) {
+  static TabDescriptor* CreateForWebContents(int tab_id,
+                                             WebContents* web_contents) {
+    return new TabDescriptor(tab_id, web_contents);
   }
 
-  ~TabProxyDelegate() override {
+  static TabDescriptor* CreateForUnloadedTab(int tab_id,
+                                             const base::string16& title,
+                                             const GURL& url) {
+    return new TabDescriptor(tab_id, title, url);
   }
 
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    proxy_->DispatchOnClientHost(message);
+  ~TabDescriptor() override {
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override {
-    proxy_->ConnectionClosed();
-  }
-
-  void Attach(content::DevToolsExternalAgentProxy* proxy) override {
-    proxy_ = proxy;
-    MaterializeAgentHost();
-  }
-
-  void Detach() override {
-    if (agent_host_)
-      agent_host_->DetachClient(this);
-    agent_host_ = nullptr;
-    proxy_ = nullptr;
-  }
-
-  std::string GetType() override {
-    return DevToolsAgentHost::kTypePage;
-  }
-
-  std::string GetTitle() override {
-    return title_;
-  }
-
-  std::string GetDescription() override {
+  // devtools_discovery::DevToolsTargetDescriptor implementation.
+  std::string GetParentId() const override {
     return std::string();
   }
 
-  GURL GetURL() override {
+  std::string GetTitle() const override {
+    return title_;
+  }
+
+  std::string GetDescription() const override {
+    return std::string();
+  }
+
+  GURL GetURL() const override {
     return url_;
   }
 
-  GURL GetFaviconURL() override {
-    return GURL();
+  GURL GetFaviconURL() const override {
+    return favicon_url_;
   }
 
-  bool Activate() override {
+  base::TimeTicks GetLastActivityTime() const override {
+    return last_activity_time_;
+  }
+
+  std::string GetId() const override {
+    return base::IntToString(tab_id_);
+  }
+
+  std::string GetType() const override {
+    return devtools_discovery::BasicTargetDescriptor::kTypePage;
+  }
+
+  bool IsAttached() const override {
+    TabModel* model;
+    int index;
+    if (!FindTab(&model, &index))
+      return false;
+    WebContents* web_contents = model->GetWebContentsAt(index);
+    if (!web_contents)
+      return false;
+    return DevToolsAgentHost::IsDebuggerAttached(web_contents);
+  }
+
+  scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
+    TabModel* model;
+    int index;
+    if (!FindTab(&model, &index))
+      return NULL;
+    WebContents* web_contents = model->GetWebContentsAt(index);
+    if (!web_contents) {
+      // The tab has been pushed out of memory, pull it back.
+      TabAndroid* tab = model->GetTabAt(index);
+      if (!tab)
+        return NULL;
+
+      if (!tab->LoadIfNeeded())
+        return NULL;
+
+      web_contents = model->GetWebContentsAt(index);
+      if (!web_contents)
+        return NULL;
+    }
+    return DevToolsAgentHost::GetOrCreateFor(web_contents);
+  }
+
+  bool Activate() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -93,20 +125,7 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
     return true;
   }
 
-  bool Inspect() override {
-    MaterializeAgentHost();
-    if (agent_host_)
-      return agent_host_->Inspect();
-    return false;
-  }
-
-  void Reload() override {
-    MaterializeAgentHost();
-    if (agent_host_)
-      agent_host_->Reload();
-  }
-
-  bool Close() override {
+  bool Close() const override {
     TabModel* model;
     int index;
     if (!FindTab(&model, &index))
@@ -115,23 +134,19 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
     return true;
   }
 
-  void SendMessageToBackend(const std::string& message) override {
-    if (agent_host_)
-      agent_host_->DispatchProtocolMessage(this, message);
+ private:
+  TabDescriptor(int tab_id, WebContents* web_contents)
+      : tab_id_(tab_id),
+        title_(base::UTF16ToUTF8(web_contents->GetTitle())),
+        url_(web_contents->GetURL()),
+        favicon_url_(GetFaviconURLForContents(web_contents)),
+        last_activity_time_(web_contents->GetLastActiveTime()) {
   }
 
- private:
-  void MaterializeAgentHost() {
-    if (agent_host_)
-      return;
-    TabModel* model;
-    int index;
-    if (!FindTab(&model, &index))
-      return;
-    WebContents* web_contents = model->GetWebContentsAt(index);
-    if (!web_contents)
-      return;
-    agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
+  TabDescriptor(int tab_id, const base::string16& title, const GURL& url)
+      : tab_id_(tab_id),
+        title_(base::UTF16ToUTF8(title)),
+        url_(url) {
   }
 
   bool FindTab(TabModel** model_result, int* index_result) const {
@@ -153,9 +168,10 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
   const int tab_id_;
   const std::string title_;
   const GURL url_;
-  scoped_refptr<content::DevToolsAgentHost> agent_host_;
-  content::DevToolsExternalAgentProxy* proxy_;
-  DISALLOW_COPY_AND_ASSIGN(TabProxyDelegate);
+  const GURL favicon_url_;
+  const base::TimeTicks last_activity_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabDescriptor);
 };
 
 std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
@@ -175,10 +191,8 @@ CreateNewAndroidTab(const GURL& url) {
   if (!tab)
     return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
 
-  scoped_refptr<content::DevToolsAgentHost> host =
-      content::DevToolsAgentHost::Create(new TabProxyDelegate(
-           tab->GetAndroidId(), tab->GetTitle(), tab->GetURL()));
-  return base::WrapUnique(new devtools_discovery::BasicTargetDescriptor(host));
+  return base::WrapUnique(
+      TabDescriptor::CreateForWebContents(tab->GetAndroidId(), web_contents));
 }
 
 }  // namespace
@@ -206,13 +220,11 @@ DevToolsDiscoveryProviderAndroid::GetDescriptors() {
       WebContents* web_contents = tab->web_contents();
       if (web_contents) {
         tab_web_contents.insert(web_contents);
-        result.push_back(new devtools_discovery::BasicTargetDescriptor(
-            content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
+        result.push_back(TabDescriptor::CreateForWebContents(
+            tab->GetAndroidId(), web_contents));
       } else {
-        scoped_refptr<content::DevToolsAgentHost> host =
-            content::DevToolsAgentHost::Create(new TabProxyDelegate(
-                tab->GetAndroidId(), tab->GetTitle(), tab->GetURL()));
-        result.push_back(new devtools_discovery::BasicTargetDescriptor(host));
+        result.push_back(TabDescriptor::CreateForUnloadedTab(
+            tab->GetAndroidId(), tab->GetTitle(), tab->GetURL()));
       }
     }
   }

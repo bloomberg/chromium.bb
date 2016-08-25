@@ -236,13 +236,4 @@ base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
   return result.release();  // Caller takes ownership.
 }
 
-std::string ShellDevToolsManagerDelegate::GetTargetType(RenderFrameHost* host) {
-  return DevToolsAgentHost::kTypePage;
-}
-
-std::string ShellDevToolsManagerDelegate::GetTargetTitle(
-    RenderFrameHost* host) {
-  return "";
-}
-
 }  // namespace content

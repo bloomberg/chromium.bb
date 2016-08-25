@@ -39,36 +39,24 @@ bool ForwardingAgentHost::DispatchProtocolMessage(
   return true;
 }
 
-std::string ForwardingAgentHost::GetType() {
-  return delegate_->GetType();
+DevToolsAgentHost::Type ForwardingAgentHost::GetType() {
+  return TYPE_EXTERNAL;
 }
 
 std::string ForwardingAgentHost::GetTitle() {
-  return delegate_->GetTitle();
+  return "";
 }
 
 GURL ForwardingAgentHost::GetURL() {
-  return delegate_->GetURL();
-}
-
-GURL ForwardingAgentHost::GetFaviconURL() {
-  return delegate_->GetFaviconURL();
+  return GURL();
 }
 
 bool ForwardingAgentHost::Activate() {
-  return delegate_->Activate();
-}
-
-bool ForwardingAgentHost::Inspect() {
-  return delegate_->Inspect();
-}
-
-void ForwardingAgentHost::Reload() {
-  delegate_->Reload();
+  return false;
 }
 
 bool ForwardingAgentHost::Close() {
-  return delegate_->Close();
+  return false;
 }
 
 }  // content
