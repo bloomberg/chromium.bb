@@ -16363,13 +16363,12 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   GLsizei num_values = 0;
   std::vector<GLint> samples;
   if (gl_version_info().IsLowerThanGL(4, 2)) {
-    if (!GLES2Util::IsIntegerFormat(format) &&
-        !GLES2Util::IsFloatFormat(format)) {
-      // No multisampling for integer formats and float formats.
+    if (!GLES2Util::IsIntegerFormat(format)) {
+      // No multisampling for integer formats.
       GLint max_samples = renderbuffer_manager()->max_samples();
       while (max_samples > 0) {
         samples.push_back(max_samples);
-        max_samples = max_samples >> 1;
+        --max_samples;
       }
     }
     switch (pname) {
