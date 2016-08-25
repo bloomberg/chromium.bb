@@ -31,8 +31,12 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    inSubpage_: Boolean,
+    /**
+     * True if a section is fully expanded to hide other sections beneath it.
+     * Not true otherwise (even while animating a section open/closed).
+     * @private
+     */
+    hasExpandedSection_: Boolean,
 
     /** @private */
     overscroll_: {
@@ -90,6 +94,9 @@ Polymer({
       this.advancedToggleExpanded_ = e.detail;
       this.currentRouteChanged(settings.getCurrentRoute());
     }.bind(this));
+
+    var currentRoute = settings.getCurrentRoute();
+    this.hasExpandedSection_ = currentRoute && currentRoute.isSubpage();
   },
 
   /** @private */
@@ -136,22 +143,42 @@ Polymer({
    */
   showAdvancedToggle_: function() {
     var inSearchMode = !!this.previousShowPages_;
-    return this.showPages_.basic && !this.inSubpage_ && !inSearchMode;
+    return !inSearchMode && this.showPages_.basic && !this.hasExpandedSection_;
   },
 
-  /** @protected */
   currentRouteChanged: function(newRoute) {
-    this.inSubpage_ = newRoute.isSubpage();
-    this.style.height = this.inSubpage_ ? '100%' : '';
+    // When the route changes from a sub-page to the main page, immediately
+    // update hasExpandedSection_ to unhide the other sections.
+    if (!newRoute.isSubpage())
+      this.hasExpandedSection_ = false;
 
-    if (settings.Route.ABOUT.contains(newRoute)) {
+    this.updatePagesShown_();
+  },
+
+  /** @private */
+  onSubpageExpand_: function() {
+    // The subpage finished expanding fully. Hide pages other than the current
+    // section's parent page.
+    this.hasExpandedSection_ = true;
+    this.updatePagesShown_();
+  },
+
+  /**
+   * Updates the hidden state of the about, basic and advanced pages, based on
+   * the current route and the Advanced toggle state.
+   * @private
+   */
+  updatePagesShown_: function() {
+    var currentRoute = settings.getCurrentRoute();
+    if (settings.Route.ABOUT.contains(currentRoute)) {
       this.showPages_ = {about: true, basic: false, advanced: false};
     } else {
       this.showPages_ = {
         about: false,
-        basic: settings.Route.BASIC.contains(newRoute) || !this.inSubpage_,
-        advanced: settings.Route.ADVANCED.contains(newRoute) ||
-            (!this.inSubpage_ && this.advancedToggleExpanded_),
+        basic: settings.Route.BASIC.contains(currentRoute) ||
+            !this.hasExpandedSection_,
+        advanced: settings.Route.ADVANCED.contains(currentRoute) ||
+            (!this.hasExpandedSection_ && this.advancedToggleExpanded_),
       };
 
       if (this.showPages_.advanced) {

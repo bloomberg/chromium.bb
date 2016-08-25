@@ -10,6 +10,7 @@
         '../compiled_resources2.gyp:route',
         'settings_section',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

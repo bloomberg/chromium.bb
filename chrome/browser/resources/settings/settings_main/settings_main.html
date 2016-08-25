@@ -59,13 +59,14 @@
     </div>
     <template is="dom-if" if="[[showPages_.basic]]">
       <settings-basic-page prefs="{{prefs}}"
-          page-visibility="[[pageVisibility]]">
+          page-visibility="[[pageVisibility]]"
+          on-subpage-expand="onSubpageExpand_">
       </settings-basic-page>
     </template>
     <template is="dom-if"
         if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
       <template is="dom-if" if="[[showAdvancedToggle_(
-          showPages_.basic, inSubpage_, previousShowPages_)]]">
+          showPages_.basic, hasExpandedSection_, previousShowPages_)]]">
         <div id="toggleSpacer"></div>
         <div id="toggleContainer">
           <div id="advancedToggle" on-tap="toggleAdvancedPage_">
@@ -76,7 +77,8 @@
       </template>
       <template is="dom-if" if="[[showPages_.advanced]]">
         <settings-advanced-page prefs="{{prefs}}"
-            page-visibility="[[pageVisibility]]">
+            page-visibility="[[pageVisibility]]"
+            on-subpage-expand="onSubpageExpand_">
         </settings-advanced-page>
       </template>
     </template>

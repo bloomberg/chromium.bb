@@ -9,7 +9,12 @@
  * @param {!Function} readyCallback
  */
 function doWhenReady(readyTest, readyCallback) {
-  // TODO(dschuyler): Determine whether this hack can be removed.
+  if (readyTest()) {
+    readyCallback();
+    return;
+  }
+
+  // TODO(michaelpg): Remove this hack.
   // See also: https://github.com/Polymer/polymer/issues/3629
   var intervalId = setInterval(function() {
     if (readyTest()) {
@@ -82,10 +87,7 @@ var MainPageBehaviorImpl = {
       // If the section shouldn't be expanded, collapse it.
       if (!currentRoute.isSubpage() || expandedSection != currentSection) {
         promise = this.collapseSection_(expandedSection);
-        // Scroll to the collapsed section. TODO(michaelpg): This can look weird
-        // because the collapse we just scheduled calculated its end target
-        // based on the current scroll position. This bug existed before, and is
-        // fixed in the next patch by making the card position: absolute.
+        // Scroll to the collapsed section.
         if (currentSection)
           currentSection.scrollIntoView();
       }
@@ -149,7 +151,13 @@ var MainPageBehaviorImpl = {
    */
   expandSection_: function(section) {
     assert(this.scroller);
-    assert(section.canAnimateExpand());
+
+    if (!section.canAnimateExpand()) {
+      // Try to wait for the section to be created.
+      return new Promise(function(resolve, reject) {
+        setTimeout(resolve);
+      });
+    }
 
     // Save the scroller position before freezing it.
     this.origScrollTop_ = this.scroller.scrollTop;
@@ -159,20 +167,26 @@ var MainPageBehaviorImpl = {
     section.setFrozen(true);
 
     this.currentAnimation_ = section.animateExpand(this.scroller);
-    var promise = this.currentAnimation_ ?
-        this.currentAnimation_.finished : Promise.resolve();
 
     var finished;
-    return promise.then(function() {
-      this.scroller.scrollTop = 0;
+    return this.currentAnimation_.finished.then(function() {
+      // Hide other sections and scroll to the top of the subpage.
+      this.classList.add('showing-subpage');
       this.toggleOtherSectionsHidden_(section.section, true);
+      this.scroller.scrollTop = 0;
+      section.setFrozen(false);
+
+      // Notify that the page is fully expanded.
+      this.fire('subpage-expand');
+
       finished = true;
     }.bind(this), function() {
-      // The animation was canceled; restore the section.
+      // The animation was canceled; restore the section and scroll position.
       section.setFrozen(false);
+      this.scroller.scrollTop = this.origScrollTop_;
+
       finished = false;
-    }).then(function() {
-      section.cleanUpAnimateExpand(finished);
+    }.bind(this)).then(function() {
       this.toggleScrolling_(true);
       this.currentAnimation_ = null;
     }.bind(this));
@@ -182,32 +196,65 @@ var MainPageBehaviorImpl = {
    * Animates the card in |section|, collapsing it back into its section.
    * @param {!SettingsSectionElement} section
    * @return {!Promise} Resolved when the transition is finished or canceled.
-   * @private
    */
   collapseSection_: function(section) {
     assert(this.scroller);
-    assert(section.canAnimateCollapse());
+    assert(section.classList.contains('expanded'));
 
+    var canAnimateCollapse = section.canAnimateCollapse();
+    if (canAnimateCollapse) {
+      this.toggleScrolling_(false);
+      // Do the initial collapse setup, which takes the section out of the flow,
+      // before showing everything.
+      section.setUpAnimateCollapse(this.scroller);
+    } else {
+      section.classList.remove('expanded');
+    }
+
+    // Show everything.
     this.toggleOtherSectionsHidden_(section.section, false);
-    this.toggleScrolling_(false);
+    this.classList.remove('showing-subpage');
 
-    this.currentAnimation_ =
-        section.animateCollapse(this.scroller, this.origScrollTop_);
-    var promise = this.currentAnimation_ ?
-        this.currentAnimation_.finished : Promise.resolve();
-
-    return promise.then(function() {
-      section.cleanUpAnimateCollapse(true);
-    }, function() {
-      section.cleanUpAnimateCollapse(false);
-    }).then(function() {
+    if (!canAnimateCollapse) {
+      // Finish by restoring the section into the page.
       section.setFrozen(false);
-      section.classList.remove('collapsing');
-      this.toggleScrolling_(true);
-      this.currentAnimation_ = null;
+      return Promise.resolve();
+    }
+
+    // Play the actual collapse animation.
+    return new Promise(function(resolve, reject) {
+      // Wait for the other sections to show up so we can scroll properly.
+      setTimeout(function() {
+        var newSection = settings.getCurrentRoute().section &&
+            this.getSection(settings.getCurrentRoute().section);
+
+        // Scroll to the section if indicated by the route. TODO(michaelpg): Is
+        // this the right behavior, or should we return to the previous scroll
+        // position?
+        if (newSection)
+          newSection.scrollIntoView();
+        else
+          this.scroller.scrollTop = this.origScrollTop_;
+
+        this.currentAnimation_ = section.animateCollapse(
+            /** @type {!HTMLElement} */(this.scroller));
+
+        this.currentAnimation_.finished.catch(function() {
+          // The collapse was canceled, so the page is showing a subpage still.
+          this.fire('subpage-expand');
+        }.bind(this)).then(function() {
+          // Clean up after the animation succeeds or cancels.
+          section.setFrozen(false);
+          section.classList.remove('collapsing');
+          this.toggleScrolling_(true);
+          this.currentAnimation_ = null;
+          resolve();
+        }.bind(this));
+      }.bind(this));
     }.bind(this));
   },
 
+  /**
   /**
    * Hides or unhides the sections not being expanded.
    * @param {string} sectionName The section to keep visible.

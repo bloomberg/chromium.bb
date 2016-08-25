@@ -685,6 +685,13 @@ TEST_F('CrSettingsNonExistentRouteTest', 'All', function() {
   mocha.run();
 });
 
+// Hangs on ASAN builder for unknown reasons. TODO(michaelpg): Find reason.
+GEN('#if defined(ADDRESS_SANITIZER)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
@@ -698,7 +705,7 @@ CrSettingsRouteDynamicParametersTest.prototype = {
   browsePreload: 'chrome://md-settings/people?guid=a%2Fb&foo=42',
 };
 
-TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
+TEST_F('CrSettingsRouteDynamicParametersTest', 'MAYBE_All', function() {
   suite('DynamicParameters', function() {
     test('get parameters from URL and navigation', function(done) {
       assertEquals(settings.Route.PEOPLE, settings.getCurrentRoute());

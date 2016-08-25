@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="/animation/animation.html">
 
@@ -9,6 +8,9 @@
       :host {
         display: flex;
         flex-direction: column;
+        /* Margin so the box-shadow isn't clipped during animations. */
+        margin-left: 3px;
+        margin-right: 3px;
         position: relative;
       }
 
@@ -30,17 +32,19 @@
         overflow: hidden;
       }
 
+      :host(.expanding) #card,
+      :host(.collapsing) #card,
+      :host(.expanded) #card {
+        @apply(--shadow-elevation-4dp);
+      }
+
+      :host(:not(.expanding):not(.expanded)) #card {
+        /* Keep the fading-out neon-animatable inside the card. */
+        position: relative;
+      }
+
       :host(.expanded) #header {
         display: none;
-      }
-
-      :host(.frozen) #card {
-        position: fixed;
-        width: 100%;
-      }
-
-      :host(.expanded.frozen) #card {
-        position: relative;
       }
 
       :host([hidden-by-search]) {
