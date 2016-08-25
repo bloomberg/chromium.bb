@@ -24,8 +24,8 @@
 
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"

@@ -32,11 +32,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrArrayBuffer.h"
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
 #include "core/inspector/InspectorInstrumentation.h"

@@ -30,7 +30,6 @@
 
 #include "modules/webdatabase/DatabaseTracker.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"

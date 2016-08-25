@@ -30,8 +30,8 @@
 
 #include "core/loader/WorkerThreadableLoader.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerGlobalScope.h"

@@ -30,7 +30,6 @@
 
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"

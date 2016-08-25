@@ -6,8 +6,8 @@
 #define CrossThreadHolder_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Locker.h"
 #include "wtf/PassRefPtr.h"

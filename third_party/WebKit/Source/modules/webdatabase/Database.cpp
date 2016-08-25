@@ -25,7 +25,6 @@
 
 #include "modules/webdatabase/Database.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"

@@ -4,7 +4,7 @@
 
 #include "core/workers/WorkerInspectorProxy.h"
 
-#include "core/dom/CrossThreadTask.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorInstrumentation.h"
