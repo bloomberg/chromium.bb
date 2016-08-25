@@ -172,7 +172,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       if (needs_scroll_begin_) {
         // If no GSB has been sent, it will be a non-synthetic GSB.
         SendScrollBegin(scroll_update, false);
-      } else if (has_phase_info) {
+      } else if (has_phase_info && !enable_scroll_latching_) {
         // If a GSB has been sent, generate a synthetic GSB if we have phase
         // information. This should be removed once crbug.com/526463 is fully
         // implemented.
@@ -195,7 +195,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         // Generate a synthetic GSE for every update to force hit testing so
         // that the non-latching behavior is preserved. Remove once
         // crbug.com/526463 is fully implemented.
-        SendScrollEnd(scroll_update, true);
+        if (!enable_scroll_latching_)
+          SendScrollEnd(scroll_update, true);
       } else {
         scroll_end_timer_.Start(
             FROM_HERE,

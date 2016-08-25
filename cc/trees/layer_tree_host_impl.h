@@ -609,6 +609,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
   LayerTreeMutator* mutator() { return mutator_.get(); }
 
+  void ClearCurrentlyScrollingLayerForTesting() {
+    ClearCurrentlyScrollingLayer();
+  }
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

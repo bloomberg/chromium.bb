@@ -696,6 +696,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10),
                                                       InputHandler::WHEEL));
   host_impl_->ScrollEnd(EndState().get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
                                                        InputHandler::WHEEL));
   EXPECT_TRUE(did_request_redraw_);
@@ -719,6 +720,7 @@ TEST_F(LayerTreeHostImplTest, ScrollActiveOnlyAfterScrollMovement) {
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   EXPECT_TRUE(host_impl_->IsActivelyScrolling());
   host_impl_->ScrollEnd(EndState().get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->IsActivelyScrolling());
 }
 
@@ -1045,6 +1047,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
       gfx::Point(25, 25), InputHandler::TOUCHSCREEN));
   host_impl_->ScrollEnd(EndState().get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
       gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
 
@@ -1057,6 +1060,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
       gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   host_impl_->ScrollEnd(EndState().get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
       gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
 }
@@ -1119,6 +1123,7 @@ TEST_F(LayerTreeHostImplTest, ScrollHandlerPresent) {
                           InputHandler::TOUCHSCREEN);
   EXPECT_TRUE(host_impl_->scroll_affects_scroll_handler());
   host_impl_->ScrollEnd(EndState().get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
 }
 
@@ -2825,6 +2830,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     if (expecting_animations) {
@@ -2919,6 +2925,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
@@ -9363,6 +9370,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
     EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingLayer());
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
@@ -9388,6 +9396,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
     EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingLayer());
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
@@ -9445,6 +9454,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
     outer_expected += scroll_delta;
     inner_expected += scroll_delta;
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
         gfx::Point(), InputHandler::TOUCHSCREEN));
 
@@ -9517,6 +9527,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
             .did_scroll);
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
     host_impl_->ScrollEnd(EndState().get());
+    host_impl_->ClearCurrentlyScrollingLayerForTesting();
     EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
         gfx::Point(), InputHandler::TOUCHSCREEN));
   }
@@ -10100,6 +10111,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
                                                       InputHandler::WHEEL));
   std::unique_ptr<ScrollState> scroll_state_end = EndState();
   host_impl_->ScrollEnd(scroll_state_end.get());
+  host_impl_->ClearCurrentlyScrollingLayerForTesting();
   EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
                                                        InputHandler::WHEEL));
 
