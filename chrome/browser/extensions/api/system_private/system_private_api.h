@@ -8,12 +8,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 class SystemPrivateGetIncognitoModeAvailabilityFunction
-    : public ChromeSyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getIncognitoModeAvailability",
                              SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY)
@@ -22,12 +22,11 @@ class SystemPrivateGetIncognitoModeAvailabilityFunction
   ~SystemPrivateGetIncognitoModeAvailabilityFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // API function which returns the status of system update.
-class SystemPrivateGetUpdateStatusFunction
-    : public ChromeSyncExtensionFunction {
+class SystemPrivateGetUpdateStatusFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getUpdateStatus",
                              SYSTEMPRIVATE_GETUPDATESTATUS)
@@ -36,11 +35,11 @@ class SystemPrivateGetUpdateStatusFunction
   ~SystemPrivateGetUpdateStatusFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // API function which returns the Google API key.
-class SystemPrivateGetApiKeyFunction : public SyncExtensionFunction {
+class SystemPrivateGetApiKeyFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemPrivate.getApiKey", SYSTEMPRIVATE_GETAPIKEY)
 
@@ -48,7 +47,7 @@ class SystemPrivateGetApiKeyFunction : public SyncExtensionFunction {
   ~SystemPrivateGetApiKeyFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 // Dispatches systemPrivate.onBrightnessChanged event for extensions.

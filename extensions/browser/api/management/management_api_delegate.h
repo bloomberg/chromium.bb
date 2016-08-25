@@ -50,8 +50,8 @@ class ManagementAPIDelegate {
  public:
   virtual ~ManagementAPIDelegate() {}
 
-  // Launches the app |extension|. Returns true on success.
-  virtual bool LaunchAppFunctionDelegate(
+  // Launches the app |extension|.
+  virtual void LaunchAppFunctionDelegate(
       const Extension* extension,
       content::BrowserContext* context) const = 0;
 

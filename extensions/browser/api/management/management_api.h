@@ -23,17 +23,12 @@ namespace extensions {
 class ExtensionRegistry;
 class RequirementsChecker;
 
-class ManagementFunction : public SyncExtensionFunction {
- protected:
-  ~ManagementFunction() override {}
-};
-
 class AsyncManagementFunction : public AsyncExtensionFunction {
  protected:
   ~AsyncManagementFunction() override {}
 };
 
-class ManagementGetAllFunction : public ManagementFunction {
+class ManagementGetAllFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getAll", MANAGEMENT_GETALL)
 
@@ -41,10 +36,10 @@ class ManagementGetAllFunction : public ManagementFunction {
   ~ManagementGetAllFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ManagementGetFunction : public ManagementFunction {
+class ManagementGetFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.get", MANAGEMENT_GET)
 
@@ -52,10 +47,10 @@ class ManagementGetFunction : public ManagementFunction {
   ~ManagementGetFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ManagementGetSelfFunction : public ManagementFunction {
+class ManagementGetSelfFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getSelf", MANAGEMENT_GETSELF)
 
@@ -63,10 +58,11 @@ class ManagementGetSelfFunction : public ManagementFunction {
   ~ManagementGetSelfFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
+class ManagementGetPermissionWarningsByIdFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsById",
                              MANAGEMENT_GETPERMISSIONWARNINGSBYID)
@@ -75,7 +71,7 @@ class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
   ~ManagementGetPermissionWarningsByIdFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementGetPermissionWarningsByManifestFunction
@@ -95,7 +91,7 @@ class ManagementGetPermissionWarningsByManifestFunction
   bool RunAsync() override;
 };
 
-class ManagementLaunchAppFunction : public ManagementFunction {
+class ManagementLaunchAppFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.launchApp", MANAGEMENT_LAUNCHAPP)
 
@@ -103,7 +99,7 @@ class ManagementLaunchAppFunction : public ManagementFunction {
   ~ManagementLaunchAppFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
@@ -192,7 +188,7 @@ class ManagementCreateAppShortcutFunction : public AsyncManagementFunction {
   bool RunAsync() override;
 };
 
-class ManagementSetLaunchTypeFunction : public ManagementFunction {
+class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.setLaunchType",
                              MANAGEMENT_SETLAUNCHTYPE);
@@ -200,7 +196,7 @@ class ManagementSetLaunchTypeFunction : public ManagementFunction {
  protected:
   ~ManagementSetLaunchTypeFunction() override {}
 
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class ManagementGenerateAppForLinkFunction : public AsyncManagementFunction {

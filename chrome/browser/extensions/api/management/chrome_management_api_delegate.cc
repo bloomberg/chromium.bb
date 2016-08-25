@@ -171,7 +171,7 @@ ChromeManagementAPIDelegate::ChromeManagementAPIDelegate() {
 ChromeManagementAPIDelegate::~ChromeManagementAPIDelegate() {
 }
 
-bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
+void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
     const extensions::Extension* extension,
     content::BrowserContext* context) const {
   // Look at prefs to find the right launch container.
@@ -184,8 +184,6 @@ bool ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
       NEW_FOREGROUND_TAB, extensions::SOURCE_MANAGEMENT_API));
   extensions::RecordAppLaunchType(extension_misc::APP_LAUNCH_EXTENSION_API,
                                   extension->GetType());
-
-  return true;
 }
 
 GURL ChromeManagementAPIDelegate::GetFullLaunchURL(

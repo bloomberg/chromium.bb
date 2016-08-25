@@ -190,7 +190,7 @@ class NetworkingPrivateGetVisibleNetworksFunction
 
 // Implements the chrome.networkingPrivate.getEnabledNetworkTypes method.
 class NetworkingPrivateGetEnabledNetworkTypesFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateGetEnabledNetworkTypesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getEnabledNetworkTypes",
@@ -199,15 +199,16 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
  protected:
   ~NetworkingPrivateGetEnabledNetworkTypesFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
 };
 
 // Implements the chrome.networkingPrivate.getDeviceStates method.
-class NetworkingPrivateGetDeviceStatesFunction : public SyncExtensionFunction {
+class NetworkingPrivateGetDeviceStatesFunction
+    : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateGetDeviceStatesFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.getDeviceStates",
@@ -216,8 +217,8 @@ class NetworkingPrivateGetDeviceStatesFunction : public SyncExtensionFunction {
  protected:
   ~NetworkingPrivateGetDeviceStatesFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetDeviceStatesFunction);
@@ -225,7 +226,7 @@ class NetworkingPrivateGetDeviceStatesFunction : public SyncExtensionFunction {
 
 // Implements the chrome.networkingPrivate.enableNetworkType method.
 class NetworkingPrivateEnableNetworkTypeFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateEnableNetworkTypeFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.enableNetworkType",
@@ -234,8 +235,8 @@ class NetworkingPrivateEnableNetworkTypeFunction
  protected:
   ~NetworkingPrivateEnableNetworkTypeFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEnableNetworkTypeFunction);
@@ -243,7 +244,7 @@ class NetworkingPrivateEnableNetworkTypeFunction
 
 // Implements the chrome.networkingPrivate.disableNetworkType method.
 class NetworkingPrivateDisableNetworkTypeFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateDisableNetworkTypeFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.disableNetworkType",
@@ -252,8 +253,8 @@ class NetworkingPrivateDisableNetworkTypeFunction
  protected:
   ~NetworkingPrivateDisableNetworkTypeFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateDisableNetworkTypeFunction);
@@ -261,7 +262,7 @@ class NetworkingPrivateDisableNetworkTypeFunction
 
 // Implements the chrome.networkingPrivate.requestNetworkScan method.
 class NetworkingPrivateRequestNetworkScanFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   NetworkingPrivateRequestNetworkScanFunction() {}
   DECLARE_EXTENSION_FUNCTION("networkingPrivate.requestNetworkScan",
@@ -270,8 +271,8 @@ class NetworkingPrivateRequestNetworkScanFunction
  protected:
   ~NetworkingPrivateRequestNetworkScanFunction() override;
 
-  // SyncExtensionFunction overrides.
-  bool RunSync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateRequestNetworkScanFunction);

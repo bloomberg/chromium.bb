@@ -20,7 +20,7 @@ class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
   ~ChromeManagementAPIDelegate() override;
 
   // ManagementAPIDelegate.
-  bool LaunchAppFunctionDelegate(
+  void LaunchAppFunctionDelegate(
       const extensions::Extension* extension,
       content::BrowserContext* context) const override;
   GURL GetFullLaunchURL(const extensions::Extension* extension) const override;

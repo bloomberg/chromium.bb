@@ -15,7 +15,7 @@
 namespace extensions {
 
 class MetricsPrivateGetIsCrashReportingEnabledFunction
-    : public SyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.getIsCrashReportingEnabled",
                              METRICSPRIVATE_GETISCRASHRECORDINGENABLED)
@@ -24,10 +24,10 @@ class MetricsPrivateGetIsCrashReportingEnabledFunction
   ~MetricsPrivateGetIsCrashReportingEnabledFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
+class MetricsPrivateGetFieldTrialFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.getFieldTrial",
                              METRICSPRIVATE_GETFIELDTRIAL)
@@ -36,10 +36,11 @@ class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
   ~MetricsPrivateGetFieldTrialFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class MetricsPrivateGetVariationParamsFunction : public SyncExtensionFunction {
+class MetricsPrivateGetVariationParamsFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.getVariationParams",
                              METRICSPRIVATE_GETVARIATIONPARAMS)
@@ -48,10 +49,11 @@ class MetricsPrivateGetVariationParamsFunction : public SyncExtensionFunction {
   ~MetricsPrivateGetVariationParamsFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
+class MetricsPrivateRecordUserActionFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",
                              METRICSPRIVATE_RECORDUSERACTION)
@@ -60,16 +62,18 @@ class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
   ~MetricsPrivateRecordUserActionFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
-class MetricsHistogramHelperFunction : public SyncExtensionFunction {
+class MetricsHistogramHelperFunction : public UIThreadExtensionFunction {
  protected:
   ~MetricsHistogramHelperFunction() override {}
-  virtual bool RecordValue(const std::string& name,
-                           base::HistogramType type,
-                           int min, int max, size_t buckets,
-                           int sample);
+  void RecordValue(const std::string& name,
+                   base::HistogramType type,
+                   int min,
+                   int max,
+                   size_t buckets,
+                   int sample);
 };
 
 class MetricsPrivateRecordValueFunction
@@ -82,7 +86,7 @@ class MetricsPrivateRecordValueFunction
   ~MetricsPrivateRecordValueFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordSparseValueFunction
@@ -95,7 +99,7 @@ class MetricsPrivateRecordSparseValueFunction
   ~MetricsPrivateRecordSparseValueFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordPercentageFunction
@@ -108,7 +112,7 @@ class MetricsPrivateRecordPercentageFunction
   ~MetricsPrivateRecordPercentageFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordCountFunction
@@ -121,7 +125,7 @@ class MetricsPrivateRecordCountFunction
   ~MetricsPrivateRecordCountFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordSmallCountFunction
@@ -134,7 +138,7 @@ class MetricsPrivateRecordSmallCountFunction
   ~MetricsPrivateRecordSmallCountFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordMediumCountFunction
@@ -147,7 +151,7 @@ class MetricsPrivateRecordMediumCountFunction
   ~MetricsPrivateRecordMediumCountFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordTimeFunction : public MetricsHistogramHelperFunction {
@@ -159,7 +163,7 @@ class MetricsPrivateRecordTimeFunction : public MetricsHistogramHelperFunction {
   ~MetricsPrivateRecordTimeFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordMediumTimeFunction
@@ -172,7 +176,7 @@ class MetricsPrivateRecordMediumTimeFunction
   ~MetricsPrivateRecordMediumTimeFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 class MetricsPrivateRecordLongTimeFunction
@@ -185,7 +189,7 @@ class MetricsPrivateRecordLongTimeFunction
   ~MetricsPrivateRecordLongTimeFunction() override {}
 
   // ExtensionFunction:
-  bool RunSync() override;
+  ResponseAction Run() override;
 };
 
 } // namespace extensions

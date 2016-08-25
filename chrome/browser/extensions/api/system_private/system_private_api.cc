@@ -70,18 +70,19 @@ namespace extensions {
 
 namespace system_private = api::system_private;
 
-bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunSync() {
-  PrefService* prefs = GetProfile()->GetPrefs();
+ExtensionFunction::ResponseAction
+SystemPrivateGetIncognitoModeAvailabilityFunction::Run() {
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   int value = prefs->GetInteger(prefs::kIncognitoModeAvailability);
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
-  SetResult(base::MakeUnique<base::StringValue>(
-      kIncognitoModeAvailabilityStrings[value]));
-  return true;
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
+      kIncognitoModeAvailabilityStrings[value])));
 }
 
-bool SystemPrivateGetUpdateStatusFunction::RunSync() {
+ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
   std::string state;
   double download_progress = 0;
 #if defined(OS_CHROMEOS)
@@ -135,17 +136,16 @@ bool SystemPrivateGetUpdateStatusFunction::RunSync() {
     state = kNotAvailableState;
   }
 #endif
+
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kStateKey, state);
   dict->SetDouble(kDownloadProgressKey, download_progress);
-  SetResult(std::move(dict));
-
-  return true;
+  return RespondNow(OneArgument(std::move(dict)));
 }
 
-bool SystemPrivateGetApiKeyFunction::RunSync() {
-  SetResult(base::MakeUnique<base::StringValue>(google_apis::GetAPIKey()));
-  return true;
+ExtensionFunction::ResponseAction SystemPrivateGetApiKeyFunction::Run() {
+  return RespondNow(OneArgument(
+      base::MakeUnique<base::StringValue>(google_apis::GetAPIKey())));
 }
 
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {
