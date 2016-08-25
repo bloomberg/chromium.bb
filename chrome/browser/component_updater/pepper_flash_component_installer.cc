@@ -247,7 +247,7 @@ void FlashComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {
 }
 
 std::string FlashComponentInstallerTraits::GetName() const {
-  return "pepper_flash";
+  return "Adobe Flash Player";
 }
 
 update_client::InstallerAttributes
