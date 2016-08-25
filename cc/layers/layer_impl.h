@@ -30,7 +30,6 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/output/filter_operations.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_priority.h"
@@ -94,7 +93,6 @@ class CC_EXPORT LayerImpl {
 
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
-  void OnFilterAnimated(const FilterOperations& filters);
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
   void OnTransformIsCurrentlyAnimatingChanged(bool is_currently_animating);
   void OnTransformIsPotentiallyAnimatingChanged(bool has_potential_animation);

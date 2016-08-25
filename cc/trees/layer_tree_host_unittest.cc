@@ -983,7 +983,8 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
                          ->LayerById(child_->id())
                          ->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
-        root->OnFilterAnimated(filters);
+        impl->active_tree()->property_trees()->effect_tree.OnFilterAnimated(
+            filters, root->effect_tree_index(), impl->active_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case END:
@@ -1077,7 +1078,8 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 4:
         EXPECT_EQ(node->opacity, 0.25f);
-        root->OnFilterAnimated(brightness_filter_);
+        impl->sync_tree()->property_trees()->effect_tree.OnFilterAnimated(
+            brightness_filter_, root->effect_tree_index(), impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 5:
@@ -1086,7 +1088,8 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         break;
       case 6:
         EXPECT_EQ(node->filters, brightness_filter_);
-        root->OnFilterAnimated(brightness_filter_);
+        impl->sync_tree()->property_trees()->effect_tree.OnFilterAnimated(
+            brightness_filter_, root->effect_tree_index(), impl->sync_tree());
         PostSetNeedsCommitToMainThread();
         break;
       case 7:

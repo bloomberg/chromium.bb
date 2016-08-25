@@ -941,6 +941,20 @@ void EffectTree::OnOpacityAnimated(float opacity,
   layer_tree_impl->set_needs_update_draw_properties();
 }
 
+void EffectTree::OnFilterAnimated(const FilterOperations& filters,
+                                  int id,
+                                  LayerTreeImpl* layer_tree_impl) {
+  EffectNode* node = Node(id);
+  layer_tree_impl->AddToFilterAnimationsMap(node->owner_id, filters);
+  if (node->filters == filters)
+    return;
+  node->filters = filters;
+  node->effect_changed = true;
+  property_trees()->changed = true;
+  property_trees()->effect_tree.set_needs_update(true);
+  layer_tree_impl->set_needs_update_draw_properties();
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);

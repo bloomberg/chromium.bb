@@ -14,6 +14,7 @@
 #include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
+#include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -335,6 +336,9 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateSurfaceContentsScale(EffectNode* node);
 
   void OnOpacityAnimated(float opacity, int id, LayerTreeImpl* layer_tree_impl);
+  void OnFilterAnimated(const FilterOperations& filters,
+                        int id,
+                        LayerTreeImpl* layer_tree_impl);
 
   void UpdateEffects(int id);
 

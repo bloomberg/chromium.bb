@@ -582,7 +582,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   child->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child->OnFilterAnimated(filters);
+  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
+      filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root);
   root_damage_rect =
           root->render_surface()->damage_tracker()->current_damage_rect();
@@ -632,7 +633,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
   child->test_properties()->transform = transform;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
-  child->OnFilterAnimated(filters);
+  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
+      filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root);
   root_damage_rect =
       root->render_surface()->damage_tracker()->current_damage_rect();
@@ -687,7 +689,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForHighDPIImageFilter) {
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   int device_scale_factor = 2;
   EmulateDrawingOneFrame(root, device_scale_factor);
-  child->OnFilterAnimated(filters);
+  child->layer_tree_impl()->property_trees()->effect_tree.OnFilterAnimated(
+      filters, child->effect_tree_index(), child->layer_tree_impl());
   EmulateDrawingOneFrame(root, device_scale_factor);
   root_damage_rect =
       root->render_surface()->damage_tracker()->current_damage_rect();

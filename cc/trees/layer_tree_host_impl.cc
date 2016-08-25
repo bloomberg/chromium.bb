@@ -3955,9 +3955,12 @@ void LayerTreeHostImpl::SetTreeLayerFilterMutated(
   if (!tree)
     return;
 
-  LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer)
-    layer->OnFilterAnimated(filters);
+  const int layer_id = tree->LayerIdByElementId(element_id);
+  const int effect_id =
+      tree->property_trees()->effect_id_to_index_map[layer_id];
+  if (effect_id != EffectTree::kInvalidNodeId)
+    tree->property_trees()->effect_tree.OnFilterAnimated(filters, effect_id,
+                                                         tree);
 }
 
 void LayerTreeHostImpl::SetTreeLayerOpacityMutated(ElementId element_id,

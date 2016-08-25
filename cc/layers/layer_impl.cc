@@ -542,22 +542,6 @@ gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
 
-void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
-  layer_tree_impl()->AddToFilterAnimationsMap(id(), filters);
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  DCHECK(
-      property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()));
-  EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
-  if (node->filters == filters)
-    return;
-  node->filters = filters;
-  node->effect_changed = true;
-  property_trees->changed = true;
-  property_trees->effect_tree.set_needs_update(true);
-  SetNeedsPushProperties();
-  layer_tree_impl()->set_needs_update_draw_properties();
-}
-
 void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   // Only layers in the active tree should need to do anything here, since
   // layers in the pending tree will find out about these changes as a
