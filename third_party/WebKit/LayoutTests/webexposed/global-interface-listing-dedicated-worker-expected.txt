@@ -1249,6 +1249,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter appCodeName
 [Worker]     getter appName
 [Worker]     getter appVersion
+[Worker]     getter budget
 [Worker]     getter connection
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine

@@ -1236,6 +1236,7 @@ interface WorkerNavigator
     getter appCodeName
     getter appName
     getter appVersion
+    getter budget
     getter connection
     getter hardwareConcurrency
     getter onLine
