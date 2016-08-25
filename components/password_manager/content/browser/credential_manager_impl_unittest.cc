@@ -40,6 +40,8 @@ using content::BrowserContext;
 using content::WebContents;
 
 using testing::_;
+using testing::Pointee;
+using testing::UnorderedElementsAre;
 
 namespace password_manager {
 
@@ -97,7 +99,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
       const GURL& origin,
-      const CredentialsCallback& callback) {
+      const CredentialsCallback& callback) override {
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
     const autofill::PasswordForm* form =
         local_forms.empty() ? federated_forms[0] : local_forms[0];
@@ -695,15 +697,63 @@ TEST_F(CredentialManagerImplTest,
 }
 
 TEST_F(CredentialManagerImplTest,
-       CredentialManagerOnRequestCredentialWithEmptyAndNonUsernames) {
+       CredentialManagerOnRequestCredentialWithEmptyAndNonemptyUsernames) {
   store_->AddLogin(form_);
   autofill::PasswordForm empty = form_;
   empty.username_value.clear();
   store_->AddLogin(empty);
+  autofill::PasswordForm duplicate = form_;
+  duplicate.username_element = base::ASCIIToUTF16("different_username_element");
+  store_->AddLogin(duplicate);
 
   std::vector<GURL> federations;
   ExpectZeroClickSignInSuccess(false, true, federations,
                                CredentialType::CREDENTIAL_TYPE_PASSWORD);
+}
+
+TEST_F(CredentialManagerImplTest,
+       CredentialManagerOnRequestCredentialWithDuplicates) {
+  // Add 7 credentials. Two buckets of duplicates and one empty username. There
+  // should be just two in the account chooser.
+  form_.preferred = true;
+  form_.username_element = base::ASCIIToUTF16("username_element");
+  store_->AddLogin(form_);
+  autofill::PasswordForm empty = form_;
+  empty.username_value.clear();
+  store_->AddLogin(empty);
+  autofill::PasswordForm duplicate = form_;
+  duplicate.username_element = base::ASCIIToUTF16("username_element1");
+  duplicate.is_public_suffix_match = true;
+  store_->AddLogin(duplicate);
+  duplicate = form_;
+  duplicate.username_element = base::ASCIIToUTF16("username_element2");
+  duplicate.preferred = false;
+  store_->AddLogin(duplicate);
+
+  origin_path_form_.preferred = true;
+  store_->AddLogin(origin_path_form_);
+  duplicate = origin_path_form_;
+  duplicate.username_element = base::ASCIIToUTF16("username_element3");
+  duplicate.is_public_suffix_match = true;
+  store_->AddLogin(duplicate);
+  duplicate = origin_path_form_;
+  duplicate.username_element = base::ASCIIToUTF16("username_element4");
+  duplicate.preferred = false;
+  store_->AddLogin(duplicate);
+
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
+                            UnorderedElementsAre(Pointee(form_),
+                                                 Pointee(origin_path_form_)),
+                            testing::IsEmpty(), _, _));
+
+  bool called = false;
+  mojom::CredentialManagerError error;
+  base::Optional<CredentialInfo> credential;
+  std::vector<GURL> federations;
+  CallGet(false, true, federations,
+          base::Bind(&GetCredentialCallback, &called, &error, &credential));
+
+  RunAllPendingTasks();
 }
 
 TEST_F(CredentialManagerImplTest,
