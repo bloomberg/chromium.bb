@@ -23,7 +23,7 @@ const base::Feature kOfflinePagesBackgroundLoadingFeature {
 };
 
 const base::Feature kOfflinePagesCTFeature {
-   "OfflinePagesCT", base::FEATURE_DISABLED_BY_DEFAULT
+   "OfflinePagesCT", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 const base::Feature kOfflinePagesSharingFeature{
