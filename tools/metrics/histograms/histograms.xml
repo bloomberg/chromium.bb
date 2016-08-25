@@ -92876,6 +92876,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="15" label="FOREIGN_FETCH"/>
   <int value="16" label="FETCH_WAITUNTIL"/>
   <int value="17" label="FOREIGN_FETCH_WAITUNTIL"/>
+  <int value="18" label="NAVIGATION_HINT_LINK_MOUSE_DOWN"/>
+  <int value="19" label="NAVIGATION_HINT_LINK_TAP_UNCONFIRMED"/>
+  <int value="20" label="NAVIGATION_HINT_LINK_TAP_DOWN"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">
