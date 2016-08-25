@@ -353,8 +353,7 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
   return nullptr;
 }
 
-void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
-    BluetoothDevice::ConnectErrorCode error_code) {
+void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {
   SetGattServicesDiscoveryComplete(false);
   // Removing all services at once to ensure that calling GetGattService on
   // removed service in GattServiceRemoved returns null.
@@ -362,10 +361,16 @@ void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
   gatt_services_swapped.swap(gatt_services_);
   gatt_services_swapped.clear();
   device_uuids_.ClearServiceUUIDs();
+  // There are two cases in which this function will be called:
+  //   1. When the connection to the device breaks (either because
+  //      we closed it or the device closed it).
+  //   2. When we cancel a pending connection request.
   if (create_gatt_connection_error_callbacks_.empty()) {
-    // TODO(http://crbug.com/585897): Need to pass the error.
+    // If there are no pending callbacks then the connection broke (#1).
     DidDisconnectGatt();
-  } else {
-    DidFailToConnectGatt(error_code);
+    return;
   }
+  // Else we canceled the connection request (#2).
+  // TODO(http://crbug.com/585897): Need to pass the error.
+  DidFailToConnectGatt(BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
 }
