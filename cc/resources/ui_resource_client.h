@@ -23,6 +23,10 @@ class CC_EXPORT UIResourceClient {
   // delete a UIResourceClient object after DeleteUIResource has been called for
   // all IDs associated with it.  A valid bitmap always must be returned but it
   // doesn't need to be the same size or format as the original.
+  // The bitmap's dimensions must *not* exceed the maximum texture size
+  // supported by the GPU. For resources that are not bigger than the viewport
+  // this should not be a problem, but for much larger resources, the caller is
+  // responsible for ensuring this.
   virtual UIResourceBitmap GetBitmap(UIResourceId uid,
                                      bool resource_lost) = 0;
   virtual ~UIResourceClient() {}

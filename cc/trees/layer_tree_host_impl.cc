@@ -3754,20 +3754,67 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       format = ETC1;
       break;
   }
+
+  const gfx::Size source_size = bitmap.GetSize();
+  gfx::Size upload_size = bitmap.GetSize();
+  bool scaled = false;
+
+  int max_texture_size = resource_provider_->max_texture_size();
+  if (source_size.width() > max_texture_size ||
+      source_size.height() > max_texture_size) {
+    // Must resize the bitmap to fit within the max texture size.
+    scaled = true;
+    int edge = std::max(source_size.width(), source_size.height());
+    float scale = nextafterf(static_cast<float>(max_texture_size) / edge, 0);
+    DCHECK_LT(scale, 1.f);
+    upload_size = gfx::ScaleToFlooredSize(source_size, scale, scale);
+  }
+
   id = resource_provider_->CreateResource(
-      bitmap.GetSize(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
+      upload_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
       gfx::ColorSpace());
+
+  if (!scaled) {
+    AutoLockUIResourceBitmap bitmap_lock(bitmap);
+    auto* pixels = bitmap_lock.GetPixels();
+    resource_provider_->CopyToResource(id, pixels, source_size);
+  } else {
+    // Only support auto-resizing for N32 textures (since this is primarily for
+    // scrollbars). Users of other types need to ensure they are not too big.
+    DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
+
+    float canvas_scale_x =
+        upload_size.width() / static_cast<float>(source_size.width());
+    float canvas_scale_y =
+        upload_size.height() / static_cast<float>(source_size.height());
+
+    // Uses kPremul_SkAlphaType since that is what SkBitmap's allocN32Pixels
+    // makes, and we only support the RGBA8 format here.
+    SkImageInfo info = SkImageInfo::MakeN32(
+        source_size.width(), source_size.height(), kPremul_SkAlphaType);
+    int row_bytes = source_size.width() * 4;
+
+    AutoLockUIResourceBitmap bitmap_lock(bitmap);
+    SkBitmap source_bitmap;
+    source_bitmap.setInfo(info, row_bytes);
+    source_bitmap.setPixels(const_cast<uint8_t*>(bitmap_lock.GetPixels()));
+
+    // This applies the scale to draw the |bitmap| into |scaled_bitmap|.
+    SkBitmap scaled_bitmap;
+    scaled_bitmap.allocN32Pixels(upload_size.width(), upload_size.height());
+    SkCanvas scaled_canvas(scaled_bitmap);
+    scaled_canvas.scale(canvas_scale_x, canvas_scale_y);
+    scaled_canvas.drawBitmap(source_bitmap, 0, 0);
+
+    SkAutoLockPixels scaled_bitmap_lock(scaled_bitmap);
+    auto* pixels = static_cast<uint8_t*>(scaled_bitmap.getPixels());
+    resource_provider_->CopyToResource(id, pixels, upload_size);
+  }
 
   UIResourceData data;
   data.resource_id = id;
-  data.size = bitmap.GetSize();
   data.opaque = bitmap.GetOpaque();
-
   ui_resource_map_[uid] = data;
-
-  AutoLockUIResourceBitmap bitmap_lock(bitmap);
-  resource_provider_->CopyToResource(id, bitmap_lock.GetPixels(),
-                                     bitmap.GetSize());
 
   resource_provider_->GenerateSyncTokenForResource(id);
   MarkUIResourceNotEvicted(uid);
