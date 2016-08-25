@@ -28,7 +28,8 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
  public:
   OfflinePageDownloadBridge(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
-                            DownloadUIAdapter* download_ui_adapter);
+                            DownloadUIAdapter* download_ui_adapter,
+                            content::BrowserContext* browser_context);
   ~OfflinePageDownloadBridge() override;
 
   static bool Register(JNIEnv* env);
@@ -62,6 +63,18 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_tab);
 
+  void CancelDownload(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jstring>& j_guid);
+
+  void PauseDownload(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& j_guid);
+
+  void ResumeDownload(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jstring>& j_guid);
+
   // DownloadUIAdapter::Observer implementation.
   void ItemsLoaded() override;
   void ItemAdded(const DownloadUIItem& item) override;
@@ -76,6 +89,8 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
   JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.
   DownloadUIAdapter* download_ui_adapter_;
+  // Not owned.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageDownloadBridge);
 };

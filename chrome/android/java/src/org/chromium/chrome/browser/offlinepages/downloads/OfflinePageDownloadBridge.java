@@ -129,14 +129,19 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     @Override
     public void cancelDownload(String downloadGuid, boolean isOffTheRecord,
             boolean isNotificationDismissed) {
+        nativeCancelDownload(mNativeOfflinePageDownloadBridge, downloadGuid);
     }
 
     @Override
     public void pauseDownload(String downloadGuid, boolean isOffTheRecord) {
+        nativePauseDownload(mNativeOfflinePageDownloadBridge, downloadGuid);
     }
 
     @Override
     public void resumeDownload(DownloadItem item, boolean hasUserGesture) {
+        if (hasUserGesture) {
+            nativeResumeDownload(mNativeOfflinePageDownloadBridge, item.getId());
+        }
     }
 
     /**
@@ -262,6 +267,9 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
             long nativeOfflinePageDownloadBridge, List<OfflinePageDownloadItem> items);
     native OfflinePageDownloadItem nativeGetItemByGuid(
             long nativeOfflinePageDownloadBridge, String guid);
+    native void nativeCancelDownload(long nativeOfflinePageDownloadBridge, String guid);
+    native void nativePauseDownload(long nativeOfflinePageDownloadBridge, String guid);
+    native void nativeResumeDownload(long nativeOfflinePageDownloadBridge, String guid);
     native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native String nativeGetOfflineUrlByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab);

@@ -177,10 +177,12 @@ class RequestCoordinator : public KeyedService,
 
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
+      SavePageStatus status,
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 
   void HandleRemovedRequests(
+      SavePageStatus status,
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 

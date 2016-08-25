@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -22,6 +24,7 @@
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
 #include "net/base/filename_util.h"
@@ -64,14 +67,71 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
       ConvertUTF8ToJavaString(env, item.target_path.value()),
       item.start_time.ToJavaTime(), item.total_bytes);
 }
+
+std::vector<int64_t> FilterRequestsByGuid(
+    const std::vector<SavePageRequest>& requests,
+    const std::string& guid) {
+  std::vector<int64_t> request_ids;
+  for (const SavePageRequest& request : requests) {
+    if (request.client_id().id == guid &&
+        (request.client_id().name_space == kDownloadNamespace ||
+         request.client_id().name_space == kAsyncNamespace)) {
+      request_ids.push_back(request.request_id());
+    }
+  }
+  return request_ids;
+}
+
+void CancelRequestCallback(const RequestQueue::UpdateMultipleRequestResults&) {
+  // Results ignored here, as UI uses observer to update itself.
+}
+
+void CancelRequestsContinuation(content::BrowserContext* browser_context,
+                                const std::string& guid,
+                                const std::vector<SavePageRequest>& requests) {
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+  if (coordinator) {
+    std::vector<int64_t> request_ids = FilterRequestsByGuid(requests, guid);
+    coordinator->RemoveRequests(request_ids,
+                                base::Bind(&CancelRequestCallback));
+  } else {
+    LOG(WARNING) << "CancelRequestsContinuation has no valid coordinator.";
+  }
+}
+
+void PauseRequestsContinuation(content::BrowserContext* browser_context,
+                               const std::string& guid,
+                               const std::vector<SavePageRequest>& requests) {
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+  if (coordinator)
+    coordinator->PauseRequests(FilterRequestsByGuid(requests, guid));
+  else
+    LOG(WARNING) << "PauseRequestsContinuation has no valid coordinator.";
+}
+
+void ResumeRequestsContinuation(content::BrowserContext* browser_context,
+                                const std::string& guid,
+                                const std::vector<SavePageRequest>& requests) {
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+  if (coordinator)
+    coordinator->ResumeRequests(FilterRequestsByGuid(requests, guid));
+  else
+    LOG(WARNING) << "ResumeRequestsContinuation has no valid coordinator.";
+}
+
 }  // namespace
 
 OfflinePageDownloadBridge::OfflinePageDownloadBridge(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    DownloadUIAdapter* download_ui_adapter)
+    DownloadUIAdapter* download_ui_adapter,
+    content::BrowserContext* browser_context)
     : weak_java_ref_(env, obj),
-      download_ui_adapter_(download_ui_adapter) {
+      download_ui_adapter_(download_ui_adapter),
+      browser_context_(browser_context) {
   DCHECK(download_ui_adapter_);
   download_ui_adapter_->AddObserver(this);
 }
@@ -177,7 +237,7 @@ void OfflinePageDownloadBridge::StartDownload(
   // Page is ready, capture it right from the tab.
   offline_pages::OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(
-      tab->GetProfile()->GetOriginalProfile());
+          tab->GetProfile()->GetOriginalProfile());
   if (!offline_page_model)
     return;
 
@@ -194,6 +254,54 @@ void OfflinePageDownloadBridge::StartDownload(
   offline_page_model->SavePage(
       url, client_id, 0ul, std::move(archiver),
       base::Bind(&OfflinePageDownloadBridge::SavePageCallback, item));
+}
+
+void OfflinePageDownloadBridge::CancelDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_guid) {
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
+
+  if (coordinator) {
+    coordinator->GetAllRequests(
+        base::Bind(&CancelRequestsContinuation, browser_context_, guid));
+  } else {
+    LOG(WARNING) << "CancelDownload has no valid coordinator.";
+  }
+}
+
+void OfflinePageDownloadBridge::PauseDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_guid) {
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
+
+  if (coordinator) {
+    coordinator->GetAllRequests(
+        base::Bind(&PauseRequestsContinuation, browser_context_, guid));
+  } else {
+    LOG(WARNING) << "PauseDownload has no valid coordinator.";
+  }
+}
+
+void OfflinePageDownloadBridge::ResumeDownload(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_guid) {
+  std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  RequestCoordinator* coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(browser_context_);
+
+  if (coordinator) {
+    coordinator->GetAllRequests(
+        base::Bind(&ResumeRequestsContinuation, browser_context_, guid));
+  } else {
+    LOG(WARNING) << "ResumeDownload has no valid coordinator.";
+  }
 }
 
 void OfflinePageDownloadBridge::ItemsLoaded() {
@@ -234,15 +342,17 @@ void OfflinePageDownloadBridge::ItemUpdated(const DownloadUIItem& item) {
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jobject>& j_profile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  content::BrowserContext* browser_context =
+      ProfileAndroid::FromProfileAndroid(j_profile);
+
   OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(profile);
+      OfflinePageModelFactory::GetForBrowserContext(browser_context);
 
   DownloadUIAdapter* adapter =
       DownloadUIAdapter::FromOfflinePageModel(offline_page_model);
 
   return reinterpret_cast<jlong>(
-      new OfflinePageDownloadBridge(env, obj, adapter));
+      new OfflinePageDownloadBridge(env, obj, adapter, browser_context));
 }
 
 }  // namespace android

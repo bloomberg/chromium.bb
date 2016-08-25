@@ -158,7 +158,8 @@ void RequestCoordinator::RemoveRequests(
   queue_->RemoveRequests(
       request_ids,
       base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 SavePageStatus::REMOVED));
   if (canceled)
     TryNextRequest();
 }
@@ -215,17 +216,19 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
+    SavePageStatus status,
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   callback.Run(results);
-  HandleRemovedRequests(results, requests);
+  HandleRemovedRequests(status, results, requests);
 }
 
 void RequestCoordinator::HandleRemovedRequests(
+    SavePageStatus status,
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
   for (SavePageRequest request : requests)
-    NotifyCompleted(request, SavePageStatus::REMOVED);
+    NotifyCompleted(request, status);
 }
 
 void RequestCoordinator::StopProcessing() {
@@ -367,9 +370,9 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     std::vector<int64_t> remove_requests;
     remove_requests.push_back(request.request_id());
     queue_->RemoveRequests(
-        remove_requests, base::Bind(&RequestCoordinator::HandleRemovedRequests,
-                                    weak_ptr_factory_.GetWeakPtr()));
-    NotifyCompleted(request, SavePageStatus::SUCCESS);
+        remove_requests,
+        base::Bind(&RequestCoordinator::HandleRemovedRequests,
+                   weak_ptr_factory_.GetWeakPtr(), SavePageStatus::SUCCESS));
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeeded max retries. The +1
@@ -380,8 +383,8 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     remove_requests.push_back(request.request_id());
     queue_->RemoveRequests(
         remove_requests, base::Bind(&RequestCoordinator::HandleRemovedRequests,
-                                    weak_ptr_factory_.GetWeakPtr()));
-    NotifyCompleted(request, SavePageStatus::RETRY_COUNT_EXCEEDED);
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    SavePageStatus::RETRY_COUNT_EXCEEDED));
   } else {
     // If we failed, but are not over the limit, update the request in the
     // queue.
