@@ -27,7 +27,6 @@ class PhotoCapabilities {
     public final int focusMode;
     public final int exposureMode;
 
-    // TODO(mcasas): Add a PhotoCapabilitiesBuilder to this class.
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
             int minZoom, int currentZoom, int focusMode, int exposureMode) {
@@ -115,5 +114,100 @@ class PhotoCapabilities {
     @CalledByNative
     public int getExposureMode() {
         return exposureMode;
+    }
+
+    public static class Builder {
+        public int maxIso;
+        public int minIso;
+        public int currentIso;
+        public int maxHeight;
+        public int minHeight;
+        public int currentHeight;
+        public int maxWidth;
+        public int minWidth;
+        public int currentWidth;
+        public int maxZoom;
+        public int minZoom;
+        public int currentZoom;
+        public int focusMode;
+        public int exposureMode;
+
+        public Builder() {}
+
+        public Builder setMaxIso(int maxIso) {
+            this.maxIso = maxIso;
+            return this;
+        }
+
+        public Builder setMinIso(int minIso) {
+            this.minIso = minIso;
+            return this;
+        }
+
+        public Builder setCurrentIso(int currentIso) {
+            this.currentIso = currentIso;
+            return this;
+        }
+
+        public Builder setMaxHeight(int maxHeight) {
+            this.maxHeight = maxHeight;
+            return this;
+        }
+
+        public Builder setMinHeight(int minHeight) {
+            this.minHeight = minHeight;
+            return this;
+        }
+
+        public Builder setCurrentHeight(int currentHeight) {
+            this.currentHeight = currentHeight;
+            return this;
+        }
+
+        public Builder setMaxWidth(int maxWidth) {
+            this.maxWidth = maxWidth;
+            return this;
+        }
+
+        public Builder setMinWidth(int minWidth) {
+            this.minWidth = minWidth;
+            return this;
+        }
+
+        public Builder setCurrentWidth(int currentWidth) {
+            this.currentWidth = currentWidth;
+            return this;
+        }
+
+        public Builder setMaxZoom(int maxZoom) {
+            this.maxZoom = maxZoom;
+            return this;
+        }
+
+        public Builder setMinZoom(int minZoom) {
+            this.minZoom = minZoom;
+            return this;
+        }
+
+        public Builder setCurrentZoom(int currentZoom) {
+            this.currentZoom = currentZoom;
+            return this;
+        }
+
+        public Builder setFocusMode(int focusMode) {
+            this.focusMode = focusMode;
+            return this;
+        }
+
+        public Builder setExposureMode(int exposureMode) {
+            this.exposureMode = exposureMode;
+            return this;
+        }
+
+        public PhotoCapabilities build() {
+            return new PhotoCapabilities(maxIso, minIso, currentIso, maxHeight, minHeight,
+                    currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
+                    focusMode, exposureMode);
+        }
     }
 }

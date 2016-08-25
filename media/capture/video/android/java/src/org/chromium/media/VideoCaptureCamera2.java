@@ -572,6 +572,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     public PhotoCapabilities getPhotoCapabilities() {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        PhotoCapabilities.Builder builder = new PhotoCapabilities.Builder();
 
         int minIso = 0;
         int maxIso = 0;
@@ -581,7 +582,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             minIso = iso_range.getLower();
             maxIso = iso_range.getUpper();
         }
-        final int currentIso = mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY);
+        builder.setMinIso(minIso).setMaxIso(maxIso);
+        builder.setCurrentIso(mPreviewRequest.get(CaptureRequest.SENSOR_SENSITIVITY));
 
         final StreamConfigurationMap streamMap =
                 cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
@@ -596,8 +598,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
             if (size.getWidth() > maxWidth) maxWidth = size.getWidth();
             if (size.getHeight() > maxHeight) maxHeight = size.getHeight();
         }
-        final int currentHeight = (mPhotoHeight > 0) ? mPhotoHeight : mCaptureFormat.getHeight();
-        final int currentWidth = (mPhotoWidth > 0) ? mPhotoWidth : mCaptureFormat.getWidth();
+        builder.setMinHeight(minHeight).setMaxHeight(maxHeight);
+        builder.setMinWidth(minWidth).setMaxWidth(maxWidth);
+        builder.setCurrentHeight((mPhotoHeight > 0) ? mPhotoHeight : mCaptureFormat.getHeight());
+        builder.setCurrentWidth((mPhotoWidth > 0) ? mPhotoWidth : mCaptureFormat.getWidth());
 
         // The Min and Max zoom are returned as x100 by the API to avoid using floating point. There
         // is no min-zoom per se, so clamp it to always 100 (TODO(mcasas): make const member).
@@ -608,6 +612,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 * cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
                           .width()
                 / mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width();
+        builder.setMinZoom(minZoom).setMaxZoom(maxZoom).setCurrentZoom(currentZoom);
 
         final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
         // Classify the Focus capabilities. In CONTINUOUS and SINGLE_SHOT, we can call
@@ -624,6 +629,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } else {
             assert jniFocusMode == CameraMetadata.CONTROL_AF_MODE_EDOF;
         }
+        builder.setFocusMode(jniFocusMode);
 
         int jniExposureMode = AndroidMeteringMode.CONTINUOUS;
         if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_MODE)
@@ -633,12 +639,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
             jniExposureMode = AndroidMeteringMode.FIXED;
         }
+        builder.setFocusMode(jniExposureMode);
+
         // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
         // values using CONTROL_AE_COMPENSATION_RANGE.
 
-        return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
-                currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
-                jniFocusMode, jniExposureMode);
+        return builder.build();
     }
 
     @Override

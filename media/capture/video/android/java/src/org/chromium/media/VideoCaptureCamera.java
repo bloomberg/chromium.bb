@@ -301,14 +301,13 @@ public abstract class VideoCaptureCamera
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
         final android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
+        PhotoCapabilities.Builder builder = new PhotoCapabilities.Builder();
         Log.i(TAG, " CAM params: %s", parameters.flatten());
 
         // Before the Camera2 API there was no official way to retrieve the supported, if any, ISO
         // values from |parameters|; some platforms had "iso-values", others "iso-mode-values" etc.
         // Ignore them.
-        final int maxIso = 0;
-        final int currentIso = 0;
-        final int minIso = 0;
+        builder.setMinIso(0).setMaxIso(0).setCurrentIso(0);
 
         List<android.hardware.Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
         int minWidth = Integer.MAX_VALUE;
@@ -321,7 +320,11 @@ public abstract class VideoCaptureCamera
             if (size.width > maxWidth) maxWidth = size.width;
             if (size.height > maxHeight) maxHeight = size.height;
         }
+        builder.setMinHeight(minHeight).setMaxHeight(maxHeight);
+        builder.setMinWidth(minWidth).setMaxWidth(maxWidth);
         final android.hardware.Camera.Size currentSize = parameters.getPreviewSize();
+        builder.setCurrentHeight(currentSize.height);
+        builder.setCurrentWidth(currentSize.width);
 
         int maxZoom = 0;
         int currentZoom = 0;
@@ -332,6 +335,7 @@ public abstract class VideoCaptureCamera
             currentZoom = 100 + 100 * parameters.getZoom();
             minZoom = parameters.getZoomRatios().get(0);
         }
+        builder.setMinZoom(minZoom).setMaxZoom(maxZoom).setCurrentZoom(currentZoom);
 
         Log.d(TAG, "parameters.getFocusMode(): %s", parameters.getFocusMode());
         final String focusMode = parameters.getFocusMode();
@@ -351,6 +355,7 @@ public abstract class VideoCaptureCamera
                 || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)) {
             jniFocusMode = AndroidMeteringMode.FIXED;
         }
+        builder.setFocusMode(jniFocusMode);
 
         // Exposure is usually continuously updated except it not available at all, or if the
         // exposure compensation is locked, in which case we consider it as FIXED.
@@ -360,12 +365,12 @@ public abstract class VideoCaptureCamera
         if (parameters.isAutoExposureLockSupported() && parameters.getAutoExposureLock()) {
             jniExposureMode = AndroidMeteringMode.FIXED;
         }
+        builder.setExposureMode(jniExposureMode);
+
         // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
         // values using getMinExposureCompensation() and getMaxExposureCompensation().
 
-        return new PhotoCapabilities(minIso, maxIso, currentIso, maxHeight, minHeight,
-                currentSize.height, maxWidth, minWidth, currentSize.width, maxZoom, minZoom,
-                currentZoom, jniFocusMode, jniExposureMode);
+        return builder.build();
     }
 
     @Override
