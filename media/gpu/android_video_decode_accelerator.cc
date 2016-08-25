@@ -259,7 +259,7 @@ class AVDAManager {
     // guaranteed to not run StopThreadTask() when the thread is hung because if
     // an AVDA queues tasks after DoNothing(), the StopThreadTask() reply will
     // be canceled by invalidating its weak pointer.
-    if (thread_avda_instances_.empty() &&
+    if (thread_avda_instances_.empty() && construction_thread_.IsRunning() &&
         !hang_detector_.IsThreadLikelyHung()) {
       construction_thread_.task_runner()->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing),
