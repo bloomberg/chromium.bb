@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGConstraintSpace_h
-#define NGConstraintSpace_h
+#ifndef NGDerivedConstraintSpace_h
+#define NGDerivedConstraintSpace_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -41,4 +41,4 @@ class CORE_EXPORT NGDerivedConstraintSpace final : public NGConstraintSpace {
 
 }  // namespace blink
 
-#endif  // NGConstraintSpace_h
+#endif  // NGDerivedConstraintSpace_h
