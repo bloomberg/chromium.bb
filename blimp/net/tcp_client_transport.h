@@ -23,7 +23,7 @@ class StreamSocket;
 
 namespace blimp {
 
-class BlimpConnection;
+class MessagePort;
 
 // BlimpTransport which creates a TCP connection to one of the specified
 // |addresses| on each call to Connect().
@@ -37,7 +37,7 @@ class BLIMP_NET_EXPORT TCPClientTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
-  std::unique_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<MessagePort> TakeMessagePort() override;
   const char* GetName() const override;
 
  protected:

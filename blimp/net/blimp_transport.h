@@ -13,6 +13,7 @@
 namespace blimp {
 
 class BlimpConnection;
+class MessagePort;
 
 // An interface which encapsulates the transport-specific code for
 // establishing network connections between the client and engine.
@@ -24,17 +25,16 @@ class BlimpTransport {
 
   // Initiate or listen for a connection.
   //
-  // |callback| will be invoked with the connection outcome:
-  //   * net::OK if a connection is established successful, the BlimpConnection
-  //     can be taken by calling TakeConnection().
-  //   * net::ERR_IO_PENDING will never be the outcome
-  //   * Other error code indicates no connection was established.
+  // |callback| is passed net::OK if a connection was successfully
+  // established. The connection's MessagePort can then be taken by calling
+  // TakeMessagePort().
+  // All other values indicate a connection error.
   virtual void Connect(const net::CompletionCallback& callback) = 0;
 
-  // Returns the connection object after a successful Connect().
-  virtual std::unique_ptr<BlimpConnection> TakeConnection() = 0;
+  // Returns the MessagePort of a successfully established connection.
+  virtual std::unique_ptr<MessagePort> TakeMessagePort() = 0;
 
-  // Gets transport name, e.g. "TCP", "SSL", "mock", etc.
+  // Gets the transport name, e.g. "TCP", "SSL", "mock", etc.
   virtual const char* GetName() const = 0;
 };
 

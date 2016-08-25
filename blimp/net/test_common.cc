@@ -11,6 +11,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/common.h"
+#include "blimp/net/message_port.h"
 #include "net/base/io_buffer.h"
 
 namespace blimp {
@@ -23,8 +24,8 @@ MockTransport::MockTransport() {}
 
 MockTransport::~MockTransport() {}
 
-std::unique_ptr<BlimpConnection> MockTransport::TakeConnection() {
-  return base::WrapUnique(TakeConnectionPtr());
+std::unique_ptr<MessagePort> MockTransport::TakeMessagePort() {
+  return base::WrapUnique(TakeMessagePortPtr());
 }
 
 const char* MockTransport::GetName() const {

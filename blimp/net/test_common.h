@@ -17,6 +17,7 @@
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/connection_error_observer.h"
 #include "blimp/net/connection_handler.h"
+#include "blimp/net/message_port.h"
 #include "blimp/net/packet_reader.h"
 #include "blimp/net/packet_writer.h"
 #include "net/socket/stream_socket.h"
@@ -139,9 +140,9 @@ class MockTransport : public BlimpTransport {
   ~MockTransport() override;
 
   MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
-  MOCK_METHOD0(TakeConnectionPtr, BlimpConnection*());
+  MOCK_METHOD0(TakeMessagePortPtr, MessagePort*());
 
-  std::unique_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<MessagePort> TakeMessagePort() override;
   const char* GetName() const override;
 };
 

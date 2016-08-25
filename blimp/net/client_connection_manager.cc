@@ -4,7 +4,10 @@
 
 #include "blimp/net/client_connection_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/protocol_version.h"
@@ -13,6 +16,7 @@
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/connection_handler.h"
+#include "blimp/net/message_port.h"
 #include "net/base/net_errors.h"
 
 namespace blimp {
@@ -54,7 +58,8 @@ void ClientConnectionManager::OnConnectResult(int transport_index, int result) {
   DCHECK_NE(result, net::ERR_IO_PENDING);
   const auto& transport = transports_[transport_index];
   if (result == net::OK) {
-    std::unique_ptr<BlimpConnection> connection = transport->TakeConnection();
+    std::unique_ptr<BlimpConnection> connection =
+        base::MakeUnique<BlimpConnection>(transport->TakeMessagePort());
     connection->AddConnectionErrorObserver(this);
     SendAuthenticationMessage(std::move(connection));
   } else {

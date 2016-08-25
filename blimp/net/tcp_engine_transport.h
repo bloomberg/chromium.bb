@@ -22,7 +22,7 @@ class StreamSocket;
 
 namespace blimp {
 
-class BlimpConnection;
+class MessagePort;
 
 // BlimpTransport which listens for a TCP connection at |address|.
 class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
@@ -34,7 +34,7 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
 
   // BlimpTransport implementation.
   void Connect(const net::CompletionCallback& callback) override;
-  std::unique_ptr<BlimpConnection> TakeConnection() override;
+  std::unique_ptr<MessagePort> TakeMessagePort() override;
   const char* GetName() const override;
 
   int GetLocalAddress(net::IPEndPoint* address) const;

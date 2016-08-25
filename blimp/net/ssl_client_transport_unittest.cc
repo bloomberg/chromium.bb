@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/message_port.h"
 #include "blimp/net/ssl_client_transport.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -81,7 +82,7 @@ TEST_F(SSLClientTransportTest, ConnectSyncOK) {
     SetupSSLSyncSocketConnect(net::OK);
     transport_->Connect(base::Bind(&SSLClientTransportTest::ConnectComplete,
                                    base::Unretained(this)));
-    EXPECT_NE(nullptr, transport_->TakeConnection().get());
+    EXPECT_NE(nullptr, transport_->TakeMessagePort().get());
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -96,7 +97,7 @@ TEST_F(SSLClientTransportTest, ConnectAsyncOK) {
     transport_->Connect(base::Bind(&SSLClientTransportTest::ConnectComplete,
                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
-    EXPECT_NE(nullptr, transport_->TakeConnection().get());
+    EXPECT_NE(nullptr, transport_->TakeMessagePort().get());
   }
 }
 
@@ -155,7 +156,7 @@ TEST_F(SSLClientTransportTest, ConnectAfterError) {
   SetupSSLSyncSocketConnect(net::OK);
   transport_->Connect(base::Bind(&SSLClientTransportTest::ConnectComplete,
                                  base::Unretained(this)));
-  EXPECT_NE(nullptr, transport_->TakeConnection().get());
+  EXPECT_NE(nullptr, transport_->TakeMessagePort().get());
   base::RunLoop().RunUntilIdle();
 }
 

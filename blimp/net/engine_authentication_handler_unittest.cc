@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"

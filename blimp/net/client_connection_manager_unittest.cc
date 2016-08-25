@@ -5,8 +5,8 @@
 #include "blimp/net/client_connection_manager.h"
 
 #include <stddef.h>
-
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -14,8 +14,6 @@
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/protocol_version.h"
-#include "blimp/net/blimp_connection.h"
-#include "blimp/net/blimp_transport.h"
 #include "blimp/net/test_common.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -39,10 +37,8 @@ class ClientConnectionManagerTest : public testing::Test {
       : manager_(new ClientConnectionManager(&connection_handler_)),
         transport1_(new testing::StrictMock<MockTransport>),
         transport2_(new testing::StrictMock<MockTransport>),
-        reader_(new MockPacketReader),
-        writer_(new MockPacketWriter),
-        connection_(new BlimpConnection(base::WrapUnique(reader_),
-                                        base::WrapUnique(writer_))),
+        reader_(new testing::StrictMock<MockPacketReader>),
+        writer_(new testing::StrictMock<MockPacketWriter>),
         start_connection_message_(
             CreateStartConnectionMessage(kDummyClientToken, kProtocolVersion)) {
     manager_->set_client_token(kDummyClientToken);
@@ -56,9 +52,8 @@ class ClientConnectionManagerTest : public testing::Test {
   std::unique_ptr<ClientConnectionManager> manager_;
   std::unique_ptr<testing::StrictMock<MockTransport>> transport1_;
   std::unique_ptr<testing::StrictMock<MockTransport>> transport2_;
-  MockPacketReader* reader_;
-  MockPacketWriter* writer_;
-  std::unique_ptr<BlimpConnection> connection_;
+  std::unique_ptr<MockPacketReader> reader_;
+  std::unique_ptr<MockPacketWriter> writer_;
   std::unique_ptr<BlimpMessage> start_connection_message_;
 };
 
@@ -67,18 +62,20 @@ TEST_F(ClientConnectionManagerTest, FirstTransportConnects) {
   net::CompletionCallback write_cb;
   net::CompletionCallback connect_cb_1;
   EXPECT_CALL(*transport1_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_1));
-  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection_.get())));
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_));
   EXPECT_CALL(*writer_,
               WritePacket(BufferEqualsProto(*start_connection_message_), _))
       .WillOnce(SaveArg<1>(&write_cb));
-  EXPECT_CALL(*transport1_, TakeConnectionPtr())
-      .WillOnce(Return(connection_.release()));
 
-  ASSERT_TRUE(connect_cb_1.is_null());
+  EXPECT_CALL(*transport1_, TakeMessagePortPtr())
+      .WillOnce(
+          Return(new MessagePort(std::move(reader_), std::move(writer_))));
+
+  EXPECT_TRUE(connect_cb_1.is_null());
   manager_->AddTransport(std::move(transport1_));
   manager_->AddTransport(std::move(transport2_));
   manager_->Connect();
-  ASSERT_FALSE(connect_cb_1.is_null());
+  EXPECT_FALSE(connect_cb_1.is_null());
   base::ResetAndReturn(&connect_cb_1).Run(net::OK);
   base::ResetAndReturn(&write_cb).Run(net::OK);
 }
@@ -93,18 +90,19 @@ TEST_F(ClientConnectionManagerTest, SecondTransportConnects) {
   EXPECT_CALL(*writer_,
               WritePacket(BufferEqualsProto(*start_connection_message_), _))
       .WillOnce(SaveArg<1>(&write_cb));
-  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection_.get())));
-  EXPECT_CALL(*transport2_, TakeConnectionPtr())
-      .WillOnce(Return(connection_.release()));
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_));
+  EXPECT_CALL(*transport2_, TakeMessagePortPtr())
+      .WillOnce(
+          Return(new MessagePort(std::move(reader_), std::move(writer_))));
 
-  ASSERT_TRUE(connect_cb_1.is_null());
-  ASSERT_TRUE(connect_cb_2.is_null());
+  EXPECT_TRUE(connect_cb_1.is_null());
+  EXPECT_TRUE(connect_cb_2.is_null());
   manager_->AddTransport(std::move(transport1_));
   manager_->AddTransport(std::move(transport2_));
   manager_->Connect();
-  ASSERT_FALSE(connect_cb_1.is_null());
+  EXPECT_FALSE(connect_cb_1.is_null());
   base::ResetAndReturn(&connect_cb_1).Run(net::ERR_FAILED);
-  ASSERT_FALSE(connect_cb_2.is_null());
+  EXPECT_FALSE(connect_cb_2.is_null());
   base::ResetAndReturn(&connect_cb_2).Run(net::OK);
   base::ResetAndReturn(&write_cb).Run(net::OK);
 }
@@ -116,15 +114,15 @@ TEST_F(ClientConnectionManagerTest, BothTransportsFailToConnect) {
   net::CompletionCallback connect_cb_2;
   EXPECT_CALL(*transport2_, Connect(_)).WillOnce(SaveArg<0>(&connect_cb_2));
 
-  ASSERT_TRUE(connect_cb_1.is_null());
-  ASSERT_TRUE(connect_cb_2.is_null());
+  EXPECT_TRUE(connect_cb_1.is_null());
+  EXPECT_TRUE(connect_cb_2.is_null());
   manager_->AddTransport(std::move(transport1_));
   manager_->AddTransport(std::move(transport2_));
   manager_->Connect();
-  ASSERT_FALSE(connect_cb_1.is_null());
-  ASSERT_TRUE(connect_cb_2.is_null());
+  EXPECT_FALSE(connect_cb_1.is_null());
+  EXPECT_TRUE(connect_cb_2.is_null());
   base::ResetAndReturn(&connect_cb_1).Run(net::ERR_FAILED);
-  ASSERT_FALSE(connect_cb_2.is_null());
+  EXPECT_FALSE(connect_cb_2.is_null());
   base::ResetAndReturn(&connect_cb_2).Run(net::ERR_FAILED);
 }
 

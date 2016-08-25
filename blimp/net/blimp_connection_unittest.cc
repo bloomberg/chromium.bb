@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -15,6 +16,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/common.h"
 #include "blimp/net/connection_error_observer.h"
+#include "blimp/net/message_port.h"
 #include "blimp/net/test_common.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -34,14 +36,14 @@ namespace {
 class BlimpConnectionTest : public testing::Test {
  public:
   BlimpConnectionTest() {
-    std::unique_ptr<testing::StrictMock<MockPacketWriter>> writer(
-        new testing::StrictMock<MockPacketWriter>);
-    writer_ = writer.get();
-    std::unique_ptr<testing::StrictMock<MockPacketReader>> reader(
-        new testing::StrictMock<MockPacketReader>);
-    reader_ = reader.get();
-    connection_.reset(
-        new BlimpConnection(std::move(reader), std::move(writer)));
+    std::unique_ptr<MockPacketReader> mock_reader(new MockPacketReader);
+    std::unique_ptr<MockPacketWriter> mock_writer(new MockPacketWriter);
+    mock_reader_ = mock_reader.get();
+    mock_writer_ = mock_writer.get();
+    connection_ =
+        base::MakeUnique<BlimpConnection>(base::MakeUnique<MessagePort>(
+            std::move(mock_reader), std::move(mock_writer)));
+
     connection_->AddConnectionErrorObserver(&error_observer1_);
     connection_->AddConnectionErrorObserver(&error_observer2_);
     connection_->AddConnectionErrorObserver(&error_observer3_);
@@ -64,8 +66,8 @@ class BlimpConnectionTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  testing::StrictMock<MockPacketReader>* reader_;
-  testing::StrictMock<MockPacketWriter>* writer_;
+  MockPacketReader* mock_reader_;
+  MockPacketWriter* mock_writer_;
   testing::StrictMock<MockConnectionErrorObserver> error_observer1_;
   testing::StrictMock<MockConnectionErrorObserver> error_observer2_;
 
@@ -82,11 +84,11 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWrite) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
-  EXPECT_CALL(*writer_,
+  EXPECT_CALL(*mock_writer_,
               WritePacket(BufferEqualsProto(*CreateInputMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
-  EXPECT_CALL(*writer_,
+  EXPECT_CALL(*mock_writer_,
               WritePacket(BufferEqualsProto(*CreateControlMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
@@ -118,11 +120,11 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
-  EXPECT_CALL(*writer_,
+  EXPECT_CALL(*mock_writer_,
               WritePacket(BufferEqualsProto(*CreateInputMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
-  EXPECT_CALL(*writer_,
+  EXPECT_CALL(*mock_writer_,
               WritePacket(BufferEqualsProto(*CreateControlMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
@@ -148,7 +150,7 @@ TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
   net::CompletionCallback write_packet_cb;
 
   InSequence s;
-  EXPECT_CALL(*writer_,
+  EXPECT_CALL(*mock_writer_,
               WritePacket(BufferEqualsProto(*CreateInputMessage()), _))
       .WillOnce(SaveArg<1>(&write_packet_cb))
       .RetiresOnSaturation();
@@ -168,7 +170,7 @@ TEST_F(BlimpConnectionTest, ReadPacketErrorInvokesErrorObservers) {
   scoped_refptr<net::GrowableIOBuffer> read_packet_buffer;
   net::CompletionCallback read_packet_cb;
 
-  EXPECT_CALL(*reader_, ReadPacket(_, _))
+  EXPECT_CALL(*mock_reader_, ReadPacket(_, _))
       .WillOnce(
           DoAll(SaveArg<0>(&read_packet_buffer), SaveArg<1>(&read_packet_cb)))
       .RetiresOnSaturation();
@@ -194,7 +196,7 @@ TEST_F(BlimpConnectionTest, EndConnectionInvokesErrorObservers) {
   scoped_refptr<net::GrowableIOBuffer> read_packet_buffer;
   net::CompletionCallback read_packet_cb;
 
-  EXPECT_CALL(*reader_, ReadPacket(_, _))
+  EXPECT_CALL(*mock_reader_, ReadPacket(_, _))
       .WillOnce(
           DoAll(SaveArg<0>(&read_packet_buffer), SaveArg<1>(&read_packet_cb)))
       .WillOnce(Return())

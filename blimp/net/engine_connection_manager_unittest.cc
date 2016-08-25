@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -40,39 +41,42 @@ class EngineConnectionManagerTest : public testing::Test {
 
   std::unique_ptr<BlimpConnection> CreateConnection() {
     return base::MakeUnique<BlimpConnection>(
-        base::WrapUnique(new MockPacketReader),
-        base::WrapUnique(new MockPacketWriter));
+        base::MakeUnique<MessagePort>(base::MakeUnique<MockPacketReader>(),
+                                      base::MakeUnique<MockPacketWriter>()));
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
   testing::StrictMock<MockConnectionHandler> connection_handler_;
   std::unique_ptr<EngineConnectionManager> manager_;
 };
 
 TEST_F(EngineConnectionManagerTest, ConnectionSucceeds) {
   std::unique_ptr<testing::StrictMock<MockTransport>> transport1(
-      new testing::StrictMock<MockTransport>);
+      new testing::StrictMock<MockTransport>());
   std::unique_ptr<testing::StrictMock<MockTransport>> transport2(
-      new testing::StrictMock<MockTransport>);
+      new testing::StrictMock<MockTransport>());
 
-  std::unique_ptr<BlimpConnection> connection1 = CreateConnection();
   net::CompletionCallback connect_cb_1;
+  net::CompletionCallback connect_cb_2;
   EXPECT_CALL(*transport1, Connect(_))
       .Times(2)
       .WillRepeatedly(SaveArg<0>(&connect_cb_1));
-  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection1.get())));
-  EXPECT_CALL(*transport1, TakeConnectionPtr())
-      .WillOnce(Return(connection1.release()));
-
-  std::unique_ptr<BlimpConnection> connection2 = CreateConnection();
-  net::CompletionCallback connect_cb_2;
   EXPECT_CALL(*transport2, Connect(_))
       .Times(2)
       .WillRepeatedly(SaveArg<0>(&connect_cb_2));
-  EXPECT_CALL(connection_handler_, HandleConnectionPtr(Eq(connection2.get())));
-  EXPECT_CALL(*transport2, TakeConnectionPtr())
-      .WillOnce(Return(connection2.release()));
+
+  std::unique_ptr<MessagePort> port1 =
+      base::MakeUnique<MessagePort>(base::MakeUnique<MockPacketReader>(),
+                                    base::MakeUnique<MockPacketWriter>());
+  std::unique_ptr<MessagePort> port2 =
+      base::MakeUnique<MessagePort>(base::MakeUnique<MockPacketReader>(),
+                                    base::MakeUnique<MockPacketWriter>());
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_)).Times(2);
+
+  EXPECT_CALL(*transport1, TakeMessagePortPtr())
+      .WillOnce(Return(port1.release()));
+  EXPECT_CALL(*transport2, TakeMessagePortPtr())
+      .WillOnce(Return(port2.release()));
 
   ASSERT_TRUE(connect_cb_1.is_null());
   manager_->AddTransport(std::move(transport1));

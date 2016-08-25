@@ -11,9 +11,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "blimp/net/stream_socket_connection.h"
+#include "blimp/net/message_port.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -51,7 +50,6 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
   }
 
   if (result != net::OK) {
-    // TODO(haibinlu): investigate when we can keep using this server socket.
     server_socket_.reset();
   }
 
@@ -59,10 +57,11 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
                                                 base::Bind(callback, result));
 }
 
-std::unique_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
+std::unique_ptr<MessagePort> TCPEngineTransport::TakeMessagePort() {
   DCHECK(connect_callback_.is_null());
   DCHECK(accepted_socket_);
-  return base::MakeUnique<StreamSocketConnection>(std::move(accepted_socket_));
+  return MessagePort::CreateForStreamSocketWithCompression(
+      std::move(accepted_socket_));
 }
 
 const char* TCPEngineTransport::GetName() const {

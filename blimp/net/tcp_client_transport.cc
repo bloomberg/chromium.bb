@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "blimp/net/message_port.h"
 #include "blimp/net/stream_socket_connection.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
@@ -50,10 +51,10 @@ void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
   OnTCPConnectComplete(result);
 }
 
-std::unique_ptr<BlimpConnection> TCPClientTransport::TakeConnection() {
+std::unique_ptr<MessagePort> TCPClientTransport::TakeMessagePort() {
   DCHECK(connect_callback_.is_null());
   DCHECK(socket_);
-  return base::MakeUnique<StreamSocketConnection>(std::move(socket_));
+  return MessagePort::CreateForStreamSocketWithCompression(std::move(socket_));
 }
 
 const char* TCPClientTransport::GetName() const {

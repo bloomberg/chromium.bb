@@ -4,9 +4,13 @@
 
 #include "blimp/net/engine_connection_manager.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_transport.h"
+#include "blimp/net/message_port.h"
 #include "net/base/net_errors.h"
 
 namespace blimp {
@@ -34,9 +38,9 @@ void EngineConnectionManager::Connect(BlimpTransport* transport) {
 
 void EngineConnectionManager::OnConnectResult(BlimpTransport* transport,
                                               int result) {
-  // Expects engine transport to be reliably, thus |result| is always net::OK.
-  CHECK(result == net::OK) << "Transport failure:" << transport->GetName();
-  connection_handler_->HandleConnection(transport->TakeConnection());
+  CHECK_EQ(net::OK, result) << "Transport failure:" << transport->GetName();
+  connection_handler_->HandleConnection(
+      base::MakeUnique<BlimpConnection>(transport->TakeMessagePort()));
   Connect(transport);
 }
 
