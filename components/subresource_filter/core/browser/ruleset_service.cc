@@ -50,6 +50,32 @@ void RecordIndexAndWriteRulesetResult(
       static_cast<int>(RulesetService::IndexAndWriteRulesetResult::MAX));
 }
 
+// Implements operations on a `sentinel file`, which is used as a safeguard to
+// prevent crash-looping if ruleset indexing crashes on start-up.
+//
+// The sentinel file is placed in the ruleset version directory just before
+// indexing commences, and removed afterwards. Therefore, if a sentinel file is
+// found on next start-up, it is an indication that the previous indexing
+// operation may have crashed, and indexing will not be attempted again.
+//
+// Admittedly, this approach errs on the side of caution, and false positives
+// can happen. For example, the sentinel file may fail to be removed in case of
+// an unclean shutdown, or an unrelated crash as well. This should not be a
+// problem, however, as the sentinel file only affects one version of the
+// ruleset, and it is expected that version updates will be frequent enough.
+class SentinelFile {
+ public:
+  static bool IsPresent(base::FilePath& path) { return base::PathExists(path); }
+
+  static bool Create(base::FilePath& path) {
+    return base::WriteFile(path, nullptr, 0) == 0;
+  }
+
+  static bool Remove(base::FilePath& path) {
+    return base::DeleteFile(path, false /* recursive */);
+  }
+};
+
 }  // namespace
 
 // UnindexedRulesetInfo ------------------------------------------------------
@@ -109,6 +135,14 @@ base::FilePath IndexedRulesetVersion::GetSubdirectoryPathForVersion(
 
 // RulesetService ------------------------------------------------------------
 
+// static
+decltype(&RulesetService::IndexRuleset) RulesetService::g_index_ruleset_func =
+    &RulesetService::IndexRuleset;
+
+// static
+decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
+    &base::ReplaceFile;
+
 RulesetService::RulesetService(
     PrefService* local_state,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -164,6 +198,12 @@ base::FilePath RulesetService::GetLicenseFilePath(
 }
 
 // static
+base::FilePath RulesetService::GetSentinelFilePath(
+    const base::FilePath& version_directory) {
+  return version_directory.Append(kSentinelFileName);
+}
+
+// static
 IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
@@ -178,19 +218,55 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     return IndexedRulesetVersion();
   }
 
+  IndexedRulesetVersion indexed_version(
+      unindexed_ruleset_info.content_version,
+      IndexedRulesetVersion::CurrentFormatVersion());
+  base::FilePath indexed_ruleset_version_dir =
+      indexed_version.GetSubdirectoryPathForVersion(indexed_ruleset_base_dir);
+
+  if (!base::CreateDirectory(indexed_ruleset_version_dir)) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::FAILED_CREATING_VERSION_DIR);
+    return IndexedRulesetVersion();
+  }
+
+  base::FilePath sentinel_path(
+      GetSentinelFilePath(indexed_ruleset_version_dir));
+  if (SentinelFile::IsPresent(sentinel_path)) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::ABORTED_BECAUSE_SENTINEL_FILE_PRESENT);
+    return IndexedRulesetVersion();
+  }
+
+  if (!SentinelFile::Create(sentinel_path)) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::FAILED_CREATING_SENTINEL_FILE);
+    return IndexedRulesetVersion();
+  }
+
+  // --- Begin of guarded section.
+  //
+  // Crashes or errors occurring here will leave behind a sentinel file that
+  // will prevent this version of the ruleset from ever being indexed again.
+
   RulesetIndexer indexer;
-  if (!IndexRuleset(std::move(unindexed_ruleset_file), &indexer)) {
+  if (!(*g_index_ruleset_func)(std::move(unindexed_ruleset_file), &indexer)) {
     RecordIndexAndWriteRulesetResult(
         IndexAndWriteRulesetResult::FAILED_PARSING_UNINDEXED_RULESET);
     return IndexedRulesetVersion();
   }
 
-  IndexedRulesetVersion indexed_version(
-      unindexed_ruleset_info.content_version,
-      IndexedRulesetVersion::CurrentFormatVersion());
+  // --- End of guarded section.
+
+  if (!SentinelFile::Remove(sentinel_path)) {
+    RecordIndexAndWriteRulesetResult(
+        IndexAndWriteRulesetResult::FAILED_DELETING_SENTINEL_FILE);
+    return IndexedRulesetVersion();
+  }
+
   IndexAndWriteRulesetResult result = WriteRuleset(
-      indexed_ruleset_base_dir, indexed_version,
-      unindexed_ruleset_info.license_path, indexer.data(), indexer.size());
+      indexed_ruleset_version_dir, unindexed_ruleset_info.license_path,
+      indexer.data(), indexer.size());
   RecordIndexAndWriteRulesetResult(result);
   if (result != IndexAndWriteRulesetResult::SUCCESS)
     return IndexedRulesetVersion();
@@ -229,13 +305,10 @@ bool RulesetService::IndexRuleset(base::File unindexed_ruleset_file,
 
 // static
 RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
-    const base::FilePath& indexed_ruleset_base_dir,
-    const IndexedRulesetVersion& indexed_version,
-    const base::FilePath& license_path,
+    const base::FilePath& indexed_ruleset_version_dir,
+    const base::FilePath& license_source_path,
     const uint8_t* indexed_ruleset_data,
     size_t indexed_ruleset_size) {
-  base::FilePath indexed_ruleset_version_dir =
-      indexed_version.GetSubdirectoryPathForVersion(indexed_ruleset_base_dir);
   base::ScopedTempDir scratch_dir;
   if (!scratch_dir.CreateUniqueTempDirUnderPath(
           indexed_ruleset_version_dir.DirName())) {
@@ -250,8 +323,9 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
     return IndexAndWriteRulesetResult::FAILED_WRITING_RULESET_DATA;
   }
 
-  if (base::PathExists(license_path) &&
-      !base::CopyFile(license_path, GetLicenseFilePath(scratch_dir.path()))) {
+  if (base::PathExists(license_source_path) &&
+      !base::CopyFile(license_source_path,
+                      GetLicenseFilePath(scratch_dir.path()))) {
     return IndexAndWriteRulesetResult::FAILED_WRITING_LICENSE;
   }
 
@@ -264,17 +338,13 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   // Due to the same-version check in IndexAndStoreAndPublishRulesetIfNeeded, we
   // would not normally find a pre-existing copy at this point unless the
   // previous write was interrupted.
-  //
-  // If there is a _file_ at the target path, do not delete and let ReplaceFile
-  // fail, to allow for error injection in unit tests.
-  if (base::DirectoryExists(indexed_ruleset_version_dir) &&
-      !base::DeleteFile(indexed_ruleset_version_dir, true)) {
+  if (!base::DeleteFile(indexed_ruleset_version_dir, true)) {
     return IndexAndWriteRulesetResult::FAILED_DELETE_PREEXISTING;
   }
 
   base::File::Error error;
-  if (!base::ReplaceFile(scratch_dir.path(), indexed_ruleset_version_dir,
-                         &error)) {
+  if (!(*g_replace_file_func)(scratch_dir.path(), indexed_ruleset_version_dir,
+                              &error)) {
     // While enumerators of base::File::Error all have negative values, the
     // histogram records the absolute values.
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",

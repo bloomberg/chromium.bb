@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -111,6 +112,10 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
     FAILED_DELETE_PREEXISTING,
     FAILED_OPENING_UNINDEXED_RULESET,
     FAILED_PARSING_UNINDEXED_RULESET,
+    FAILED_CREATING_VERSION_DIR,
+    FAILED_CREATING_SENTINEL_FILE,
+    FAILED_DELETING_SENTINEL_FILE,
+    ABORTED_BECAUSE_SENTINEL_FILE_PRESENT,
 
     // Insert new values before this line.
     MAX,
@@ -144,6 +149,10 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
  private:
   friend class SubresourceFilteringRulesetServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceTest,
+                           NewRuleset_WriteFailure);
+  FRIEND_TEST_ALL_PREFIXES(SubresourceFilteringRulesetServiceDeathTest,
+                           NewRuleset_IndexingCrash);
 
   using WriteRulesetCallback =
       base::Callback<void(const IndexedRulesetVersion&)>;
@@ -151,6 +160,8 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   static base::FilePath GetRulesetDataFilePath(
       const base::FilePath& version_directory);
   static base::FilePath GetLicenseFilePath(
+      const base::FilePath& version_directory);
+  static base::FilePath GetSentinelFilePath(
       const base::FilePath& version_directory);
 
   // Reads the ruleset described in |unindexed_ruleset_info|, indexes it, and
@@ -177,11 +188,15 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
   // Writing is factored out into this separate function so it can be
   // independently exercised in tests.
   static IndexAndWriteRulesetResult WriteRuleset(
-      const base::FilePath& indexed_ruleset_base_dir,
-      const IndexedRulesetVersion& indexed_version,
-      const base::FilePath& license_path,
+      const base::FilePath& indexed_ruleset_version_dir,
+      const base::FilePath& license_source_path,
       const uint8_t* indexed_ruleset_data,
       size_t indexed_ruleset_size);
+
+  // Indirections for accessing these routines, so as to allow overriding and
+  // injecting faults in tests.
+  static decltype(&IndexRuleset) g_index_ruleset_func;
+  static decltype(&base::ReplaceFile) g_replace_file_func;
 
   // Posts a task to the |blocking_task_runner_| to index and persist the given
   // unindexed ruleset. Then, on success, updates the most recently indexed

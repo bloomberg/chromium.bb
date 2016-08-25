@@ -95001,6 +95001,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="FailedDeletePreexisting"/>
   <int value="6" label="FailedOpeningUnindexedRuleset"/>
   <int value="7" label="FailedParsingUnindexedRuleset"/>
+  <int value="8" label="FailedCreatingVersionDir"/>
+  <int value="9" label="FailedCreatingSentinelFile"/>
+  <int value="10" label="FailedDeletingSentinelFile"/>
+  <int value="11" label="AbortedBecauseSentinelFileWasPresent"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">
