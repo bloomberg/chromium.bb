@@ -48,6 +48,7 @@ public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 
     void willAddPrerender(Prerender*) override;
+    bool isPrefetchOnly() override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { PrerendererClient::trace(visitor); }
 

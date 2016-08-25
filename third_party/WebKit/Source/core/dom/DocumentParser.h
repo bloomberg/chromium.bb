@@ -24,6 +24,7 @@
 #ifndef DocumentParser_h
 #define DocumentParser_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include <memory>
@@ -36,7 +37,7 @@ class SegmentedString;
 class ScriptableDocumentParser;
 class TextResourceDecoder;
 
-class DocumentParser : public GarbageCollectedFinalized<DocumentParser> {
+class CORE_EXPORT DocumentParser : public GarbageCollectedFinalized<DocumentParser> {
 public:
     virtual ~DocumentParser();
     DECLARE_VIRTUAL_TRACE();

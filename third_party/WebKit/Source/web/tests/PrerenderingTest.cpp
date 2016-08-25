@@ -98,6 +98,11 @@ private:
         m_webPrerenders.push_back(*prerender);
     }
 
+    bool isPrefetchOnly() override
+    {
+        return false;
+    }
+
     std::unique_ptr<WebPrerender::ExtraData> m_extraData;
     std::list<WebPrerender> m_webPrerenders;
 };

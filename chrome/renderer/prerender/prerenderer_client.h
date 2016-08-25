@@ -24,6 +24,7 @@ class PrerendererClient : public content::RenderViewObserver,
 
   // Implements blink::WebPrerendererClient
   void willAddPrerender(blink::WebPrerender* prerender) override;
+  bool isPrefetchOnly() override;
 };
 
 }  // namespace prerender

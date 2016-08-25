@@ -194,6 +194,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/loader/PrerendererClient.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/observer/ResizeObserverController.h"
 #include "core/page/ChromeClient.h"
@@ -1326,6 +1327,15 @@ PageVisibilityState Document::pageVisibilityState() const
     return m_frame->page()->visibilityState();
 }
 
+bool Document::isPrefetchOnly() const
+{
+    if (!m_frame || !m_frame->page())
+        return false;
+
+    PrerendererClient* prerendererClient = PrerendererClient::from(m_frame->page());
+    return prerendererClient && prerendererClient->isPrefetchOnly();
+}
+
 String Document::visibilityState() const
 {
     return pageVisibilityStateString(pageVisibilityState());
@@ -2436,8 +2446,12 @@ DocumentParser* Document::implicitOpen(ParserSynchronizationPolicy parserSyncPol
 
     setCompatibilityMode(NoQuirksMode);
 
-    if (!threadedParsingEnabledForTesting())
+    if (!threadedParsingEnabledForTesting()) {
         parserSyncPolicy = ForceSynchronousParsing;
+    } else if (parserSyncPolicy == AllowAsynchronousParsing && isPrefetchOnly()) {
+        // Prefetch must be synchronous.
+        parserSyncPolicy = ForceSynchronousParsing;
+    }
 
     m_parserSyncPolicy = parserSyncPolicy;
     m_parser = createParser();

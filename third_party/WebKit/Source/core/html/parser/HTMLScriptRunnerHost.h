@@ -26,6 +26,7 @@
 #ifndef HTMLScriptRunnerHost_h
 #define HTMLScriptRunnerHost_h
 
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -34,7 +35,7 @@ class HTMLInputStream;
 class Resource;
 class Visitor;
 
-class HTMLScriptRunnerHost : public GarbageCollectedMixin {
+class CORE_EXPORT HTMLScriptRunnerHost : public GarbageCollectedMixin {
 public:
     virtual ~HTMLScriptRunnerHost() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

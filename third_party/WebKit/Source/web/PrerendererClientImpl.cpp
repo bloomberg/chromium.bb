@@ -51,4 +51,9 @@ void PrerendererClientImpl::willAddPrerender(Prerender* prerender)
     m_client->willAddPrerender(&webPrerender);
 }
 
+bool PrerendererClientImpl::isPrefetchOnly()
+{
+    return m_client && m_client->isPrefetchOnly();
+}
+
 } // namespace blink

@@ -41,6 +41,7 @@ class WebPrerender;
 class WebPrerendererClient {
 public:
     virtual void willAddPrerender(WebPrerender*) = 0;
+    virtual bool isPrefetchOnly() = 0;
 };
 
 } // namespace blink

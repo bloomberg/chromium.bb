@@ -34,10 +34,20 @@ void UpdateVisibilityState(content::RenderFrame* render_frame) {
 
 namespace prerender {
 
-PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame)
+PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame,
+                                 PrerenderMode prerender_mode)
     : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<PrerenderHelper>(render_frame) {
+      content::RenderFrameObserverTracker<PrerenderHelper>(render_frame),
+      prerender_mode_(prerender_mode) {
+  DCHECK_NE(prerender_mode_, NO_PRERENDER);
   UpdateVisibilityState(render_frame);
+}
+
+PrerenderHelper::PrerenderHelper(content::RenderFrame* sub_frame)
+    : PrerenderHelper(sub_frame,
+                      GetPrerenderMode(
+                          sub_frame->GetRenderView()->GetMainRenderFrame())) {
+  DCHECK(!render_frame()->IsMainFrame());
 }
 
 PrerenderHelper::~PrerenderHelper() {
@@ -45,7 +55,18 @@ PrerenderHelper::~PrerenderHelper() {
 
 // static.
 bool PrerenderHelper::IsPrerendering(const content::RenderFrame* render_frame) {
-  return PrerenderHelper::Get(render_frame) != NULL;
+  return PrerenderHelper::GetPrerenderMode(render_frame) != NO_PRERENDER;
+}
+
+// static.
+PrerenderMode PrerenderHelper::GetPrerenderMode(
+    const content::RenderFrame* render_frame) {
+  PrerenderHelper* helper = PrerenderHelper::Get(render_frame);
+  if (!helper)
+    return NO_PRERENDER;
+
+  DCHECK_NE(helper->prerender_mode_, NO_PRERENDER);
+  return helper->prerender_mode_;
 }
 
 bool PrerenderHelper::OnMessageReceived(

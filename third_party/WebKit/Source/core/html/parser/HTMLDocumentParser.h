@@ -27,6 +27,7 @@
 #define HTMLDocumentParser_h
 
 #include "bindings/core/v8/DocumentWriteEvaluator.h"
+#include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/ResourceClient.h"
@@ -69,7 +70,7 @@ class HTMLTreeBuilder;
 class PumpSession;
 class TokenizedChunkQueue;
 
-class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
+class CORE_EXPORT HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
     USING_PRE_FINALIZER(HTMLDocumentParser, dispose);
 public:
@@ -87,6 +88,9 @@ public:
     void resumeParsingAfterYield();
 
     static void parseDocumentFragment(const String&, DocumentFragment*, Element* contextElement, ParserContentPolicy = AllowScriptingContent);
+
+    // Exposed for testing.
+    HTMLScriptRunnerHost* asHTMLScriptRunnerHostForTesting() { return this; }
 
     HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
 

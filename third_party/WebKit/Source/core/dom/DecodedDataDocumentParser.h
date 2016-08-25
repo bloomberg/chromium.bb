@@ -26,13 +26,14 @@
 #ifndef DecodedDataDocumentParser_h
 #define DecodedDataDocumentParser_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DocumentParser.h"
 #include <memory>
 
 namespace blink {
 class TextResourceDecoder;
 
-class DecodedDataDocumentParser : public DocumentParser {
+class CORE_EXPORT DecodedDataDocumentParser : public DocumentParser {
 public:
     // Only used by the XMLDocumentParser to communicate back to
     // XMLHttpRequest if the responseXML was well formed.

@@ -26,13 +26,14 @@
 #ifndef ScriptableDocumentParser_h
 #define ScriptableDocumentParser_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DecodedDataDocumentParser.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
 
-class ScriptableDocumentParser : public DecodedDataDocumentParser {
+class CORE_EXPORT ScriptableDocumentParser : public DecodedDataDocumentParser {
 public:
     // Only used by Document::open for deciding if its safe to act on a
     // JavaScript document.open() call right now, or it should be ignored.

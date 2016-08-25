@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/renderer/prerender/prerender_extra_data.h"
+#include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -32,6 +33,11 @@ void PrerendererClient::willAddPrerender(
   prerender->setExtraData(new PrerenderExtraData(++s_last_prerender_id,
                                                  routing_id(),
                                                  render_view()->GetSize()));
+}
+
+bool PrerendererClient::isPrefetchOnly() {
+  return PrerenderHelper::GetPrerenderMode(
+             render_view()->GetMainRenderFrame()) == PREFETCH_ONLY;
 }
 
 void PrerendererClient::OnDestruct() {

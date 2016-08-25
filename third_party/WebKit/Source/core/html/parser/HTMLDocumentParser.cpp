@@ -131,6 +131,9 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document, ParserContentPolicy c
     , m_triedLoadingLinkHeaders(false)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
+    // Threading is not allowed in prefetch mode.
+    DCHECK(!document.isPrefetchOnly() || !shouldUseThreading());
+
     ThreadState::current()->registerPreFinalizer(this);
 }
 
@@ -815,6 +818,18 @@ void HTMLDocumentParser::append(const String& inputSource)
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::append", "size", inputSource.length());
     const SegmentedString source(inputSource);
+
+    if (document()->isPrefetchOnly()) {
+        if (!m_preloadScanner)
+            m_preloadScanner = createPreloadScanner();
+
+        m_preloadScanner->appendToEnd(source);
+        // TODO(droger): Set the LOAD_PREFETCH flags on the requests.
+        m_preloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
+
+        // Return after the preload scanner, do not actually parse the document.
+        return;
+    }
 
     if (m_preloadScanner) {
         if (m_input.current().isEmpty() && !isWaitingForScripts()) {

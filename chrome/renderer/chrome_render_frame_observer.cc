@@ -170,7 +170,7 @@ void ChromeRenderFrameObserver::OnSetIsPrerendering(
 
     // The PrerenderHelper will destroy itself either after recording histograms
     // or on destruction of the RenderView.
-    new prerender::PrerenderHelper(render_frame());
+    new prerender::PrerenderHelper(render_frame(), mode);
   }
 }
 

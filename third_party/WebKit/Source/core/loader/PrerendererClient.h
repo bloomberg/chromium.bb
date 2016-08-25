@@ -44,6 +44,7 @@ class Prerender;
 class CORE_EXPORT PrerendererClient : public Supplement<Page> {
 public:
     virtual void willAddPrerender(Prerender*) = 0;
+    virtual bool isPrefetchOnly() = 0;
 
     static const char* supplementName();
     static PrerendererClient* from(Page*);

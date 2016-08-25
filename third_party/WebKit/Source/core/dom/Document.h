@@ -355,6 +355,11 @@ public:
     bool hidden() const;
     void didChangeVisibilityState();
 
+    // If the document is "prefetch only", it will not be fully contstructed,
+    // and should never be displayed. Only a few resources will be loaded and
+    // scanned, in order to warm up caches.
+    bool isPrefetchOnly() const;
+
     Node* adoptNode(Node* source, ExceptionState&);
 
     HTMLCollection* images();
