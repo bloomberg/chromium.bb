@@ -668,14 +668,6 @@ class IdlArgument(TypedObject):
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
 
-    def __getstate__(self):
-        # FIXME: Return a picklable object which has enough information to
-        # unpickle.
-        return {}
-
-    def __setstate__(self, state):
-        pass
-
     def accept(self, visitor):
         visitor.visit_argument(self)
 
