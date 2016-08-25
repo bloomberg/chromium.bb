@@ -446,14 +446,10 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                          MenuItemView::NORMAL);
     // MenuRunner takes ownership of root.
     menu_runner_.reset(new MenuRunner(
-        root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-    if (menu_runner_->RunMenuAt(GetWidget(),
-                                NULL,
-                                gfx::Rect(point, gfx::Size()),
-                                views::MENU_ANCHOR_TOPLEFT,
-                                source_type) == MenuRunner::MENU_DELETED) {
-      return;
-    }
+        root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU |
+                  views::MenuRunner::ASYNC));
+    menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+                            views::MENU_ANCHOR_TOPLEFT, source_type);
   }
 
   WindowTypeLauncher* window_type_launcher_;
