@@ -17,13 +17,6 @@
 
 namespace ui {
 
-MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    std::unique_ptr<base::SharedMemory> shared_memory)
-    : GpuMemoryBufferImpl(gfx::GenericSharedMemoryId(0), size, format),
-      shared_memory_(std::move(shared_memory)) {}
-
 // TODO(rjkroege): Support running a destructor callback as necessary.
 MojoGpuMemoryBufferImpl::~MojoGpuMemoryBufferImpl() {}
 
@@ -50,8 +43,10 @@ std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::Create(
 
   auto shared_memory =
       base::MakeUnique<base::SharedMemory>(platform_handle, readonly);
-  return base::MakeUnique<MojoGpuMemoryBufferImpl>(
-      size, format, std::move(shared_memory));
+  const int stride = base::checked_cast<int>(
+      gfx::RowSizeForBufferFormat(size.width(), format, 0));
+  return base::WrapUnique(new MojoGpuMemoryBufferImpl(
+      size, format, std::move(shared_memory), 0, stride));
 }
 
 // static
@@ -65,8 +60,8 @@ std::unique_ptr<gfx::GpuMemoryBuffer> MojoGpuMemoryBufferImpl::CreateFromHandle(
   const bool readonly = false;
   auto shared_memory =
       base::MakeUnique<base::SharedMemory>(handle.handle, readonly);
-  return base::MakeUnique<MojoGpuMemoryBufferImpl>(
-      size, format, std::move(shared_memory));
+  return base::WrapUnique(new MojoGpuMemoryBufferImpl(
+      size, format, std::move(shared_memory), handle.offset, handle.stride));
 }
 
 MojoGpuMemoryBufferImpl* MojoGpuMemoryBufferImpl::FromClientBuffer(
@@ -80,7 +75,11 @@ const unsigned char* MojoGpuMemoryBufferImpl::GetMemory() const {
 
 bool MojoGpuMemoryBufferImpl::Map() {
   DCHECK(!mapped_);
-  if (!shared_memory_->Map(gfx::BufferSizeForBufferFormat(size_, format_)))
+  DCHECK_EQ(static_cast<size_t>(stride_),
+            gfx::RowSizeForBufferFormat(size_.width(), format_, 0));
+  const size_t buffer_size = gfx::BufferSizeForBufferFormat(size_, format_);
+  const size_t map_size = offset_ + buffer_size;
+  if (!shared_memory_->Map(map_size))
     return false;
   mapped_ = true;
   return true;
@@ -89,7 +88,7 @@ bool MojoGpuMemoryBufferImpl::Map() {
 void* MojoGpuMemoryBufferImpl::memory(size_t plane) {
   DCHECK(mapped_);
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) +
+  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
          gfx::BufferOffsetForBufferFormat(size_, format_, plane);
 }
 
@@ -109,9 +108,8 @@ gfx::GpuMemoryBufferHandle MojoGpuMemoryBufferImpl::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.handle = shared_memory_->handle();
-  handle.offset = 0;
-  handle.stride = static_cast<int32_t>(
-      gfx::RowSizeForBufferFormat(size_.width(), format_, 0));
+  handle.offset = offset_;
+  handle.stride = stride_;
 
   return handle;
 }
@@ -119,5 +117,16 @@ gfx::GpuMemoryBufferHandle MojoGpuMemoryBufferImpl::GetHandle() const {
 gfx::GpuMemoryBufferType MojoGpuMemoryBufferImpl::GetBufferType() const {
   return gfx::SHARED_MEMORY_BUFFER;
 }
+
+MojoGpuMemoryBufferImpl::MojoGpuMemoryBufferImpl(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    std::unique_ptr<base::SharedMemory> shared_memory,
+    uint32_t offset,
+    int32_t stride)
+    : GpuMemoryBufferImpl(gfx::GenericSharedMemoryId(0), size, format),
+      shared_memory_(std::move(shared_memory)),
+      offset_(offset),
+      stride_(stride) {}
 
 }  // namespace ui

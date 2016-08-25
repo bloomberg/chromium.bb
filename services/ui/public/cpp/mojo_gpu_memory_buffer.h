@@ -18,9 +18,6 @@ namespace ui {
 
 class MojoGpuMemoryBufferImpl : public ui::GpuMemoryBufferImpl {
  public:
-  MojoGpuMemoryBufferImpl(const gfx::Size& size,
-                          gfx::BufferFormat format,
-                          std::unique_ptr<base::SharedMemory> shared_memory);
   ~MojoGpuMemoryBufferImpl() override;
 
   static std::unique_ptr<gfx::GpuMemoryBuffer> Create(const gfx::Size& size,
@@ -46,7 +43,15 @@ class MojoGpuMemoryBufferImpl : public ui::GpuMemoryBufferImpl {
   gfx::GpuMemoryBufferType GetBufferType() const override;
 
  private:
+  MojoGpuMemoryBufferImpl(const gfx::Size& size,
+                          gfx::BufferFormat format,
+                          std::unique_ptr<base::SharedMemory> shared_memory,
+                          uint32_t offset,
+                          int32_t stride);
+
   std::unique_ptr<base::SharedMemory> shared_memory_;
+  const uint32_t offset_;
+  const int32_t stride_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoGpuMemoryBufferImpl);
 };
