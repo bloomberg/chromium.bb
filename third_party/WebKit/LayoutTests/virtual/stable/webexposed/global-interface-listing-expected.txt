@@ -602,6 +602,12 @@ interface CryptoKey
     getter type
     getter usages
     method constructor
+interface CustomElementRegistry
+    attribute @@toStringTag
+    method constructor
+    method define
+    method get
+    method whenDefined
 interface CustomEvent : Event
     attribute @@toStringTag
     getter detail
@@ -6523,6 +6529,7 @@ interface webkitURL
     attribute closed
     attribute console
     attribute crypto
+    attribute customElements
     attribute defaultStatus
     attribute defaultstatus
     attribute devicePixelRatio
