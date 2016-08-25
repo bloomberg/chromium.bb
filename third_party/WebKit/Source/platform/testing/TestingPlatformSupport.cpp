@@ -268,17 +268,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc, char*
 
 ScopedUnittestsEnvironmentSetup::~ScopedUnittestsEnvironmentSetup()
 {
-    blink::ThreadState::detachMainThread();
-    blink::ProcessHeap::shutdown();
-
-    // Destroy test platform objects before shutting down WTF layer.
-    m_testingPlatformSupport.reset();
-    m_compositorSupport.reset();
-
-    WTF::shutdown();
-    WTF::Partitions::shutdown();
-
-    // Now - implicitly destroy m_platform and m_discardableMemoryAllocator.
 }
 
 } // namespace blink
