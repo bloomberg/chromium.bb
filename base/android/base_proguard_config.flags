@@ -37,12 +37,19 @@
   native <methods>;
 }
 
-# Keep all Parcelables as they might be marshalled outside Chrome.
--keepnames class * implements android.os.Parcelable
-
+# Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class * implements android.os.Parcelable {
   public static *** CREATOR;
 }
+
+# Don't obfuscate Parcelables as they might be marshalled outside Chrome.
+-keepnames class * implements android.os.Parcelable
+
+# Keep all Parcelables, since Play Services has some that are used only by
+# reflection.
+# TODO(agrieve): Remove this once proguard flags provided by play services via
+#     .aars are used.  https://crbug.com/640836
+-keep class * implements android.os.Parcelable
 
 # Remove methods annotated with this if their return value is unused
 -assumenosideeffects class ** {
