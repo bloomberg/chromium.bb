@@ -37,6 +37,7 @@
             'platform/mime_registry.mojom',
             'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/broadcastchannel/broadcast_channel.mojom',
+            'platform/modules/budget_service/budget_service.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/hyphenation/hyphenation.mojom',
             'platform/modules/notifications/notification.mojom',

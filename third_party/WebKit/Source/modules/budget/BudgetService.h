@@ -7,16 +7,18 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
+#include "public/platform/modules/budget_service/budget_service.mojom-blink.h"
 
 namespace blink {
 
 class ScriptPromise;
+class ScriptPromiseResolver;
 class ScriptState;
 
 // This is the entry point into the browser for the BudgetService API, which is
 // designed to give origins the ability to perform background operations
 // on the user's behalf.
-class BudgetService final : public GarbageCollected<BudgetService>, public ScriptWrappable {
+class BudgetService final : public GarbageCollectedFinalized<BudgetService>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
@@ -25,13 +27,26 @@ public:
         return new BudgetService();
     }
 
+    ~BudgetService();
+
+    // Implementation of the Budget API interface.
     ScriptPromise getCost(ScriptState*, const AtomicString& actionType);
     ScriptPromise getBudget(ScriptState*);
 
     DEFINE_INLINE_TRACE() {}
 
 private:
+    // Callbacks from the BudgetService to the blink layer.
+    void gotCost(ScriptPromiseResolver*, double cost) const;
+    void gotBudget(ScriptPromiseResolver*, const mojo::WTFArray<mojom::blink::BudgetStatePtr> expectations) const;
+
+    // Error handler for use if mojo service doesn't connect.
+    void onConnectionError();
+
     BudgetService();
+
+    // Pointer to the Mojo service which will proxy calls to the browser.
+    mojom::blink::BudgetServicePtr m_service;
 };
 
 } // namespace blink

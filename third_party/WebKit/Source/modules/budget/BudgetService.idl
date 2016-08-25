@@ -13,5 +13,5 @@ enum ActionType {
     RuntimeEnabled=Budget
 ] interface BudgetService {
     [CallWith=ScriptState] Promise<double> getCost(ActionType actionType);
-    [CallWith=ScriptState] Promise<FrozenArray<BudgetChunk>> getBudget();
+    [CallWith=ScriptState] Promise<FrozenArray<BudgetState>> getBudget();
 };

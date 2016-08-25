@@ -394,6 +394,11 @@ interface BudgetService
     method constructor
     method getBudget
     method getCost
+interface BudgetState
+    attribute @@toStringTag
+    getter budgetAt
+    getter time
+    method constructor
 interface ByteLengthQueuingStrategy
     method constructor
     method size

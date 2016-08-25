@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Budget API: Make basic getBudget call.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="/js-test-resources/mojo-helpers.js"></script>
+    <script src="budget-service-mock.js"></script>
+  </head>
+  <body>
+    <script>
+      if (!window.mojo)
+        debug('This test can not run without mojo');
+
+      promise_test(function() {
+        return budgetServiceMock.then(mock => {
+          assert_own_property(Navigator.prototype, 'budget');
+          return navigator.budget.getBudget();
+        }).then(budget => {
+          assert_equals(budget.length, 1);
+          assert_equals(budget[0].budgetAt, TEST_BUDGET_AT);
+          assert_equals(budget[0].time, TEST_BUDGET_TIME);
+        });
+      }, 'BudgetService.GetBudget should return correct results.');
+    </script>
+  </body>
+</html>

@@ -5,7 +5,9 @@
 // https://beverloo.github.io/budget-api/#budget-state-interface
 // TODO(harkness): Link WICG spec when it exists.
 
-dictionary BudgetChunk {
-    double amount;
-    double expiration;
+[
+    RuntimeEnabled=Budget
+] interface BudgetState {
+    readonly attribute double budgetAt;
+    readonly attribute DOMTimeStamp time;
 };
