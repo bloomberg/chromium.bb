@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
@@ -34,18 +35,32 @@ void BrowserSavePasswordProgressLogger::LogFormSignatures(
     SavePasswordProgressLogger::StringID label,
     const autofill::PasswordForm& form) {
   autofill::FormStructure form_structure(form.form_data);
-  base::DictionaryValue log;
-  log.SetString(GetStringFromID(STRING_FORM_SIGNATURE),
-                ScrubNonDigit(form_structure.FormSignature()));
+  std::string message = GetStringFromID(label) + ": {\n";
+  message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
+             ScrubNonDigit(form_structure.FormSignature()) + "\n";
+  message += GetStringFromID(STRING_SIGNON_REALM) + ": " +
+             ScrubURL(GURL(form.signon_realm)) + "\n";
+  message +=
+      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.origin) + "\n";
+  message +=
+      GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form.action) + "\n";
+  message += GetStringFromID(STRING_FORM_NAME) + ": " +
+             ScrubElementID(form.form_data.name) + "\n";
+  message += GetStringFromID(STRING_FIELDS) + ": " + "\n";
+
   for (const autofill::AutofillField* field : form_structure) {
-    log.SetString(ScrubElementID(field->name),
-                  ScrubNonDigit(field->FieldSignature()));
+    std::string field_info = ScrubElementID(field->name) + ": " +
+                             ScrubNonDigit(field->FieldSignature()) + ", " +
+                             ScrubElementID(field->form_control_type);
+    if (!field->autocomplete_attribute.empty())
+      field_info += ", " + ScrubElementID(field->autocomplete_attribute);
+    message += field_info + "\n";
   }
-  LogValue(label, log);
+  message += "}";
+  SendLog(message);
 }
 
-BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {
-}
+BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   log_manager_->LogSavePasswordProgress(log);

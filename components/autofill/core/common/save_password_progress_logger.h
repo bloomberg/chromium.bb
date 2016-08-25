@@ -144,6 +144,8 @@ class SavePasswordProgressLogger {
     STRING_MATCH_IN_ADDITIONAL,
     STRING_USERNAME_FILLED,
     STRING_PASSWORD_FILLED,
+    STRING_FORM_NAME,
+    STRING_FIELDS,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };
@@ -170,15 +172,22 @@ class SavePasswordProgressLogger {
   // Converts |log| and its |label| to a string and calls SendLog on the result.
   void LogValue(StringID label, const base::Value& log);
 
-  // Replaces all characters satisfying IsUnwantedInElementID with a ' ', and
-  // lowercases all characters. This damages some valid HTML element IDs
-  // or names, but it is likely that it will be still possible to match the
-  // scrubbed string to the original ID or name in the HTML doc. That's good
-  // enough for the logging purposes, and provides some security benefits.
+  // Replaces all characters satisfying IsUnwantedInElementID with a ' '.
+  // This damages some valid HTML element IDs or names, but it is likely that it
+  // will be still possible to match the scrubbed string to the original ID or
+  // name in the HTML doc. That's good enough for the logging purposes, and
+  // provides some security benefits.
   static std::string ScrubElementID(const base::string16& element_id);
+
+  // The UTF-8 version of the function above.
+  static std::string ScrubElementID(std::string element_id);
 
   // Translates the StringID values into the corresponding strings.
   static std::string GetStringFromID(SavePasswordProgressLogger::StringID id);
+
+  // Removes privacy sensitive parts of |url| (currently all but host and
+  // scheme).
+  static std::string ScrubURL(const GURL& url);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SavePasswordProgressLogger);

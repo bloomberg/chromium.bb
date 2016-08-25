@@ -25,25 +25,11 @@ namespace autofill {
 
 namespace {
 
-// Removes privacy sensitive parts of |url| (currently all but host and scheme).
-std::string ScrubURL(const GURL& url) {
-  if (url.is_valid())
-    return url.GetWithEmptyPath().spec();
-  return std::string();
-}
-
 // Returns true for all characters which we don't want to see in the logged IDs
 // or names of HTML elements.
 bool IsUnwantedInElementID(char c) {
-  return !(c == '_' || c == '-' ||
-           base::IsAsciiAlpha(c) || base::IsAsciiDigit(c));
-}
-
-// The UTF-8 version of SavePasswordProgressLogger::ScrubElementID.
-std::string ScrubElementID8Bit(std::string element_id) {
-  std::replace_if(
-      element_id.begin(), element_id.end(), IsUnwantedInElementID, ' ');
-  return base::ToLowerASCII(element_id);
+  return !(c == '_' || c == '-' || base::IsAsciiAlpha(c) ||
+           base::IsAsciiDigit(c));
 }
 
 SavePasswordProgressLogger::StringID FormSchemeToStringID(
@@ -66,11 +52,9 @@ SavePasswordProgressLogger::StringID FormSchemeToStringID(
 
 }  // namespace
 
-SavePasswordProgressLogger::SavePasswordProgressLogger() {
-}
+SavePasswordProgressLogger::SavePasswordProgressLogger() {}
 
-SavePasswordProgressLogger::~SavePasswordProgressLogger() {
-}
+SavePasswordProgressLogger::~SavePasswordProgressLogger() {}
 
 void SavePasswordProgressLogger::LogPasswordForm(
     SavePasswordProgressLogger::StringID label,
@@ -103,8 +87,7 @@ void SavePasswordProgressLogger::LogHTMLForm(
     const std::string& name_or_id,
     const GURL& action) {
   DictionaryValue log;
-  log.SetString(GetStringFromID(STRING_NAME_OR_ID),
-                ScrubElementID8Bit(name_or_id));
+  log.SetString(GetStringFromID(STRING_NAME_OR_ID), ScrubElementID(name_or_id));
   log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(action));
   LogValue(label, log);
 }
@@ -150,7 +133,21 @@ void SavePasswordProgressLogger::LogValue(StringID label, const Value& log) {
 // static
 std::string SavePasswordProgressLogger::ScrubElementID(
     const base::string16& element_id) {
-  return ScrubElementID8Bit(base::UTF16ToUTF8(element_id));
+  return ScrubElementID(base::UTF16ToUTF8(element_id));
+}
+
+// static
+std::string SavePasswordProgressLogger::ScrubElementID(std::string element_id) {
+  std::replace_if(element_id.begin(), element_id.end(), IsUnwantedInElementID,
+                  ' ');
+  return element_id;
+}
+
+// Static
+std::string SavePasswordProgressLogger::ScrubURL(const GURL& url) {
+  if (url.is_valid())
+    return url.GetWithEmptyPath().spec();
+  return std::string();
 }
 
 // Note 1: Caching the ID->string map in an array would be probably faster, but
@@ -309,13 +306,13 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "wait_for_username";
     case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
       return "Instances of LoginModelObserver may be present";
-    case
-      SavePasswordProgressLogger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD:
+    case SavePasswordProgressLogger::
+        STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD:
       return "ChromePasswordManagerClient::WasLastNavigationHTTPError";
     case SavePasswordProgressLogger::STRING_HTTP_STATUS_CODE:
       return "HTTP status code for landing page";
-    case
-        SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
+    case SavePasswordProgressLogger::
+        STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
       return "Provisionally saved form is not HTML";
     case SavePasswordProgressLogger::STRING_PROCESS_MATCHES_METHOD:
       return "PasswordFormManager::ProcessMatches";
@@ -349,11 +346,11 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::STRING_PROCESS_FRAME_METHOD:
       return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
-      return "Signature of form, followed by field signatures";
+      return "Signature of form";
     case SavePasswordProgressLogger::STRING_FORM_MANAGER_STATE:
       return "PasswordFormManager::state_";
     case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
-      return "Adding manager for form with this signature";
+      return "Adding manager for form";
     case SavePasswordProgressLogger::STRING_UNOWNED_INPUTS_VISIBLE:
       return "Some control elements not associated to a form element are "
              "visible";
@@ -384,6 +381,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Filled username element named";
     case SavePasswordProgressLogger::STRING_PASSWORD_FILLED:
       return "Filled password element named";
+    case SavePasswordProgressLogger::STRING_FORM_NAME:
+      return "Form name";
+    case SavePasswordProgressLogger::STRING_FIELDS:
+      return "Form fields";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
