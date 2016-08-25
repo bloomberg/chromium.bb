@@ -120,6 +120,7 @@ struct ShellInitParams;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class StickyKeysController;
+class StylusMetricsRecorder;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
@@ -576,6 +577,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   std::unique_ptr<ui::EventHandler> speech_feedback_handler_;
+  std::unique_ptr<StylusMetricsRecorder> stylus_metrics_recorder_;
 #endif  // defined(OS_CHROMEOS)
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
