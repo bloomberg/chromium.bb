@@ -74,8 +74,9 @@ Viewport.SCROLL_INCREMENT = 40;
 
 /**
  * Predefined zoom factors to be used when zooming in/out. These are in
- * ascending order. This should match the list in
- * components/ui/zoom/page_zoom_constants.h
+ * ascending order. This should match the lists in
+ * components/ui/zoom/page_zoom_constants.h and
+ * chrome/browser/resources/settings/appearance_page/appearance_page.js
  */
 Viewport.ZOOM_FACTORS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 0.8, 0.9,
                          1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
