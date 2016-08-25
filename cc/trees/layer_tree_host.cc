@@ -567,6 +567,10 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
+const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
+  return proxy_->GetRendererCapabilities();
+}
+
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   NotifySwapPromiseMonitorsOfSetNeedsCommit();

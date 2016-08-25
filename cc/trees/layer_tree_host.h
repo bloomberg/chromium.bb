@@ -34,6 +34,7 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/renderer_capabilities.h"
 #include "cc/output/swap_promise.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
@@ -175,6 +176,8 @@ class CC_EXPORT LayerTreeHost {
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const {
     return rendering_stats_instrumentation_.get();
   }
+
+  virtual const RendererCapabilities& GetRendererCapabilities() const;
 
   void SetNeedsAnimate();
   virtual void SetNeedsUpdateLayers();

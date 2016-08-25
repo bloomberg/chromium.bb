@@ -199,6 +199,14 @@ void ThreadedChannel::DidCompleteSwapBuffers() {
                             impl().proxy_main_weak_ptr));
 }
 
+void ThreadedChannel::SetRendererCapabilitiesMainCopy(
+    const RendererCapabilities& capabilities) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyMain::SetRendererCapabilities,
+                            impl().proxy_main_weak_ptr, capabilities));
+}
+
 void ThreadedChannel::BeginMainFrameNotExpectedSoon() {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
@@ -235,11 +243,13 @@ void ThreadedChannel::RequestNewOutputSurface() {
                             impl().proxy_main_weak_ptr));
 }
 
-void ThreadedChannel::DidInitializeOutputSurface(bool success) {
+void ThreadedChannel::DidInitializeOutputSurface(
+    bool success,
+    const RendererCapabilities& capabilities) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::DidInitializeOutputSurface,
-                            impl().proxy_main_weak_ptr, success));
+                            impl().proxy_main_weak_ptr, success, capabilities));
 }
 
 void ThreadedChannel::DidCompletePageScaleAnimation() {

@@ -8,6 +8,10 @@ namespace cc {
 
 VulkanRenderer::~VulkanRenderer() {}
 
+const RendererCapabilitiesImpl& VulkanRenderer::Capabilities() const {
+  return capabilities_;
+}
+
 void VulkanRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   CompositorFrame* compositor_frame = nullptr;
   output_surface_->SwapBuffers(compositor_frame);

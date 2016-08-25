@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/output/renderer_capabilities_impl.h"
 
 namespace cc {
 class OutputSurface;
@@ -21,6 +22,8 @@ class CC_EXPORT DelegatingRenderer {
                      ResourceProvider* resource_provider);
   ~DelegatingRenderer();
 
+  const RendererCapabilitiesImpl& Capabilities() const { return capabilities_; }
+
   void DrawFrame(RenderPassList* render_passes_in_draw_order);
 
   void SwapBuffers(CompositorFrameMetadata metadata);
@@ -28,6 +31,7 @@ class CC_EXPORT DelegatingRenderer {
  private:
   OutputSurface* const output_surface_;
   ResourceProvider* const resource_provider_;
+  RendererCapabilitiesImpl capabilities_;
   std::unique_ptr<DelegatedFrameData> delegated_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);

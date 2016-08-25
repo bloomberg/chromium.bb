@@ -119,9 +119,6 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   internal_contents_scale_ = GetIdealContentsScale();
   internal_content_bounds_ =
       gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_);
-  internal_content_bounds_.SetToMin(
-      gfx::Size(resource_provider->max_texture_size(),
-                resource_provider->max_texture_size()));
 
   ReleaseUnmatchedSizeResources(resource_provider);
   AcquireResource(resource_provider);

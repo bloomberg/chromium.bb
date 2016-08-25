@@ -152,6 +152,7 @@ void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
   DCHECK(task_runner_provider_->IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());
   DCHECK(output_surface_creation_requested_);
+  renderer_capabilities_for_main_thread_ = RendererCapabilities();
 
   bool success;
   {
@@ -172,6 +173,12 @@ void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
     // and so output_surface_creation_requested remains true.
     layer_tree_host_->DidFailToInitializeOutputSurface();
   }
+}
+
+const RendererCapabilities& SingleThreadProxy::GetRendererCapabilities() const {
+  DCHECK(task_runner_provider_->IsMainThread());
+  DCHECK(!layer_tree_host_->output_surface_lost());
+  return renderer_capabilities_for_main_thread_;
 }
 
 void SingleThreadProxy::SetNeedsAnimate() {
@@ -448,6 +455,12 @@ void SingleThreadProxy::DidPrepareTiles() {
 
 void SingleThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
   layer_tree_host_->DidCompletePageScaleAnimation();
+}
+
+void SingleThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
+  DCHECK(task_runner_provider_->IsImplThread());
+  renderer_capabilities_for_main_thread_ =
+      layer_tree_host_impl_->GetRendererCapabilities().MainThreadCapabilities();
 }
 
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {

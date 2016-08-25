@@ -130,6 +130,7 @@ class LayerTreeHostImplTest : public testing::Test,
       host_impl_->ReleaseOutputSurface();
   }
 
+  void UpdateRendererCapabilitiesOnImplThread() override {}
   void DidLoseOutputSurfaceOnImplThread() override {}
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}

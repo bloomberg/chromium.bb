@@ -1267,6 +1267,10 @@ const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
   return layer_tree_host_impl_->debug_state();
 }
 
+const RendererCapabilitiesImpl& LayerTreeImpl::GetRendererCapabilities() const {
+  return layer_tree_host_impl_->GetRendererCapabilities();
+}
+
 ContextProvider* LayerTreeImpl::context_provider() const {
   return output_surface()->context_provider();
 }

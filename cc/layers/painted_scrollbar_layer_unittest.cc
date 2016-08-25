@@ -33,6 +33,9 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
 
   layer_tree_host_ =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_);
+  RendererCapabilities renderer_capabilities;
+  renderer_capabilities.max_texture_size = 2048;
+  layer_tree_host_->set_renderer_capabilities(renderer_capabilities);
 
   MockScrollbar* scrollbar = new MockScrollbar();
   scoped_refptr<PaintedScrollbarLayer> scrollbar_layer =

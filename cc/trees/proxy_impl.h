@@ -65,6 +65,7 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   };
 
   // LayerTreeHostImplClient implementation
+  void UpdateRendererCapabilitiesOnImplThread() override;
   void DidLoseOutputSurfaceOnImplThread() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;

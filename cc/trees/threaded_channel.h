@@ -117,12 +117,16 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
 
   // ChannelImpl Implementation
   void DidCompleteSwapBuffers() override;
+  void SetRendererCapabilitiesMainCopy(
+      const RendererCapabilities& capabilities) override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
   void DidLoseOutputSurface() override;
   void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface(bool success) override;
+  void DidInitializeOutputSurface(
+      bool success,
+      const RendererCapabilities& capabilities) override;
   void DidCompletePageScaleAnimation() override;
   void BeginMainFrame(std::unique_ptr<BeginMainFrameAndCommitState>
                           begin_main_frame_state) override;

@@ -9,6 +9,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/renderer_capabilities_impl.h"
 
 namespace cc {
 class DebugBorderDrawQuad;
@@ -29,6 +30,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   ~SoftwareRenderer() override;
 
+  const RendererCapabilitiesImpl& Capabilities() const override;
   void SwapBuffers(CompositorFrameMetadata metadata) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
@@ -94,6 +96,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   bool disable_picture_quad_image_filtering_ = false;
 
+  RendererCapabilitiesImpl capabilities_;
   bool is_scissor_enabled_ = false;
   gfx::Rect scissor_rect_;
 

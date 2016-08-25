@@ -22,7 +22,8 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
                  int highp_threshold_min);
   ~VulkanRenderer() override;
 
-  // Implementation of public DirectRenderer functions.
+  // Implementation of public Renderer functions.
+  const RendererCapabilitiesImpl& Capabilities() const override;
   void SwapBuffers(const CompositorFrameMetadata& metadata) override;
   void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) override;
 
@@ -54,6 +55,8 @@ class CC_EXPORT VulkanRenderer : public DirectRenderer {
       std::unique_ptr<CopyOutputRequest> request) override;
 
  private:
+  RendererCapabilitiesImpl capabilities_;
+
   DISALLOW_COPY_AND_ASSIGN(VulkanRenderer);
 };
 

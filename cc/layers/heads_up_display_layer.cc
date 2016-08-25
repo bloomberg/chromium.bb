@@ -41,7 +41,12 @@ void HeadsUpDisplayLayer::PrepareForCalculateDrawProperties(
   matrix.MakeIdentity();
 
   if (layer_tree_host()->debug_state().ShowHudRects()) {
-    bounds = device_viewport_in_layout_pixels;
+    int max_texture_size =
+        layer_tree_host()->GetRendererCapabilities().max_texture_size;
+    bounds.SetSize(std::min(max_texture_size,
+                            device_viewport_in_layout_pixels.width()),
+                   std::min(max_texture_size,
+                            device_viewport_in_layout_pixels.height()));
   } else {
     int size = 256;
     bounds.SetSize(size, size);

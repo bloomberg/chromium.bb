@@ -9,6 +9,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/renderer_capabilities.h"
 #include "cc/trees/channel_main.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
@@ -49,12 +50,14 @@ class CC_EXPORT ProxyMain : public Proxy {
   };
 
   void DidCompleteSwapBuffers();
+  void SetRendererCapabilities(const RendererCapabilities& capabilities);
   void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
   void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
   void DidLoseOutputSurface();
   void RequestNewOutputSurface();
-  void DidInitializeOutputSurface(bool success);
+  void DidInitializeOutputSurface(bool success,
+                                  const RendererCapabilities& capabilities);
   void DidCompletePageScaleAnimation();
   void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
@@ -82,6 +85,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool CommitToActiveTree() const override;
   void SetOutputSurface(OutputSurface* output_surface) override;
   void SetVisible(bool visible) override;
+  const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
   void SetNeedsCommit() override;
@@ -135,6 +139,8 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool started_;
 
   bool defer_commits_;
+
+  RendererCapabilities renderer_capabilities_;
 
   std::unique_ptr<ChannelMain> channel_main_;
 

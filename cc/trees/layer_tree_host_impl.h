@@ -96,6 +96,7 @@ enum class GpuRasterizationStatus {
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
+  virtual void UpdateRendererCapabilitiesOnImplThread() = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;
@@ -421,6 +422,7 @@ class CC_EXPORT LayerTreeHostImpl
   ImageDecodeController* image_decode_controller() {
     return image_decode_controller_.get();
   }
+  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
   bool SwapBuffers(const FrameData& frame);
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);

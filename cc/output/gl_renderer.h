@@ -15,6 +15,7 @@
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer_draw_cache.h"
 #include "cc/output/program_binding.h"
+#include "cc/output/renderer_capabilities_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -56,6 +57,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
              TextureMailboxDeleter* texture_mailbox_deleter,
              int highp_threshold_min);
   ~GLRenderer() override;
+
+  const RendererCapabilitiesImpl& Capabilities() const override;
 
   void SwapBuffers(CompositorFrameMetadata metadata) override;
   void SwapBuffersComplete() override;
@@ -279,6 +282,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
+
+  RendererCapabilitiesImpl capabilities_;
 
   unsigned offscreen_framebuffer_id_;
 

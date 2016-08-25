@@ -24,6 +24,9 @@ DelegatingRenderer::DelegatingRenderer(OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
     : output_surface_(output_surface), resource_provider_(resource_provider) {
   DCHECK(resource_provider_);
+
+  capabilities_.max_texture_size = resource_provider_->max_texture_size();
+  capabilities_.best_texture_format = resource_provider_->best_texture_format();
 }
 
 DelegatingRenderer::~DelegatingRenderer() = default;
