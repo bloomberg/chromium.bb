@@ -287,6 +287,13 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
                     std::string& name) {
   name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
+
+  // https://crbug.com/582312: Prepend "Get" if method name conflicts with type.
+  const clang::IdentifierInfo* return_type =
+      decl.getReturnType().getBaseTypeIdentifier();
+  if (return_type && return_type->getName() == name)
+    name = "Get" + name;
+
   return true;
 }
 

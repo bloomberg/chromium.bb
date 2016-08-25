@@ -172,6 +172,23 @@ struct StructInBlink {
   bool Function() { return true; }
 };
 
+class BitVector {
+ public:
+  class OutOfLineBits {};
+  enum Foo { kBlah };
+  struct Bar {};
+
+  // Naive renaming will break the build, by leaving return type the same
+  // as method the name - to avoid this "Get" prefix needs to be prepended
+  // as suggested in https://crbug.com/582312#c17.
+  const OutOfLineBits* GetOutOfLineBits() const { return nullptr; }
+  Foo GetFoo() { return kBlah; }
+  const Bar& GetBar() const { return bar_; }
+
+ private:
+  Bar bar_;
+};
+
 }  // namespace blink
 
 namespace WTF {
