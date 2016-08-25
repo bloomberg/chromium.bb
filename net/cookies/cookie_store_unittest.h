@@ -597,18 +597,20 @@ TYPED_TEST_P(CookieStoreTest, ValidSubdomainTest) {
 // no side-effect. An invalid domain in this context is one which does
 // not match the originating domain.
 TYPED_TEST_P(CookieStoreTest, InvalidDomainTest) {
-#if defined(__IPHONE_10_0)
-  // TODO(crbug.com/639167): Reenable this test on iOS10.
-  return;
-#endif
   CookieStore* cs = this->GetCookieStore();
   GURL url_foobar("http://foo.bar.com");
 
   // More specific sub-domain than allowed.
   EXPECT_FALSE(this->SetCookie(cs, url_foobar, "a=1; domain=.yo.foo.bar.com"));
+
+// The iOS networking stack uses the iOS cookie parser, which we do not
+// control. Its handling of multiple domain= values in cookie string varies
+// depending on iOS version. See https://crbug.com/639167
+#if !defined(OS_IOS)
   // Regression test for https://crbug.com/601786
   EXPECT_FALSE(
       this->SetCookie(cs, url_foobar, "a=1; domain=.yo.foo.bar.com; domain="));
+#endif  // !defined(OS_IOS)
 
   EXPECT_FALSE(this->SetCookie(cs, url_foobar, "b=2; domain=.foo.com"));
   EXPECT_FALSE(this->SetCookie(cs, url_foobar, "c=3; domain=.bar.foo.com"));
