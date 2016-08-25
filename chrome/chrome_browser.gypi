@@ -114,6 +114,8 @@
       'browser/budget_service/budget_manager_factory.h',
       'browser/budget_service/budget_database.cc',
       'browser/budget_service/budget_database.h',
+      'browser/budget_service/budget_service_impl.cc',
+      'browser/budget_service/budget_service_impl.h',
       'browser/character_encoding.cc',
       'browser/character_encoding.h',
       'browser/chrome_browser_application_mac.h',

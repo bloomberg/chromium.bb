@@ -23,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 
 using content::BrowserThread;
 
@@ -102,9 +103,9 @@ void BudgetManager::RegisterProfilePrefs(
 }
 
 // static
-double BudgetManager::GetCost(CostType type) {
+double BudgetManager::GetCost(blink::mojom::BudgetOperationType type) {
   switch (type) {
-    case CostType::SILENT_PUSH:
+    case blink::mojom::BudgetOperationType::SILENT_PUSH:
       return 2.0;
       // No default case.
   }

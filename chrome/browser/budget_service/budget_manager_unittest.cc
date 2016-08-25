@@ -17,6 +17,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 
 namespace {
 
@@ -193,8 +194,8 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
     budget = GetBudget();
 
     if (i % 10 == 0) {
-      double cost =
-          BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
+      double cost = BudgetManager::GetCost(
+          blink::mojom::BudgetOperationType::SILENT_PUSH);
       StoreBudget(budget - cost);
     }
   }

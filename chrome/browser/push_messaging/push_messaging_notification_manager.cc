@@ -31,6 +31,7 @@
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -212,7 +213,8 @@ void PushMessagingNotificationManager::DidGetBudget(
 
   // Generate histograms for the GetBudget calls which would return "no budget"
   // or "low budget" if an API was available to app developers.
-  double cost = BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
+  double cost =
+      BudgetManager::GetCost(blink::mojom::BudgetOperationType::SILENT_PUSH);
   if (budget < cost)
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", ses_score);
   else if (budget < 2.0 * cost)
@@ -282,7 +284,8 @@ void PushMessagingNotificationManager::CheckForMissedNotification(
 
   // If the service needed to show a notification but did not, update the
   // budget.
-  double cost = BudgetManager::GetCost(BudgetManager::CostType::SILENT_PUSH);
+  double cost =
+      BudgetManager::GetCost(blink::mojom::BudgetOperationType::SILENT_PUSH);
   if (budget >= cost) {
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);

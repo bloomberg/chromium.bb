@@ -37,6 +37,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/browsing_data/registrable_domain_filter_builder.h"
+#include "chrome/browser/budget_service/budget_service_impl.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_net_benchmarking_message_filter.h"
@@ -2864,6 +2865,9 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
           content::BrowserThread::UI);
   registry->AddInterface(
       base::Bind(&startup_metric_utils::StartupMetricHostImpl::Create),
+      ui_task_runner);
+  registry->AddInterface(
+      base::Bind(&BudgetServiceImpl::Create, render_process_host->GetID()),
       ui_task_runner);
 
 #if defined(OS_CHROMEOS)

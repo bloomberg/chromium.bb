@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -34,13 +35,8 @@ class BudgetManager : public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  enum class CostType {
-    // The cost of silencing a push message.
-    SILENT_PUSH = 0,
-  };
-
   // Query for the base cost for any background processing.
-  static double GetCost(CostType type);
+  static double GetCost(blink::mojom::BudgetOperationType type);
 
   using GetBudgetCallback = base::Callback<void(double budget)>;
 
