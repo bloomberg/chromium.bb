@@ -158,7 +158,7 @@ public class WindowAndroid {
      * @return The time interval between two consecutive vsync pulses in milliseconds.
      */
     public long getVsyncPeriodInMillis() {
-        return mVSyncMonitor.getVSyncPeriodInMicroseconds() * 1000;
+        return mVSyncMonitor.getVSyncPeriodInMicroseconds() / 1000;
     }
 
     /**
