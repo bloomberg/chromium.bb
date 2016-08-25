@@ -26,7 +26,6 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
-#include "cc/test/test_context_provider.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -741,6 +740,60 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
             vertical_scrollbar_layer_->ComputeThumbQuadRect());
 }
 
+class ScrollbarLayerTestWithFixedScrollbarBounds : public LayerTreeTest {
+ public:
+  ScrollbarLayerTestWithFixedScrollbarBounds() {}
+
+  void SetScrollbarBounds(const gfx::Size& bounds) { bounds_ = bounds; }
+
+  void BeginTest() override {
+    scroll_layer_ = Layer::Create();
+    layer_tree()->root_layer()->AddChild(scroll_layer_);
+
+    std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar);
+    scrollbar_layer_ = PaintedScrollbarLayer::Create(std::move(scrollbar),
+                                                     scroll_layer_->id());
+    scrollbar_layer_->SetScrollLayer(scroll_layer_->id());
+    scrollbar_layer_->SetLayerTreeHost(layer_tree_host());
+    scrollbar_layer_->SetBounds(bounds_);
+    scrollbar_layer_->SetIsDrawable(true);
+    layer_tree()->root_layer()->AddChild(scrollbar_layer_);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommitAndDrawFrame() override {
+    const int kMaxTextureSize =
+        layer_tree_host()->GetRendererCapabilities().max_texture_size;
+
+    // Check first that we're actually testing something.
+    EXPECT_GT(scrollbar_layer_->bounds().width(), kMaxTextureSize);
+
+    EXPECT_EQ(scrollbar_layer_->internal_content_bounds().width(),
+              kMaxTextureSize - 1);
+    EXPECT_EQ(scrollbar_layer_->internal_content_bounds().height(),
+              kMaxTextureSize - 1);
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<PaintedScrollbarLayer> scrollbar_layer_;
+  scoped_refptr<Layer> scroll_layer_;
+  gfx::Size bounds_;
+};
+
+TEST_F(ScrollbarLayerTestWithFixedScrollbarBounds, MaxTextureSize) {
+  std::unique_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  int max_size = 0;
+  context->getIntegerv(GL_MAX_TEXTURE_SIZE, &max_size);
+  SetScrollbarBounds(gfx::Size(max_size + 100, max_size + 100));
+  RunTest(CompositorMode::THREADED);
+}
+
 class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
  public:
   void TestResourceUpload(int num_updates,
@@ -974,6 +1027,7 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     scrollbar_layer->set_visible_layer_rect(
         gfx::Rect(scrollbar_location, scrollbar_layer->bounds()));
 
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     layer_tree_->SetDeviceScaleFactor(test_scale);
@@ -997,6 +1051,16 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
               scrollbar_layer->internal_content_bounds().width());
     EXPECT_LE(thumb_size.height(),
               scrollbar_layer->internal_content_bounds().height());
+    EXPECT_LE(track_size.width(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(track_size.height(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(thumb_size.width(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+    EXPECT_LE(thumb_size.height(),
+              layer_tree_host_->GetRendererCapabilities().max_texture_size);
+
+    testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 };
 
@@ -1007,13 +1071,8 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
   TestResourceUpload(1.41f);
   TestResourceUpload(4.1f);
 
-  // Try something extreme to be larger than max texture size, and make it a
-  // non-integer for funsies.
-  scoped_refptr<TestContextProvider> context = TestContextProvider::Create();
-  context->BindToCurrentThread();
-  int max_texture_size = 0;
-  context->ContextGL()->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-  TestResourceUpload(max_texture_size / 9.9f);
+  // Try something extreme to make sure it gets clamped.
+  TestResourceUpload(2147483647.0f);
 }
 
 class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {

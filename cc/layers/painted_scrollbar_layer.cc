@@ -78,6 +78,26 @@ ScrollbarOrientation PaintedScrollbarLayer::orientation() const {
   return scrollbar_->Orientation();
 }
 
+int PaintedScrollbarLayer::MaxTextureSize() {
+  DCHECK(layer_tree_host());
+  return layer_tree_host()->GetRendererCapabilities().max_texture_size;
+}
+
+float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
+  // If the scaled bounds() is bigger than the max texture size of the
+  // device, we need to clamp it by rescaling, since this is used
+  // below to set the texture size.
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
+  if (scaled_bounds.width() > MaxTextureSize() ||
+      scaled_bounds.height() > MaxTextureSize()) {
+    if (bounds().width() > bounds().height())
+      return (MaxTextureSize() - 1) / static_cast<float>(bounds().width());
+    else
+      return (MaxTextureSize() - 1) / static_cast<float>(bounds().height());
+  }
+  return scale;
+}
+
 void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
 
@@ -182,7 +202,8 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
     scale = std::max(transform_scales.x(), transform_scales.y());
   }
   bool changed = false;
-  changed |= UpdateProperty(scale, &internal_contents_scale_);
+  changed |= UpdateProperty(ClampScaleToMaxTextureSize(scale),
+                            &internal_contents_scale_);
   changed |=
       UpdateProperty(gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_),
                      &internal_content_bounds_);
