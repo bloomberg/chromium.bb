@@ -222,7 +222,7 @@ BrowserShortcutLauncherItemController::ItemSelected(const ui::Event& event) {
 
   // In case of a keyboard event, we were called by a hotkey. In that case we
   // activate the next item in line if an item of our list is already active.
-  if (event.type() & ui::ET_KEY_RELEASED) {
+  if (event.type() == ui::ET_KEY_RELEASED) {
     return ActivateOrAdvanceToNextBrowser();
   }
 
