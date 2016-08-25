@@ -34,17 +34,16 @@ namespace content {
 
 namespace {
 
-// We add a UMA histogram measuring the execution time of the Render() method
-// every |kNumCallbacksBetweenRenderTimeHistograms| callback. Assuming 10ms
-// between each callback leads to one UMA update each 100ms.
-const int kNumCallbacksBetweenRenderTimeHistograms = 10;
-
 // Audio parameters that don't change.
 const media::AudioParameters::Format kFormat =
     media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
 const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 const int kChannels = 2;
 const int kBitsPerSample = 16;
+
+// Used for UMA histograms.
+const int kRenderTimeHistogramMinMicroseconds = 100;
+const int kRenderTimeHistogramMaxMicroseconds = 1 * 1000 * 1000;  // 1 second
 
 // This is a simple wrapper class that's handed out to users of a shared
 // WebRtcAudioRenderer instance.  This class maintains the per-user 'playing'
@@ -171,8 +170,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       audio_delay_milliseconds_(0),
       sink_params_(kFormat, kChannelLayout, 0, kBitsPerSample, 0),
       output_device_id_(device_id),
-      security_origin_(security_origin),
-      render_callback_count_(0) {
+      security_origin_(security_origin) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
       source_render_frame_id, session_id, sink_params_.effects()));
@@ -251,7 +249,6 @@ void WebRtcAudioRenderer::Play() {
     return;
 
   playing_state_.set_playing(true);
-  render_callback_count_ = 0;
 
   OnPlayStateChanged(media_stream_, &playing_state_);
 }
@@ -305,6 +302,15 @@ void WebRtcAudioRenderer::EnterPauseState() {
 void WebRtcAudioRenderer::Stop() {
   DVLOG(1) << "WebRtcAudioRenderer::Stop()";
   DCHECK(thread_checker_.CalledOnValidThread());
+  // If |max_render_time_| is zero, no render call has been made.
+  if (!max_render_time_.is_zero()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Media.Audio.Render.GetSourceDataTimeMax.WebRTC",
+        max_render_time_.InMicroseconds(), kRenderTimeHistogramMinMicroseconds,
+        kRenderTimeHistogramMaxMicroseconds, 50);
+    max_render_time_ = base::TimeDelta();
+  }
+
   {
     base::AutoLock auto_lock(lock_);
     if (state_ == UNINITIALIZED)
@@ -476,10 +482,17 @@ void WebRtcAudioRenderer::SourceCallback(
   if (state_ != PLAYING)
     audio_bus->Zero();
 
-  if (++render_callback_count_ == kNumCallbacksBetweenRenderTimeHistograms) {
+  // Measure the elapsed time for this function and log it to UMA. Store the max
+  // value. Don't do this for low resolution clocks to not skew data.
+  if (base::TimeTicks::IsHighResolution()) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    render_callback_count_ = 0;
-    UMA_HISTOGRAM_TIMES("WebRTC.AudioRenderTimes", elapsed);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Audio.Render.GetSourceDataTime.WebRTC",
+                                elapsed.InMicroseconds(),
+                                kRenderTimeHistogramMinMicroseconds,
+                                kRenderTimeHistogramMaxMicroseconds, 50);
+
+    if (elapsed > max_render_time_)
+      max_render_time_ = elapsed;
   }
 }
 

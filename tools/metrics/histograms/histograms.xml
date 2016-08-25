@@ -21989,6 +21989,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.Render.GetSourceDataTime.WebRTC"
+    units="microseconds">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The time spent to get audio data from the source. For WebRTC, it's the time
+    spent in WebRtcAudioRenderer::SourceCallback. Logged every function call,
+    which is every 10 ms.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.GetSourceDataTimeMax.WebRTC"
+    units="microseconds">
+  <owner>grunell@chromium.org</owner>
+  <summary>
+    The maximum time spent to get audio data from the source during a session.
+    For WebRTC, it's the time spent in WebRtcAudioRenderer::SourceCallback. A
+    session is between Start() and Stop() of WebRtcAudioRenderer.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.Render.Glitches" units="glitches">
   <owner>tommi@chromium.org</owner>
   <summary>
@@ -66301,6 +66321,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebRTC.AudioRenderTimes" units="ms">
+  <obsolete>
+    Deprecated as of Aug 2016, replaced by
+    Media.Audio.Render.GetSourceDataTime.WebRTC.
+  </obsolete>
   <owner>henrika@chromium.org</owner>
   <summary>
     Measures the time spent in WebRtcAudioRenderer::SourceCallback. Sampled 10
