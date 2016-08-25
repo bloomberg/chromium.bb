@@ -87,6 +87,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private final List<DownloadHistoryItemWrapper> mFilteredItems = new ArrayList<>();
     private final ComponentName mParentComponent;
     private final boolean mShowOffTheRecord;
+    private final LoadingStateDelegate mLoadingDelegate;
 
     private BackendProvider mBackendProvider;
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
@@ -96,6 +97,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         mShowOffTheRecord = showOffTheRecord;
         mParentComponent = parentComponent;
         setHasStableIds(true);
+        mLoadingDelegate = new LoadingStateDelegate(mShowOffTheRecord);
     }
 
     public void initialize(BackendProvider provider) {
@@ -116,6 +118,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
+        mLoadingDelegate.updateLoadingState(
+                isOffTheRecord ? LoadingStateDelegate.OFF_THE_RECORD_HISTORY_LOADED
+                        : LoadingStateDelegate.DOWNLOAD_HISTORY_LOADED);
+
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         list.clear();
         int[] mItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
@@ -135,19 +141,20 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             }
         }
 
-        filter(DownloadFilter.FILTER_ALL);
         if (!isOffTheRecord) recordDownloadCountHistograms(mItemCounts, result.size());
+
+        if (mLoadingDelegate.isLoaded()) filter(mLoadingDelegate.getPendingFilter());
     }
 
     /** Called when the user's offline page history has been gathered. */
     private void onAllOfflinePagesRetrieved(List<OfflinePageDownloadItem> result) {
+        mLoadingDelegate.updateLoadingState(LoadingStateDelegate.OFFLINE_PAGE_LOADED);
         mOfflinePageItems.clear();
         for (OfflinePageDownloadItem item : result) {
             mOfflinePageItems.add(createOfflinePageItemWrapper(item));
         }
 
-        // TODO(ianwen): Implement a loading screen to prevent filter-changing wonkiness.
-        filter(DownloadFilter.FILTER_ALL);
+        if (mLoadingDelegate.isLoaded()) filter(mLoadingDelegate.getPendingFilter());
 
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.OfflinePage",
                 result.size());
@@ -266,7 +273,13 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public void onFilterChanged(int filter) {
-        filter(filter);
+        if (mLoadingDelegate.isLoaded()) {
+            filter(filter);
+        } else {
+            // On tablets, this method might be called before anything is loaded. In this case,
+            // cache the filter, and wait till the backends are loaded.
+            mLoadingDelegate.setPendingFilter(filter);
+        }
     }
 
     @Override
@@ -424,5 +437,59 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     private Map<String, Boolean> getExternallyDeletedItemsMap(boolean isOffTheRecord) {
         return isOffTheRecord ? sExternallyDeletedOffTheRecordItems : sExternallyDeletedItems;
+    }
+    /**
+     * Determines when the data from all of the backends has been loaded.
+     * <p>
+     * TODO(ianwen): add a timeout mechanism to either the DownloadLoadingDelegate or to the
+     * backend so that if it takes forever to load one of the backend, users are still able to see
+     * the other two.
+     */
+    private static class LoadingStateDelegate {
+        public static final int DOWNLOAD_HISTORY_LOADED = 0b001;
+        public static final int OFF_THE_RECORD_HISTORY_LOADED = 0b010;
+        public static final int OFFLINE_PAGE_LOADED = 0b100;
+
+        private static final int ALL_LOADED = 0b111;
+
+        private int mState;
+        private int mPendingFilter = DownloadFilter.FILTER_ALL;
+
+        /**
+         * @param offTheRecord Whether this delegate needs to consider incognito.
+         */
+        public LoadingStateDelegate(boolean offTheRecord) {
+            // If we don't care about incognito, mark it as loaded.
+            mState = offTheRecord ? 0 : OFF_THE_RECORD_HISTORY_LOADED;
+        }
+
+        /**
+         * Tells this delegate one of the three backends has been loaded.
+         */
+        public void updateLoadingState(int flagToUpdate) {
+            mState |= flagToUpdate;
+        }
+
+        /**
+         * @return Whether all backends are loaded.
+         */
+        public boolean isLoaded() {
+            return mState == ALL_LOADED;
+        }
+
+        /**
+         * Caches a filter for when the backends have loaded.
+         */
+        public void setPendingFilter(int filter) {
+            mPendingFilter = filter;
+        }
+
+        /**
+         * @return The cached filter. If there are no such filter, fall back to
+         *         {@link DownloadFilter#FILTER_ALL}.
+         */
+        public int getPendingFilter() {
+            return mPendingFilter;
+        }
     }
 }

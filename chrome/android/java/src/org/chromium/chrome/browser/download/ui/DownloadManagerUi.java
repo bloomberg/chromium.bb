@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBri
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
+import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -117,6 +118,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final ListView mFilterView;
     private final RecyclerView mRecyclerView;
     private final View mEmptyView;
+    private final LoadingView mLoadingView;
 
     private BasicNativePage mNativePage;
     private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
@@ -131,6 +133,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 mEmptyView.setVisibility(View.GONE);
                 mRecyclerView.setVisibility(View.VISIBLE);
             }
+            // At inflation, the RecyclerView is set to gone, and the loading view is visible. As
+            // long as the adapter data changes, we show the recycler view, and hide loading view.
+            mLoadingView.hideLoadingUI();
         }
     };
 
@@ -149,6 +154,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mHistoryAdapter.registerAdapterDataObserver(mAdapterObserver);
 
         mEmptyView = mMainView.findViewById(R.id.empty_view);
+
+        mLoadingView = (LoadingView) mMainView.findViewById(R.id.loading_view);
+        mLoadingView.showLoadingUI();
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
@@ -186,8 +194,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         }
 
         mToolbar.setTitle(R.string.menu_downloads);
-
-        // TODO(ianwen): add support for loading state.
     }
 
     /**
