@@ -37,15 +37,6 @@ uint64_t CalculateNearestPowerOfTwo(uint64_t n) {
   return ret;
 }
 
-// The following structures, TestVector and ProofTestVector are used for
-// definining test proofs later on.
-
-// A single hash node.
-struct TestVector {
-  const char* const str;
-  size_t length_bytes;
-};
-
 // A single consistency proof. Contains the old and new tree sizes
 // (snapshot1 and snapshot2), the length of the proof (proof_length) and
 // at most 3 proof nodes (all test proofs will be for a tree of size 8).
@@ -53,72 +44,70 @@ struct ProofTestVector {
   uint64_t snapshot1;
   uint64_t snapshot2;
   size_t proof_length;
-  TestVector proof[3];
+  const char* const proof[3];
 };
 
 // All test data replicated from
 // https://github.com/google/certificate-transparency/blob/c41b090ecc14ddd6b3531dc7e5ce36b21e253fdd/cpp/merkletree/merkle_tree_test.cc
 // A hash of the empty string.
-const TestVector kSHA256EmptyTreeHash = {
-    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", 32};
+const uint8_t kSHA256EmptyTreeHash[32] = {
+    0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4,
+    0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b,
+    0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55};
 
 // Node hashes for a sample tree of size 8 (each element in this array is
 // a node hash, not leaf data; order represents order of the nodes in the tree).
-const TestVector kSHA256Roots[8] = {
-    {"6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d", 32},
-    {"fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125", 32},
-    {"aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77", 32},
-    {"d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7", 32},
-    {"4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4", 32},
-    {"76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef", 32},
-    {"ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c", 32},
-    {"5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328", 32}};
+const char* const kSHA256Roots[8] = {
+    "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+    "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+    "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+    "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+    "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+    "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+    "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+    "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"};
 
 // A collection of consistency proofs between various sub-trees of the tree
 // defined by |kSHA256Roots|.
 const ProofTestVector kSHA256Proofs[4] = {
     // Empty consistency proof between trees of the same size (1).
-    {1, 1, 0, {{"", 0}, {"", 0}, {"", 0}}},
+    {1, 1, 0, {"", "", ""}},
     // Consistency proof between tree of size 1 and tree of size 8, with 3
     // nodes in the proof.
     {1,
      8,
      3,
-     {{"96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7", 32},
-      {"5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e", 32},
-      {"6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
-       32}}},
+     {"96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+      "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"}},
     // Consistency proof between tree of size 6 and tree of size 8, with 3
     // nodes in the proof.
     {6,
      8,
      3,
-     {{"0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a", 32},
-      {"ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0", 32},
-      {"d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
-       32}}},
+     {"0ebc5d3437fbe2db158b9f126a1d118e308181031d0a949f8dededebc558ef6a",
+      "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+      "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"}},
     // Consistency proof between tree of size 2 and tree of size 5, with 2
     // nodes in the proof.
     {2,
      5,
      2,
-     {{"5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e", 32},
-      {"bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b", 32},
-      {"", 0}}}};
+     {"5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+      "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b", ""}}};
 
 // Decodes a hexadecimal string into the binary data it represents.
-std::string HexToBytes(const char* hex_data, size_t hex_data_length) {
+std::string HexToBytes(const std::string& hex_data) {
   std::vector<uint8_t> output;
   std::string result;
-  std::string hex_data_input(hex_data, hex_data_length);
   if (base::HexStringToBytes(hex_data, &output))
-    result.assign(reinterpret_cast<const char*>(&output[0]), output.size());
+    result.assign(output.begin(), output.end());
   return result;
 }
 
 std::string GetEmptyTreeHash() {
-  return HexToBytes(kSHA256EmptyTreeHash.str,
-                    kSHA256EmptyTreeHash.length_bytes);
+  return std::string(std::begin(kSHA256EmptyTreeHash),
+                     std::end(kSHA256EmptyTreeHash));
 }
 
 // Creates a ct::MerkleConsistencyProof and returns the result of
@@ -382,16 +371,15 @@ TEST_F(CTLogVerifierTest, VerifiesValidConsistencyProofs) {
   for (size_t i = 0; i < arraysize(kSHA256Proofs); ++i) {
     proof.clear();
     for (size_t j = 0; j < kSHA256Proofs[i].proof_length; ++j) {
-      const TestVector& v = kSHA256Proofs[i].proof[j];
-      proof.push_back(HexToBytes(v.str, v.length_bytes));
+      const char* const v = kSHA256Proofs[i].proof[j];
+      proof.push_back(HexToBytes(v));
     }
     const uint64_t snapshot1 = kSHA256Proofs[i].snapshot1;
     const uint64_t snapshot2 = kSHA256Proofs[i].snapshot2;
-    const TestVector& old_root = kSHA256Roots[snapshot1 - 1];
-    const TestVector& new_root = kSHA256Roots[snapshot2 - 1];
-    VerifierConsistencyCheck(
-        snapshot1, snapshot2, HexToBytes(old_root.str, old_root.length_bytes),
-        HexToBytes(new_root.str, new_root.length_bytes), proof);
+    const char* const old_root = kSHA256Roots[snapshot1 - 1];
+    const char* const new_root = kSHA256Roots[snapshot2 - 1];
+    VerifierConsistencyCheck(snapshot1, snapshot2, HexToBytes(old_root),
+                             HexToBytes(new_root), proof);
   }
 }
 
@@ -403,11 +391,6 @@ const char kLeafPrefix[] = {'\x00'};
 // code.
 class TreeHasher {
  public:
-  static std::string HashEmpty() {
-    return HexToBytes(kSHA256EmptyTreeHash.str,
-                      kSHA256EmptyTreeHash.length_bytes);
-  }
-
   static std::string HashLeaf(const std::string& leaf) {
     SHA256HashValue sha256;
     memset(sha256.data, 0, sizeof(sha256.data));
@@ -428,7 +411,7 @@ class TreeHasher {
 // specified in |inputs|.
 std::string ReferenceMerkleTreeHash(std::string* inputs, uint64_t input_size) {
   if (!input_size)
-    return TreeHasher::HashEmpty();
+    return GetEmptyTreeHash();
   if (input_size == 1)
     return TreeHasher::HashLeaf(inputs[0]);
 
