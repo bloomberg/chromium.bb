@@ -85,9 +85,6 @@ ui::PointerDetails GetEventPointerDetails(
     case BTN_TOOL_PEN:
       type = ui::EventPointerType::POINTER_TYPE_PEN;
       break;
-    case BTN_TOOL_RUBBER:
-      type = ui::EventPointerType::POINTER_TYPE_ERASER;
-      break;
     default:
       type = ui::EventPointerType::POINTER_TYPE_TOUCH;
   }
@@ -333,7 +330,6 @@ void TouchEventConverterEvdev::ProcessKey(const input_event& input) {
   switch (input.code) {
     case BTN_TOUCH:
     case BTN_LEFT:
-    case BTN_0:
       events_[current_slot_].btn_left.down = input.value;
       events_[current_slot_].btn_left.changed = true;
       break;
@@ -346,7 +342,6 @@ void TouchEventConverterEvdev::ProcessKey(const input_event& input) {
       events_[current_slot_].btn_middle.changed = true;
       break;
     case BTN_TOOL_PEN:
-    case BTN_TOOL_RUBBER:
       // Do not change tool types while touching to prevent inconsistencies
       // from switching between Mouse and TouchEvents.
       if (events_[current_slot_].was_touching)

@@ -2963,8 +2963,6 @@ class WaylandPointerStylusDelegate : public PointerStylusDelegate {
     uint wayland_type = ZWP_POINTER_STYLUS_V1_TOOL_TYPE_MOUSE;
     if (type == ui::EventPointerType::POINTER_TYPE_PEN)
       wayland_type = ZWP_POINTER_STYLUS_V1_TOOL_TYPE_PEN;
-    else if (type == ui::EventPointerType::POINTER_TYPE_ERASER)
-      wayland_type = ZWP_POINTER_STYLUS_V1_TOOL_TYPE_ERASER;
     zwp_pointer_stylus_v1_send_tool_change(resource_, wayland_type);
   }
   void OnPointerForce(base::TimeTicks time_stamp, float force) override {

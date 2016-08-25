@@ -173,7 +173,6 @@ enum class EventPointerType : int {
   POINTER_TYPE_MOUSE,
   POINTER_TYPE_PEN,
   POINTER_TYPE_TOUCH,
-  POINTER_TYPE_ERASER,
 };
 
 // Device type for gesture events.
