@@ -170,8 +170,15 @@ HTMLElement* ScriptCustomElementDefinition::createElementSync(
     // 6. If definition is non-null
     // 6.1. If the synchronous custom elements flag is set:
     // 6.1.2. Set result to Construct(C). Rethrow any exceptions.
-    Element* element = nullptr;
+
+    // Create an element and push to the construction stack.
+    // V8HTMLElement::constructorCustom() can only refer to
+    // window.document(), but it is different from the document here
+    // when it is an import document.  This is not exactly what the
+    // spec defines, but the public behavior matches to the spec.
+    Element* element = createElementForConstructor(document);
     {
+        ConstructionStackScope constructionStackScope(this, element);
         v8::TryCatch tryCatch(m_scriptState->isolate());
         element = runConstructor();
         if (tryCatch.HasCaught()) {

@@ -424,8 +424,6 @@ crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
-crbug.com/640465 custom-elements/imports/create-element-in-import.html [ Failure ]
-crbug.com/640465 custom-elements/imports/sync-create-element-order.html [ Failure ]
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/505364 imported/wpt/custom-elements/v0/instantiating/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]

@@ -84,6 +84,22 @@ void CustomElementDefinition::checkConstructorResult(Element* element,
         exceptionState.throwDOMException(NotSupportedError, message);
 }
 
+HTMLElement* CustomElementDefinition::createElementForConstructor(
+    Document& document)
+{
+    // TODO(kojii): When HTMLElementFactory has an option not to queue
+    // upgrade, call that instead of HTMLElement. HTMLElement is enough
+    // for now, but type extension will require HTMLElementFactory.
+    HTMLElement* element = HTMLElement::create(
+        QualifiedName(nullAtom, descriptor().localName(),
+            HTMLNames::xhtmlNamespaceURI),
+        document);
+    // TODO(davaajav): write this as one call to setCustomElementState instead of two
+    element->setCustomElementState(CustomElementState::Undefined);
+    element->setCustomElementDefinition(this);
+    return element;
+}
+
 HTMLElement* CustomElementDefinition::createElementAsync(Document& document, const QualifiedName& tagName)
 {
     // https://dom.spec.whatwg.org/#concept-create-element
@@ -101,6 +117,25 @@ HTMLElement* CustomElementDefinition::createElementAsync(Document& document, con
     return element;
 }
 
+CustomElementDefinition::ConstructionStackScope::ConstructionStackScope(
+    CustomElementDefinition* definition, Element* element)
+    : m_constructionStack(definition->m_constructionStack)
+    , m_element(element)
+{
+    // Push the construction stack.
+    m_constructionStack.append(element);
+    m_depth = m_constructionStack.size();
+}
+
+CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope()
+{
+    // Pop the construction stack.
+    DCHECK(!m_constructionStack.last()
+        || m_constructionStack.last() == m_element);
+    DCHECK_EQ(m_constructionStack.size(), m_depth); // It's a *stack*.
+    m_constructionStack.removeLast();
+}
+
 // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
 void CustomElementDefinition::upgrade(Element* element)
 {
@@ -112,17 +147,11 @@ void CustomElementDefinition::upgrade(Element* element)
     if (element->isConnected() && hasConnectedCallback())
         enqueueConnectedCallback(element);
 
-    m_constructionStack.append(element);
-    size_t depth = m_constructionStack.size();
-
-    bool succeeded = runConstructor(element);
-
-    // Pop the construction stack.
-    if (m_constructionStack.last().get())
-        DCHECK_EQ(m_constructionStack.last(), element);
-    DCHECK_EQ(m_constructionStack.size(), depth); // It's a *stack*.
-    m_constructionStack.removeLast();
-
+    bool succeeded = false;
+    {
+        ConstructionStackScope constructionStackScope(this, element);
+        succeeded = runConstructor(element);
+    }
     if (!succeeded) {
         element->setCustomElementState(CustomElementState::Failed);
         return;

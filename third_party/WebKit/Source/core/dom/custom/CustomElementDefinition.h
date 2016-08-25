@@ -48,6 +48,7 @@ public:
         return m_constructionStack;
     }
 
+    HTMLElement* createElementForConstructor(Document&);
     virtual HTMLElement* createElementSync(Document&, const QualifiedName&) = 0;
     virtual HTMLElement* createElementSync(Document&, const QualifiedName&, ExceptionState&) = 0;
     HTMLElement* createElementAsync(Document&, const QualifiedName&);
@@ -73,6 +74,18 @@ public:
     void enqueueAttributeChangedCallback(Element*, const QualifiedName&,
         const AtomicString& oldValue, const AtomicString& newValue);
 
+    class CORE_EXPORT ConstructionStackScope final {
+        STACK_ALLOCATED();
+        DISALLOW_COPY_AND_ASSIGN(ConstructionStackScope);
+    public:
+        ConstructionStackScope(CustomElementDefinition*, Element*);
+        ~ConstructionStackScope();
+
+    private:
+        ConstructionStack& m_constructionStack;
+        Member<Element> m_element;
+        size_t m_depth;
+    };
 protected:
     virtual bool runConstructor(Element*) = 0;
 

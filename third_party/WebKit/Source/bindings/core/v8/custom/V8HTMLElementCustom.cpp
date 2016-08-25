@@ -56,15 +56,7 @@ void V8HTMLElement::constructorCustom(
     Element* element;
     if (definition->constructionStack().isEmpty()) {
         // This is an element being created with 'new' from script
-        // TODO(kojii): When HTMLElementFactory has an option not to queue
-        // upgrade, call that instead of HTMLElement. HTMLElement is enough
-        // for now, but type extension will require HTMLElementFactory.
-        element = HTMLElement::create(
-            QualifiedName(nullAtom, definition->descriptor().localName(), HTMLNames::xhtmlNamespaceURI),
-            *window->document());
-        // TODO(davaajav): write this as one call to setCustomElementState instead of two
-        element->setCustomElementState(CustomElementState::Undefined);
-        element->setCustomElementDefinition(definition);
+        element = definition->createElementForConstructor(*window->document());
     } else {
         element = definition->constructionStack().last();
         if (element) {
