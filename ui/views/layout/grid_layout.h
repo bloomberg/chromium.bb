@@ -18,7 +18,7 @@
 // define the structure of the Grid first, then add the Views.
 // The following creates a trivial grid with two columns separated by
 // a column with padding:
-// ColumnSet* columns = layout->AddColumnSet(0); // Give this column an
+// ColumnSet* columns = layout->AddColumnSet(0); // Give this column set an
 //                                               // identifier of 0.
 // columns->AddColumn(FILL, // Views are horizontally resized to fill column.
 //                    FILL, // Views starting in this column are vertically
