@@ -1335,6 +1335,8 @@ def GetConfig():
       'lumpy-chrome-pfq', chrome_pfq,
       _base_configs['lumpy'],
       afdo_generate=True,
+      # Disable hugepages before collecting AFDO profile.
+      useflags=append_useflags(['-transparent_hugepage']),
       hw_tests=[HWTestList.AFDORecordTest()] + HWTestList.SharedPoolPFQ(),
   )
 
