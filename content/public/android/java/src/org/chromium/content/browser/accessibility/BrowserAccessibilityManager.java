@@ -301,6 +301,24 @@ public class BrowserAccessibilityManager {
                 return scrollForward(virtualViewId);
             case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
                 return scrollBackward(virtualViewId);
+            case AccessibilityNodeInfo.ACTION_CUT:
+                if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
+                    mContentViewCore.getWebContents().cut();
+                    return true;
+                }
+                return false;
+            case AccessibilityNodeInfo.ACTION_COPY:
+                if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
+                    mContentViewCore.getWebContents().copy();
+                    return true;
+                }
+                return false;
+            case AccessibilityNodeInfo.ACTION_PASTE:
+                if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
+                    mContentViewCore.getWebContents().paste();
+                    return true;
+                }
+                return false;
             default:
                 break;
         }
@@ -798,6 +816,9 @@ public class BrowserAccessibilityManager {
         if (editableText && enabled) {
             node.addAction(ACTION_SET_TEXT);
             node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+            node.addAction(AccessibilityNodeInfo.ACTION_CUT);
+            node.addAction(AccessibilityNodeInfo.ACTION_COPY);
+            node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
         }
 
         if (canScrollForward) {
