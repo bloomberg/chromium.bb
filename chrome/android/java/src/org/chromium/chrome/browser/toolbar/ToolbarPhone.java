@@ -452,7 +452,20 @@ public class ToolbarPhone extends ToolbarLayout
                 && mNtpSearchBoxScrollPercent != UNINITIALIZED_PERCENT) {
             return true;
         }
+
         return super.onInterceptTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        // Forward touch events to the NTP if the toolbar is moved away.
+        if (mNtpSearchBoxTranslation.y < 0) {
+            NewTabPage newTabPage = getToolbarDataProvider().getNewTabPageForCurrentTab();
+
+            // No null check -- the toolbar should not be moved if we are not on an NTP.
+            return newTabPage.getView().dispatchTouchEvent(ev);
+        }
+        return super.onTouchEvent(ev);
     }
 
     @Override
@@ -876,6 +889,7 @@ public class ToolbarPhone extends ToolbarLayout
      */
     private void resetNtpAnimationValues() {
         mLocationBarBackgroundNtpOffset.setEmpty();
+        mNtpSearchBoxTranslation.set(0, 0);
         mLocationBar.setTranslationY(0);
         if (!mUrlFocusChangeInProgress) {
             mToolbarButtonsContainer.setTranslationY(0);
@@ -2076,6 +2090,8 @@ public class ToolbarPhone extends ToolbarLayout
         if (!visualStateChanged) {
             if (mVisualState == VisualState.NEW_TAB_NORMAL) {
                 updateNtpTransitionAnimation();
+            } else {
+                resetNtpAnimationValues();
             }
             return;
         }
