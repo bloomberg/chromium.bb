@@ -661,18 +661,25 @@ TEST_F(DiskMountManagerTest, MountPath_RecordAccessMode) {
   const std::string kMountPath1 = "/media/foo";
   const std::string kMountPath2 = "/media/bar";
 
+  // Event handlers of observers should be called.
   EXPECT_CALL(
       observer_,
       OnMountEvent(
           DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
           Field(&DiskMountManager::MountPointInfo::mount_path, kMountPath1)));
-  // Observers should see updated disks_ object reflecting mount option.
+  // For the 2nd source, the disk (block device) is not read-only but the
+  // test will mount it in read-only mode.
+  // Observers query |disks_| from |DiskMountManager| in its event handler for
+  // a mount completion event. Therefore |disks_| must be updated with correct
+  // |read_only| value before notifying to observers.
   EXPECT_CALL(
       observer_,
       OnMountEvent(
           DiskMountManager::MOUNTING, chromeos::MOUNT_ERROR_NONE,
           Field(&DiskMountManager::MountPointInfo::mount_path, kMountPath2)))
       .WillOnce(InvokeWithoutArgs(
+          // Verify if the disk appears read-only at the time of notification
+          // to observers.
           [&]() { ExpectDiskReadOnly(manager, kSourcePath2, true); }));
 
   manager->MountPath(kSourcePath1, kSourceFormat, std::string(),
