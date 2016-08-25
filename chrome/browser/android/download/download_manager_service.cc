@@ -173,6 +173,12 @@ void DownloadManagerService::CheckForExternallyRemovedDownloads(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     bool is_off_the_record) {
+  // Once the history query is complete, download_history.cc will check for the
+  // removal of history files. If the history query is not yet complete, ignore
+  // requests to check for externally removed downloads.
+  if (!is_history_query_complete_)
+    return;
+
   content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
   if (!manager)
     return;

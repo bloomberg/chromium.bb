@@ -254,7 +254,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
 
         // Click the delete button, which should delete the items and reset the toolbar.
         assertEquals(11, mAdapter.getItemCount());
-        assertEquals(0,
+        // checkForExternallyRemovedFiles() should have been called once already in onResume().
+        assertEquals(1,
                 mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
         assertEquals(0,
                 mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());

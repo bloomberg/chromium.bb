@@ -218,7 +218,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
 
                 @Override
                 public void onPostExecute(Void unused) {
-                    callback.onResult(unused);
+                    if (callback != null) callback.onResult(unused);
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }

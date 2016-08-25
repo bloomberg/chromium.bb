@@ -921,11 +921,31 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DownloadManager.CheckForExternallyRemovedItems">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    A request was issued to check the file system for download items that were
+    externally deleted e.g. through a third-party download manager.
+  </description>
+</action>
+
 <action name="Android.DownloadManager.Delete">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
   <description>User deleted one or more download items.</description>
+</action>
+
+<action name="Android.DownloadManager.Item.ExternallyDeleted">
+  <owner>dfalcantara@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>ianwen@chromium.org</owner>
+  <description>
+    A download tracked by the Chrome download service was externally deleted
+    e.g. through a third-party download manager.
+  </description>
 </action>
 
 <action name="Android.DownloadManager.OpenDrawer">
@@ -937,13 +957,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Android.DownloadManager.Share.Deleted">
+<action name="Android.DownloadManager.SelectionEstablished">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
   <description>
-    User tapped on the share button with only externally deleted download items
-    selected.
+    User established a long-press selection in Chrome's download manager.
   </description>
 </action>
 

@@ -35,6 +35,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflinePageItemWrapper;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,7 +43,6 @@ import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -269,6 +269,13 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         return mActivity;
     }
 
+    /**
+     * @return The BackendProvider associated with the download UI.
+     */
+    public BackendProvider getBackendProvider() {
+        return mBackendProvider;
+    }
+
     /** Called when the filter has been changed by the user. */
     void onFilterChanged(int filter) {
         mBackendProvider.getSelectionDelegate().clearSelection();
@@ -316,7 +323,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         for (int i = 0; i < selectedItems.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = selectedItems.get(i);
-            if (wrappedItem.hasBeenExternallyRemoved()) continue;
 
             if (wrappedItem instanceof OfflinePageItemWrapper) {
                 if (offlinePagesString.length() != 0) {
@@ -366,14 +372,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 // The mime type should be {top-level type}/*
                 intentMimeType = intentMimeParts[0] + MIME_TYPE_DELIMITER + "*";
             }
-        }
-
-        // If there are no non-deleted items to share, return early.
-        if (itemUris.size() == 0 && offlinePagesString.length() == 0) {
-            Toast.makeText(mActivity, mActivity.getString(R.string.download_cant_share_deleted),
-                    Toast.LENGTH_SHORT).show();
-            RecordUserAction.record("Android.DownloadManager.Share.Deleted");
-            return;
         }
 
         // Use Action_SEND if there is only one downloaded item or only text to share.
@@ -448,7 +446,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                     int remaining = mNumberOfFilesBeingDeleted.decrementAndGet();
                     if (remaining != 0) return;
 
-                    mBackendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(
+                    DownloadUtils.checkForExternallyRemovedDownloads(mBackendProvider,
                             mIsOffTheRecord);
                 }
             });

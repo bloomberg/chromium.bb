@@ -7,6 +7,10 @@ package org.chromium.chrome.browser.download;
 import android.app.Activity;
 import android.view.View;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.UrlConstants;
@@ -17,11 +21,13 @@ import org.chromium.chrome.browser.tab.Tab;
  * Native page for managing downloads handled through Chrome.
  */
 public class DownloadPage extends BasicNativePage {
+    private ActivityStateListener mActivityStateListener;
+
     private DownloadManagerUi mManager;
     private String mTitle;
 
     /**
-     * Create a new instance of the bookmarks page.
+     * Create a new instance of the downloads page.
      * @param activity The activity to get context and manage fragments.
      * @param tab The tab to load urls.
      */
@@ -30,10 +36,28 @@ public class DownloadPage extends BasicNativePage {
     }
 
     @Override
-    protected void initialize(Activity activity, Tab tab) {
+    protected void initialize(Activity activity, final Tab tab) {
+        ThreadUtils.assertOnUiThread();
+
         mManager = new DownloadManagerUi(activity, tab.isIncognito(), activity.getComponentName());
         mManager.setBasicNativePage(this);
         mTitle = activity.getString(R.string.download_manager_ui_all_downloads);
+
+        // #destroy() unregisters the ActivityStateListener to avoid checking for externally removed
+        // downloads after the downloads page is closed. This requires each DownloadPage to have its
+        // own ActivityStateListener. If multiple tabs are showing the downloads page, multiple
+        // requests to check for externally removed downloads will be issued when the activity is
+        // resumed.
+        mActivityStateListener = new ActivityStateListener() {
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                if (newState == ActivityState.RESUMED) {
+                    DownloadUtils.checkForExternallyRemovedDownloads(
+                            mManager.getBackendProvider(), tab.isIncognito());
+                }
+            }
+        };
+        ApplicationStatus.registerStateListenerForActivity(mActivityStateListener, activity);
     }
 
     @Override
@@ -61,6 +85,7 @@ public class DownloadPage extends BasicNativePage {
     public void destroy() {
         mManager.onDestroyed();
         mManager = null;
+        ApplicationStatus.unregisterActivityStateListener(mActivityStateListener);
         super.destroy();
     }
 }

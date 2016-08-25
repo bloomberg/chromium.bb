@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
@@ -18,8 +16,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
@@ -34,7 +32,10 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Bridges the user's download history and the UI used to display it. */
 public class DownloadHistoryAdapter extends DateDividedAdapter implements DownloadUiObserver {
@@ -63,6 +64,23 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /** See {@link #findItemIndex}. */
     private static final int INVALID_INDEX = -1;
 
+    /**
+     * Externally deleted items that have been removed from downloads history.
+     * Shared across instances.
+     */
+    private static Map<String, Boolean> sExternallyDeletedItems = new HashMap<>();
+
+    /**
+     * Externally deleted off-the-record items that have been removed from downloads history.
+     * Shared across instances.
+     */
+    private static Map<String, Boolean> sExternallyDeletedOffTheRecordItems = new HashMap<>();
+
+    /**
+     * The number of DownloadHistoryAdapater instances in existence that have been initialized.
+     */
+    private static final AtomicInteger sNumInstancesInitialized = new AtomicInteger();
+
     private final List<DownloadItemWrapper> mDownloadItems = new ArrayList<>();
     private final List<DownloadItemWrapper> mDownloadOffTheRecordItems = new ArrayList<>();
     private final List<OfflinePageItemWrapper> mOfflinePageItems = new ArrayList<>();
@@ -90,6 +108,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         if (mShowOffTheRecord) downloadManager.getAllDownloads(true);
 
         initializeOfflinePageBridge();
+
+        sNumInstancesInitialized.getAndIncrement();
     }
 
     /** Called when the user's download history has been gathered. */
@@ -99,11 +119,22 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         list.clear();
         int[] mItemCounts = new int[DownloadFilter.FILTER_BOUNDARY];
+
         for (DownloadItem item : result) {
             DownloadItemWrapper wrapper = createDownloadItemWrapper(item, isOffTheRecord);
-            list.add(wrapper);
-            mItemCounts[wrapper.getFilterType()]++;
+
+            // TODO(twellington): The native downloads service should remove externally deleted
+            //                    downloads rather than passing them to Java.
+            if (getExternallyDeletedItemsMap(isOffTheRecord).containsKey(wrapper.getId())) {
+                continue;
+            } else if (wrapper.hasBeenExternallyRemoved()) {
+                removeExternallyDeletedItem(wrapper, isOffTheRecord);
+            } else {
+                list.add(wrapper);
+                mItemCounts[wrapper.getFilterType()]++;
+            }
         }
+
         filter(DownloadFilter.FILTER_ALL);
         if (!isOffTheRecord) recordDownloadCountHistograms(mItemCounts, result.size());
     }
@@ -128,12 +159,12 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         for (DownloadHistoryItemWrapper wrapper : mDownloadItems) {
             assert wrapper instanceof DownloadItemWrapper;
             DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
-            if (!downloadWrapper.hasBeenExternallyRemoved()) totalSize += wrapper.getFileSize();
+            totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mDownloadOffTheRecordItems) {
             assert wrapper instanceof DownloadItemWrapper;
             DownloadItemWrapper downloadWrapper = (DownloadItemWrapper) wrapper;
-            if (!downloadWrapper.hasBeenExternallyRemoved()) totalSize += wrapper.getFileSize();
+            totalSize += wrapper.getFileSize();
         }
         for (DownloadHistoryItemWrapper wrapper : mOfflinePageItems) {
             totalSize += wrapper.getFileSize();
@@ -159,7 +190,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
         ItemViewHolder holder = (ItemViewHolder) current;
-        DownloadHistoryItemWrapper previousItem = holder.mItemView.mItem;
         Context context = holder.mFilesizeView.getContext();
         holder.mFilenameView.setText(item.getDisplayFileName());
         holder.mHostnameView.setText(
@@ -191,12 +221,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         }
 
         holder.mIconView.setImageResource(iconResource);
-
-        // Externally removed items have a different style. Update the item's style if necessary.
-        if (previousItem == null
-                || previousItem.hasBeenExternallyRemoved() != item.hasBeenExternallyRemoved()) {
-            setItemViewStyle(holder, item);
-        }
     }
 
     /**
@@ -207,12 +231,24 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         int index = findItemIndex(list, item.getId());
+
+        DownloadItemWrapper wrapper = createDownloadItemWrapper(item, isOffTheRecord);
+
+        // If an externally deleted item has already been removed from the history service, it
+        // shouldn't be removed again.
+        if (getExternallyDeletedItemsMap(isOffTheRecord).containsKey(wrapper.getId())) return;
+
+        if (wrapper.hasBeenExternallyRemoved()) {
+            removeExternallyDeletedItem(wrapper, isOffTheRecord);
+            return;
+        }
+
         if (index == INVALID_INDEX) {
             // Add a new entry.
-            list.add(createDownloadItemWrapper(item, isOffTheRecord));
+            list.add(wrapper);
         } else {
             // Update the old one.
-            list.set(index, createDownloadItemWrapper(item, isOffTheRecord));
+            list.set(index, wrapper);
         }
 
         filter(mFilter);
@@ -237,6 +273,13 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     public void onManagerDestroyed() {
         getDownloadDelegate().removeDownloadHistoryAdapter(this);
         getOfflinePageBridge().removeObserver(mOfflinePageObserver);
+
+        // If there are no more instances, clear out externally deleted items maps so that they stop
+        // taking up space.
+        if (sNumInstancesInitialized.decrementAndGet() == 0) {
+            sExternallyDeletedItems.clear();
+            sExternallyDeletedOffTheRecordItems.clear();
+        }
     }
 
     private DownloadDelegate getDownloadDelegate() {
@@ -330,31 +373,6 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         return INVALID_INDEX;
     }
 
-    private void setItemViewStyle(ItemViewHolder holder, DownloadHistoryItemWrapper item) {
-        Context context = holder.itemView.getContext();
-        Resources res = context.getResources();
-        if (item.hasBeenExternallyRemoved()) {
-            int disabledColor = ApiCompatibilityUtils.getColor(res, R.color.google_grey_300);
-
-            holder.mHostnameView.setTextColor(disabledColor);
-            holder.mIconView.setBackgroundColor(disabledColor);
-            holder.mFilenameView.setTextColor(disabledColor);
-            holder.mFilenameView.setPaintFlags(holder.mFilenameView.getPaintFlags()
-                    | Paint.STRIKE_THRU_TEXT_FLAG);
-            holder.mFilesizeView.setText(context.getString(R.string.download_manager_ui_deleted));
-        } else {
-            int sublabelColor = ApiCompatibilityUtils.getColor(res, R.color.google_grey_600);
-
-            holder.mHostnameView.setTextColor(sublabelColor);
-            holder.mIconView.setBackgroundColor(ApiCompatibilityUtils.getColor(res,
-                    R.color.light_active_color));
-            holder.mFilenameView.setTextColor(ApiCompatibilityUtils.getColor(res,
-                    R.color.default_text_color));
-            holder.mFilenameView.setPaintFlags(holder.mFilenameView.getPaintFlags()
-                    & ~Paint.STRIKE_THRU_TEXT_FLAG);
-        }
-    }
-
     /**
      * Removes the item matching the given |guid|.
      * @param list List of the users downloads of a specific type.
@@ -396,5 +414,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
                 itemCounts[DownloadFilter.FILTER_VIDEO]);
         RecordHistogram.recordCountHistogram("Android.DownloadManager.InitialCount.Total",
                 totalCount);
+    }
+
+    private void removeExternallyDeletedItem(DownloadItemWrapper wrapper, boolean isOffTheRecord) {
+        getExternallyDeletedItemsMap(isOffTheRecord).put(wrapper.getId(), true);
+        wrapper.delete(null);
+        RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeleted");
+    }
+
+    private Map<String, Boolean> getExternallyDeletedItemsMap(boolean isOffTheRecord) {
+        return isOffTheRecord ? sExternallyDeletedOffTheRecordItems : sExternallyDeletedItems;
     }
 }

@@ -18,16 +18,25 @@ import org.chromium.chrome.browser.util.IntentUtils;
  */
 public class DownloadActivity extends SnackbarActivity {
     private DownloadManagerUi mDownloadManagerUi;
+    private boolean mIsOffTheRecord;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        boolean isIncognito = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
+        boolean isOffTheRecord = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
         ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
-        mDownloadManagerUi = new DownloadManagerUi(this, isIncognito, parentComponent);
+        mDownloadManagerUi = new DownloadManagerUi(this, isOffTheRecord, parentComponent);
         setContentView(mDownloadManagerUi.getView());
+        mIsOffTheRecord = isOffTheRecord;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        DownloadUtils.checkForExternallyRemovedDownloads(mDownloadManagerUi.getBackendProvider(),
+                mIsOffTheRecord);
     }
 
     @Override

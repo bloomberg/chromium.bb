@@ -9,10 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -76,5 +78,24 @@ public class DownloadUtils {
      */
     public static void showDownloadStartToast(Context context) {
         Toast.makeText(context, R.string.download_pending, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Issues a request to the {@link DownloadDelegate} associated with backendProvider to check
+     * for externally removed downloads.
+     * See {@link DownloadManagerService#checkForExternallyRemovedDownloads}.
+     *
+     * @param backendProvider The {@link BackendProvider} associated with the DownloadDelegate used
+     *                        to check for externally removed downloads.
+     * @param isOffTheRecord  Whether to check downloads for the off the record profile.
+     */
+    public static void checkForExternallyRemovedDownloads(BackendProvider backendProvider,
+            boolean isOffTheRecord) {
+        if (isOffTheRecord) {
+            backendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(true);
+        }
+        backendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(false);
+        RecordUserAction.record(
+                "Android.DownloadManager.CheckForExternallyRemovedItems");
     }
 }

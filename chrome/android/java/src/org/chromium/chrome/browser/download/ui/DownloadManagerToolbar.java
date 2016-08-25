@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.DrawerLayout;
 import android.util.AttributeSet;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -49,7 +50,9 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
 
     @Override
     public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
+        boolean wasSelectionEnabled = mIsSelectionEnabled;
         super.onSelectionStateChange(selectedItems);
+
         if (!mIsSelectionEnabled) {
             updateTitle();
         } else {
@@ -60,6 +63,10 @@ public class DownloadManagerToolbar extends SelectionToolbar<DownloadHistoryItem
             findViewById(R.id.selection_mode_delete_menu_id).setContentDescription(
                     getResources().getQuantityString(R.plurals.accessibility_remove_selected_items,
                             numSelected, numSelected));
+
+            if (!wasSelectionEnabled) {
+                RecordUserAction.record("Android.DownloadManager.SelectionEstablished");
+            }
         }
     }
 
