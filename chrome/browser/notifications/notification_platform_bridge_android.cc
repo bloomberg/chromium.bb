@@ -204,6 +204,11 @@ void NotificationPlatformBridgeAndroid::Display(
   ScopedJavaLocalRef<jstring> body =
       ConvertUTF16ToJavaString(env, notification.message());
 
+  ScopedJavaLocalRef<jobject> image;
+  SkBitmap image_bitmap = notification.image().AsBitmap();
+  if (!image_bitmap.drawsNothing())
+    image = gfx::ConvertToJavaBitmap(&image_bitmap);
+
   ScopedJavaLocalRef<jobject> notification_icon;
   SkBitmap notification_icon_bitmap = notification.icon().AsBitmap();
   if (!notification_icon_bitmap.drawsNothing())
@@ -231,7 +236,7 @@ void NotificationPlatformBridgeAndroid::Display(
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_, j_notification_id, j_origin, j_profile_id, incognito,
-      tag, webapk_package, title, body, notification_icon, badge,
+      tag, webapk_package, title, body, image, notification_icon, badge,
       vibration_pattern, notification.timestamp().ToJavaTime(),
       notification.renotify(), notification.silent(), action_titles,
       action_icons);

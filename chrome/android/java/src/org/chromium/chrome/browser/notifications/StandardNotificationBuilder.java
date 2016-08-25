@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.content.Context;
+import android.os.Build;
 
 /**
  * Builds a notification using the standard Notification.BigTextStyle layout.
@@ -23,9 +24,23 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
         // API level of methods you call on the builder.
         Notification.Builder builder = new Notification.Builder(mContext);
         builder.setContentTitle(mTitle);
-        builder.setContentText(mBody).setStyle(new Notification.BigTextStyle().bigText(mBody));
+        builder.setContentText(mBody);
         builder.setSubText(mOrigin);
         builder.setTicker(mTickerText);
+        if (mImage != null) {
+            Notification.BigPictureStyle style =
+                    new Notification.BigPictureStyle().bigPicture(mImage);
+            if (Build.VERSION.CODENAME.equals("N")
+                    || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                // Android N doesn't show content text when expanded, so duplicate body text as a
+                // summary for the big picture.
+                style.setSummaryText(mBody);
+            }
+            builder.setStyle(style);
+        } else {
+            // If there is no image, let the body text wrap only multiple lines when expanded.
+            builder.setStyle(new Notification.BigTextStyle().bigText(mBody));
+        }
         builder.setLargeIcon(mLargeIcon);
         setSmallIconOnBuilder(builder, mSmallIconId, mSmallIconBitmap);
         builder.setContentIntent(mContentIntent);

@@ -471,6 +471,7 @@ public class NotificationPlatformBridge {
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
      *             text by the Android notification system.
+     * @param image Content image to be prominently displayed when the notification is expanded.
      * @param icon Icon to be displayed in the notification. Valid Bitmap icons will be scaled to
      *             the platforms, whereas a default icon will be generated for invalid Bitmaps.
      * @param badge An image to represent the notification in the status bar. It is also displayed
@@ -487,8 +488,8 @@ public class NotificationPlatformBridge {
     @CalledByNative
     private void displayNotification(String notificationId, String origin, String profileId,
             boolean incognito, String tag, String webApkPackage, String title, String body,
-            Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp, boolean renotify,
-            boolean silent, String[] actionTitles, Bitmap[] actionIcons) {
+            Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
+            boolean renotify, boolean silent, String[] actionTitles, Bitmap[] actionIcons) {
         if (actionTitles.length != actionIcons.length) {
             throw new IllegalArgumentException("The number of action titles and icons must match.");
         }
@@ -522,6 +523,7 @@ public class NotificationPlatformBridge {
                 createNotificationBuilder()
                         .setTitle(title)
                         .setBody(body)
+                        .setImage(image)
                         .setLargeIcon(ensureNormalizedIcon(icon, origin))
                         .setSmallIcon(R.drawable.ic_chrome)
                         .setSmallIcon(badge)

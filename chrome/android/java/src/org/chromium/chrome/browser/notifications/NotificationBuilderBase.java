@@ -65,6 +65,7 @@ public abstract class NotificationBuilderBase {
     protected CharSequence mBody;
     protected CharSequence mOrigin;
     protected CharSequence mTickerText;
+    protected Bitmap mImage;
     protected Bitmap mLargeIcon;
     protected int mSmallIconId;
     protected Bitmap mSmallIconBitmap;
@@ -111,6 +112,14 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase setTicker(@Nullable CharSequence tickerText) {
         mTickerText = limitLength(tickerText);
+        return this;
+    }
+
+    /**
+     * Sets the content image to be prominently displayed when the notification is expanded.
+     */
+    public NotificationBuilderBase setImage(@Nullable Bitmap image) {
+        mImage = image;
         return this;
     }
 
