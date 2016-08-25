@@ -22,7 +22,6 @@ class FakeProxy : public Proxy {
   void SetOutputSurface(OutputSurface* output_surface) override {}
   void ReleaseOutputSurface() override;
   void SetVisible(bool visible) override {}
-  const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsAnimate() override {}
   void SetNeedsUpdateLayers() override {}
   void SetNeedsCommit() override {}
@@ -43,10 +42,7 @@ class FakeProxy : public Proxy {
                               TopControlsState current,
                               bool animate) override {}
 
-  virtual RendererCapabilities& GetRendererCapabilities();
-
  private:
-  RendererCapabilities capabilities_;
   LayerTreeHost* layer_tree_host_;
 };
 

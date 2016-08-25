@@ -1879,12 +1879,6 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   SetRequiresHighResToDraw();
 }
 
-const RendererCapabilitiesImpl& LayerTreeHostImpl::GetRendererCapabilities()
-    const {
-  CHECK(renderer_);
-  return renderer_->Capabilities();
-}
-
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   ResetRequiresHighResToDraw();
   if (frame.has_no_damage) {
@@ -2201,7 +2195,6 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   active_tree_->set_needs_update_draw_properties();
   if (pending_tree_)
     pending_tree_->set_needs_update_draw_properties();
-  client_->UpdateRendererCapabilitiesOnImplThread();
 }
 
 void LayerTreeHostImpl::CreateTileManagerResources() {

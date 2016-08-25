@@ -1282,8 +1282,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   EXPECT_EQ(active_mask->bounds(), mask_texture_size);
 
   // Resize larger than the max texture size.
-  int max_texture_size =
-      host_impl()->GetRendererCapabilities().max_texture_size;
+  int max_texture_size = host_impl()->resource_provider()->max_texture_size();
   gfx::Size huge_bounds(max_texture_size + 1, 10);
   scoped_refptr<FakeRasterSource> huge_raster_source =
       FakeRasterSource::CreateFilled(huge_bounds);

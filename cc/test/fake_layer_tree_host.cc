@@ -39,8 +39,7 @@ FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                  &task_runner_provider_,
                  &manager_,
                  params->task_graph_runner),
-      needs_commit_(false),
-      renderer_capabilities_set(false) {
+      needs_commit_(false) {
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner =
       mode == CompositorMode::THREADED ? base::ThreadTaskRunnerHandle::Get()
                                        : nullptr;
@@ -96,12 +95,6 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
 
 FakeLayerTreeHost::~FakeLayerTreeHost() {
   client_->SetLayerTreeHost(NULL);
-}
-
-const RendererCapabilities& FakeLayerTreeHost::GetRendererCapabilities() const {
-  if (renderer_capabilities_set)
-    return renderer_capabilities;
-  return LayerTreeHost::GetRendererCapabilities();
 }
 
 void FakeLayerTreeHost::SetNeedsCommit() { needs_commit_ = true; }

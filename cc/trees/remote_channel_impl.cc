@@ -193,11 +193,6 @@ void RemoteChannelImpl::SetVisible(bool visible) {
       base::Bind(&ProxyImpl::SetVisibleOnImpl, proxy_impl_weak_ptr_, visible));
 }
 
-const RendererCapabilities& RemoteChannelImpl::GetRendererCapabilities() const {
-  NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
-  return main().renderer_capabilities;
-}
-
 void RemoteChannelImpl::SetNeedsAnimate() {
   NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
 }
@@ -324,9 +319,6 @@ void RemoteChannelImpl::DidCompleteSwapBuffers() {
                             impl().remote_channel_weak_ptr));
 }
 
-void RemoteChannelImpl::SetRendererCapabilitiesMainCopy(
-    const RendererCapabilities& capabilities) {}
-
 void RemoteChannelImpl::BeginMainFrameNotExpectedSoon() {}
 
 void RemoteChannelImpl::DidCommitAndDrawFrame() {
@@ -355,15 +347,13 @@ void RemoteChannelImpl::RequestNewOutputSurface() {
                             impl().remote_channel_weak_ptr));
 }
 
-void RemoteChannelImpl::DidInitializeOutputSurface(
-    bool success,
-    const RendererCapabilities& capabilities) {
+void RemoteChannelImpl::DidInitializeOutputSurface(bool success) {
   DCHECK(task_runner_provider_->IsImplThread());
 
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&RemoteChannelImpl::DidInitializeOutputSurfaceOnMain,
-                 impl().remote_channel_weak_ptr, success, capabilities));
+                 impl().remote_channel_weak_ptr, success));
 }
 
 void RemoteChannelImpl::DidCompletePageScaleAnimation() {}
@@ -416,9 +406,7 @@ void RemoteChannelImpl::RequestNewOutputSurfaceOnMain() {
   main().layer_tree_host->RequestNewOutputSurface();
 }
 
-void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
-    bool success,
-    const RendererCapabilities& capabilities) {
+void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(bool success) {
   DCHECK(task_runner_provider_->IsMainThread());
 
   if (!success) {
@@ -427,7 +415,6 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
   }
 
   VLOG(1) << "OutputSurface initialized successfully";
-  main().renderer_capabilities = capabilities;
   main().layer_tree_host->DidInitializeOutputSurface();
 
   // If we were waiting for output surface initialization, we might have queued

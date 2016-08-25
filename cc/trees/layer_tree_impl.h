@@ -52,7 +52,6 @@ class TileManager;
 class UIResourceRequest;
 class VideoFrameControllerClient;
 struct PendingPageScaleAnimation;
-struct RendererCapabilitiesImpl;
 
 typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
 typedef SyncedProperty<AdditionGroup<float>> SyncedTopControls;
@@ -77,7 +76,6 @@ class CC_EXPORT LayerTreeImpl {
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
-  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
   ContextProvider* context_provider() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;

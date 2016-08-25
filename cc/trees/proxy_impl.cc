@@ -146,14 +146,7 @@ void ProxyImpl::InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) {
 
   LayerTreeHostImpl* host_impl = layer_tree_host_impl_.get();
   bool success = host_impl->InitializeRenderer(output_surface);
-  RendererCapabilities capabilities;
-  if (success) {
-    capabilities =
-        host_impl->GetRendererCapabilities().MainThreadCapabilities();
-  }
-
-  channel_impl_->DidInitializeOutputSurface(success, capabilities);
-
+  channel_impl_->DidInitializeOutputSurface(success);
   if (success)
     scheduler_->DidCreateAndInitializeOutputSurface();
 }
@@ -275,13 +268,6 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   DCHECK(!blocked_main_commit().layer_tree_host);
   blocked_main_commit().layer_tree_host = layer_tree_host;
   scheduler_->NotifyReadyToCommit();
-}
-
-void ProxyImpl::UpdateRendererCapabilitiesOnImplThread() {
-  DCHECK(IsImplThread());
-  channel_impl_->SetRendererCapabilitiesMainCopy(
-      layer_tree_host_impl_->GetRendererCapabilities()
-          .MainThreadCapabilities());
 }
 
 void ProxyImpl::DidLoseOutputSurfaceOnImplThread() {

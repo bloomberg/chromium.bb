@@ -58,18 +58,9 @@ SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
                                    ResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider),
       output_device_(output_surface->software_device()) {
-  if (resource_provider_) {
-    capabilities_.max_texture_size = resource_provider_->max_texture_size();
-    capabilities_.best_texture_format =
-        resource_provider_->best_texture_format();
-  }
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
-
-const RendererCapabilitiesImpl& SoftwareRenderer::Capabilities() const {
-  return capabilities_;
-}
 
 bool SoftwareRenderer::CanPartialSwap() {
   return true;
