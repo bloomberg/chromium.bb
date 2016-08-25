@@ -55,8 +55,9 @@ bool GetOldSignedTreeHead(net::ct::SignedTreeHead* sth) {
 
 class SingleTreeTrackerTest : public ::testing::Test {
   void SetUp() override {
-    log_ = net::CTLogVerifier::Create(net::ct::GetTestPublicKey(), "testlog",
-                                      "https://ct.example.com", "");
+    log_ =
+        net::CTLogVerifier::Create(net::ct::GetTestPublicKey(), "testlog",
+                                   "https://ct.example.com", "dns.example.com");
 
     ASSERT_TRUE(log_);
     ASSERT_EQ(log_->key_id(), net::ct::GetTestPublicKeyId());
