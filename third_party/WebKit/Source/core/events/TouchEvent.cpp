@@ -204,7 +204,7 @@ void TouchEvent::preventDefault()
     // A common developer error is to wait too long before attempting to stop
     // scrolling by consuming a touchmove event. Generate a warning if this
     // event is uncancelable.
-    if (!cancelable() && view() && view()->isLocalDOMWindow() && view()->frame()) {
+    if (!cancelable() && handlingPassive() == PassiveMode::NotPassive && view() && view()->isLocalDOMWindow() && view()->frame()) {
         toLocalDOMWindow(view())->frame()->console().addMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
             "Ignored attempt to cancel a " + type() + " event with cancelable=false, for example because scrolling is in progress and cannot be interrupted."));
     }

@@ -79,6 +79,12 @@ public:
         Scoped,
     };
 
+    enum class PassiveMode {
+        NotPassive,
+        Passive,
+        PassiveForcedDocumentLevel,
+    };
+
     static Event* create()
     {
         return new Event;
@@ -211,7 +217,7 @@ public:
     bool isTrusted() const { return m_isTrusted; }
     void setTrusted(bool value) { m_isTrusted = value; }
 
-    void setHandlingPassive(bool value);
+    void setHandlingPassive(PassiveMode);
 
     bool preventDefaultCalledDuringPassive() const { return m_preventDefaultCalledDuringPassive; }
 
@@ -229,6 +235,8 @@ protected:
     virtual void receivedTarget();
 
     void setCanBubble(bool bubble) { m_canBubble = bubble; }
+
+    PassiveMode handlingPassive() const { return m_handlingPassive; }
 
 private:
 
@@ -252,7 +260,6 @@ private:
     unsigned m_cancelBubble:1;
     unsigned m_wasInitialized:1;
     unsigned m_isTrusted : 1;
-    unsigned m_handlingPassive : 1;
 
     // Whether preventDefault was called when |m_handlingPassive| is
     // true. This field is reset on each call to setHandlingPassive.
@@ -260,6 +267,7 @@ private:
     // Whether preventDefault was called on uncancelable event.
     unsigned m_preventDefaultCalledOnUncancelableEvent : 1;
 
+    PassiveMode m_handlingPassive;
     unsigned short m_eventPhase;
     Member<EventTarget> m_currentTarget;
     Member<EventTarget> m_target;

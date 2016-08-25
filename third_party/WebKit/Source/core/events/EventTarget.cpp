@@ -65,6 +65,15 @@ enum PassiveForcedListenerResultType {
     PassiveForcedListenerResultTypeMax
 };
 
+Event::PassiveMode eventPassiveMode(const RegisteredEventListener& eventListener)
+{
+    if (!eventListener.passive())
+        return Event::PassiveMode::NotPassive;
+    if (eventListener.passiveForcedForDocumentTarget())
+        return Event::PassiveMode::PassiveForcedDocumentLevel;
+    return Event::PassiveMode::Passive;
+}
+
 Settings* windowSettings(LocalDOMWindow* executingWindow)
 {
     if (executingWindow) {
@@ -627,7 +636,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->immediatePropagationStopped())
             break;
 
-        event->setHandlingPassive(registeredListener.passive());
+        event->setHandlingPassive(eventPassiveMode(registeredListener));
         bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
@@ -655,7 +664,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             passiveForcedHistogram.count(breakageType);
         }
 
-        event->setHandlingPassive(false);
+        event->setHandlingPassive(Event::PassiveMode::NotPassive);
 
         CHECK_LE(i, size);
     }
