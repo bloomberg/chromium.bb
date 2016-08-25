@@ -180,7 +180,7 @@ void RequestCoordinator::ResumeRequests(
       request_ids, SavePageRequest::RequestState::AVAILABLE,
       base::Bind(&RequestCoordinator::UpdateMultipleRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr()));
-  // TODO: Should we also schedule a task, in case there is not one scheduled?
+  scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }
 
 void RequestCoordinator::AddRequestResultCallback(
