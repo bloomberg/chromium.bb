@@ -3,13 +3,28 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'build/adb',
+  'build/bisect_tester',
   'build/chromium',
+  'build/chromium_android',
   'build/chromium_swarming',
   'build/chromium_tests',
+  'build/commit_position',
+  'build/file',
+  'build/gsutil',
+  'build/isolate',
+  'build/swarming',
   'build/test_results',
   'build/test_utils',
+  'depot_tools/bot_update',
+  'recipe_engine/json',
+  'recipe_engine/path',
+  'recipe_engine/platform',
   'recipe_engine/properties',
+  'recipe_engine/python',
+  'recipe_engine/raw_io',
   'recipe_engine/step',
+  'recipe_engine/tempfile',
 ]
 
 
