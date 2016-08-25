@@ -96,7 +96,7 @@ public class RenderUtils {
             File goldenFile = createPath(mGoldenFolder, imagename);
             ComparisonResult result = compareBmpToGolden(bitmap, goldenFile);
 
-            if (REPORT_ONLY_DO_NOT_FAIL) {
+            if (REPORT_ONLY_DO_NOT_FAIL && !isGenerateMode()) {
                 Log.d(TAG, "Image comparison for %s: %s", id, result.name());
                 return;
             }

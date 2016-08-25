@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.BitmapFactory;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
@@ -46,6 +48,9 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
     private NewTabPageRecyclerView mRecyclerView;
     private NewTabPageAdapter mAdapter;
 
+    private FrameLayout mContentView;
+    private UiConfig mUiConfig;
+
     public ArticleSnippetsTest() {
         super(ChromeActivity.class);
     }
@@ -56,18 +61,21 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                FrameLayout layout = new FrameLayout(getActivity());
-                getActivity().setContentView(layout);
+                mContentView = new FrameLayout(getActivity());
+                mUiConfig = new UiConfig(mContentView);
+
+                getActivity().setContentView(mContentView);
 
                 mRecyclerView = (NewTabPageRecyclerView) getActivity().getLayoutInflater()
-                        .inflate(R.layout.new_tab_page_recycler_view, layout, false);
-                layout.addView(mRecyclerView);
+                        .inflate(R.layout.new_tab_page_recycler_view, mContentView, false);
+                mContentView.addView(mRecyclerView);
 
                 View aboveTheFold = new View(getActivity());
 
+
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
                 mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mSnippetsSource,
-                        new UiConfig(aboveTheFold));
+                        mUiConfig);
                 mRecyclerView.setAdapter(mAdapter);
 
                 setupTestData();
@@ -81,13 +89,39 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 1), "long_snippet");
         mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 2), "minimal_snippet");
         mViewRenderer.renderAndCompare(mRecyclerView, "snippets");
+
+        // See how everything looks in narrow layout.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Since we inform the UiConfig manually about the desired display style, the only
+                // reason we actually change the LayoutParams is for the rendered Views to look
+                // right.
+                ViewGroup.LayoutParams params = mContentView.getLayoutParams();
+                params.width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 350,
+                        mRecyclerView.getResources().getDisplayMetrics());
+                mContentView.setLayoutParams(params);
+
+                mUiConfig.setDisplayStyleForTesting(UiConfig.DISPLAY_STYLE_NARROW);
+            }
+        });
+
+        getInstrumentation().waitForIdleSync();
+
+        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first), "short_snippet_narrow");
+        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 1), "long_snippet_narrow");
+        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 2),
+                "long_minimal_snippet_narrow");
+        mViewRenderer.renderAndCompare(mRecyclerView.getChildAt(first + 3),
+                "short_minimal_snippet_narrow");
+        mViewRenderer.renderAndCompare(mRecyclerView, "snippets_narrow");
     }
 
     private void setupTestData() {
         SnippetArticle shortSnippet = new SnippetArticle(
                 0,  // Category
                 "id1",
-                "Title",
+                "Snippet",
                 "Publisher",
                 "Preview Text",
                 "www.google.com",
@@ -102,7 +136,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         SnippetArticle longSnippet = new SnippetArticle(
                 0,  // Category
                 "id2",
-                new String(new char[20]).replace("\0", "Title "),
+                new String(new char[20]).replace("\0", "Snippet "),
                 new String(new char[20]).replace("\0", "Publisher "),
                 new String(new char[80]).replace("\0", "Preview Text "),
                 "www.google.com",
@@ -115,7 +149,20 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         SnippetArticle minimalSnippet = new SnippetArticle(
                 0,  // Category
                 "id3",
-                new String(new char[20]).replace("\0", "Title "),
+                new String(new char[20]).replace("\0", "Bookmark "),
+                "Publisher",
+                "This should not be displayed",
+                "www.google.com",
+                "",  // AMP URL
+                1466614774,  // Timestamp
+                10f,  // Score
+                0,  // Position
+                ContentSuggestionsCardLayout.MINIMAL_CARD);
+
+        SnippetArticle minimalSnippet2 = new SnippetArticle(
+                0,  // Category
+                "id4",
+                "Bookmark",
                 "Publisher",
                 "This should not be displayed",
                 "www.google.com",
@@ -130,7 +177,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES,
                 CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES,
-                Arrays.asList(shortSnippet, longSnippet, minimalSnippet));
+                Arrays.asList(shortSnippet, longSnippet, minimalSnippet, minimalSnippet2));
     }
 
     @Override

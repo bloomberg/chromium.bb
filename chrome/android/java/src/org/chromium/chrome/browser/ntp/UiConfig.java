@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import android.view.View;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -73,14 +74,23 @@ public class UiConfig {
      * Refresh the display style, notify observers of changes.
      */
     public void updateDisplayStyle() {
-        @DisplayStyle
-        int newDisplayStyle = computeDisplayStyleForCurrentConfig();
+        updateDisplayStyle(computeDisplayStyleForCurrentConfig());
+    }
 
-        if (newDisplayStyle == mCurrentDisplayStyle) return;
+    /**
+     * Sets the display style, notifying observers of changes. Should only be used in testing.
+     */
+    @VisibleForTesting
+    public void setDisplayStyleForTesting(@DisplayStyle int displayStyle) {
+        updateDisplayStyle(displayStyle);
+    }
 
-        mCurrentDisplayStyle = newDisplayStyle;
+    private void updateDisplayStyle(@DisplayStyle int displayStyle) {
+        if (displayStyle == mCurrentDisplayStyle) return;
+
+        mCurrentDisplayStyle = displayStyle;
         for (DisplayStyleObserver observer : mObservers) {
-            observer.onDisplayStyleChanged(newDisplayStyle);
+            observer.onDisplayStyleChanged(displayStyle);
         }
     }
 

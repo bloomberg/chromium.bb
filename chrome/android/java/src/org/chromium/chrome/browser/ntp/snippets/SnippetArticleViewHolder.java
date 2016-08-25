@@ -253,22 +253,28 @@ public class SnippetArticleViewHolder extends CardViewHolder
         boolean narrow = mUiConfig.getCurrentDisplayStyle() == UiConfig.DISPLAY_STYLE_NARROW;
         boolean minimal = mArticle.mCardLayout == ContentSuggestionsCardLayout.MINIMAL_CARD;
 
+        // If the screen is narrow or we are using the minimal layout, hide the article snippet.
+        boolean hideSnippet = narrow || minimal;
+        mArticleSnippetTextView.setVisibility(hideSnippet ? View.GONE : View.VISIBLE);
+
+        // If we are using minimal layout, hide the thumbnail.
+        boolean hideThumbnail = minimal;
+        mThumbnailView.setVisibility(hideThumbnail ? View.GONE : View.VISIBLE);
+
         // If the screen is narrow, increase the number of lines in the header.
         mHeadlineTextView.setMaxLines(narrow ? 4 : 2);
 
-        // If the screen is narrow or we are using the minimal layout, hide the article snippet.
-        mArticleSnippetTextView.setVisibility((narrow || minimal) ? View.GONE : View.VISIBLE);
-
-        // If we are using minimal layout, hide the thumbnail.
-        mThumbnailView.setVisibility(minimal ? View.GONE : View.VISIBLE);
+        // If the screen is narrow, ensure a minimum number of lines to prevent overlap between the
+        // publisher and the header.
+        mHeadlineTextView.setMinLines((narrow && !hideThumbnail) ? 3 : 1);
 
         // If we aren't showing the article snippet, reduce the top margin for publisher text.
         RelativeLayout.LayoutParams params =
                 (RelativeLayout.LayoutParams) mPublisherTextView.getLayoutParams();
 
         int topMargin = mPublisherTextView.getResources().getDimensionPixelSize(
-                minimal ? R.dimen.snippets_publisher_margin_top_without_article_snippet
-                        : R.dimen.snippets_publisher_margin_top_with_article_snippet);
+                hideSnippet ? R.dimen.snippets_publisher_margin_top_without_article_snippet
+                            : R.dimen.snippets_publisher_margin_top_with_article_snippet);
 
         params.setMargins(params.leftMargin,
                           topMargin,
