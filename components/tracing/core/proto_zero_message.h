@@ -83,6 +83,21 @@ class TRACING_EXPORT ProtoZeroMessage {
     AppendVarInt(field_id, proto::ZigZagEncode(value));
   }
 
+  // Proto types: bool, enum (small).
+  // Faster version of AppendVarInt for tiny numbers.
+  void AppendTinyVarInt(uint32_t field_id, int32_t value) {
+    DCHECK(0 <= value && value < 0x80);
+    if (nested_message_)
+      EndNestedMessage();
+
+    uint8_t buffer[proto::kMaxSimpleFieldEncodedSize];
+    uint8_t* pos = buffer;
+    // MakeTagVarInt gets super optimized here for constexpr.
+    pos = proto::WriteVarInt(proto::MakeTagVarInt(field_id), pos);
+    *pos++ = static_cast<uint8_t>(value);
+    WriteToStream(buffer, pos);
+  }
+
   // Proto types: fixed64, sfixed64, fixed32, sfixed32, double, float.
   template <typename T>
   void AppendFixed(uint32_t field_id, T value) {
@@ -99,7 +114,6 @@ class TRACING_EXPORT ProtoZeroMessage {
     WriteToStream(buffer, pos);
   }
 
-  // TODO(kraynov): Add AppendTinyInt.
   void AppendString(uint32_t field_id, const char* str);
   void AppendBytes(uint32_t field_id, const void* value, size_t size);
 

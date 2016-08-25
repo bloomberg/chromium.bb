@@ -28,6 +28,7 @@ class FakeScatteredBuffer : public ScatteredStreamWriter::Delegate {
 
   std::string GetChunkAsString(int chunk_index);
 
+  void GetBytes(size_t start, size_t length, uint8_t* buf);
   std::string GetBytesAsString(size_t start, size_t length);
 
   const std::vector<std::unique_ptr<uint8_t[]>>& chunks() const {

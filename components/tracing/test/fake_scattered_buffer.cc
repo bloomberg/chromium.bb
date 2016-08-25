@@ -29,19 +29,19 @@ std::string FakeScatteredBuffer::GetChunkAsString(int chunk_index) {
   return base::HexEncode(chunks_[chunk_index].get(), chunk_size_);
 }
 
-std::string FakeScatteredBuffer::GetBytesAsString(size_t start, size_t length) {
-  std::string hexstr;
-  EXPECT_LE(start + length, chunks_.size() * chunk_size_);
-  for (size_t pos = start; pos < start + length; ++pos) {
-    const size_t chunk_idx = pos / chunk_size_;
-    const size_t chunk_off = pos % chunk_size_;
-    if (chunk_idx >= chunks_.size()) {
-      hexstr += " <OUT OF BOUND @ pos=" + base::SizeTToString(pos) + ">";
-      return hexstr;
-    }
-    hexstr += base::HexEncode(&chunks_[chunk_idx].get()[chunk_off], 1);
+void FakeScatteredBuffer::GetBytes(size_t start, size_t length, uint8_t* buf) {
+  ASSERT_LE(start + length, chunks_.size() * chunk_size_);
+  for (size_t pos = 0; pos < length; ++pos) {
+    size_t chunk_index = (start + pos) / chunk_size_;
+    size_t chunk_offset = (start + pos) % chunk_size_;
+    buf[pos] = chunks_[chunk_index].get()[chunk_offset];
   }
-  return hexstr;
+}
+
+std::string FakeScatteredBuffer::GetBytesAsString(size_t start, size_t length) {
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[length]);
+  GetBytes(start, length, buffer.get());
+  return base::HexEncode(buffer.get(), length);
 }
 
 }  // namespace v2

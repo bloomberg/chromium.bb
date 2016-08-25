@@ -75,6 +75,7 @@ proto_library("proto_zero_testing_messages") {
 
   generator_plugin_label = "tools/proto_zero_plugin:proto_zero_plugin"
   generator_plugin_suffix = ".pbzero"
+  generator_plugin_options = "wrapper_namespace=pbzero"
   generate_cc = true
   generate_python = false
 }

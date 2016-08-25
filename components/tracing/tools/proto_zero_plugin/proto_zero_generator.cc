@@ -58,6 +58,14 @@ class GeneratorJob {
     return error_.empty();
   }
 
+  void SetOption(const std::string& name, const std::string& value) {
+    if (name == "wrapper_namespace") {
+      wrapper_namespace_ = value;
+    } else {
+      Abort(std::string() + "Unknown plugin option '" + name + "'.");
+    }
+  }
+
   // If generator fails to produce stubs for a particular proto definitions
   // it finishes with undefined output and writes the first error occured.
   const std::string& GetFirstError() const {
@@ -194,9 +202,13 @@ class GeneratorJob {
     // Package name maps to a series of namespaces.
     package_ = source_->package();
     namespaces_ = Split(package_, ".");
+    if (!wrapper_namespace_.empty())
+      namespaces_.insert(namespaces_.begin(), wrapper_namespace_);
+
     full_namespace_prefix_ = "::";
     for (const std::string& ns : namespaces_)
       full_namespace_prefix_ += ns + "::";
+
     CollectDescriptors();
     CollectDependencies();
   }
@@ -306,72 +318,72 @@ class GeneratorJob {
 
     switch (field->type()) {
       case FieldDescriptor::TYPE_BOOL: {
-        appender = "AppendBool";
+        appender = "AppendTinyVarInt";
         cpp_type = "bool";
         break;
       }
       case FieldDescriptor::TYPE_INT32: {
-        appender = "AppendInt32";
+        appender = "AppendVarInt";
         cpp_type = "int32_t";
         break;
       }
       case FieldDescriptor::TYPE_INT64: {
-        appender = "AppendInt64";
+        appender = "AppendVarInt";
         cpp_type = "int64_t";
         break;
       }
       case FieldDescriptor::TYPE_UINT32: {
-        appender = "AppendUint32";
+        appender = "AppendVarInt";
         cpp_type = "uint32_t";
         break;
       }
       case FieldDescriptor::TYPE_UINT64: {
-        appender = "AppendUint64";
+        appender = "AppendVarInt";
         cpp_type = "uint64_t";
         break;
       }
       case FieldDescriptor::TYPE_SINT32: {
-        appender = "AppendSint32";
+        appender = "AppendSignedVarInt";
         cpp_type = "int32_t";
         break;
       }
       case FieldDescriptor::TYPE_SINT64: {
-        appender = "AppendSint64";
+        appender = "AppendSignedVarInt";
         cpp_type = "int64_t";
         break;
       }
       case FieldDescriptor::TYPE_FIXED32: {
-        appender = "AppendFixed32";
+        appender = "AppendFixed";
         cpp_type = "uint32_t";
         break;
       }
       case FieldDescriptor::TYPE_FIXED64: {
-        appender = "AppendFixed64";
+        appender = "AppendFixed";
         cpp_type = "uint64_t";
         break;
       }
       case FieldDescriptor::TYPE_SFIXED32: {
-        appender = "AppendSfixed32";
+        appender = "AppendFixed";
         cpp_type = "int32_t";
         break;
       }
       case FieldDescriptor::TYPE_SFIXED64: {
-        appender = "AppendSfixed64";
+        appender = "AppendFixed";
         cpp_type = "int64_t";
         break;
       }
       case FieldDescriptor::TYPE_FLOAT: {
-        appender = "AppendFloat";
+        appender = "AppendFixed";
         cpp_type = "float";
         break;
       }
       case FieldDescriptor::TYPE_DOUBLE: {
-        appender = "AppendDouble";
+        appender = "AppendFixed";
         cpp_type = "double";
         break;
       }
       case FieldDescriptor::TYPE_ENUM: {
-        appender = IsTinyEnumField(field) ? "AppendTinyNumber" : "AppendInt32";
+        appender = IsTinyEnumField(field) ? "AppendTinyVarInt" : "AppendVarInt";
         cpp_type = GetCppClassName(field->enum_type(), true);
         break;
       }
@@ -384,7 +396,7 @@ class GeneratorJob {
         stub_h_->Print(
             setter,
             "void $action$_$name$(const uint8_t* data, size_t size) {\n"
-            "  // AppendBytes($id$, data, size);\n"
+            "  AppendBytes($id$, data, size);\n"
             "}\n");
         return;
       }
@@ -398,7 +410,7 @@ class GeneratorJob {
     stub_h_->Print(
         setter,
         "void $action$_$name$($cpp_type$ value) {\n"
-        "  // $appender$($id$, value);\n"
+        "  $appender$($id$, value);\n"
         "}\n");
   }
 
@@ -519,6 +531,7 @@ class GeneratorJob {
   std::string error_;
 
   std::string package_;
+  std::string wrapper_namespace_;
   std::vector<std::string> namespaces_;
   std::string full_namespace_prefix_;
   std::vector<const Descriptor*> messages_;
@@ -551,8 +564,14 @@ bool ProtoZeroGenerator::Generate(const FileDescriptor* file,
   // Variables are delimited by $.
   Printer stub_h_printer(stub_h_file_stream.get(), '$');
   Printer stub_cc_printer(stub_cc_file_stream.get(), '$');
-
   GeneratorJob job(file, &stub_h_printer, &stub_cc_printer);
+
+  // Parse additional options.
+  for (const std::string& option : Split(options, ",")) {
+    std::vector<std::string> option_pair = Split(option, "=");
+    job.SetOption(option_pair[0], option_pair[1]);
+  }
+
   if (!job.GenerateStubs()) {
     *error = job.GetFirstError();
     return false;
