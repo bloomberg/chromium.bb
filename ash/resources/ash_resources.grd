@@ -26,6 +26,9 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="common/multi_window_resize_horizontal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="common/multi_window_resize_vertical.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND_NORMAL" file="common/shelf/status_launcher_icon_background_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND_ON_BLACK" file="common/shelf/status_launcher_icon_background_onblack_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND_PRESSED" file="common/shelf/status_launcher_icon_background_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/shelf/status_icon_background_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK" file="common/shelf/status_icon_background_onblack_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED" file="common/shelf/status_icon_background_pressed.png" />

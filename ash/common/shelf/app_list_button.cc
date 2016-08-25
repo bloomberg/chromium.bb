@@ -199,13 +199,11 @@ void AppListButton::PaintAppListButton(gfx::Canvas* canvas,
 
   if (WmShell::Get()->GetAppListTargetVisibility() ||
       draw_background_as_active_) {
-    background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
+    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_PRESSED;
+  } else if (wm_shelf_->IsDimmed()) {
+    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_ON_BLACK;
   } else {
-    if (wm_shelf_->IsDimmed()) {
-      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
-    } else {
-      background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;
-    }
+    background_image_id = IDR_AURA_LAUNCHER_BACKGROUND_NORMAL;
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
