@@ -47,6 +47,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(e.alert, this.onAlert);
   this.addListener_(e.ariaAttributeChanged, this.onEventIfInRange);
   this.addListener_(e.checkedStateChanged, this.onCheckedStateChanged);
+  this.addListener_(e.childrenChanged, this.onActiveDescendantChanged);
   this.addListener_(e.focus, this.onFocus);
   this.addListener_(e.hover, this.onHover);
   this.addListener_(e.loadComplete, this.onLoadComplete);
@@ -178,7 +179,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onActiveDescendantChanged: function(evt) {
-    if (!evt.target.activeDescendant)
+    if (!evt.target.activeDescendant || !evt.target.state.focused)
       return;
     this.onEventDefault(new chrome.automation.AutomationEvent(
         EventType.focus, evt.target.activeDescendant));
