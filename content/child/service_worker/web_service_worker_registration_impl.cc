@@ -155,7 +155,7 @@ WebServiceWorkerRegistrationImpl::CreateHandle(
     const scoped_refptr<WebServiceWorkerRegistrationImpl>& registration) {
   if (!registration)
     return nullptr;
-  return base::WrapUnique(new HandleImpl(registration));
+  return base::MakeUnique<HandleImpl>(registration);
 }
 
 blink::WebServiceWorkerRegistration::Handle*

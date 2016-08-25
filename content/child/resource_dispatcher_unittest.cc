@@ -519,7 +519,7 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
       std::unique_ptr<RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) override {
-    return base::WrapUnique(new WrapperPeer(std::move(current_peer)));
+    return base::MakeUnique<WrapperPeer>(std::move(current_peer));
   }
 
   class WrapperPeer : public RequestPeer {
@@ -552,8 +552,8 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             int64_t total_transfer_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
-        original_peer_->OnReceivedData(base::WrapUnique(new FixedReceivedData(
-            data_.data(), data_.size(), -1, data_.size())));
+        original_peer_->OnReceivedData(base::MakeUnique<FixedReceivedData>(
+            data_.data(), data_.size(), -1, data_.size()));
       }
       original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                          stale_copy_in_cache, security_info,

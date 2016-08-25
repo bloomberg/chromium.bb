@@ -106,8 +106,8 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     ResourceDispatcher::PendingRequestInfo* request_info =
         resource_dispatcher_->GetPendingRequestInfo(request_id_);
     DCHECK(request_info);
-    request_info->peer->OnReceivedData(base::WrapUnique(
-        new ReceivedData(static_cast<const char*>(buffer), available, this)));
+    request_info->peer->OnReceivedData(base::MakeUnique<ReceivedData>(
+        static_cast<const char*>(buffer), available, this));
   }
 }
 

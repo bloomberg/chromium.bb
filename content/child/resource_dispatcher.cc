@@ -639,9 +639,9 @@ int ResourceDispatcher::StartAsync(
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
-  pending_requests_[request_id] = base::WrapUnique(new PendingRequestInfo(
+  pending_requests_[request_id] = base::MakeUnique<PendingRequestInfo>(
       std::move(peer), request->resource_type, request->origin_pid,
-      frame_origin, request->url, request_info.download_to_file));
+      frame_origin, request->url, request_info.download_to_file);
 
   if (resource_scheduling_filter_.get() && request_info.loading_task_runner) {
     resource_scheduling_filter_->SetRequestIdTaskRunner(

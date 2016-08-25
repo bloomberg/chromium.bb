@@ -112,7 +112,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test,
   int SetUpRequestPeer(const RequestInfo& request_info,
                        TestRequestPeer::Context* context) {
     return dispatcher_->StartAsync(
-        request_info, nullptr, base::WrapUnique(new TestRequestPeer(context)),
+        request_info, nullptr, base::MakeUnique<TestRequestPeer>(context),
         blink::WebURLRequest::LoadingIPCType::ChromeIPC, nullptr);
   }
 

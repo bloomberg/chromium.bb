@@ -139,8 +139,7 @@ class WebIDBCursorImplTest : public testing::Test {
     null_key_.assignNull();
     thread_safe_sender_ = new ThreadSafeSender(
         base::ThreadTaskRunnerHandle::Get(), new MockSyncMessageFilter);
-    dispatcher_ =
-        base::WrapUnique(new MockDispatcher(thread_safe_sender_.get()));
+    dispatcher_ = base::MakeUnique<MockDispatcher>(thread_safe_sender_.get());
   }
 
  protected:

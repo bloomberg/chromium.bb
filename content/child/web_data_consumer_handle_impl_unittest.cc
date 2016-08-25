@@ -236,8 +236,8 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
 
 TEST_F(WebDataConsumerHandleImplTest, ReadData) {
   base::RunLoop run_loop;
-  auto operation = base::WrapUnique(new ReadDataOperation(
-      std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
+  auto operation = base::MakeUnique<ReadDataOperation>(
+      std::move(consumer_), &message_loop_, run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
   ASSERT_TRUE(t.Start());
@@ -257,8 +257,8 @@ TEST_F(WebDataConsumerHandleImplTest, ReadData) {
 
 TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   base::RunLoop run_loop;
-  auto operation = base::WrapUnique(new TwoPhaseReadDataOperation(
-      std::move(consumer_), &message_loop_, run_loop.QuitClosure()));
+  auto operation = base::MakeUnique<TwoPhaseReadDataOperation>(
+      std::move(consumer_), &message_loop_, run_loop.QuitClosure());
 
   base::Thread t("DataConsumerHandle test thread");
   ASSERT_TRUE(t.Start());

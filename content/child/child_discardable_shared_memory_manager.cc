@@ -167,8 +167,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     // at least one span from the free lists.
     MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-    return base::WrapUnique(
-        new DiscardableMemoryImpl(this, std::move(free_span)));
+    return base::MakeUnique<DiscardableMemoryImpl>(this, std::move(free_span));
   }
 
   // Release purged memory to free up the address space before we attempt to
@@ -210,7 +209,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-  return base::WrapUnique(new DiscardableMemoryImpl(this, std::move(new_span)));
+  return base::MakeUnique<DiscardableMemoryImpl>(this, std::move(new_span));
 }
 
 bool ChildDiscardableSharedMemoryManager::OnMemoryDump(

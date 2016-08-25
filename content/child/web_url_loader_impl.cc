@@ -558,7 +558,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       request_info, request_body.get(),
-      base::WrapUnique(new WebURLLoaderImpl::RequestPeerImpl(this)),
+      base::MakeUnique<WebURLLoaderImpl::RequestPeerImpl>(this),
       request.getLoadingIPCType(), url_loader_factory_);
 
   if (defers_loading_ != NOT_DEFERRING)
@@ -673,9 +673,9 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       mode = SharedMemoryDataConsumerHandle::kApplyBackpressure;
     }
 
-    auto read_handle = base::WrapUnique(new SharedMemoryDataConsumerHandle(
+    auto read_handle = base::MakeUnique<SharedMemoryDataConsumerHandle>(
         mode, base::Bind(&Context::CancelBodyStreaming, this),
-        &body_stream_writer_));
+        &body_stream_writer_);
 
     // Here |body_stream_writer_| has an indirect reference to |this| and that
     // creates a reference cycle, but it is not a problem because the cycle
@@ -871,7 +871,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
     auto size = data.size();
     if (size != 0)
       OnReceivedData(
-          base::WrapUnique(new FixedReceivedData(data.data(), size, 0, size)));
+          base::MakeUnique<FixedReceivedData>(data.data(), size, 0, size));
   }
 
   OnCompletedRequest(error_code, false, false, info.security_info,

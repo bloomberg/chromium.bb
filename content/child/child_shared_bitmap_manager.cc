@@ -117,7 +117,7 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
     // Shutdown path, so use EXIT_SUCCESS. https://crbug.com/615121.
     exit(EXIT_SUCCESS);
   }
-  memory = base::WrapUnique(new base::SharedMemory(handle, false));
+  memory = base::MakeUnique<base::SharedMemory>(handle, false);
   if (!memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);
 #else
@@ -142,8 +142,7 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
       memory_size, handle_to_send, id));
 #endif
-  return base::WrapUnique(
-      new ChildSharedBitmap(sender_, std::move(memory), id));
+  return base::MakeUnique<ChildSharedBitmap>(sender_, std::move(memory), id);
 }
 
 std::unique_ptr<cc::SharedBitmap>
@@ -164,7 +163,7 @@ ChildSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
   sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(
       mem->mapped_size(), handle_to_send, id));
 
-  return base::WrapUnique(new ChildSharedBitmap(sender_, mem, id));
+  return base::MakeUnique<ChildSharedBitmap>(sender_, mem, id);
 }
 
 }  // namespace content
