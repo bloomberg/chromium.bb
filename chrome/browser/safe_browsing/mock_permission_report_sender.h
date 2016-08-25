@@ -25,10 +25,15 @@ class MockPermissionReportSender : public net::ReportSender {
 
   int GetAndResetNumberOfReportsSent();
 
+  void WaitForReportSent();
+
  private:
   GURL latest_report_uri_;
   std::string latest_report_;
   int number_of_reports_;
+  base::Closure quit_closure_;
+
+  void NotifyReportSentOnUIThread();
 
   DISALLOW_COPY_AND_ASSIGN(MockPermissionReportSender);
 };

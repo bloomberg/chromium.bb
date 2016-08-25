@@ -2,22 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/mock_permission_report_sender.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
 MockPermissionReportSender::MockPermissionReportSender()
-    : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {
-  number_of_reports_ = 0;
+    : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES),
+      number_of_reports_(0) {
+  DCHECK(quit_closure_.is_null());
 }
 
-MockPermissionReportSender::~MockPermissionReportSender() {}
+MockPermissionReportSender::~MockPermissionReportSender() {
+}
 
 void MockPermissionReportSender::Send(const GURL& report_uri,
                                       const std::string& report) {
   latest_report_uri_ = report_uri;
   latest_report_ = report;
   number_of_reports_++;
+
+  // BrowserThreads aren't initialized in the unittest, so don't post tasks
+  // to them.
+  if (!content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI))
+    return;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &MockPermissionReportSender::NotifyReportSentOnUIThread,
+          base::Unretained(this)));
+}
+
+void MockPermissionReportSender::WaitForReportSent() {
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
+}
+
+void MockPermissionReportSender::NotifyReportSentOnUIThread() {
+  if (!quit_closure_.is_null()) {
+    quit_closure_.Run();
+    quit_closure_.Reset();
+  }
 }
 
 const GURL& MockPermissionReportSender::latest_report_uri() {

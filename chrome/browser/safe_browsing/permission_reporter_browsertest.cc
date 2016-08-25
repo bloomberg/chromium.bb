@@ -87,9 +87,8 @@ class PermissionReporterBrowserTest : public SyncTest {
 };
 
 // Test that permission action report will be sent if the user is opted into it.
-// TODO(kcarattini): Address crbug/638316 to reenable this test.
 IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
-                       DISABLED_PermissionActionReporting) {
+                       PermissionActionReporting) {
   // Set up the Sync client.
   ASSERT_TRUE(SetupSync());
   Profile* profile = GetProfile(0);
@@ -110,8 +109,10 @@ IN_PROC_BROWSER_TEST_F(PermissionReporterBrowserTest,
   EXPECT_TRUE(mock_permission_prompt_factory->is_visible());
 
   AcceptBubble(browser);
-
   EXPECT_FALSE(mock_permission_prompt_factory->is_visible());
+
+  // We need to wait for the report to be sent on the IO thread.
+  mock_report_sender()->WaitForReportSent();
   EXPECT_EQ(1, mock_report_sender()->GetAndResetNumberOfReportsSent());
 
   PermissionReport permission_report;
