@@ -82,10 +82,6 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profil
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
 crbug.com/624233 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Failure ]
-crbug.com/638942 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-layer.html [ Pass Failure ]
-crbug.com/638942 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
-crbug.com/638942 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-svg-fill-text.html [ Pass Failure ]
-crbug.com/638942 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-group.html [ Pass Failure ]
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
