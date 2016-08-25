@@ -68,11 +68,8 @@ const char kSbDiagnosticUrl[] =
     "https://www.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
-// URL for malware and phishing, V2.
-const char kLearnMoreMalwareUrlV2[] =
-    "https://www.google.com/transparencyreport/safebrowsing/";
-const char kLearnMorePhishingUrlV2[] =
-    "https://www.google.com/transparencyreport/safebrowsing/";
+// URL for the Help Center article on Safe Browsing warnings.
+const char kLearnMore[] = "https://support.google.com/chrome/answer/99020";
 
 // After a safe browsing interstitial where the user opted-in to the report
 // but clicked "proceed anyway", we delay the call to
@@ -253,9 +250,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       // User pressed "Learn more".
       metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
-      GURL learn_more_url(
-          interstitial_reason_ == SB_REASON_PHISHING ?
-          kLearnMorePhishingUrlV2 : kLearnMoreMalwareUrlV2);
+      GURL learn_more_url(kLearnMore);
       learn_more_url = google_util::AppendGoogleLocaleParam(
           learn_more_url, g_browser_process->GetApplicationLocale());
       OpenURLParams params(learn_more_url,

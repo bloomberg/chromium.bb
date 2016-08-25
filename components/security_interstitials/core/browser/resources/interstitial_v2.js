@@ -8,7 +8,7 @@
 var expandedDetails = false;
 var keyPressState = 0;
 
-// Should match SecurityInterstitialCommands in security_interstitial_page.h
+// Should match security_interstitials::SecurityInterstitialCommands
 var CMD_DONT_PROCEED = 0;
 var CMD_PROCEED = 1;
 // Ways for user to get more information
@@ -153,13 +153,17 @@ function setupEvents() {
 
   if (ssl && overridable) {
     $('proceed-link').classList.add('small-link');
-  } else if ($('help-link')) {
-    // Overridable SSL page doesn't have this link.
-    $('help-link').addEventListener('click', function(event) {
-      if (ssl || loadTimeData.getBoolean('phishing'))
-        sendCommand(CMD_OPEN_HELP_CENTER);
-      else
-        sendCommand(CMD_OPEN_DIAGNOSTIC);
+  }
+
+  if ($('diagnostic-link')) {
+    $('diagnostic-link').addEventListener('click', function(event) {
+      sendCommand(CMD_OPEN_DIAGNOSTIC);
+    });
+  }
+
+  if ($('learn-more-link')) {
+    $('learn-more-link').addEventListener('click', function(event) {
+      sendCommand(CMD_OPEN_HELP_CENTER);
     });
   }
 

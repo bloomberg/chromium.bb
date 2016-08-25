@@ -504,7 +504,7 @@ class SafeBrowsingBlockingPageBrowserTest
     EXPECT_EQ(HIDDEN, GetVisibility("opt-in-checkbox"));
     EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
     EXPECT_TRUE(Click("details-button"));
-    EXPECT_EQ(VISIBLE, GetVisibility("help-link"));
+    EXPECT_EQ(VISIBLE, GetVisibility("learn-more-link"));
     EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
 
     EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
@@ -844,15 +844,17 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
   SetupWarningAndNavigate();
-  EXPECT_TRUE(ClickAndWaitForDetach("help-link"));
+  EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));
   AssertNoInterstitial(false);  // Assert the interstitial is gone
 
   // We are in the help page.
   EXPECT_EQ(
-      testing::get<0>(GetParam()) == SB_THREAT_TYPE_URL_PHISHING
-          ? "/transparencyreport/safebrowsing/"
-          : "/safebrowsing/diagnostic",
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().path());
+      GURL("https://support.google.com/chrome/answer/99020").GetWithEmptyPath(),
+      browser()
+          ->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetURL()
+          .GetWithEmptyPath());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,

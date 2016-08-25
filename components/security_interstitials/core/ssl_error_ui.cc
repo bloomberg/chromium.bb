@@ -16,7 +16,7 @@ namespace security_interstitials {
 namespace {
 
 // URL for help page.
-const char kHelpURL[] = "https://support.google.com/chrome/answer/4454607";
+const char kHelpURL[] = "https://support.google.com/chrome/answer/6098869";
 
 bool IsMasked(int options, SSLErrorUI::SSLErrorOptionsMask mask) {
   return ((options & mask) != 0);
