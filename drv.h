@@ -46,7 +46,7 @@ extern "C" {
 #define DRV_BO_USE_HW_FB		(1ull << 14)
 #define DRV_BO_USE_EXTERNAL_DISP	(1ull << 15)
 #define DRV_BO_USE_PROTECTED		(1ull << 16)
-#define DRV_BO_USE_HW_VIDEO_ENCODE	(1ull << 17)
+#define DRV_BO_USE_HW_VIDEO_ENCODER	(1ull << 17)
 #define DRV_BO_USE_HW_CAMERA_WRITE	(1ull << 18)
 #define DRV_BO_USE_HW_CAMERA_READ	(1ull << 19)
 #define DRV_BO_USE_HW_CAMERA_ZSL	(1ull << 20)
@@ -208,7 +208,16 @@ uint64_t
 drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane);
 
 drv_format_t
+drv_bo_get_format(struct bo *bo);
+
+drv_format_t
 drv_resolve_format(struct driver *drv, drv_format_t format);
+
+int
+drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
+
+uint32_t
+drv_num_buffers_per_bo(struct bo *bo);
 
 #ifdef __cplusplus
 }

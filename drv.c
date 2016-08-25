@@ -296,6 +296,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 		bo->strides[plane] = data->strides[plane];
 		bo->offsets[plane] = data->offsets[plane];
 		bo->sizes[plane] = data->sizes[plane];
+		bo->total_size += data->sizes[plane];
 
 		pthread_mutex_lock(&drv->table_lock);
 		drv_increment_reference_count(drv, bo, plane);
@@ -439,10 +440,55 @@ uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane)
 	return bo->format_modifiers[plane];
 }
 
+drv_format_t drv_bo_get_format(struct bo *bo)
+{
+	return bo->format;
+}
+
 drv_format_t drv_resolve_format(struct driver *drv, drv_format_t format)
 {
 	if (drv->backend->resolve_format)
 		return drv->backend->resolve_format(format);
 
 	return format;
+}
+
+/*
+ * This function returns the stride for a given format, width and plane.
+ */
+int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
+{
+	/* Get stride of the first plane */
+	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, 0), 8);
+
+	/*
+	 * Only downsample for certain multiplanar formats which are not
+	 * interleaved and have horizontal subsampling.  Only formats supported
+	 * by our drivers are listed here -- add more as needed.
+	 */
+	if (plane != 0) {
+		switch (format) {
+		case DRV_FORMAT_YVU420:
+			stride = stride / 2;
+			break;
+		}
+	}
+
+	return stride;
+}
+
+uint32_t drv_num_buffers_per_bo(struct bo *bo)
+{
+	uint32_t count = 0;
+	size_t plane, p;
+
+	for (plane = 0; plane < bo->num_planes; plane++) {
+		for (p = 0; p < plane; p++)
+			if (bo->handles[p].u32 == bo->handles[plane].u32)
+				break;
+		if (p == plane)
+			count++;
+	}
+
+	return count;
 }

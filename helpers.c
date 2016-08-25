@@ -148,29 +148,6 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 }
 
 /*
- * This function returns the stride for a given format, width and plane.
- */
-int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
-{
-	/* Get stride of the first plane */
-	int stride = width * DIV_ROUND_UP(drv_bpp_from_format(format, 0), 8);
-
-	/*
-	 * Only downsample for certain multiplanar formats which are not
-	 * interleaved and have horizontal subsampling.  Only formats supported
-	 * by our drivers are listed here -- add more as needed.
-	 */
-	if (plane != 0) {
-		switch (format) {
-		case DRV_FORMAT_YVU420:
-			stride = stride / 2;
-		}
-	}
-
-	return stride;
-}
-
-/*
  * This function fills in the buffer object given driver aligned dimensions
  * and a format.  This function assumes there is just one kernel buffer per
  * buffer object.
@@ -344,24 +321,6 @@ void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
 			      (void *) (num - 1));
 }
 
-uint32_t drv_num_buffers_per_bo(struct bo *bo)
-{
-	uint32_t count = 0;
-	size_t plane, p;
-
-	for (plane = 0; plane < bo->num_planes; plane++) {
-		for (p = 0; p < plane; p++) {
-			if (bo->handles[p].u32 == bo->handles[plane].u32)
-				break;
-		}
-
-		if (p == plane)
-			count++;
-	}
-
-	return count;
-}
-
 uint32_t drv_log_base2(uint32_t value)
 {
 	int ret = 0;
@@ -371,4 +330,3 @@ uint32_t drv_log_base2(uint32_t value)
 
 	return ret;
 }
-

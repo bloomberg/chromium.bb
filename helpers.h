@@ -11,7 +11,6 @@
 
 size_t drv_num_planes_from_format(uint32_t format);
 int drv_bpp_from_format(uint32_t format, size_t plane);
-int drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
 int drv_bo_from_format(struct bo *bo, uint32_t width, uint32_t height,
 		       drv_format_t format);
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
@@ -25,6 +24,5 @@ void drv_increment_reference_count(struct driver *drv, struct bo *bo,
 				   size_t plane);
 void drv_decrement_reference_count(struct driver *drv, struct bo *bo,
 				   size_t plane);
-uint32_t drv_num_buffers_per_bo(struct bo *bo);
 uint32_t drv_log_base2(uint32_t value);
 #endif

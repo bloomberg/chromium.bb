@@ -7,6 +7,7 @@
 #ifndef DRV_PRIV_H
 #define DRV_PRIV_H
 
+#include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
