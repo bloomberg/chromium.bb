@@ -48,6 +48,7 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
 {
     setScriptResource(resource);
     ThreadState::current()->registerPreFinalizer(this);
+    MemoryCoordinator::instance().registerClient(this);
 }
 
 PendingScript::~PendingScript()
@@ -187,6 +188,7 @@ DEFINE_TRACE(PendingScript)
     visitor->trace(m_streamer);
     visitor->trace(m_client);
     ResourceOwner<ScriptResource>::trace(visitor);
+    MemoryCoordinatorClient::trace(visitor);
 }
 
 ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOccurred) const
@@ -225,6 +227,13 @@ bool PendingScript::errorOccurred() const
     if (m_streamer && m_streamer->resource())
         return m_streamer->resource()->errorOccurred();
     return false;
+}
+
+void PendingScript::prepareToSuspend()
+{
+    if (!m_streamer)
+        return;
+    m_streamer->cancel();
 }
 
 } // namespace blink
