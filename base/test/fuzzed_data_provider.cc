@@ -34,7 +34,7 @@ uint32_t FuzzedDataProvider::ConsumeUint32InRange(uint32_t min, uint32_t max) {
   uint32_t offset = 0;
   uint32_t result = 0;
 
-  while ((range >> offset) > 0 && !remaining_data_.empty()) {
+  while (offset < 32 && (range >> offset) > 0 && !remaining_data_.empty()) {
     // Pull bytes off the end of the seed data. Experimentally, this seems to
     // allow the fuzzer to more easily explore the input space. This makes
     // sense, since it works by modifying inputs that caused new code to run,
