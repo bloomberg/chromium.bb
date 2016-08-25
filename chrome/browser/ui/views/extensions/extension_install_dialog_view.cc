@@ -200,11 +200,15 @@ void ExtensionInstallDialogView::InitView() {
   // +---------------------+
   //
   // No webstore data (all other types)
-  // +--------------+------+
-  // | title        | icon |
-  // +--------------|      |
-  // | scroll_view  |      |
-  // +--------------+------+
+  //      w/ permissions           no permissions
+  // +--------------+------+  +--------------+------+
+  // | title        | icon |  | title        | icon |
+  // +--------------+------+  +--------------+------+
+  // |     separator       |  | scroll_view (empty) |
+  // +---------------------+  +---------------------+
+  // | scroll_view         |
+  // +---------------------+
+
   // The scroll_view contains permissions (if there are any) and retained
   // files/devices (if there are any; post-install-permissions prompt only).
   int left_column_width =
@@ -248,43 +252,34 @@ void ExtensionInstallDialogView::InitView() {
     store_link->SetFontList(small_font_list);
     store_link->set_listener(this);
     layout->AddView(store_link);
-
-    if (prompt_->ShouldShowPermissions()) {
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      layout->StartRow(0, column_set_id);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
-                      3,
-                      1,
-                      views::GridLayout::FILL,
-                      views::GridLayout::FILL);
-    }
   }
 
-  int content_width = left_column_width + views::kPanelHorizMargin + kIconSize;
+  if (prompt_->ShouldShowPermissions()) {
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, column_set_id);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 3, 1,
+                    views::GridLayout::FILL, views::GridLayout::FILL);
+  }
+
+  const int content_width =
+      left_column_width + views::kPanelHorizMargin + kIconSize;
 
   // Create the scrollable view which will contain the permissions and retained
-  // files/devices.
+  // files/devices. It will span the full content width.
   CustomScrollableView* scrollable = new CustomScrollableView();
   views::GridLayout* scroll_layout = new views::GridLayout(scrollable);
   scrollable->SetLayoutManager(scroll_layout);
 
   views::ColumnSet* scrollable_column_set =
       scroll_layout->AddColumnSet(column_set_id);
-  // If we have webstore data, there's a separator below it, so we can span the
-  // whole content width. Otherwise just use the width of the left column so
-  // that we don't overlap the icon.
-  int scrollable_width = prompt_->has_webstore_data() ? content_width
-                                                      : left_column_width;
-  scrollable_column_set->AddColumn(views::GridLayout::LEADING,
-                                   views::GridLayout::LEADING,
-                                   0,  // no resizing
-                                   views::GridLayout::USE_PREF,
-                                   scrollable_width,
-                                   scrollable_width);
+
+  scrollable_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::LEADING,
+      0,  // no resizing
+      views::GridLayout::USE_PREF, content_width, content_width);
+
   // Pad to the very right of the dialog, so the scrollbar will be on the edge.
-  int padding_width =
-      content_width + views::kButtonHEdgeMarginNew - scrollable_width;
-  scrollable_column_set->AddPaddingColumn(0, padding_width);
+  scrollable_column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
   layout->StartRow(0, column_set_id);
   scroll_view_ = new views::ScrollView();
@@ -298,16 +293,10 @@ void ExtensionInstallDialogView::InitView() {
             ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS) > 0;
     if (has_permissions) {
       AddPermissions(
-          scroll_layout,
-          rb,
-          column_set_id,
-          scrollable_width,
+          scroll_layout, rb, column_set_id, content_width,
           ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS);
       AddPermissions(
-          scroll_layout,
-          rb,
-          column_set_id,
-          scrollable_width,
+          scroll_layout, rb, column_set_id, content_width,
           ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS);
     } else {
       scroll_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -316,7 +305,7 @@ void ExtensionInstallDialogView::InitView() {
           l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS));
       permission_label->SetMultiLine(true);
       permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      permission_label->SizeToFit(scrollable_width);
+      permission_label->SizeToFit(content_width);
       scroll_layout->AddView(permission_label);
     }
   }
@@ -329,7 +318,7 @@ void ExtensionInstallDialogView::InitView() {
         new views::Label(prompt_->GetRetainedFilesHeading());
     retained_files_header->SetMultiLine(true);
     retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    retained_files_header->SizeToFit(scrollable_width);
+    retained_files_header->SizeToFit(content_width);
     scroll_layout->AddView(retained_files_header);
 
     scroll_layout->StartRow(0, column_set_id);
@@ -338,7 +327,7 @@ void ExtensionInstallDialogView::InitView() {
       details.push_back(prompt_->GetRetainedFile(i));
     }
     ExpandableContainerView* issue_advice_view =
-        new ExpandableContainerView(details, scrollable_width, false);
+        new ExpandableContainerView(details, content_width, false);
     scroll_layout->AddView(issue_advice_view);
   }
 
@@ -350,7 +339,7 @@ void ExtensionInstallDialogView::InitView() {
         new views::Label(prompt_->GetRetainedDevicesHeading());
     retained_devices_header->SetMultiLine(true);
     retained_devices_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    retained_devices_header->SizeToFit(scrollable_width);
+    retained_devices_header->SizeToFit(content_width);
     scroll_layout->AddView(retained_devices_header);
 
     scroll_layout->StartRow(0, column_set_id);
@@ -359,7 +348,7 @@ void ExtensionInstallDialogView::InitView() {
       details.push_back(prompt_->GetRetainedDeviceMessageString(i));
     }
     ExpandableContainerView* issue_advice_view =
-        new ExpandableContainerView(details, scrollable_width, false);
+        new ExpandableContainerView(details, content_width, false);
     scroll_layout->AddView(issue_advice_view);
   }
 
@@ -461,7 +450,10 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   title->SetMultiLine(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SizeToFit(left_column_width);
-  layout->AddView(title);
+
+  // Center align the title along the vertical axis.
+  layout->AddView(title, 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::CENTER);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
@@ -472,15 +464,9 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   icon->SetImageSize(size);
   icon->SetImage(*image);
 
-  int icon_row_span = 1;  // Always span the title.
-  if (prompt_->has_webstore_data()) {
-    // Also span the rating, user_count and store_link rows.
-    icon_row_span += 3;
-    // Note: Do not span the permissions here, there's a separator in between!
-  } else {
-    // Also span the scrollable container with permissions, retained files etc.
-    icon_row_span += 1;
-  }
+  // Span the title row. In case the webstore data is available, also span the
+  // rating, user_count and store_link rows.
+  const int icon_row_span = prompt_->has_webstore_data() ? 4 : 1;
   layout->AddView(icon, 1, icon_row_span);
 
   return layout;
