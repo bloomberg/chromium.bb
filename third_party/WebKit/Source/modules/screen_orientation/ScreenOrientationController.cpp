@@ -93,7 +93,7 @@ void ScreenOrientationController::updateOrientation()
 
 bool ScreenOrientationController::isActiveAndVisible() const
 {
-    return m_orientation && frame() && page() && page()->isPageVisible();
+    return m_orientation && m_client && frame() && page() && page()->isPageVisible();
 }
 
 void ScreenOrientationController::pageVisibilityChanged()
@@ -102,6 +102,9 @@ void ScreenOrientationController::pageVisibilityChanged()
 
     if (!isActiveAndVisible())
         return;
+
+    DCHECK(frame());
+    DCHECK(frame()->host());
 
     // The orientation type and angle are tied in a way that if the angle has
     // changed, the type must have changed.
