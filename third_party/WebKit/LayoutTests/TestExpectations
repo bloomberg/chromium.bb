@@ -261,7 +261,7 @@ crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pas
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
-crbug.com/638693 [ Mac ] virtual/threaded/animations/display-inline-style-adjust.html [ Pass Failure ]
+crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
