@@ -335,6 +335,17 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
+    'Mac Retina Release (AMD)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6821',
+        'hidpi': '1',
+        'os': 'Mac-10.11'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off for testing purposes.
+      'swarming': False,
+      'os_type': 'mac',
+    },
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': {
         'gpu': '10de:104a',

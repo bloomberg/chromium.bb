@@ -327,6 +327,7 @@
       'Mac 10.10 Retina Release (AMD)': 'none',
       'Mac Retina Debug': 'none',
       'Mac Retina Release': 'none',
+      'Mac Retina Release (AMD)': 'none',
       'Win7 Debug (ATI)': 'none',
       'Win7 Debug (NVIDIA)': 'none',
       'Win7 Debug (New Intel)': 'none',
