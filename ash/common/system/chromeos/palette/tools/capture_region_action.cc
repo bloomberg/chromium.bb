@@ -10,6 +10,7 @@
 #include "ash/common/system/toast/toast_data.h"
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/wm_shell.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,10 +21,8 @@ namespace {
 const char kToastId[] = "palette_capture_region";
 const int kToastDurationMs = 2500;
 
-// TODO(jdufault): Convert ToastData to use base::string16 so we can properly
-// localize the toast messages and land the final strings. See crbug.com/634558.
+// TODO(jdufault): Localize toast message. See crbug.com/634558.
 const char kToastMessage[] = "Select a region";
-const char kToastDismiss[] = "Dismiss";
 
 }  // namespace
 
@@ -43,7 +42,8 @@ PaletteToolId CaptureRegionAction::GetToolId() const {
 void CaptureRegionAction::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  ToastData toast(kToastId, kToastMessage, kToastDurationMs, kToastDismiss);
+  ToastData toast(kToastId, base::ASCIIToUTF16(kToastMessage), kToastDurationMs,
+                  base::string16());
   ash::WmShell::Get()->toast_manager()->Show(toast);
 
   WmShell::Get()->palette_delegate()->TakePartialScreenshot();

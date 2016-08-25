@@ -6,9 +6,9 @@
 #define ASH_COMMON_SYSTEM_TOAST_TOAST_OVERLAY_H_
 
 #include <memory>
-#include <string>
 
 #include "ash/ash_export.h"
+#include "base/strings/string16.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -40,8 +40,8 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
   // |dismiss_text| is the message for the button to dismiss the toast message.
   // |dismiss_text| is optional. If empty, the default text is used.
   ToastOverlay(Delegate* delegate,
-               const std::string& text,
-               const std::string& dismiss_text);
+               const base::string16& text,
+               const base::string16& dismiss_text);
   ~ToastOverlay() override;
 
   // Shows or hides the overlay.
@@ -61,8 +61,8 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
   void ClickDismissButtonForTesting(const ui::Event& event);
 
   Delegate* const delegate_;
-  const std::string text_;
-  const std::string dismiss_text_;
+  const base::string16 text_;
+  const base::string16 dismiss_text_;
   std::unique_ptr<views::Widget> overlay_widget_;
   std::unique_ptr<ToastOverlayView> overlay_view_;
   gfx::Size widget_size_;

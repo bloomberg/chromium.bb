@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "mojo/common/common_type_converters.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"
 #include "ui/arc/notification/arc_notification_item.h"
 
@@ -193,7 +194,8 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   ash::WmShell::Get()->toast_manager()->Show(
-      ash::ToastData(data->id, data->text, data->duration, data->dismiss_text));
+      ash::ToastData(data->id, data->text.To<base::string16>(), data->duration,
+                     data->dismiss_text.To<base::string16>()));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {

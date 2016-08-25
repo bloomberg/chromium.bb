@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
@@ -118,7 +119,8 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
 #if defined(OS_CHROMEOS)
     case DEBUG_SHOW_TOAST:
       WmShell::Get()->toast_manager()->Show(
-          ToastData("id", "Toast", 5000 /* duration_ms */, "Dismiss"));
+          ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
+                    base::ASCIIToUTF16("Dismiss")));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

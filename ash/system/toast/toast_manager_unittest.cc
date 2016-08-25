@@ -12,7 +12,9 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/widget/widget.h"
 
@@ -53,14 +55,14 @@ class ToastManagerTest : public test::AshTestBase {
     return overlay ? overlay->widget_for_testing() : nullptr;
   }
 
-  std::string GetCurrentText() {
+  base::string16 GetCurrentText() {
     ToastOverlay* overlay = GetCurrentOverlay();
-    return overlay ? overlay->text_ : std::string();
+    return overlay ? overlay->text_ : base::string16();
   }
 
-  std::string GetCurrentDismissText() {
+  base::string16 GetCurrentDismissText() {
     ToastOverlay* overlay = GetCurrentOverlay();
-    return overlay ? overlay->dismiss_text_ : std::string();
+    return overlay ? overlay->dismiss_text_ : base::string16();
   }
 
   void ClickDismissButton() {
@@ -71,7 +73,8 @@ class ToastManagerTest : public test::AshTestBase {
 
   std::string ShowToast(const std::string& text, int32_t duration) {
     std::string id = "TOAST_ID_" + base::UintToString(serial_++);
-    manager()->Show(ToastData(id, text, duration, ""));
+    manager()->Show(
+        ToastData(id, base::ASCIIToUTF16(text), duration, base::string16()));
     return id;
   }
 
@@ -79,7 +82,8 @@ class ToastManagerTest : public test::AshTestBase {
                                    int32_t duration,
                                    const std::string& dismiss_text) {
     std::string id = "TOAST_ID_" + base::UintToString(serial_++);
-    manager()->Show(ToastData(id, text, duration, dismiss_text));
+    manager()->Show(ToastData(id, base::ASCIIToUTF16(text), duration,
+                              base::ASCIIToUTF16(dismiss_text)));
     return id;
   }
 
@@ -140,17 +144,17 @@ TEST_F(ToastManagerTest, QueueMessage) {
   ShowToast("DUMMY3", 10);
 
   EXPECT_EQ(1, GetToastSerial());
-  EXPECT_EQ("DUMMY1", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("DUMMY1"), GetCurrentText());
 
   while (GetToastSerial() != 2)
     base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ("DUMMY2", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("DUMMY2"), GetCurrentText());
 
   while (GetToastSerial() != 3)
     base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ("DUMMY3", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("DUMMY3"), GetCurrentText());
 }
 
 TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
@@ -281,15 +285,15 @@ TEST_F(ToastManagerTest, CancelToast) {
   std::string id3 = ShowToast("TEXT3", ToastData::kInfiniteDuration);
 
   // Confirm that the first toast is shown.
-  EXPECT_EQ("TEXT1", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("TEXT1"), GetCurrentText());
   // Cancel the queued toast.
   CancelToast(id2);
   // Confirm that the shown toast is still visible.
-  EXPECT_EQ("TEXT1", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("TEXT1"), GetCurrentText());
   // Cancel the shown toast.
   CancelToast(id1);
   // Confirm that the next toast is visible.
-  EXPECT_EQ("TEXT3", GetCurrentText());
+  EXPECT_EQ(base::ASCIIToUTF16("TEXT3"), GetCurrentText());
   // Cancel the shown toast.
   CancelToast(id3);
   // Confirm that the shown toast disappears.

@@ -9,13 +9,13 @@
 namespace ash {
 
 ToastData::ToastData(std::string id,
-                     std::string text,
+                     const base::string16& text,
                      int32_t duration_ms,
-                     std::string dismiss_text)
+                     const base::string16& dismiss_text)
     : id(std::move(id)),
-      text(std::move(text)),
+      text(text),
       duration_ms(duration_ms),
-      dismiss_text(std::move(dismiss_text)) {}
+      dismiss_text(dismiss_text) {}
 
 ToastData::ToastData(const ToastData& other) = default;
 

@@ -68,17 +68,17 @@ gfx::Rect GetUserWorkAreaBounds() {
 //  ToastOverlayLabel
 class ToastOverlayLabel : public views::Label {
  public:
-  explicit ToastOverlayLabel(const std::string& label);
+  explicit ToastOverlayLabel(const base::string16& label);
   ~ToastOverlayLabel() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayLabel);
 };
 
-ToastOverlayLabel::ToastOverlayLabel(const std::string& label) {
+ToastOverlayLabel::ToastOverlayLabel(const base::string16& label) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
-  SetText(base::UTF8ToUTF16(label));
+  SetText(label);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFontList(rb->GetFontList(kTextFontStyle));
   SetAutoColorReadabilityEnabled(false);
@@ -136,8 +136,8 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
  public:
   // This object is not owned by the views hiearchy or by the widget.
   ToastOverlayView(ToastOverlay* overlay,
-                   const std::string& text,
-                   const std::string& dismiss_text);
+                   const base::string16& text,
+                   const base::string16& dismiss_text);
   ~ToastOverlayView() override;
 
   // views::View overrides:
@@ -158,14 +158,14 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
 };
 
 ToastOverlayView::ToastOverlayView(ToastOverlay* overlay,
-                                   const std::string& text,
-                                   const std::string& dismiss_text)
+                                   const base::string16& text,
+                                   const base::string16& dismiss_text)
     : overlay_(overlay),
       button_(new ToastOverlayButton(
           this,
           dismiss_text.empty()
               ? l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON)
-              : base::UTF8ToUTF16(dismiss_text))) {
+              : dismiss_text)) {
   ToastOverlayLabel* label = new ToastOverlayLabel(text);
   label->SetMaximumWidth(
       GetMaximumSize().width() - button_->GetPreferredSize().width() -
@@ -207,8 +207,8 @@ void ToastOverlayView::ButtonPressed(views::Button* sender,
 ///////////////////////////////////////////////////////////////////////////////
 //  ToastOverlay
 ToastOverlay::ToastOverlay(Delegate* delegate,
-                           const std::string& text,
-                           const std::string& dismiss_text)
+                           const base::string16& text,
+                           const base::string16& dismiss_text)
     : delegate_(delegate),
       text_(text),
       dismiss_text_(dismiss_text),
