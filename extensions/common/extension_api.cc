@@ -38,7 +38,7 @@ const char* kChildKinds[] = {
   "events"
 };
 
-std::unique_ptr<base::ListValue> LoadSchemaList(
+std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
     const std::string& name,
     const base::StringPiece& schema) {
   std::string error_message;
@@ -56,8 +56,9 @@ std::unique_ptr<base::ListValue> LoadSchemaList(
       error_message.c_str());
 
   CHECK(result.get()) << error_message << " for schema " << schema;
-  CHECK(result->IsType(base::Value::TYPE_LIST)) << " for schema " << schema;
-  return base::ListValue::From(std::move(result));
+  CHECK(result->IsType(base::Value::TYPE_DICTIONARY)) << " for schema "
+                                                      << schema;
+  return base::DictionaryValue::From(std::move(result));
 }
 
 const base::DictionaryValue* FindListItem(const base::ListValue* list,
@@ -146,22 +147,11 @@ ExtensionAPI::OverrideSharedInstanceForTest::~OverrideSharedInstanceForTest() {
 
 void ExtensionAPI::LoadSchema(const std::string& name,
                               const base::StringPiece& schema) {
-  std::unique_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
+  std::unique_ptr<base::DictionaryValue> schema_dict(
+      LoadSchemaDictionary(name, schema));
   std::string schema_namespace;
-  extensions::ExtensionsClient* extensions_client =
-      extensions::ExtensionsClient::Get();
-  DCHECK(extensions_client);
-  while (!schema_list->empty()) {
-    std::unique_ptr<base::DictionaryValue> schema;
-    {
-      std::unique_ptr<base::Value> val;
-      schema_list->Erase(schema_list->begin(), &val);
-      schema = base::DictionaryValue::From(std::move(val));
-      CHECK(schema);
-    }
-    CHECK(schema->GetString("namespace", &schema_namespace));
-    schemas_[schema_namespace] = std::move(schema);
-  }
+  CHECK(schema_dict->GetString("namespace", &schema_namespace));
+  schemas_[schema_namespace] = std::move(schema_dict);
 }
 
 ExtensionAPI::ExtensionAPI() : default_configuration_initialized_(false) {

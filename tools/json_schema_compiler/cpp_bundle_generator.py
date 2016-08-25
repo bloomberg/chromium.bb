@@ -326,9 +326,8 @@ class _SchemasCCGenerator(object):
     c.Append('namespace {')
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
-      # JSON parsing code expects lists of schemas, so dump a singleton list.
-      json_content = json.dumps([_PrefixSchemaWithNamespace(
-                                     _RemoveUnneededFields(api))],
+      json_content = json.dumps(_PrefixSchemaWithNamespace(
+                                     _RemoveUnneededFields(api)),
                                 separators=(',', ':'))
       # Escape all double-quotes and backslashes. For this to output a valid
       # JSON C string, we need to escape \ and ". Note that some schemas are
