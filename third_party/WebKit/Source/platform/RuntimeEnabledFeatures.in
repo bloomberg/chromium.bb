@@ -113,6 +113,7 @@ IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
 LayoutNG
 LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
+LongTaskObserver status=test
 FractionalScrollOffsets
 LoadingWithMojo
 MediaCapture

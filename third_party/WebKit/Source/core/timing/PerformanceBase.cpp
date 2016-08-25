@@ -35,6 +35,7 @@
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/timing/PerformanceCompositeTiming.h"
+#include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceRenderTiming.h"
 #include "core/timing/PerformanceResourceTiming.h"
@@ -50,12 +51,14 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t defaultResourceTimingBufferSize = 150;
 static const size_t defaultFrameTimingBufferSize = 150;
+static const size_t defaultLongTaskTimingBufferSize = 150;
 
 PerformanceBase::PerformanceBase(double timeOrigin)
     : m_frameTimingBufferSize(defaultFrameTimingBufferSize)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
-    , m_timeOrigin(timeOrigin)
+    , m_longTaskTimingBufferSize(defaultLongTaskTimingBufferSize)
     , m_userTiming(nullptr)
+    , m_timeOrigin(timeOrigin)
     , m_observerFilterOptions(PerformanceEntry::Invalid)
     , m_deliverObservationsTimer(this, &PerformanceBase::deliverObservationsTimerFired)
 {
@@ -81,6 +84,7 @@ PerformanceEntryVector PerformanceBase::getEntries() const
 
     entries.appendVector(m_resourceTimingBuffer);
     entries.appendVector(m_frameTimingBuffer);
+    entries.appendVector(m_longTaskTimingBuffer);
 
     if (m_userTiming) {
         entries.appendVector(m_userTiming->getMarks());
@@ -118,6 +122,10 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(const String& entryType
     case PerformanceEntry::Measure:
         if (m_userTiming)
             entries.appendVector(m_userTiming->getMeasures());
+        break;
+    case PerformanceEntry::LongTask:
+        for (const auto& longTask : m_longTaskTimingBuffer)
+            entries.append(longTask);
         break;
     }
 
@@ -184,6 +192,18 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size)
     m_frameTimingBufferSize = size;
     if (isFrameTimingBufferFull())
         dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
+}
+
+void PerformanceBase::clearLongTaskTimings()
+{
+    m_longTaskTimingBuffer.clear();
+}
+
+void PerformanceBase::setLongTaskTimingBufferSize(unsigned size)
+{
+    m_longTaskTimingBufferSize = size;
+    if (isLongTaskTimingBufferFull())
+        dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
 }
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, const SecurityOrigin& initiatorSecurityOrigin, const AtomicString& originalTimingAllowOrigin, ExecutionContext* context)
@@ -322,6 +342,30 @@ bool PerformanceBase::isFrameTimingBufferFull()
     return m_frameTimingBuffer.size() >= m_frameTimingBufferSize;
 }
 
+void PerformanceBase::addLongTaskTiming(double startTime, double endTime, const String& frameContextUrl)
+{
+    if (isLongTaskTimingBufferFull() || !hasObserverFor(PerformanceEntry::LongTask))
+        return;
+    PerformanceEntry* entry = PerformanceLongTaskTiming::create(
+        monotonicTimeToDOMHighResTimeStampInMillis(startTime),
+        monotonicTimeToDOMHighResTimeStampInMillis(endTime),
+        frameContextUrl);
+    notifyObserversOfEntry(*entry);
+    addLongTaskTimingBuffer(*entry);
+}
+
+void PerformanceBase::addLongTaskTimingBuffer(PerformanceEntry& entry)
+{
+    m_longTaskTimingBuffer.append(&entry);
+    if (isLongTaskTimingBufferFull())
+        dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
+}
+
+bool PerformanceBase::isLongTaskTimingBufferFull()
+{
+    return m_longTaskTimingBuffer.size() >= m_longTaskTimingBufferSize;
+}
+
 void PerformanceBase::mark(const String& markName, ExceptionState& exceptionState)
 {
     if (!m_userTiming)
@@ -445,6 +489,12 @@ DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(double m
     return convertSecondsToDOMHighResTimeStamp(clampTimeResolution(timeInSeconds));
 }
 
+double PerformanceBase::monotonicTimeToDOMHighResTimeStampInMillis(
+    DOMHighResTimeStamp monotonicTime) const
+{
+    return monotonicTimeToDOMHighResTimeStamp(monotonicTime) * 1000;
+}
+
 DOMHighResTimeStamp PerformanceBase::now() const
 {
     return monotonicTimeToDOMHighResTimeStamp(monotonicallyIncreasingTime());
@@ -454,6 +504,7 @@ DEFINE_TRACE(PerformanceBase)
 {
     visitor->trace(m_frameTimingBuffer);
     visitor->trace(m_resourceTimingBuffer);
+    visitor->trace(m_longTaskTimingBuffer);
     visitor->trace(m_userTiming);
     visitor->trace(m_observers);
     visitor->trace(m_activeObservers);

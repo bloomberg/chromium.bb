@@ -72,6 +72,8 @@ PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(const String& entr
 {
     if (equalIgnoringCase(entryType, "composite"))
         return Composite;
+    if (equalIgnoringCase(entryType, "longtask"))
+        return LongTask;
     if (equalIgnoringCase(entryType, "mark"))
         return Mark;
     if (equalIgnoringCase(entryType, "measure"))

@@ -4358,10 +4358,12 @@ interface Performance : EventTarget
     getter memory
     getter navigation
     getter onframetimingbufferfull
+    getter onlongtasktimingbufferfull
     getter onresourcetimingbufferfull
     getter onwebkitresourcetimingbufferfull
     getter timing
     method clearFrameTimings
+    method clearLongTaskTimings
     method clearMarks
     method clearMeasures
     method clearResourceTimings
@@ -4373,10 +4375,12 @@ interface Performance : EventTarget
     method measure
     method now
     method setFrameTimingBufferSize
+    method setLongTaskTimingBufferSize
     method setResourceTimingBufferSize
     method webkitClearResourceTimings
     method webkitSetResourceTimingBufferSize
     setter onframetimingbufferfull
+    setter onlongtasktimingbufferfull
     setter onresourcetimingbufferfull
     setter onwebkitresourcetimingbufferfull
 interface PerformanceCompositeTiming : PerformanceEntry
@@ -4391,6 +4395,9 @@ interface PerformanceEntry
     getter startTime
     method constructor
     method toJSON
+interface PerformanceLongTaskTiming : PerformanceEntry
+    attribute @@toStringTag
+    method constructor
 interface PerformanceMark : PerformanceEntry
     attribute @@toStringTag
     method constructor

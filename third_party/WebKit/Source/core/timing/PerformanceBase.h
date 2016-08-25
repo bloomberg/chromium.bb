@@ -72,6 +72,7 @@ public:
     // document's time origin and has a time resolution that is safe for
     // exposing to web.
     DOMHighResTimeStamp monotonicTimeToDOMHighResTimeStamp(double) const;
+    double monotonicTimeToDOMHighResTimeStampInMillis(DOMHighResTimeStamp) const;
     DOMHighResTimeStamp now() const;
 
     double timeOrigin() const { return m_timeOrigin; }
@@ -90,6 +91,13 @@ public:
     void setFrameTimingBufferSize(unsigned);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
+
+    void clearLongTaskTimings();
+    void setLongTaskTimingBufferSize(unsigned);
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(longtasktimingbufferfull);
+
+    void addLongTaskTiming(double, double, const String& frameContextUrl);
 
     void addResourceTiming(const ResourceTimingInfo&);
 
@@ -120,6 +128,9 @@ protected:
     bool isFrameTimingBufferFull();
     void addFrameTimingBuffer(PerformanceEntry&);
 
+    bool isLongTaskTimingBufferFull();
+    void addLongTaskTimingBuffer(PerformanceEntry&);
+
     void notifyObserversOfEntry(PerformanceEntry&);
     bool hasObserverFor(PerformanceEntry::EntryType);
 
@@ -129,9 +140,11 @@ protected:
     unsigned m_frameTimingBufferSize;
     PerformanceEntryVector m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
-    double m_timeOrigin;
-
+    PerformanceEntryVector m_longTaskTimingBuffer;
+    unsigned m_longTaskTimingBufferSize;
     Member<UserTiming> m_userTiming;
+
+    double m_timeOrigin;
 
     PerformanceEntryTypeMask m_observerFilterOptions;
     PerformanceObservers m_observers;

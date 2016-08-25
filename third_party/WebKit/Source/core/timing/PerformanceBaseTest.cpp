@@ -5,8 +5,10 @@
 #include "core/timing/Performance.h"
 
 #include "core/timing/PerformanceBase.h"
+#include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceObserverCallback.h"
+#include "core/timing/PerformanceObserverInit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -21,6 +23,11 @@ public:
     int numActiveObservers() { return m_activeObservers.size(); }
 
     int numObservers() { return m_observers.size(); }
+
+    int numLongTaskTimingEntries()
+    {
+        return m_longTaskTimingBuffer.size();
+    }
 
     DEFINE_INLINE_TRACE()
     {
@@ -86,6 +93,25 @@ TEST_F(PerformanceBaseTest, Activate)
     m_base->unregisterPerformanceObserver(*m_observer.get());
     EXPECT_EQ(0, m_base->numObservers());
     EXPECT_EQ(0, m_base->numActiveObservers());
+}
+
+TEST_F(PerformanceBaseTest, AddLongTaskTiming)
+{
+    // Add a long task entry, but no observer registered.
+    m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar");
+    EXPECT_EQ(0, m_base->numLongTaskTimingEntries()); // has no effect
+
+    // Make an observer for longtask
+    NonThrowableExceptionState exceptionState;
+    PerformanceObserverInit options;
+    Vector<String> entryTypeVec;
+    entryTypeVec.append("longtask");
+    options.setEntryTypes(entryTypeVec);
+    m_observer->observe(options, exceptionState);
+
+    // Add a long task entry
+    m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar");
+    EXPECT_EQ(1, m_base->numLongTaskTimingEntries()); // added an entry
 }
 
 } // namespace blink

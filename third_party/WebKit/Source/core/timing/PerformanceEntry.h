@@ -58,6 +58,7 @@ public:
         Measure = 1 << 3,
         Render = 1 << 4,
         Resource = 1 << 5,
+        LongTask = 1 << 6,
     };
 
     String name() const;
