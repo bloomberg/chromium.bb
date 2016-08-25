@@ -154,7 +154,7 @@ int ToGestureEventType(WebInputEvent::Type type) {
     case WebInputEvent::GestureTwoFingerTap:
     default:
       NOTREACHED() << "Invalid source gesture type: "
-                   << ui::WebInputEventTraits::GetName(type);
+                   << WebInputEvent::GetName(type);
       return -1;
   }
 }

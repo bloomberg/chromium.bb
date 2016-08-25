@@ -70,4 +70,50 @@ static_assert(sizeof(WebMouseWheelEvent) == sizeof(SameSizeAsWebMouseWheelEvent)
 static_assert(sizeof(WebGestureEvent) == sizeof(SameSizeAsWebGestureEvent), "WebGestureEvent should not have gaps");
 static_assert(sizeof(WebTouchEvent) == sizeof(SameSizeAsWebTouchEvent), "WebTouchEvent should not have gaps");
 
+#define CASE_TYPE(t) case WebInputEvent::t: return #t
+// static
+const char* WebInputEvent::GetName(WebInputEvent::Type type)
+{
+    switch (type) {
+        CASE_TYPE(Undefined);
+        CASE_TYPE(MouseDown);
+        CASE_TYPE(MouseUp);
+        CASE_TYPE(MouseMove);
+        CASE_TYPE(MouseEnter);
+        CASE_TYPE(MouseLeave);
+        CASE_TYPE(ContextMenu);
+        CASE_TYPE(MouseWheel);
+        CASE_TYPE(RawKeyDown);
+        CASE_TYPE(KeyDown);
+        CASE_TYPE(KeyUp);
+        CASE_TYPE(Char);
+        CASE_TYPE(GestureScrollBegin);
+        CASE_TYPE(GestureScrollEnd);
+        CASE_TYPE(GestureScrollUpdate);
+        CASE_TYPE(GestureFlingStart);
+        CASE_TYPE(GestureFlingCancel);
+        CASE_TYPE(GestureShowPress);
+        CASE_TYPE(GestureTap);
+        CASE_TYPE(GestureTapUnconfirmed);
+        CASE_TYPE(GestureTapDown);
+        CASE_TYPE(GestureTapCancel);
+        CASE_TYPE(GestureDoubleTap);
+        CASE_TYPE(GestureTwoFingerTap);
+        CASE_TYPE(GestureLongPress);
+        CASE_TYPE(GestureLongTap);
+        CASE_TYPE(GesturePinchBegin);
+        CASE_TYPE(GesturePinchEnd);
+        CASE_TYPE(GesturePinchUpdate);
+        CASE_TYPE(TouchStart);
+        CASE_TYPE(TouchMove);
+        CASE_TYPE(TouchEnd);
+        CASE_TYPE(TouchCancel);
+        CASE_TYPE(TouchScrollStarted);
+    default:
+        NOTREACHED();
+        return "";
+    }
+}
+#undef CASE_TYPE
+
 } // namespace blink

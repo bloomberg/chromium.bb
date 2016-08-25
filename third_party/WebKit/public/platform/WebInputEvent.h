@@ -259,6 +259,8 @@ public:
         return type == other.type;
     }
 
+    BLINK_COMMON_EXPORT static const char* GetName(WebInputEvent::Type);
+
 protected:
     explicit WebInputEvent(unsigned sizeParam)
     {

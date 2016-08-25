@@ -199,7 +199,7 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     ui::LatencyInfo* latency_info) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("input,benchmark,rail", "InputHandlerManager::HandleInputEvent",
-                 "type", ui::WebInputEventTraits::GetName(input_event->type));
+               "type", WebInputEvent::GetName(input_event->type));
 
   auto it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {

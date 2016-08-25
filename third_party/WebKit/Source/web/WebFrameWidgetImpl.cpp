@@ -331,7 +331,7 @@ const WebInputEvent* WebFrameWidgetImpl::m_currentInputEvent = nullptr;
 
 WebInputEventResult WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
-    TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
+    TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type", WebInputEvent::GetName(inputEvent.type));
 
     // Don't handle events once we've started shutting down.
     if (!page())

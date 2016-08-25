@@ -24,7 +24,7 @@ bool IsCompatibleScrollorPinch(
   DCHECK(new_event.event.type == WebInputEvent::GestureScrollUpdate ||
          new_event.event.type == WebInputEvent::GesturePinchUpdate)
       << "Invalid event type for pinch/scroll coalescing: "
-      << ui::WebInputEventTraits::GetName(new_event.event.type);
+      << WebInputEvent::GetName(new_event.event.type);
   DLOG_IF(WARNING, new_event.event.timeStampSeconds <
                        event_in_queue.event.timeStampSeconds)
       << "Event time not monotonic?\n";
@@ -48,7 +48,7 @@ gfx::Transform GetTransformForEvent(
     gesture_transform.Translate(gesture_event.event.x, gesture_event.event.y);
   } else {
     NOTREACHED() << "Invalid event type for transform retrieval: "
-                 << ui::WebInputEventTraits::GetName(gesture_event.event.type);
+                 << WebInputEvent::GetName(gesture_event.event.type);
   }
   return gesture_transform;
 }

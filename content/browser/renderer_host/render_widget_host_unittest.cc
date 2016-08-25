@@ -74,7 +74,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     const WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
-    result += ui::WebInputEventTraits::GetName(event->type);
+    result += WebInputEvent::GetName(event->type);
   }
   process->sink().ClearMessages();
   return result;

@@ -1067,7 +1067,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         || (event.type == WebInputEvent::KeyDown)
         || (event.type == WebInputEvent::KeyUp));
     TRACE_EVENT2("input", "WebViewImpl::handleKeyEvent",
-        "type", inputTypeToName(event.type),
+        "type", WebInputEvent::GetName(event.type),
         "text", String(event.text).utf8());
 
     // Halt an in-progress fling on a key event.
@@ -2147,7 +2147,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
 
     page()->frameHost().visualViewport().startTrackingPinchStats();
 
-    TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type", inputTypeToName(inputEvent.type));
+    TRACE_EVENT1("input,rail", "WebViewImpl::handleInputEvent", "type", WebInputEvent::GetName(inputEvent.type));
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)

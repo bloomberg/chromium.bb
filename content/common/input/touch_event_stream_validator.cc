@@ -61,9 +61,8 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   }
 
   if (!WebInputEvent::isTouchEventType(event.type)) {
-    error_msg->append(
-        StringPrintf("Touch event has invalid type: %s\n",
-                     ui::WebInputEventTraits::GetName(event.type)));
+    error_msg->append(StringPrintf("Touch event has invalid type: %s\n",
+                                   WebInputEvent::GetName(event.type)));
   }
 
   // Allow "hard" restarting of touch stream validation. This is necessary
@@ -161,7 +160,7 @@ bool TouchEventStreamValidator::Validate(const WebTouchEvent& event,
   if (!found_valid_state_for_type) {
     error_msg->append(
         StringPrintf("No valid touch point corresponding to event type: %s\n",
-                     ui::WebInputEventTraits::GetName(event.type)));
+                     WebInputEvent::GetName(event.type)));
   }
 
   return error_msg->empty();

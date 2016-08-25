@@ -13,7 +13,6 @@ namespace ui {
 // Utility class for performing operations on and with WebInputEvents.
 class WebInputEventTraits {
  public:
-  static const char* GetName(blink::WebInputEvent::Type type);
   static std::string ToString(const blink::WebInputEvent& event);
   static size_t GetSize(blink::WebInputEvent::Type type);
   static ScopedWebInputEvent Clone(const blink::WebInputEvent& event);

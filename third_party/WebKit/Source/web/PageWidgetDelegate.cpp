@@ -231,48 +231,4 @@ WebInputEventResult PageWidgetEventHandler::handleTouchEvent(LocalFrame& mainFra
     return mainFrame.eventHandler().handleTouchEvent(PlatformTouchEventBuilder(mainFrame.view(), event));
 }
 
-#define WEBINPUT_EVENT_CASE(type) case WebInputEvent::type: return #type;
-
-const char* PageWidgetEventHandler::inputTypeToName(WebInputEvent::Type type)
-{
-    switch (type) {
-        WEBINPUT_EVENT_CASE(MouseDown)
-        WEBINPUT_EVENT_CASE(MouseUp)
-        WEBINPUT_EVENT_CASE(MouseMove)
-        WEBINPUT_EVENT_CASE(MouseEnter)
-        WEBINPUT_EVENT_CASE(MouseLeave)
-        WEBINPUT_EVENT_CASE(ContextMenu)
-        WEBINPUT_EVENT_CASE(MouseWheel)
-        WEBINPUT_EVENT_CASE(RawKeyDown)
-        WEBINPUT_EVENT_CASE(KeyDown)
-        WEBINPUT_EVENT_CASE(KeyUp)
-        WEBINPUT_EVENT_CASE(Char)
-        WEBINPUT_EVENT_CASE(GestureScrollBegin)
-        WEBINPUT_EVENT_CASE(GestureScrollEnd)
-        WEBINPUT_EVENT_CASE(GestureScrollUpdate)
-        WEBINPUT_EVENT_CASE(GestureFlingStart)
-        WEBINPUT_EVENT_CASE(GestureFlingCancel)
-        WEBINPUT_EVENT_CASE(GestureShowPress)
-        WEBINPUT_EVENT_CASE(GestureTap)
-        WEBINPUT_EVENT_CASE(GestureTapUnconfirmed)
-        WEBINPUT_EVENT_CASE(GestureTapDown)
-        WEBINPUT_EVENT_CASE(GestureTapCancel)
-        WEBINPUT_EVENT_CASE(GestureDoubleTap)
-        WEBINPUT_EVENT_CASE(GestureTwoFingerTap)
-        WEBINPUT_EVENT_CASE(GestureLongPress)
-        WEBINPUT_EVENT_CASE(GestureLongTap)
-        WEBINPUT_EVENT_CASE(GesturePinchBegin)
-        WEBINPUT_EVENT_CASE(GesturePinchEnd)
-        WEBINPUT_EVENT_CASE(GesturePinchUpdate)
-        WEBINPUT_EVENT_CASE(TouchStart)
-        WEBINPUT_EVENT_CASE(TouchMove)
-        WEBINPUT_EVENT_CASE(TouchEnd)
-        WEBINPUT_EVENT_CASE(TouchCancel)
-        WEBINPUT_EVENT_CASE(TouchScrollStarted)
-    default:
-        NOTREACHED();
-        return "";
-    }
-}
-
 } // namespace blink

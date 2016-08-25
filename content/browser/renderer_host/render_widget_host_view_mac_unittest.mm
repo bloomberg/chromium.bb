@@ -115,7 +115,7 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
     const blink::WebInputEvent* event = std::get<0>(params);
     if (i != 0)
       result += " ";
-    result += ui::WebInputEventTraits::GetName(event->type);
+    result += blink::WebInputEvent::GetName(event->type);
   }
   process->sink().ClearMessages();
   return result;

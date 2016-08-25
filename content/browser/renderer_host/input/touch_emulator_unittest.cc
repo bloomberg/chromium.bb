@@ -96,7 +96,7 @@ class TouchEmulatorTest : public testing::Test,
     for (size_t i = 0; i < forwarded_events_.size(); ++i) {
       if (i != 0)
         result += " ";
-      result += ui::WebInputEventTraits::GetName(forwarded_events_[i]);
+      result += WebInputEvent::GetName(forwarded_events_[i]);
     }
     forwarded_events_.clear();
     return result;

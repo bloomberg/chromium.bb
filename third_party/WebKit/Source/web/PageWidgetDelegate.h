@@ -59,8 +59,6 @@ public:
     virtual WebInputEventResult handleGestureEvent(const WebGestureEvent&) = 0;
     virtual WebInputEventResult handleTouchEvent(LocalFrame& mainFrame, const WebTouchEvent&);
     virtual ~PageWidgetEventHandler() { }
-protected:
-    const char* inputTypeToName(WebInputEvent::Type);
 };
 
 

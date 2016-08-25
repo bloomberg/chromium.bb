@@ -247,7 +247,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
-               ui::WebInputEventTraits::GetName(input_event.type));
+               WebInputEvent::GetName(input_event.type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),

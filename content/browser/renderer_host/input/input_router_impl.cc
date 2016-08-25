@@ -349,10 +349,8 @@ bool InputRouterImpl::Send(IPC::Message* message) {
 void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
-  TRACE_EVENT1("input",
-               "InputRouterImpl::FilterAndSendWebInputEvent",
-               "type",
-               WebInputEventTraits::GetName(input_event.type));
+  TRACE_EVENT1("input", "InputRouterImpl::FilterAndSendWebInputEvent", "type",
+               WebInputEvent::GetName(input_event.type));
   TRACE_EVENT_WITH_FLOW2("input,benchmark,devtools.timeline",
                          "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
@@ -523,9 +521,9 @@ void InputRouterImpl::ProcessInputEventAck(WebInputEvent::Type event_type,
                                            const ui::LatencyInfo& latency_info,
                                            uint32_t unique_touch_event_id,
                                            AckSource ack_source) {
-  TRACE_EVENT2("input", "InputRouterImpl::ProcessInputEventAck",
-               "type", WebInputEventTraits::GetName(event_type),
-               "ack", GetEventAckName(ack_result));
+  TRACE_EVENT2("input", "InputRouterImpl::ProcessInputEventAck", "type",
+               WebInputEvent::GetName(event_type), "ack",
+               GetEventAckName(ack_result));
 
   // Note: The keyboard ack must be treated carefully, as it may result in
   // synchronous destruction of |this|. Handling immediately guards against

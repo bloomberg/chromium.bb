@@ -451,9 +451,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   }
 
   latency->AddLatencyNumberWithTraceName(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      latency_component_id_, ++last_event_id_,
-      ui::WebInputEventTraits::GetName(event.type));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, latency_component_id_,
+      ++last_event_id_, WebInputEvent::GetName(event.type));
 
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
