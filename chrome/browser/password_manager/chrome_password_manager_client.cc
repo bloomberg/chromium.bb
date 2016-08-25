@@ -555,12 +555,7 @@ void ChromePasswordManagerClient::GenerationAvailableForForm(
 }
 
 bool ChromePasswordManagerClient::IsUpdatePasswordUIEnabled() const {
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordChangeSupport);
-#else
   return true;
-#endif
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
