@@ -86,6 +86,11 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   void OnSharedWorkerMessageFilterClosing(
       SharedWorkerMessageFilter* filter);
 
+  // Removes the references to shared workers from all the documents in the
+  // renderer frame. And shuts down any shared workers that are no longer
+  // referenced by active documents.
+  void RenderFrameDetached(int render_process_id, int render_frame_id);
+
   // Checks the worker dependency of renderer processes and calls
   // IncrementWorkerRefCount and DecrementWorkerRefCount of
   // RenderProcessHostImpl on UI thread if necessary.

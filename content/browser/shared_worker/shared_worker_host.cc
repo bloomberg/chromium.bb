@@ -132,6 +132,19 @@ void SharedWorkerHost::DocumentDetached(SharedWorkerMessageFilter* filter,
   }
 }
 
+void SharedWorkerHost::RenderFrameDetached(int render_process_id,
+                                           int render_frame_id) {
+  if (!instance_)
+    return;
+  // Walk all instances and remove all the documents in the frame from their
+  // document set.
+  worker_document_set_->RemoveRenderFrame(render_process_id, render_frame_id);
+  if (worker_document_set_->IsEmpty()) {
+    // This worker has no more associated documents - shut it down.
+    TerminateWorker();
+  }
+}
+
 void SharedWorkerHost::WorkerContextClosed() {
   if (!instance_)
     return;

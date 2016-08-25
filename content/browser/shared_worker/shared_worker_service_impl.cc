@@ -157,6 +157,17 @@ class SharedWorkerServiceImpl::SharedWorkerPendingInstance {
     requests_.erase(to_remove, requests_.end());
   }
 
+  void RemoveRequestFromFrame(int process_id, int frame_id) {
+    auto to_remove = std::remove_if(
+        requests_.begin(), requests_.end(),
+        [process_id,
+         frame_id](const std::unique_ptr<SharedWorkerPendingRequest>& r) {
+          return r->render_process_id == process_id &&
+                 r->render_frame_route_id == frame_id;
+        });
+    requests_.erase(to_remove, requests_.end());
+  }
+
   void RegisterToSharedWorkerHost(SharedWorkerHost* host) {
     for (const auto& request : requests_) {
       host->AddFilter(request->filter, request->route_id);
@@ -437,6 +448,23 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
   }
   for (int to_remove : remove_pending_instance_list)
     pending_instances_.erase(to_remove);
+}
+
+void SharedWorkerServiceImpl::RenderFrameDetached(int render_process_id,
+                                                  int render_frame_id) {
+  ScopedWorkerDependencyChecker checker(this);
+  for (const auto& it : worker_hosts_) {
+    it.second->RenderFrameDetached(render_process_id, render_frame_id);
+  }
+
+  auto it = pending_instances_.begin();
+  while (it != pending_instances_.end()) {
+    it->second->RemoveRequestFromFrame(render_process_id, render_frame_id);
+    if (it->second->requests()->empty())
+      it = pending_instances_.erase(it);
+    else
+      ++it;
+  }
 }
 
 void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,

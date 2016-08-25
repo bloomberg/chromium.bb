@@ -75,6 +75,10 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   // from a worker's document set.
   void RemoveAll(BrowserMessageFilter* parent);
 
+  // Invoked when a render frame is deleted, to remove all associated documents
+  // from a worker's document set.
+  void RemoveRenderFrame(int render_process_id, int render_frame_id);
+
   bool IsEmpty() const { return document_set_.empty(); }
 
   // Define a typedef for convenience here when declaring iterators, etc.

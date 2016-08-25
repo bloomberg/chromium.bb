@@ -64,6 +64,19 @@ void WorkerDocumentSet::RemoveAll(BrowserMessageFilter* parent) {
   }
 }
 
+void WorkerDocumentSet::RemoveRenderFrame(int render_process_id,
+                                          int render_frame_id) {
+  for (DocumentInfoSet::iterator i = document_set_.begin();
+       i != document_set_.end();) {
+    if (i->render_process_id() == render_process_id &&
+        i->render_frame_id() == render_frame_id) {
+      i = document_set_.erase(i);
+    } else {
+      ++i;
+    }
+  }
+}
+
 WorkerDocumentSet::DocumentInfo::DocumentInfo(
     BrowserMessageFilter* filter, unsigned long long document_id,
     int render_process_id, int render_frame_id)

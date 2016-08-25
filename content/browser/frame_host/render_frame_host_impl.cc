@@ -48,6 +48,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_context.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -180,6 +181,12 @@ void GrantFileAccess(int child_id,
   }
 }
 
+void NotifyRenderFrameDetachedOnIO(int render_process_id, int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  SharedWorkerServiceImpl::GetInstance()->RenderFrameDetached(render_process_id,
+                                                              render_frame_id);
+}
+
 }  // namespace
 
 // static
@@ -310,6 +317,9 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&NotifyRenderFrameDetachedOnIO,
+                                     GetProcess()->GetID(), routing_id_));
 
   site_instance_->RemoveObserver(this);
 

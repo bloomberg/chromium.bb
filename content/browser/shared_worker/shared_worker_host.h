@@ -57,6 +57,11 @@ class SharedWorkerHost {
   void DocumentDetached(SharedWorkerMessageFilter* filter,
                         unsigned long long document_id);
 
+  // Removes the references to shared workers from the all documents in the
+  // renderer frame. And shuts down any shared workers that are no longer
+  // referenced by active documents.
+  void RenderFrameDetached(int render_process_id, int render_frame_id);
+
   void WorkerContextClosed();
   void WorkerReadyForInspection();
   void WorkerScriptLoaded();
