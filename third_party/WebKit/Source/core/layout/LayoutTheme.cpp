@@ -635,7 +635,7 @@ void LayoutTheme::adjustMenuListButtonStyle(ComputedStyle&, Element*) const
 
 void LayoutTheme::adjustSliderContainerStyle(ComputedStyle& style, Element* e) const
 {
-    if (e->shadowPseudoId() == "-webkit-media-slider-container" || e->shadowPseudoId() == "-webkit-slider-container") {
+    if (e && (e->shadowPseudoId() == "-webkit-media-slider-container" || e->shadowPseudoId() == "-webkit-slider-container")) {
         if (style.appearance() == SliderVerticalPart) {
             style.setTouchAction(TouchActionPanX);
             style.setAppearance(NoControlPart);

@@ -384,9 +384,11 @@ SliderContainerElement::Direction SliderContainerElement::getDirection(LayoutPoi
 
 bool SliderContainerElement::canSlide()
 {
-    DCHECK(hostInput()->layoutObject());
-    const ComputedStyle& sliderStyle = hostInput()->layoutObject()->styleRef();
-    const TransformOperations& transforms = sliderStyle.transform();
+    if (!hostInput() || !hostInput()->layoutObject() || !hostInput()->layoutObject()->style()) {
+        return false;
+    }
+    const ComputedStyle* sliderStyle = hostInput()->layoutObject()->style();
+    const TransformOperations& transforms = sliderStyle->transform();
     int transformSize = transforms.size();
     if (transformSize > 0) {
         for (int i = 0; i < transformSize; ++i) {
@@ -395,7 +397,7 @@ bool SliderContainerElement::canSlide()
             }
         }
     }
-    if ((m_slidingDirection == Vertical && sliderStyle.appearance() == SliderHorizontalPart) || (m_slidingDirection == Horizontal && sliderStyle.appearance() == SliderVerticalPart)) {
+    if ((m_slidingDirection == Vertical && sliderStyle->appearance() == SliderHorizontalPart) || (m_slidingDirection == Horizontal && sliderStyle->appearance() == SliderVerticalPart)) {
         return false;
     }
     return true;
