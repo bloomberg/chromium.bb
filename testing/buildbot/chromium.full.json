@@ -96,7 +96,6 @@
       "install_static_unittests",
       "keyboard_unittests",
       "unit_tests",
-      "chrome_app_unittests",
       "libaddressinput_unittests",
       "libphonenumber_unittests",
       "content_browsertests",
