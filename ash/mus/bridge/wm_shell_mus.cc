@@ -14,6 +14,7 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/common/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -134,6 +135,9 @@ WmShellMus::WmShellMus(
 
   // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.
   SetKeyboardUI(KeyboardUI::Create());
+
+  // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
+  // wallpaper_delegate()->InitializeWallpaper();
 }
 
 WmShellMus::~WmShellMus() {
@@ -307,6 +311,7 @@ void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
 
 void WmShellMus::ShowContextMenu(const gfx::Point& location_in_screen,
                                  ui::MenuSourceType source_type) {
+  // TODO: http://crbug.com/640693.
   NOTIMPLEMENTED();
 }
 

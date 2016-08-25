@@ -15,8 +15,8 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wm_shell.h"
 #endif
 
 namespace settings {
@@ -87,7 +87,7 @@ void AppearanceHandler::HandleGetResetThemeEnabled(
 #if defined(OS_CHROMEOS)
 void AppearanceHandler::HandleOpenWallpaperManager(
     const base::ListValue* /*args*/) {
-  ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
+  ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
 }
 #endif
 

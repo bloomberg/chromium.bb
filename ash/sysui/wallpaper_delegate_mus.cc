@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/sysui/user_wallpaper_delegate_mus.h"
+#include "ash/sysui/wallpaper_delegate_mus.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
@@ -34,53 +34,53 @@ wallpaper::WallpaperLayout WallpaperLayoutFromMojo(
 namespace ash {
 namespace sysui {
 
-UserWallpaperDelegateMus::UserWallpaperDelegateMus() {}
+WallpaperDelegateMus::WallpaperDelegateMus() {}
 
-UserWallpaperDelegateMus::~UserWallpaperDelegateMus() {}
+WallpaperDelegateMus::~WallpaperDelegateMus() {}
 
-int UserWallpaperDelegateMus::GetAnimationType() {
+int WallpaperDelegateMus::GetAnimationType() {
   return ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
 }
 
-int UserWallpaperDelegateMus::GetAnimationDurationOverride() {
+int WallpaperDelegateMus::GetAnimationDurationOverride() {
   return 0;
 }
 
-void UserWallpaperDelegateMus::SetAnimationDurationOverride(
+void WallpaperDelegateMus::SetAnimationDurationOverride(
     int animation_duration_in_ms) {
   NOTIMPLEMENTED();
 }
 
-bool UserWallpaperDelegateMus::ShouldShowInitialAnimation() {
+bool WallpaperDelegateMus::ShouldShowInitialAnimation() {
   return false;
 }
 
-void UserWallpaperDelegateMus::UpdateWallpaper(bool clear_cache) {
+void WallpaperDelegateMus::UpdateWallpaper(bool clear_cache) {
   NOTIMPLEMENTED();
 }
 
-void UserWallpaperDelegateMus::InitializeWallpaper() {
+void WallpaperDelegateMus::InitializeWallpaper() {
   // No action required; ChromeBrowserMainPartsChromeos inits WallpaperManager.
 }
 
-void UserWallpaperDelegateMus::OpenSetWallpaperPage() {
+void WallpaperDelegateMus::OpenSetWallpaperPage() {
   mojom::WallpaperManagerPtr wallpaper_manager;
   auto* connector = views::WindowManagerConnection::Get()->connector();
   connector->ConnectToInterface("exe:chrome", &wallpaper_manager);
   wallpaper_manager->Open();
 }
 
-bool UserWallpaperDelegateMus::CanOpenSetWallpaperPage() {
+bool WallpaperDelegateMus::CanOpenSetWallpaperPage() {
   // TODO(msw): Restrict this during login, etc.
   return true;
 }
 
-void UserWallpaperDelegateMus::OnWallpaperAnimationFinished() {}
+void WallpaperDelegateMus::OnWallpaperAnimationFinished() {}
 
-void UserWallpaperDelegateMus::OnWallpaperBootAnimationFinished() {}
+void WallpaperDelegateMus::OnWallpaperBootAnimationFinished() {}
 
-void UserWallpaperDelegateMus::SetWallpaper(const SkBitmap& wallpaper,
-                                            mojom::WallpaperLayout layout) {
+void WallpaperDelegateMus::SetWallpaper(const SkBitmap& wallpaper,
+                                        mojom::WallpaperLayout layout) {
   if (wallpaper.isNull())
     return;
   gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(wallpaper);

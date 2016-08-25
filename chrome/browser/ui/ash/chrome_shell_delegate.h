@@ -46,7 +46,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   app_list::AppListPresenter* GetAppListPresenter() override;
   ash::ShelfDelegate* CreateShelfDelegate(ash::ShelfModel* model) override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::SessionStateDelegate* CreateSessionStateDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ash::NewWindowDelegate* CreateNewWindowDelegate() override;

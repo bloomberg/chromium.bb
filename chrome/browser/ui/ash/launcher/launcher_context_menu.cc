@@ -10,9 +10,8 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,8 +97,8 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
     case MENU_PIN:
       return controller_->IsPinnable(item_.id);
     case MENU_CHANGE_WALLPAPER:
-      return ash::Shell::GetInstance()
-          ->user_wallpaper_delegate()
+      return ash::WmShell::Get()
+          ->wallpaper_delegate()
           ->CanOpenSetWallpaperPage();
     case MENU_AUTO_HIDE:
       return CanUserModifyShelfAutoHideBehavior(controller_->GetProfile());
@@ -140,8 +139,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_ALIGNMENT_MENU:
       break;
     case MENU_CHANGE_WALLPAPER:
-      ash::Shell::GetInstance()->user_wallpaper_delegate()->
-          OpenSetWallpaperPage();
+      ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
       break;
     default:
       NOTREACHED();

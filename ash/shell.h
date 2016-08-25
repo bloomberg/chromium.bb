@@ -126,7 +126,6 @@ class SystemTray;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
 class TouchObserverHUD;
-class UserWallpaperDelegate;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
@@ -314,10 +313,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
 
-  UserWallpaperDelegate* user_wallpaper_delegate() {
-    return user_wallpaper_delegate_.get();
-  }
-
   SessionStateDelegate* session_state_delegate() {
     return session_state_delegate_.get();
   }
@@ -495,7 +490,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<AcceleratorControllerDelegateAura>
       accelerator_controller_delegate_;
-  std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 

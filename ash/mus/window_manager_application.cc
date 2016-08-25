@@ -8,6 +8,7 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
+#include "ash/mus/native_widget_factory_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -109,6 +110,9 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
   ui::WindowTreeClient* window_tree_client = new ui::WindowTreeClient(
       window_manager_.get(), window_manager_.get(), nullptr);
   window_tree_client->ConnectAsWindowManager(connector());
+
+  native_widget_factory_mus_.reset(
+      new NativeWidgetFactoryMus(window_manager_.get()));
 
   InitWindowManager(window_tree_client);
 }

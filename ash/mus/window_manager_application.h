@@ -34,6 +34,7 @@ namespace ash {
 namespace mus {
 
 class AcceleratorRegistrarImpl;
+class NativeWidgetFactoryMus;
 class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
@@ -74,6 +75,7 @@ class WindowManagerApplication
   tracing::Provider tracing_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<NativeWidgetFactoryMus> native_widget_factory_mus_;
 
   std::unique_ptr<ui::GpuService> gpu_service_;
   std::unique_ptr<views::SurfaceContextFactory> compositor_context_factory_;

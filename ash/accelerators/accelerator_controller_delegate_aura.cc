@@ -25,13 +25,13 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/debug.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -293,9 +293,7 @@ void HandleToggleDesktopBackgroundMode() {
       Shell::GetInstance()->desktop_background_controller();
   switch (++index % 4) {
     case 0:
-      ash::Shell::GetInstance()
-          ->user_wallpaper_delegate()
-          ->InitializeWallpaper();
+      ash::WmShell::Get()->wallpaper_delegate()->InitializeWallpaper();
       break;
     case 1:
       desktop_background_controller->SetWallpaperImage(

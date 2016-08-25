@@ -49,7 +49,7 @@ class TestShellDelegate : public ShellDelegate {
   app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  UserWallpaperDelegate* CreateUserWallpaperDelegate() override;
+  std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   TestSessionStateDelegate* CreateSessionStateDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;

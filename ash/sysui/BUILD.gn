@@ -11,8 +11,6 @@ source_set("lib") {
   sources = [
     "app_list_presenter_mus.cc",
     "app_list_presenter_mus.h",
-    "context_menu_mus.cc",
-    "context_menu_mus.h",
     "keyboard_ui_mus.cc",
     "keyboard_ui_mus.h",
     "shelf_delegate_mus.cc",
@@ -23,8 +21,8 @@ source_set("lib") {
     "stub_context_factory.h",
     "sysui_application.cc",
     "sysui_application.h",
-    "user_wallpaper_delegate_mus.cc",
-    "user_wallpaper_delegate_mus.h",
+    "wallpaper_delegate_mus.cc",
+    "wallpaper_delegate_mus.h",
   ]
 
   deps = [

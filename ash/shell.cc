@@ -31,6 +31,7 @@
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -39,7 +40,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_manager.h"
@@ -891,8 +891,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(
       new DesktopBackgroundController(blocking_pool_));
-  user_wallpaper_delegate_.reset(
-      wm_shell_->delegate()->CreateUserWallpaperDelegate());
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());
@@ -931,12 +929,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   audio_a11y_controller_.reset(new chromeos::AudioA11yController);
 #endif  // defined(OS_CHROMEOS)
 
-  // It needs to be created after RootWindowController has been created
-  // (which calls OnWindowResized has been called, otherwise the
-  // widget will not paint when restoring after a browser crash.  Also it needs
-  // to be created after InitSecondaryDisplays() to initialize the wallpapers in
-  // the correct size.
-  user_wallpaper_delegate_->InitializeWallpaper();
+  // Initialize the wallpaper after the RootWindowController has been created,
+  // otherwise the widget will not paint when restoring after a browser crash.
+  // Also, initialize after display initialization to ensure correct sizing.
+  wm_shell_->wallpaper_delegate()->InitializeWallpaper();
 
   if (cursor_manager_) {
     if (initially_hide_cursor_)

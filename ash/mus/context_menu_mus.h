@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSUI_CONTEXT_MENU_MUS_H_
-#define ASH_SYSUI_CONTEXT_MENU_MUS_H_
+#ifndef ASH_MUS_CONTEXT_MENU_MUS_H_
+#define ASH_MUS_CONTEXT_MENU_MUS_H_
 
 #include "ash/common/shelf/shelf_alignment_menu.h"
 #include "base/macros.h"
@@ -14,7 +14,7 @@ namespace ash {
 class WmShelf;
 
 // Context menu for mash.
-// TODO(msw): Mimic logic in LauncherContextMenu.
+// TODO: Mimic logic in LauncherContextMenu. http://crbug.com/640693
 class ContextMenuMus : public ui::SimpleMenuModel,
                        public ui::SimpleMenuModel::Delegate {
  public:
@@ -41,4 +41,4 @@ class ContextMenuMus : public ui::SimpleMenuModel,
 
 }  // namespace ash
 
-#endif  // ASH_SYSUI_CONTEXT_MENU_MUS_H_
+#endif  // ASH_MUS_CONTEXT_MENU_MUS_H_

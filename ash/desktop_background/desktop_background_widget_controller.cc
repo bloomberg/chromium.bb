@@ -5,11 +5,11 @@
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 
 #include "ash/ash_export.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/shell.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -125,9 +125,8 @@ void DesktopBackgroundWidgetController::StartAnimating(
     ui::ScopedLayerAnimationSettings settings(
         widget_->GetNativeView()->layer()->GetAnimator());
     settings.AddObserver(new ShowWallpaperAnimationObserver(
-        root_window_controller, widget_, Shell::GetInstance()
-                                             ->user_wallpaper_delegate()
-                                             ->ShouldShowInitialAnimation()));
+        root_window_controller, widget_,
+        WmShell::Get()->wallpaper_delegate()->ShouldShowInitialAnimation()));
     // When |widget_| shows, AnimateShowWindowCommon() is called to do the
     // animation. Sets transition duration to 0 to avoid animating to the
     // show animation's initial values.

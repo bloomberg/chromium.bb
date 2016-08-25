@@ -7,12 +7,12 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ui/display/display.h"
@@ -194,8 +194,7 @@ views::Widget* CreateDesktopBackground(WmWindow* root_window,
   aura::Window* aura_root_window = WmWindowAura::GetAuraWindow(root_window);
   DesktopBackgroundController* controller =
       Shell::GetInstance()->desktop_background_controller();
-  UserWallpaperDelegate* wallpaper_delegate =
-      Shell::GetInstance()->user_wallpaper_delegate();
+  WallpaperDelegate* wallpaper_delegate = WmShell::Get()->wallpaper_delegate();
 
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(

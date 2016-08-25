@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -861,8 +861,8 @@ void LoginDisplayHostImpl::Observe(
     VLOG(1) << "Login WebUI >> wp animation done";
     is_wallpaper_loaded_ = true;
     if (!chrome::IsRunningInMash()) {
-      ash::Shell::GetInstance()
-          ->user_wallpaper_delegate()
+      ash::WmShell::Get()
+          ->wallpaper_delegate()
           ->OnWallpaperBootAnimationFinished();
     } else {
       NOTIMPLEMENTED();

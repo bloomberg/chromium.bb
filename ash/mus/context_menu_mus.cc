@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/sysui/context_menu_mus.h"
+#include "ash/mus/context_menu_mus.h"
 
 #include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
+#include "ash/common/wm_shell.h"
 #include "grit/ash_strings.h"
 
 namespace ash {
@@ -35,9 +35,9 @@ bool ContextMenuMus::IsCommandIdChecked(int command_id) const {
 }
 
 bool ContextMenuMus::IsCommandIdEnabled(int command_id) const {
-  Shell* shell = Shell::GetInstance();
-  if (command_id == MENU_CHANGE_WALLPAPER)
-    return shell->user_wallpaper_delegate()->CanOpenSetWallpaperPage();
+  // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
+  // if (command_id == MENU_CHANGE_WALLPAPER)
+  //   return WmShell::Get()->wallpaper_delegate()->CanOpenSetWallpaperPage();
   return true;
 }
 
@@ -48,7 +48,8 @@ void ContextMenuMus::ExecuteCommand(int command_id, int event_flags) {
                                        ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                        : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   } else if (command_id == MENU_CHANGE_WALLPAPER) {
-    Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
+    // TODO(msw): Port WallpaperDelegateMus and support this (crbug.com/629605):
+    // WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
   }
 }
 

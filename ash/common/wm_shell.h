@@ -56,6 +56,7 @@ class ShellObserver;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToastManager;
+class WallpaperDelegate;
 class WindowCycleController;
 class WindowCycleEventFilter;
 class WindowResizer;
@@ -141,6 +142,8 @@ class ASH_EXPORT WmShell {
   }
 
   ToastManager* toast_manager() { return toast_manager_.get(); }
+
+  WallpaperDelegate* wallpaper_delegate() { return wallpaper_delegate_.get(); }
 
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
@@ -408,6 +411,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;
+  std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
 

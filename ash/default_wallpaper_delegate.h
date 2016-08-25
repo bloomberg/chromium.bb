@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DEFAULT_USER_WALLPAPER_DELEGATE_H_
-#define ASH_DEFAULT_USER_WALLPAPER_DELEGATE_H_
+#ifndef ASH_DEFAULT_WALLPAPER_DELEGATE_H_
+#define ASH_DEFAULT_WALLPAPER_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "base/compiler_specific.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
 
-class ASH_EXPORT DefaultUserWallpaperDelegate : public UserWallpaperDelegate {
+class ASH_EXPORT DefaultWallpaperDelegate : public WallpaperDelegate {
  public:
-  DefaultUserWallpaperDelegate() {}
-  ~DefaultUserWallpaperDelegate() override {}
+  DefaultWallpaperDelegate() {}
+  ~DefaultWallpaperDelegate() override {}
 
-  // UserWallpaperDelegate overrides:
+  // WallpaperDelegate overrides:
   int GetAnimationType() override;
   int GetAnimationDurationOverride() override;
   void SetAnimationDurationOverride(int animation_duration_in_ms) override;
@@ -30,9 +29,9 @@ class ASH_EXPORT DefaultUserWallpaperDelegate : public UserWallpaperDelegate {
   void OnWallpaperBootAnimationFinished() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultUserWallpaperDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DefaultWallpaperDelegate);
 };
 
 }  // namespace ash
 
-#endif  // ASH_DEFAULT_USER_WALLPAPER_DELEGATE_H_
+#endif  // ASH_DEFAULT_WALLPAPER_DELEGATE_H_

@@ -9,12 +9,12 @@
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
@@ -192,8 +192,8 @@ void UserSwitchAnimatorChromeOS::FinalizeAnimation() {
 void UserSwitchAnimatorChromeOS::TransitionWallpaper(
     AnimationStep animation_step) {
   // Handle the wallpaper switch.
-  ash::UserWallpaperDelegate* wallpaper_delegate =
-      ash::Shell::GetInstance()->user_wallpaper_delegate();
+  ash::WallpaperDelegate* wallpaper_delegate =
+      ash::WmShell::Get()->wallpaper_delegate();
   if (animation_step == ANIMATION_STEP_HIDE_OLD_USER) {
     // Set the wallpaper cross dissolve animation duration to our complete
     // animation cycle for a fade in and fade out.

@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
 
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/window_animation_types.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
@@ -39,14 +39,13 @@ bool IsNormalWallpaperChange() {
   return false;
 }
 
-class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
+class WallpaperDelegate : public ash::WallpaperDelegate {
  public:
-  UserWallpaperDelegate()
+  WallpaperDelegate()
       : boot_animation_finished_(false),
-        animation_duration_override_in_ms_(0) {
-  }
+        animation_duration_override_in_ms_(0) {}
 
-  ~UserWallpaperDelegate() override {}
+  ~WallpaperDelegate() override {}
 
   int GetAnimationType() override {
     return ShouldShowInitialAnimation()
@@ -71,8 +70,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     bool is_registered = StartupUtils::IsDeviceRegistered();
     const base::CommandLine* command_line =
         base::CommandLine::ForCurrentProcess();
-    bool disable_boot_animation = command_line->
-        HasSwitch(switches::kDisableBootAnimation);
+    bool disable_boot_animation =
+        command_line->HasSwitch(switches::kDisableBootAnimation);
     if (is_registered && disable_boot_animation)
       return false;
 
@@ -135,13 +134,13 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   // The animation duration to show a new wallpaper if an animation is required.
   int animation_duration_override_in_ms_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperDelegate);
 };
 
 }  // namespace
 
-ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() {
-  return new chromeos::UserWallpaperDelegate();
+ash::WallpaperDelegate* CreateWallpaperDelegate() {
+  return new chromeos::WallpaperDelegate();
 }
 
 }  // namespace chromeos

@@ -12,7 +12,9 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/mus/accessibility_delegate_mus.h"
+#include "ash/mus/context_menu_mus.h"
 #include "ash/mus/new_window_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -200,7 +202,7 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
   return new DefaultSystemTrayDelegate;
 }
 
-UserWallpaperDelegate* ShellDelegateMus::CreateUserWallpaperDelegate() {
+std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -230,8 +232,7 @@ std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(WmShelf* wm_shelf,
                                                    const ShelfItem* item) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return new ContextMenuMus(wm_shelf);
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {

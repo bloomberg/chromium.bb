@@ -14,6 +14,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
@@ -28,7 +29,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/background/ash_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
@@ -511,8 +512,9 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
   return chromeos::CreateSystemTrayDelegate();
 }
 
-ash::UserWallpaperDelegate* ChromeShellDelegate::CreateUserWallpaperDelegate() {
-  return chromeos::CreateUserWallpaperDelegate();
+std::unique_ptr<ash::WallpaperDelegate>
+ChromeShellDelegate::CreateWallpaperDelegate() {
+  return base::WrapUnique(chromeos::CreateWallpaperDelegate());
 }
 
 void ChromeShellDelegate::Observe(int type,

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_TEST_TEST_USER_WALLPAPER_DELEGATE_H_
-#define ASH_TEST_TEST_USER_WALLPAPER_DELEGATE_H_
+#ifndef ASH_TEST_TEST_WALLPAPER_DELEGATE_H_
+#define ASH_TEST_TEST_WALLPAPER_DELEGATE_H_
 
-#include "ash/default_user_wallpaper_delegate.h"
+#include "ash/default_wallpaper_delegate.h"
 
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
@@ -13,16 +13,16 @@
 namespace ash {
 namespace test {
 
-class TestUserWallpaperDelegate : public DefaultUserWallpaperDelegate {
+class TestWallpaperDelegate : public DefaultWallpaperDelegate {
  public:
-  TestUserWallpaperDelegate();
-  ~TestUserWallpaperDelegate() override;
+  TestWallpaperDelegate();
+  ~TestWallpaperDelegate() override;
 
   void set_custom_wallpaper(const gfx::ImageSkia& wallpaper) {
     custom_wallpaper_ = wallpaper;
   }
 
-  // DefaultUserWallpaperDelegate overrides:
+  // DefaultWallpaperDelegate overrides:
   void UpdateWallpaper(bool clear_cache) override;
 
   // Returns and clears |update_wallpaper_count_|.
@@ -35,10 +35,10 @@ class TestUserWallpaperDelegate : public DefaultUserWallpaperDelegate {
   // If non-null, used as custom wallpaper by UpdateWallpaper().
   gfx::ImageSkia custom_wallpaper_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestUserWallpaperDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperDelegate);
 };
 
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_USER_WALLPAPER_DELEGATE_H_
+#endif  // ASH_TEST_TEST_WALLPAPER_DELEGATE_H_

@@ -7,11 +7,11 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -252,7 +252,7 @@ int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
 
 void DesktopBackgroundController::UpdateWallpaper(bool clear_cache) {
   current_wallpaper_.reset();
-  Shell::GetInstance()->user_wallpaper_delegate()->UpdateWallpaper(clear_cache);
+  WmShell::Get()->wallpaper_delegate()->UpdateWallpaper(clear_cache);
 }
 
 }  // namespace ash

@@ -117,7 +117,7 @@
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
@@ -149,7 +149,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #endif
 
 using base::UserMetricsAction;
@@ -662,7 +662,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   // Profile deletion is not allowed for any users using Metro mode.
   bool allow_deletion = true;
 #if defined(USE_ASH)
-  allow_deletion = allow_deletion && !ash::Shell::HasInstance();
+  allow_deletion = allow_deletion && !ash::WmShell::HasInstance();
 #endif
   values->SetBoolean("allowProfileDeletion", allow_deletion);
 
@@ -1893,7 +1893,7 @@ void BrowserOptionsHandler::HandleRefreshExtensionControlIndicators(
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::HandleOpenWallpaperManager(
     const base::ListValue* args) {
-  ash::Shell::GetInstance()->user_wallpaper_delegate()->OpenSetWallpaperPage();
+  ash::WmShell::Get()->wallpaper_delegate()->OpenSetWallpaperPage();
 }
 
 void BrowserOptionsHandler::VirtualKeyboardChangeCallback(

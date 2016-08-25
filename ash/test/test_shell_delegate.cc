@@ -21,7 +21,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/test/test_user_wallpaper_delegate.h"
+#include "ash/test/test_wallpaper_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -166,8 +166,9 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
   return new TestSystemTrayDelegate;
 }
 
-UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
-  return new TestUserWallpaperDelegate();
+std::unique_ptr<WallpaperDelegate>
+TestShellDelegate::CreateWallpaperDelegate() {
+  return base::MakeUnique<TestWallpaperDelegate>();
 }
 
 TestSessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {

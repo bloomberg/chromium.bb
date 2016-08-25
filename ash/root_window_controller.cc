@@ -26,6 +26,7 @@
 #include "ash/common/system/status_area_layout_manager.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/container_finder.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
@@ -38,7 +39,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
@@ -527,9 +527,7 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
   boot_splash_screen_.reset();
 #endif
 
-  Shell::GetInstance()
-      ->user_wallpaper_delegate()
-      ->OnWallpaperAnimationFinished();
+  WmShell::Get()->wallpaper_delegate()->OnWallpaperAnimationFinished();
   // Only removes old component when wallpaper animation finished. If we
   // remove the old one before the new wallpaper is done fading in there will
   // be a white flash during the animation.
