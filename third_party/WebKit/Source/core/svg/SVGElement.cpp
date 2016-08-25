@@ -247,6 +247,12 @@ static void updateInstancesAnimatedAttributeNoInvalidate(SVGElement* element, co
     }
 }
 
+static inline void notifyAnimValChanged(SVGElement* targetElement, const QualifiedName& attributeName)
+{
+    targetElement->invalidateSVGAttributes();
+    targetElement->svgAttributeChanged(attributeName);
+}
+
 template<typename T>
 static void updateInstancesAnimatedAttribute(SVGElement* element, const QualifiedName& attribute, T callback)
 {
@@ -254,8 +260,7 @@ static void updateInstancesAnimatedAttribute(SVGElement* element, const Qualifie
     for (SVGElement* instance : SVGAnimateElement::findElementInstances(element)) {
         if (SVGAnimatedPropertyBase* animatedProperty = instance->propertyFromAttribute(attribute)) {
             callback(*animatedProperty);
-            instance->invalidateSVGAttributes();
-            instance->svgAttributeChanged(attribute);
+            notifyAnimValChanged(instance, attribute);
         }
     }
 }
@@ -285,6 +290,15 @@ void SVGElement::setAnimatedAttribute(const QualifiedName& attribute, SVGPropert
     updateInstancesAnimatedAttributeNoInvalidate(this, attribute, [&value](SVGAnimatedPropertyBase& animatedProperty) {
         animatedProperty.setAnimatedValue(value);
     });
+}
+
+void SVGElement::invalidateAnimatedAttribute(const QualifiedName& attribute)
+{
+    InstanceUpdateBlocker blocker(this);
+    notifyAnimValChanged(this, attribute);
+
+    for (SVGElement* element : instancesForElement())
+        notifyAnimValChanged(element, attribute);
 }
 
 void SVGElement::clearAnimatedAttribute(const QualifiedName& attribute)

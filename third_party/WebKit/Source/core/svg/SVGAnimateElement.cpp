@@ -231,24 +231,13 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
     targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
 }
 
-static inline void notifyTargetAboutAnimValChange(SVGElement* targetElement, const QualifiedName& attributeName)
-{
-    targetElement->invalidateSVGAttributes();
-    targetElement->svgAttributeChanged(attributeName);
-}
-
 static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* targetElement, const QualifiedName& attributeName)
 {
     ASSERT(targetElement);
     if (attributeName == anyQName() || !targetElement->isConnected() || !targetElement->parentNode())
         return;
 
-    SVGElement::InstanceUpdateBlocker blocker(targetElement);
-    notifyTargetAboutAnimValChange(targetElement, attributeName);
-
-    // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
-    for (SVGElement* element : targetElement->instancesForElement())
-        notifyTargetAboutAnimValChange(element, attributeName);
+    targetElement->invalidateAnimatedAttribute(attributeName);
 }
 
 void SVGAnimateElement::clearAnimatedType()
