@@ -160,6 +160,19 @@ class PowerMetric(Metric):
           results.current_page, 'gpu_average_frequency_hz', 'hz', gpu_freq_hz,
           important=False))
 
+    # GPU Frequency.
+    chrome_power = component_utilization.get('chrome', None)
+    if chrome_power is not None:
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'cputime', 'ms per s',
+          chrome_power['cputime_ms_per_s'], important=False))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'energy_impact', 'unitless',
+          chrome_power['energy_impact'], important=False))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'idle_wakeups', '# per s',
+          chrome_power['idle_wakeups_per_s'], important=False))
+
     # Add idle wakeup numbers for all processes.
     for (process_type, stats) in self._results.get('cpu_stats', {}).items():
       trace_name_for_process = 'idle_wakeups_%s' % (process_type.lower())
