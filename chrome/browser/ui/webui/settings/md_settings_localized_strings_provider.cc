@@ -693,9 +693,10 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
       {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
       {"moveDown", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_DOWN},
+      {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
       {"languageDetail",
        IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_LANGUAGE_DETAIL},
-      {"manageLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_MANAGE},
+      {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
 #if defined(OS_CHROMEOS)
       {"inputMethodsListTitle",
        IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
@@ -703,7 +704,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       {"manageInputMethodsPageTitle",
        IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
 #endif
-      {"manageLanguagesPageTitle",
+      {"addLanguagesDialogTitle",
        IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
       {"allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES},
       {"enabledLanguages", IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES},

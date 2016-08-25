@@ -46,6 +46,9 @@ Polymer({
      * @private
      */
     detailLanguage_: Object,
+
+    /** @private */
+    showAddLanguagesDialog_: Boolean,
   },
 
   /**
@@ -89,12 +92,18 @@ Polymer({
   },
 
   /**
-   * Opens the Manage Languages page.
+   * Stamps and opens the Add Languages dialog, registering a listener to
+   * disable the dialog's dom-if again on close.
    * @private
    */
-  onManageLanguagesTap_: function() {
-    settings.navigateTo(settings.Route.MANAGE_LANGUAGES);
-    this.forceRenderList_('settings-manage-languages-page');
+  onAddLanguagesTap_: function() {
+    this.showAddLanguagesDialog_ = true;
+    this.async(function() {
+      var dialog = this.$$('settings-add-languages-dialog');
+      dialog.addEventListener('close', function() {
+        this.showAddLanguagesDialog_ = false;
+      }.bind(this));
+    });
   },
 
   /**
@@ -143,6 +152,15 @@ Polymer({
    */
   onMoveDownTap_: function(e) {
     this.languageHelper.moveLanguage(e.model.item.language.code, 1);
+  },
+
+  /**
+   * Disables the language.
+   * @param {!{model: !{item: !LanguageState}}} e
+   * @private
+   */
+  onRemoveLanguageTap_: function(e) {
+    this.languageHelper.disableLanguage(e.model.item.language.code);
   },
 
   /**

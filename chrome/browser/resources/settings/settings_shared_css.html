@@ -75,9 +75,13 @@
         box-shadow: 0 2px 6px var(--paper-grey-500);
       }
 
-      iron-dropdown .dropdown-content .dropdown-item,
+      iron-dropdown .dropdown-content .dropdown-item:not([disabled]),
       iron-dropdown .dropdown-content paper-item {
         @apply(--settings-actionable);
+      }
+
+      iron-dropdown .dropdown-content .dropdown-item[disabled] {
+        opacity: var(--settings-disabled-opacity);
       }
 
       span ~ a {
@@ -225,7 +229,7 @@
       }
 
       .list-item > label span[disabled] {
-        opacity: .65;  /* TODO(michaelpg): check this value with bettes. */
+        opacity: var(--settings-disabled-opacity);
       }
 
       .list-item > paper-icon-item {

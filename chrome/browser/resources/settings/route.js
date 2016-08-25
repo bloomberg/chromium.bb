@@ -174,7 +174,6 @@ cr.define('settings', function() {
 
   r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
   r.LANGUAGES_DETAIL = r.LANGUAGES.createChild('edit');
-  r.MANAGE_LANGUAGES = r.LANGUAGES.createChild('/manageLanguages');
 <if expr="chromeos">
   r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
 </if>

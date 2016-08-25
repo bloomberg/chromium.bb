@@ -65,7 +65,7 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'manage_languages_page',
+      'target_name': 'add_languages_dialog',
       'dependencies': [
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-checkbox/compiled_resources2.gyp:paper-checkbox-extracted',
         'languages',
