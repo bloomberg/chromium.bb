@@ -30,8 +30,10 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "ui/gfx/geometry/cubic_bezier.h"
 #include "wtf/MathExtras.h"
 
+#include <algorithm>
 #include <type_traits>
 
 namespace blink {
@@ -77,7 +79,7 @@ inline FloatPoint blend(const FloatPoint& from, const FloatPoint& to, double pro
 // Calculates the accuracy for evaluating a timing function for an animation with the specified duration.
 inline double accuracyForDuration(double duration)
 {
-    return 1.0 / (200.0 * duration);
+    return std::max(1.0 / (200.0 * duration), gfx::CubicBezier::GetDefaultEpsilon());
 }
 
 } // namespace blink

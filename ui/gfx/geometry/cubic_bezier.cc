@@ -132,6 +132,10 @@ void CubicBezier::InitRange(double p1y, double p2y) {
   range_max_ = std::max(std::max(range_max_, sol1), sol2);
 }
 
+double CubicBezier::GetDefaultEpsilon() {
+  return kBezierEpsilon;
+}
+
 double CubicBezier::SolveCurveX(double x, double epsilon) const {
   DCHECK_GE(x, 0.0);
   DCHECK_LE(x, 1.0);

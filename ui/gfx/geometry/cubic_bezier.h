@@ -32,6 +32,8 @@ class GFX_EXPORT CubicBezier {
     return (3.0 * ay_ * t + 2.0 * by_) * t + cy_;
   }
 
+  static double GetDefaultEpsilon();
+
   // Given an x value, find a parametric value it came from.
   // x must be in [0, 1] range. Doesn't use gradients.
   double SolveCurveX(double x, double epsilon) const;
