@@ -153,8 +153,8 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   static int GetMaxSnippetCountForTesting();
 
   // Available snippets, only for unit tests.
-  const NTPSnippet::PtrVector& GetSnippetsForTesting(Category category) const {
-    return categories_.find(category)->second.snippets;
+  const NTPSnippet::PtrVector& GetSnippetsForTesting() const {
+    return snippets_;
   }
 
  private:
@@ -222,7 +222,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
   // Merges newly available snippets with the previously available list.
-  void MergeSnippets(Category category, NTPSnippet::PtrVector new_snippets);
+  void MergeSnippets(NTPSnippet::PtrVector new_snippets);
 
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
@@ -239,18 +239,18 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   void FinishInitialization();
 
   void OnSnippetImageFetchedFromDatabase(const ImageFetchedCallback& callback,
-                                         const std::string& suggestion_id,
+                                         const std::string& snippet_id,
                                          std::string data);
 
   void OnSnippetImageDecodedFromDatabase(const ImageFetchedCallback& callback,
-                                         const std::string& suggestion_id,
+                                         const std::string& snippet_id,
                                          const gfx::Image& image);
 
-  void FetchSnippetImageFromNetwork(const std::string& suggestion_id,
+  void FetchSnippetImageFromNetwork(const std::string& snippet_id,
                                     const ImageFetchedCallback& callback);
 
   void OnSnippetImageDecodedFromNetwork(const ImageFetchedCallback& callback,
-                                        const std::string& suggestion_id,
+                                        const std::string& snippet_id,
                                         const gfx::Image& image);
 
   // Triggers a state transition depending on the provided reason to be
@@ -261,7 +261,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Also updates the provider status. Does nothing except updating the provider
   // status if called with the current state.
-  void EnterState(State state);
+  void EnterState(State state, CategoryStatus status);
 
   // Enables the service and triggers a fetch if required. Do not call directly,
   // use |EnterState| instead.
@@ -278,42 +278,24 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // the observers.
   void NotifyNewSuggestions();
 
-  // Updates the internal status for |category| to |category_status_| and
-  // notifies the content suggestions observer if it changed.
-  void UpdateCategoryStatus(Category category, CategoryStatus status);
-  // Calls UpdateCategoryStatus() for all provided categories.
-  void UpdateAllCategoryStatus(CategoryStatus status);
+  // Updates the internal status |category_status_| and notifies the content
+  // suggestions observer if it changed.
+  void UpdateCategoryStatus(CategoryStatus status);
 
   State state_;
+
+  CategoryStatus category_status_;
 
   PrefService* pref_service_;
 
   suggestions::SuggestionsService* suggestions_service_;
 
-  const Category articles_category_;
+  // All current suggestions (i.e. not dismissed ones).
+  NTPSnippet::PtrVector snippets_;
 
-  struct CategoryContent {
-    CategoryStatus status = CategoryStatus::INITIALIZING;
-
-    // True iff the server returned results in this category in the last fetch.
-    // We never remove categories that the server still provides, but if the
-    // server stops providing a category, we won't yet report it as NOT_PROVIDED
-    // while we still have non-expired snippets in it.
-    bool provided_by_server = true;
-
-    // All current suggestions (i.e. not dismissed ones).
-    NTPSnippet::PtrVector snippets;
-
-    // Suggestions that the user dismissed. We keep these around until they
-    // expire so we won't re-add them on the next fetch.
-    NTPSnippet::PtrVector dismissed;
-
-    CategoryContent();                              // = default, in .cc
-    CategoryContent(CategoryContent&&);             // = default, in .cc
-    ~CategoryContent();                             // = default, in .cc
-    CategoryContent& operator=(CategoryContent&&);  // = default, in .cc
-  };
-  std::map<Category, CategoryContent, Category::CompareByID> categories_;
+  // Suggestions that the user dismissed. We keep these around until they expire
+  // so we won't re-add them on the next fetch.
+  NTPSnippet::PtrVector dismissed_snippets_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
@@ -355,6 +337,8 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // Set to true if NukeAllSnippets is called before the database has been
   // loaded. The nuke will be executed after the database load finishes.
   bool nuke_after_load_;
+
+  const Category provided_category_;
 
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
