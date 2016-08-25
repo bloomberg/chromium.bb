@@ -32,7 +32,7 @@ void BluetoothGattServerTest::SetUp() {
   BluetoothTest::SetUp();
   last_read_value_ = std::vector<uint8_t>();
   InitWithFakeAdapter();
-  delegate_ = base::WrapUnique(new TestBluetoothLocalGattServiceDelegate());
+  delegate_ = base::MakeUnique<TestBluetoothLocalGattServiceDelegate>();
 }
 
 void BluetoothGattServerTest::TearDown() {

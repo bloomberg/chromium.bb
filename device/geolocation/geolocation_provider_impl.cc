@@ -191,8 +191,8 @@ GeolocationProviderImpl::CreateArbitrator() {
   if (!g_delegate.Get())
     g_delegate.Get().reset(new GeolocationDelegate);
 
-  return base::WrapUnique(
-      new LocationArbitratorImpl(callback, g_delegate.Get().get()));
+  return base::MakeUnique<LocationArbitratorImpl>(callback,
+                                                  g_delegate.Get().get());
 }
 
 }  // namespace device

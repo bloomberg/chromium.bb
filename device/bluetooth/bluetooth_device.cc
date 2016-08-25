@@ -397,7 +397,7 @@ void BluetoothDevice::ClearAdvertisementData() {
 void BluetoothDevice::DidConnectGatt() {
   for (const auto& callback : create_gatt_connection_success_callbacks_) {
     callback.Run(
-        base::WrapUnique(new BluetoothGattConnection(adapter_, GetAddress())));
+        base::MakeUnique<BluetoothGattConnection>(adapter_, GetAddress()));
   }
   create_gatt_connection_success_callbacks_.clear();
   create_gatt_connection_error_callbacks_.clear();

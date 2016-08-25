@@ -116,8 +116,8 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
       characteristic_providers_.push_back(
           base::WrapUnique(BluetoothGattCharacteristicServiceProvider::Create(
               bus, characteristic.second->object_path(),
-              base::WrapUnique(new BluetoothGattCharacteristicDelegateWrapper(
-                  service.second, characteristic.second.get())),
+              base::MakeUnique<BluetoothGattCharacteristicDelegateWrapper>(
+                  service.second, characteristic.second.get()),
               characteristic.second->GetUUID().value(),
               FlagsFromProperties(characteristic.second->GetProperties()),
               service.second->object_path())));
@@ -125,8 +125,8 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
         descriptor_providers_.push_back(
             base::WrapUnique(BluetoothGattDescriptorServiceProvider::Create(
                 bus, descriptor->object_path(),
-                base::WrapUnique(new BluetoothGattDescriptorDelegateWrapper(
-                    service.second, descriptor.get())),
+                base::MakeUnique<BluetoothGattDescriptorDelegateWrapper>(
+                    service.second, descriptor.get()),
                 descriptor->GetUUID().value(),
                 FlagsFromPermissions(descriptor->GetPermissions()),
                 characteristic.second->object_path())));
@@ -161,8 +161,8 @@ BluetoothGattApplicationServiceProvider::Create(
     return base::WrapUnique(new BluetoothGattApplicationServiceProviderImpl(
         bus, object_path, services));
   }
-  return base::WrapUnique(
-      new FakeBluetoothGattApplicationServiceProvider(object_path, services));
+  return base::MakeUnique<FakeBluetoothGattApplicationServiceProvider>(
+      object_path, services);
 }
 
 }  // namespace bluez

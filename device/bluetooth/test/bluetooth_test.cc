@@ -38,7 +38,7 @@ BluetoothTestBase::~BluetoothTestBase() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySession() {
   adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE)),
+      base::MakeUnique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::EXPECTED),
       GetErrorCallback(Call::NOT_EXPECTED));
   base::RunLoop().RunUntilIdle();
@@ -46,7 +46,7 @@ void BluetoothTestBase::StartLowEnergyDiscoverySession() {
 
 void BluetoothTestBase::StartLowEnergyDiscoverySessionExpectedToFail() {
   adapter_->StartDiscoverySessionWithFilter(
-      base::WrapUnique(new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE)),
+      base::MakeUnique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE),
       GetDiscoverySessionCallback(Call::NOT_EXPECTED),
       GetErrorCallback(Call::EXPECTED));
   base::RunLoop().RunUntilIdle();

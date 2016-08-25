@@ -447,8 +447,8 @@ void BluetoothRemoteGattCharacteristicWin::GattEventRegistrationCallback(
   if (SUCCEEDED(hr)) {
     gatt_event_handle_ = event_handle;
     for (const auto& callback : callbacks) {
-      callback.first.Run(base::WrapUnique(
-          new BluetoothGattNotifySession(weak_ptr_factory_.GetWeakPtr())));
+      callback.first.Run(base::MakeUnique<BluetoothGattNotifySession>(
+          weak_ptr_factory_.GetWeakPtr()));
     }
   } else {
     for (const auto& callback : callbacks)
