@@ -119,9 +119,6 @@ crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointercancel_touch-manual.html  [ Leak ]
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html  [ Leak ]
 
-# Leaks that must be fixed asap.
-crbug.com/640886 [ Linux ] http/tests/images/png-partial-load-as-document.html is leaking [ Leak ]
-
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
