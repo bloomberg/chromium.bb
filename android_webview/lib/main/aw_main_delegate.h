@@ -23,7 +23,10 @@ class AwContentBrowserClient;
 class AwContentGpuClient;
 class AwContentRendererClient;
 
-// Android WebView implementation of ContentMainDelegate.
+// Android WebView implementation of ContentMainDelegate. The methods in
+// this class runs per process, (browser and renderer) so when making changes
+// make sure to properly conditionalize for browser vs. renderer wherever
+// needed.
 class AwMainDelegate : public content::ContentMainDelegate,
                        public JniDependencyFactory {
  public:
