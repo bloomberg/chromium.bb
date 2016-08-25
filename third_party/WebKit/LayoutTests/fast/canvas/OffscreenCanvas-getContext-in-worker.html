@@ -1,50 +1,7 @@
 <!DOCTYPE html>
-<html>
-<script src="../../resources/js-test.js"></script>
-<body>
-<script id="myWorker" type="text/worker">
-self.onmessage = function(e) {
-    var aCanvas = new OffscreenCanvas(50, 50);
-    var bCanvas = new OffscreenCanvas(50, 50);
-    try {
-      var ctx1 = aCanvas.getContext('2d');
-      var ctx2 = bCanvas.getContext('webgl');
-      if (!(ctx1 instanceof OffscreenCanvasRenderingContext2D)) {
-          self.postMessage("aCanvas.getContext('2d') returns " + ctx1);
-      } else if (!(ctx2 instanceof WebGLRenderingContext)) {
-          self.postMessage("bCanvas.getContext('webgl') returns " + ctx2);
-      } else {
-          self.postMessage("success");
-      }
-    } catch (e) {
-      self.postMessage(e);
-    }
-};
-</script>
-
+<title>Tests that the 2D and webgl context of OffscreenCanvas can be constructed on a worker thread.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-jsTestIsAsync = true;
-description("Tests that the 2D and webgl context of OffscreenCanvas can be constructed on a worker thread.");
-
-function makeWorker(script) {
-  var blob = new Blob([script]);
-  return new Worker(URL.createObjectURL(blob));
-}
-
-function handleMessageFromWorker(msg)
-{
-    if (msg.data == "success") {
-        testPassed("getContext('2d') and getContext('webgl') works on a worker thread");
-    } else {
-        testFailed(msg.data);
-    }
-    finishJSTest();
-}
-
-var worker = makeWorker(document.getElementById('myWorker').textContent);
-worker.addEventListener('message', handleMessageFromWorker);
-worker.postMessage("");
+fetch_tests_from_worker(new Worker("OffscreenCanvas-getContext-in-worker.js"));
 </script>
-
-</body>
-</html>
