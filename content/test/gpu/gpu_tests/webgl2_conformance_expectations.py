@@ -69,20 +69,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'amd'], bug=638323)
     self.Fail('deqp/functional/gles3/textureshadow/cube*',
         ['win', 'amd'], bug=638323)
-
-    # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
-        ['win', ('amd', 0x6779)], bug=614178)
+        ['win', 'amd'], bug=614178)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_depth_stencil.html',
-        ['win', ('amd', 0x6779)], bug=614178)
+        ['win', 'amd'], bug=614178)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
-        ['win', ('amd', 0x6779)], bug=483282)
+        ['win', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
+        ['win', 'amd'], bug=483282)
+
+    # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
-        ['win', ('amd', 0x6779)], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
     self.Fail('deqp/functional/gles3/transformfeedback/*',
@@ -97,22 +97,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # and updated driver. The older drivers won't ever get fixes from AMD.
     self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
         ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
-        ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_array*',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturefiltering/cube*',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturespecification/'
         'teximage2d_depth.html',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturespecification/'
-        'texstorage2d_format_depth_stencil.html',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturespecification/'
-        'texstorage3d_format_depth_stencil.html',
         ['win', ('amd', 0x6613)], bug=638323)
     self.Fail('deqp/functional/gles3/texturespecification/'
         'texsubimage2d_depth.html',
