@@ -30,6 +30,18 @@ View certificate
     </DIV>
     <DIV class=security-explanation-text >
         <DIV class=security-explanation-title >
+Obsolete Connection Settings
+        </DIV>
+        <DIV >
+The connection to this site uses a strong protocol (TLS 1.2), a strong key exchange (ECDHE_RSA), and an obsolete cipher (AES_256_CBC with HMAC-SHA1).
+        </DIV>
+    </DIV>
+</DIV>
+<DIV class=security-explanation security-explanation-secure >
+    <DIV class=security-property security-property-secure >
+    </DIV>
+    <DIV class=security-explanation-text >
+        <DIV class=security-explanation-title >
 Secure Resources
         </DIV>
         <DIV >

@@ -591,7 +591,7 @@ void WebsiteSettings::Init(
   } else {
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED;
 
-    if (security_info.is_secure_protocol_and_ciphersuite) {
+    if (security_info.obsolete_ssl_status == net::OBSOLETE_SSL_NONE) {
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
           subject_name));

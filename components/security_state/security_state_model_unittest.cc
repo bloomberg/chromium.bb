@@ -8,6 +8,7 @@
 
 #include "components/security_state/security_state_model_client.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
@@ -163,7 +164,7 @@ TEST(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   client.SetCipherSuite(ciphersuite);
   const SecurityStateModel::SecurityInfo& security_info =
       model.GetSecurityInfo();
-  EXPECT_TRUE(security_info.is_secure_protocol_and_ciphersuite);
+  EXPECT_EQ(net::OBSOLETE_SSL_NONE, security_info.obsolete_ssl_status);
 }
 
 TEST(SecurityStateModelTest, NonsecureProtocol) {
@@ -178,7 +179,7 @@ TEST(SecurityStateModelTest, NonsecureProtocol) {
   client.SetCipherSuite(ciphersuite);
   const SecurityStateModel::SecurityInfo& security_info =
       model.GetSecurityInfo();
-  EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
+  EXPECT_EQ(net::OBSOLETE_SSL_MASK_PROTOCOL, security_info.obsolete_ssl_status);
 }
 
 TEST(SecurityStateModelTest, NonsecureCiphersuite) {
@@ -193,7 +194,8 @@ TEST(SecurityStateModelTest, NonsecureCiphersuite) {
   client.SetCipherSuite(ciphersuite);
   const SecurityStateModel::SecurityInfo& security_info =
       model.GetSecurityInfo();
-  EXPECT_FALSE(security_info.is_secure_protocol_and_ciphersuite);
+  EXPECT_EQ(net::OBSOLETE_SSL_MASK_KEY_EXCHANGE | net::OBSOLETE_SSL_MASK_CIPHER,
+            security_info.obsolete_ssl_status);
 }
 
 // Tests that the malware/phishing status is set, and it overrides valid HTTPS.

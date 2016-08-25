@@ -114,9 +114,11 @@ class SecurityStateModel {
     // Information about the SSL connection, such as protocol and
     // ciphersuite. See ssl_connection_flags.h in net.
     int connection_status;
-    // True if the protocol version and ciphersuite for the connection
-    // are considered secure.
-    bool is_secure_protocol_and_ciphersuite;
+    // A mask that indicates which of the protocol version,
+    // key exchange, or cipher for the connection is considered
+    // obsolete. See net::ObsoleteSSLMask for specific mask values.
+    int obsolete_ssl_status;
+
     // True if pinning was bypassed due to a local trust anchor.
     bool pkp_bypassed;
   };

@@ -305,6 +305,52 @@ bool GetCipherProperties(uint16_t cipher_suite,
   return true;
 }
 
+int ObsoleteSSLStatusForProtocol(int ssl_version) {
+  int obsolete_ssl = net::OBSOLETE_SSL_NONE;
+  if (ssl_version < net::SSL_CONNECTION_VERSION_TLS1_2)
+    obsolete_ssl |= net::OBSOLETE_SSL_MASK_PROTOCOL;
+  return obsolete_ssl;
+}
+
+int ObsoleteSSLStatusForCipherSuite(uint16_t cipher_suite) {
+  int obsolete_ssl = net::OBSOLETE_SSL_NONE;
+
+  int key_exchange, cipher, mac;
+  if (!GetCipherProperties(cipher_suite, &key_exchange, &cipher, &mac)) {
+    // Cannot determine/unknown cipher suite. Err on the side of caution.
+    obsolete_ssl |= net::OBSOLETE_SSL_MASK_KEY_EXCHANGE;
+    obsolete_ssl |= net::OBSOLETE_SSL_MASK_CIPHER;
+    return obsolete_ssl;
+  }
+
+  // Only allow ECDHE key exchanges.
+  switch (key_exchange) {
+    case 14:  // ECDHE_ECDSA
+    case 16:  // ECDHE_RSA
+    case 18:  // CECPQ1_RSA
+    case 19:  // CECPQ1_ECDSA
+    case 20:  // ECDHE_PSK
+      break;
+    default:
+      obsolete_ssl |= net::OBSOLETE_SSL_MASK_KEY_EXCHANGE;
+  }
+
+  switch (cipher) {
+    case 13:  // AES_128_GCM
+    case 14:  // AES_256_GCM
+    case 17:  // CHACHA20_POLY1305
+      break;
+    default:
+      obsolete_ssl |= net::OBSOLETE_SSL_MASK_CIPHER;
+  }
+
+  // Only AEADs allowed.
+  if (mac != kAEADMACValue)
+    obsolete_ssl |= net::OBSOLETE_SSL_MASK_CIPHER;
+
+  return obsolete_ssl;
+}
+
 }  // namespace
 
 namespace net {
@@ -374,37 +420,16 @@ bool ParseSSLCipherString(const std::string& cipher_string,
   return false;
 }
 
-bool IsSecureTLSCipherSuite(uint16_t cipher_suite) {
-  int key_exchange, cipher, mac;
-  if (!GetCipherProperties(cipher_suite, &key_exchange, &cipher, &mac))
-    return false;
+int ObsoleteSSLStatus(int connection_status) {
+  int obsolete_ssl = OBSOLETE_SSL_NONE;
 
-  // Only allow ECDHE key exchanges.
-  switch (key_exchange) {
-    case 14:  // ECDHE_ECDSA
-    case 16:  // ECDHE_RSA
-    case 18:  // CECPQ1_RSA
-    case 19:  // CECPQ1_ECDSA
-    case 20:  // ECDHE_PSK
-      break;
-    default:
-      return false;
-  }
+  int ssl_version = SSLConnectionStatusToVersion(connection_status);
+  obsolete_ssl |= ObsoleteSSLStatusForProtocol(ssl_version);
 
-  switch (cipher) {
-    case 13:  // AES_128_GCM
-    case 14:  // AES_256_GCM
-    case 17:  // CHACHA20_POLY1305
-      break;
-    default:
-      return false;
-  }
+  uint16_t cipher_suite = SSLConnectionStatusToCipherSuite(connection_status);
+  obsolete_ssl |= ObsoleteSSLStatusForCipherSuite(cipher_suite);
 
-  // Only AEADs allowed.
-  if (mac != kAEADMACValue)
-    return false;
-
-  return true;
+  return obsolete_ssl;
 }
 
 bool IsTLSCipherSuiteAllowedByHTTP2(uint16_t cipher_suite) {

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
@@ -22,6 +25,8 @@
 #include "content/public/common/ssl_status.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
@@ -75,6 +80,74 @@ content::SecurityStyle SecurityLevelToSecurityStyle(
 
   NOTREACHED();
   return content::SECURITY_STYLE_UNKNOWN;
+}
+
+void AddConnectionExplanation(
+    const security_state::SecurityStateModel::SecurityInfo& security_info,
+    content::SecurityStyleExplanations* security_style_explanations) {
+
+  // Avoid showing TLS details when we couldn't even establish a TLS connection
+  // (e.g. for net errors) or if there was no real connection (some tests). We
+  // check the |cert_id| to see if there was a connection.
+  if (security_info.cert_id == 0 || security_info.connection_status == 0) {
+    return;
+  }
+
+  int ssl_version =
+      net::SSLConnectionStatusToVersion(security_info.connection_status);
+  const char* protocol;
+  net::SSLVersionToString(&protocol, ssl_version);
+  const char* key_exchange;
+  const char* cipher;
+  const char* mac;
+  bool is_aead;
+  uint16_t cipher_suite =
+      net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
+  net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                               cipher_suite);
+  base::string16 protocol_name = base::ASCIIToUTF16(protocol);
+  base::string16 key_exchange_name = base::ASCIIToUTF16(key_exchange);
+  const base::string16 cipher_name =
+      (mac == NULL) ? base::ASCIIToUTF16(cipher)
+                    : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
+                                                 base::ASCIIToUTF16(cipher),
+                                                 base::ASCIIToUTF16(mac));
+  if (security_info.obsolete_ssl_status == net::OBSOLETE_SSL_NONE) {
+    security_style_explanations->secure_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_STRONG_SSL_SUMMARY),
+            l10n_util::GetStringFUTF8(IDS_STRONG_SSL_DESCRIPTION, protocol_name,
+                                      key_exchange_name, cipher_name)));
+    return;
+  }
+
+  std::vector<base::string16> description_replacements;
+  int status = security_info.obsolete_ssl_status;
+  int str_id;
+
+  str_id = (status & net::OBSOLETE_SSL_MASK_PROTOCOL)
+               ? IDS_SSL_AN_OBSOLETE_PROTOCOL
+               : IDS_SSL_A_STRONG_PROTOCOL;
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
+  description_replacements.push_back(protocol_name);
+
+  str_id = (status & net::OBSOLETE_SSL_MASK_KEY_EXCHANGE)
+               ? IDS_SSL_AN_OBSOLETE_KEY_EXCHANGE
+               : IDS_SSL_A_STRONG_KEY_EXCHANGE;
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
+  description_replacements.push_back(key_exchange_name);
+
+  str_id = (status & net::OBSOLETE_SSL_MASK_CIPHER) ? IDS_SSL_AN_OBSOLETE_CIPHER
+                                                    : IDS_SSL_A_STRONG_CIPHER;
+  description_replacements.push_back(l10n_util::GetStringUTF16(str_id));
+  description_replacements.push_back(cipher_name);
+
+  security_style_explanations->info_explanations.push_back(
+      content::SecurityStyleExplanation(
+          l10n_util::GetStringUTF8(IDS_OBSOLETE_SSL_SUMMARY),
+          base::UTF16ToUTF8(
+              l10n_util::GetStringFUTF16(IDS_OBSOLETE_SSL_DESCRIPTION,
+                                         description_replacements, nullptr))));
 }
 
 }  // namespace
@@ -172,13 +245,7 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
     }
   }
 
-  if (security_info.is_secure_protocol_and_ciphersuite) {
-    security_style_explanations->secure_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
-            l10n_util::GetStringUTF8(
-                IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION)));
-  }
+  AddConnectionExplanation(security_info, security_style_explanations);
 
   security_style_explanations->pkp_bypassed = security_info.pkp_bypassed;
   if (security_info.pkp_bypassed) {

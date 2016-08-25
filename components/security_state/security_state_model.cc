@@ -209,13 +209,9 @@ void SecurityInfoForRequest(
   security_info->cert_status = visible_security_state.cert_status;
   security_info->scheme_is_cryptographic =
       visible_security_state.url.SchemeIsCryptographic();
+  security_info->obsolete_ssl_status =
+      net::ObsoleteSSLStatus(security_info->connection_status);
   security_info->pkp_bypassed = visible_security_state.pkp_bypassed;
-  security_info->is_secure_protocol_and_ciphersuite =
-      (net::SSLConnectionStatusToVersion(security_info->connection_status) >=
-           net::SSL_CONNECTION_VERSION_TLS1_2 &&
-       net::IsSecureTLSCipherSuite(net::SSLConnectionStatusToCipherSuite(
-           security_info->connection_status)));
-
   security_info->sct_verify_statuses =
       visible_security_state.sct_verify_statuses;
 
@@ -249,7 +245,7 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       cert_id(0),
       security_bits(-1),
       connection_status(0),
-      is_secure_protocol_and_ciphersuite(false),
+      obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false) {}
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}

@@ -158,11 +158,36 @@ void CheckSecureExplanations(
     EXPECT_EQ(cert_id, secure_explanations[0].cert_id);
   }
 
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_STRONG_SSL_SUMMARY),
             secure_explanations.back().summary);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION),
-      secure_explanations.back().description);
+
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  const SecurityStateModel::SecurityInfo& security_info =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents)
+          ->GetSecurityInfo();
+
+  const char *protocol, *key_exchange, *cipher, *mac;
+  int ssl_version =
+      net::SSLConnectionStatusToVersion(security_info.connection_status);
+  net::SSLVersionToString(&protocol, ssl_version);
+  bool is_aead;
+  uint16_t cipher_suite =
+      net::SSLConnectionStatusToCipherSuite(security_info.connection_status);
+  net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                               cipher_suite);
+  EXPECT_TRUE(is_aead);
+  EXPECT_EQ(NULL, mac);  // The default secure cipher does not have a MAC.
+
+  std::vector<base::string16> description_replacements;
+  description_replacements.push_back(base::ASCIIToUTF16(protocol));
+  description_replacements.push_back(base::ASCIIToUTF16(key_exchange));
+  description_replacements.push_back(base::ASCIIToUTF16(cipher));
+  base::string16 secure_description = l10n_util::GetStringFUTF16(
+      IDS_STRONG_SSL_DESCRIPTION, description_replacements, nullptr);
+
+  EXPECT_EQ(secure_description,
+            base::ASCIIToUTF16(secure_explanations.back().description));
 }
 
 void CheckSecurityInfoForSecure(
@@ -1081,9 +1106,13 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
 // After AddNonsecureUrlHandler() is called, requests to this hostname
 // will use obsolete TLS settings.
 const char kMockNonsecureHostname[] = "example-nonsecure.test";
+const int kObsoleteTLSVersion = net::SSL_CONNECTION_VERSION_TLS1_1;
+// ECDHE_RSA + AES_128_CBC with HMAC-SHA1
+const uint16_t kObsoleteCipherSuite = 0xc013;
 
-// A URLRequestMockHTTPJob that mocks a TLS connection with an obsolete
-// protocol version.
+// A URLRequestMockHTTPJob that mocks a TLS connection with the obsolete
+// TLS settings specified in kObsoleteTLSVersion and
+// kObsoleteCipherSuite.
 class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
  public:
   URLRequestObsoleteTLSJob(net::URLRequest* request,
@@ -1099,10 +1128,9 @@ class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
 
   void GetResponseInfo(net::HttpResponseInfo* info) override {
     net::URLRequestMockHTTPJob::GetResponseInfo(info);
-    net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_1,
+    net::SSLConnectionStatusSetVersion(kObsoleteTLSVersion,
                                        &info->ssl_info.connection_status);
-    const uint16_t kTlsEcdheRsaWithAes128CbcSha = 0xc013;
-    net::SSLConnectionStatusSetCipherSuite(kTlsEcdheRsaWithAes128CbcSha,
+    net::SSLConnectionStatusSetCipherSuite(kObsoleteCipherSuite,
                                            &info->ssl_info.connection_status);
     info->ssl_info.cert = cert_;
   }
@@ -1210,9 +1238,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequest,
   // the TLS settings are obsolete.
   for (const auto& explanation :
        observer.latest_explanations().secure_explanations) {
-    EXPECT_NE(l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+    EXPECT_NE(l10n_util::GetStringUTF8(IDS_STRONG_SSL_SUMMARY),
               explanation.summary);
   }
+
+  // Populate description string replacement with values corresponding
+  // to test constants.
+  std::vector<base::string16> description_replacements;
+  description_replacements.push_back(
+      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_PROTOCOL));
+  description_replacements.push_back(base::ASCIIToUTF16("TLS 1.1"));
+  description_replacements.push_back(
+      l10n_util::GetStringUTF16(IDS_SSL_A_STRONG_KEY_EXCHANGE));
+  description_replacements.push_back(base::ASCIIToUTF16("ECDHE_RSA"));
+  description_replacements.push_back(
+      l10n_util::GetStringUTF16(IDS_SSL_AN_OBSOLETE_CIPHER));
+  description_replacements.push_back(
+      base::ASCIIToUTF16("AES_128_CBC with HMAC-SHA1"));
+  base::string16 obsolete_description = l10n_util::GetStringFUTF16(
+      IDS_OBSOLETE_SSL_DESCRIPTION, description_replacements, nullptr);
+
+  EXPECT_EQ(
+      obsolete_description,
+      base::ASCIIToUTF16(
+          observer.latest_explanations().info_explanations[0].description));
 }
 
 // After AddSCTUrlHandler() is called, requests to this hostname
