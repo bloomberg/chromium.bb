@@ -129,6 +129,7 @@ void RequestCoordinator::StopPrerendering() {
   if (active_request_) {
     RecordOfflinerResultUMA(active_request_->client_id(),
                             last_offlining_status_);
+    is_busy_ = false;
     active_request_.reset();
   }
 

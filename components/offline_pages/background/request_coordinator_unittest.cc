@@ -607,11 +607,16 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
 
+  // Coordinator should now be busy.
+  EXPECT_TRUE(is_busy());
+
   // Now we cancel it while the prerenderer is busy.
   coordinator()->StopProcessing();
 
   // Let the async callbacks in the cancel run.
   PumpLoop();
+
+  EXPECT_FALSE(is_busy());
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
   // since we cancelled the event before the LoadAndSave completed.
