@@ -122,10 +122,17 @@ void InsertionPoint::detachLayoutTree(const AttachContext& context)
 
 void InsertionPoint::willRecalcStyle(StyleRecalcChange change)
 {
-    if (change < IndependentInherit && getStyleChangeType() < SubtreeStyleChange)
+    StyleChangeType styleChangeType = NoStyleChange;
+
+    if (change > Inherit || getStyleChangeType() > LocalStyleChange)
+        styleChangeType = SubtreeStyleChange;
+    else if (change > NoInherit)
+        styleChangeType = LocalStyleChange;
+    else
         return;
+
     for (size_t i = 0; i < m_distributedNodes.size(); ++i)
-        m_distributedNodes.at(i)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
+        m_distributedNodes.at(i)->setNeedsStyleRecalc(styleChangeType, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
 }
 
 bool InsertionPoint::canBeActive() const
