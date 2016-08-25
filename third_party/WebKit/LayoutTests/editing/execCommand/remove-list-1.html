@@ -1,28 +1,27 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpEditingCallbacks();
-    testRunner.dumpAsText();
-}
-</script>
-<p>This tests de-listing content.</p>
-<div id="div" contenteditable="true"><ol><li></li><li>There should be a single BR above this line and no OL or LI.</li></ol></div>
-<p id="console"></p>
-
-<script>
-
-function log(message) {
-    var console = document.getElementById("console");
-    var text = document.createTextNode(message);
-    console.appendChild(text);
-}
-
-var div = document.getElementById("div");
-var sel = window.getSelection();
-
-div.focus();
-document.execCommand("SelectAll");
-document.execCommand("InsertOrderedList");
-
-log(div.innerHTML);
-
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<ol>',
+                    '<li>|</li>',
+                    '<li>foo bar</li>',
+                '</ol>',
+            '</div>',
+        ].join(''),
+        selection => {
+            selection.document.execCommand('selectAll');
+            selection.document.execCommand('insertOrderedList');
+        },
+        [
+            '<div contenteditable>',
+                // TODO(yosin): We should study why unlistify sets caret before
+                // last character.
+                '^<br>foo ba|r',
+            '</div>',
+        ].join('')),
+        'Unlistify with an empty list item');
 </script>
