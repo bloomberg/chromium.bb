@@ -184,9 +184,11 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
       (gl::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
        gl::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
       !gpu_preferences().disable_gpu_program_cache) {
-    program_cache_.reset(new gpu::gles2::MemoryProgramCache(
-          gpu_preferences().gpu_program_cache_size,
-          gpu_preferences().disable_gpu_shader_disk_cache));
+    bool disable_disk_cache =
+        gpu_preferences_.disable_gpu_shader_disk_cache ||
+        gpu_driver_bug_workarounds_.disable_program_disk_cache;
+    program_cache_.reset(new gles2::MemoryProgramCache(
+        gpu_preferences_.gpu_program_cache_size, disable_disk_cache));
   }
   return program_cache_.get();
 }
