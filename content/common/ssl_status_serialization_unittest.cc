@@ -148,4 +148,19 @@ TEST(SSLStatusSerializationTest, DeserializeBogusSCTVerifyStatus) {
   EXPECT_PRED2(SSLStatusAreEqual, SSLStatus(), deserialized);
 }
 
+// Test that SCTVerifyStatus INVALID can be deserialized; even though
+// this value is deprecated, it may still appear in previously written
+// disk cache entries. Regression test for https://crbug.com/640296
+TEST(SSLStatusSerializationTest, DeserializeInvalidSCT) {
+  SSLStatus status;
+  SetTestStatus(&status);
+  status.sct_statuses.push_back(
+      static_cast<net::ct::SCTVerifyStatus>(net::ct::SCT_STATUS_INVALID));
+  std::string serialized = SerializeSecurityInfo(status);
+
+  SSLStatus deserialized;
+  ASSERT_TRUE(DeserializeSecurityInfo(serialized, &deserialized));
+  EXPECT_PRED2(SSLStatusAreEqual, status, deserialized);
+}
+
 }  // namespace

@@ -197,7 +197,9 @@ int GetSiteIdentityDetailsMessageByCTInfo(
                   : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED);
 
   // Any invalid SCT.
-  if (CertificateTransparencyStatusMatchAny(
+  if (CertificateTransparencyStatusMatchAny(sct_verify_statuses,
+                                            net::ct::SCT_STATUS_INVALID) ||
+      CertificateTransparencyStatusMatchAny(
           sct_verify_statuses, net::ct::SCT_STATUS_INVALID_TIMESTAMP) ||
       CertificateTransparencyStatusMatchAny(
           sct_verify_statuses, net::ct::SCT_STATUS_INVALID_SIGNATURE))

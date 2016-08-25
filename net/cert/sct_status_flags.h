@@ -21,9 +21,12 @@ enum SCTVerifyStatus {
   // The SCT is from an unknown log, so we cannot verify its signature.
   SCT_STATUS_LOG_UNKNOWN = 1,
 
-  // SCTVerifyStatus=2 used to represent SCT_STATUS_INVALID, which has now been
-  // split into INVALID_SIGNATURE and INVALID_TIMESTAMP to represent the
-  // different reasons an SCT could be invalid.
+  // This value is deprecated and should not be used. It has been split
+  // into INVALID_SIGNATURE and INVALID_TIMESTAMP to represent the
+  // different reasons an SCT could be invalid. Though it is no longer
+  // in use, it is preserved here because it may be present in
+  // serialized messages.
+  SCT_STATUS_INVALID = 2,
 
   // The SCT is from a known log, and the signature is valid.
   SCT_STATUS_OK = 3,

@@ -31,6 +31,9 @@ bool CheckSecurityStyle(int security_style) {
 bool CheckSCTStatus(uint32_t sct_status) {
   switch (sct_status) {
     case net::ct::SCT_STATUS_LOG_UNKNOWN:
+    // INVALID is deprecated and should not be used anymore, but it
+    // might have been previously written into the disk cache.
+    case net::ct::SCT_STATUS_INVALID:
     case net::ct::SCT_STATUS_INVALID_SIGNATURE:
     case net::ct::SCT_STATUS_OK:
     case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
