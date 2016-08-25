@@ -568,6 +568,7 @@ BuildSysrootAll() {
   RunCommand BuildSysrootAmd64
   RunCommand BuildSysrootI386
   RunCommand BuildSysrootARM
+  RunCommand BuildSysrootARM64
   RunCommand BuildSysrootMips
 }
 

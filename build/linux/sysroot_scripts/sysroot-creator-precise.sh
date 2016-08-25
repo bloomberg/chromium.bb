@@ -193,5 +193,6 @@ DEBIAN_PACKAGES="\
 "
 
 DEBIAN_PACKAGES_X86="libquadmath0"
+DEBIAN_PACKAGES_ARM="libdrm-omap1"
 
 . ${SCRIPT_DIR}/sysroot-creator.sh
