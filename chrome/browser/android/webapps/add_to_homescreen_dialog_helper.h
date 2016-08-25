@@ -29,6 +29,9 @@ struct ShortcutInfo;
 class AddToHomescreenDialogHelper :
     public AddToHomescreenDataFetcher::Observer {
  public:
+  // Registers JNI hooks.
+  static bool RegisterAddToHomescreenDialogHelper(JNIEnv* env);
+
   AddToHomescreenDialogHelper(JNIEnv* env,
                               jobject obj,
                               content::WebContents* web_contents);
@@ -36,20 +39,10 @@ class AddToHomescreenDialogHelper :
   // Called by the Java counterpart to destroy its native half.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  // Registers JNI hooks.
-  static bool RegisterAddToHomescreenDialogHelper(JNIEnv* env);
-
   // Adds a shortcut to the current URL to the Android home screen.
   void AddShortcut(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jstring>& title);
-
-  // AddToHomescreenDataFetcher::Observer
-  void OnUserTitleAvailable(const base::string16& user_title) override;
-  void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon) override;
-  SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
-                                            const GURL& url,
-                                            bool* is_generated) override;
 
  private:
   virtual ~AddToHomescreenDialogHelper();
@@ -59,6 +52,13 @@ class AddToHomescreenDialogHelper :
   void AddShortcut(const ShortcutInfo& info, const SkBitmap& icon);
 
   void RecordAddToHomescreen();
+
+  // AddToHomescreenDataFetcher::Observer:
+  void OnUserTitleAvailable(const base::string16& user_title) override;
+  void OnDataAvailable(const ShortcutInfo& info, const SkBitmap& icon) override;
+  SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
+                                            const GURL& url,
+                                            bool* is_generated) override;
 
   // Points to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
