@@ -174,6 +174,7 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     , m_isMainFrameLayoutViewLayer(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
     , m_scrollingContentsAreEmpty(false)
+    , m_backgroundPaintsOntoScrollingContentsLayer(false)
 {
     if (layer.isRootLayer() && layoutObject()->frame()->isMainFrame())
         m_isMainFrameLayoutViewLayer = true;
@@ -294,9 +295,22 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
 
+void CompositedLayerMapping::updateBackgroundPaintsOntoScrollingContentsLayer()
+{
+    bool shouldPaintOntoScrollingContentsLayer = shouldPaintBackgroundOntoScrollingContentsLayer();
+    if (shouldPaintOntoScrollingContentsLayer != backgroundPaintsOntoScrollingContentsLayer()) {
+        m_backgroundPaintsOntoScrollingContentsLayer = shouldPaintOntoScrollingContentsLayer;
+        // If the background is no longer painted onto the scrolling contents
+        // layer the scrolling contents layer needs to be updated. If it is
+        // going to be painted onto the scrolling contents layer this update
+        // will be triggered by LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect
+        if (hasScrollingLayer() && !shouldPaintOntoScrollingContentsLayer)
+            m_scrollingContentsLayer->setNeedsDisplay();
+    }
+}
+
 void CompositedLayerMapping::updateContentsOpaque()
 {
-    ASSERT(m_isMainFrameLayoutViewLayer || !m_backgroundLayer);
     if (isAcceleratedCanvas(layoutObject())) {
         // Determine whether the rendering context's external texture layer is opaque.
         CanvasRenderingContext* context = toHTMLCanvasElement(layoutObject()->node())->renderingContext();
@@ -312,7 +326,7 @@ void CompositedLayerMapping::updateContentsOpaque()
     } else {
         // For non-root layers, background is painted by the scrolling contents layer if all backgrounds
         // are background attachment local, otherwise background is painted by the primary graphics layer.
-        if (hasScrollingLayer() && shouldPaintBackgroundOntoScrollingContentsLayer()) {
+        if (hasScrollingLayer() && m_backgroundPaintsOntoScrollingContentsLayer) {
             // Backgrounds painted onto the foreground are clipped by the padding box rect.
             // TODO(flackr): This should actually check the entire overflow rect within the
             // scrolling contents layer but since we currently only trigger this for solid
@@ -324,6 +338,8 @@ void CompositedLayerMapping::updateContentsOpaque()
             // not opaque.
             m_graphicsLayer->setContentsOpaque(false);
         } else {
+            if (hasScrollingLayer())
+                m_scrollingContentsLayer->setContentsOpaque(false);
             m_graphicsLayer->setContentsOpaque(m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
         }
     }
@@ -769,6 +785,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateBackgroundColor();
     updateDrawsContent();
     updateElementIdAndCompositorMutableProperties();
+    updateBackgroundPaintsOntoScrollingContentsLayer();
     updateContentsOpaque();
     updateAfterPartResize();
     updateRenderingContext();
@@ -2461,7 +2478,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         || graphicsLayer == m_childClippingMaskLayer.get()
         || graphicsLayer == m_scrollingContentsLayer.get()) {
 
-        bool paintRootBackgroundOntoScrollingContentsLayer = shouldPaintBackgroundOntoScrollingContentsLayer();
+        bool paintRootBackgroundOntoScrollingContentsLayer = m_backgroundPaintsOntoScrollingContentsLayer;
         DCHECK(!paintRootBackgroundOntoScrollingContentsLayer || (!m_backgroundLayer && !m_foregroundLayer));
         if (paintRootBackgroundOntoScrollingContentsLayer) {
             if (graphicsLayer == m_scrollingContentsLayer.get())

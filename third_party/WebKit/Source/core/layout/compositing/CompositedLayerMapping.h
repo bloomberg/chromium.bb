@@ -87,6 +87,9 @@ public:
     bool updateGraphicsLayerConfiguration();
     void updateGraphicsLayerGeometry(const PaintLayer* compositingContainer, const PaintLayer* compositingStackingContext, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
+    // Update whether background paints onto scrolling contents layer.
+    void updateBackgroundPaintsOntoScrollingContentsLayer();
+
     // Update whether layer needs blending.
     void updateContentsOpaque();
 
@@ -223,6 +226,7 @@ public:
     // opaque this allows us to composite the scroller even on low DPI as we can
     // draw with subpixel anti-aliasing.
     bool shouldPaintBackgroundOntoScrollingContentsLayer() const;
+    bool backgroundPaintsOntoScrollingContentsLayer() { return m_backgroundPaintsOntoScrollingContentsLayer; }
 
 private:
     IntRect recomputeInterestRect(const GraphicsLayer*) const;
@@ -460,6 +464,9 @@ private:
 
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
+
+    // Keep track of whether the background is painted onto the scrolling contents layer for invalidations.
+    unsigned m_backgroundPaintsOntoScrollingContentsLayer : 1;
 
     friend class CompositedLayerMappingTest;
 };

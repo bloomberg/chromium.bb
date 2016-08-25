@@ -225,7 +225,7 @@ void ObjectPaintInvalidator::setBackingNeedsPaintInvalidationInRect(const Layout
     } else if (m_object.compositedScrollsWithRespectTo(paintInvalidationContainer)) {
         layer.compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(rect, reason, m_object);
     } else if (paintInvalidationContainer.usesCompositedScrolling()) {
-        if (layer.compositedLayerMapping()->shouldPaintBackgroundOntoScrollingContentsLayer()) {
+        if (layer.compositedLayerMapping()->backgroundPaintsOntoScrollingContentsLayer()) {
             // TODO(flackr): Get a correct rect in the context of the scrolling contents layer to update
             // rather than updating the entire rect.
             const LayoutRect& scrollingContentsRect = toLayoutBox(m_object).layoutOverflowRect();
