@@ -130,10 +130,6 @@ Polymer({
     this.set('counters_.' + assert(matches[1]), text);
   },
 
-  open: function() {
-    this.$.dialog.showModal();
-  },
-
   /**
    * Handles the tap on the Clear Data button.
    * @private

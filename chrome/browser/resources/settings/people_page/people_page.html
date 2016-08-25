@@ -290,7 +290,7 @@
 </if>
     </settings-animated-pages>
 
-    <dialog is="cr-dialog" id="disconnectDialog">
+    <dialog is="cr-dialog" id="disconnectDialog" on-close="onDisconnectCancel_">
       <div class="title">$i18n{syncDisconnectTitle}</div>
       <div class="body">
         <div inner-h-t-m-l="[[getDisconnectExplanationHtml_(syncStatus.domain)]]">
