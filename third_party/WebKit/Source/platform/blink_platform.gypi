@@ -261,8 +261,6 @@
       'audio/ReverbInputBuffer.h',
       'audio/SincResampler.cpp',
       'audio/SincResampler.h',
-      'audio/Spatializer.cpp',
-      'audio/Spatializer.h',
       'audio/StereoPanner.cpp',
       'audio/StereoPanner.h',
       'audio/UpSampler.cpp',

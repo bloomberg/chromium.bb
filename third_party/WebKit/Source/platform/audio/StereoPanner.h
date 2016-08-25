@@ -5,26 +5,31 @@
 #ifndef StereoPanner_h
 #define StereoPanner_h
 
-#include "platform/audio/Spatializer.h"
+#include "platform/PlatformExport.h"
+#include "wtf/Allocator.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-// Common type of stereo panner as found in normal audio mixing equipment.
-// See: http://webaudio.github.io/web-audio-api/#the-stereopannernode-interface
+class AudioBus;
 
-class PLATFORM_EXPORT StereoPanner final : public Spatializer {
+// Implement the equal-power panning algorithm for mono or stereo input. See:
+// https://webaudio.github.io/web-audio-api/#Spatialzation-equal-power-panning
+
+class PLATFORM_EXPORT StereoPanner {
+    USING_FAST_MALLOC(StereoPanner);
+    WTF_MAKE_NONCOPYABLE(StereoPanner);
+
 public:
-    explicit StereoPanner(float sampleRate);
+    static std::unique_ptr<StereoPanner> create(float sampleRate);
+    ~StereoPanner() { };
 
-    void panWithSampleAccurateValues(const AudioBus* inputBus, AudioBus* outputBuf, const float* panValues, size_t framesToProcess) override;
-    void panToTargetValue(const AudioBus* inputBus, AudioBus* outputBuf, float panValue, size_t framesToProcess) override;
-
-    void reset() override { }
-
-    double tailTime() const override { return 0; }
-    double latencyTime() const override { return 0; }
+    void panWithSampleAccurateValues(const AudioBus* inputBus, AudioBus* outputBus, const float* panValues, size_t framesToProcess);
+    void panToTargetValue(const AudioBus* inputBus, AudioBus* outputBus, float panValue, size_t framesToProcess);
 
 private:
+    explicit StereoPanner(float sampleRate);
+
     bool m_isFirstRender;
     double m_smoothingConstant;
 

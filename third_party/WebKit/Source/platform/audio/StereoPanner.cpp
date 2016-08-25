@@ -16,8 +16,13 @@ namespace blink {
 // Implement equal-power panning algorithm for mono or stereo input.
 // See: http://webaudio.github.io/web-audio-api/#panning-algorithm
 
-StereoPanner::StereoPanner(float sampleRate) : Spatializer(PanningModelEqualPower)
-    , m_isFirstRender(true)
+std::unique_ptr<StereoPanner> StereoPanner::create(float sampleRate)
+{
+    return wrapUnique(new StereoPanner(sampleRate));
+}
+
+StereoPanner::StereoPanner(float sampleRate)
+    : m_isFirstRender(true)
     , m_pan(0.0)
 {
     // Convert smoothing time (50ms) to a per-sample time value.

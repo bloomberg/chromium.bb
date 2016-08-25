@@ -75,7 +75,7 @@ void StereoPannerHandler::initialize()
     if (isInitialized())
         return;
 
-    m_stereoPanner = Spatializer::create(Spatializer::PanningModelEqualPower, sampleRate());
+    m_stereoPanner = StereoPanner::create(sampleRate());
 
     AudioHandler::initialize();
 }
