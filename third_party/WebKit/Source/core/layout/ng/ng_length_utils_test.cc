@@ -23,8 +23,8 @@ class NGLengthUtilsTest : public ::testing::Test {
   static NGConstraintSpace constructConstraintSpace(int inline_size,
                                                     int block_size) {
     NGLogicalSize container_size;
-    container_size.inlineSize = LayoutUnit(inline_size);
-    container_size.blockSize = LayoutUnit(block_size);
+    container_size.inline_size = LayoutUnit(inline_size);
+    container_size.block_size = LayoutUnit(block_size);
     return NGConstraintSpace(container_size);
   }
 
@@ -184,10 +184,10 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGBoxMargins margins = computeMargins(constraintSpace, *style_);
 
-  EXPECT_EQ(LayoutUnit(20), margins.blockStart);
-  EXPECT_EQ(LayoutUnit(52), margins.inlineEnd);
-  EXPECT_EQ(LayoutUnit(), margins.blockEnd);
-  EXPECT_EQ(LayoutUnit(22), margins.inlineStart);
+  EXPECT_EQ(LayoutUnit(20), margins.block_start);
+  EXPECT_EQ(LayoutUnit(52), margins.inline_end);
+  EXPECT_EQ(LayoutUnit(), margins.block_end);
+  EXPECT_EQ(LayoutUnit(22), margins.inline_start);
 }
 
 }  // namespace

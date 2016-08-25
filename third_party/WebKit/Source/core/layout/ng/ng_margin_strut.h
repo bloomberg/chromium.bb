@@ -12,22 +12,22 @@ namespace blink {
 
 // Stores the four margins of a box
 struct NGBoxMargins {
-  LayoutUnit inlineStart;
-  LayoutUnit inlineEnd;
-  LayoutUnit blockStart;
-  LayoutUnit blockEnd;
+  LayoutUnit inline_start;
+  LayoutUnit inline_end;
+  LayoutUnit block_start;
+  LayoutUnit block_end;
 
-  LayoutUnit inlineSum() const { return inlineStart + inlineEnd; }
-  LayoutUnit blockSum() const { return blockStart + blockEnd; }
+  LayoutUnit InlineSum() const { return inline_start + inline_end; }
+  LayoutUnit BlockSum() const { return block_start + block_end; }
 };
 
 // This struct is used for the margin collapsing calculation.
 struct NGMarginStrut {
-  LayoutUnit marginBlockStart;
-  LayoutUnit marginBlockEnd;
+  LayoutUnit margin_block_start;
+  LayoutUnit margin_block_end;
 
-  LayoutUnit negativeMarginBlockStart;
-  LayoutUnit negativeMarginBlockEnd;
+  LayoutUnit negative_margin_block_start;
+  LayoutUnit negative_margin_block_end;
 };
 
 }  // namespace blink

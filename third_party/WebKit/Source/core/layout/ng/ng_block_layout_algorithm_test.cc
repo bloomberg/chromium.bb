@@ -26,8 +26,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   style_->setHeight(Length(40, Fixed));
 
   NGLogicalSize container_size;
-  container_size.inlineSize = LayoutUnit(100);
-  container_size.blockSize = NGSizeIndefinite;
+  container_size.inline_size = LayoutUnit(100);
+  container_size.block_size = NGSizeIndefinite;
   NGConstraintSpace space(container_size);
 
   NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));

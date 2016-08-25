@@ -23,22 +23,22 @@ NGFragmentBuilder& NGFragmentBuilder::SetDirection(NGDirection direction) {
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetInlineSize(LayoutUnit size) {
-  size_.inlineSize = size;
+  size_.inline_size = size;
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetBlockSize(LayoutUnit size) {
-  size_.blockSize = size;
+  size_.block_size = size;
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetInlineOverflow(LayoutUnit size) {
-  overflow_.inlineSize = size;
+  overflow_.inline_size = size;
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
-  overflow_.blockSize = size;
+  overflow_.block_size = size;
   return *this;
 }
 

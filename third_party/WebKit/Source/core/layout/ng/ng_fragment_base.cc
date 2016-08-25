@@ -24,8 +24,8 @@ void NGFragmentBase::SetOffset(LayoutUnit inline_offset,
                                LayoutUnit block_offset) {
   // setOffset should only be called once.
   DCHECK(!has_been_placed_);
-  offset_.inlineOffset = inline_offset;
-  offset_.blockOffset = block_offset;
+  offset_.inline_offset = inline_offset;
+  offset_.block_offset = block_offset;
   has_been_placed_ = true;
 }
 

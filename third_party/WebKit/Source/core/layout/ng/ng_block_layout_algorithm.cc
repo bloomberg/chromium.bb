@@ -17,43 +17,43 @@ namespace blink {
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGBoxIterator boxIterator)
-    : m_style(style), m_boxIterator(boxIterator) {}
+    NGBoxIterator box_iterator)
+    : m_style(style), m_boxIterator(box_iterator) {}
 
 NGFragment* NGBlockLayoutAlgorithm::layout(
-    const NGConstraintSpace& constraintSpace) {
-  LayoutUnit inlineSize =
-      computeInlineSizeForFragment(constraintSpace, *m_style);
+    const NGConstraintSpace& constraint_space) {
+  LayoutUnit inline_size =
+      computeInlineSizeForFragment(constraint_space, *m_style);
   // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
-  LayoutUnit blockSize =
-      computeBlockSizeForFragment(constraintSpace, *m_style, LayoutUnit(-1));
+  LayoutUnit block_size =
+      computeBlockSizeForFragment(constraint_space, *m_style, LayoutUnit(-1));
   NGConstraintSpace constraint_space_for_children(
-      constraintSpace, NGLogicalSize(inlineSize, blockSize));
+      constraint_space, NGLogicalSize(inline_size, block_size));
 
   NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
-  builder.SetInlineSize(inlineSize).SetBlockSize(blockSize);
+  builder.SetInlineSize(inline_size).SetBlockSize(block_size);
 
-  LayoutUnit contentSize;
+  LayoutUnit content_size;
   for (NGBox box : m_boxIterator) {
-    NGBoxMargins childMargins =
+    NGBoxMargins child_margins =
         computeMargins(constraint_space_for_children, *box.style());
     NGFragment* fragment = box.layout(constraint_space_for_children);
     // TODO(layout-ng): Support auto margins
-    fragment->SetOffset(childMargins.inlineStart,
-                        contentSize + childMargins.blockStart);
+    fragment->SetOffset(child_margins.inline_start,
+                        content_size + child_margins.block_start);
     box.positionUpdated(*fragment);
-    contentSize += fragment->BlockSize() + childMargins.blockSum();
+    content_size += fragment->BlockSize() + child_margins.BlockSum();
     builder.AddChild(fragment);
   }
 
   // Recompute the block-axis size now that we know our content size.
-  blockSize =
-      computeBlockSizeForFragment(constraintSpace, *m_style, contentSize);
+  block_size =
+      computeBlockSizeForFragment(constraint_space, *m_style, content_size);
   // TODO(layout-ng): Compute correct inline overflow (block overflow should be
   // correct)
-  builder.SetBlockSize(blockSize)
-      .SetInlineOverflow(inlineSize)
-      .SetBlockOverflow(contentSize);
+  builder.SetBlockSize(block_size)
+      .SetInlineOverflow(inline_size)
+      .SetBlockOverflow(content_size);
   return builder.ToFragment();
 }
 

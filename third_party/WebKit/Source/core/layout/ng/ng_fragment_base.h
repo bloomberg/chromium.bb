@@ -24,16 +24,16 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   NGDirection Direction() const { return static_cast<NGDirection>(direction_); }
 
   // Returns the border-box size.
-  LayoutUnit InlineSize() const { return size_.inlineSize; }
-  LayoutUnit BlockSize() const { return size_.blockSize; }
+  LayoutUnit InlineSize() const { return size_.inline_size; }
+  LayoutUnit BlockSize() const { return size_.block_size; }
 
   // Returns the total size, including the contents outside of the border-box.
-  LayoutUnit InlineOverflow() const { return overflow_.inlineSize; }
-  LayoutUnit BlockOverflow() const { return overflow_.blockSize; }
+  LayoutUnit InlineOverflow() const { return overflow_.inline_size; }
+  LayoutUnit BlockOverflow() const { return overflow_.block_size; }
 
   // Returns the offset relative to the parent fragement's content-box.
-  LayoutUnit InlineOffset() const { return offset_.inlineOffset; }
-  LayoutUnit BlockOffset() const { return offset_.blockOffset; }
+  LayoutUnit InlineOffset() const { return offset_.inline_offset; }
+  LayoutUnit BlockOffset() const { return offset_.block_offset; }
 
   // Should only be used by the parent fragement's layout.
   void SetOffset(LayoutUnit inline_offset, LayoutUnit block_offset);

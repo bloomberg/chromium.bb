@@ -21,7 +21,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
                                LengthResolveType type) {
   // TODO(layout-ng): Handle min/max/fit-content
   DCHECK(!length.isMaxSizeNone());
-  DCHECK_GE(constraintSpace.ContainerSize().inlineSize, LayoutUnit());
+  DCHECK_GE(constraintSpace.ContainerSize().inline_size, LayoutUnit());
 
   if (type == LengthResolveType::MinSize && length.isAuto())
     return LayoutUnit();
@@ -29,7 +29,7 @@ LayoutUnit resolveInlineLength(const NGConstraintSpace& constraintSpace,
   if (type == LengthResolveType::MarginSize && length.isAuto())
     return LayoutUnit();
 
-  return valueForLength(length, constraintSpace.ContainerSize().inlineSize);
+  return valueForLength(length, constraintSpace.ContainerSize().inline_size);
 }
 
 LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
@@ -51,17 +51,17 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
   // Make sure that indefinite percentages resolve to NGSizeIndefinite, not to
   // a random negative number.
   if (length.hasPercent() &&
-      constraintSpace.ContainerSize().blockSize == NGSizeIndefinite)
+      constraintSpace.ContainerSize().block_size == NGSizeIndefinite)
     return contentSize;
 
-  return valueForLength(length, constraintSpace.ContainerSize().blockSize);
+  return valueForLength(length, constraintSpace.ContainerSize().block_size);
 }
 
 LayoutUnit computeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
   if (constraintSpace.fixedInlineSize())
-    return constraintSpace.ContainerSize().inlineSize;
+    return constraintSpace.ContainerSize().inline_size;
 
   LayoutUnit extent = resolveInlineLength(constraintSpace, style.logicalWidth(),
                                           LengthResolveType::ContentSize);
@@ -88,7 +88,7 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
                                        LayoutUnit contentSize) {
   if (constraintSpace.fixedBlockSize())
-    return constraintSpace.ContainerSize().blockSize;
+    return constraintSpace.ContainerSize().block_size;
 
   LayoutUnit extent =
       resolveBlockLength(constraintSpace, style.logicalHeight(), contentSize,
@@ -121,14 +121,14 @@ NGBoxMargins computeMargins(const NGConstraintSpace& constraintSpace,
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
   NGBoxMargins margins;
-  margins.inlineStart = resolveInlineLength(
+  margins.inline_start = resolveInlineLength(
       constraintSpace, style.marginStart(), LengthResolveType::MarginSize);
-  margins.inlineEnd = resolveInlineLength(constraintSpace, style.marginEnd(),
-                                          LengthResolveType::MarginSize);
-  margins.blockStart = resolveInlineLength(
+  margins.inline_end = resolveInlineLength(constraintSpace, style.marginEnd(),
+                                           LengthResolveType::MarginSize);
+  margins.block_start = resolveInlineLength(
       constraintSpace, style.marginBefore(), LengthResolveType::MarginSize);
-  margins.blockEnd = resolveInlineLength(constraintSpace, style.marginAfter(),
-                                         LengthResolveType::MarginSize);
+  margins.block_end = resolveInlineLength(constraintSpace, style.marginAfter(),
+                                          LengthResolveType::MarginSize);
   return margins;
 }
 

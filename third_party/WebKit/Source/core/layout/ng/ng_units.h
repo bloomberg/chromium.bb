@@ -13,16 +13,16 @@ class LayoutUnit;
 
 struct NGLogicalSize {
   NGLogicalSize() {}
-  NGLogicalSize(LayoutUnit inlineSize, LayoutUnit blockSize)
-      : inlineSize(inlineSize), blockSize(blockSize) {}
+  NGLogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
+      : inline_size(inline_size), block_size(block_size) {}
 
-  LayoutUnit inlineSize;
-  LayoutUnit blockSize;
+  LayoutUnit inline_size;
+  LayoutUnit block_size;
 };
 
 struct NGLogicalOffset {
-  LayoutUnit inlineOffset;
-  LayoutUnit blockOffset;
+  LayoutUnit inline_offset;
+  LayoutUnit block_offset;
 };
 
 struct NGPhysicalSize {

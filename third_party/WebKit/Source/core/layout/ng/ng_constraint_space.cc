@@ -41,8 +41,8 @@ NGConstraintSpace NGConstraintSpace::fromLayoutObject(const LayoutBox& child) {
     fixedBlock = true;
   }
   NGLogicalSize size;
-  size.inlineSize = container_logical_width;
-  size.blockSize = container_logical_height;
+  size.inline_size = container_logical_width;
+  size.block_size = container_logical_height;
   NGConstraintSpace space(size);
   space.setOverflowTriggersScrollbar(
       child.styleRef().overflowInlineDirection() == OverflowAuto,

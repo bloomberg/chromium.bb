@@ -32,9 +32,9 @@ NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
     // TODO(layout-ng): If fixedSize is true, set the override width/height too
     NGLogicalSize containerSize = constraintSpace.ContainerSize();
     m_layoutBox->setOverrideContainingBlockContentLogicalWidth(
-        containerSize.inlineSize);
+        containerSize.inline_size);
     m_layoutBox->setOverrideContainingBlockContentLogicalHeight(
-        containerSize.blockSize);
+        containerSize.block_size);
     if (m_layoutBox->isLayoutNGBlockFlow() && m_layoutBox->needsLayout()) {
       toLayoutNGBlockFlow(m_layoutBox)->LayoutBlockFlow::layoutBlock(true);
     } else {
