@@ -70,7 +70,11 @@ public:
     void select(NeedToDispatchSelectEvent = DispatchSelectEvent);
     virtual void setRangeText(const String& replacement, ExceptionState&);
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
-    void setSelectionRange(int start, int end, const String& direction);
+    // Web-exposed setSelectionRange() function. This translates "none"
+    // direction to "forward" if necessary.
+    void setSelectionRangeForBinding(int start, int end, const String& direction = "none");
+    // Blink-internal version of setSelectionRange(). This never translates
+    // "none" direction.
     void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent);
     Range* selection() const;
 

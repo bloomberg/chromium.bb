@@ -64,6 +64,7 @@ interface HTMLTextAreaElement : HTMLElement {
                                         optional SelectionMode selectionMode = "preserve");
     // TODO(foolip): The start and end arguments should be unsigned long and
     // should not be optional.
+    [ImplementedAs=setSelectionRangeForBinding]
     void setSelectionRange([Default=Undefined] optional long start,
                            [Default=Undefined] optional long end,
                            optional DOMString direction);

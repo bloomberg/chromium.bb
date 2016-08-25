@@ -13,7 +13,7 @@ PASS input direction of setSelectionRange(0,1,"forward")
 FAIL input direction of setSelectionRange(0,1,"none") assert_equals: The direction of the selection must be set to forward if direction is a case-sensitive match for the string "none" expected "none" but got "forward"
 FAIL input direction of setSelectionRange(0,1,"hoge") assert_equals: otherwise expected "none" but got "forward"
 FAIL input direction of setSelectionRange(0,1,"BACKWARD") assert_equals: selectionDirection should be 'none' expected "none" but got "forward"
-PASS input direction of setSelectionRange(0,1) 
+FAIL input direction of setSelectionRange(0,1) assert_equals: if the argument is omitted expected "none" but got "forward"
 FAIL input setSelectionRange(1,-1) assert_equals: element.selectionStart should be 1 expected 1 but got 0
 FAIL input setSelectionRange(-1,1) assert_equals: ECMAScript conversion to unsigned long + if end is less than or equal to start then the start of the selection and the end of the selection must both be placed immediately before the character with offset end expected 1 but got 0
 PASS input setSelectionRange("string",1) 
@@ -36,7 +36,7 @@ PASS textarea direction of setSelectionRange(0,1,"forward")
 FAIL textarea direction of setSelectionRange(0,1,"none") assert_equals: The direction of the selection must be set to forward if direction is a case-sensitive match for the string "none" expected "none" but got "forward"
 FAIL textarea direction of setSelectionRange(0,1,"hoge") assert_equals: otherwise expected "none" but got "forward"
 FAIL textarea direction of setSelectionRange(0,1,"BACKWARD") assert_equals: selectionDirection should be 'none' expected "none" but got "forward"
-PASS textarea direction of setSelectionRange(0,1) 
+FAIL textarea direction of setSelectionRange(0,1) assert_equals: if the argument is omitted expected "none" but got "forward"
 PASS textarea setSelectionRange("string",1) 
 PASS textarea setSelectionRange(true,1) 
 PASS textarea setSelectionRange([],1) 

@@ -174,17 +174,17 @@ void HTMLTextFormControlElement::updatePlaceholderVisibility()
 
 void HTMLTextFormControlElement::setSelectionStart(int start)
 {
-    setSelectionRange(start, std::max(start, selectionEnd()), selectionDirection());
+    setSelectionRangeForBinding(start, std::max(start, selectionEnd()), selectionDirection());
 }
 
 void HTMLTextFormControlElement::setSelectionEnd(int end)
 {
-    setSelectionRange(std::min(end, selectionStart()), end, selectionDirection());
+    setSelectionRangeForBinding(std::min(end, selectionStart()), end, selectionDirection());
 }
 
 void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 {
-    setSelectionRange(selectionStart(), selectionEnd(), direction);
+    setSelectionRangeForBinding(selectionStart(), selectionEnd(), direction);
 }
 
 void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
@@ -263,7 +263,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
     setSelectionRange(newSelectionStart, newSelectionEnd, SelectionHasNoDirection);
 }
 
-void HTMLTextFormControlElement::setSelectionRange(int start, int end, const String& directionString)
+void HTMLTextFormControlElement::setSelectionRangeForBinding(int start, int end, const String& directionString)
 {
     TextFieldSelectionDirection direction = SelectionHasNoDirection;
     if (directionString == "forward")
