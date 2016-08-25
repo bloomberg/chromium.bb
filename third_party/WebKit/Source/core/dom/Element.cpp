@@ -534,7 +534,7 @@ void Element::callDistributeScroll(ScrollState& scrollState)
     // allow the viewport scroll callback so we don't disable overscroll.
     // crbug.com/623079.
     bool disableCustomCallbacks = !scrollState.isDirectManipulation()
-        && !document().isViewportScrollCallback(callback);
+        && !document().rootScrollerController()->isViewportScrollCallback(callback);
 
     if (!callback || disableCustomCallbacks) {
         nativeDistributeScroll(scrollState);
@@ -612,7 +612,7 @@ void Element::callApplyScroll(ScrollState& scrollState)
     // allow the viewport scroll callback so we don't disable overscroll.
     // crbug.com/623079.
     bool disableCustomCallbacks = !scrollState.isDirectManipulation()
-        && !document().isViewportScrollCallback(callback);
+        && !document().rootScrollerController()->isViewportScrollCallback(callback);
 
     if (!callback || disableCustomCallbacks) {
         nativeApplyScroll(scrollState);

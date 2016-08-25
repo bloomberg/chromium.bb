@@ -21,6 +21,8 @@
 
 namespace blink {
 
+class RootFrameViewport;
+
 namespace {
 
 ScrollableArea* scrollableAreaFor(const Element& element)
@@ -91,6 +93,7 @@ DEFINE_TRACE(RootScrollerController)
     visitor->trace(m_viewportApplyScroll);
     visitor->trace(m_rootScroller);
     visitor->trace(m_effectiveRootScroller);
+    visitor->trace(m_currentViewportApplyScrollHost);
 }
 
 void RootScrollerController::set(Element* newRootScroller)
@@ -114,12 +117,6 @@ void RootScrollerController::didUpdateLayout()
     updateEffectiveRootScroller();
 }
 
-void RootScrollerController::setViewportScrollCallback(ViewportScrollCallback* callback)
-{
-    m_viewportApplyScroll = callback;
-    moveViewportApplyScroll(m_effectiveRootScroller);
-}
-
 void RootScrollerController::updateEffectiveRootScroller()
 {
     bool rootScrollerValid =
@@ -132,44 +129,73 @@ void RootScrollerController::updateEffectiveRootScroller()
     if (m_effectiveRootScroller == newEffectiveRootScroller)
         return;
 
-    if (moveViewportApplyScroll(newEffectiveRootScroller))
-        m_effectiveRootScroller = newEffectiveRootScroller;
+    m_effectiveRootScroller = newEffectiveRootScroller;
+
+    if (m_document->isInMainFrame())
+        setViewportApplyScrollOnRootScroller();
 }
 
-bool RootScrollerController::moveViewportApplyScroll(Element* target)
+void RootScrollerController::setViewportApplyScrollOnRootScroller()
 {
-    if (!m_viewportApplyScroll || !target)
-        return false;
+    DCHECK(m_document->isInMainFrame());
 
-    ScrollableArea* targetScroller = scrollableAreaFor(*target);
+    if (!m_viewportApplyScroll || !m_effectiveRootScroller)
+        return;
+
+    ScrollableArea* targetScroller =
+        scrollableAreaFor(*m_effectiveRootScroller);
+
     if (!targetScroller)
-        return false;
+        return;
 
-    if (m_effectiveRootScroller)
-        m_effectiveRootScroller->removeApplyScroll();
+    if (m_currentViewportApplyScrollHost)
+        m_currentViewportApplyScrollHost->removeApplyScroll();
 
     // Use disable-native-scroll since the ViewportScrollCallback needs to
     // apply scroll actions both before (TopControls) and after (overscroll)
     // scrolling the element so it will apply scroll to the element itself.
-    target->setApplyScroll(m_viewportApplyScroll, "disable-native-scroll");
+    m_effectiveRootScroller->setApplyScroll(
+        m_viewportApplyScroll, "disable-native-scroll");
+
+    m_currentViewportApplyScrollHost = m_effectiveRootScroller;
 
     // Ideally, scroll customization would pass the current element to scroll to
     // the apply scroll callback but this doesn't happen today so we set it
     // through a back door here. This is also needed by the
-    // RootViewportScrollCallback to swap the target into the layout viewport
+    // ViewportScrollCallback to swap the target into the layout viewport
     // in RootFrameViewport.
     m_viewportApplyScroll->setScroller(targetScroller);
-
-    return true;
 }
 
 void RootScrollerController::didUpdateCompositing()
 {
-    FrameHost& frameHost = *m_document->frameHost();
+    FrameHost* frameHost = m_document->frameHost();
 
     // Let the compositor-side counterpart know about this change.
-    if (m_document->isInMainFrame())
-        frameHost.chromeClient().registerViewportLayers();
+    if (frameHost && m_document->isInMainFrame())
+        frameHost->chromeClient().registerViewportLayers();
+}
+
+void RootScrollerController::didAttachDocument()
+{
+    if (!m_document->isInMainFrame())
+        return;
+
+    FrameHost* frameHost = m_document->frameHost();
+    FrameView* frameView = m_document->view();
+
+    if (!frameHost || !frameView)
+        return;
+
+    RootFrameViewport* rootFrameViewport = frameView->getRootFrameViewport();
+    DCHECK(rootFrameViewport);
+
+    m_viewportApplyScroll = ViewportScrollCallback::create(
+        &frameHost->topControls(),
+        &frameHost->overscrollController(),
+        *rootFrameViewport);
+
+    updateEffectiveRootScroller();
 }
 
 GraphicsLayer* RootScrollerController::rootScrollerLayer()
@@ -189,6 +215,15 @@ GraphicsLayer* RootScrollerController::rootScrollerLayer()
     // the root scroller gets composited.
 
     return graphicsLayer;
+}
+
+bool RootScrollerController::isViewportScrollCallback(
+    const ScrollStateCallback* callback) const
+{
+    if (!callback)
+        return false;
+
+    return callback == m_viewportApplyScroll.get();
 }
 
 Element* RootScrollerController::defaultEffectiveRootScroller()

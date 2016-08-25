@@ -203,12 +203,11 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/scrolling/ChildViewportScrollCallback.h"
 #include "core/page/scrolling/RootScrollerController.h"
-#include "core/page/scrolling/RootViewportScrollCallback.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
+#include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
@@ -604,22 +603,9 @@ void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionSt
     m_rootScrollerController->set(newScroller);
 }
 
-void Document::initializeRootScroller(ViewportScrollCallback* callback)
-{
-    m_rootScrollerController->setViewportScrollCallback(callback);
-}
-
 Element* Document::rootScroller() const
 {
     return m_rootScrollerController->get();
-}
-
-bool Document::isViewportScrollCallback(const ScrollStateCallback* callback)
-{
-    if (!callback)
-        return false;
-
-    return callback == m_rootScrollerController->viewportScrollCallback();
 }
 
 bool Document::isInMainFrame() const
@@ -2144,6 +2130,9 @@ void Document::attachLayoutTree(const AttachContext& context)
 
     if (view())
         view()->didAttachDocument();
+
+    // Needs to be called after view()->didAttachDocument().
+    m_rootScrollerController->didAttachDocument();
 }
 
 void Document::detachLayoutTree(const AttachContext& context)

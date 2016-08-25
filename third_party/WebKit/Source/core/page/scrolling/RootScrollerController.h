@@ -13,6 +13,7 @@ namespace blink {
 class Document;
 class Element;
 class GraphicsLayer;
+class ScrollStateCallback;
 class ViewportScrollCallback;
 
 // Manages the root scroller associated with a given document. The root scroller
@@ -75,17 +76,16 @@ public:
     // update the compositor when the effective root scroller changes.
     void didUpdateCompositing();
 
+    // This class needs to be informed when the document has been attached to a
+    // FrameView so that we can initialize the viewport scroll callback.
+    void didAttachDocument();
+
     GraphicsLayer* rootScrollerLayer();
 
-    // TODO(bokan): Temporarily exposed to allow ScrollCustomization to
+    // TODO(bokan): Temporarily needed to allow ScrollCustomization to
     // differentiate between real custom callback and the built-in viewport
     // apply scroll.
-    const ViewportScrollCallback* viewportScrollCallback()
-    {
-        return m_viewportApplyScroll;
-    }
-
-    void setViewportScrollCallback(ViewportScrollCallback*);
+    bool isViewportScrollCallback(const ScrollStateCallback*) const;
 
 private:
     RootScrollerController(Document&);
@@ -96,8 +96,10 @@ private:
     // with the default if not.
     void updateEffectiveRootScroller();
 
-    // Returns true if the move was successful.
-    bool moveViewportApplyScroll(Element* target);
+    // Called only from the top Document's RootScrollerController. Ensures that
+    // the element that should be used as the root scroller on the page has the
+    // m_viewportApplyScroll callback set on it.
+    void setViewportApplyScrollOnRootScroller();
 
     WeakMember<Document> m_document;
     Member<ViewportScrollCallback> m_viewportApplyScroll;
@@ -110,6 +112,10 @@ private:
     // initialization and will not be set until m_viewportApplyScroll is
     // provided.
     WeakMember<Element> m_effectiveRootScroller;
+
+    // Tracks which element currently has the m_viewportApplyScroll set to it.
+    // This will only ever be set on the top Document's RootScrollerController.
+    WeakMember<Element> m_currentViewportApplyScrollHost;
 };
 
 } // namespace blink

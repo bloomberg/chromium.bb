@@ -11,34 +11,58 @@
 
 namespace blink {
 
+class FloatSize;
 class ScrollableArea;
 class ScrollState;
+class TopControls;
+class OverscrollController;
+class RootFrameViewport;
 
-// ViewportScrollCallback is an interface that's used by the
-// RootScrollerController to apply scrolls to the designated rootScroller
-// element. It is a ScrollStateCallback, meaning that it's applied during the
-// applyScroll step of ScrollCustomization and child classes must implement
-// handleEvent in order to actually do the scrolling as well as any possible
-// associated actions.
+// ViewportScrollCallback is a ScrollStateCallback, meaning that it's applied
+// during the applyScroll step of ScrollCustomization. It implements viewport
+// actions like moving top controls and showing overscroll glow as well as
+// scrolling the Element.
 //
 // ScrollCustomization generally relies on using the nativeApplyScroll to
 // scroll the element; however, the rootScroller may need to execute actions
 // both before and after the native scroll which is currently unsupported.
 // Because of this, the ViewportScrollCallback can scroll the Element directly.
-// This is accomplished by descendant classes implementing the setScroller
-// method which RootScrollerController will call to fill the callback with the
-// appropriate ScrollableArea to use.
+// This is accomplished by passing the ScrollableArea directly using
+// setScroller() which RootScrollerController will call to set the appropriate
+// ScrollableArea to use.
 class ViewportScrollCallback : public ScrollStateCallback {
 public:
-    virtual ~ViewportScrollCallback() {}
-
-    virtual void setScroller(ScrollableArea*) = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {
-        ScrollStateCallback::trace(visitor);
+    // The TopControls and OverscrollController are given to the
+    // ViewportScrollCallback but are not owned or kept alive by it.
+    static ViewportScrollCallback* create(
+        TopControls* topControls,
+        OverscrollController* overscrollController,
+        RootFrameViewport& rootFrameViewport)
+    {
+        return new ViewportScrollCallback(
+            topControls, overscrollController, rootFrameViewport);
     }
-protected:
-    ScrollResult performNativeScroll(ScrollState&, ScrollableArea&);
+
+    virtual ~ViewportScrollCallback();
+
+    void handleEvent(ScrollState*) override;
+    void setScroller(ScrollableArea*);
+
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    // ViewportScrollCallback does not assume ownership of TopControls or of
+    // OverscrollController.
+    ViewportScrollCallback(TopControls*, OverscrollController*, RootFrameViewport&);
+
+    bool shouldScrollTopControls(const FloatSize&, ScrollGranularity) const;
+    bool scrollTopControls(ScrollState&);
+
+    ScrollResult performNativeScroll(ScrollState&);
+
+    WeakMember<TopControls> m_topControls;
+    WeakMember<OverscrollController> m_overscrollController;
+    WeakMember<RootFrameViewport> m_rootFrameViewport;
 };
 
 } // namespace blink

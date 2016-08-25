@@ -168,7 +168,6 @@ class Touch;
 class TouchList;
 class TransformSource;
 class TreeWalker;
-class ViewportScrollCallback;
 class VisitedLinkState;
 class VisualViewport;
 class WebGLRenderingContext;
@@ -1089,14 +1088,9 @@ public:
 
     bool containsV1ShadowTree() const { return m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV1; }
 
-    void initializeRootScroller(ViewportScrollCallback*);
     Element* rootScroller() const;
     void setRootScroller(Element*, ExceptionState&);
     RootScrollerController* rootScrollerController() const { return m_rootScrollerController.get(); }
-
-    // TODO(bokan): Temporarily added to allow ScrollCustomization to properly
-    // opt out for wheel scrolls. crbug.com/623079.
-    bool isViewportScrollCallback(const ScrollStateCallback*);
 
     bool isInMainFrame() const;
 
