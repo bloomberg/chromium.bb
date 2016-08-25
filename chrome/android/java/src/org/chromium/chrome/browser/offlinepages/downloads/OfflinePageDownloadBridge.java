@@ -178,12 +178,12 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
      */
     @Override
     public void openItem(String guid, @Nullable ComponentName componentName) {
-        String url = nativeGetOfflineUrlByGuid(mNativeOfflinePageDownloadBridge, guid);
-        if (url == null) return;
+        OfflinePageDownloadItem item = getItem(guid);
+        if (item == null) return;
 
-        LoadUrlParams params = new LoadUrlParams(url);
+        LoadUrlParams params = new LoadUrlParams(item.getUrl());
         Map<String, String> headers = new HashMap<String, String>();
-        headers.put("X-chromium-offline", "reason=download");
+        headers.put("X-Chrome-offline", "reason=download");
         params.setExtraHeaders(headers);
         AsyncTabCreationParams asyncParams = componentName == null
                 ? new AsyncTabCreationParams(params)

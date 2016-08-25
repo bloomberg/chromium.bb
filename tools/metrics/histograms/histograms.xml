@@ -37306,6 +37306,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.AggregatedRequestResult"
+    enum="OfflinePagesAggregatedRequestResult">
+  <owner>dimich@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>Result of servicing requests that may contain offline page.</summary>
+</histogram>
+
 <histogram name="OfflinePages.Background.OfflinerRequestStatus"
     enum="OfflinePagesBackgroundOfflinerRequestStatus">
   <owner>dougarnett@chromium.org</owner>
@@ -37613,6 +37620,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.RedirectResult" enum="OfflinePagesRedirectResult">
+  <obsolete>
+    Deprecated 8/2016. Use OfflinePages.RequestResult instead.
+  </obsolete>
   <owner>dimich@chromium.org</owner>
   <summary>
     Result of automatic redirect to offline version of the page or back. Emitted
@@ -87834,6 +87844,21 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Account was not seeded before FireRefreshTokenAvailable"/>
 </enum>
 
+<enum name="OfflinePagesAggregatedRequestResult" type="int">
+  <int value="0" label="Show offline page on disconnected network"/>
+  <int value="1" label="Page not found on disconnected network"/>
+  <int value="2" label="Show offline page on flaky network"/>
+  <int value="3" label="Page not found on flaky network"/>
+  <int value="4" label="Show offline page on prohibitively slow network"/>
+  <int value="5" label="Page not found on prohibitively slow network"/>
+  <int value="6" label="Page not fresh on prohibitively slow network"/>
+  <int value="7" label="Show offline page on disconnected network"/>
+  <int value="8" label="Page not found on disconnected network"/>
+  <int value="9" label="Android Tab does not have persistent ID"/>
+  <int value="10" label="No web contents"/>
+  <int value="11" label="Unknown net error, showing error page"/>
+</enum>
+
 <enum name="OfflinePagesBackgroundOfflinerRequestStatus" type="int">
 <!-- Generated from components/offline_pages/background/offliner.h -->
 
@@ -87877,6 +87902,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="OfflinePagesRedirectResult" type="int">
+  <obsolete>
+    Deprecated 2016-08.
+  </obsolete>
   <int value="0" label="Redirected on disconnected network"/>
   <int value="1" label="Page not found on disconnected network"/>
   <int value="2" label="Redirected on flaky network"/>

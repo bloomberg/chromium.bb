@@ -902,7 +902,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 mUrlBar.setUrl("", null);
             } else {
                 mUrlBar.setUrl(
-                        mToolbarDataProvider.getText(), getOnlineUrlFromTab());
+                        mToolbarDataProvider.getText(), getCurrentTabUrl());
             }
         }
     }
@@ -2024,7 +2024,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     @Override
     public void setUrlToPageUrl() {
-        String url = getOnlineUrlFromTab();
+        String url = getCurrentTabUrl();
 
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
@@ -2064,16 +2064,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         updateCustomSelectionActionModeCallback();
     }
 
-    /**
-     * Gets the URL of the web page in the tab. When displaying offline page it gets the URL of the
-     * original page.
-     */
-    private String getOnlineUrlFromTab() {
+    /** Gets the URL of the web page in the tab. */
+    private String getCurrentTabUrl() {
         Tab currentTab = getCurrentTab();
         if (currentTab == null) return "";
-        if (currentTab.isOfflinePage()) {
-            return currentTab.getOriginalUrl().trim();
-        }
         return currentTab.getUrl().trim();
     }
 
@@ -2095,7 +2089,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         // AutocompleteResults needed by onSuggestionsSelected. Therefore,
         // loadUrl should should be invoked last.
         Tab currentTab = getCurrentTab();
-        String currentPageUrl = currentTab != null ? currentTab.getUrl() : "";
+        String currentPageUrl = getCurrentTabUrl();
         WebContents webContents = currentTab != null ? currentTab.getWebContents() : null;
         long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
                 ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;

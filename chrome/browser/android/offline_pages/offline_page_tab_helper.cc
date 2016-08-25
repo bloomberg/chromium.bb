@@ -7,86 +7,29 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/offline_page_request_job.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
-#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_model.h"
-#include "components/previews/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/net_errors.h"
-#include "net/base/network_change_notifier.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinePageTabHelper);
 
 namespace offline_pages {
-namespace {
-
-void ReportAccessedOfflinePage(content::BrowserContext* browser_context,
-                               const GURL& navigated_url,
-                               const GURL& online_url) {
-  // If there is a valid online URL for this navigated URL, then we are looking
-  // at an offline page.
-  if (online_url.is_valid())
-    OfflinePageUtils::MarkPageAccessed(browser_context, navigated_url);
-}
-
-// Whether using offline pages for slow networks is allowed and the network is
-// currently estimated to be prohibitively slow.
-bool ShouldUseOfflineForSlowNetwork(content::BrowserContext* context) {
-  if (!previews::IsOfflinePreviewsEnabled())
-    return false;
-  Profile* profile = Profile::FromBrowserContext(context);
-  UINetworkQualityEstimatorService* nqe_service =
-      UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
-  if (!nqe_service)
-    return false;
-  net::EffectiveConnectionType effective_connection_type =
-      nqe_service->GetEffectiveConnectionType();
-  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
-         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-}
-
-class DefaultDelegate : public OfflinePageTabHelper::Delegate {
- public:
-  DefaultDelegate() {}
-  // offline_pages::OfflinePageTabHelper::Delegate implementation:
-  bool GetTabId(content::WebContents* web_contents,
-                int* tab_id) const override {
-    return OfflinePageUtils::GetTabId(web_contents, tab_id);
-  }
-  base::Time Now() const override { return base::Time::Now(); }
-};
-}  // namespace
 
 OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(new DefaultDelegate()),
       is_offline_preview_(false),
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {}
-
-void OfflinePageTabHelper::SetDelegateForTesting(
-    std::unique_ptr<OfflinePageTabHelper::Delegate> delegate) {
-  DCHECK(delegate);
-  delegate_ = std::move(delegate);
-}
 
 void OfflinePageTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -99,65 +42,10 @@ void OfflinePageTabHelper::DidStartNavigation(
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Since this is a new navigation, we will reset the cached offline page,
-  // unless we are currently looking at an offline page.
-  GURL navigated_url = navigation_handle->GetURL();
-  if (offline_page_ && navigated_url != offline_page_->GetOfflineURL()) {
-    offline_page_ = nullptr;
-    is_offline_preview_ = false;
-  }
+  offline_page_ = nullptr;
+  is_offline_preview_ = false;
 
-  // If an offline download file is opened, don't do redirect per network
-  // conditions. Also store a cached copy here such that Tab knows that
-  // the offline page is opened.
-  if (OfflinePageUtils::MightBeOfflineURL(navigated_url)) {
-    OfflinePageModel* offline_page_model =
-        OfflinePageModelFactory::GetForBrowserContext(
-            web_contents()->GetBrowserContext());
-    if (offline_page_model) {
-      const OfflinePageItem* offline_page =
-          offline_page_model->MaybeGetPageByOfflineURL(navigated_url);
-      if (offline_page &&
-          (offline_page->client_id.name_space == kDownloadNamespace ||
-           offline_page->client_id.name_space == kAsyncNamespace)) {
-        offline_page_ = base::MakeUnique<OfflinePageItem>(*offline_page);
-        return;
-      }
-    }
-  }
-
-  // Ignore navigations that are forward or back transitions in the nav stack
-  // which are not at the head of the stack.
-  // TODO(dimich): Not sure this is needed. Clarify and remove. Bug 624216.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
-  if (controller.GetEntryCount() > 0 &&
-      controller.GetCurrentEntryIndex() != -1 &&
-      controller.GetCurrentEntryIndex() < controller.GetEntryCount() - 1) {
-    return;
-  }
-
-  if (net::NetworkChangeNotifier::IsOffline()) {
-    GetBestPageForRedirectToOffline(
-        RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK, navigated_url);
-    return;
-  }
-
-  content::BrowserContext* context = web_contents()->GetBrowserContext();
-  if (ShouldUseOfflineForSlowNetwork(context)) {
-    GetBestPageForRedirectToOffline(
-        RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK,
-        navigated_url);
-    return;
-  }
-
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(context);
-  if (!offline_page_model)
-    return;
-
-  offline_page_model->GetPageByOfflineURL(
-      navigated_url, base::Bind(&OfflinePageTabHelper::RedirectToOnline,
-                                weak_ptr_factory_.GetWeakPtr(), navigated_url));
+  reloading_url_on_net_error_ = false;
 }
 
 void OfflinePageTabHelper::DidFinishNavigation(
@@ -166,169 +54,76 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  GURL navigated_url = navigation_handle->GetURL();
-  net::Error error_code = navigation_handle->GetNetErrorCode();
-  content::BrowserContext* browser_context =
-      web_contents()->GetBrowserContext();
-
-  // If the offline page is being loaded successfully, set the access record but
-  // no need to do anything else.
-  if (error_code == net::OK) {
-    OfflinePageUtils::GetOnlineURLForOfflineURL(
-        browser_context, navigated_url,
-        base::Bind(&ReportAccessedOfflinePage, browser_context, navigated_url));
+  // We might be reloading the URL in order to fetch the offline page.
+  // * If successful, nothing to do.
+  // * Otherwise, we're hitting error again. Bail out to avoid loop.
+  if (reloading_url_on_net_error_)
     return;
-  }
 
-  // When the navigation starts, we redirect immediately from online page to
-  // offline version on the case that there is no network connection. If there
-  // is still network connection but with no or poor network connectivity, the
-  // navigation will eventually fail and we want to redirect to offline copy
-  // in this case. If error code doesn't match this list, then we still show
-  // the error page and not an offline page, so do nothing.
+  // When the navigation starts, the request might be intercepted to serve the
+  // offline content if the network is detected to be in disconnected or poor
+  // conditions. This detection might not work for some cases, i.e., connected
+  // to a hotspot or proxy that does not have network, and the navigation will
+  // eventually fail. To handle this, we will reload the page to force the
+  // offline interception if the error code matches the following list.
+  // Otherwise, the error page will be shown.
+  net::Error error_code = navigation_handle->GetNetErrorCode();
   if (error_code != net::ERR_INTERNET_DISCONNECTED &&
       error_code != net::ERR_NAME_NOT_RESOLVED &&
       error_code != net::ERR_ADDRESS_UNREACHABLE &&
       error_code != net::ERR_PROXY_CONNECTION_FAILED) {
-    ReportRedirectResultUMA(RedirectResult::SHOW_NET_ERROR_PAGE);
+    // Do not report aborted error since the error page is not shown on this
+    // error.
+    if (error_code != net::ERR_ABORTED) {
+      OfflinePageRequestJob::ReportAggregatedRequestResult(
+          OfflinePageRequestJob::AggregatedRequestResult::SHOW_NET_ERROR_PAGE);
+    }
     return;
   }
 
-  // Don't actually want to redirect on a forward/back nav.
-  // TODO(dimich): Clarify and possibly redirect as well. Bug 624216.
-  if (ui::PageTransitionTypeIncludingQualifiersIs(
-          navigation_handle->GetPageTransition(),
-          ui::PAGE_TRANSITION_FORWARD_BACK)) {
-    ReportRedirectResultUMA(RedirectResult::IGNORED_FLAKY_NETWORK_FORWARD_BACK);
-    return;
-  }
-
-  GetBestPageForRedirectToOffline(
-      RedirectResult::REDIRECTED_ON_FLAKY_NETWORK, navigated_url);
-}
-
-void OfflinePageTabHelper::RedirectToOnline(
-    const GURL& navigated_url,
-    const OfflinePageItem* offline_page) {
-  // Bails out if no redirection is needed. No UMA reporting since all regular
-  // navigations will be here and it'll dwarf the useful reporting.
-  if (!offline_page)
-    return;
-
-  GURL redirect_url = offline_page->url;
-  if (IsInRedirectLoop(redirect_url)) {
-    ReportRedirectResultUMA(RedirectResult::REDIRECT_LOOP_ONLINE);
-    return;
-  }
-
-  Redirect(navigated_url, redirect_url);
-  // Clear the offline page since we are redirecting to online.
-  offline_page_ = nullptr;
-  is_offline_preview_ = false;
-
-  ReportRedirectResultUMA(RedirectResult::REDIRECTED_ON_CONNECTED_NETWORK);
-}
-
-void OfflinePageTabHelper::GetBestPageForRedirectToOffline(
-    RedirectResult result, const GURL& online_url) {
   // When there is no valid tab android there is nowhere to show the offline
   // page, so we can leave.
   int tab_id;
-  if (!delegate_->GetTabId(web_contents(), &tab_id)) {
-    ReportRedirectResultUMA(RedirectResult::NO_TAB_ID);
+  if (!OfflinePageUtils::GetTabId(web_contents(), &tab_id)) {
+    // No need to report NO_TAB_ID since it should have already been detected
+    // and reported in offline page request handler.
     return;
   }
 
   OfflinePageUtils::SelectPageForOnlineURL(
       web_contents()->GetBrowserContext(),
-      online_url,
+      navigation_handle->GetURL(),
       tab_id,
       base::Bind(&OfflinePageTabHelper::SelectPageForOnlineURLDone,
-                 weak_ptr_factory_.GetWeakPtr(), result, online_url));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageTabHelper::SelectPageForOnlineURLDone(
-    RedirectResult result,
-    const GURL& online_url,
     const OfflinePageItem* offline_page) {
-  DCHECK(result == RedirectResult::REDIRECTED_ON_FLAKY_NETWORK ||
-         result == RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK ||
-         result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
-
+  // Bails out if no offline page is found.
   if (!offline_page) {
-    switch (result) {
-      case RedirectResult::REDIRECTED_ON_FLAKY_NETWORK:
-        ReportRedirectResultUMA(
-            RedirectResult::PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
-        return;
-      case RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK:
-        ReportRedirectResultUMA(
-            RedirectResult::PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
-        return;
-      case RedirectResult::REDIRECTED_ON_DISCONNECTED_NETWORK:
-        ReportRedirectResultUMA(
-            RedirectResult::PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
-        return;
-      default:
-        NOTREACHED();
-        return;
-    }
-  }
-
-  // If the page is being loaded on a slow network, only use the offline page
-  // if it was created within the past 7 days.
-  if (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK &&
-      delegate_->Now() - offline_page->creation_time >
-          base::TimeDelta::FromDays(7)) {
-    ReportRedirectResultUMA(
-        RedirectResult::PAGE_NOT_FRESH_ON_PROHIBITIVELY_SLOW_NETWORK);
+    OfflinePageRequestJob::ReportAggregatedRequestResult(
+        OfflinePageRequestJob::AggregatedRequestResult::
+            PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
     return;
   }
 
-  TryRedirectToOffline(result, online_url, *offline_page);
-}
+  reloading_url_on_net_error_ = true;
 
-void OfflinePageTabHelper::TryRedirectToOffline(
-    RedirectResult result,
-    const GURL& from_url,
-    const OfflinePageItem& offline_page) {
-  GURL redirect_url = offline_page.GetOfflineURL();
-  if (!redirect_url.is_valid())
-    return;
-
-  if (IsInRedirectLoop(redirect_url)) {
-    ReportRedirectResultUMA(RedirectResult::REDIRECT_LOOP_OFFLINE);
-    return;
-  }
-
-  Redirect(from_url, redirect_url);
-  offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
-  is_offline_preview_ =
-      (result == RedirectResult::REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK);
-  ReportRedirectResultUMA(result);
-}
-
-void OfflinePageTabHelper::Redirect(const GURL& from_url, const GURL& to_url) {
-  content::NavigationController::LoadURLParams load_params(to_url);
-  load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  load_params.redirect_chain.push_back(from_url);
+  // Reloads the page with extra header set to force loading the offline page.
+  content::NavigationController::LoadURLParams load_params(offline_page->url);
+  load_params.transition_type = ui::PAGE_TRANSITION_RELOAD;
+  load_params.extra_headers = kLoadingOfflinePageHeader;
+  load_params.extra_headers += ":";
+  load_params.extra_headers += kLoadingOfflinePageReason;
+  load_params.extra_headers += kLoadingOfflinePageDueToNetError;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
-bool OfflinePageTabHelper::IsInRedirectLoop(const GURL& to_url) const {
-  // Detects looping between online and offline redirections.
-  const content::NavigationController& controller =
-      web_contents()->GetController();
-  content::NavigationEntry* entry = controller.GetPendingEntry();
-  return entry &&
-         !entry->GetRedirectChain().empty() &&
-         entry->GetRedirectChain().back() == to_url;
-}
-
-void OfflinePageTabHelper::ReportRedirectResultUMA(RedirectResult result) {
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.RedirectResult",
-      static_cast<int>(result),
-      static_cast<int>(RedirectResult::REDIRECT_RESULT_MAX));
+void OfflinePageTabHelper::SetOfflinePage(const OfflinePageItem& offline_page,
+                                          bool is_offline_preview) {
+  offline_page_ = base::MakeUnique<OfflinePageItem>(offline_page);
+  is_offline_preview_ = is_offline_preview;
 }
 
 }  // namespace offline_pages

@@ -140,10 +140,10 @@ public class OfflinePageDownloadBridgeTest {
     @Feature({"OfflinePages"})
     public void testOpenItemByGuid() {
         OfflinePageDownloadItem item = createDownloadItem1();
-        // null as URL skips actual intent so no tabs are attempted to be created.
-        doReturn(null).when(mBridge).nativeGetOfflineUrlByGuid(anyLong(), eq(item.getGuid()));
+        // null as item skips actual intent so no tabs are attempted to be created.
+        doReturn(null).when(mBridge).nativeGetItemByGuid(anyLong(), eq(item.getGuid()));
         mBridge.openItem(item.getGuid());
-        verify(mBridge, times(1)).nativeGetOfflineUrlByGuid(eq(0L), eq(item.getGuid()));
+        verify(mBridge, times(1)).nativeGetItemByGuid(eq(0L), eq(item.getGuid()));
     }
 
     @Test

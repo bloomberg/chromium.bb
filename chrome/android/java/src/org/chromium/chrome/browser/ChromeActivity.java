@@ -89,7 +89,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
@@ -1026,21 +1025,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         ContentBitmapCallback callback = new ContentBitmapCallback() {
             @Override
             public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                // Check whether this page is an offline page, and use its online URL if so.
-                OfflinePageItem offlinePage = currentTab.getOfflinePage();
-                String onlineUrl = currentTab.getOriginalUrl();
+                boolean isOfflinePage = currentTab.isOfflinePage();
                 RecordHistogram.recordBooleanHistogram(
-                        "OfflinePages.SharedPageWasOffline", offlinePage != null);
+                        "OfflinePages.SharedPageWasOffline", isOfflinePage);
                 boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
 
                 if (canShareOfflinePage) {
                     // Share the offline page instead of the URL.
-                    boolean isOfflinePage = (offlinePage != null);
                     OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
-                            onlineUrl, bitmap, null, currentTab, isOfflinePage);
+                            currentTab.getUrl(), bitmap, null, currentTab, isOfflinePage);
                 } else {
                     ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(),
-                            null, onlineUrl, null, bitmap, null);
+                            null, currentTab.getUrl(), null, bitmap, null);
                     if (shareDirectly) {
                         RecordUserAction.record("MobileMenuDirectShare");
                     } else {

@@ -288,9 +288,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
     // Permissions available to be displayed in mPermissionsList.
     private List<PageInfoPermissionEntry> mDisplayedPermissions;
 
-    // Original URL of an offline copy, if web contents contains an offline page.
-    private String mOfflinePageOriginalUrl;
-
     // Creation date of an offline copy, if web contents contains an offline page.
     private String mOfflinePageCreationDate;
 
@@ -300,17 +297,19 @@ public class WebsiteSettingsPopup implements OnClickListener {
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
-     * @param webContents The WebContents for which to show Website information. This information is
-     *                    retrieved for the visible entry.
-     * @param publisher   The name of the content publisher, if any.
+     * @param activity                 Activity which is used for showing a popup.
+     * @param profile                  Profile of the tab that will show the popup.
+     * @param webContents              The WebContents for which to show Website information. This
+     *                                 information is retrieved for the visible entry.
+     * @param offlinePageCreationDate  Date when the offline page was created.
+     * @param publisher                The name of the content publisher, if any.
      */
     private WebsiteSettingsPopup(Activity activity, Profile profile, WebContents webContents,
-            String offlinePageOriginalUrl, String offlinePageCreationDate, String publisher) {
+            String offlinePageCreationDate, String publisher) {
         mContext = activity;
         mProfile = profile;
         mWebContents = webContents;
-        if (offlinePageOriginalUrl != null && offlinePageCreationDate != null) {
-            mOfflinePageOriginalUrl = offlinePageOriginalUrl;
+        if (offlinePageCreationDate != null) {
             mOfflinePageCreationDate = offlinePageCreationDate;
         }
         mWindowAndroid = ContentViewCore.fromWebContents(mWebContents).getWindowAndroid();
@@ -433,14 +432,12 @@ public class WebsiteSettingsPopup implements OnClickListener {
         });
 
         // Work out the URL and connection message and status visibility.
-        int statusIconVisibility = View.GONE;
+        mFullUrl = mWebContents.getVisibleUrl();
         if (isShowingOfflinePage()) {
-            mFullUrl = mOfflinePageOriginalUrl;
-            statusIconVisibility = View.VISIBLE;
-        } else {
-            mFullUrl = mWebContents.getVisibleUrl();
+            mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
         }
 
+        int statusIconVisibility = isShowingOfflinePage() ? View.VISIBLE : View.GONE;
         mContainer.findViewById(R.id.offline_icon).setVisibility(statusIconVisibility);
 
         try {
@@ -906,7 +903,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
      * Whether website dialog is displayed for an offline page.
      */
     private boolean isShowingOfflinePage() {
-        return mOfflinePageOriginalUrl != null && mOfflinePageCreationDate != null;
+        return mOfflinePageCreationDate != null;
     }
 
     /**
@@ -929,7 +926,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
             assert false : "Invalid source passed";
         }
 
-        String offlinePageOriginalUrl = null;
         String offlinePageCreationDate = null;
 
         OfflinePageItem offlinePage = tab.getOfflinePage();
@@ -938,12 +934,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
             Date creationDate = new Date(offlinePage.getCreationTimeMs());
             DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
             offlinePageCreationDate = df.format(creationDate);
-            offlinePageOriginalUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(
-                    offlinePage.getUrl());
         }
 
         new WebsiteSettingsPopup(activity, tab.getProfile(), tab.getWebContents(),
-                offlinePageOriginalUrl, offlinePageCreationDate, contentPublisher);
+                offlinePageCreationDate, contentPublisher);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);

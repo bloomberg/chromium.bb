@@ -69,7 +69,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_request_handler.h"
+#include "chrome/browser/android/offline_pages/offline_page_request_interceptor.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {
@@ -532,11 +532,9 @@ void ProfileImplIOData::InitializeInternal(
 
   // Install the Offline Page Interceptor.
 #if defined(OS_ANDROID)
-  std::unique_ptr<net::URLRequestInterceptor> offline_page_interceptor =
-      offline_pages::OfflinePageRequestHandler::CreateInterceptor(
-          profile_params->profile);
-  if (offline_page_interceptor)
-    request_interceptors.push_back(std::move(offline_page_interceptor));
+  request_interceptors.push_back(std::unique_ptr<net::URLRequestInterceptor>(
+      new offline_pages::OfflinePageRequestInterceptor(
+          profile_params->profile)));
 #endif
 
   // The data reduction proxy interceptor should be as close to the network

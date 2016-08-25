@@ -2962,12 +2962,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return Original url of the tab, if tab currently displays offline copy, would return url of
-     * the original page. Otherwise return the original url from DOMDistiller.
+     * @return Original url of the tab, which is the original url from DOMDistiller.
      */
     public String getOriginalUrl() {
-        OfflinePageItem offlinePage = getOfflinePage();
-        if (offlinePage != null) return offlinePage.getUrl();
         return DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(getUrl());
     }
 

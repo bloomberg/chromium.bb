@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.provider.Browser;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -24,6 +26,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
+
+import java.util.Map;
 
 /**
  * Asynchronously creates Tabs by creating/starting up Activities.
@@ -129,6 +133,15 @@ public class TabDelegate extends TabCreator {
             intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         } else {
             intent.setComponent(componentName);
+        }
+
+        Map<String, String> extraHeaders = asyncParams.getLoadUrlParams().getExtraHeaders();
+        if (extraHeaders != null && !extraHeaders.isEmpty()) {
+            Bundle bundle = new Bundle();
+            for (Map.Entry<String, String> header : extraHeaders.entrySet()) {
+                bundle.putString(header.getKey(), header.getValue());
+            }
+            intent.putExtra(Browser.EXTRA_HEADERS, bundle);
         }
 
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
