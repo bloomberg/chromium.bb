@@ -307,6 +307,12 @@ public class IntentHandler {
         ExternalAppId externalId = determineExternalIntentSource(mPackageName, intent);
         RecordHistogram.recordEnumeratedHistogram("MobileIntent.PageLoadDueToExternalApp",
                 externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
+        if (externalId == ExternalAppId.OTHER) {
+            String appId = IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID);
+            if (!TextUtils.isEmpty(appId)) {
+                RapporServiceBridge.sampleString("Android.PageLoadDueToExternalApp", appId);
+            }
+        }
     }
 
     /**
