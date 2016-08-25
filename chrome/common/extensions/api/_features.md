@@ -288,6 +288,78 @@ often useful to link the crbug next to the id hash, e.g.:
 Google employees: please update http://go/chrome-api-whitelist to map hashes
 back to ids.
 
+## Feature Contexts
+
+A Feature Context is the type of JavaScript context that a feature can be made
+available in. This allows us to restrict certain features to only being
+accessible in more secure contexts, or to expose features to contexts outside
+of extensions.
+
+For each of these contexts, an "extension" context can refer to a context of
+either an app or an extension.
+
+### Blessed Extension Contexts
+
+The `blessed_extension` context refers to a JavaScript context running from an
+extension process. These are typically the most secure JavaScript contexts, as
+it reduces the likelihood that a compromised web page renderer will have access
+to secure APIs.
+
+Traditionally, only pages with a top-level extension frame (with a
+`chrome-extension://` scheme), extension popups, and app windows were blessed
+extension contexts. With [site isolation](https://www.chromium.org/developers/design-documents/site-isolation),
+extension frames running in web pages are also considered blessed extension
+contexts, since they are running in the extension process (rather than in the
+same process as the web page).
+
+### Blessed Web Page Contexts
+
+The `blessed_web_page` context refers to a JavaScript context running from a
+hosted app. These are similar to blessed extension contexts in that they are
+(partially) isolated from other processes, but are typically more restricted
+than blessed extension processes, since hosted apps generally have fewer
+permissions. Note that these contexts are unaffected by the `matches` property.
+
+### Content Script Contexts
+
+The `content_script` context refers to a JavaScript context for an extension
+content script. Since content scripts share a process with (and run on the same
+content as) web pages, these are considered very insecure contexts. Very few
+features should be exposed to these contexts.
+
+### Service Worker Contexts
+
+The `extension_service_worker` context refers to a JavaScript context for an
+extension's service worker. An extension can only register a service worker for
+it's own domain, and these should only be run within an extension process. Thus,
+these have similar privilege levels to blessed extension processes.
+
+### Web Page Contexts
+
+The `web_page` context refers to a JavaScript context for a simple web page,
+completely separate from extensions. This is the least secure of all contexts,
+and very few features should be exposed to these contexts. When specifying this
+context, an accompanying URL pattern should be provided with the `matches`
+property.
+
+### WebUI Contexts
+
+The `webui` context refers to a JavaScript context for a page with WebUI
+bindings, such as internal chrome pages like chrome://settings or
+chrome://extensions. These are considered secure contexts, since they are
+an internal part of chrome. When specifying this context, an accompanying URL
+pattern should be provided with the `matches` property.
+
+### Unblessed Extension Contexts
+
+The `unblessed_extension` context refers to a JavaScript context for an
+extension frame that is embedded in an external page, like a web page, and
+runs in the same process as the embedder. Given the limited separation between
+the (untrusted) embedder and the extension frame, relatively few features are
+exposed in these contexts. Note that with [site isolation](https://www.chromium.org/developers/design-documents/site-isolation),
+extension frames (even those embedded in web pages) run in the trusted
+extension process, and become blessed extension contexts.
+
 ## Compilation
 
 The feature files are compiled as part of the suite of tools in
@@ -303,6 +375,5 @@ the compiler is probably missing some cases.
 
 ## Still to come
 
-TODO(devlin): Possibly move documentation for feature contexts, add
-documentation for extension types. Probably also more on requirements for
-individual features.
+TODO(devlin): Add documentation for extension types. Probably also more on
+requirements for individual features.

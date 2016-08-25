@@ -29,27 +29,14 @@ class Feature {
   enum Context {
     UNSPECIFIED_CONTEXT,
 
-    // A context in a privileged extension process.
+    // See chrome/common/extensions/api/_features.md for a description of these
+    // contexts.
     BLESSED_EXTENSION_CONTEXT,
-
-    // A context in an unprivileged extension process.
     UNBLESSED_EXTENSION_CONTEXT,
-
-    // A context from a content script.
     CONTENT_SCRIPT_CONTEXT,
-
-    // A normal web page. This should have an associated URL matching pattern.
     WEB_PAGE_CONTEXT,
-
-    // A web page context which has been blessed by the user. Typically this
-    // will be via the installation of a hosted app, so this may host an
-    // extension. This is not affected by the URL matching pattern.
     BLESSED_WEB_PAGE_CONTEXT,
-
-    // A page within webui.
     WEBUI_CONTEXT,
-
-    // A context belonging to a service worker.
     SERVICE_WORKER_CONTEXT,
   };
 
