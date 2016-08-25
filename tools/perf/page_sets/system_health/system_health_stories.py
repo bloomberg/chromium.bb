@@ -31,6 +31,32 @@ class SystemHealthStorySet(story.StorySet):
       self.AddStory(story_class(self, take_memory_measurement))
 
 
+class DesktopSystemHealthStorySet(SystemHealthStorySet):
+  """Desktop user stories for the System Health Plan.
+
+  Note: This story set is only intended to be used for recording stories via
+  tools/perf/record_wpr. If you would like to use it in a benchmark, please use
+  the generic SystemHealthStorySet class instead (you'll need to override the
+  CreateStorySet method of your benchmark).
+  """
+  def __init__(self):
+    super(DesktopSystemHealthStorySet, self).__init__(
+        'desktop', take_memory_measurement=False)
+
+
+class MobileSystemHealthStorySet(SystemHealthStorySet):
+  """Mobile user stories for the System Health Plan.
+
+  Note: This story set is only intended to be used for recording stories via
+  tools/perf/record_wpr. If you would like to use it in a benchmark, please use
+  the generic SystemHealthStorySet class instead (you'll need to override the
+  CreateStorySet method of your benchmark).
+  """
+  def __init__(self):
+    super(MobileSystemHealthStorySet, self).__init__(
+        'mobile', take_memory_measurement=False)
+
+
 def _IterAllSystemHealthStoryClasses():
   start_dir = os.path.dirname(os.path.abspath(__file__))
   # Sort the classes by their names so that their order is stable and

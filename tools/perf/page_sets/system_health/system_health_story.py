@@ -47,24 +47,10 @@ class SystemHealthStory(page.Page):
     self._take_memory_measurement = take_memory_measurement
 
   def _Measure(self, action_runner):
-    if self._ShouldMeasureMemory(action_runner):
+    if self._take_memory_measurement:
       action_runner.MeasureMemory(deterministic_mode=True)
     else:
       action_runner.Wait(_WAIT_TIME_AFTER_LOAD)
-
-  def _ShouldMeasureMemory(self, action_runner):
-    if not self._take_memory_measurement:
-      return False
-    # The check below is also performed in action_runner.MeasureMemory().
-    # However, we need to duplicate it here so that the story would wait for
-    # |_WAIT_TIME_AFTER_LOAD| seconds after load when recorded via the
-    # system_health.memory_* benchmarks.
-    # TODO(petrcermak): Make it possible (and mandatory) to record the story
-    # directly through the story set and remove this check.
-    tracing_controller = action_runner.tab.browser.platform.tracing_controller
-    if not tracing_controller.is_tracing_running:
-      return False  # Tracing is not running, e.g. when recording a WPR archive.
-    return True
 
   def _Login(self, action_runner):
     pass
