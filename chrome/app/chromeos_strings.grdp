@@ -1143,7 +1143,7 @@ Press any key to continue exploring.
   </message>
 
   <message name="IDS_FILE_BROWSER_SPACE_AVAILABLE" desc="Menu item showing space left for storage.">
-    <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> left
+    <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> available
   </message>
   <message name="IDS_FILE_BROWSER_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for space information for storage. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_SPACE_AVAILABLE">
     Waiting for space info...

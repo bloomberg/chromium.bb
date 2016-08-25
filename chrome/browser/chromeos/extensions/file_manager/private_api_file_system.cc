@@ -83,29 +83,6 @@ void GetSizeStatsOnBlockingPool(const base::FilePath& mount_path,
     *remaining_size = size;
 }
 
-// Used for OnCalculateEvictableCacheSize.
-using GetSizeStatsCallback =
-    base::Callback<void(const uint64_t* total_size,
-                        const uint64_t* remaining_space)>;
-
-// Calculates the real remaining size of Download volume and pass it to
-// GetSizeStatsCallback.
-void OnCalculateEvictableCacheSize(const GetSizeStatsCallback& callback,
-                                   uint64_t total_size,
-                                   uint64_t remaining_size,
-                                   int64_t evictable_cache_size) {
-  // For calculating real remaining size of Download volume
-  // - Adds evictable cache size since the space is available if they are
-  //   evicted.
-  // - Subtracts minimum free space of cryptohome since the space is not
-  //   available for file manager.
-  const uint64_t real_remaining_size =
-      std::max(static_cast<int64_t>(remaining_size + evictable_cache_size) -
-                   cryptohome::kMinFreeSpaceInBytes,
-               int64_t(0));
-  callback.Run(&total_size, &real_remaining_size);
-}
-
 // Retrieves the maximum file name length of the file system of |path|.
 // Returns 0 if it could not be queried.
 size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
@@ -472,32 +449,10 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE, base::Bind(&GetSizeStatsOnBlockingPool, volume->mount_path(),
                               total_size, remaining_size),
-        base::Bind(
-            &FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace, this,
-            base::Owned(total_size), base::Owned(remaining_size),
-            volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY));
+        base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats,
+                   this, base::Owned(total_size), base::Owned(remaining_size)));
   }
   return true;
-}
-
-void FileManagerPrivateGetSizeStatsFunction::OnGetLocalSpace(
-    uint64_t* total_size,
-    uint64_t* remaining_size,
-    bool is_download) {
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(GetProfile());
-
-  if (!is_download || !file_system) {
-    OnGetSizeStats(total_size, remaining_size);
-    return;
-  }
-
-  // We need to add evictable cache size to the remaining size of Downloads
-  // volume if drive is available.
-  file_system->CalculateEvictableCacheSize(base::Bind(
-      &OnCalculateEvictableCacheSize,
-      base::Bind(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats, this),
-      *total_size, *remaining_size));
 }
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(

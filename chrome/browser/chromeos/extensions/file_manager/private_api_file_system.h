@@ -155,10 +155,6 @@ class FileManagerPrivateGetSizeStatsFunction
   bool RunAsync() override;
 
  private:
-  void OnGetLocalSpace(uint64_t* total_size,
-                       uint64_t* remaining_size,
-                       bool is_download);
-
   void OnGetDriveAvailableSpace(drive::FileError error,
                                 int64_t bytes_total,
                                 int64_t bytes_used);
