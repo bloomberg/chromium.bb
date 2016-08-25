@@ -1448,4 +1448,34 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, DidPassCORSAccessTest) {
+  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  set_preload(MultibufferDataSource::NONE);
+  WebURLResponse response1 =
+      response_generator_->GeneratePartial206(0, kDataSize - 1);
+  response1.setWasFetchedViaServiceWorker(true);
+  response1.setOriginalURLViaServiceWorker(GURL(kHttpDifferentOriginUrl));
+  WebURLResponse response2 =
+      response_generator_->GeneratePartial206(kDataSize, kDataSize * 2 - 1);
+
+  EXPECT_CALL(host_, SetTotalBytes(kFileSize));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+
+  EXPECT_FALSE(data_source_->DidPassCORSAccessCheck());
+  Respond(response1);
+  ReceiveData(kDataSize);
+  ReadAt(0);
+  EXPECT_TRUE(loading());
+  EXPECT_TRUE(data_source_->DidPassCORSAccessCheck());
+
+  FinishLoading();
+
+  // Verify that if reader_ is null, DidPassCORSAccessCheck still returns true.
+  data_source_->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data_source_->DidPassCORSAccessCheck());
+}
+
 }  // namespace media

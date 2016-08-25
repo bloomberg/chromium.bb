@@ -174,6 +174,9 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource
   // |downloading_cb_|.
   bool loading_;
 
+  // True if a failure has occured.
+  bool failed_;
+
   // The task runner of the render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> render_task_runner_;
 
