@@ -66,10 +66,23 @@ union U {
 
 namespace WTF {
 
-struct TypeTrait {
-  // WTF has structs for things like type traits, which we don't want to
-  // capitalize.
+// We don't want to capitalize fields in type traits
+// (i.e. no |value| -> |kValue| rename is undesirable below).
+struct TypeTrait1 {
   static const bool value = true;
+};
+
+// Some type traits  are implemented as classes, not structs
+// (e.g. WTF::IsGarbageCollectedType or WTF::IsAssignable).
+template <typename T>
+class TypeTrait2 {
+ public:
+  static const bool value = false;
+};
+template <>
+class TypeTrait2<void> {
+ public:
+  static const bool value = false;
 };
 
 };  // namespace WTF
@@ -82,5 +95,6 @@ void F() {
   blink::C c;
   blink::C c2 = c;
 
-  bool b = WTF::TypeTrait::value;
+  bool b1 = WTF::TypeTrait1::value;
+  bool b2 = WTF::TypeTrait2<void>::value;
 }

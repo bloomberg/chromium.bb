@@ -93,17 +93,6 @@ AST_MATCHER_P(clang::OverloadExpr,
   return true;
 }
 
-bool IsDeclContextInWTF(const clang::DeclContext* decl_context) {
-  auto* namespace_decl = clang::dyn_cast_or_null<clang::NamespaceDecl>(
-      decl_context->getEnclosingNamespaceContext());
-  if (!namespace_decl)
-    return false;
-  if (namespace_decl->getParent()->isTranslationUnit() &&
-      namespace_decl->getName() == "WTF")
-    return true;
-  return IsDeclContextInWTF(namespace_decl->getParent());
-}
-
 template <typename T>
 bool MatchAllOverriddenMethods(
     const clang::CXXMethodDecl& decl,
@@ -367,15 +356,6 @@ bool GetNameForDecl(const clang::VarDecl& decl,
         clang::isUppercase(original_name[1]))
       return false;
 
-    // Struct consts in WTF do not become kFoo cuz stuff like type traits
-    // should stay as lowercase.
-    const clang::DeclContext* decl_context = decl.getDeclContext();
-    bool is_in_wtf = IsDeclContextInWTF(decl_context);
-    const clang::CXXRecordDecl* parent =
-        clang::dyn_cast_or_null<clang::CXXRecordDecl>(decl_context);
-    if (is_in_wtf && parent && parent->isStruct())
-      return false;
-
     name = 'k';
     name.append(original_name.data(), original_name.size());
     name[1] = clang::toUppercase(name[1]);
@@ -605,7 +585,13 @@ int main(int argc, const char* argv[]) {
   //   };
   // matches |x|, |y|, and |VALUE|.
   auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
-  auto var_decl_matcher = id("decl", varDecl(in_blink_namespace));
+  auto is_wtf_type_trait_value =
+      varDecl(hasName("value"), hasStaticStorageDuration(),
+              hasType(isConstQualified()), hasType(booleanType()),
+              hasAncestor(recordDecl(hasAncestor(namespaceDecl(
+                  hasName("WTF"), hasParent(translationUnitDecl()))))));
+  auto var_decl_matcher =
+      id("decl", varDecl(in_blink_namespace, unless(is_wtf_type_trait_value)));
   auto enum_member_decl_matcher =
       id("decl", enumConstantDecl(in_blink_namespace));
 
