@@ -819,7 +819,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   EXPECT_EQ(2u, visible_notifications.size());
 
   std::string notification_id2;
-  for (auto notification : visible_notifications) {
+  for (auto* notification : visible_notifications) {
     if (notification->id() == notification_id1) {
       continue;
     } else if (notification->type() ==

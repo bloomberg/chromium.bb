@@ -936,7 +936,7 @@ bool DownloadItemNotification::IsNotificationVisible() const {
 
   message_center::NotificationList::Notifications visible_notifications =
       message_center_->GetVisibleNotifications();
-  for (const auto& notification : visible_notifications) {
+  for (auto* notification : visible_notifications) {
     if (notification->id() == notification_id_in_message_center)
       return true;
   }
