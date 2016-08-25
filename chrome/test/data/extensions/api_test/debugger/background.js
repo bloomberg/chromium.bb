@@ -7,8 +7,10 @@ var fail = chrome.test.callbackFail;
 
 var tabId;
 var debuggee;
-var protocolVersion = "1.1";
-var protocolPreviousVersion = "1.0";
+var protocolVersion = "1.2";
+var protocolPreviousVersion = "1.1";
+var unsupportedMinorProtocolVersion = "1.5";
+var unsupportedMajorProtocolVersion = "100.0";
 
 var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
@@ -24,15 +26,17 @@ chrome.test.runTests([
 
   function attachUnsupportedMinorVersion() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.debugger.attach({tabId: tab.id}, "1.5",
-          fail("Requested protocol version is not supported: 1.5."));
+      chrome.debugger.attach({tabId: tab.id}, unsupportedMinorProtocolVersion,
+          fail("Requested protocol version is not supported: " +
+              unsupportedMinorProtocolVersion + "."));
     });
   },
 
   function attachUnsupportedVersion() {
     chrome.tabs.getSelected(null, function(tab) {
-      chrome.debugger.attach({tabId: tab.id}, "100.0",
-          fail("Requested protocol version is not supported: 100.0."));
+      chrome.debugger.attach({tabId: tab.id}, unsupportedMajorProtocolVersion,
+          fail("Requested protocol version is not supported: " +
+              unsupportedMajorProtocolVersion + "."));
     });
   },
 

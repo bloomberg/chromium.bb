@@ -18,7 +18,7 @@ SchemaHandler::~SchemaHandler() {
 
 Response SchemaHandler::GetDomains(
     std::vector<scoped_refptr<Domain>>* domains) {
-  static const char kVersion[] = "1.1";
+  static const char kVersion[] = "1.2";
   static const char* kDomains[] = {
     "Inspector", "Memory", "Page", "Rendering", "Emulation", "Security",
     "Network", "Database", "IndexedDB", "CacheStorage", "DOMStorage", "CSS",
