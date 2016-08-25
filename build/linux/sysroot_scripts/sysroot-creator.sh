@@ -48,8 +48,6 @@ if [ -z "${DEBIAN_PACKAGES:-}" ]; then
   exit 1
 fi
 
-readonly REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
-
 readonly HAS_ARCH_AMD64=${HAS_ARCH_AMD64:=0}
 readonly HAS_ARCH_I386=${HAS_ARCH_I386:=0}
 readonly HAS_ARCH_ARM=${HAS_ARCH_ARM:=0}
@@ -65,8 +63,6 @@ readonly REQUIRED_TOOLS="wget"
 PACKAGES_EXT=${PACKAGES_EXT:-bz2}
 readonly RELEASE_FILE="Release"
 readonly RELEASE_FILE_GPG="Release.gpg"
-readonly RELEASE_LIST="${REPO_BASEDIR}/${RELEASE_FILE}"
-readonly RELEASE_LIST_GPG="${REPO_BASEDIR}/${RELEASE_FILE_GPG}"
 
 readonly DEBIAN_DEP_LIST_AMD64="packagelist.${DIST}.amd64"
 readonly DEBIAN_DEP_LIST_I386="packagelist.${DIST}.i386"
@@ -193,22 +189,32 @@ ExtractPackageBz2() {
   fi
 }
 
-GeneratePackageListCommon() {
-  local output_file="$1"
-  local arch="$2"
-  local apt_repo="$3"
-  local packages="$4"
+GeneratePackageListDist() {
+  local arch="$1"
+  local apt_repo="$2"
+  local dist="$3"
 
-  local repo_basedir="${apt_repo}/dists/${DIST}"
-  local package_list="${BUILD_DIR}/Packages.${DIST}_${arch}.${PACKAGES_EXT}"
-  local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_${arch}"
+  TMP_PACKAGE_LIST="${BUILD_DIR}/Packages.${dist}_${arch}"
+  local repo_basedir="${apt_repo}/dists/${dist}"
+  local package_list="${BUILD_DIR}/Packages.${dist}_${arch}.${PACKAGES_EXT}"
   local package_file_arch="main/binary-${arch}/Packages.${PACKAGES_EXT}"
   local package_list_arch="${repo_basedir}/${package_file_arch}"
 
   DownloadOrCopy "${package_list_arch}" "${package_list}"
-  VerifyPackageListing "${package_file_arch}" "${package_list}"
-  ExtractPackageBz2 "$package_list" "$tmp_package_list"
-  GeneratePackageList "$tmp_package_list" "$output_file" "${packages}"
+  VerifyPackageListing "${package_file_arch}" "${package_list}" ${dist}
+  ExtractPackageBz2 "${package_list}" "${TMP_PACKAGE_LIST}"
+}
+
+GeneratePackageListCommon() {
+  GeneratePackageListDist "$2" "$3" ${DIST}
+  local output_file="$1"
+  local packages="$4"
+  local list_base="${TMP_PACKAGE_LIST}"
+  if [ ! -z ${DIST_UPDATES:-} ]; then
+      GeneratePackageListDist "$2" "$3" ${DIST_UPDATES}
+      cat "${TMP_PACKAGE_LIST}" | ./merge-package-lists.py "${list_base}"
+  fi
+  GeneratePackageList "${list_base}" "${output_file}" "${packages}"
 }
 
 GeneratePackageListAmd64() {
@@ -658,15 +664,21 @@ CheckForDebianGPGKeyring() {
 #     Verifies the downloaded Packages.bz2 file has the right checksums.
 #
 VerifyPackageListing() {
-  local file_path=$1
-  local output_file=$2
-  local release_file="${BUILD_DIR}/${RELEASE_FILE}"
-  local release_file_gpg="${BUILD_DIR}/${RELEASE_FILE_GPG}"
+  local file_path="$1"
+  local output_file="$2"
+  local dist="$3"
+
+  local repo_basedir="${APT_REPO}/dists/${dist}"
+  local release_list="${repo_basedir}/${RELEASE_FILE}"
+  local release_list_gpg="${repo_basedir}/${RELEASE_FILE_GPG}"
+
+  local release_file="${BUILD_DIR}/${dist}-${RELEASE_FILE}"
+  local release_file_gpg="${BUILD_DIR}/${dist}-${RELEASE_FILE_GPG}"
 
   CheckForDebianGPGKeyring
 
-  DownloadOrCopy ${RELEASE_LIST} ${release_file}
-  DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
+  DownloadOrCopy ${release_list} ${release_file}
+  DownloadOrCopy ${release_list_gpg} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
   set -x
   gpgv --keyring "${KEYRING_FILE}" "${release_file_gpg}" "${release_file}"
@@ -677,7 +689,7 @@ VerifyPackageListing() {
   local sha256sum=$(echo ${checksums} | cut -d " " -f 3)
 
   if [ "${#sha256sum}" -ne "64" ]; then
-    echo "Bad sha256sum from ${RELEASE_LIST}"
+    echo "Bad sha256sum from ${release_list}"
     exit 1
   fi
 

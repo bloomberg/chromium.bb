@@ -7,12 +7,12 @@ SCRIPT_DIR=$(dirname $0)
 
 DISTRO=ubuntu
 DIST=trusty
+DIST_UPDATES=trusty-updates
 
 # This is where we get all the debian packages from.
 APT_REPO=http://archive.ubuntu.com/ubuntu
 APT_REPO_ARM=http://ports.ubuntu.com
 APT_REPO_ARM64=http://ports.ubuntu.com
-REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
 KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
 
 HAS_ARCH_AMD64=1

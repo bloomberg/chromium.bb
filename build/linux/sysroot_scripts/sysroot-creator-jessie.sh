@@ -9,7 +9,6 @@ DISTRO=debian
 DIST=jessie
 PACKAGES_EXT=xz
 APT_REPO=http://http.us.debian.org/debian
-REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
 # gpg keyring file generated using:
 #   export KEYS="518E17E1 46925553 2B90D010"
 #   gpg --recv-keys $KEYS
