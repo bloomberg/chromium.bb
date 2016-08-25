@@ -21,12 +21,25 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   options = {'pageset_repeat': 2}
 
   def CreateTimelineBasedMeasurementOptions(self):
-    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        filter_string='blink.console,navigation,blink.user_timing,loading')
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
+
+    # "blink.console" is used for marking ranges in
+    # cache_temperature.MarkTelemetryInternal.
+    cat_filter.AddIncludedCategory('blink.console')
+
+    # "navigation" and "blink.user_timing" are needed to capture core
+    # navigation events.
+    cat_filter.AddIncludedCategory('navigation')
+    cat_filter.AddIncludedCategory('blink.user_timing')
 
     # Below categories are needed for first-meaningful-paint computation.
     cat_filter.AddDisabledByDefault('disabled-by-default-blink.debug.layout')
     cat_filter.AddIncludedCategory('devtools.timeline')
+    cat_filter.AddIncludedCategory('loading')
+
+    # "toplevel" category is used to capture TaskQueueManager events
+    # necessary to compute time-to-interactive.
+    cat_filter.AddIncludedCategory('toplevel')
 
     tbm_options = timeline_based_measurement.Options(
         overhead_level=cat_filter)
