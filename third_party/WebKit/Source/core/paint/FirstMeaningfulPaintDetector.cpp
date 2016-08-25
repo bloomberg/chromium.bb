@@ -7,6 +7,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/paint/PaintTiming.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 
@@ -86,6 +87,8 @@ void FirstMeaningfulPaintDetector::notifyPaint()
 
     m_provisionalFirstMeaningfulPaint = monotonicallyIncreasingTime();
     m_state = NextPaintIsNotMeaningful;
+
+    TRACE_EVENT_MARK_WITH_TIMESTAMP1("loading", "firstMeaningfulPaintCandidate", m_provisionalFirstMeaningfulPaint, "frame", document()->frame());
 }
 
 void FirstMeaningfulPaintDetector::checkNetworkStable()
