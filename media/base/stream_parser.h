@@ -39,17 +39,16 @@ class MEDIA_EXPORT StreamParser {
   // TextTrackConfigMap (which is passed in StreamParser::NewConfigCB), or
   // 0 for other media types that currently allow at most one track.
   // WebMTracksParser uses -1 as an invalid text track number.
-  // TODO(wolenetz/acolwell): Change to size_type while fixing stream parsers to
-  // emit validated track configuration and buffer vectors rather than max 1
-  // audio, max 1 video, and N text tracks in a map keyed by
-  // bytestream-specific-ranged track numbers. See http://crbug.com/341581.
+  // It is also the key for BufferQueueMap structure returned by stream parsers.
+  // TODO(servolk/wolenetz): Change to size_type or unsigned after fixing track
+  // id handling in FrameProcessor.
   typedef int TrackId;
 
   // Map of text track ID to the track configuration.
   typedef std::map<TrackId, TextTrackConfig> TextTrackConfigMap;
 
-  // Map of text track ID to decode-timestamp-ordered buffers for the track.
-  typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
+  // Map of track ID to decode-timestamp-ordered buffers for the track.
+  using BufferQueueMap = std::map<TrackId, BufferQueue>;
 
   // Stream parameters passed in InitCB.
   struct MEDIA_EXPORT InitParameters {
@@ -94,18 +93,11 @@ class MEDIA_EXPORT StreamParser {
       NewConfigCB;
 
   // New stream buffers have been parsed.
-  // First parameter - A queue of newly parsed audio buffers.
-  // Second parameter - A queue of newly parsed video buffers.
-  // Third parameter - A map of text track ids to queues of newly parsed inband
-  //                   text buffers. If the map is not empty, it must contain
-  //                   at least one track with a non-empty queue of text
-  //                   buffers.
+  // First parameter - A map of track ids to queues of newly parsed buffers.
   // Return value - True indicates that the buffers are accepted.
   //                False if something was wrong with the buffers and a parsing
   //                error should be signalled.
-  typedef base::Callback<bool(const BufferQueue&,
-                              const BufferQueue&,
-                              const TextBufferQueueMap&)> NewBuffersCB;
+  typedef base::Callback<bool(const BufferQueueMap&)> NewBuffersCB;
 
   // Signals the beginning of a new media segment.
   typedef base::Callback<void()> NewMediaSegmentCB;
@@ -164,11 +156,8 @@ class MEDIA_EXPORT StreamParser {
 // No validation of media type within the various buffer queues is done here.
 // TODO(wolenetz/acolwell): Merge incrementally in parsers to eliminate
 // subtle issues with tie-breaking. See http://crbug.com/338484.
-MEDIA_EXPORT bool MergeBufferQueues(
-    const StreamParser::BufferQueue& audio_buffers,
-    const StreamParser::BufferQueue& video_buffers,
-    const StreamParser::TextBufferQueueMap& text_buffers,
-    StreamParser::BufferQueue* merged_buffers);
+MEDIA_EXPORT bool MergeBufferQueues(const StreamParser::BufferQueueMap& buffers,
+                                    StreamParser::BufferQueue* merged_buffers);
 
 }  // namespace media
 

@@ -118,20 +118,6 @@ int WebMClusterParser::Parse(const uint8_t* buf, int size) {
   return result;
 }
 
-const WebMClusterParser::BufferQueue& WebMClusterParser::GetAudioBuffers() {
-  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
-    UpdateReadyBuffers();
-
-  return audio_.ready_buffers();
-}
-
-const WebMClusterParser::BufferQueue& WebMClusterParser::GetVideoBuffers() {
-  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
-    UpdateReadyBuffers();
-
-  return video_.ready_buffers();
-}
-
 const WebMClusterParser::TextBufferQueueMap&
 WebMClusterParser::GetTextBuffers() {
   if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
@@ -149,6 +135,25 @@ WebMClusterParser::GetTextBuffers() {
   }
 
   return text_buffers_map_;
+}
+
+void WebMClusterParser::GetBuffers(StreamParser::BufferQueueMap* buffers) {
+  DCHECK(buffers->empty());
+  if (ready_buffer_upper_bound_ == kNoDecodeTimestamp())
+    UpdateReadyBuffers();
+  const BufferQueue& audio_buffers = audio_.ready_buffers();
+  if (!audio_buffers.empty()) {
+    buffers->insert(std::make_pair(audio_.track_num(), audio_buffers));
+  }
+  const BufferQueue& video_buffers = video_.ready_buffers();
+  if (!video_buffers.empty()) {
+    buffers->insert(std::make_pair(video_.track_num(), video_buffers));
+  }
+  const WebMClusterParser::TextBufferQueueMap& text_buffers = GetTextBuffers();
+  for (const auto& it : text_buffers) {
+    DCHECK(!it.second.empty());
+    buffers->insert(it);
+  }
 }
 
 base::TimeDelta WebMClusterParser::TryGetEncodedAudioDuration(

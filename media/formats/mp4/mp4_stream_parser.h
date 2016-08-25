@@ -73,11 +73,8 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   bool PrepareAACBuffer(const AAC& aac_config,
                         std::vector<uint8_t>* frame_buf,
                         std::vector<SubsampleEntry>* subsamples) const;
-  bool EnqueueSample(BufferQueue* audio_buffers,
-                     BufferQueue* video_buffers,
-                     bool* err);
-  bool SendAndFlushSamples(BufferQueue* audio_buffers,
-                           BufferQueue* video_buffers);
+  bool EnqueueSample(BufferQueueMap* buffers, bool* err);
+  bool SendAndFlushSamples(BufferQueueMap* buffers);
 
   void Reset();
 

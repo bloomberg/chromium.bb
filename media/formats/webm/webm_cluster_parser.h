@@ -184,8 +184,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // If no Parse() or Reset() has occurred since the last call to Get{Audio,
   // Video,Text}Buffers(), then the previous BufferQueue& is returned again
   // without any recalculation.
-  const BufferQueue& GetAudioBuffers();
-  const BufferQueue& GetVideoBuffers();
+  void GetBuffers(StreamParser::BufferQueueMap* buffers);
 
   // Constructs and returns a subset of |text_track_map_| containing only
   // tracks with non-empty buffer queues produced by the last Parse() and

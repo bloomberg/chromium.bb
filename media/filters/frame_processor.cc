@@ -196,14 +196,12 @@ void FrameProcessor::SetSequenceMode(bool sequence_mode) {
 }
 
 bool FrameProcessor::ProcessFrames(
-    const StreamParser::BufferQueue& audio_buffers,
-    const StreamParser::BufferQueue& video_buffers,
-    const StreamParser::TextBufferQueueMap& text_map,
+    const StreamParser::BufferQueueMap& buffer_queue_map,
     base::TimeDelta append_window_start,
     base::TimeDelta append_window_end,
     base::TimeDelta* timestamp_offset) {
   StreamParser::BufferQueue frames;
-  if (!MergeBufferQueues(audio_buffers, video_buffers, text_map, &frames)) {
+  if (!MergeBufferQueues(buffer_queue_map, &frames)) {
     MEDIA_LOG(ERROR, media_log_) << "Parsed buffers not in DTS sequence";
     return false;
   }

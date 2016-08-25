@@ -100,20 +100,17 @@ bool StreamParserTestBase::OnNewConfig(
 }
 
 bool StreamParserTestBase::OnNewBuffers(
-    const StreamParser::BufferQueue& audio_buffers,
-    const StreamParser::BufferQueue& video_buffers,
-    const StreamParser::TextBufferQueueMap& text_map) {
+    const StreamParser::BufferQueueMap& buffer_queue_map) {
+  EXPECT_EQ(1u, buffer_queue_map.size());
+  const auto& itr_audio = buffer_queue_map.find(audio_track_id_);
+  EXPECT_NE(buffer_queue_map.end(), itr_audio);
+  const StreamParser::BufferQueue& audio_buffers = itr_audio->second;
   EXPECT_FALSE(audio_buffers.empty());
-  EXPECT_TRUE(video_buffers.empty());
 
   // Ensure that track ids are properly assigned on all emitted buffers.
   for (const auto& buf : audio_buffers) {
     EXPECT_EQ(audio_track_id_, buf->track_id());
   }
-
-  // TODO(wolenetz/acolwell): Add text track support to more MSE parsers. See
-  // http://crbug.com/336926.
-  EXPECT_TRUE(text_map.empty());
 
   const std::string buffers_str = BufferQueueToString(audio_buffers);
   DVLOG(1) << __FUNCTION__ << " : " << buffers_str;

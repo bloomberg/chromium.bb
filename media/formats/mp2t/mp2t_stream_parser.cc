@@ -512,10 +512,12 @@ std::unique_ptr<MediaTracks> GenerateMediaTrackInfo(
   // TODO(servolk): Implement proper sourcing of media track info as described
   // in crbug.com/590085
   if (audio_config.IsValidConfig()) {
-    media_tracks->AddAudioTrack(audio_config, 1, "main", "", "");
+    media_tracks->AddAudioTrack(audio_config, kMp2tAudioTrackId, "main", "",
+                                "");
   }
   if (video_config.IsValidConfig()) {
-    media_tracks->AddVideoTrack(video_config, 2, "main", "", "");
+    media_tracks->AddVideoTrack(video_config, kMp2tVideoTrackId, "main", "",
+                                "");
   }
   return media_tracks;
 }
@@ -655,15 +657,16 @@ bool Mp2tStreamParser::EmitRemainingBuffers() {
     }
 
     // Add buffers.
-    TextBufferQueueMap empty_text_map;
-    if (!queue_with_config.audio_queue.empty() ||
-        !queue_with_config.video_queue.empty()) {
-      if (!new_buffers_cb_.Run(queue_with_config.audio_queue,
-                               queue_with_config.video_queue,
-                               empty_text_map)) {
-        return false;
-      }
-    }
+    BufferQueueMap buffer_queue_map;
+    if (!queue_with_config.audio_queue.empty())
+      buffer_queue_map.insert(
+          std::make_pair(kMp2tAudioTrackId, queue_with_config.audio_queue));
+    if (!queue_with_config.video_queue.empty())
+      buffer_queue_map.insert(
+          std::make_pair(kMp2tVideoTrackId, queue_with_config.video_queue));
+
+    if (!buffer_queue_map.empty() && !new_buffers_cb_.Run(buffer_queue_map))
+      return false;
 
     buffer_queue_chain_.pop_front();
   }

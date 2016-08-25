@@ -153,9 +153,7 @@ class MEDIA_EXPORT MediaSourceState {
   // frame's track.
   // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
-  bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
-                    const StreamParser::BufferQueue& video_buffers,
-                    const StreamParser::TextBufferQueueMap& text_map);
+  bool OnNewBuffers(const StreamParser::BufferQueueMap& buffer_queue_map);
 
   void OnSourceInitDone(const StreamParser::InitParameters& params);
 

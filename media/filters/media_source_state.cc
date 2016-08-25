@@ -776,16 +776,21 @@ void MediaSourceState::OnEndOfMediaSegment() {
 }
 
 bool MediaSourceState::OnNewBuffers(
-    const StreamParser::BufferQueue& audio_buffers,
-    const StreamParser::BufferQueue& video_buffers,
-    const StreamParser::TextBufferQueueMap& text_map) {
+    const StreamParser::BufferQueueMap& buffer_queue_map) {
   DVLOG(2) << "OnNewBuffers()";
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   DCHECK(timestamp_offset_during_append_);
   DCHECK(parsing_media_segment_);
 
-  media_segment_contained_audio_frame_ |= !audio_buffers.empty();
-  media_segment_contained_video_frame_ |= !video_buffers.empty();
+  for (const auto& it : buffer_queue_map) {
+    const StreamParser::BufferQueue& bufq = it.second;
+    DCHECK(!bufq.empty());
+    if (bufq[0]->type() == DemuxerStream::AUDIO) {
+      media_segment_contained_audio_frame_ = true;
+    } else if (bufq[0]->type() == DemuxerStream::VIDEO) {
+      media_segment_contained_video_frame_ = true;
+    }
+  }
 
   const TimeDelta timestamp_offset_before_processing =
       *timestamp_offset_during_append_;
@@ -794,22 +799,23 @@ bool MediaSourceState::OnNewBuffers(
   // parser has requested automatic updates.
   TimeDelta new_timestamp_offset = timestamp_offset_before_processing;
   if (auto_update_timestamp_offset_) {
-    const bool have_audio_buffers = !audio_buffers.empty();
-    const bool have_video_buffers = !video_buffers.empty();
-    if (have_audio_buffers && have_video_buffers) {
-      new_timestamp_offset +=
-          std::min(EndTimestamp(audio_buffers), EndTimestamp(video_buffers));
-    } else if (have_audio_buffers) {
-      new_timestamp_offset += EndTimestamp(audio_buffers);
-    } else if (have_video_buffers) {
-      new_timestamp_offset += EndTimestamp(video_buffers);
+    TimeDelta min_end_timestamp = kNoTimestamp;
+    for (const auto& it : buffer_queue_map) {
+      const StreamParser::BufferQueue& bufq = it.second;
+      DCHECK(!bufq.empty());
+      if (min_end_timestamp == kNoTimestamp ||
+          EndTimestamp(bufq) < min_end_timestamp) {
+        min_end_timestamp = EndTimestamp(bufq);
+        DCHECK_NE(kNoTimestamp, min_end_timestamp);
+      }
     }
+    if (min_end_timestamp != kNoTimestamp)
+      new_timestamp_offset += min_end_timestamp;
   }
 
-  if (!frame_processor_->ProcessFrames(audio_buffers, video_buffers, text_map,
-                                       append_window_start_during_append_,
-                                       append_window_end_during_append_,
-                                       timestamp_offset_during_append_)) {
+  if (!frame_processor_->ProcessFrames(
+          buffer_queue_map, append_window_start_during_append_,
+          append_window_end_during_append_, timestamp_offset_during_append_)) {
     return false;
   }
 

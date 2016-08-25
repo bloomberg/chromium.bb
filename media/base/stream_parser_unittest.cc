@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <sstream>
 
 #include "base/macros.h"
@@ -17,7 +18,6 @@ namespace media {
 
 typedef StreamParser::TrackId TrackId;
 typedef StreamParser::BufferQueue BufferQueue;
-typedef StreamParser::TextBufferQueueMap TextBufferQueueMap;
 
 const int kEnd = -1;
 const uint8_t kFakeData[] = {0xFF};
@@ -78,36 +78,32 @@ class StreamParserTest : public testing::Test {
   // to |audio_buffers_|. See GenerateBuffers() for |decode_timestamps| format.
   void GenerateAudioBuffers(const int* decode_timestamps) {
     GenerateBuffers(decode_timestamps, DemuxerStream::AUDIO, kAudioTrackId,
-                    &audio_buffers_);
+                    &buffer_queue_map_[kAudioTrackId]);
   }
 
   // Appends test video buffers in the sequence described by |decode_timestamps|
   // to |video_buffers_|. See GenerateBuffers() for |decode_timestamps| format.
   void GenerateVideoBuffers(const int* decode_timestamps) {
     GenerateBuffers(decode_timestamps, DemuxerStream::VIDEO, kVideoTrackId,
-                    &video_buffers_);
+                    &buffer_queue_map_[kVideoTrackId]);
   }
 
   // Current tests only need up to two distinct text BufferQueues. This helper
-  // conditionally appends buffers to the underlying |text_buffers_a_| and
-  // |text_buffers_b_| and conditionally inserts these BufferQueues into
-  // |text_map_| keyed by the respective track ID. If |decode_timestamps_{a,b}|
-  // is NULL, then the corresponding BufferQueue is neither appended to nor
-  // inserted into |text_map_| (though it may previously have been inserted).
+  // conditionally appends buffers to the underlying |buffer_queue_map_| keyed
+  // by the respective track ID. If |decode_timestamps_{a,b}|
+  // is NULL, then the corresponding BufferQueue is not changed at all.
   // Note that key collision on map insertion does not replace the previous
   // value.
   void GenerateTextBuffers(const int* decode_timestamps_a,
                            const int* decode_timestamps_b) {
     if (decode_timestamps_a) {
       GenerateBuffers(decode_timestamps_a, DemuxerStream::TEXT, kTextTrackIdA,
-                      &text_buffers_a_);
-      text_map_.insert(std::make_pair(kTextTrackIdA, text_buffers_a_));
+                      &buffer_queue_map_[kTextTrackIdA]);
     }
 
     if (decode_timestamps_b) {
       GenerateBuffers(decode_timestamps_b, DemuxerStream::TEXT, kTextTrackIdB,
-                      &text_buffers_b_);
-      text_map_.insert(std::make_pair(kTextTrackIdB, text_buffers_b_));
+                      &buffer_queue_map_[kTextTrackIdB]);
     }
   }
 
@@ -176,8 +172,7 @@ class StreamParserTest : public testing::Test {
     size_t original_video_in_merged = CountMatchingMergedBuffers(IsVideo);
     size_t original_text_in_merged = CountMatchingMergedBuffers(IsText);
 
-    EXPECT_TRUE(MergeBufferQueues(audio_buffers_, video_buffers_, text_map_,
-                                  &merged_buffers_));
+    EXPECT_TRUE(MergeBufferQueues(buffer_queue_map_, &merged_buffers_));
 
     // Verify resulting contents of |merged_buffers| matches |expected|.
     EXPECT_EQ(expected,
@@ -193,46 +188,40 @@ class StreamParserTest : public testing::Test {
     EXPECT_GE(video_in_merged, original_video_in_merged);
     EXPECT_GE(text_in_merged, original_text_in_merged);
 
-    EXPECT_EQ(audio_buffers_.size(),
+    EXPECT_EQ(buffer_queue_map_[kAudioTrackId].size(),
               audio_in_merged - original_audio_in_merged);
-    EXPECT_EQ(video_buffers_.size(),
+    if (buffer_queue_map_[kAudioTrackId].empty())
+      buffer_queue_map_.erase(kAudioTrackId);
+    EXPECT_EQ(buffer_queue_map_[kVideoTrackId].size(),
               video_in_merged - original_video_in_merged);
+    if (buffer_queue_map_[kVideoTrackId].empty())
+      buffer_queue_map_.erase(kVideoTrackId);
 
     size_t expected_text_buffer_count = 0;
-    for (TextBufferQueueMap::const_iterator itr = text_map_.begin();
-         itr != text_map_.end();
-         ++itr) {
-      expected_text_buffer_count += itr->second.size();
-    }
+    expected_text_buffer_count += buffer_queue_map_[kTextTrackIdA].size();
+    if (buffer_queue_map_[kTextTrackIdA].empty())
+      buffer_queue_map_.erase(kTextTrackIdA);
+    expected_text_buffer_count += buffer_queue_map_[kTextTrackIdB].size();
+    if (buffer_queue_map_[kTextTrackIdB].empty())
+      buffer_queue_map_.erase(kTextTrackIdB);
     EXPECT_EQ(expected_text_buffer_count,
               text_in_merged - original_text_in_merged);
   }
 
-  // Verifies that MergeBufferQueues() of the current |audio_buffers_|,
-  // |video_buffers_|, |text_map_|, and |merged_buffers_| returns false.
+  // Verifies that MergeBufferQueues() of the current |buffer_queue_map_| and
+  // |merged_buffers_| returns false.
   void VerifyMergeFailure() {
-    EXPECT_FALSE(MergeBufferQueues(audio_buffers_, video_buffers_, text_map_,
-                                   &merged_buffers_));
+    EXPECT_FALSE(MergeBufferQueues(buffer_queue_map_, &merged_buffers_));
   }
 
   // Helper to allow tests to clear all the input BufferQueues (except
-  // |merged_buffers_|) and the TextBufferQueueMap that are used in
+  // |merged_buffers_|) and the BufferQueueMap that are used in
   // VerifyMerge{Success/Failure}().
-  void ClearQueuesAndTextMapButKeepAnyMergedBuffers() {
-    audio_buffers_.clear();
-    video_buffers_.clear();
-    text_buffers_a_.clear();
-    text_buffers_b_.clear();
-    text_map_.clear();
-  }
+  void ClearBufferQueuesButKeepAnyMergedBuffers() { buffer_queue_map_.clear(); }
 
  private:
-  BufferQueue audio_buffers_;
-  BufferQueue video_buffers_;
-  BufferQueue text_buffers_a_;
-  BufferQueue text_buffers_b_;
+  StreamParser::BufferQueueMap buffer_queue_map_;
   BufferQueue merged_buffers_;
-  TextBufferQueueMap text_map_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamParserTest);
 };
@@ -343,7 +332,7 @@ TEST_F(StreamParserTest, MergeBufferQueues_ValidAppendToExistingMerge) {
   GenerateTextBuffers(text_timestamps_a, text_timestamps_b);
   VerifyMergeSuccess(expected, true);
 
-  ClearQueuesAndTextMapButKeepAnyMergedBuffers();
+  ClearBufferQueuesButKeepAnyMergedBuffers();
 
   expected = "A0:100 V1:101 T2:102 V1:103 T3:104 A0:105 V1:106 T2:107 "
              "A0:107 V1:111 T2:112 V1:113 T3:114 A0:115 V1:116 T2:117";
@@ -371,7 +360,7 @@ TEST_F(StreamParserTest, MergeBufferQueues_InvalidAppendToExistingMerge) {
 
   // Appending empty buffers to pre-existing merge result should succeed and not
   // change the existing result.
-  ClearQueuesAndTextMapButKeepAnyMergedBuffers();
+  ClearBufferQueuesButKeepAnyMergedBuffers();
   VerifyMergeSuccess(expected, true);
 
   // But appending something with a lower timestamp than the last timestamp

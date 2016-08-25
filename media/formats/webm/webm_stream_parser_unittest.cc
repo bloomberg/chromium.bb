@@ -38,7 +38,7 @@ class WebMStreamParserTest : public testing::Test {
     EXPECT_CALL(*this, InitCB(_));
     EXPECT_CALL(*this, NewMediaSegmentCB()).Times(testing::AnyNumber());
     EXPECT_CALL(*this, EndMediaSegmentCB()).Times(testing::AnyNumber());
-    EXPECT_CALL(*this, NewBuffersCB(_, _, _))
+    EXPECT_CALL(*this, NewBuffersCB(_))
         .Times(testing::AnyNumber())
         .WillRepeatedly(testing::Return(true));
     parser_->Init(
@@ -79,10 +79,7 @@ class WebMStreamParserTest : public testing::Test {
     return true;
   }
 
-  MOCK_METHOD3(NewBuffersCB,
-               bool(const StreamParser::BufferQueue&,
-                    const StreamParser::BufferQueue&,
-                    const StreamParser::TextBufferQueueMap&));
+  MOCK_METHOD1(NewBuffersCB, bool(const StreamParser::BufferQueueMap&));
   MOCK_METHOD2(OnEncryptedMediaInitData,
                void(EmeInitDataType init_data_type,
                     const std::vector<uint8_t>& init_data));

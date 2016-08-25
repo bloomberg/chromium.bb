@@ -111,24 +111,25 @@ static bool MergeBufferQueuesInternal(
   }
 }
 
-bool MergeBufferQueues(const StreamParser::BufferQueue& audio_buffers,
-                       const StreamParser::BufferQueue& video_buffers,
-                       const StreamParser::TextBufferQueueMap& text_buffers,
+bool MergeBufferQueues(const StreamParser::BufferQueueMap& buffer_queue_map,
                        StreamParser::BufferQueue* merged_buffers) {
   DCHECK(merged_buffers);
 
   // Prepare vector containing pointers to any provided non-empty buffer queues.
+
+  // Append audio buffer queues first, before all other types, since
+  // FrameProcessorTest.AudioVideo_Discontinuity currently depends on audio
+  // buffers being processed first.
   std::vector<const StreamParser::BufferQueue*> buffer_queues;
-  if (!audio_buffers.empty())
-    buffer_queues.push_back(&audio_buffers);
-  if (!video_buffers.empty())
-    buffer_queues.push_back(&video_buffers);
-  for (StreamParser::TextBufferQueueMap::const_iterator map_itr =
-           text_buffers.begin();
-       map_itr != text_buffers.end();
-       map_itr++) {
-    if (!map_itr->second.empty())
-      buffer_queues.push_back(&(map_itr->second));
+  for (const auto& it : buffer_queue_map) {
+    DCHECK(!it.second.empty());
+    if (it.second[0]->type() == DemuxerStream::AUDIO)
+      buffer_queues.push_back(&it.second);
+  }
+  for (const auto& it : buffer_queue_map) {
+    DCHECK(!it.second.empty());
+    if (it.second[0]->type() != DemuxerStream::AUDIO)
+      buffer_queues.push_back(&it.second);
   }
 
   // Do the merge.

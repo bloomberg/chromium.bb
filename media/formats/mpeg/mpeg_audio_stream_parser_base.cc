@@ -408,9 +408,9 @@ bool MPEGAudioStreamParserBase::SendBuffers(BufferQueue* buffers,
     new_segment_cb_.Run();
   }
 
-  BufferQueue empty_video_buffers;
-  TextBufferQueueMap empty_text_map;
-  if (!new_buffers_cb_.Run(*buffers, empty_video_buffers, empty_text_map))
+  BufferQueueMap buffer_queue_map;
+  buffer_queue_map.insert(std::make_pair(kMpegAudioTrackId, *buffers));
+  if (!new_buffers_cb_.Run(buffer_queue_map))
     return false;
   buffers->clear();
 
