@@ -717,6 +717,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
     content_->Show();
   content_->SetTransparent(true);
   content_->SetFillsBoundsCompletely(false);
+  content_->set_ignore_events(!params.accept_events);
   hosted_window->AddChild(content_);
 
   // Set-up transiency if appropriate.
