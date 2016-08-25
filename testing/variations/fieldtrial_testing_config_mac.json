@@ -374,6 +374,17 @@
             "group_name": "ExperimentYes"
         }
     ],
+    "SpeculativeLaunchServiceWorker": [
+        {
+            "enable_features": [
+                "SpeculativeLaunchServiceWorker"
+            ],
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"
