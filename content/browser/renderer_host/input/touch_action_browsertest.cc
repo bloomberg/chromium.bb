@@ -164,7 +164,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     // Expect that the compositor scrolled at least one pixel while the
     // main thread was in a busy loop.
     while (wait_until_scrolled &&
-           frame_watcher->LastMetadata().root_scroll_offset.y() <= 0) {
+           frame_watcher->LastMetadata().root_scroll_offset.y() <
+               distance.y()) {
       frame_watcher->WaitFrames(1);
     }
 
