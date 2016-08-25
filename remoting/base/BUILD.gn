@@ -2,12 +2,44 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//remoting/remoting_srcs.gni")
-
 source_set("base") {
-  sources = rebase_path(remoting_srcs_gypi_values.remoting_base_sources,
-                        ".",
-                        "//remoting")
+  sources = [
+    "auto_thread.cc",
+    "auto_thread.h",
+    "auto_thread_task_runner.cc",
+    "auto_thread_task_runner.h",
+    "buffered_socket_writer.cc",
+    "buffered_socket_writer.h",
+    "capabilities.cc",
+    "capabilities.h",
+    "chromium_url_request.cc",
+    "chromium_url_request.h",
+    "chromoting_event.cc",
+    "chromoting_event.h",
+    "compound_buffer.cc",
+    "compound_buffer.h",
+    "constants.cc",
+    "constants.h",
+    "rate_counter.cc",
+    "rate_counter.h",
+    "rsa_key_pair.cc",
+    "rsa_key_pair.h",
+    "running_samples.cc",
+    "running_samples.h",
+    "scoped_sc_handle_win.h",
+    "socket_reader.cc",
+    "socket_reader.h",
+    "telemetry_log_writer.cc",
+    "telemetry_log_writer.h",
+    "typed_buffer.h",
+    "url_request.h",
+    "url_request_context_getter.cc",
+    "url_request_context_getter.h",
+    "util.cc",
+    "util.h",
+    "vlog_net_log.cc",
+    "vlog_net_log.h",
+  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 

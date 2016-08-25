@@ -2,13 +2,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//remoting/remoting_srcs.gni")
-
 source_set("setup") {
-  sources =
-      rebase_path(remoting_host_srcs_gypi_values.remoting_host_setup_sources,
-                  ".",
-                  "//remoting")
+  sources = [
+    "daemon_controller.cc",
+    "daemon_controller.h",
+    "daemon_controller_delegate_linux.cc",
+    "daemon_controller_delegate_linux.h",
+    "daemon_controller_delegate_mac.h",
+    "daemon_controller_delegate_mac.mm",
+    "daemon_controller_delegate_win.cc",
+    "daemon_controller_delegate_win.h",
+    "gaia_oauth_client.cc",
+    "gaia_oauth_client.h",
+    "me2me_native_messaging_host.cc",
+    "me2me_native_messaging_host.h",
+    "oauth_client.h",
+    "oauth_helper.cc",
+    "oauth_helper.h",
+    "pin_validator.cc",
+    "pin_validator.h",
+    "service_client.cc",
+    "service_client.h",
+    "test_util.cc",
+    "test_util.h",
+    "win/auth_code_getter.cc",
+    "win/auth_code_getter.h",
+  ]
 
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

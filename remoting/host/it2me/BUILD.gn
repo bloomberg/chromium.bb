@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//remoting/remoting_enable.gni")
-import("//remoting/remoting_srcs.gni")
 import("//remoting/remoting_locales.gni")
 import("//remoting/remoting_version.gni")
 
@@ -17,10 +16,17 @@ if (is_mac) {
 }
 
 source_set("common") {
-  sources = rebase_path(
-          remoting_host_srcs_gypi_values.remoting_it2me_host_static_sources,
-          ".",
-          "//remoting")
+  sources = [
+    "it2me_confirmation_dialog.cc",
+    "it2me_confirmation_dialog.h",
+    "it2me_confirmation_dialog_chromeos.cc",
+    "it2me_confirmation_dialog_proxy.cc",
+    "it2me_confirmation_dialog_proxy.h",
+    "it2me_host.cc",
+    "it2me_host.h",
+    "it2me_native_messaging_host.cc",
+    "it2me_native_messaging_host.h",
+  ]
 
   if (is_android) {
     sources -= [

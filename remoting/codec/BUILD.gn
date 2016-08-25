@@ -2,12 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//remoting/remoting_srcs.gni")
-
 source_set("codec") {
-  sources = rebase_path(remoting_srcs_gypi_values.remoting_codec_sources,
-                        ".",
-                        "//remoting")
+  sources = [
+    "audio_decoder.cc",
+    "audio_decoder.h",
+    "audio_decoder_opus.cc",
+    "audio_decoder_opus.h",
+    "audio_decoder_verbatim.cc",
+    "audio_decoder_verbatim.h",
+    "audio_encoder.h",
+    "audio_encoder_opus.cc",
+    "audio_encoder_opus.h",
+    "audio_encoder_verbatim.cc",
+    "audio_encoder_verbatim.h",
+    "scoped_vpx_codec.cc",
+    "scoped_vpx_codec.h",
+    "video_decoder.h",
+    "video_decoder_verbatim.cc",
+    "video_decoder_verbatim.h",
+    "video_decoder_vpx.cc",
+    "video_decoder_vpx.h",
+    "video_encoder.cc",
+    "video_encoder.h",
+    "video_encoder_helper.cc",
+    "video_encoder_helper.h",
+    "video_encoder_verbatim.cc",
+    "video_encoder_verbatim.h",
+    "video_encoder_vpx.cc",
+    "video_encoder_vpx.h",
+    "webrtc_video_encoder_vpx.cc",
+    "webrtc_video_encoder_vpx.h",
+  ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
