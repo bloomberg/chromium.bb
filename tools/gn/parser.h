@@ -111,7 +111,12 @@ class Parser {
                 const char* error_message);
   Token Consume();
 
+  // Call this only if !at_end().
   const Token& cur_token() const { return tokens_[cur_]; }
+
+  const Token& cur_or_last_token() const {
+    return at_end() ? tokens_[tokens_.size() - 1] : cur_token();
+  }
 
   bool done() const { return at_end() || has_error(); }
   bool at_end() const { return cur_ >= tokens_.size(); }

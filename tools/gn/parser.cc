@@ -388,7 +388,8 @@ Token Parser::Consume(Token::Type* types,
   if (has_error()) {
     // Don't overwrite current error, but make progress through tokens so that
     // a loop that's expecting a particular token will still terminate.
-    cur_++;
+    if (!at_end())
+      cur_++;
     return Token(Location(), Token::INVALID, base::StringPiece());
   }
   if (at_end()) {
@@ -708,7 +709,7 @@ std::unique_ptr<ParseNode> Parser::ParseStatement() {
         return stmt;
     }
     if (!has_error()) {
-      Token token = at_end() ? tokens_[tokens_.size() - 1] : cur_token();
+      Token token = cur_or_last_token();
       *err_ = Err(token, "Expecting assignment or function call.");
     }
     return std::unique_ptr<ParseNode>();
@@ -755,7 +756,7 @@ std::unique_ptr<ParseNode> Parser::ParseCondition() {
     } else if (LookAhead(Token::IF)) {
       condition->set_if_false(ParseStatement());
     } else {
-      *err_ = Err(cur_token(), "Expected '{' or 'if' after 'else'.");
+      *err_ = Err(cur_or_last_token(), "Expected '{' or 'if' after 'else'.");
       return std::unique_ptr<ParseNode>();
     }
   }
