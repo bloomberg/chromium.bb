@@ -492,14 +492,19 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
       current_scale_factor_ = frame_device_scale_factor;
     }
 
-    frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
-                                       skipped_latency_info_list_.begin(),
-                                       skipped_latency_info_list_.end());
-    skipped_latency_info_list_.clear();
-
     gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
-    if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())
+    if (desired_size != frame_size_in_dip && !desired_size.IsEmpty()) {
       skip_frame = true;
+      skipped_latency_info_list_.insert(skipped_latency_info_list_.end(),
+                                        frame.metadata.latency_info.begin(),
+                                        frame.metadata.latency_info.end());
+      frame.metadata.latency_info.clear();
+    } else {
+      frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
+                                         skipped_latency_info_list_.begin(),
+                                         skipped_latency_info_list_.end());
+      skipped_latency_info_list_.clear();
+    }
 
     cc::SurfaceFactory::DrawCallback ack_callback;
     if (compositor_ && !skip_frame) {
