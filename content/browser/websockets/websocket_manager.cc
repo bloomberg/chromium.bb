@@ -53,7 +53,7 @@ class WebSocketManager::Handle : public base::SupportsUserData::Data,
 
 // static
 void WebSocketManager::CreateWebSocket(int process_id, int frame_id,
-                                       blink::mojom::WebSocketRequest request) {
+                                       mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RenderProcessHost* host = RenderProcessHost::FromID(process_id);
@@ -102,9 +102,8 @@ WebSocketManager::~WebSocketManager() {
   }
 }
 
-void WebSocketManager::DoCreateWebSocket(
-    int frame_id,
-    blink::mojom::WebSocketRequest request) {
+void WebSocketManager::DoCreateWebSocket(int frame_id,
+                                         mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (num_pending_connections_ >= kMaxPendingWebSocketConnections) {
@@ -158,7 +157,7 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
 
 WebSocketImpl* WebSocketManager::CreateWebSocketImpl(
     WebSocketImpl::Delegate* delegate,
-    blink::mojom::WebSocketRequest request,
+    mojom::WebSocketRequest request,
     int frame_id,
     base::TimeDelta delay) {
   return new WebSocketImpl(delegate, std::move(request), frame_id, delay);

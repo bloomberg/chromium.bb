@@ -92,6 +92,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool isLinkVisited(unsigned long long linkHash) override;
   void createMessageChannel(blink::WebMessagePortChannel** channel1,
                             blink::WebMessagePortChannel** channel2) override;
+  blink::WebSocketHandle* createWebSocketHandle() override;
   blink::WebPrescientNetworking* prescientNetworking() override;
   void cacheMetadata(const blink::WebURL&,
                      int64_t,

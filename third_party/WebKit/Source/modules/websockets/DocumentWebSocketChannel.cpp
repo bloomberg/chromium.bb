@@ -45,11 +45,16 @@
 #include "modules/websockets/InspectorWebSocketEvents.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketFrame.h"
-#include "modules/websockets/WebSocketHandle.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/websockets/WebSocketHandshakeRequestInfo.h"
+#include "public/platform/modules/websockets/WebSocketHandshakeResponseInfo.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -131,7 +136,7 @@ void DocumentWebSocketChannel::BlobLoader::didFail(FileError::ErrorCode errorCod
 
 DocumentWebSocketChannel::DocumentWebSocketChannel(Document* document, WebSocketChannelClient* client, std::unique_ptr<SourceLocation> location, WebSocketHandle *handle)
     : ContextLifecycleObserver(document)
-    , m_handle(wrapUnique(handle ? handle : new WebSocketHandle()))
+    , m_handle(wrapUnique(handle ? handle : Platform::current()->createWebSocketHandle()))
     , m_client(client)
     , m_identifier(createUniqueIdentifier())
     , m_sendingQuota(0)
@@ -170,17 +175,14 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
         // it.
         protocol.split(", ", true, protocols);
     }
-
-    if (document()->frame()) {
-        // Initialize the WebSocketHandle with the frame's InterfaceProvider to
-        // provide the WebSocket implementation with context about this frame.
-        // This is important so that the browser can show UI associated with
-        // the WebSocket (e.g., for certificate errors).
-        m_handle->initialize(document()->frame()->interfaceProvider());
-    } else {
-        m_handle->initialize(Platform::current()->interfaceProvider());
+    WebVector<WebString> webProtocols(protocols.size());
+    for (size_t i = 0; i < protocols.size(); ++i) {
+        webProtocols[i] = protocols[i];
     }
-    m_handle->connect(url, protocols, getExecutionContext()->getSecurityOrigin(), document()->firstPartyForCookies(), document()->userAgent(), this);
+
+    if (document()->frame())
+        document()->frame()->loader().client()->dispatchWillOpenWebSocket(m_handle.get());
+    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), document()->firstPartyForCookies(), document()->userAgent(), this);
 
     flowControlIfNecessary();
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketCreateEvent::data(document(), m_identifier, url, protocol));
@@ -409,7 +411,7 @@ Document* DocumentWebSocketChannel::document()
     return toDocument(context);
 }
 
-void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const String& selectedProtocol, const String& extensions)
+void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const WebString& selectedProtocol, const WebString& extensions)
 {
     NETWORK_DVLOG(1) << this << " didConnect(" << handle << ", " << String(selectedProtocol) << ", " << String(extensions) << ")";
 
@@ -420,7 +422,7 @@ void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const String&
     m_client->didConnect(selectedProtocol, extensions);
 }
 
-void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle, PassRefPtr<WebSocketHandshakeRequest> request)
+void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeRequestInfo& request)
 {
     NETWORK_DVLOG(1) << this << " didStartOpeningHandshake(" << handle << ")";
 
@@ -428,11 +430,11 @@ void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle,
     ASSERT(handle == m_handle.get());
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketSendHandshakeRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketEvent::data(document(), m_identifier));
-    InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, request.get());
-    m_handshakeRequest = request;
+    InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, &request.toCoreRequest());
+    m_handshakeRequest = WebSocketHandshakeRequest::create(request.toCoreRequest());
 }
 
-void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponse* response)
+void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle, const WebSocketHandshakeResponseInfo& response)
 {
     NETWORK_DVLOG(1) << this << " didFinishOpeningHandshake(" << handle << ")";
 
@@ -440,11 +442,11 @@ void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle
     ASSERT(handle == m_handle.get());
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketReceiveHandshakeResponse", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketEvent::data(document(), m_identifier));
-    InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, m_handshakeRequest.get(), response);
+    InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, m_handshakeRequest.get(), &response.toCoreResponse());
     m_handshakeRequest.clear();
 }
 
-void DocumentWebSocketChannel::didFail(WebSocketHandle* handle, const String& message)
+void DocumentWebSocketChannel::didFail(WebSocketHandle* handle, const WebString& message)
 {
     NETWORK_DVLOG(1) << this << " didFail(" << handle << ", " << String(message) << ")";
 
@@ -509,7 +511,7 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle, bool fin,
     }
 }
 
-void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const String& reason)
+void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const WebString& reason)
 {
     NETWORK_DVLOG(1) << this << " didClose(" << handle << ", " << wasClean << ", " << code << ", " << String(reason) << ")";
 

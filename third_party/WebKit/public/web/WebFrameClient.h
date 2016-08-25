@@ -91,6 +91,7 @@ class WebMediaSession;
 class WebMediaStream;
 class WebNotificationPermissionCallback;
 class WebServiceWorkerProvider;
+class WebSocketHandle;
 class WebPlugin;
 class WebPresentationClient;
 class WebPushClient;
@@ -549,6 +550,11 @@ public:
         WebStorageQuotaType,
         unsigned long long newQuotaInBytes,
         WebStorageQuotaCallbacks) { }
+
+    // WebSocket -----------------------------------------------------
+
+    // A WebSocket object is going to open a new WebSocket connection.
+    virtual void willOpenWebSocket(WebSocketHandle*) { }
 
     // MediaStream -----------------------------------------------------
 

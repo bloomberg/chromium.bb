@@ -155,6 +155,8 @@ public:
     void didAddContentSecurityPolicy(const String& headerValue, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource) override;
     void didChangeFrameOwnerProperties(HTMLFrameElementBase*) override;
 
+    void dispatchWillOpenWebSocket(WebSocketHandle*) override;
+
     void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) override;
 
     bool allowWebGL(bool enabledPerSettings) override;

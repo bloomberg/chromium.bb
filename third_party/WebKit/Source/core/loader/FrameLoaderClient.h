@@ -231,6 +231,8 @@ public:
 
     virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) { }
 
+    virtual void dispatchWillOpenWebSocket(WebSocketHandle*) { }
+
     virtual void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) { }
 
     virtual bool allowWebGL(bool enabledPerSettings) { return enabledPerSettings; }

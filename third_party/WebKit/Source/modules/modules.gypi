@@ -1980,9 +1980,6 @@
       'websockets/WebSocketChannelClient.h',
       'websockets/WebSocketFrame.cpp',
       'websockets/WebSocketFrame.h',
-      'websockets/WebSocketHandle.cpp',
-      'websockets/WebSocketHandle.h',
-      'websockets/WebSocketHandleClient.h',
       'websockets/WorkerWebSocketChannel.cpp',
       'websockets/WorkerWebSocketChannel.h',
       'webusb/NavigatorUSB.cpp',
@@ -2097,7 +2094,6 @@
       'webdatabase/QuotaTrackerTest.cpp',
       'websockets/DOMWebSocketTest.cpp',
       'websockets/DocumentWebSocketChannelTest.cpp',
-      'websockets/WebSocketHandle.cpp',
     ],
   },
 }

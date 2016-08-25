@@ -7,7 +7,6 @@ include_rules = [
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
     "+modules/websockets",
-    "+mojo/public/cpp/bindings",
     "+platform",
     "+public/platform",
     "-web",

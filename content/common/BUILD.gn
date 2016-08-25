@@ -254,6 +254,7 @@ mojom("mojo_bindings") {
     "storage_partition_service.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
+    "websocket.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

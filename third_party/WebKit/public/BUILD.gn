@@ -205,10 +205,9 @@ mojom("new_wrapper_types_mojo_bindings") {
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
-    "platform/modules/websockets/websocket.mojom",
   ]
+
   public_deps = [
-    "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]
 

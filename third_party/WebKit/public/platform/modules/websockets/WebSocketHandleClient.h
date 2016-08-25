@@ -31,26 +31,28 @@
 #ifndef WebSocketHandleClient_h
 #define WebSocketHandleClient_h
 
-#include "modules/websockets/WebSocketHandle.h"
-#include "wtf/Forward.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/modules/websockets/WebSocketHandle.h"
 
 namespace blink {
-class WebSocketHandshakeRequest;
-class WebSocketHandshakeResponse;
+
+class WebSocketHandshakeRequestInfo;
+class WebSocketHandshakeResponseInfo;
 
 class WebSocketHandleClient {
 public:
     // Called when the handle is opened.
-    virtual void didConnect(WebSocketHandle*, const String& selectedProtocol, const String& extensions) = 0;
+    virtual void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) = 0;
 
     // Called when the browser starts the opening handshake.
     // This notification can be omitted when the inspector is not active.
-    virtual void didStartOpeningHandshake(WebSocketHandle*, PassRefPtr<WebSocketHandshakeRequest>) = 0;
+    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) = 0;
 
     // Called when the browser finishes the opening handshake.
     // This notification precedes didConnect.
     // This notification can be omitted when the inspector is not active.
-    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponse*) = 0;
+    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) = 0;
 
     // Called when the browser is required to fail the connection.
     // |message| can be displayed in the inspector, but should not be passed
@@ -58,14 +60,14 @@ public:
     // This message also implies that channel is closed with
     // (wasClean = false, code = 1006, reason = "") and
     // |handle| becomes unavailable.
-    virtual void didFail(WebSocketHandle* /* handle */, const String& message) = 0;
+    virtual void didFail(WebSocketHandle* /* handle */, const WebString& message) = 0;
 
     // Called when data are received.
-    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t) = 0;
+    virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) = 0;
 
     // Called when the handle is closed.
     // |handle| becomes unavailable once this notification arrives.
-    virtual void didClose(WebSocketHandle* /* handle */, bool wasClean, unsigned short code, const String& reason) = 0;
+    virtual void didClose(WebSocketHandle* /* handle */, bool wasClean, unsigned short code, const WebString& reason) = 0;
 
     virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
 

@@ -37,10 +37,10 @@
 #include "core/fileapi/FileError.h"
 #include "modules/ModulesExport.h"
 #include "modules/websockets/WebSocketChannel.h"
-#include "modules/websockets/WebSocketHandle.h"
-#include "modules/websockets/WebSocketHandleClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/modules/websockets/WebSocketHandle.h"
+#include "public/platform/modules/websockets/WebSocketHandleClient.h"
 #include "wtf/Deque.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -54,6 +54,8 @@ namespace blink {
 
 class Document;
 class WebSocketHandshakeRequest;
+class WebSocketHandshakeRequestInfo;
+class WebSocketHandshakeResponseInfo;
 
 // This class is a WebSocketChannel subclass that works with a Document in a
 // DOMWindow (i.e. works in the main thread).
@@ -114,12 +116,12 @@ private:
     Document* document();
 
     // WebSocketHandleClient functions.
-    void didConnect(WebSocketHandle*, const String& selectedProtocol, const String& extensions) override;
-    void didStartOpeningHandshake(WebSocketHandle*, PassRefPtr<WebSocketHandshakeRequest>) override;
-    void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponse*) override;
-    void didFail(WebSocketHandle*, const String& message) override;
-    void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t) override;
-    void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const String& reason) override;
+    void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) override;
+    void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) override;
+    void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) override;
+    void didFail(WebSocketHandle*, const WebString& message) override;
+    void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) override;
+    void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) override;
     void didReceiveFlowControl(WebSocketHandle*, int64_t quota) override;
     void didStartClosingHandshake(WebSocketHandle*) override;
 
