@@ -61,7 +61,12 @@ class MetricsReportingHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
+    // For crbug.com/637068 which only run on official bots with no try jobs.
+    base::RunLoop().RunUntilIdle();
     handler_.reset();
+    base::RunLoop().RunUntilIdle();
+    local_state_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   PrefService* local_state() { return local_state_->Get(); }
