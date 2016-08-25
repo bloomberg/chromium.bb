@@ -35,10 +35,9 @@ class DragCaretController final : public GarbageCollectedFinalized<DragCaretCont
 public:
     static DragCaretController* create();
 
-    LayoutBlock* caretLayoutObject() const;
     void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
 
-    bool isContentEditable() const;
+    bool hasCaretIn(const LayoutBlock&) const;
     bool isContentRichlyEditable() const;
 
     bool hasCaret() const { return m_position.isNotNull(); }

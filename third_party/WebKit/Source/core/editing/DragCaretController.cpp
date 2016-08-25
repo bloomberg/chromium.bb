@@ -26,6 +26,7 @@
 #include "core/editing/DragCaretController.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/frame/Settings.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 
@@ -39,6 +40,19 @@ DragCaretController::DragCaretController()
 DragCaretController* DragCaretController::create()
 {
     return new DragCaretController;
+}
+
+bool DragCaretController::hasCaretIn(const LayoutBlock& layoutBlock) const
+{
+    Node* node = m_position.deepEquivalent().anchorNode();
+    if (!node)
+        return false;
+    if (layoutBlock != CaretBase::caretLayoutObject(node))
+        return false;
+    if (rootEditableElementOf(m_position))
+        return true;
+    Settings* settings = node->ownerDocument()->frame()->settings();
+    return settings && settings->caretBrowsingEnabled();
 }
 
 bool DragCaretController::isContentRichlyEditable() const
@@ -100,16 +114,6 @@ DEFINE_TRACE(DragCaretController)
 {
     visitor->trace(m_position);
     visitor->trace(m_caretBase);
-}
-
-LayoutBlock* DragCaretController::caretLayoutObject() const
-{
-    return CaretBase::caretLayoutObject(m_position.deepEquivalent().anchorNode());
-}
-
-bool DragCaretController::isContentEditable() const
-{
-    return rootEditableElementOf(m_position);
 }
 
 void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext& context, const LayoutPoint& paintOffset) const

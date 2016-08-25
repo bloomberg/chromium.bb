@@ -1607,7 +1607,7 @@ bool LayoutBlock::hasDragCaret() const
 {
     LocalFrame* frame = this->frame();
     DragCaretController& dragCaretController = frame->page()->dragCaretController();
-    return dragCaretController.caretLayoutObject() == this && (dragCaretController.isContentEditable() || caretBrowsingEnabled(frame));
+    return dragCaretController.hasCaretIn(*this);
 }
 
 LayoutRect LayoutBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, LayoutUnit* extraWidthToEndOfLine)
