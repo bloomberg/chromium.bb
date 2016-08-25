@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -172,6 +173,51 @@ TEST_F(LoggingTest, TabControl) {
   VerifyLogOutput(
       "type=TAB_CONTROL subtype=SIZE size=640x480:2.00 target_tab_id=123",
       size_msg);
+}
+
+TEST_F(LoggingTest, Geolocation) {
+  BlimpMessage base_msg;
+
+  BlimpMessage interest_level_msg = base_msg;
+  interest_level_msg.mutable_geolocation()->mutable_set_interest_level()
+      ->set_level(GeolocationSetInterestLevelMessage::HIGH_ACCURACY);
+  VerifyLogOutput("type=GEOLOCATION subtype=SET_INTEREST_LEVEL "
+                  "level=1", interest_level_msg);
+
+  BlimpMessage request_refresh_msg = base_msg;
+  request_refresh_msg.mutable_geolocation()->mutable_request_refresh();
+  VerifyLogOutput("type=GEOLOCATION subtype=REQUEST_REFRESH",
+                  request_refresh_msg);
+
+  BlimpMessage coordinates_msg = base_msg;
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_latitude(140);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_longitude(150);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_altitude(160);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_accuracy(50);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_altitude_accuracy(60);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()
+      ->set_heading(70);
+  coordinates_msg.mutable_geolocation()->mutable_coordinates()->set_speed(80);
+  VerifyLogOutput("type=GEOLOCATION subtype=COORDINATES "
+                  "latitude=140.000000 longitude=150.000000 "
+                  "altitude=160.000000 accuracy=50.000000 "
+                  "altitude_accuracy=60.000000 heading=70.000000 "
+                  "speed=80.000000",
+                  coordinates_msg);
+
+  BlimpMessage error_msg = base_msg;
+  error_msg.mutable_geolocation()->mutable_error()->set_error_code(
+      GeolocationErrorMessage::TIMEOUT);
+  error_msg.mutable_geolocation()->mutable_error()->set_error_message(
+      "Timeout occured.");
+  VerifyLogOutput("type=GEOLOCATION subtype=ERROR "
+                  "error_code=3 error_message=\"Timeout occured.\"",
+                  error_msg);
 }
 
 TEST_F(LoggingTest, ProtocolControl) {

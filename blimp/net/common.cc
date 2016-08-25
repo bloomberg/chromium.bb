@@ -6,7 +6,7 @@
 
 namespace blimp {
 
-const size_t kMaxPacketPayloadSizeBytes = 5 * 1024 * 1024;  // 5MB
+const size_t kMaxPacketPayloadSizeBytes = 20 * 1024 * 1024;  // 20MB
 const size_t kPacketHeaderSizeBytes = 4;
 
 }  // namespace blimp

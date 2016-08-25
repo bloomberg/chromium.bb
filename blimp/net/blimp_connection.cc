@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -73,7 +74,6 @@ void BlimpMessageSender::ProcessMessage(
     callback.Run(net::ERR_MSG_TOO_BIG);
     return;
   }
-
   if (!message->SerializeToArray(buffer_->data(), message->GetCachedSize())) {
     DLOG(ERROR) << "Failed to serialize message.";
     callback.Run(net::ERR_INVALID_ARGUMENT);

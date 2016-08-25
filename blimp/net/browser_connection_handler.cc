@@ -4,6 +4,8 @@
 
 #include "blimp/net/browser_connection_handler.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "blimp/net/blimp_connection.h"
@@ -19,7 +21,7 @@ namespace {
 
 // Maximum footprint of the output buffer.
 // TODO(kmarshall): Use a value that's computed from the platform.
-const int kMaxBufferSizeBytes = 1 << 24;
+const int kMaxBufferSizeBytes = 32 * 1024 * 1024;
 
 }  // namespace
 
