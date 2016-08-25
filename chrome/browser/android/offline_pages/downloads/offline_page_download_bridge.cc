@@ -12,11 +12,15 @@
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/recent_tab_helper.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageDownloadBridge_jni.h"
@@ -148,19 +152,37 @@ void OfflinePageDownloadBridge::StartDownload(
   if (!web_contents)
     return;
 
+  GURL url = web_contents->GetLastCommittedURL();
+  offline_pages::ClientId client_id;
+  client_id.name_space = offline_pages::kDownloadNamespace;
+  client_id.id = base::GenerateGUID();
+
+  // If the page is not loaded enough to be captured, submit a background loader
+  // request instead.
+  offline_pages::RecentTabHelper* tab_helper =
+      RecentTabHelper::FromWebContents(web_contents);
+  if (tab_helper &&
+      !tab_helper->is_page_ready_for_snapshot() &&
+      offline_pages::IsBackgroundLoaderForDownloadsEnabled()) {
+    // TODO(dimich): Improve this to wait for the page load if it is still going
+    // on. Pre-submit the request and if the load finishes and capture happens,
+    // remove request.
+    offline_pages::RequestCoordinator* request_coordinator =
+        offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
+            tab->GetProfile()->GetOriginalProfile());
+    request_coordinator->SavePageLater(url, client_id, true);
+    return;
+  }
+
+  // Page is ready, capture it right from the tab.
   offline_pages::OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(
       tab->GetProfile()->GetOriginalProfile());
   if (!offline_page_model)
     return;
 
-  GURL url = web_contents->GetLastCommittedURL();
   auto archiver =
       base::MakeUnique<offline_pages::OfflinePageMHTMLArchiver>(web_contents);
-
-  offline_pages::ClientId client_id;
-  client_id.name_space = offline_pages::kDownloadNamespace;
-  client_id.id = base::GenerateGUID();
 
   DownloadUIItem item;
   item.guid = client_id.id;
