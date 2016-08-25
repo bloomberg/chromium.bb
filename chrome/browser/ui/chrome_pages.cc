@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,6 +33,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -102,8 +104,11 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, NEW_FOREGROUND_TAB, app_launch_source));
+  OpenApplication(
+      AppLaunchParams(profile, extension,
+                      extensions::GetLaunchContainer(
+                          extensions::ExtensionPrefs::Get(profile), extension),
+                      NEW_FOREGROUND_TAB, app_launch_source, true));
 #else
   GURL url;
   switch (source) {

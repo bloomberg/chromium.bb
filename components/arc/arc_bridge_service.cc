@@ -53,6 +53,11 @@ bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
           base::FeatureList::IsEnabled(kArcEnabledFeature));
 }
 
+// static
+bool ArcBridgeService::GetAvailable(const base::CommandLine* command_line) {
+  return command_line->HasSwitch(chromeos::switches::kArcAvailable);
+}
+
 void ArcBridgeService::AddObserver(Observer* observer) {
   DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);

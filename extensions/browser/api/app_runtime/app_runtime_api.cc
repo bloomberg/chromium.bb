@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -138,18 +139,16 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEvent(
     BrowserContext* context,
     const Extension* extension,
     extensions::AppLaunchSource source,
-    std::unique_ptr<app_runtime::ActionData> action_data) {
-  app_runtime::LaunchData launch_data;
-
+    std::unique_ptr<app_runtime::LaunchData> launch_data) {
+  if (!launch_data)
+    launch_data = base::MakeUnique<app_runtime::LaunchData>();
   app_runtime::LaunchSource source_enum = GetLaunchSourceEnum(source);
   if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
-    launch_data.source = source_enum;
+    launch_data->source = source_enum;
   }
 
-  launch_data.action_data = std::move(action_data);
-
   DispatchOnLaunchedEventImpl(extension->id(), source_enum,
-                              launch_data.ToValue(), context);
+                              launch_data->ToValue(), context);
 }
 
 // static

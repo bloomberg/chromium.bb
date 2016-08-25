@@ -96,7 +96,7 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 
   OpenApplication(
       AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
+                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL, true));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();
