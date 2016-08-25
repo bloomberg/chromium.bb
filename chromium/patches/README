@@ -14,7 +14,7 @@ Upstream cherry-picks:
 Autorename:
   autorename_* files are renamed copies of various files that would cause
     base name collisions from mac libtool. These files are generated
-    by generate_gyp.py. https://chromium-review.googlesource.com/#/c/274543/
+    by generate_gn.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
   .gitignore has a "Chromium stuff" section.

@@ -236,7 +236,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
     RewriteFile(
         os.path.join(config_dir, 'config.h'),
         r'(#define HAVE_VFP_ARGS [01])',
-        r'/* \1 -- Disabled to allow softfp/hardfp selection at gyp time */')
+        (r'/* \1 -- softfp/hardfp selection is done by the chrome build */'))
 
 
 def main(argv):
@@ -246,7 +246,7 @@ def main(argv):
                     help='Branding to build; determines e.g. supported codecs')
   parser.add_option('--config-only', action='store_true',
                     help='Skip the build step. Useful when a given platform '
-                    'is not necessary for generate_gyp.py')
+                    'is not necessary for generate_gn.py')
   options, args = parser.parse_args(argv)
 
   if len(args) < 2:
@@ -401,7 +401,8 @@ def main(argv):
             # av_get_cpu_flags() is run outside of the sandbox when enabled.
             '--enable-neon',
             '--extra-cflags=-mtune=generic-armv7-a',
-            # NOTE: softfp/hardfp selected at gyp time.
+            # Enabling softfp lets us choose either softfp or hardfp when doing
+            # the chrome build.
             '--extra-cflags=-mfloat-abi=softfp',
         ])
         if target_arch == 'arm-neon':
@@ -420,7 +421,7 @@ def main(argv):
             '--target-os=linux',
             '--cross-prefix=armv7a-cros-linux-gnueabi-',
             '--extra-cflags=-mtune=cortex-a8',
-            # NOTE: softfp/hardfp selected at gyp time.
+            # NOTE: we don't need softfp for this hardware.
             '--extra-cflags=-mfloat-abi=hard',
         ])
 

@@ -4,15 +4,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittest for generate_gyp_py.
+"""Unittest for generate_gn.py.
 
 It's tough to test the lower-level GetSourceFiles() and GetObjectFiles()
 functions, so this focuses on the higher-level functions assuming those two
 functions are working as intended (i.e., producing lists of files).
 """
 
-import generate_gyp as gg
-from generate_gyp import SourceSet, SourceListCondition
+import generate_gn as gg
+from generate_gn import SourceSet, SourceListCondition
 import string
 import unittest
 
@@ -135,43 +135,6 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqual(c.conditions, set([SourceListCondition('1', '2', '5')]))
     self.assertFalse(c.IsEmpty())
 
-  def testGenerateGypStanza(self):
-    # ia32 should just be ia32.  Win should appear as an OS restriction.
-    a = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win')]))
-    a_stanza = a.GenerateGypStanza()
-    string.index(a_stanza, 'target_arch == "ia32"')
-    string.index(a_stanza, 'OS == "win"')
-
-    # x64 should just be x64.  Linux should appear as an OS restriction.
-    b = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('x64', 'Chromium', 'linux')]))
-    b_stanza = b.GenerateGypStanza()
-    string.index(b_stanza, 'target_arch == "x64"')
-    string.index(b_stanza, 'OS == "linux"')
-
-    # arm should just be arm.
-    c = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm', 'Chromium', 'linux')]))
-    c_stanza = c.GenerateGypStanza()
-    string.index(c_stanza, 'target_arch == "arm"')
-
-    # arm-neon should be arm and flip the arm_neon switch.
-    d = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm-neon', 'Chromium', 'linux')]))
-    d_stanza = d.GenerateGypStanza()
-    string.index(d_stanza, 'target_arch == "arm" and arm_neon == 1')
-
-    # Multiple conditions
-    e = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm', 'Chrome', 'win'),
-                       SourceListCondition('x64', 'Chromium', 'linux')]))
-    e_stanza = e.GenerateGypStanza()
-    string.index(e_stanza, ('OS == "win" and target_arch == "arm"'
-        ' and ffmpeg_branding == "Chrome"'))
-    string.index(e_stanza, ('OS == "linux" and target_arch == "x64"'
-        ' and ffmpeg_branding == "Chromium"'))
-
   def testGenerateGnStanza(self):
     # ia32 should be x86.  Win should appear as an OS restriction.
     a = SourceSet(set(['a', 'b']),
@@ -212,7 +175,7 @@ class SourceSetUnittest(unittest.TestCase):
   def testComplexSourceListConditions(self):
     # Create 2 sets with intersecting source 'a', but setup such that 'a'
     # is only valid for combinations (x86 && windows) || (x64 && linux). The
-    # generated gyp stanza should then not allow for inclusion of the 'a' file
+    # generated gn stanza should then not allow for inclusion of the 'a' file
     # for combinations like x86 && linux.
     a = SourceSet(set(['a']), set([SourceListCondition('x86', 'c', 'win')]))
     b = SourceSet(set(['a']), set([SourceListCondition('x64', 'c', 'linux')]))
@@ -221,7 +184,7 @@ class SourceSetUnittest(unittest.TestCase):
     # This condition is bad because x86 && linux would pass. Admittedly a very
     # fragile way to test this, but evaulating gn stanzas is hard, and it at
     # least serves to document the motivation for the associated changes to
-    # our generate_gyp.py
+    # our generate_gn.py
     bad_condition = ('(current_cpu == "x86" || current_cpu == "x64")'
                      ' && (ffmpeg_branding == "c")'
                      ' && (is_win || is_linux)')
@@ -382,16 +345,14 @@ class SourceSetUnittest(unittest.TestCase):
     expected = set([SourceListCondition('*', '*', '*')])
     self.assertEqualSets(expected, ss.conditions)
 
-  def testGenerateGypStanzaWildCard(self):
+  def testGenerateStanzaWildCard(self):
     a = SourceSet(set(['foo.c']),
                   set([SourceListCondition('x64', 'Chromium', '*')]))
-    gyp_stanza = a.GenerateGypStanza()
-    gn_stanza = a.GenerateGnStanza()
-    for stanza in [gyp_stanza, gn_stanza]:
-        string.index(stanza, '== "x64"')
-        string.index(stanza, 'ffmpeg_branding == "Chromium"')
-        # OS is wild-card, so it should not be mentioned in the stanza.
-        self.assertEqual(-1, string.find(stanza, 'OS =='))
+    stanza = a.GenerateGnStanza()
+    string.index(stanza, '== "x64"')
+    string.index(stanza, 'ffmpeg_branding == "Chromium"')
+    # OS is wild-card, so it should not be mentioned in the stanza.
+    self.assertEqual(-1, string.find(stanza, 'OS =='))
 
 if __name__ == '__main__':
   unittest.main()

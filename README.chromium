@@ -5,23 +5,23 @@ License File: CREDITS.chromium
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
 Last Upstream Merge: 855d9d29ebf135b08ffdc7436e529a3ab767f977, Feb 11 2016
 
-This file documents the layout of the Chromium copy of FFmpeg git, some common
-tasks, how to produce the FFmpeg include directory, and how to create the
-ffmpeg.gyp file and related configurations.
+This file documents the layout of the Chromium copy of FFmpeg, some common
+tasks, and how to create the build files and related configurations.
 
-FFmpeg Git Layout:
-==================
+FFmpeg Layout:
+==============
 
-Chromium's copy of FFmpeg is a fork of the upstream git repository, see the tags
-above for up-to-date cut information.  All of the Chromium-specific bits, minus
-the gyp files, are located under the chromium/ folder off the root.
+Chromium's copy of FFmpeg is a fork of the upstream git repository, see the
+tags above for the latest merged upstream revision.  All of the
+Chromium-specific bits, minus the gn files, are located under the chromium/
+folder off the root.
 
-    ffmpeg.gyp: See the section on ffmpeg.gyp below.
+    BUILD.gn: Has the targets for building FFmpeg for Chrome.
 
-    ffmpeg_generated.gypi: Pregenerated gyp listing of files necessary to build
-      every platform.  See chromium/scripts/generate_gyp.py for more details.
+    ffmpeg_generated.gni: Pregenerated listing of files necessary to build
+      every platform.  See chromium/scripts/generate_gn.py for more details.
 
-    chromium/scripts: Utilities for building the gyp and config files.
+    chromium/scripts: Utilities for building the gn and config files.
 
     chromium/config/...: Pregenerated FFmpeg config options for each platform
       and architecture; e.g., ChromeOS: ARM-Neon, Linux: X64, etc.

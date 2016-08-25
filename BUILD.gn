@@ -46,7 +46,7 @@ if (has_yasm_deps) {
 
     if (is_mac) {
       # Necessary to ensure symbols end up with a _ prefix; added by
-      # yasm_compile.gypi for Windows, but not Mac.
+      # yasm_assemble.gni for Windows, but not Mac.
       defines += [ "PREFIX" ]
     }
   }
@@ -145,7 +145,8 @@ target(link_target_type, "ffmpeg_internal") {
     "_XOPEN_SOURCE=600",
     "PIC",
     # Disable deprecated features that generate spammy warnings.
-    # ffmpeg.gyp & media/ffmpeg/ffmpeg_common.h must be kept in sync.
+    # media/ffmpeg/ffmpeg_common.h defines these as well and must be kept
+    # in sync with this file.
     "FF_API_CONVERGENCE_DURATION=0",
     # Upstream libavcodec/utils.c still uses the deprecated
     # av_dup_packet(), causing deprecation warnings.
