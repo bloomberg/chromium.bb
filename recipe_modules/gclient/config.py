@@ -10,7 +10,7 @@ from recipe_engine.config import ConfigList, Dict, Single, Static, Set, List
 from . import api as gclient_api
 
 
-def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
+def BaseConfig(USE_MIRROR=True, GIT_MODE=True, CACHE_DIR=None,
                PATCH_PROJECT=None, BUILDSPEC_VERSION=None,
                **_kwargs):
   deps = '.DEPS.git' if GIT_MODE else 'DEPS'
@@ -96,7 +96,7 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=False, CACHE_DIR=None,
 
 config_ctx = config_item_context(BaseConfig)
 
-def ChromiumSvnSubURL(c, *pieces):
+def ChromiumSvnSubURL(c, *pieces):  # pragma: no cover
   BASES = ('https://src.chromium.org',
            'svn://svn-mirror.golo.chromium.org')
   return '/'.join((BASES[c.USE_MIRROR],) + pieces)
@@ -106,19 +106,19 @@ def ChromiumGitURL(_c, *pieces):
 
 def ChromiumSrcURL(c):
   # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:  # pragma: no cover
+  if c.GIT_MODE:
     return ChromiumGitURL(c, 'chromium', 'src.git')
-  else:
+  else:  # pragma: no cover
     return ChromiumSvnSubURL(c, 'chrome', 'trunk', 'src')
 
 def BlinkURL(c):
   # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:  # pragma: no cover
+  if c.GIT_MODE:
     return ChromiumGitURL(c, 'chromium', 'blink.git')
-  else:
+  else:  # pragma: no cover
     return ChromiumSvnSubURL(c, 'blink', 'trunk')
 
-def ChromeSvnSubURL(c, *pieces):
+def ChromeSvnSubURL(c, *pieces):  # pragma: no cover
   BASES = ('svn://svn.chromium.org',
            'svn://svn-mirror.golo.chromium.org')
   return '/'.join((BASES[c.USE_MIRROR],) + pieces)
@@ -129,9 +129,9 @@ def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
 
 def ChromeInternalSrcURL(c):
   # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:  # pragma: no cover
+  if c.GIT_MODE:
     return ChromeInternalGitURL(c, 'chrome', 'src-internal.git')
-  else:
+  else:  # pragma: no cover
     return ChromeSvnSubURL(c, 'chrome-internal', 'trunk', 'src-internal')
 
 def mirror_only(c, obj, default=None):
@@ -350,8 +350,8 @@ def gyp(c):
   m['gyp'] = 'got_revision'
 
 @config_ctx(config_vars={'GIT_MODE': True})
-def build(c):  # pragma: no cover
-  if not c.GIT_MODE:
+def build(c):
+  if not c.GIT_MODE:  # pragma: no cover
     raise BadConf('build only supports git')
   s = c.solutions.add()
   s.name = 'build'
@@ -380,7 +380,7 @@ def skia(c):  # pragma: no cover
   m['skia'] = 'got_revision'
 
 @config_ctx(config_vars={'GIT_MODE': True})
-def chrome_golo(c): # pragma: no cover
+def chrome_golo(c):  # pragma: no cover
   if not c.GIT_MODE:
     raise BadConf('chrome_golo only supports git')
   s = c.solutions.add()

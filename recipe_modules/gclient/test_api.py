@@ -32,6 +32,6 @@ class GclientTestApi(recipe_test_api.RecipeTestApi):
     h = hashlib.sha1(project)
     if GIT_MODE:
       return h.hexdigest()
-    else:
+    else:  # pragma: no cover
       import struct
       return struct.unpack('!I', h.digest()[:4])[0] % 300000

@@ -153,7 +153,7 @@ class GclientApi(recipe_api.RecipeApi):
     step_test_data = lambda: (
       self.test_api.output_json(test_data_paths, cfg.GIT_MODE))
     try:
-      if not cfg.GIT_MODE:
+      if not cfg.GIT_MODE:  # pragma: no cover
         args = ['sync', '--nohooks', '--force', '--verbose']
         if cfg.delete_unversioned_trees:
           args.append('--delete_unversioned_trees')
@@ -239,7 +239,7 @@ class GclientApi(recipe_api.RecipeApi):
 
     sync_step = None
     try:
-      if not cfg.GIT_MODE:
+      if not cfg.GIT_MODE:  # pragma: no cover
         try:
           if revert:
             self.revert(**kwargs)
@@ -266,7 +266,7 @@ class GclientApi(recipe_api.RecipeApi):
 
     return sync_step
 
-  def revert(self, **kwargs):
+  def revert(self, **kwargs):  # pragma: no cover
     """Return a gclient_safe_revert step."""
     # Not directly calling gclient, so don't use self().
     alias = self.spec_alias
