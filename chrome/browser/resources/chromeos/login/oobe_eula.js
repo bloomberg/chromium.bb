@@ -33,6 +33,22 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * If "Report anonymous usage stats" checkbox is checked.
+     */
+    usageStatsChecked: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Reference to OOBE screen object.
+     * @type {!OobeTypes.Screen}
+     */
+    screen: {
+      type: Object,
+    },
   },
 
   /**
@@ -55,5 +71,34 @@ Polymer({
    */
   eulaAccepted_: function(event) {
     chrome.send('login.EulaScreen.userActed', ['accept-button']);
+  },
+
+  /**
+   * On-change event handler for usageStats.
+   *
+   * * @private
+   */
+  onUsageChanged_: function() {
+    this.screen.onUsageStatsClicked_(this.$.usageStats.checked);
+  },
+
+  /**
+   * On-tap event handler for installationSettings.
+   *
+   * * @private
+   */
+  onInstallationSettingsClicked_: function() {
+    chrome.send('eulaOnInstallationSettingsPopupOpened');
+    $('popup-overlay').hidden = false;
+    $('installation-settings-ok-button').focus();
+  },
+
+  /**
+   * On-tap event handler for stats-help-link.
+   *
+   * * @private
+   */
+  onUsageStatsHelpLinkClicked_: function() {
+    chrome.send('eulaOnLearnMore');
   },
 });

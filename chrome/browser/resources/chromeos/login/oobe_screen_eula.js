@@ -39,11 +39,19 @@ login.createScreen('EulaScreen', 'eula', function() {
 
       var self = this;
       $('usage-stats').addEventListener('click', function(event) {
-        self.context.set(CONTEXT_KEY_USAGE_STATS_ENABLED,
-                         $('usage-stats').checked);
-        self.commitContextChanges();
+        self.onUsageStatsClicked_($('usage-stats').checked);
         event.stopPropagation();
       });
+      $('oobe-eula-md').screen = this;
+    },
+
+    /**
+     * Event handler for $('usage-stats') click event.
+     * @param {boolean} value $('usage-stats').checked value.
+     */
+    onUsageStatsClicked_: function(value) {
+      this.context.set(CONTEXT_KEY_USAGE_STATS_ENABLED, value);
+      this.commitContextChanges();
     },
 
     /**

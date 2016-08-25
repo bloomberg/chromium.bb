@@ -246,6 +246,7 @@ cr.define('cr.ui.Oobe', function() {
      */
     setUsageStats: function(checked) {
       $('usage-stats').checked = checked;
+      $('oobe-eula-md').usageStatsChecked = checked;
     },
 
     /**

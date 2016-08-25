@@ -5,6 +5,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <iron-iconset-svg name="oobe-eula" size="24">
   <svg>
@@ -42,6 +44,20 @@
         <iframe id="crosEulaFrame" class="flex" src="chrome://terms"
             on-load="onFrameLoad_">
         </iframe>
+        <a id="installationSettings" href="#"
+            on-tap="onInstallationSettingsClicked_"
+            i18n-content="eulaSystemInstallationSettings">
+        </a>
+        <div id="logging">
+          <paper-checkbox aria-labelledby="usage-stats-label" id="usageStats"
+              checked="{{usageStatsChecked}}" on-change="onUsageChanged_">
+            <label id="usage-stats-label" i18n-content="checkboxLogging">
+            </label>
+            <a id="" href="#" i18n-content="learnMore"
+                on-tap="onUsageStatsHelpLinkClicked_">
+            </a>
+          </paper-checkbox>
+        </div>
       </div>
       <div class="bottom-buttons flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="eulaAccepted_"
