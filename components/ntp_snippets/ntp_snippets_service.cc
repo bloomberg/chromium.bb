@@ -50,9 +50,9 @@ namespace {
 // histograms with COUNTS() if this number increases beyond 50.
 const int kMaxSnippetCount = 10;
 
-// Default values for snippets fetching intervals.
-const int kDefaultFetchingIntervalWifiChargingSeconds = 30 * 60;
-const int kDefaultFetchingIntervalWifiSeconds = 2 * 60 * 60;
+// Default values for snippets fetching intervals - once per day only.
+const int kDefaultFetchingIntervalWifiChargingSeconds = 0;
+const int kDefaultFetchingIntervalWifiSeconds = 0;
 const int kDefaultFetchingIntervalFallbackSeconds = 24 * 60 * 60;
 
 // Variation parameters than can override the default fetching intervals.
