@@ -373,16 +373,21 @@ def PatchExperimentalCommandsAndEvents(json_api):
         command['experimental'] = True
       for event in domain.get('events', []):
         event['experimental'] = True
+
+
+def EnsureCommandsHaveParametersAndReturnTypes(json_api):
+  """
+  Make sure all commands have at least empty parameters and return values. This
+  guarantees API compatibility if a previously experimental command is made
+  stable.
+  """
+  for domain in json_api['domains']:
     for command in domain.get('commands', []):
-      if not command.get('experimental', False):
-        continue
       if not 'parameters' in command:
         command['parameters'] = []
       if not 'returns' in command:
         command['returns'] = []
     for event in domain.get('events', []):
-      if not event.get('experimental', False):
-        continue
       if not 'parameters' in event:
         event['parameters'] = []
 
@@ -422,6 +427,7 @@ if __name__ == '__main__':
   json_api, output_dirname = ParseArguments(sys.argv[1:])
   jinja_env = InitializeJinjaEnv(output_dirname)
   PatchExperimentalCommandsAndEvents(json_api)
+  EnsureCommandsHaveParametersAndReturnTypes(json_api)
   SynthesizeCommandTypes(json_api)
   SynthesizeEventTypes(json_api)
   PatchFullQualifiedRefs(json_api)

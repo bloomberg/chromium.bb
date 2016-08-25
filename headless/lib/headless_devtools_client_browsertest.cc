@@ -192,6 +192,11 @@ class HeadlessDevToolsClientExperimentalTest
                 .SetEnabled(false)
                 .Build());
 
+    // Check that a previously experimental command which takes no parameters
+    // still works by giving it a parameter object.
+    devtools_client_->GetRuntime()->GetExperimental()->RunIfWaitingForDebugger(
+        runtime::RunIfWaitingForDebuggerParams::Builder().Build());
+
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(
@@ -200,8 +205,15 @@ class HeadlessDevToolsClientExperimentalTest
 
   void OnFrameStoppedLoading(
       const page::FrameStoppedLoadingParams& params) override {
-    FinishAsynchronousTest();
+    // Check that a non-experimental command which has no return value can be
+    // called with a void() callback.
+    devtools_client_->GetPage()->Reload(
+        page::ReloadParams::Builder().Build(),
+        base::Bind(&HeadlessDevToolsClientExperimentalTest::OnReloadStarted,
+                   base::Unretained(this)));
   }
+
+  void OnReloadStarted() { FinishAsynchronousTest(); }
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientExperimentalTest);

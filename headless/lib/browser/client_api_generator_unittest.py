@@ -370,37 +370,13 @@ class ClientApiGeneratorTest(unittest.TestCase):
         }
       ]
     }
-    expected_types = [
-      {
-        'type': 'object',
-        'id': 'FooCommandParams',
-        'description': 'Parameters for the FooCommand command.',
-        'properties': [],
-      },
-      {
-        'type': 'object',
-        'id': 'FooCommandResult',
-        'description': 'Result for the FooCommand command.',
-        'properties': [],
-      },
-      {
-        'type': 'object',
-        'id': 'BarEventParams',
-        'description': 'Parameters for the BarEvent event.',
-        'properties': [],
-      }
-    ]
     client_api_generator.PatchExperimentalCommandsAndEvents(json_api)
-    client_api_generator.SynthesizeCommandTypes(json_api)
-    client_api_generator.SynthesizeEventTypes(json_api)
     for command in json_api['domains'][0]['commands']:
       self.assertTrue(command['experimental'])
     for event in json_api['domains'][0]['events']:
       self.assertTrue(command['experimental'])
-    types = json_api['domains'][0]['types']
-    self.assertListEqual(types, expected_types)
 
-  def test_PatchExperimentalCommandsAndEvents(self):
+  def test_EnsureCommandsHaveParametersAndReturnTypes(self):
     json_api = {
       'domains': [
         {
@@ -408,13 +384,11 @@ class ClientApiGeneratorTest(unittest.TestCase):
           'commands': [
             {
               'name': 'FooCommand',
-              'experimental': True,
             }
           ],
           'events': [
             {
               'name': 'BarEvent',
-              'experimental': True,
             }
           ]
         }
@@ -440,13 +414,9 @@ class ClientApiGeneratorTest(unittest.TestCase):
         'properties': [],
       }
     ]
-    client_api_generator.PatchExperimentalCommandsAndEvents(json_api)
+    client_api_generator.EnsureCommandsHaveParametersAndReturnTypes(json_api)
     client_api_generator.SynthesizeCommandTypes(json_api)
     client_api_generator.SynthesizeEventTypes(json_api)
-    for command in json_api['domains'][0]['commands']:
-      self.assertTrue(command['experimental'])
-    for event in json_api['domains'][0]['events']:
-      self.assertTrue(command['experimental'])
     types = json_api['domains'][0]['types']
     self.assertListEqual(types, expected_types)
 

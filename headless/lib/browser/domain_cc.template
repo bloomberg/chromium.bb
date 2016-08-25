@@ -32,19 +32,8 @@ void Domain::RemoveObserver(Observer* observer) {
 
     {% set class_name = 'ExperimentalDomain' if command.experimental else 'Domain' %}
     {% set method_name = command.name | to_title_case %}
-    {% if "parameters" in command and "returns" in command %}
 void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
   dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::Bind(&Domain::Handle{{method_name}}Response, callback));
-    {% elif "parameters" in command %}
-void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void()> callback) {
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
-    {% elif "returns" in command %}
-void {{class_name}}::{{method_name}}(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", base::Bind(&Domain::Handle{{method_name}}Response, std::move(callback)));
-    {% else %}
-void {{class_name}}::{{method_name}}(base::Callback<void()> callback) {
-  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", std::move(callback));
-    {% endif %}
 }
     {# Generate convenience methods that take the required parameters directly. #}
     {% if not "parameters" in command %}{% continue %}{% endif %}
@@ -59,8 +48,8 @@ void {{class_name}}::{{method_name}}({##}
         {% if not loop.first %}, {% endif %}
 {{resolve_type(parameter).pass_type}} {{parameter.name | camelcase_to_hacker_style -}}
     {% endfor %}
-    {% if "parameters" in command and not command.parameters[0].get("optional", False) %}, {% endif %}{# -#}
-    {% if "returns" in command -%}
+    {% if command.get("parameters", []) and not command.parameters[0].get("optional", False) %}, {% endif %}{# -#}
+    {% if command.get("returns", []) -%}
       base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback{##}
     {% else -%}
       base::Callback<void()> callback{##}
@@ -75,8 +64,19 @@ void {{class_name}}::{{method_name}}({##}
     {% endfor %}
       .Build();
     {# Send the message. #}
-  {{method_name}}(std::move(params), std::move(callback));
+    {% if command.get("returns", []) -%}
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), base::Bind(&Domain::Handle{{method_name}}Response, callback));
+    {% else %}
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
+    {% endif %}
 }
+    {# If the command has no return value, generate a convenience method that #}
+    {# accepts a base::Callback<void()> together with the parameters object. #}
+    {% if not command.get("returns", []) %}
+void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void()> callback) {
+  dispatcher_->SendMessage("{{domain.domain}}.{{command.name}}", params->Serialize(), std::move(callback));
+}
+    {% endif %}
   {% endfor %}
 
 {# Generate response handlers for commands that need them. #}
