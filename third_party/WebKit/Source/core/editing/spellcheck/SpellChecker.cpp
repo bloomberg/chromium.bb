@@ -76,6 +76,23 @@ bool isSelectionInTextFormControl(const VisibleSelection& selection)
     return !!enclosingTextFormControl(selection.start());
 }
 
+static bool isSpellCheckingEnabledFor(const VisibleSelection& selection)
+{
+    if (selection.isNone())
+        return false;
+    // TODO(tkent): The following password type check should be done in
+    // HTMLElement::spellcheck(). crbug.com/371567
+    if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start())) {
+        if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->type() == InputTypeNames::password)
+            return false;
+    }
+    if (HTMLElement* element = Traversal<HTMLElement>::firstAncestorOrSelf(*selection.start().anchorNode())) {
+        if (element->isSpellCheckingEnabled())
+            return true;
+    }
+    return false;
+}
+
 static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
 {
     DCHECK(range.isNotNull());
@@ -298,7 +315,7 @@ void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &moving
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selection)
 {
-    if (!isSpellCheckingEnabled())
+    if (!isSpellCheckingEnabled() || !isSpellCheckingEnabledFor(selection))
         return;
 
     const EphemeralRange& range = selection.toNormalizedEphemeralRange();
@@ -308,9 +325,6 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selecti
     // If we're not in an editable node, bail.
     Node* editableNode = range.startPosition().computeContainerNode();
     if (!editableNode || !hasEditableStyle(*editableNode))
-        return;
-
-    if (!isSpellCheckingEnabledFor(editableNode))
         return;
 
     chunkAndMarkAllMisspellingsAndBadGrammar(range);
@@ -386,36 +400,15 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
     markMisspellingsAndBadGrammar(adjacentWords);
 }
 
-bool SpellChecker::isSpellCheckingEnabledFor(const Node* node) const
+bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const
 {
-    if (!node)
+    Node* focusedNode = frame().selection().start().anchorNode();
+    if (!focusedNode)
         return false;
-    const Element* focusedElement = node->isElementNode() ? toElement(node) : node->parentElement();
+    const Element* focusedElement = focusedNode->isElementNode() ? toElement(focusedNode) : focusedNode->parentElement();
     if (!focusedElement)
         return false;
     return focusedElement->isSpellCheckingEnabled();
-}
-
-bool SpellChecker::isSpellCheckingEnabledInFocusedNode() const
-{
-    return isSpellCheckingEnabledFor(frame().selection().start().anchorNode());
-}
-
-bool SpellChecker::isSpellCheckingEnabledFor(const VisibleSelection& selection)
-{
-    if (selection.isNone())
-        return false;
-    // TODO(tkent): The following password type check should be done in
-    // HTMLElement::spellcheck(). crbug.com/371567
-    if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start())) {
-        if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->type() == InputTypeNames::password)
-            return false;
-    }
-    if (HTMLElement* element = Traversal<HTMLElement>::firstAncestorOrSelf(*selection.start().anchorNode())) {
-        if (element->spellcheck())
-            return true;
-    }
-    return false;
 }
 
 void SpellChecker::markMisspellingsAfterReplaceSelectionCommand(const ReplaceSelectionCommand& cmd)
@@ -830,7 +823,7 @@ void SpellChecker::cancelCheck()
 
 void SpellChecker::requestTextChecking(const Element& element)
 {
-    if (!isSpellCheckingEnabledFor(&element))
+    if (!element.isSpellCheckingEnabled())
         return;
     const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingProcessBatch, rangeToCheck));
