@@ -133,6 +133,47 @@ base::LazyInstance<
     std::list<std::unique_ptr<TraceLog::TraceEventFilter>>>::Leaky
     g_category_group_filter[MAX_CATEGORY_GROUPS] = {LAZY_INSTANCE_INITIALIZER};
 
+// This filter is used to record trace events as pseudo stack for the heap
+// profiler. It does not filter-out any events from the trace, ie. the behavior
+// of trace events being added to TraceLog remains same: the events are added
+// iff enabled for recording and not filtered-out by any other filter.
+class HeapProfilerFilter : public TraceLog::TraceEventFilter {
+ public:
+  HeapProfilerFilter() {}
+
+  bool FilterTraceEvent(const TraceEvent& trace_event) const override {
+    if (AllocationContextTracker::capture_mode() !=
+        AllocationContextTracker::CaptureMode::PSEUDO_STACK) {
+      return true;
+    }
+
+    // TODO(primiano): Add support for events with copied name crbug.com/581079.
+    if (trace_event.flags() & TRACE_EVENT_FLAG_COPY)
+      return true;
+
+    if (trace_event.phase() == TRACE_EVENT_PHASE_BEGIN ||
+        trace_event.phase() == TRACE_EVENT_PHASE_COMPLETE) {
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->PushPseudoStackFrame(trace_event.name());
+    } else if (trace_event.phase() == TRACE_EVENT_PHASE_END) {
+      // The pop for |TRACE_EVENT_PHASE_COMPLETE| events is in |EndEvent|.
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->PopPseudoStackFrame(trace_event.name());
+    }
+    // Do not filter-out any events and always return true. TraceLog adds the
+    // event only if it is enabled for recording.
+    return true;
+  }
+
+  void EndEvent(const char* name, const char* category_group) override {
+    if (AllocationContextTracker::capture_mode() ==
+        AllocationContextTracker::CaptureMode::PSEUDO_STACK) {
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->PopPseudoStackFrame(name);
+    }
+  }
+};
+
 TraceLog::TraceEventFilterConstructorForTesting
     g_trace_event_filter_constructor_for_testing = nullptr;
 
@@ -540,9 +581,12 @@ void TraceLog::UpdateCategoryGroupEnabledFlag(size_t category_index) {
     if (event_filter.IsCategoryGroupEnabled(category_group)) {
       std::unique_ptr<TraceEventFilter> new_filter;
 
-      if (event_filter.predicate_name() == "event_whitelist_predicate") {
-        new_filter =
-            WrapUnique(new EventNameFilter(event_filter.filter_args()));
+      if (event_filter.predicate_name() ==
+          TraceEventFilter::kEventWhitelistPredicate) {
+        new_filter = MakeUnique<EventNameFilter>(event_filter.filter_args());
+      } else if (event_filter.predicate_name() ==
+                 TraceEventFilter::kHeapProfilerPredicate) {
+        new_filter = MakeUnique<HeapProfilerFilter>();
       } else if (event_filter.predicate_name() == "testing_predicate") {
         CHECK(g_trace_event_filter_constructor_for_testing);
         new_filter = g_trace_event_filter_constructor_for_testing();
@@ -1343,6 +1387,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
 
   std::string console_message;
   std::unique_ptr<TraceEvent> filtered_trace_event;
+  bool disabled_by_filters = false;
   if (*category_group_enabled & ENABLED_FOR_FILTERING) {
     std::unique_ptr<TraceEvent> new_trace_event(new TraceEvent);
     new_trace_event->Initialize(thread_id, offset_event_timestamp, thread_now,
@@ -1353,21 +1398,20 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     auto filter_list = GetCategoryGroupFilter(category_group_enabled);
     DCHECK(!filter_list->empty());
 
-    bool should_add_event = false;
+    disabled_by_filters = true;
     for (const auto& trace_event_filter : *filter_list) {
       if (trace_event_filter->FilterTraceEvent(*new_trace_event))
-        should_add_event = true;
+        disabled_by_filters = false;
     }
 
-    if (should_add_event)
+    if (!disabled_by_filters)
       filtered_trace_event = std::move(new_trace_event);
   }
 
-  // Add the trace event if we're either *just* recording (and not filtering)
-  // or if we one of our filters indicates the event should be added.
-  if (((*category_group_enabled & ENABLED_FOR_RECORDING) &&
-       (*category_group_enabled & ENABLED_FOR_FILTERING) == 0) ||
-      filtered_trace_event) {
+  // If enabled for recording, the event should be added only if one of the
+  // filters indicates or category is not enabled for filtering.
+  if ((*category_group_enabled & ENABLED_FOR_RECORDING) &&
+      !disabled_by_filters) {
     OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = NULL;
@@ -1427,23 +1471,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
           phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN : phase,
           category_group_enabled, name, scope, id, num_args, arg_names,
           arg_types, arg_values, flags);
-    }
-  }
-
-  // TODO(primiano): Add support for events with copied name crbug.com/581078
-  if (!(flags & TRACE_EVENT_FLAG_COPY)) {
-    if (AllocationContextTracker::capture_mode() ==
-        AllocationContextTracker::CaptureMode::PSEUDO_STACK) {
-      if (phase == TRACE_EVENT_PHASE_BEGIN ||
-          phase == TRACE_EVENT_PHASE_COMPLETE) {
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->PushPseudoStackFrame(name);
-      } else if (phase == TRACE_EVENT_PHASE_END) {
-        // The pop for |TRACE_EVENT_PHASE_COMPLETE| events
-        // is in |TraceLog::UpdateTraceEventDuration|.
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->PopPseudoStackFrame(name);
-      }
     }
   }
 
@@ -1589,13 +1616,6 @@ void TraceLog::UpdateTraceEventDuration(
     if (trace_options() & kInternalEchoToConsole) {
       console_message =
           EventToConsoleMessage(TRACE_EVENT_PHASE_END, now, trace_event);
-    }
-
-    if (AllocationContextTracker::capture_mode() ==
-        AllocationContextTracker::CaptureMode::PSEUDO_STACK) {
-      // The corresponding push is in |AddTraceEventWithThreadIdAndTimestamp|.
-      AllocationContextTracker::GetInstanceForCurrentThread()
-          ->PopPseudoStackFrame(name);
     }
   }
 

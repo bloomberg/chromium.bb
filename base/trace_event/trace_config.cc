@@ -629,6 +629,22 @@ void TraceConfig::SetDefaultMemoryDumpConfig() {
   memory_dump_config_.triggers.push_back(kDefaultHeavyMemoryDumpTrigger);
   memory_dump_config_.triggers.push_back(kDefaultLightMemoryDumpTrigger);
   memory_dump_config_.allowed_dump_modes = GetDefaultAllowedMemoryDumpModes();
+
+  if (AllocationContextTracker::capture_mode() ==
+      AllocationContextTracker::CaptureMode::PSEUDO_STACK) {
+    for (const auto& filter : event_filters_) {
+      if (filter.predicate_name() ==
+          TraceLog::TraceEventFilter::kHeapProfilerPredicate)
+        return;
+    }
+    // Adds a filter predicate to filter all categories for the heap profiler.
+    // Note that the heap profiler predicate does not filter-out any events.
+    EventFilterConfig heap_profiler_config(
+        TraceLog::TraceEventFilter::kHeapProfilerPredicate);
+    heap_profiler_config.AddIncludedCategory("*");
+    heap_profiler_config.AddIncludedCategory(MemoryDumpManager::kTraceCategory);
+    event_filters_.push_back(heap_profiler_config);
+  }
 }
 
 void TraceConfig::SetEventFilters(

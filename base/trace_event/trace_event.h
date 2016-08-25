@@ -76,7 +76,8 @@
   UNLIKELY(*INTERNAL_TRACE_EVENT_UID(category_group_enabled) &           \
            (base::trace_event::TraceLog::ENABLED_FOR_RECORDING |         \
             base::trace_event::TraceLog::ENABLED_FOR_EVENT_CALLBACK |    \
-            base::trace_event::TraceLog::ENABLED_FOR_ETW_EXPORT))
+            base::trace_event::TraceLog::ENABLED_FOR_ETW_EXPORT |        \
+            base::trace_event::TraceLog::ENABLED_FOR_FILTERING))
 
 #define INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_FILTERING_MODE( \
     category_group_enabled)                                             \

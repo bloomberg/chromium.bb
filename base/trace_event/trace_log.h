@@ -312,8 +312,11 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Allows deleting our singleton instance.
   static void DeleteForTesting();
 
-  class TraceEventFilter {
+  class BASE_EXPORT TraceEventFilter {
    public:
+    static const char* const kEventWhitelistPredicate;
+    static const char* const kHeapProfilerPredicate;
+
     TraceEventFilter() {}
     virtual ~TraceEventFilter() {}
     virtual bool FilterTraceEvent(const TraceEvent& trace_event) const = 0;

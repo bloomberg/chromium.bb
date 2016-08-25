@@ -3280,14 +3280,14 @@ TEST_F(TraceEventTestFixture, EventFiltering) {
 }
 
 TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
-  const char config_json[] =
+  std::string config_json = StringPrintf(
       "{"
       "  \"included_categories\": ["
       "    \"filtered_cat\","
       "    \"unfiltered_cat\"],"
       "  \"event_filters\": ["
       "     {"
-      "       \"filter_predicate\": \"event_whitelist_predicate\", "
+      "       \"filter_predicate\": \"%s\", "
       "       \"included_categories\": [\"*\"], "
       "       \"excluded_categories\": [\"unfiltered_cat\"], "
       "       \"filter_args\": {"
@@ -3296,7 +3296,8 @@ TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
       "     }"
       "    "
       "  ]"
-      "}";
+      "}",
+      TraceLog::TraceEventFilter::kEventWhitelistPredicate);
 
   TraceConfig trace_config(config_json);
   TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
@@ -3308,6 +3309,38 @@ TEST_F(TraceEventTestFixture, EventWhitelistFiltering) {
 
   EndTraceAndFlush();
 
+  EXPECT_TRUE(FindMatchingValue("name", "a snake"));
+  EXPECT_FALSE(FindMatchingValue("name", "a mushroom"));
+  EXPECT_TRUE(FindMatchingValue("name", "a cat"));
+}
+
+TEST_F(TraceEventTestFixture, HeapProfilerFiltering) {
+  std::string config_json = StringPrintf(
+      "{"
+      "  \"included_categories\": ["
+      "    \"filtered_cat\","
+      "    \"unfiltered_cat\"],"
+      "  \"excluded_categories\": [\"excluded_cat\"],"
+      "  \"event_filters\": ["
+      "     {"
+      "       \"filter_predicate\": \"%s\", "
+      "       \"included_categories\": [\"*\"]"
+      "     }"
+      "  ]"
+      "}",
+      TraceLog::TraceEventFilter::kHeapProfilerPredicate);
+
+  TraceConfig trace_config(config_json);
+  TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
+
+  TRACE_EVENT0("filtered_cat", "a snake");
+  TRACE_EVENT0("excluded_cat", "a mushroom");
+  TRACE_EVENT0("unfiltered_cat", "a cat");
+
+  EndTraceAndFlush();
+
+  // The predicate should not change behavior of the trace events.
   EXPECT_TRUE(FindMatchingValue("name", "a snake"));
   EXPECT_FALSE(FindMatchingValue("name", "a mushroom"));
   EXPECT_TRUE(FindMatchingValue("name", "a cat"));
