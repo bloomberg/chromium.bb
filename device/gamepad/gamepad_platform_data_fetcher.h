@@ -22,6 +22,7 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_win.h"
 #include "device/gamepad/raw_input_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
+#include "device/gamepad/game_controller_data_fetcher_mac.h"
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
 #include "device/gamepad/xbox_data_fetcher_mac.h"
 #elif defined(OS_LINUX)
@@ -42,6 +43,7 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
 
 #elif defined(OS_MACOSX)
 
+  manager->AddFactory(new GameControllerDataFetcherMac::Factory());
   manager->AddFactory(new GamepadPlatformDataFetcherMac::Factory());
   manager->AddFactory(new XboxDataFetcher::Factory());
 
