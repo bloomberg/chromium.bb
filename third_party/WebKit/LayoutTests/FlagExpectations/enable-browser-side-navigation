@@ -2,10 +2,8 @@
 # See https://crbug.com/576261
 # before-unload issues
   virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
-  virtual/pointerevent/fast/events/before-unload-in-subframe.html [ Crash ]
 
 # https://crbug.com/608372: PlzNavigate: support POST navigations
-  fast/forms/state-restore-skip-stateless.html [ Crash ]
   fast/forms/submit-to-url-fragment.html [ Failure ]
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
   fast/loader/form-state-restore-with-frames.html [ Failure ]
@@ -124,7 +122,6 @@
   http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
 
 # Untriaged navigation
-  fast/loader/document-destruction-within-unload.html [ Crash ]
   http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site.html [ Failure ]
   http/tests/loading/307-after-303-after-post.html [ Failure ]

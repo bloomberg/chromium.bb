@@ -50,6 +50,16 @@
 -DevToolsPixelOutputTests.TestScreenshotRecording
 -DevToolsSanityTest.TestNetworkRawHeadersText
 -DevToolsReattachAfterCrashTest.*
+-DnsProbeBrowserTest.CorrectionsDisabled
+-DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
+-DnsProbeBrowserTest.CorrectionsLoadStopped
+-DnsProbeBrowserTest.Incognito
+-DnsProbeBrowserTest.NoInternetProbeResultWithBrokenCorrections
+-DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
+-DnsProbeBrowserTest.NxdomainProbeResultWithWorkingCorrections
+-DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
+-DnsProbeBrowserTest.ProbesDisabled
+-DnsProbeBrowserTest.SyncFailureWithBrokenCorrections
 -DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
 -DomDistillerTabUtilsBrowserTest.TestSwapWebContents
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
@@ -72,7 +82,9 @@
 -ErrorPageAutoReloadTest.AutoReload
 -ErrorPageAutoReloadTest.IgnoresSamePageNavigation
 -ErrorPageAutoReloadTest.ManualReloadNotSuppressed
+-ErrorPageNavigationCorrectionsFailTest.FetchCorrectionsFails
 -ErrorPageTest.DNSError*
+-ErrorPageTest.IFrameDNSError_JavaScript
 -ErrorPageTest.StaleCacheStatus
 -ExecuteScriptApiTest.ExecuteScriptByFrameId
 -ExecuteScriptApiTest.FrameWithHttp204
@@ -98,7 +110,10 @@
 -FirstRunMasterPrefsImportNothing.ImportNothingAndShowNewTabPage
 -InlineLoginUISafeIframeBrowserTest.ConfirmationRequiredForNonsecureSignin
 -InputImeApiTest*
+-InProcessBrowserTest.ExternalConnectionFail
 -IsolatedAppTest.CookieIsolation
+-LaunchWebAuthFlowFunctionTest.InteractiveFirstNavigationSuccess
+-LaunchWebAuthFlowFunctionTest.NonInteractiveSuccess
 -LoginPromptBrowserTest.TestCancelAuth
 -LogWebUIUrlTest.TestUberPage
 -MaybeSetMetadata/SafeBrowsingServiceMetadataTest.MalwareIFrame/0

@@ -243,11 +243,7 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
-  // PlzNavigate: the entry has already been discarded in FailedNavigation.
-  if (!IsBrowserSideNavigationEnabled()) {
-    DiscardPendingEntryOnFailureIfNeeded(
-        render_frame_host->navigation_handle());
-  }
+  DiscardPendingEntryOnFailureIfNeeded(render_frame_host->navigation_handle());
 
   if (delegate_) {
     delegate_->DidFailProvisionalLoadWithError(
