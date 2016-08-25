@@ -639,6 +639,7 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'reef-paladin',
         'elm-cheets-paladin',
         'gale-paladin',
         'gru-paladin',
