@@ -791,24 +791,27 @@ void Surface::UpdateSurface(bool full_damage) {
   std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
       new cc::DelegatedFrameData);
   if (current_resource_.id) {
-    cc::TextureDrawQuad* texture_quad =
-        render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
-    float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-    gfx::Rect opaque_rect;
-    if (state_.blend_mode == SkXfermode::kSrc_Mode ||
-        state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
-      opaque_rect = quad_rect;
-    } else if (state_.opaque_region.isRect()) {
-      opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
-    }
+    // Texture quad is only needed if buffer is not fully transparent.
+    if (state_.alpha) {
+      cc::TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+      float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
+      gfx::Rect opaque_rect;
+      if (state_.blend_mode == SkXfermode::kSrc_Mode ||
+          state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
+        opaque_rect = quad_rect;
+      } else if (state_.opaque_region.isRect()) {
+        opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
+      }
 
-    texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
-                         current_resource_.id, true, uv_top_left,
-                         uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                         false, false, state_.only_visible_on_secure_output);
-    if (current_resource_.is_overlay_candidate)
-      texture_quad->set_resource_size_in_pixels(current_resource_.size);
-    delegated_frame->resource_list.push_back(current_resource_);
+      texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
+                           current_resource_.id, true, uv_top_left,
+                           uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
+                           false, false, state_.only_visible_on_secure_output);
+      if (current_resource_.is_overlay_candidate)
+        texture_quad->set_resource_size_in_pixels(current_resource_.size);
+      delegated_frame->resource_list.push_back(current_resource_);
+    }
   } else {
     cc::SolidColorDrawQuad* solid_quad =
         render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
