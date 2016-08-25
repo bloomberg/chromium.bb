@@ -164,8 +164,8 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  // The inner edge is antialiased and gets off-by-one differences.
-  float percentage_pixels_large_error = 0.42f;
+  // The edges are antialiased and get off-by-one differences.
+  float percentage_pixels_large_error = 0.80125f;
   float percentage_pixels_small_error = 0.f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int large_error_allowed = 1;
