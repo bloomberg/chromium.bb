@@ -70,6 +70,8 @@ const char kPersonalizationBothString[] = "both";  // the default value
 const char kHostRestrictionOnString[] = "on";  // the default value
 const char kHostRestrictionOffString[] = "off";
 
+const int kMaxExcludedIds = 100;
+
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
     case NTPSnippetsFetcher::FetchResult::SUCCESS:
@@ -216,6 +218,7 @@ void NTPSnippetsFetcher::SetCallback(
 void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
     const std::string& language_code,
+    const std::set<std::string>& excluded_ids,
     int count,
     bool interactive_request) {
   if (!request_throttler_.DemandQuotaForRequest(interactive_request))
@@ -223,6 +226,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
 
   hosts_ = hosts;
   fetch_start_time_ = tick_clock_->NowTicks();
+  excluded_ids_ = excluded_ids;
 
   if (UsesHostRestrictions() && hosts_.empty()) {
     FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
@@ -317,11 +321,20 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
       if (!user_locale.empty()) {
         request->SetString("uiLanguage", user_locale);
       }
+
       auto regular_hosts = base::MakeUnique<base::ListValue>();
       for (const auto& host : host_restricts) {
         regular_hosts->AppendString(host);
       }
       request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
+
+      auto excluded = base::MakeUnique<base::ListValue>();
+      for (const auto& id : excluded_ids) {
+        excluded->AppendString(id);
+        if (excluded->GetSize() >= kMaxExcludedIds)
+          break;
+      }
+      request->Set("excludedSuggestionIds", std::move(excluded));
 
       // TODO(sfiera): support authentication and personalization
       // TODO(sfiera): support count_to_fetch
@@ -392,6 +405,7 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   params.fetch_api = fetch_api_;
   params.host_restricts =
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
+  params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
   FetchSnippetsImpl(url, std::string(), params.BuildRequest());
 }
@@ -407,6 +421,7 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
   params.user_locale = locale_;
   params.host_restricts =
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
+  params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   FetchSnippetsImpl(fetch_url_,

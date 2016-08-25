@@ -265,8 +265,13 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
   if (snippets_.empty())
     UpdateCategoryStatus(CategoryStatus::AVAILABLE_LOADING);
 
-  snippets_fetcher_->FetchSnippetsFromHosts(
-      hosts, application_language_code_, kMaxSnippetCount, interactive_request);
+  std::set<std::string> excluded_ids;
+  for (const auto& snippet : dismissed_snippets_) {
+    excluded_ids.insert(snippet->id());
+  }
+  snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
+                                            excluded_ids, kMaxSnippetCount,
+                                            interactive_request);
 }
 
 void NTPSnippetsService::RescheduleFetching() {

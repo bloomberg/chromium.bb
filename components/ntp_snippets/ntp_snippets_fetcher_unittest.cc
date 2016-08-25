@@ -179,6 +179,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
     snippets_fetcher_->SetTickClockForTesting(
         mock_task_runner_->GetMockTickClock());
     test_hosts_.insert("www.somehost.com");
+    test_excluded_.insert("1234567890");
     // Increase initial time such that ticks are non-zero.
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
   }
@@ -191,6 +192,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
   const std::string& test_lang() const { return test_lang_; }
   const GURL& test_url() { return test_url_; }
   const std::set<std::string>& test_hosts() const { return test_hosts_; }
+  const std::set<std::string>& test_excluded() const { return test_excluded_; }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   void InitFakeURLFetcherFactory() {
@@ -228,6 +230,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
   const std::string test_lang_;
   const GURL test_url_;
   std::set<std::string> test_hosts_;
+  std::set<std::string> test_excluded_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcherTest);
@@ -255,6 +258,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   params.only_return_personalized_results = true;
   params.user_locale = "en";
   params.host_restricts = {"chromium.org"};
+  params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
@@ -302,6 +306,9 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
                          "  \"uiLanguage\": \"en\","
                          "  \"regularlyVisitedHostNames\": ["
                          "    \"chromium.org\""
+                         "  ],"
+                         "  \"excludedSuggestionIds\": ["
+                         "    \"1234567890\""
                          "  ]"
                          "}"));
 }
@@ -311,6 +318,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.only_return_personalized_results = false;
   params.host_restricts = {};
   params.count_to_fetch = 10;
+  params.excluded_ids = {};
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -347,7 +355,48 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": []"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"excludedSuggestionIds\": []"
+                         "}"));
+}
+
+TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
+  NTPSnippetsFetcher::RequestParams params;
+  params.only_return_personalized_results = false;
+  params.host_restricts = {};
+  params.count_to_fetch = 10;
+  for (int i = 0; i < 200; ++i) {
+    params.excluded_ids.insert(base::StringPrintf("%03d", i));
+  }
+
+  params.fetch_api = NTPSnippetsFetcher::CHROME_CONTENT_SUGGESTIONS_API;
+  EXPECT_THAT(params.BuildRequest(),
+              EqualsJSON("{"
+                         "  \"regularlyVisitedHostNames\": [],"
+                         "  \"excludedSuggestionIds\": ["
+                         "    \"000\", \"001\", \"002\", \"003\", \"004\","
+                         "    \"005\", \"006\", \"007\", \"008\", \"009\","
+                         "    \"010\", \"011\", \"012\", \"013\", \"014\","
+                         "    \"015\", \"016\", \"017\", \"018\", \"019\","
+                         "    \"020\", \"021\", \"022\", \"023\", \"024\","
+                         "    \"025\", \"026\", \"027\", \"028\", \"029\","
+                         "    \"030\", \"031\", \"032\", \"033\", \"034\","
+                         "    \"035\", \"036\", \"037\", \"038\", \"039\","
+                         "    \"040\", \"041\", \"042\", \"043\", \"044\","
+                         "    \"045\", \"046\", \"047\", \"048\", \"049\","
+                         "    \"050\", \"051\", \"052\", \"053\", \"054\","
+                         "    \"055\", \"056\", \"057\", \"058\", \"059\","
+                         "    \"060\", \"061\", \"062\", \"063\", \"064\","
+                         "    \"065\", \"066\", \"067\", \"068\", \"069\","
+                         "    \"070\", \"071\", \"072\", \"073\", \"074\","
+                         "    \"075\", \"076\", \"077\", \"078\", \"079\","
+                         "    \"080\", \"081\", \"082\", \"083\", \"084\","
+                         "    \"085\", \"086\", \"087\", \"088\", \"089\","
+                         "    \"090\", \"091\", \"092\", \"093\", \"094\","
+                         "    \"095\", \"096\", \"097\", \"098\", \"099\""
+                         // Truncated to 100 entries. Currently, they happen to
+                         // be those lexically first.
+                         "  ]"
                          "}"));
 }
 
@@ -378,6 +427,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -413,6 +463,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -436,6 +487,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, EmptyCategoryIsOK) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -488,6 +540,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   EXPECT_CALL(mock_callback(), Run(_))
       .WillOnce(WithArg<0>(MovePointeeTo(&snippets)));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*force_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -528,6 +581,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -545,6 +599,7 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldReportEmptyHostsError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
                                             /*language_code=*/"en-US",
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -566,7 +621,8 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldReportEmptyHostsError) {
 TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldRestrictToHosts) {
   net::TestURLFetcherFactory test_url_fetcher_factory;
   snippets_fetcher().FetchSnippetsFromHosts(
-      {"www.somehost1.com", "www.somehost2.com"}, test_lang(), /*count=*/17,
+      {"www.somehost1.com", "www.somehost2.com"}, test_lang(), test_excluded(),
+      /*count=*/17,
       /*interactive_request=*/true);
   net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
   ASSERT_THAT(fetcher, NotNull());
@@ -598,6 +654,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
                   net::URLRequestStatus::FAILED);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -619,6 +676,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -639,6 +697,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -661,6 +720,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -680,6 +740,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -700,6 +761,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
   InitFakeURLFetcherFactory();
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
@@ -711,11 +773,13 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   // Second call to FetchSnippetsFromHosts() overrides/cancels the previous.
   // Callback is expected to be called once.
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            test_excluded(),
                                             /*count=*/1,
                                             /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();

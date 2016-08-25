@@ -90,7 +90,11 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   void SetCallback(const SnippetsAvailableCallback& callback);
 
   // Fetches snippets from the server. |hosts| restricts the results to a set of
-  // hosts, e.g. "www.google.com". An empty host set produces an error.
+  // hosts, e.g. "www.google.com". If host restrictions are enabled, an empty
+  // host set produces an error without issuing a fetch.
+  //
+  // |excluded_ids| will be reported to the server; the server should not return
+  // suggestions with those IDs.
   //
   // If an ongoing fetch exists, it will be cancelled and a new one started,
   // without triggering an additional callback (i.e. not noticeable by
@@ -100,6 +104,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // |interactive_request| is set to true (use only for user-initiated fetches).
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               const std::string& language_code,
+                              const std::set<std::string>& excluded_ids,
                               int count,
                               bool interactive_request);
 
@@ -134,6 +139,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestAuthenticated);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestUnauthenticated);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsFetcherTest, BuildRequestExcludedIds);
 
   enum FetchAPI {
     CHROME_READER_API,
@@ -146,6 +152,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     bool only_return_personalized_results;
     std::string user_locale;
     std::set<std::string> host_restricts;
+    std::set<std::string> excluded_ids;
     int count_to_fetch;
 
     RequestParams();
@@ -200,6 +207,9 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   // Hosts to restrict the snippets to.
   std::set<std::string> hosts_;
+
+  // Snippets to exclude from the results.
+  std::set<std::string> excluded_ids_;
 
   // Count of snippets to fetch.
   int count_to_fetch_;
