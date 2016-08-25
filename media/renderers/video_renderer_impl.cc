@@ -93,8 +93,6 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   flush_cb_ = callback;
   state_ = kFlushing;
 
-  // This is necessary if the |video_frame_stream_| has already seen an end of
-  // stream and needs to drain it before flushing it.
   if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
     buffering_state_ = BUFFERING_HAVE_NOTHING;
     task_runner_->PostTask(
@@ -104,11 +102,18 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
 
-  algorithm_->Reset();
-
+  // Reset |video_frame_stream_| and drop any pending read callbacks from it.
+  pending_read_ = false;
+  frame_callback_weak_factory_.InvalidateWeakPtrs();
   video_frame_stream_->Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
                  weak_factory_.GetWeakPtr()));
+
+  // To avoid unnecessary work by VDAs, only delete queued frames after
+  // resetting |video_frame_stream_|. If this is done in the opposite order VDAs
+  // will get a bunch of ReusePictureBuffer() calls before the Reset(), which
+  // they may use to output more frames that won't be used.
+  algorithm_->Reset();
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -337,9 +342,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
-  DCHECK_NE(state_, kUninitialized);
-  DCHECK_NE(state_, kFlushed);
-
+  DCHECK_EQ(state_, kPlaying);
   CHECK(pending_read_);
   pending_read_ = false;
 
@@ -351,14 +354,6 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                    weak_factory_.GetWeakPtr(), PIPELINE_ERROR_DECODE));
     return;
   }
-
-  // Already-queued VideoFrameStream ReadCB's can fire after various state
-  // transitions have happened; in that case just drop those frames
-  // immediately.
-  if (state_ == kFlushing)
-    return;
-
-  DCHECK_EQ(state_, kPlaying);
 
   // Can happen when demuxers are preparing for a new Seek().
   if (!frame) {
@@ -520,11 +515,6 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK(!rendered_end_of_stream_);
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
-  // Pending read might be true if an async video frame copy is in flight.
-  pending_read_ = false;
-  // Drop any pending calls to FrameReady() and
-  // FrameReadyForCopyingToGpuMemoryBuffers()
-  frame_callback_weak_factory_.InvalidateWeakPtrs();
   state_ = kFlushed;
   base::ResetAndReturn(&flush_cb_).Run();
 }
