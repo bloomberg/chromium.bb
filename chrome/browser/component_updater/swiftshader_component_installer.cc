@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
@@ -257,7 +258,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
-#if defined(ENABLE_SWIFTSHADER)
+#if defined(ENABLE_SWIFTSHADER) && defined(ARCH_CPU_X86)
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&RegisterSwiftShaderPath, cus));
