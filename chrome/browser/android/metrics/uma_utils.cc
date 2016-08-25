@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "jni/UmaUtils_jni.h"
 
@@ -22,6 +23,12 @@ base::Time GetMainEntryPointTime() {
   int64_t startTimeUnixMs = Java_UmaUtils_getMainEntryPointWallTime(env);
   return base::Time::UnixEpoch() +
          base::TimeDelta::FromMilliseconds(startTimeUnixMs);
+}
+
+static jboolean IsClientInMetricsReportingSample(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& obj) {
+  return ChromeMetricsServicesManagerClient::IsClientInSample();
 }
 
 static void RecordMetricsReportingDefaultOptIn(JNIEnv* env,

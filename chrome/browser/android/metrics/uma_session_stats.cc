@@ -93,34 +93,46 @@ void UmaSessionStats::RegisterSyntheticMultiGroupFieldTrial(
       trial_name, group_name_hashes);
 }
 
-// Starts/stops the MetricsService when permissions have changed.
+// Updates metrics reporting state managed by native code. This should only be
+// called when consent is changing, and UpdateMetricsServiceState() should be
+// called immediately after for metrics services to be started or stopped as
+// needed. This is enforced by UmaSessionStats.changeMetricsReportingConsent on
+// the Java side.
+static void ChangeMetricsReportingConsent(JNIEnv*,
+                                          const JavaParamRef<jclass>&,
+                                          jboolean consent) {
+  UpdateMetricsPrefsOnPermissionChange(consent);
+
+  // This function ensures a consent file in the data directory is either
+  // created, or deleted, depending on consent. Starting up metrics services
+  // will ensure that the consent file contains the ClientID. The ID is passed
+  // to the renderer for crash reporting when things go wrong.
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(
+                                GoogleUpdateSettings::SetCollectStatsConsent),
+                            consent));
+}
+
+// Starts/stops the MetricsService based on existing consent and upload
+// preferences.
 // There are three possible states:
 // * Logs are being recorded and being uploaded to the server.
 // * Logs are being recorded, but not being uploaded to the server.
 //   This happens when we've got permission to upload on Wi-Fi but we're on a
 //   mobile connection (for example).
 // * Logs are neither being recorded or uploaded.
-static void UpdateMetricsServiceState(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj,
-                                      jboolean may_record,
+// If logs aren't being recorded, then |may_upload| is ignored.
+//
+// This can be called at any time when consent hasn't changed, such as
+// connection type change, or start up. If consent has changed, then
+// ChangeMetricsReportingConsent() should be called first.
+static void UpdateMetricsServiceState(JNIEnv*,
+                                      const JavaParamRef<jclass>&,
                                       jboolean may_upload) {
-  metrics::MetricsService* metrics = g_browser_process->metrics_service();
-  DCHECK(metrics);
-
-  if (metrics->recording_active() != may_record) {
-    UpdateMetricsPrefsOnPermissionChange(may_record);
-
-    // This function puts a consent file with the ClientID in the
-    // data directory. The ID is passed to the renderer for crash
-    // reporting when things go wrong.
-    content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
-        base::Bind(
-            base::IgnoreResult(GoogleUpdateSettings::SetCollectStatsConsent),
-            may_record));
-  }
-
-  g_browser_process->GetMetricsServicesManager()->UpdatePermissions(
-      may_record, may_upload);
+  // This will also apply the consent state, taken from Chrome Local State
+  // prefs.
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(
+      may_upload);
 }
 
 // Renderer process crashed in the foreground.

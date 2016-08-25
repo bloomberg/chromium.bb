@@ -26,6 +26,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
     static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR = "crash_dump_upload_no_cellular";
     static final String PREF_METRICS_REPORTING = "metrics_reporting";
+    private static final String PREF_METRICS_IN_SAMPLE = "in_metrics_sample";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_BANDWIDTH_OLD = "prefetch_bandwidth";
     private static final String PREF_BANDWIDTH_NO_CELLULAR_OLD = "prefetch_bandwidth_no_cellular";
@@ -277,6 +278,27 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
+     * Sets whether this client is in-sample. See
+     * {@link org.chromium.chrome.browser.metrics.UmaUtils#isClientInMetricsSample} for details.
+     */
+    public void setClientInMetricsSample(boolean inSample) {
+        mSharedPreferences.edit().putBoolean(PREF_METRICS_IN_SAMPLE, inSample).apply();
+    }
+
+    /**
+     * Checks whether this client is in-sample. See
+     * {@link org.chromium.chrome.browser.metrics.UmaUtils#isClientInMetricsSample} for details.
+     *
+     * @returns boolean Whether client is in-sample.
+     */
+    public boolean isClientInMetricsSample() {
+        // The default value is true to avoid sampling out crashes that occur before native code has
+        // been initialized on first run. We'd rather have some extra crashes than none from that
+        // time.
+        return mSharedPreferences.getBoolean(PREF_METRICS_IN_SAMPLE, true);
+    }
+
+    /**
      * Sets the crash upload preference, which determines whether crash dumps will be uploaded
      * always, never, or only on wifi.
      *
@@ -325,8 +347,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Sets the initial value for whether crash stacks may be uploaded.
-     * This should be called only once, the first time Chrome is launched.
+     * Sets the value for whether crash stacks may be uploaded.
      */
     public void initCrashUploadPreference(boolean allowCrashUpload) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();

@@ -56,13 +56,15 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         UPLOAD_SUCCESS,
         UPLOAD_FAILURE,
         UPLOAD_USER_DISABLED,
-        UPLOAD_COMMANDLINE_DISABLED
+        UPLOAD_COMMANDLINE_DISABLED,
+        UPLOAD_DISABLED_BY_SAMPLING
     })
     public @interface MinidumpUploadStatus {}
     public static final int UPLOAD_SUCCESS = 0;
     public static final int UPLOAD_FAILURE = 1;
     public static final int UPLOAD_USER_DISABLED = 2;
     public static final int UPLOAD_COMMANDLINE_DISABLED = 3;
+    public static final int UPLOAD_DISABLED_BY_SAMPLING = 4;
 
     private final File mFileToUpload;
     private final File mLogfile;
@@ -100,6 +102,13 @@ public class MinidumpUploadCallable implements Callable<Integer> {
                         + "cleanup to prevent future uploads.");
                 cleanupMinidumpFile();
                 return UPLOAD_USER_DISABLED;
+            }
+
+            if (!mPermManager.isClientInMetricsSample()) {
+                Log.i(TAG, "Minidump upload skipped due to sampling.  Marking file as uploaded for "
+                                + "cleanup to prevent future uploads.");
+                cleanupMinidumpFile();
+                return UPLOAD_DISABLED_BY_SAMPLING;
             }
 
             boolean isLimited = mPermManager.isUploadLimited();

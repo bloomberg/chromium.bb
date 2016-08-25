@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.AccountAdder;
@@ -32,7 +33,7 @@ public class FirstRunGlueImpl implements FirstRunGlue {
 
     @Override
     public void acceptTermsOfService(Context appContext, boolean allowCrashUpload) {
-        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(allowCrashUpload);
+        UmaSessionStats.changeMetricsReportingConsent(allowCrashUpload);
         PrefServiceBridge.getInstance().setEulaAccepted();
     }
 

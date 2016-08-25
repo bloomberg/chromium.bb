@@ -55,6 +55,14 @@ public class UmaUtils {
     }
 
     /**
+     * Determines if this client is eligible to send metrics and crashes based on sampling. If it
+     * is, and there was user consent, then metrics and crashes would be reported
+     */
+    public static boolean isClientInMetricsReportingSample() {
+        return nativeIsClientInMetricsReportingSample();
+    }
+
+    /**
      * Sets whether metrics reporting was opt-in or not. If it was opt-in, then the enable checkbox
      * on first-run was default unchecked. If it was opt-out, then the checkbox was default checked.
      * This should only be set once, and only during first-run.
@@ -73,5 +81,6 @@ public class UmaUtils {
         return sForegroundStartTimeMs;
     }
 
+    private static native boolean nativeIsClientInMetricsReportingSample();
     private static native void nativeRecordMetricsReportingDefaultOptIn(boolean optIn);
 }

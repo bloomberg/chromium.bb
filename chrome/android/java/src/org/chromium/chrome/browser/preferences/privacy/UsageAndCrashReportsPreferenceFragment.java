@@ -10,6 +10,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -39,16 +40,7 @@ public class UsageAndCrashReportsPreferenceFragment extends PreferenceFragment {
         usageAndCrashReportsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                boolean enabled = (boolean) newValue;
-                PrivacyPreferencesManager privacyManager = PrivacyPreferencesManager.getInstance();
-
-                // Update new two-choice android and chromium preferences.
-                PrefServiceBridge.getInstance().setMetricsReportingEnabled(enabled);
-                privacyManager.setUsageAndCrashReporting(enabled);
-
-                // Update old three-choice android and chromium preference.
-                PrefServiceBridge.getInstance().setCrashReportingEnabled(enabled);
-                privacyManager.initCrashUploadPreference(enabled);
+                UmaSessionStats.changeMetricsReportingConsent((boolean) newValue);
                 return true;
             }
         });

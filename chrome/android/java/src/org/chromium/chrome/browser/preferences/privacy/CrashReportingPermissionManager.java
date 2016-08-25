@@ -9,6 +9,14 @@ package org.chromium.chrome.browser.preferences.privacy;
  */
 public interface CrashReportingPermissionManager {
     /**
+     * Checks whether this client is in-sample for crashes. See
+     * {@link org.chromium.chrome.browser.metrics.UmaUtils#isClientInMetricsSample} for details.
+     *
+     * @returns boolean Whether client is in-sample.
+     */
+    public boolean isClientInMetricsSample();
+
+    /**
      * Check whether to allow uploading crash dump now based on user consent and connectivity.
      *
      * @return whether to allow uploading crash dump now.
