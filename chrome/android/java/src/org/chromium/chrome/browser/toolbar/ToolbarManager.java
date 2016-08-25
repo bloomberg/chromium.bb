@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -414,6 +415,19 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 }
             }
 
+            private boolean hasPendingNonNtpNavigation(Tab tab) {
+                WebContents webContents = tab.getWebContents();
+                if (webContents == null) return false;
+
+                NavigationController navigationController = webContents.getNavigationController();
+                if (navigationController == null) return false;
+
+                NavigationEntry pendingEntry = navigationController.getPendingEntry();
+                if (pendingEntry == null) return false;
+
+                return !NewTabPage.isNTPUrl(pendingEntry.getUrl());
+            }
+
             @Override
             public void onDidFailLoad(Tab tab, boolean isProvisionalLoad, boolean isMainFrame,
                     int errorCode, String description, String failingUrl) {
@@ -421,12 +435,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 if (ntp == null) return;
 
                 // If the load failed due to a different navigation, there is no need to reset the
-                // the location bar animations.
-                boolean hasPendingNavigation = tab.getWebContents() != null
-                        && tab.getWebContents().getNavigationController() != null
-                        && tab.getWebContents().getNavigationController().getPendingEntry() != null;
-
-                if (isProvisionalLoad && isMainFrame && !hasPendingNavigation) {
+                // location bar animations.
+                if (isProvisionalLoad && isMainFrame && !hasPendingNonNtpNavigation(tab)) {
                     ntp.setUrlFocusAnimationsDisabled(false);
                     mToolbar.onTabOrModelChanged();
                     if (mToolbar.getProgressBar() != null) mToolbar.getProgressBar().finish(false);
