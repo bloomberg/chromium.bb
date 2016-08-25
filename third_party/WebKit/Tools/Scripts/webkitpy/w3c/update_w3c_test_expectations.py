@@ -2,63 +2,63 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Functionality for adding TestExpectations lines and downloading baselines
-based on layout test failures in try jobs.
+"""A class for updating layout test expectations when updating w3c tests.
 
-This script is used as part of the w3c test auto-import process.
+Specifically, this class fetches results from try bots for the current CL, and:
+  1. Downloads new baseline files for any tests that can be rebaselined.
+  2. Updates the generic TestExpectations file for any other failing tests.
+
+This is used as part of the w3c test auto-import process.
 """
 
 import logging
 
-from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.buildbot import BuildBot, Build
 from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
 
-def main(host):
-    # TODO(qyearsley): Add a "main" function to W3CExpectationsLineAdder
-    # and move most or all of this logic in there.
-    host.initialize_scm()
-    port = host.port_factory.get()
-    expectations_file = port.path_to_generic_test_expectations_file()
-    expectations_line_adder = W3CExpectationsLineAdder(host)
-    issue_number = expectations_line_adder.get_issue_number()
-    try_bots = expectations_line_adder.get_try_bots()
-    rietveld = Rietveld(host.web)
-    try_jobs = rietveld.latest_try_jobs(issue_number, try_bots)
-    test_expectations = {}
-    if not try_jobs:
-        print 'No Try Job information was collected.'
-        return 1
-
-    for job in try_jobs:
-        platform_results = expectations_line_adder.get_failing_results_dict(BuildBot(), job.builder_name, job.build_number)
-        test_expectations = expectations_line_adder.merge_dicts(test_expectations, platform_results)
-
-    for test_name, platform_result in test_expectations.iteritems():
-        test_expectations[test_name] = expectations_line_adder.merge_same_valued_keys(platform_result)
-    test_expectations = expectations_line_adder.get_expected_txt_files(test_expectations)
-    test_expectation_lines = expectations_line_adder.create_line_list(test_expectations)
-    expectations_line_adder.write_to_test_expectations(host, expectations_file, test_expectation_lines)
-
-
 class W3CExpectationsLineAdder(object):
 
     def __init__(self, host):
-        self._host = host
-        self.filesystem = host.filesystem
+        self.host = host
+        self.host.initialize_scm()
+        self.finder = WebKitFinder(self.host.filesystem)
+
+    def run(self):
+        issue_number = self.get_issue_number()
+        try_bots = self.get_try_bots()
+        rietveld = Rietveld(self.host.web)
+        try_jobs = rietveld.latest_try_jobs(issue_number, try_bots)
+
+        if not try_jobs:
+            print 'No Try Job information was collected.'
+            return 1
+
+        test_expectations = {}
+        for job in try_jobs:
+            platform_results = self.get_failing_results_dict(job)
+            test_expectations = self.merge_dicts(test_expectations, platform_results)
+
+        for test_name, platform_result in test_expectations.iteritems():
+            test_expectations[test_name] = self.merge_same_valued_keys(platform_result)
+
+        test_expectations = self.get_expected_txt_files(test_expectations)
+        test_expectation_lines = self.create_line_list(test_expectations)
+        self.write_to_test_expectations(test_expectation_lines)
+        return 0
 
     def get_issue_number(self):
-        return GitCL(self._host.executive).get_issue_number()
+        return GitCL(self.host.executive).get_issue_number()
 
     def get_try_bots(self):
-        return self._host.builders.all_try_builder_names()
+        return self.host.builders.all_try_builder_names()
 
-    def _generate_results_dict(self, platform, result_list):
+    def generate_results_dict(self, platform, result_list):
         test_dict = {}
         if '-' in platform:
             platform = platform[platform.find('-') + 1:].capitalize()
@@ -71,19 +71,14 @@ class W3CExpectationsLineAdder(object):
                 }}
         return test_dict
 
-    def get_failing_results_dict(self, buildbot, builder_name, build_number):
+    def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
 
         Retrieves a full list of layout test results from a builder result URL.
         Collects the builder name, platform and a list of tests that did not
         run as expected.
 
-        TODO(qyearsley): Rather than taking a BuildBot object, this should use
-        the Host's BuildBot object.
-
         Args:
-            buildbot: A BuildBot object.
-            builder: A Builder object.
             build: A Build object.
 
         Returns:
@@ -97,13 +92,13 @@ class W3CExpectationsLineAdder(object):
             If there are no failing results or no results could be fetched,
             this will return an empty dict.
         """
-        layout_test_results = buildbot.fetch_results(Build(builder_name, build_number))
+        layout_test_results = self.host.buildbot.fetch_results(build)
         if layout_test_results is None:
-            _log.warning('No results for builder %s, build %s', builder_name, build_number)
+            _log.warning('No results for build %s', build)
             return {}
-        platform = self._host.builders.port_name_for_builder_name(builder_name)
+        platform = self.host.builders.port_name_for_builder_name(build.builder_name)
         result_list = layout_test_results.didnt_run_as_expected_results()
-        failing_results_dict = self._generate_results_dict(platform, result_list)
+        failing_results_dict = self.generate_results_dict(platform, result_list)
         return failing_results_dict
 
     def merge_dicts(self, target, source, path=None):
@@ -247,7 +242,7 @@ class W3CExpectationsLineAdder(object):
                     line_list.append(str(line))
         return line_list
 
-    def write_to_test_expectations(self, host, path, line_list):
+    def write_to_test_expectations(self, line_list):
         """Writes to TestExpectations.
 
         Writes the test expectations lines in |line_list| to the test
@@ -258,12 +253,12 @@ class W3CExpectationsLineAdder(object):
         be added to the end of the file.
 
         Args:
-            host: A Host object.
-            path: The path to the file general TestExpectations file.
             line_list: A list of w3c test expectations lines.
         """
+        port = self.host.port_factory.get()
+        expectations_file = port.path_to_generic_test_expectations_file()
         comment_line = '# Tests added from W3C auto import bot'
-        file_contents = host.filesystem.read_text_file(path)
+        file_contents = self.host.filesystem.read_text_file(expectations_file)
         w3c_comment_line_index = file_contents.find(comment_line)
         all_lines = ''
         for line in line_list:
@@ -280,10 +275,10 @@ class W3CExpectationsLineAdder(object):
             end_of_comment_line = (file_contents[w3c_comment_line_index:].find('\n')) + w3c_comment_line_index
             new_data = file_contents[: end_of_comment_line + 1] + all_lines + file_contents[end_of_comment_line:]
             file_contents = new_data
-        host.filesystem.write_text_file(path, file_contents)
+        self.host.filesystem.write_text_file(expectations_file, file_contents)
 
     def get_expected_txt_files(self, tests_results):
-        """Fetches new baseline files for tests that sould be rebaselined.
+        """Fetches new baseline files for tests that should be rebaselined.
 
         Invokes webkit-patch rebaseline-from-try-jobs in order to download new
         -expected.txt files for testharness.js tests that did not crash or time
@@ -291,20 +286,19 @@ class W3CExpectationsLineAdder(object):
         failure test dictionary.
 
         Args:
-            tests_results: A dictmapping test name to platform to test results.
+            tests_results: A dict mapping test name to platform to test results.
 
         Returns:
             An updated tests_results dictionary without the platform-specific
             testharness.js tests that required new baselines to be downloaded
             from `webkit-patch rebaseline-from-try-jobs`.
         """
-        finder = WebKitFinder(self._host.filesystem)
-        tests = self._host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
-        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(finder, tests, tests_results)
+        tests = self.host.executive.run_command(['git', 'diff', 'master', '--name-only']).splitlines()
+        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(tests, tests_results)
         if tests_to_rebaseline:
-            webkit_patch = self._host.filesystem.join(
-                finder.chromium_base(), finder.webkit_base(), finder.path_to_script('webkit-patch'))
-            self._host.executive.run_command([
+            webkit_patch = self.host.filesystem.join(
+                self.finder.chromium_base(), self.finder.webkit_base(), self.finder.path_to_script('webkit-patch'))
+            self.host.executive.run_command([
                 'python',
                 webkit_patch,
                 'rebaseline-cl',
@@ -313,7 +307,7 @@ class W3CExpectationsLineAdder(object):
             ] + tests_to_rebaseline)
         return tests_results
 
-    def get_tests_to_rebaseline(self, webkit_finder, tests, tests_results):
+    def get_tests_to_rebaseline(self, tests, tests_results):
         """Returns a list of tests to download new baselines for.
 
         Creates a list of tests to rebaseline depending on the tests' platform-
@@ -321,7 +315,6 @@ class W3CExpectationsLineAdder(object):
         due to a baseline mismatch (rather than crash or timeout).
 
         Args:
-            webkit_finder: A WebKitFinder object.
             tests: A list of new imported tests.
             tests_results: A dictionary of failing tests results.
 
@@ -331,18 +324,18 @@ class W3CExpectationsLineAdder(object):
             both testharness.js tests and ref tests that failed some try job.
         """
         tests_to_rebaseline = set()
-        layout_tests_rel_path = self._host.filesystem.relpath(
-            webkit_finder.layout_tests_dir(), webkit_finder.chromium_base())
+        layout_tests_rel_path = self.host.filesystem.relpath(
+            self.finder.layout_tests_dir(), self.finder.chromium_base())
         for test in tests:
-            test_path = self._host.filesystem.relpath(test, layout_tests_rel_path)
-            if self.is_js_test(webkit_finder, test) and tests_results.get(test_path):
+            test_path = self.host.filesystem.relpath(test, layout_tests_rel_path)
+            if self.is_js_test(test) and tests_results.get(test_path):
                 for platform in tests_results[test_path].keys():
                     if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
                         del tests_results[test_path][platform]
                         tests_to_rebaseline.add(test_path)
         return list(tests_to_rebaseline), tests_results
 
-    def is_js_test(self, webkit_finder, test_path):
-        absolute_path = self._host.filesystem.join(webkit_finder.chromium_base(), test_path)
-        test_parser = TestParser(absolute_path, self._host)
+    def is_js_test(self, test_path):
+        absolute_path = self.host.filesystem.join(self.finder.chromium_base(), test_path)
+        test_parser = TestParser(absolute_path, self.host)
         return test_parser.is_jstest()

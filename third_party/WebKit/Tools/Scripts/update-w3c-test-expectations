@@ -6,7 +6,8 @@
 import sys
 
 from webkitpy.common import host
-from webkitpy.w3c.update_w3c_test_expectations import main
+from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
 if __name__ == "__main__":
-    sys.exit(main(host.Host()))
+    line_adder = W3CExpectationsLineAdder(host.Host())
+    sys.exit(line_adder.run())

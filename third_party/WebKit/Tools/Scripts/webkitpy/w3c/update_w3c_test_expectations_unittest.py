@@ -60,13 +60,13 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
             },
         }))
         line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {})
+        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {})
 
     def test_get_failing_results_dict_no_results(self):
         self.host.buildbot = MockBuildBot()
         self.host.buildbot.set_results(Build('mac', 123), None)
         line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {})
+        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {})
 
     def test_get_failing_results_dict_some_failing_results(self):
         self.host.buildbot.set_results(Build('mac', 123), LayoutTestResults({
@@ -83,7 +83,7 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
             },
         }))
         line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {
+        self.assertEqual(line_adder.get_failing_results_dict(Build('mac', 123)), {
             'fake/test.html/failing-test.html': {
                 'Mac': {
                     'actual': 'IMAGE',
@@ -144,16 +144,16 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
 
     def test_generate_results_dict(self):
         line_adder = W3CExpectationsLineAdder(MockHost())
-        layout_test_list = [LayoutTestResult(
-            'test/name.html', {
-                'expected': 'bar',
-                'actual': 'foo',
-                'is_unexpected': True,
-                'has_stderr': True
-            }
+        layout_test_list = [
+            LayoutTestResult(
+                'test/name.html', {
+                    'expected': 'bar',
+                    'actual': 'foo',
+                    'is_unexpected': True,
+                    'has_stderr': True
+                }
         )]
-        platform = 'dummy_platform'
-        self.assertEqual(line_adder._generate_results_dict(platform, layout_test_list), {
+        self.assertEqual(line_adder.generate_results_dict('dummy_platform', layout_test_list), {
             'test/name.html': {
                 'dummy_platform': {
                     'expected': 'bar',
@@ -164,55 +164,53 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         })
 
     def test_write_to_test_expectations_under_comment(self):
-        self.host.filesystem.files = {'TestExpectations': '# Tests added from W3C auto import bot\n'}
+        expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
+        self.host.filesystem.files[expectations_path] = '# Tests added from W3C auto import bot\n'
         line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
-        path = 'TestExpectations'
-        line_adder.write_to_test_expectations(line_adder, path, line_list)
-        value = line_adder._host.filesystem.read_text_file(path)
+        line_adder.write_to_test_expectations(line_list)
+        value = line_adder.host.filesystem.read_text_file(expectations_path)
         self.assertEqual(value, '# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]\n')
 
     def test_write_to_test_expectations_to_eof(self):
-        self.host.filesystem.files['TestExpectations'] = 'not empty\n'
+        expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
+        self.host.filesystem.files[expectations_path] = 'not empty\n'
         line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['fake crbug [ foo ] fake/file/path.html [Pass]']
-        path = 'TestExpectations'
-        line_adder.write_to_test_expectations(line_adder, path, line_list)
-        value = line_adder.filesystem.read_text_file(path)
-        self.assertEqual(value, 'not empty\n\n# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]')
+        line_adder.write_to_test_expectations(line_list)
+        value = self.host.filesystem.read_text_file(expectations_path)
+        self.assertEqual(
+            value,
+            'not empty\n\n# Tests added from W3C auto import bot\nfake crbug [ foo ] fake/file/path.html [Pass]')
 
     def test_write_to_test_expectations_skip_lines(self):
-        self.host.filesystem.files['TestExpectations'] = 'dont copy me\n'
+        expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
+        self.host.filesystem.files[expectations_path] = 'dont copy me\n'
         line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['[ ] dont copy me', '[ ] but copy me']
-        path = 'TestExpectations'
-        line_adder.write_to_test_expectations(line_adder, path, line_list)
-        value = line_adder.filesystem.read_text_file(path)
+        line_adder.write_to_test_expectations(line_list)
+        value = self.host.filesystem.read_text_file(expectations_path)
         self.assertEqual(value, 'dont copy me\n\n# Tests added from W3C auto import bot\n[ ] but copy me')
 
     def test_is_js_test_true(self):
         self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
         <script src="/resources/testharness.js"></script>'''
-        finder = WebKitFinder(self.host.filesystem)
         line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertTrue(line_adder.is_js_test(finder, 'foo/bar.html'))
+        self.assertTrue(line_adder.is_js_test('foo/bar.html'))
 
     def test_is_js_test_false(self):
         self.host.filesystem.files['/mock-checkout/foo/bar.html'] = '''
         <script src="ref-test.html"></script>'''
-        finder = WebKitFinder(self.host.filesystem)
         line_adder = W3CExpectationsLineAdder(self.host)
-        self.assertFalse(line_adder.is_js_test(finder, 'foo/bar.html'))
+        self.assertFalse(line_adder.is_js_test('foo/bar.html'))
 
     def test_get_test_to_rebaseline(self):
         self.host = MockHost()
         self.host.filesystem.files['/mock-checkout/imported/fake/test/path.html'] = '''
                 <script src="/resources/testharness.js"></script>'''
-        finder = WebKitFinder(self.host.filesystem)
         line_adder = W3CExpectationsLineAdder(self.host)
         tests = ['imported/fake/test/path.html']
         test_dict = {'../../../imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
-        tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(
-            finder, tests, test_dict)
+        tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(tests, test_dict)
         self.assertEqual(tests_to_rebaseline, ['../../../imported/fake/test/path.html'])
         self.assertEqual(tests_results, test_dict)
