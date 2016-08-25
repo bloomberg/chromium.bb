@@ -506,6 +506,7 @@ public class DownloadNotificationService extends Service {
                                 ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
                                 : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD);
                 DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(itemType);
+                boolean destroyImmediately = true;
                 switch (intent.getAction()) {
                     case ACTION_DOWNLOAD_CANCEL:
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
@@ -531,15 +532,27 @@ public class DownloadNotificationService extends Service {
                         resumeAllPendingDownloads();
                         break;
                     case ACTION_DOWNLOAD_OPEN:
-                        assert entry == null;
-                        String guid = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID);
-                        downloadServiceDelegate.openItem(guid);
+                        final OfflinePageDownloadBridge bridge =
+                                (OfflinePageDownloadBridge) downloadServiceDelegate;
+                        destroyImmediately = false;
+                        bridge.addObserver(
+                                new OfflinePageDownloadBridge.Observer() {
+                                    @Override
+                                    public void onItemsLoaded() {
+                                        String guid = IntentUtils.safeGetStringExtra(
+                                                intent, EXTRA_DOWNLOAD_GUID);
+                                        bridge.openItem(guid);
+                                        bridge.destroyServiceDelegate();
+                                    }
+                                });
                         break;
                     default:
                         Log.e(TAG, "Unrecognized intent action.", intent);
                         break;
                 }
-                downloadServiceDelegate.destroyServiceDelegate();
+                if (destroyImmediately) {
+                    downloadServiceDelegate.destroyServiceDelegate();
+                }
             }
         };
         try {
