@@ -121,17 +121,20 @@
   http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
   http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
 
+# https://crbug.com/640631: Failing due to difference in WebFrameClient
+# callback sequence on renderer-initiated failed navigations.
+  http/tests/loading/bad-scheme-subframe.html [ Timeout ]
+  http/tests/loading/bad-server-subframe.html [ Failure ]
+  http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
+
 # Untriaged navigation
   http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
   http/tests/cookies/same-site/popup-same-site.html [ Failure ]
   http/tests/loading/307-after-303-after-post.html [ Failure ]
-  http/tests/loading/bad-scheme-subframe.html [ Timeout ]
-  http/tests/loading/bad-server-subframe.html [ Failure ]
   http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
   http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
   http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
   http/tests/loading/redirect-methods.html [ Crash Failure ]
-  http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
   http/tests/navigation/response204.html [ Timeout ]
 
