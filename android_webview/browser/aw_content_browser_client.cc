@@ -55,6 +55,11 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/resources/grit/ui_resources.h"
 
+#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
+#include "components/spellcheck/common/spellcheck_switches.h"
+#endif
+
 using content::BrowserThread;
 using content::ResourceType;
 
@@ -218,6 +223,13 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
+
+#if defined(ENABLE_SPELLCHECK)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      spellcheck::switches::kEnableAndroidSpellChecker)) {
+    host->AddFilter(new SpellCheckMessageFilterPlatform(host->GetID()));
+  }
+#endif
 }
 
 bool AwContentBrowserClient::IsHandledURL(const GURL& url) {

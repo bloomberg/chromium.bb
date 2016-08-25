@@ -52,6 +52,11 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/renderer/spellcheck_provider.h"
+#endif
+
 using content::RenderThread;
 
 namespace android_webview {
@@ -74,6 +79,13 @@ void AwContentRendererClient::RenderThreadStarted() {
   blink::WebString aw_scheme(
       base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
+
+#if defined(ENABLE_SPELLCHECK)
+  if (!spellcheck_) {
+    spellcheck_ = base::MakeUnique<SpellCheck>();
+    thread->AddObserver(spellcheck_.get());
+  }
+#endif
 }
 
 bool AwContentRendererClient::HandleNavigation(
@@ -163,6 +175,10 @@ void AwContentRendererClient::RenderViewCreated(
   new printing::PrintWebViewHelper(
       render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
                        new AwPrintWebViewHelperDelegate()));
+
+#if defined(ENABLE_SPELLCHECK)
+  new SpellCheckProvider(render_view, spellcheck_.get());
+#endif
 }
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code,

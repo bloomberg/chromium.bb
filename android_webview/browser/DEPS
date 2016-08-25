@@ -20,6 +20,8 @@ include_rules = [
   "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",
+  "+components/spellcheck/browser",
+  "+components/spellcheck/common",
   "+components/url_formatter",
   "+components/user_prefs",
   "+components/visitedlink/browser",

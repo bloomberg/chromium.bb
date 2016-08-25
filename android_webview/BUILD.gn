@@ -630,6 +630,13 @@ source_set("common") {
     ]
   }
 
+  if (enable_spellcheck) {
+    deps += [
+      "//components/spellcheck/browser",
+      "//components/spellcheck/renderer",
+    ]
+  }
+
   configs += [ "//v8:external_startup_data" ]
 }
 
@@ -717,6 +724,10 @@ android_library("android_webview_java") {
 
   if (enable_configuration_policy) {
     deps += [ "//components/policy/android:policy_java" ]
+  }
+
+  if (enable_spellcheck) {
+    deps += [ "//components/spellcheck/browser/android:java" ]
   }
 
   srcjar_deps = [ "//android_webview/native:aw_permission_request_resource" ]

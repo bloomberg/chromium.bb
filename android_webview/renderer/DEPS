@@ -8,6 +8,7 @@ include_rules = [
   "+components/cdm/renderer",
   "+components/printing/common",
   "+components/printing/renderer",
+  "+components/spellcheck/renderer",
   "+components/visitedlink/renderer",
 
   "+content/public/child",

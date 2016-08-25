@@ -118,6 +118,10 @@ source_set("native") {
     deps += [ "//components/external_video_surface:external_video_surface" ]
   }
 
+  if (enable_spellcheck) {
+    deps += [ "//components/spellcheck/browser:browser" ]
+  }
+
   libs = [ "jnigraphics" ]
 }
 

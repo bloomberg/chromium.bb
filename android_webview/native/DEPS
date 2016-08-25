@@ -14,6 +14,7 @@ include_rules = [
   "+components/devtools_http_handler",
   "+components/external_video_surface",
   "+components/navigation_interception",
+  "+components/spellcheck/browser/android",
   "+components/user_prefs",
   "+components/web_contents_delegate_android",
 
