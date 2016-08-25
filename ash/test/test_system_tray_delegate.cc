@@ -67,10 +67,6 @@ void TestSystemTrayDelegate::SetCurrentIME(const IMEInfo& info) {
   current_ime_ = info;
 }
 
-void TestSystemTrayDelegate::SetAvailableIMEList(const IMEInfoList& list) {
-  ime_list_ = list;
-}
-
 LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   // Initial login status has been changed for testing.
   if (g_initial_status != LoginStatus::USER &&
@@ -144,10 +140,6 @@ TestSystemTrayDelegate::CreateRotationLockTrayItem(SystemTray* tray) {
 
 void TestSystemTrayDelegate::GetCurrentIME(IMEInfo* info) {
   *info = current_ime_;
-}
-
-void TestSystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {
-  *list = ime_list_;
 }
 
 }  // namespace test

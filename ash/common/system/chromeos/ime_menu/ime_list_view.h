@@ -37,9 +37,6 @@ class ImeListView : public TrayDetailsView, public ViewClickListener {
   void OnViewClicked(views::View* sender) override;
 
  private:
-  // To allow the test class to access |ime_map_|.
-  friend class ImeMenuTrayTest;
-
   // Appends the IMEs to the scrollable area of the detailed view.
   void AppendIMEList(const IMEInfoList& list);
 
