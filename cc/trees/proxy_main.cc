@@ -76,12 +76,6 @@ void ProxyMain::DidCompleteSwapBuffers() {
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
-void ProxyMain::SetRendererCapabilities(
-    const RendererCapabilities& capabilities) {
-  DCHECK(IsMainThread());
-  renderer_capabilities_ = capabilities;
-}
-
 void ProxyMain::BeginMainFrameNotExpectedSoon() {
   TRACE_EVENT0("cc", "ProxyMain::BeginMainFrameNotExpectedSoon");
   DCHECK(IsMainThread());
@@ -111,18 +105,14 @@ void ProxyMain::RequestNewOutputSurface() {
   layer_tree_host_->RequestNewOutputSurface();
 }
 
-void ProxyMain::DidInitializeOutputSurface(
-    bool success,
-    const RendererCapabilities& capabilities) {
+void ProxyMain::DidInitializeOutputSurface(bool success) {
   TRACE_EVENT0("cc", "ProxyMain::DidInitializeOutputSurface");
   DCHECK(IsMainThread());
 
-  if (!success) {
+  if (!success)
     layer_tree_host_->DidFailToInitializeOutputSurface();
-    return;
-  }
-  renderer_capabilities_ = capabilities;
-  layer_tree_host_->DidInitializeOutputSurface();
+  else
+    layer_tree_host_->DidInitializeOutputSurface();
 }
 
 void ProxyMain::DidCompletePageScaleAnimation() {
@@ -278,12 +268,6 @@ void ProxyMain::SetOutputSurface(OutputSurface* output_surface) {
 void ProxyMain::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "ProxyMain::SetVisible", "visible", visible);
   channel_main_->SetVisibleOnImpl(visible);
-}
-
-const RendererCapabilities& ProxyMain::GetRendererCapabilities() const {
-  DCHECK(IsMainThread());
-  DCHECK(!layer_tree_host_->output_surface_lost());
-  return renderer_capabilities_;
 }
 
 void ProxyMain::SetNeedsAnimate() {

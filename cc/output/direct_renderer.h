@@ -14,7 +14,6 @@
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/overlay_processor.h"
-#include "cc/output/renderer_capabilities_impl.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -60,7 +59,6 @@ class CC_EXPORT DirectRenderer {
                  const gfx::Rect& device_clip_rect);
 
   // Public interface implemented by subclasses.
-  virtual const RendererCapabilitiesImpl& Capabilities() const = 0;
   virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(

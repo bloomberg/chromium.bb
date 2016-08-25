@@ -397,9 +397,6 @@ GLRenderer::GLRenderer(const RendererSettings* settings,
       output_surface_->context_provider()->ContextCapabilities();
   DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
 
-  capabilities_.max_texture_size = resource_provider_->max_texture_size();
-  capabilities_.best_texture_format = resource_provider_->best_texture_format();
-
   use_discard_framebuffer_ = context_caps.discard_framebuffer;
   use_sync_query_ = context_caps.sync_query;
   use_blend_equation_advanced_ = context_caps.blend_equation_advanced;
@@ -418,10 +415,6 @@ GLRenderer::~GLRenderer() {
   }
 
   CleanupSharedObjects();
-}
-
-const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
-  return capabilities_;
 }
 
 bool GLRenderer::CanPartialSwap() {

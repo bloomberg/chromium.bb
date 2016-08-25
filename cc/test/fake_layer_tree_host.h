@@ -46,7 +46,6 @@ class FakeLayerTreeHost : public LayerTreeHost {
       ImageSerializationProcessor* image_serialization_processor);
   ~FakeLayerTreeHost() override;
 
-  const RendererCapabilities& GetRendererCapabilities() const override;
   void SetNeedsCommit() override;
   void SetNeedsUpdateLayers() override {}
 
@@ -81,11 +80,6 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   bool needs_commit() { return needs_commit_; }
 
-  void set_renderer_capabilities(const RendererCapabilities& capabilities) {
-    renderer_capabilities_set = true;
-    renderer_capabilities = capabilities;
-  }
-
  protected:
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     LayerTreeHost::InitParams* params,
@@ -97,9 +91,6 @@ class FakeLayerTreeHost : public LayerTreeHost {
   TestSharedBitmapManager manager_;
   FakeLayerTreeHostImpl host_impl_;
   bool needs_commit_;
-
-  bool renderer_capabilities_set;
-  RendererCapabilities renderer_capabilities;
 };
 
 }  // namespace cc
