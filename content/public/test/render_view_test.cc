@@ -339,17 +339,12 @@ void RenderViewTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 
 #if defined(OS_MACOSX)
-  // Needs to run before blink::shutdown().
   autorelease_pool_.reset(NULL);
 #endif
 
   leak_detector->collectGarbageAndReport();
 
-  base::RunLoop().RunUntilIdle();
-
   blink_platform_impl_.Shutdown();
-  blink::shutdown();
-
   platform_->PlatformUninitialize();
   platform_.reset();
   params_.reset();

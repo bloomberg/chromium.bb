@@ -153,7 +153,6 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   mock_clipboard_.reset();
   if (renderer_scheduler_)
     renderer_scheduler_->Shutdown();
-  blink::shutdown();
 
   // Clear the FeatureList that was registered in the constructor.
   base::FeatureList::ClearInstanceForTesting();
