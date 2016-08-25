@@ -27,6 +27,8 @@ namespace {
 
 // TODO(derat): Add more IDs.
 const char* const kExtensionIds[] = {
+    // TODO(jdufault): Remove testing version after m54. See crbug.com/640828.
+    "ogfjaccbdfhecploibfbhighmebiffla",  // Testing Keep app
     "hmjkmjkepdijhoojdojkdfohbdgmmhki",  // Google Keep app (Web Store)
 };
 
