@@ -211,7 +211,8 @@ OSStatus AUHALStream::Render(
     UInt32 bus_number,
     UInt32 number_of_frames,
     AudioBufferList* data) {
-  TRACE_EVENT0("audio", "AUHALStream::Render");
+  TRACE_EVENT2("audio", "AUHALStream::Render", "input buffer size",
+               number_of_frames_, "output buffer size", number_of_frames);
 
   UpdatePlayoutTimestamp(output_time_stamp);
 
