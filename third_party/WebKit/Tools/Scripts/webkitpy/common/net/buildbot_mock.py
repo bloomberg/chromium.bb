@@ -31,6 +31,9 @@ from webkitpy.common.net.layouttestresults import LayoutTestResults
 from webkitpy.common.net.layouttestresults_unittest import LayoutTestResultsTest
 
 
+# TODO(qyearsley): Instead of canned results from another module, other unit
+# tests may be a little easier to understand if this returned None by default
+# when there are no canned results to return.
 class MockBuildBot(BuildBot):
 
     def __init__(self):

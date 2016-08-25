@@ -5,8 +5,11 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.net.buildbot import Build
+from webkitpy.common.net.buildbot_mock import MockBuildBot
+from webkitpy.common.net.layouttestresults import LayoutTestResult, LayoutTestResults
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.common.net.layouttestresults import LayoutTestResult
+from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
 
@@ -36,6 +39,59 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
                 'one': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'}
             }
         }
+        self.host.builders = BuilderList({
+            'mac': {'port_name': 'test-mac'},
+        })
+
+    def tearDown(self):
+        self.host = None
+
+    def test_get_failing_results_dict_only_passing_results(self):
+        self.host.buildbot.set_results(Build('mac', 123), LayoutTestResults({
+            'tests': {
+                'fake': {
+                    'test.html': {
+                        'passing-test.html': {
+                            'expected': 'PASS',
+                            'actual': 'PASS',
+                        },
+                    },
+                },
+            },
+        }))
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {})
+
+    def test_get_failing_results_dict_no_results(self):
+        self.host.buildbot = MockBuildBot()
+        self.host.buildbot.set_results(Build('mac', 123), None)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {})
+
+    def test_get_failing_results_dict_some_failing_results(self):
+        self.host.buildbot.set_results(Build('mac', 123), LayoutTestResults({
+            'tests': {
+                'fake': {
+                    'test.html': {
+                        'failing-test.html': {
+                            'expected': 'PASS',
+                            'actual': 'IMAGE',
+                            'is_unexpected': True,
+                        },
+                    },
+                },
+            },
+        }))
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertEqual(line_adder.get_failing_results_dict(self.host.buildbot, 'mac', 123), {
+            'fake/test.html/failing-test.html': {
+                'Mac': {
+                    'actual': 'IMAGE',
+                    'expected': 'PASS',
+                    'bug': 'crbug.com/626703',
+                },
+            },
+        })
 
     def test_merge_same_valued_keys(self):
         self.assertEqual(

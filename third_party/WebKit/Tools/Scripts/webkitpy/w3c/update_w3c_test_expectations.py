@@ -8,14 +8,20 @@ based on layout test failures in try jobs.
 This script is used as part of the w3c test auto-import process.
 """
 
+import logging
+
 from webkitpy.common.net.rietveld import Rietveld
-from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net.buildbot import BuildBot, Build
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_parser import TestParser
 
+_log = logging.getLogger(__name__)
+
 
 def main(host):
+    # TODO(qyearsley): Add a "main" function to W3CExpectationsLineAdder
+    # and move most or all of this logic in there.
     host.initialize_scm()
     port = host.port_factory.get()
     expectations_file = port.path_to_generic_test_expectations_file()
@@ -72,7 +78,11 @@ class W3CExpectationsLineAdder(object):
         Collects the builder name, platform and a list of tests that did not
         run as expected.
 
+        TODO(qyearsley): Rather than taking a BuildBot object, this should use
+        the Host's BuildBot object.
+
         Args:
+            buildbot: A BuildBot object.
             builder: A Builder object.
             build: A Build object.
 
@@ -84,9 +94,13 @@ class W3CExpectationsLineAdder(object):
                     'bug': 'crbug.com/11111'
                 }
             }
+            If there are no failing results or no results could be fetched,
+            this will return an empty dict.
         """
-        results_url = buildbot.results_url(builder_name, build_number)
-        layout_test_results = buildbot.fetch_layout_test_results(results_url)
+        layout_test_results = buildbot.fetch_results(Build(builder_name, build_number))
+        if layout_test_results is None:
+            _log.warning('No results for builder %s, build %s', builder_name, build_number)
+            return {}
         platform = self._host.builders.port_name_for_builder_name(builder_name)
         result_list = layout_test_results.didnt_run_as_expected_results()
         failing_results_dict = self._generate_results_dict(platform, result_list)

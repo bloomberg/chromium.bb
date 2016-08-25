@@ -51,9 +51,16 @@ class LayoutTestResult(object):
         return 'PASS' in self.actual_results()
 
     def did_run_as_expected(self):
+        # TODO(qyearsley): For correctness, this should be:
+        #     return not self._result_dict.get('is_unexpected', False)
+        # (Right now for expected results it's not added to the result dict
+        # but in theory it could be present.)
         return 'is_unexpected' not in self._result_dict
 
     def is_missing_image(self):
+        # TODO(qyearsley): Change this to:
+        #     self._result_dict.get('is_missing_image', False)
+        # The following method should likewise be changed.
         return 'is_missing_image' in self._result_dict
 
     def is_missing_text(self):
