@@ -926,9 +926,7 @@ public class ToolbarPhone extends ToolbarLayout
         int locationBarTranslationY =
                 Math.max(0, (mNtpSearchBoxBounds.top - mLocationBar.getTop()));
         mLocationBar.setTranslationY(locationBarTranslationY);
-        if (!mUrlFocusChangeInProgress) {
-            setButtonsTranslationY();
-        }
+        updateButtonsTranslationY();
 
         // Linearly interpolate between the bounds of the search box on the NTP and the omnibox
         // background bounds. |shrinkage| is the scaling factor for the offset -- if it's 1, we are
@@ -972,11 +970,16 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private void setButtonsTranslationY() {
-        int searchBoxTranslationY = Math.min(mNtpSearchBoxTranslation.y, 0);
-        mToolbarButtonsContainer.setTranslationY(searchBoxTranslationY);
-        mReturnButton.setTranslationY(searchBoxTranslationY);
-        mHomeButton.setTranslationY(searchBoxTranslationY);
+    /**
+     * Update the y translation of the buttons to make it appear as if they were scrolling with
+     * the new tab page.
+     */
+    private void updateButtonsTranslationY() {
+        int transY = mTabSwitcherState == STATIC_TAB ? Math.min(mNtpSearchBoxTranslation.y, 0) : 0;
+
+        mToolbarButtonsContainer.setTranslationY(transY);
+        mReturnButton.setTranslationY(transY);
+        mHomeButton.setTranslationY(transY);
     }
 
     private void setAncestorsShouldClipChildren(boolean clip) {
@@ -1533,6 +1536,7 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
+        updateButtonsTranslationY();
         mAnimateNormalToolbar = showToolbar;
         if (mTabSwitcherModeAnimation != null) mTabSwitcherModeAnimation.start();
 
@@ -1769,16 +1773,6 @@ public class ToolbarPhone extends ToolbarLayout
             mLocationBar.setUrlBarFocus(false);
             return;
         }
-
-        // https://crbug.com/623885: The mToolbarButtonsContainer has its translationY modified
-        // during scroll so when the user scrolls on the NTP, it appears to scroll too. However
-        // during the URL focus and defocus animations it should not be touched. Unfortunately
-        // updateNtpTransitionAnimation() is called a few times after the URL focus animation has
-        // been completed while mUrlFocusChangeInProgress is set to false, causing translationY to
-        // incorrect at the end.
-        // We reset the translationY here so the mToolbarButtonsContainer is on screen for the
-        // defocusing animation.
-        setButtonsTranslationY();
 
         triggerUrlFocusAnimation(hasFocus);
 
