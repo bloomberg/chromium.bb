@@ -21,6 +21,8 @@ MotionEvent::ToolType EventPointerTypeToMotionEventToolType(
       return MotionEvent::TOOL_TYPE_STYLUS;
     case EventPointerType::POINTER_TYPE_TOUCH:
       return MotionEvent::TOOL_TYPE_FINGER;
+    case EventPointerType::POINTER_TYPE_ERASER:
+      return MotionEvent::TOOL_TYPE_ERASER;
   }
 
   return MotionEvent::TOOL_TYPE_UNKNOWN;
