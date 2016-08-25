@@ -353,6 +353,7 @@ class VideoRendererImplTest : public testing::Test {
     {
       SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
       WaitableMessageLoopEvent event;
+      EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
           .WillOnce(RunClosure(event.GetClosure()));
       EXPECT_CALL(mock_cb_, OnEnded());
@@ -411,6 +412,7 @@ class VideoRendererImplTest : public testing::Test {
       SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
       WaitableMessageLoopEvent event;
       EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(80))).Times(1);
+      EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
       EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
           .WillOnce(RunClosure(event.GetClosure()));
       if (type == UnderflowTestType::NORMAL)
@@ -825,6 +827,9 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
         .WillOnce(RunClosure(event.GetClosure()));
+    EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
+        .Times(4)
+        .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
@@ -832,6 +837,14 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }
+
+  // Four calls to update statistics should have been made, each reporting a
+  // single decoded frame and one frame worth of memory usage. No dropped frames
+  // should be reported later since we're in background rendering mode. These
+  // calls must all have occurred before playback starts.
+  EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
+  EXPECT_EQ(1u, last_pipeline_statistics.video_frames_decoded);
+  EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
 
   // Consider the case that rendering is faster than we setup the test event.
   // In that case, when we run out of the frames, BUFFERING_HAVE_NOTHING will
@@ -841,8 +854,6 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
       .Times(testing::AtMost(1));
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(testing::AtMost(1));
-  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
-      .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
   renderer_->OnTimeStateChanged(true);
   time_source_.StartTicking();
 
@@ -854,13 +865,6 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(90)));
   WaitForPendingDecode();
   SatisfyPendingDecodeWithEndOfStream();
-
-  // If this wasn't background rendering mode, this would result in two frames
-  // being dropped, but since we set background render to true, none should be
-  // reported
-  EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
-  EXPECT_EQ(4u, last_pipeline_statistics.video_frames_decoded);
-  EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
 
   AdvanceTimeInMs(30);
   WaitForEnded();

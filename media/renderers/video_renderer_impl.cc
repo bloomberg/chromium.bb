@@ -387,6 +387,10 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   // We may have removed all frames above and have reached end of stream.
   MaybeFireEndedCallback_Locked(time_progressing_);
 
+  // Update statistics here instead of during Render() when the sink is stopped.
+  if (!sink_started_)
+    UpdateStats_Locked();
+
   // Paint the first frame if possible and necessary. PaintSingleFrame() will
   // ignore repeated calls for the same frame. Paint ahead of HAVE_ENOUGH_DATA
   // to ensure the user sees the frame as early as possible.
