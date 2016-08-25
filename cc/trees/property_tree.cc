@@ -213,8 +213,6 @@ bool TransformTree::ComputeTranslation(int source_id,
     }
   }
 
-  DCHECK(
-      transform->IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)));
   return true;
 }
 

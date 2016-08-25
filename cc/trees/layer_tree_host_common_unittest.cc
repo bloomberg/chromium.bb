@@ -9361,6 +9361,47 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, NoisyTransform) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* render_surface = AddChild<LayerImpl>(root);
+  LayerImpl* scroll_child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* scroll_clip = AddChild<LayerImpl>(render_surface);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_clip);
+
+  scroll_child->test_properties()->scroll_parent = scroll_parent;
+  scroll_parent->test_properties()->scroll_children =
+      base::MakeUnique<std::set<LayerImpl*>>();
+  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
+  scroll_parent->SetScrollClipLayer(scroll_clip->id());
+
+  scroll_parent->SetDrawsContent(true);
+  scroll_child->SetDrawsContent(true);
+  render_surface->test_properties()->force_render_surface = true;
+
+  // A noisy transform that's invertible.
+  gfx::Transform transform;
+  transform.matrix().setDouble(0, 0, 6.12323e-17);
+  transform.matrix().setDouble(0, 2, 1);
+  transform.matrix().setDouble(2, 2, 6.12323e-17);
+  transform.matrix().setDouble(2, 0, -1);
+
+  scroll_child->test_properties()->transform = transform;
+  render_surface->test_properties()->transform = transform;
+
+  root->SetBounds(gfx::Size(30, 30));
+  scroll_child->SetBounds(gfx::Size(30, 30));
+  scroll_parent->SetBounds(gfx::Size(30, 30));
+  ExecuteCalculateDrawProperties(root);
+
+  gfx::Transform expected;
+  expected.matrix().setDouble(0, 0, 3.749395e-33);
+  expected.matrix().setDouble(0, 2, 6.12323e-17);
+  expected.matrix().setDouble(2, 0, -1);
+  expected.matrix().setDouble(2, 2, 6.12323e-17);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
+                                  scroll_child->ScreenSpaceTransform());
+}
+
 TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* render_surface1 = AddChild<LayerImpl>(root);
