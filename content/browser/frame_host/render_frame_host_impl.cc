@@ -1777,6 +1777,13 @@ void RenderFrameHostImpl::OnBeginNavigation(
 
 void RenderFrameHostImpl::OnDispatchLoad() {
   CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
+
+  // Don't forward the load event if this RFH is pending deletion.  This can
+  // happen in a race where this RenderFrameHost finishes loading just after
+  // the frame navigates away.  See https://crbug.com/626802.
+  if (!is_active())
+    return;
+
   // Only frames with an out-of-process parent frame should be sending this
   // message.
   RenderFrameProxyHost* proxy =
