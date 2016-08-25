@@ -36,7 +36,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
@@ -78,7 +77,8 @@ enum InvalidationType {
 // .t .v, .t ~ .z {}
 //   For class t we will have a SiblingInvalidationSet containing class z, with the SiblingInvalidationSet also holding descendants containing class v.
 //
-class CORE_EXPORT InvalidationSet : public RefCounted<InvalidationSet> {
+// We avoid virtual functions to minimize space consumption.
+class CORE_EXPORT InvalidationSet {
     WTF_MAKE_NONCOPYABLE(InvalidationSet);
     USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 public:
@@ -123,28 +123,30 @@ public:
     void show() const;
 #endif
 
-    const HashSet<AtomicString>& classSetForTesting() const { ASSERT(m_classes); return *m_classes; }
-    const HashSet<AtomicString>& idSetForTesting() const { ASSERT(m_ids); return *m_ids; }
-    const HashSet<AtomicString>& tagNameSetForTesting() const { ASSERT(m_tagNames); return *m_tagNames; }
-    const HashSet<AtomicString>& attributeSetForTesting() const { ASSERT(m_attributes); return *m_attributes; }
+    const HashSet<AtomicString>& classSetForTesting() const { DCHECK(m_classes); return *m_classes; }
+    const HashSet<AtomicString>& idSetForTesting() const { DCHECK(m_ids); return *m_ids; }
+    const HashSet<AtomicString>& tagNameSetForTesting() const { DCHECK(m_tagNames); return *m_tagNames; }
+    const HashSet<AtomicString>& attributeSetForTesting() const { DCHECK(m_attributes); return *m_attributes; }
 
+    void ref() { ++m_refCount; }
     void deref()
     {
-        if (!derefBase())
-            return;
-        destroy();
+        DCHECK_GT(m_refCount, 0);
+        --m_refCount;
+        if (!m_refCount)
+            destroy();
     }
 
     void combine(const InvalidationSet& other);
+
+protected:
+    explicit InvalidationSet(InvalidationType);
 
     ~InvalidationSet()
     {
         RELEASE_ASSERT(m_isAlive);
         m_isAlive = false;
     }
-
-protected:
-    explicit InvalidationSet(InvalidationType);
 
 private:
     void destroy();
@@ -153,6 +155,13 @@ private:
     HashSet<AtomicString>& ensureIdSet();
     HashSet<AtomicString>& ensureTagNameSet();
     HashSet<AtomicString>& ensureAttributeSet();
+
+    // Implement reference counting manually so we can call a derived
+    // class destructor when the reference count decreases to 0.
+    // If we use RefCounted instead, at least one of our compilers
+    // requires the ability for RefCounted<InvalidationSet>::deref()
+    // to call ~InvalidationSet(), but this is not a virtual call.
+    int m_refCount;
 
     // FIXME: optimize this if it becomes a memory issue.
     std::unique_ptr<HashSet<AtomicString>> m_classes;
