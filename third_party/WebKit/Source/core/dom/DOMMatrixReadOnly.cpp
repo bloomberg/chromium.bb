@@ -128,4 +128,23 @@ DOMFloat64Array* DOMMatrixReadOnly::toFloat64Array() const
     return DOMFloat64Array::create(array, 16);
 }
 
+const String DOMMatrixReadOnly::toString() const
+{
+    std::stringstream stream;
+    if (is2D()) {
+        stream << "matrix("
+        << a() << ", " << b() << ", " << c() << ", "
+        << d() << ", " << e() << ", " << f();
+    } else {
+        stream << "matrix3d("
+        << m11() << ", " << m12() << ", " << m13() << ", " << m14() << ", "
+        << m21() << ", " << m22() << ", " << m23() << ", " << m24() << ", "
+        << m31() << ", " << m32() << ", " << m33() << ", " << m34() << ", "
+        << m41() << ", " << m42() << ", " << m43() << ", " << m44();
+    }
+    stream << ")";
+
+    return String(stream.str().c_str());
+}
+
 } // namespace blink

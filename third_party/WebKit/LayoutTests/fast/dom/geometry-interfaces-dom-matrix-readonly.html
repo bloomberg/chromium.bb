@@ -40,6 +40,18 @@ test(function() {
 }, "DOMMatrixReadOnly constructor - 3D matrix");
 
 test(function() {
+    var matrix2d = new DOMMatrixReadOnly([1, 2, 3, 3.1, 2, 1]);
+    assert_true(matrix2d.is2D);
+    assert_equals(matrix2d.toString(), "matrix(1, 2, 3, 3.1, 2, 1)");
+}, "DOMMatrixReadOnly toString() - 2D matrix");
+
+test(function() {
+    var matrix3d = new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
+    assert_false(matrix3d.is2D);
+    assert_equals(matrix3d.toString(), "matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6)");
+}, "DOMMatrixReadOnly toString() - 3D matrix");
+
+test(function() {
     assert_throws(new TypeError(), function() { new DOMMatrixReadOnly(1, 2, 3, 4, 5, 6); },
             "DOMMatrixReadOnly constructor only accepts 1 argument");
     assert_throws(new TypeError(), function() { new DOMMatrixReadOnly("myString"); },
