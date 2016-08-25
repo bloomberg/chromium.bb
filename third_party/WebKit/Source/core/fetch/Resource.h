@@ -245,6 +245,13 @@ protected:
 
     virtual void checkNotify();
 
+    enum class MarkFinishedOption {
+        ShouldMarkFinished,
+        DoNotMarkFinished
+    };
+    void notifyClientsInternal(MarkFinishedOption);
+    void markClientFinished(ResourceClient*);
+
     virtual void destroyDecodedDataForFailedRevalidation() { }
 
     void setEncodedSize(size_t);
@@ -277,8 +284,6 @@ protected:
     const Vector<RedirectPair>& redirectChain() const { return m_redirectChain; }
 
     virtual void destroyDecodedDataIfPossible() { }
-
-    virtual void markClientsAndObserversFinished();
 
     // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
     String getMemoryDumpName() const;

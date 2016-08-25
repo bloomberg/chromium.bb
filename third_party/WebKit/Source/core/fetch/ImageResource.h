@@ -163,7 +163,8 @@ private:
     void ensureImage();
 
     void checkNotify() override;
-    void markClientsAndObserversFinished() override;
+    void notifyObserversInternal(MarkFinishedOption);
+    void markObserverFinished(ImageResourceObserver*);
 
     void doResetAnimation();
 

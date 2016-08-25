@@ -342,12 +342,28 @@ void Resource::setLoader(ResourceLoader* loader)
 
 void Resource::checkNotify()
 {
+    notifyClientsInternal(MarkFinishedOption::ShouldMarkFinished);
+}
+
+void Resource::notifyClientsInternal(MarkFinishedOption markFinishedOption)
+{
     if (isLoading())
         return;
 
     ResourceClientWalker<ResourceClient> w(m_clients);
-    while (ResourceClient* c = w.next())
+    while (ResourceClient* c = w.next()) {
+        if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
+            markClientFinished(c);
         c->notifyFinished(this);
+    }
+}
+
+void Resource::markClientFinished(ResourceClient* client)
+{
+    if (m_clients.contains(client)) {
+        m_finishedClients.add(client);
+        m_clients.remove(client);
+    }
 }
 
 void Resource::appendData(const char* data, size_t length)
@@ -380,14 +396,6 @@ void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
     setEncodedSize(0);
 }
 
-void Resource::markClientsAndObserversFinished()
-{
-    HashCountedSet<ResourceClient*> clients;
-    m_clients.swap(clients);
-    for (const auto& it : clients)
-        m_finishedClients.add(it.key, it.value);
-}
-
 void Resource::error(const ResourceError& error)
 {
     ASSERT(!error.isNull());
@@ -403,7 +411,6 @@ void Resource::error(const ResourceError& error)
     m_data.clear();
     m_loader = nullptr;
     checkNotify();
-    markClientsAndObserversFinished();
 }
 
 void Resource::finish(double loadFinishTime)
@@ -414,7 +421,6 @@ void Resource::finish(double loadFinishTime)
         m_status = Cached;
     m_loader = nullptr;
     checkNotify();
-    markClientsAndObserversFinished();
 }
 
 AtomicString Resource::httpContentType() const

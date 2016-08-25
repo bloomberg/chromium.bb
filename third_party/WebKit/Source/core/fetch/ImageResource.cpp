@@ -95,25 +95,29 @@ DEFINE_TRACE(ImageResource)
 
 void ImageResource::checkNotify()
 {
+    notifyObserversInternal(MarkFinishedOption::ShouldMarkFinished);
+    Resource::checkNotify();
+}
+
+void ImageResource::notifyObserversInternal(MarkFinishedOption markFinishedOption)
+{
     if (isLoading())
         return;
 
     ImageResourceObserverWalker walker(m_observers);
     while (auto* observer = walker.next()) {
+        if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
+            markObserverFinished(observer);
         observer->imageNotifyFinished(this);
     }
-
-    Resource::checkNotify();
 }
 
-void ImageResource::markClientsAndObserversFinished()
+void ImageResource::markObserverFinished(ImageResourceObserver* observer)
 {
-    HashCountedSet<ImageResourceObserver*> observers;
-    m_observers.swap(observers);
-    for (const auto& it : observers)
-        m_finishedObservers.add(it.key, it.value);
-
-    Resource::markClientsAndObserversFinished();
+    if (m_observers.contains(observer)) {
+        m_finishedObservers.add(observer);
+        m_observers.remove(observer);
+    }
 }
 
 void ImageResource::didAddClient(ResourceClient* client)
@@ -146,11 +150,8 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
     }
 
     if (isLoaded()) {
+        markObserverFinished(observer);
         observer->imageNotifyFinished(this);
-        if (m_observers.contains(observer)) {
-            m_finishedObservers.add(observer);
-            m_observers.remove(observer);
-        }
     }
 }
 
@@ -571,7 +572,10 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
         // Notify finished when the first part ends.
         if (!errorOccurred())
             setStatus(Cached);
-        checkNotify();
+        // We will also notify clients/observers of the finish in
+        // Resource::finish()/error() so we don't mark them finished here.
+        notifyObserversInternal(MarkFinishedOption::DoNotMarkFinished);
+        notifyClientsInternal(MarkFinishedOption::DoNotMarkFinished);
         if (loader())
             loader()->didFinishLoadingFirstPartInMultipart();
     }
