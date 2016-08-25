@@ -295,8 +295,8 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
 
     VisiblePosition visibleBase = createVisiblePosition(createPosition(baseNode, baseOffset));
     VisiblePosition visibleExtent = createVisiblePosition(createPosition(extentNode, extentOffset));
-
-    m_frame->selection().moveTo(visibleBase, visibleExtent);
+    const bool selectionHasDirection = true;
+    m_frame->selection().setSelection(VisibleSelection(visibleBase, visibleExtent, selectionHasDirection));
 }
 
 void DOMSelection::modify(const String& alterString, const String& directionString, const String& granularityString)

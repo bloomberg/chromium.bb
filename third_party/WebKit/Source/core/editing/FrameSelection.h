@@ -108,7 +108,6 @@ public:
     bool isContentRichlyEditable() const { return selection().isContentRichlyEditable(); }
 
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
-    void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
     void moveTo(const Position&, TextAffinity);
 
     template <typename Strategy>
