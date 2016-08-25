@@ -86,6 +86,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'PidFile %s' % self._pid_file,
             '-c', 'SSLCertificateFile "%s"' % cert_file,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
+            '-c', 'DefaultType None',
         ]
 
         if self._is_win:
