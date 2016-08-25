@@ -1,9 +1,11 @@
 # This file is used for tests that only need to be suppressed on the Chromium
 # WebKit Leak bots.
-#
-# This list isn't comprehensive yet, and Leak Detector bots are not tree closers atm.
-# Gardeners are welcome to touch this file, but you can ignore the failures
-# and wait for kouhei@ or hajimehoshi@ to maintain this file.
+
+###########################################################################
+# WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
+# culprit CLs instead of suppressing the leaks. If you have any question, #
+# ask hajimehoshi@.                                                       #
+###########################################################################
 
 # view-source:// tests are not supported by the leak detector
 crbug.com/364398 fast/frames/viewsource/viewsource-1.html [ Leak ]
@@ -119,3 +121,9 @@ crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerleave_
 
 # Leaks that must be fixed asap.
 crbug.com/640886 [ Linux ] http/tests/images/png-partial-load-as-document.html is leaking [ Leak ]
+
+###########################################################################
+# WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
+# culprit CLs instead of suppressing the leaks. If you have any question, #
+# ask hajimehoshi@.                                                       #
+###########################################################################
