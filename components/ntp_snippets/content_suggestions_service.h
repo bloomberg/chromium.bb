@@ -186,6 +186,8 @@ class ContentSuggestionsService : public KeyedService,
   // Fires the OnCategoryStatusChanged event for the given |category|.
   void NotifyCategoryStatusChanged(Category category);
 
+  void SortCategories();
+
   // Whether the content suggestions feature is enabled.
   State state_;
 

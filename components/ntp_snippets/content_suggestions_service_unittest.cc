@@ -178,6 +178,10 @@ class ContentSuggestionsServiceTest : public testing::Test {
     return service()->category_factory()->FromKnownCategory(known_category);
   }
 
+  Category FromRemoteCategory(int remote_category) {
+    return service()->category_factory()->FromRemoteCategory(remote_category);
+  }
+
   MockProvider* RegisterProvider(Category provided_category) {
     return RegisterProvider(std::vector<Category>({provided_category}));
   }
@@ -222,7 +226,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
               Eq(ContentSuggestionsService::State::ENABLED));
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::BOOKMARKS);
+      FromKnownCategory(KnownCategories::DOWNLOADS);
   ASSERT_THAT(providers(), IsEmpty());
   EXPECT_THAT(service()->GetCategories(), IsEmpty());
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
@@ -260,7 +264,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
 TEST_F(ContentSuggestionsServiceDisabledTest, ShouldDoNothingWhenDisabled) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::BOOKMARKS);
+      FromKnownCategory(KnownCategories::DOWNLOADS);
   EXPECT_THAT(service()->state(),
               Eq(ContentSuggestionsService::State::DISABLED));
   EXPECT_THAT(providers(), IsEmpty());
@@ -276,7 +280,7 @@ TEST_F(ContentSuggestionsServiceDisabledTest, ShouldDoNothingWhenDisabled) {
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::BOOKMARKS);
+      FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider1 = RegisterProvider(articles_category);
   MockProvider* provider2 = RegisterProvider(offline_pages_category);
 
@@ -309,7 +313,7 @@ TEST_F(ContentSuggestionsServiceTest,
 TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::BOOKMARKS);
+      FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider1 = RegisterProvider(articles_category);
   MockProvider* provider2 = RegisterProvider(offline_pages_category);
 
@@ -353,7 +357,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectSuggestionInvalidated) {
 TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
   Category articles_category = FromKnownCategory(KnownCategories::ARTICLES);
   Category offline_pages_category =
-      FromKnownCategory(KnownCategories::BOOKMARKS);
+      FromKnownCategory(KnownCategories::DOWNLOADS);
 
   // Create and register providers
   MockProvider* provider1 = RegisterProvider(articles_category);
@@ -419,13 +423,13 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardSuggestions) {
 
 TEST_F(ContentSuggestionsServiceTest,
        ShouldNotReturnCategoryInfoForNonexistentCategory) {
-  Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   base::Optional<CategoryInfo> result = service()->GetCategoryInfo(category);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoryInfo) {
-  Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
   base::Optional<CategoryInfo> result = service()->GetCategoryInfo(category);
@@ -439,7 +443,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoryInfo) {
 
 TEST_F(ContentSuggestionsServiceTest,
        ShouldRegisterNewCategoryOnNewSuggestions) {
-  Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
   MockServiceObserver observer;
@@ -472,7 +476,7 @@ TEST_F(ContentSuggestionsServiceTest,
 
 TEST_F(ContentSuggestionsServiceTest,
        ShouldRegisterNewCategoryOnCategoryStatusChanged) {
-  Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
   MockServiceObserver observer;
@@ -500,7 +504,7 @@ TEST_F(ContentSuggestionsServiceTest,
 }
 
 TEST_F(ContentSuggestionsServiceTest, ShouldRemoveCategoryWhenNotProvided) {
-  Category category = FromKnownCategory(KnownCategories::BOOKMARKS);
+  Category category = FromKnownCategory(KnownCategories::DOWNLOADS);
   MockProvider* provider = RegisterProvider(category);
   MockServiceObserver observer;
   service()->AddObserver(&observer);
@@ -518,6 +522,49 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRemoveCategoryWhenNotProvided) {
   ExpectThatSuggestionsAre(category, std::vector<int>());
 
   service()->RemoveObserver(&observer);
+}
+
+// This tests the temporary special-casing of the bookmarks section: If it is
+// empty, it should appear at the end; see crbug.com/640568.
+TEST_F(ContentSuggestionsServiceTest, ShouldPutBookmarksAtEndIfEmpty) {
+  // Register a bookmarks provider and an arbitrary remote provider.
+  Category bookmarks = FromKnownCategory(KnownCategories::BOOKMARKS);
+  MockProvider* bookmarks_provider = RegisterProvider(bookmarks);
+  bookmarks_provider->FireCategoryStatusChangedWithCurrentStatus(bookmarks);
+  Category remote = FromRemoteCategory(123);
+  MockProvider* remote_provider = RegisterProvider(remote);
+  remote_provider->FireCategoryStatusChangedWithCurrentStatus(remote);
+
+  // By default, the bookmarks category is empty, so it should be at the end.
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
+
+  // Add two bookmark suggestions; now bookmarks should be in the front.
+  bookmarks_provider->FireSuggestionsChanged(bookmarks, {1, 2});
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  // Dismiss the first suggestion; bookmarks should stay in the front.
+  service()->DismissSuggestion(CreateSuggestion(1).id());
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  // Dismiss the second suggestion; now bookmarks should go back to the end.
+  service()->DismissSuggestion(CreateSuggestion(2).id());
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
+
+  // Same thing, but invalidate instead of dismissing.
+  bookmarks_provider->FireSuggestionsChanged(bookmarks, {1, 2});
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  bookmarks_provider->FireSuggestionInvalidated(bookmarks,
+                                                CreateSuggestion(1).id());
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  bookmarks_provider->FireSuggestionInvalidated(bookmarks,
+                                                CreateSuggestion(2).id());
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
+
+  // Same thing, but now the bookmarks category updates "naturally".
+  bookmarks_provider->FireSuggestionsChanged(bookmarks, {1, 2});
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  bookmarks_provider->FireSuggestionsChanged(bookmarks, {1});
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
+  bookmarks_provider->FireSuggestionsChanged(bookmarks, std::vector<int>());
+  EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
 }
 
 }  // namespace ntp_snippets

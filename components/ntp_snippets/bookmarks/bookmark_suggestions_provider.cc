@@ -151,7 +151,9 @@ CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
       l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
       /* has_more_button */ true,
-      /* show_if_empty */ false);
+      /* show_if_empty */ true);
+  // TODO(treib): Setting show_if_empty to true is a temporary hack, see
+  // crbug.com/640568.
 }
 
 void BookmarkSuggestionsProvider::DismissSuggestion(
