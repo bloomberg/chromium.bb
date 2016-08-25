@@ -244,7 +244,8 @@ target(link_target_type, "svg") {
 
 # GYP version: //third_party/WebKit/Source/core/core.gyp:webcore_remaining
 target(link_target_type, "remaining") {
-  if (is_win && is_official_build) {
+  if (is_win && is_official_build &&
+      link_target_type == "split_static_library") {
     # Shard this target into parts to work around linker limitations
     # on link time code generation builds.
     split_count = 19
