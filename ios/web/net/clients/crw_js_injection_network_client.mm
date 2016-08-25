@@ -8,11 +8,14 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #import "ios/net/crn_http_url_response.h"
 #import "ios/third_party/blink/src/html_tokenizer.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // CRWJSInjectionNetworkClient injects an external script tag reference for
 // crweb.js into HTML and XHTML documents. To do this correctly, three data
@@ -146,7 +149,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
                                   HTTPVersion:[response cr_HTTPVersion]
                                  headerFields:all_headers_mutable];
 
-  return [update_response autorelease];
+  return update_response;
 }
 }  // namespace
 
@@ -298,7 +301,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
     [super didReceiveResponse:response];
   } else {
   // Client calls [super didReceiveResponse:] in sendPendingResponse.
-    _pendingResponse.reset([static_cast<CRNHTTPURLResponse*>(response) retain]);
+  _pendingResponse.reset(static_cast<CRNHTTPURLResponse*>(response));
   }
 }
 
@@ -350,7 +353,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
   NSString* jsContentString = [NSString
       stringWithFormat:kJSContentTemplate, [[NSUUID UUID] UUIDString]];
   _jsInjectionContent.reset(
-      [[jsContentString dataUsingEncoding:_contentEncoding] retain]);
+      [jsContentString dataUsingEncoding:_contentEncoding]);
 
   return _jsInjectionContent;
 }
@@ -393,7 +396,7 @@ CRNHTTPURLResponse* ResponseWithUpdatedContentSize(
     NSUInteger additionalLength = [[self jsInjectionContent] length];
     CRNHTTPURLResponse* responseToSend =
         ResponseWithUpdatedContentSize(_pendingResponse, additionalLength);
-    _pendingResponse.reset([responseToSend retain]);
+    _pendingResponse.reset(responseToSend);
   }
 
   [super didReceiveResponse:_pendingResponse];

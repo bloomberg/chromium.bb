@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/weak_nsobject.h"
 #import "ios/net/clients/crn_forwarding_network_client.h"
 
 @protocol CRWRedirectClientDelegate;
@@ -17,8 +16,7 @@
 @interface CRWRedirectNetworkClient : CRNForwardingNetworkClient
 
 // Designated initializer.
-- (instancetype)initWithDelegate:
-    (base::WeakNSProtocol<id<CRWRedirectClientDelegate>>)delegate;
+- (instancetype)initWithDelegate:(id<CRWRedirectClientDelegate>)delegate;
 
 @end
 

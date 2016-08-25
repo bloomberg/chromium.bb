@@ -8,24 +8,23 @@
 #include "base/mac/bind_objc_block.h"
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWRedirectNetworkClient () {
   // The delegate.
-  base::WeakNSProtocol<id<CRWRedirectClientDelegate>> delegate_;
+  __weak id<CRWRedirectClientDelegate> _delegate;
 }
 
 @end
 
 @implementation CRWRedirectNetworkClient
 
-- (instancetype)initWithDelegate:
-    (base::WeakNSProtocol<id<CRWRedirectClientDelegate>>)delegate {
+- (instancetype)initWithDelegate:(id<CRWRedirectClientDelegate>)delegate {
   self = [super init];
   if (self) {
-    // CRWRedirectNetworkClients are created on the IO thread, but due to the
-    // threading restrictions of WeakNSObjects, |delegate_| may only be
-    // dereferenced on the UI thread.
-    DCHECK_CURRENTLY_ON(web::WebThread::IO);
-    delegate_ = delegate;
+    _delegate = delegate;
   }
   return self;
 }
@@ -40,10 +39,10 @@
               redirectResponse:(NSURLResponse*)redirectResponse {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlock(^{
-    // |delegate_| can only be dereferenced from the UI thread.
-    [delegate_ wasRedirectedToRequest:request
-                     redirectResponse:redirectResponse];
-  }));
+                             [_delegate
+                                 wasRedirectedToRequest:request
+                                       redirectResponse:redirectResponse];
+                           }));
   [super wasRedirectedToRequest:request
                   nativeRequest:nativeRequest
                redirectResponse:redirectResponse];

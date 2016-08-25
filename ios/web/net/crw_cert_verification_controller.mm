@@ -18,6 +18,10 @@
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/cert/cert_verify_proc_ios.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWCertVerificationController () {
   // Used to remember user exceptions to invalid certs.
   scoped_refptr<web::CertificatePolicyCache> _certPolicyCache;

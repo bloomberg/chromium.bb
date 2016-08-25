@@ -10,6 +10,10 @@
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/net/request_tracker_impl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 RequestTrackerFactoryImpl::RequestTrackerFactoryImpl(

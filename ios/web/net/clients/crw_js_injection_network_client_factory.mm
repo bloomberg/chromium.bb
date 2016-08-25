@@ -8,6 +8,10 @@
 #include "ios/web/net/clients/crw_js_injection_network_client.h"
 #include "net/url_request/url_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation CRWJSInjectionNetworkClientFactory
 
 - (CRWJSInjectionNetworkClient*)
@@ -29,7 +33,7 @@
           static_cast<int>(web::InjectionResult::INJECTION_RESULT_COUNT));
       return nil;
     }
-    return [[[CRWJSInjectionNetworkClient alloc] init] autorelease];
+    return [[CRWJSInjectionNetworkClient alloc] init];
   }
   return nil;
 }

@@ -5,16 +5,18 @@
 #include "ios/web/net/clients/crw_redirect_network_client_factory.h"
 
 #include "base/location.h"
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/bind_objc_block.h"
 #include "ios/web/public/web_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWRedirectNetworkClientFactory () {
   // Delegate passed to each vended CRWRedirectClient.
-  base::WeakNSProtocol<id<CRWRedirectClientDelegate>> client_delegate_;
+  __weak id<CRWRedirectClientDelegate> _client_delegate;
 }
 
 @end
@@ -26,7 +28,7 @@
   if (self) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     DCHECK(delegate);
-    client_delegate_.reset(delegate);
+    _client_delegate = delegate;
   }
   return self;
 }
@@ -47,8 +49,7 @@
                                                   url:(const GURL&)url
                                              response:(NSURLResponse*)response {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  return [[[CRWRedirectNetworkClient alloc]
-      initWithDelegate:client_delegate_] autorelease];
+  return [[CRWRedirectNetworkClient alloc] initWithDelegate:_client_delegate];
 }
 
 @end
