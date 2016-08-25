@@ -162,6 +162,10 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
   return IsFocusable() || !GetText().empty();
 }
 
+bool BrowserAccessibilityAndroid::IsCollapsed() const {
+  return HasState(ui::AX_STATE_COLLAPSED);
+}
+
 bool BrowserAccessibilityAndroid::IsCollection() const {
   return (GetRole() == ui::AX_ROLE_GRID ||
           GetRole() == ui::AX_ROLE_LIST ||
@@ -196,6 +200,10 @@ bool BrowserAccessibilityAndroid::IsEditableText() const {
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
   return !HasState(ui::AX_STATE_DISABLED);
+}
+
+bool BrowserAccessibilityAndroid::IsExpanded() const {
+  return HasState(ui::AX_STATE_EXPANDED);
 }
 
 bool BrowserAccessibilityAndroid::IsFocusable() const {

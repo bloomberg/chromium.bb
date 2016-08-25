@@ -27,12 +27,14 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsCheckable() const;
   bool IsChecked() const;
   bool IsClickable() const override;
+  bool IsCollapsed() const;
   bool IsCollection() const;
   bool IsCollectionItem() const;
   bool IsContentInvalid() const;
   bool IsDismissable() const;
   bool IsEditableText() const;
   bool IsEnabled() const;
+  bool IsExpanded() const;
   bool IsFocusable() const;
   bool IsFocused() const;
   bool IsHeading() const;

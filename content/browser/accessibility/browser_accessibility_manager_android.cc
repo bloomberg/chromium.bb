@@ -422,7 +422,9 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
       node->IsEditableText(),
       node->IsEnabled(),
       node->IsFocusable(),
-      node->IsFocused());
+      node->IsFocused(),
+      node->IsCollapsed(),
+      node->IsExpanded());
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoClassName(
       env, obj, info,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));

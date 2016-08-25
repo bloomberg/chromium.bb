@@ -37,6 +37,10 @@ import java.util.Locale;
 public class BrowserAccessibilityManager {
     private static final String TAG = "BrowserAccessibilityManager";
 
+    // Constants from AccessibilityNodeInfo defined in the K SDK.
+    private static final int ACTION_COLLAPSE = 0x00080000;
+    private static final int ACTION_EXPAND = 0x00040000;
+
     // Constants from AccessibilityNodeInfo defined in the L SDK.
     private static final int ACTION_SET_TEXT = 0x200000;
     private static final String ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE =
@@ -319,6 +323,11 @@ public class BrowserAccessibilityManager {
                     return true;
                 }
                 return false;
+            case AccessibilityNodeInfo.ACTION_COLLAPSE:
+            case AccessibilityNodeInfo.ACTION_EXPAND:
+                // If something is collapsible or expandable, just activate it to toggle.
+                nativeClick(mNativeObj, virtualViewId);
+                return true;
             default:
                 break;
         }
@@ -807,7 +816,7 @@ public class BrowserAccessibilityManager {
             int virtualViewId, boolean canScrollForward, boolean canScrollBackward,
             boolean canScrollUp, boolean canScrollDown, boolean canScrollLeft,
             boolean canScrollRight, boolean clickable, boolean editableText, boolean enabled,
-            boolean focusable, boolean focused) {
+            boolean focusable, boolean focused, boolean isCollapsed, boolean isExpanded) {
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
@@ -848,6 +857,14 @@ public class BrowserAccessibilityManager {
 
         if (clickable) {
             node.addAction(AccessibilityNodeInfo.ACTION_CLICK);
+        }
+
+        if (isCollapsed) {
+            node.addAction(ACTION_EXPAND);
+        }
+
+        if (isExpanded) {
+            node.addAction(ACTION_COLLAPSE);
         }
     }
 
