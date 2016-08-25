@@ -1,13 +1,52 @@
-layer at (0,0) size 800x600
-  LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x600
-  LayoutSVGRoot {svg} at (29,39) size 142x94
-    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGHiddenContainer {symbol} at (0,0) size 0x0
-        LayoutSVGRect {rect} at (0,0) size 71x11 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#DCDCDC]}] [x=-70.00] [y=-10.00] [width=140.00] [height=20.00]
-    LayoutSVGContainer {use} at (29,39) size 142x22 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,50.00)}]
-      LayoutSVGViewportContainer {svg} at (29,39) size 142x22
-        LayoutSVGRect {rect} at (29,39) size 142x22 [stroke={[type=SOLID] [color=#696969]}] [fill={[type=SOLID] [color=#DCDCDC]}] [x=-70.00] [y=-10.00] [width=140.00] [height=20.00]
-    LayoutSVGText {text} at (90,116) size 64x17 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (0,0) size 64x17
-        chunk 1 text run 1 at (90.00,130.00) startOffset 0 endOffset 7 width 63.11: "Unknown"
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 116, 64, 17],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutSVGText text id='status'",
+          "rect": [90, 116, 64, 17],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [90, 116, 44, 17],
+          "reason": "layoutObject insertion"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGText text id='status'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'Passed'",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

@@ -104,9 +104,6 @@ crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-angle.html [ Skip ]
 
 crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
 
-# Broken on Win10
-crbug.com/632217 [ Win10 ] svg/W3C-SVG-1.1/filters-composite-02-b.svg [ Failure ]
-
 crbug.com/632548 [ Win ] fast/repaint/overflow-scroll-body-appear.html [ Pass Failure ]
 crbug.com/632548 [ Win ] fast/repaint/invalidation-after-opacity-change-subtree.html [ Pass Failure ]
 crbug.com/632548 [ Win ] compositing/overflow/text-match-highlight.html [ Pass Failure ]
@@ -116,8 +113,6 @@ crbug.com/636222 [ Mac10.10 ] fast/repaint/fixed-and-absolute-position-scrolled.
 crbug.com/636271 [ Mac ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Win ] fast/repaint/resize-iframe-text.html [ Pass Failure ]
-
-crbug.com/636311 [ Win10 ] svg/custom/use-clipped-hit.svg [ Pass Failure ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
