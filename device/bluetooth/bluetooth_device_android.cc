@@ -127,16 +127,6 @@ bool BluetoothDeviceAndroid::IsConnecting() const {
   return false;
 }
 
-base::Optional<int8_t> BluetoothDeviceAndroid::GetInquiryRSSI() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
-}
-
-base::Optional<int8_t> BluetoothDeviceAndroid::GetInquiryTxPower() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
-}
-
 bool BluetoothDeviceAndroid::ExpectingPinCode() const {
   NOTIMPLEMENTED();
   return false;

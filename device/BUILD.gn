@@ -249,7 +249,10 @@ if (is_android) {
       "//base:base_java",
       "//components/location/android:location_java",
       "//device/bluetooth:java",
+      "//third_party/android_tools:android_support_annotations_java",
     ]
+
+    srcjar_deps = [ ":bluetooth_test_javagen" ]
   }
 
   junit_binary("device_junit_tests") {
@@ -261,5 +264,11 @@ if (is_android) {
       "//third_party/android_tools:android_support_annotations_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]
+  }
+
+  java_cpp_enum("bluetooth_test_javagen") {
+    sources = [
+      "bluetooth/test/bluetooth_test.h",
+    ]
   }
 }

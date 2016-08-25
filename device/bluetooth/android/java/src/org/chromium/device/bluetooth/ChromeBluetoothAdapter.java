@@ -255,7 +255,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
             }
 
             nativeCreateOrUpdateDeviceOnScan(mNativeBluetoothAdapterAndroid,
-                    result.getDevice().getAddress(), result.getDevice(), uuid_strings);
+                    result.getDevice().getAddress(), result.getDevice(), result.getRssi(),
+                    uuid_strings, result.getScanRecord_getTxPowerLevel());
         }
 
         @Override
@@ -315,7 +316,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
     // Wrappers.BluetoothDeviceWrapper reference is not handled by jni_generator.py JavaToJni.
     // http://crbug.com/505554
     private native void nativeCreateOrUpdateDeviceOnScan(long nativeBluetoothAdapterAndroid,
-            String address, Object bluetoothDeviceWrapper, String[] advertisedUuids);
+            String address, Object bluetoothDeviceWrapper, int rssi, String[] advertisedUuids,
+            int txPower);
 
     // Binds to BluetoothAdapterAndroid::nativeOnAdapterStateChanged
     private native void nativeOnAdapterStateChanged(

@@ -103,16 +103,6 @@ bool BluetoothLowEnergyDeviceMac::IsConnecting() const {
   return ([peripheral_ state] == CBPeripheralStateConnecting);
 }
 
-base::Optional<int8_t> BluetoothLowEnergyDeviceMac::GetInquiryRSSI() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
-}
-
-base::Optional<int8_t> BluetoothLowEnergyDeviceMac::GetInquiryTxPower() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
-}
-
 bool BluetoothLowEnergyDeviceMac::ExpectingPinCode() const {
   return false;
 }

@@ -88,16 +88,6 @@ void ParseModalias(const dbus::ObjectPath& object_path,
     *device_id = device_value;
 }
 
-int8_t ClampPower(int16_t power) {
-  if (power < INT8_MIN) {
-    return INT8_MIN;
-  }
-  if (power > INT8_MAX) {
-    return INT8_MAX;
-  }
-  return static_cast<int8_t>(power);
-}
-
 void RecordPairingResult(BluetoothDevice::ConnectErrorCode error_code) {
   UMAPairingResult pairing_result;
   switch (error_code) {

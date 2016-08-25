@@ -184,8 +184,9 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     const JavaParamRef<jstring>& address,
     const JavaParamRef<jobject>&
         bluetooth_device_wrapper,  // Java Type: bluetoothDeviceWrapper
-    const JavaParamRef<jobjectArray>&
-        advertised_uuids) {  // Java Type: String[]
+    int32_t rssi,
+    const JavaParamRef<jobjectArray>& advertised_uuids,  // Java Type: String[]
+    int32_t tx_power) {
   std::string device_address = ConvertJavaStringToUTF8(env, address);
   DevicesMap::const_iterator iter = devices_.find(device_address);
 
@@ -204,17 +205,23 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
     device_android = static_cast<BluetoothDeviceAndroid*>(iter->second);
   }
   DCHECK(device_android);
+
   std::vector<std::string> advertised_uuids_strings;
   AppendJavaStringArrayToStringVector(env, advertised_uuids,
                                       &advertised_uuids_strings);
-
   BluetoothDevice::UUIDList advertised_bluetooth_uuids;
   for (std::string& uuid : advertised_uuids_strings) {
     advertised_bluetooth_uuids.push_back(BluetoothUUID(std::move(uuid)));
   }
 
-  device_android->UpdateAdvertisementData(std::move(advertised_bluetooth_uuids),
-                                          {} /* service_data */);
+  int8_t clamped_tx_power = BluetoothDevice::ClampPower(tx_power);
+
+  device_android->UpdateAdvertisementData(
+      BluetoothDevice::ClampPower(rssi), std::move(advertised_bluetooth_uuids),
+      {} /* service_data */,
+      // Android uses INT32_MIN to indicate no Advertised Tx Power.
+      // https://developer.android.com/reference/android/bluetooth/le/ScanRecord.html#getTxPowerLevel()
+      tx_power == INT32_MIN ? nullptr : &clamped_tx_power);
 
   if (is_new_device) {
     devices_.add(device_address, std::move(device_android_owner));

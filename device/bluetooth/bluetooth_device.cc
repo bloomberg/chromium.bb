@@ -311,6 +311,14 @@ const std::vector<uint8_t>* BluetoothDevice::GetServiceDataForUUID(
   return nullptr;
 }
 
+base::Optional<int8_t> BluetoothDevice::GetInquiryRSSI() const {
+  return inquiry_rssi_;
+}
+
+base::Optional<int8_t> BluetoothDevice::GetInquiryTxPower() const {
+  return inquiry_tx_power_;
+}
+
 void BluetoothDevice::CreateGattConnection(
     const GattConnectionCallback& callback,
     const ConnectErrorCallback& error_callback) {
@@ -381,16 +389,29 @@ std::string BluetoothDevice::CanonicalizeAddress(const std::string& address) {
 
 std::string BluetoothDevice::GetIdentifier() const { return GetAddress(); }
 
-void BluetoothDevice::UpdateAdvertisementData(UUIDList advertised_uuids,
-                                              ServiceDataMap service_data) {
+void BluetoothDevice::UpdateAdvertisementData(int8_t rssi,
+                                              UUIDList advertised_uuids,
+                                              ServiceDataMap service_data,
+                                              const int8_t* tx_power) {
   UpdateTimestamp();
+
+  inquiry_rssi_ = rssi;
+
   device_uuids_.ReplaceAdvertisedUUIDs(std::move(advertised_uuids));
   service_data_ = std::move(service_data);
+
+  if (tx_power != nullptr) {
+    inquiry_tx_power_ = *tx_power;
+  } else {
+    inquiry_tx_power_ = base::nullopt;
+  }
 }
 
 void BluetoothDevice::ClearAdvertisementData() {
+  inquiry_rssi_ = base::nullopt;
   device_uuids_.ClearAdvertisedUUIDs();
   service_data_.clear();
+  inquiry_tx_power_ = base::nullopt;
   GetAdapter()->NotifyDeviceChanged(this);
 }
 
@@ -455,6 +476,17 @@ void BluetoothDevice::Pair(PairingDelegate* pairing_delegate,
 
 void BluetoothDevice::UpdateTimestamp() {
   last_update_time_ = base::Time::NowFromSystemTime();
+}
+
+// static
+int8_t BluetoothDevice::ClampPower(int power) {
+  if (power < INT8_MIN) {
+    return INT8_MIN;
+  }
+  if (power > INT8_MAX) {
+    return INT8_MAX;
+  }
+  return static_cast<int8_t>(power);
 }
 
 }  // namespace device

@@ -216,6 +216,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   virtual ~BluetoothDevice();
 
+  // Clamps numbers less than -128 to -128 and numbers greater than 127 to 127.
+  static int8_t ClampPower(int power);
+
   // Returns the Bluetooth class of the device, used by GetDeviceType()
   // and metrics logging,
   virtual uint32_t GetBluetoothClass() const = 0;
@@ -331,12 +334,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // The received signal strength, in dBm. This field is avaliable and valid
   // only during discovery.
-  virtual base::Optional<int8_t> GetInquiryRSSI() const = 0;
+  // TODO(http://crbug.com/580406): Devirtualize once BlueZ sets inquiry_rssi_.
+  virtual base::Optional<int8_t> GetInquiryRSSI() const;
 
   // The transmitted power level. This field is avaliable only for LE devices
   // that include this field in AD. It is avaliable and valid only during
   // discovery.
-  virtual base::Optional<int8_t> GetInquiryTxPower() const = 0;
+  // TODO(http://crbug.com/580406): Devirtualize once BlueZ sets
+  // inquiry_tx_power_.
+  virtual base::Optional<int8_t> GetInquiryTxPower() const;
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
@@ -512,8 +518,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Called by BluetoothAdapter when a new Advertisement is seen for this
   // device. This replaces previously seen Advertisement Data.
-  void UpdateAdvertisementData(UUIDList advertised_uuids,
-                               ServiceDataMap service_data);
+  void UpdateAdvertisementData(int8_t rssi,
+                               UUIDList advertised_uuids,
+                               ServiceDataMap service_data,
+                               const int8_t* tx_power);
 
   // Called by BluetoothAdapter when it stops discoverying.
   void ClearAdvertisementData();
@@ -616,6 +624,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   GattServiceMap gatt_services_;
   bool gatt_services_discovery_complete_;
+
+  // Received Signal Strength Indicator of the advertisement received.
+  base::Optional<int8_t> inquiry_rssi_;
+
+  // Tx Power advertised by the device.
+  base::Optional<int8_t> inquiry_tx_power_;
 
   // Class that holds the union of Advertised UUIDs and Service UUIDs.
   DeviceUUIDs device_uuids_;

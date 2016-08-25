@@ -60,7 +60,8 @@ namespace {
 scoped_nsobject<NSDictionary> CreateAdvertisementData(
     NSString* name,
     NSArray* uuids,
-    NSDictionary* service_data) {
+    NSDictionary* service_data,
+    NSNumber* tx_power) {
   NSMutableDictionary* advertisement_data(
       [NSMutableDictionary dictionaryWithDictionary:@{
         CBAdvertisementDataIsConnectable : @(YES)
@@ -78,6 +79,11 @@ scoped_nsobject<NSDictionary> CreateAdvertisementData(
   if (service_data) {
     [advertisement_data setObject:service_data
                            forKey:CBAdvertisementDataServiceDataKey];
+  }
+
+  if (tx_power) {
+    [advertisement_data setObject:tx_power
+                           forKey:CBAdvertisementDataTxPowerLevelKey];
   }
 
   return scoped_nsobject<NSDictionary>(advertisement_data,
@@ -147,12 +153,15 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   const char* identifier;
   NSString* name;
   NSArray* uuids;
+  NSNumber* rssi;
   NSDictionary* service_data;
+  NSNumber* tx_power;
 
   switch (device_ordinal) {
     case 1:
       identifier = kTestPeripheralUUID1.c_str();
       name = @(kTestDeviceName.c_str());
+      rssi = @(static_cast<int8_t>(TestRSSI::LOWEST));
       uuids = @[
         [CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())],
         [CBUUID UUIDWithString:@(kTestUUIDGenericAttribute.c_str())]
@@ -161,10 +170,12 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
         [CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())] :
             [NSData dataWithBytes:(unsigned char[]){1} length:1]
       };
+      tx_power = @(static_cast<int8_t>(TestTxPower::LOWEST));
       break;
     case 2:
       identifier = kTestPeripheralUUID1.c_str();
       name = @(kTestDeviceName.c_str());
+      rssi = @(static_cast<int8_t>(TestRSSI::LOWER));
       uuids = @[
         [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())],
         [CBUUID UUIDWithString:@(kTestUUIDLinkLoss.c_str())]
@@ -175,32 +186,41 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
         [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())] :
             [NSData dataWithBytes:(unsigned char[]){0} length:1]
       };
+      tx_power = @(static_cast<int8_t>(TestTxPower::LOWER));
       break;
     case 3:
       identifier = kTestPeripheralUUID1.c_str();
       name = @(kTestDeviceNameEmpty.c_str());
+      rssi = @(static_cast<int8_t>(TestRSSI::LOW));
       uuids = nil;
       service_data = nil;
+      tx_power = nil;
       break;
     case 4:
       identifier = kTestPeripheralUUID2.c_str();
       name = @(kTestDeviceNameEmpty.c_str());
+      rssi = @(static_cast<int8_t>(TestRSSI::MEDIUM));
       uuids = nil;
       service_data = nil;
+      tx_power = nil;
       break;
     case 5:
       identifier = kTestPeripheralUUID1.c_str();
       name = nil;
+      rssi = @(static_cast<int8_t>(TestRSSI::HIGH));
       uuids = nil;
       service_data = nil;
+      tx_power = nil;
       break;
     default:
       NOTREACHED() << "SimulateLowEnergyDevice not implemented for "
                    << device_ordinal;
       identifier = nil;
       name = nil;
+      rssi = nil;
       uuids = nil;
       service_data = nil;
+      tx_power = nil;
   }
   scoped_nsobject<MockCBPeripheral> mock_peripheral([[MockCBPeripheral alloc]
       initWithUTF8StringIdentifier:identifier
@@ -209,8 +229,9 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   [central_manager_delegate
              centralManager:central_manager
       didDiscoverPeripheral:mock_peripheral.get().peripheral
-          advertisementData:CreateAdvertisementData(name, uuids, service_data)
-                       RSSI:@(0)];
+          advertisementData:CreateAdvertisementData(name, uuids, service_data,
+                                                    tx_power)
+                       RSSI:rssi];
   return observer.last_device();
 }
 

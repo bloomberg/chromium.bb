@@ -539,8 +539,15 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
                              std::vector<uint8_t>(bytes, bytes + length));
   }
 
-  device_mac->UpdateAdvertisementData(std::move(advertised_uuids),
-                                      std::move(service_data_map));
+  // Get Tx Power.
+  NSNumber* tx_power =
+      [advertisement_data objectForKey:CBAdvertisementDataTxPowerLevelKey];
+  int8_t clamped_tx_power = BluetoothDevice::ClampPower([tx_power intValue]);
+
+  device_mac->UpdateAdvertisementData(
+      BluetoothDevice::ClampPower(rssi), std::move(advertised_uuids),
+      std::move(service_data_map),
+      tx_power == nil ? nullptr : &clamped_tx_power);
 
   if (is_new_device) {
     std::string device_address =

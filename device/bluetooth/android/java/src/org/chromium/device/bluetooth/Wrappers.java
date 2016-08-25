@@ -237,8 +237,16 @@ class Wrappers {
             return new BluetoothDeviceWrapper(mScanResult.getDevice());
         }
 
+        public int getRssi() {
+            return mScanResult.getRssi();
+        }
+
         public List<ParcelUuid> getScanRecord_getServiceUuids() {
             return mScanResult.getScanRecord().getServiceUuids();
+        }
+
+        public int getScanRecord_getTxPowerLevel() {
+            return mScanResult.getScanRecord().getTxPowerLevel();
         }
     }
 

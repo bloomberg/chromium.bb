@@ -51,6 +51,21 @@ class BluetoothTestBase : public testing::Test {
   static const std::string kTestDeviceAddress2;
   static const std::string kTestDeviceAddress3;
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.bluetooth.test
+  enum class TestRSSI {
+    LOWEST = -81,
+    LOWER = -61,
+    LOW = -41,
+    MEDIUM = -21,
+    HIGH = -1,
+  };
+
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.bluetooth.test
+  enum class TestTxPower {
+    LOWEST = -40,
+    LOWER = -20,
+  };
+
   static const std::string kTestUUIDGenericAccess;
   static const std::string kTestUUIDGenericAttribute;
   static const std::string kTestUUIDImmediateAlert;
@@ -95,20 +110,44 @@ class BluetoothTestBase : public testing::Test {
 
   // Create a fake Low Energy device and discover it.
   // |device_ordinal| selects between multiple fake device data sets to produce:
-  //   1: kTestDeviceName with advertised UUIDs kTestUUIDGenericAccess,
-  //      kTestUUIDGenericAttribute, address kTestDeviceAddress1 and service
-  //      data of {kTestUUIDHeartRate: [1]}.
-  //   2: kTestDeviceName with advertised UUIDs kTestUUIDImmediateAlert,
-  //      kTestUUIDLinkLoss, address kTestDeviceAddress1 and service data of
-  //      {kTestUUIDHeartRate: [2], kTestUUIDImmediateAlert: [0]}.
-  //   3: kTestDeviceNameEmpty with no advertised UUIDs and address
-  //      kTestDeviceAddress1.
-  //   4: kTestDeviceNameEmpty with no advertised UUIDs and address
-  //      kTestDeviceAddress2.
-  //   5: Device with no name, with no advertised UUIDs and address
-  //      kTestDeviceAddress1.
-  //   6: kTestDeviceName with no advertised UUIDs and address
-  //      kTestDeviceAddress2, but which also supports BR/EDR.
+  //   1: Name: kTestDeviceName
+  //      Address:           kTestDeviceAddress1
+  //      RSSI:              kTestRSSI1
+  //      Advertised UUIDs: {kTestUUIDGenericAccess, kTestUUIDGenericAttribute}
+  //      Service Data:     {kTestUUIDHeartRate: [1]}
+  //      Tx Power:          kTestTxPower1
+  //   2: Name: kTestDeviceName
+  //      Address:           kTestDeviceAddress1
+  //      RSSI:              kTestRSSI2
+  //      Advertised UUIDs: {kTestUUIDImmediateAlert, kTestUUIDLinkLoss}
+  //      Service Data:     {kTestUUIDHeartRate: [2],
+  //                         kTestUUIDImmediateAlert: [0]}
+  //      Tx Power:          kTestTxPower2
+  //   3: Name:    kTestDeviceNameEmpty
+  //      Address: kTestDeviceAddress1
+  //      RSSI:    kTestRSSI3
+  //      No Advertised UUIDs
+  //      No Service Data
+  //      No Tx Power
+  //   4: Name:    kTestDeviceNameEmpty
+  //      Address: kTestDeviceAddress2
+  //      RSSI:    kTestRSSI4
+  //      No Advertised UUIDs
+  //      No Service Data
+  //      No Tx Power
+  //   5: No name device
+  //      Address: kTestDeviceAddress1
+  //      RSSI:    kTestRSSI5
+  //      No Advertised UUIDs
+  //      No Service Data
+  //      No Tx Power
+  //   6: Name:    kTestDeviceName
+  //      Address: kTestDeviceAddress2
+  //      RSSI:    kTestRSSI1,
+  //      No Advertised UUIDs
+  //      No Service Data
+  //      No Tx Power
+  //      Supports BR/EDR and LE.
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
 
   // Create a fake classic device and discover it. The device will have
