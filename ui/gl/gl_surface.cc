@@ -63,7 +63,7 @@ bool GLSurface::SupportsAsyncSwap() {
   return false;
 }
 
-unsigned int GLSurface::GetBackingFrameBufferObject() {
+unsigned int GLSurface::GetBackingFramebufferObject() {
   return 0;
 }
 
@@ -270,8 +270,8 @@ void* GLSurfaceAdapter::GetHandle() {
   return surface_->GetHandle();
 }
 
-unsigned int GLSurfaceAdapter::GetBackingFrameBufferObject() {
-  return surface_->GetBackingFrameBufferObject();
+unsigned int GLSurfaceAdapter::GetBackingFramebufferObject() {
+  return surface_->GetBackingFramebufferObject();
 }
 
 bool GLSurfaceAdapter::OnMakeCurrent(GLContext* context) {

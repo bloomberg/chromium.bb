@@ -78,7 +78,7 @@ void GLES2Implementation::BindBufferRange(GLenum target,
 void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindFramebuffer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << framebuffer << ")");
   if (IsFramebufferReservedId(framebuffer)) {
     SetGLError(GL_INVALID_OPERATION, "BindFramebuffer",
@@ -199,7 +199,7 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::CheckFramebufferStatus");
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCheckFramebufferStatus("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ")");
+                     << GLES2Util::GetStringFramebufferTarget(target) << ")");
   typedef cmds::CheckFramebufferStatus::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
@@ -695,7 +695,7 @@ void GLES2Implementation::FramebufferRenderbuffer(GLenum target,
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glFramebufferRenderbuffer("
-          << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+          << GLES2Util::GetStringFramebufferTarget(target) << ", "
           << GLES2Util::GetStringAttachment(attachment) << ", "
           << GLES2Util::GetStringRenderBufferTarget(renderbuffertarget) << ", "
           << renderbuffer << ")");
@@ -711,7 +711,7 @@ void GLES2Implementation::FramebufferTexture2D(GLenum target,
                                                GLint level) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFramebufferTexture2D("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ")");
@@ -726,7 +726,7 @@ void GLES2Implementation::FramebufferTextureLayer(GLenum target,
                                                   GLint layer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFramebufferTextureLayer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << texture << ", " << level << ", " << layer << ")");
   helper_->FramebufferTextureLayer(target, attachment, texture, level, layer);
@@ -994,9 +994,9 @@ void GLES2Implementation::GetFramebufferAttachmentParameteriv(GLenum target,
   GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] glGetFramebufferAttachmentParameteriv("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << GLES2Util::GetStringAttachmentQuery(attachment) << ", "
-                     << GLES2Util::GetStringFrameBufferParameter(pname) << ", "
+                     << GLES2Util::GetStringFramebufferParameter(pname) << ", "
                      << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu",
                "GLES2Implementation::GetFramebufferAttachmentParameteriv");
@@ -1467,7 +1467,7 @@ void GLES2Implementation::InvalidateFramebuffer(GLenum target,
                                                 const GLenum* attachments) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateFramebuffer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << count << ", " << static_cast<const void*>(attachments)
                      << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -1492,7 +1492,7 @@ void GLES2Implementation::InvalidateSubFramebuffer(GLenum target,
                                                    GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateSubFramebuffer("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << count << ", " << static_cast<const void*>(attachments)
                      << ", " << x << ", " << y << ", " << width << ", "
                      << height << ")");
@@ -2895,7 +2895,7 @@ void GLES2Implementation::FramebufferTexture2DMultisampleEXT(GLenum target,
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] glFramebufferTexture2DMultisampleEXT("
-                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ", " << samples << ")");

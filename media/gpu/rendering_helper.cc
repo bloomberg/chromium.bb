@@ -392,7 +392,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindFramebufferEXT(GL_FRAMEBUFFER,
-                         gl_surface_->GetBackingFrameBufferObject());
+                         gl_surface_->GetBackingFramebufferObject());
   }
 
   // These vertices and texture coords. map (0,0) in the texture to the
@@ -610,7 +610,7 @@ void RenderingHelper::RenderThumbnail(uint32_t texture_target,
   GLSetViewPort(area);
   RenderTexture(texture_target, texture_id);
   glBindFramebufferEXT(GL_FRAMEBUFFER,
-                       gl_surface_->GetBackingFrameBufferObject());
+                       gl_surface_->GetBackingFramebufferObject());
 
   // Need to flush the GL commands before we return the tnumbnail texture to
   // the decoder.
@@ -697,7 +697,7 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
                GL_UNSIGNED_BYTE,
                &rgba[0]);
   glBindFramebufferEXT(GL_FRAMEBUFFER,
-                       gl_surface_->GetBackingFrameBufferObject());
+                       gl_surface_->GetBackingFramebufferObject());
   rgb->resize(num_pixels * 3);
   // Drop the alpha channel, but check as we go that it is all 0xff.
   bool solid = true;

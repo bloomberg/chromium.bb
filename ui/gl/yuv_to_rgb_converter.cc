@@ -143,7 +143,7 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture_);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture_);
-  ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
+  ScopedFramebufferBinder framebuffer_binder(framebuffer_);
   ScopedViewport viewport(0, 0, size.width(), size.height());
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                             target, rgb_texture, 0);

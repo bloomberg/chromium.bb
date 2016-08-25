@@ -11,10 +11,10 @@
 namespace gl {
 class GLStateRestorer;
 
-class GL_EXPORT ScopedFrameBufferBinder {
+class GL_EXPORT ScopedFramebufferBinder {
  public:
-  explicit ScopedFrameBufferBinder(unsigned int fbo);
-  ~ScopedFrameBufferBinder();
+  explicit ScopedFramebufferBinder(unsigned int fbo);
+  ~ScopedFramebufferBinder();
 
  private:
   // Whenever possible we prefer to use the current GLContext's
@@ -24,7 +24,7 @@ class GL_EXPORT ScopedFrameBufferBinder {
   // Failing that we use GL calls to save and restore state.
   int old_fbo_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferBinder);
+  DISALLOW_COPY_AND_ASSIGN(ScopedFramebufferBinder);
 };
 
 class GL_EXPORT ScopedActiveTexture {

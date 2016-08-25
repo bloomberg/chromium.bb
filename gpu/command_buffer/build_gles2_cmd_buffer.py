@@ -679,7 +679,7 @@ _NAMED_TYPE_INFO = {
       'GL_RGB', 'GL_RGBA', 'GL_ALPHA', 'GL_NONE'
     ],
   },
-  'FrameBufferTarget': {
+  'FramebufferTarget': {
     'type': 'GLenum',
     'valid': [
       'GL_FRAMEBUFFER',
@@ -1307,7 +1307,7 @@ _NAMED_TYPE_INFO = {
       'GL_PIXEL_PACK_BUFFER',
     ],
   },
-  'FrameBufferParameter': {
+  'FramebufferParameter': {
     'type': 'GLenum',
     'valid': [
       'GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE',

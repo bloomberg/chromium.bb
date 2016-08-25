@@ -9,7 +9,7 @@
 
 namespace gl {
 
-ScopedFrameBufferBinder::ScopedFrameBufferBinder(unsigned int fbo)
+ScopedFramebufferBinder::ScopedFramebufferBinder(unsigned int fbo)
     : state_restorer_(!GLContext::GetCurrent()
                           ? NULL
                           : GLContext::GetCurrent()->GetGLStateRestorer()),
@@ -19,7 +19,7 @@ ScopedFrameBufferBinder::ScopedFrameBufferBinder(unsigned int fbo)
   glBindFramebufferEXT(GL_FRAMEBUFFER, fbo);
 }
 
-ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
+ScopedFramebufferBinder::~ScopedFramebufferBinder() {
   if (state_restorer_) {
     DCHECK(!!GLContext::GetCurrent());
     DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());

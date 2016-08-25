@@ -100,7 +100,7 @@ error::Error GLES2DecoderImpl::HandleBindFramebuffer(
   (void)c;
   GLenum target = static_cast<GLenum>(c.target);
   GLuint framebuffer = c.framebuffer;
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glBindFramebuffer", target, "target");
     return error::kNoError;
   }
@@ -343,7 +343,7 @@ error::Error GLES2DecoderImpl::HandleCheckFramebufferStatus(
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glCheckFramebufferStatus", target,
                                     "target");
     return error::kNoError;
@@ -1457,7 +1457,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferRenderbuffer(
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum renderbuffertarget = static_cast<GLenum>(c.renderbuffertarget);
   GLuint renderbuffer = c.renderbuffer;
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferRenderbuffer", target,
                                     "target");
     return error::kNoError;
@@ -1488,7 +1488,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   GLenum textarget = static_cast<GLenum>(c.textarget);
   GLuint texture = c.texture;
   GLint level = static_cast<GLint>(c.level);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2D", target, "target");
     return error::kNoError;
   }
@@ -1519,7 +1519,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureLayer(
   GLuint texture = c.texture;
   GLint level = static_cast<GLint>(c.level);
   GLint layer = static_cast<GLint>(c.layer);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTextureLayer", target,
                                     "target");
     return error::kNoError;
@@ -1889,7 +1889,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
   GLint* params = result ? result->GetData() : NULL;
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFramebufferAttachmentParameteriv",
                                     target, "target");
     return error::kNoError;
@@ -1899,7 +1899,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
                                     attachment, "attachment");
     return error::kNoError;
   }
-  if (!validators_->frame_buffer_parameter.IsValid(pname)) {
+  if (!validators_->framebuffer_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFramebufferAttachmentParameteriv",
                                     pname, "pname");
     return error::kNoError;
@@ -2539,7 +2539,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateFramebufferImmediate(
   }
   const GLenum* attachments =
       GetImmediateDataAs<const GLenum*>(c, data_size, immediate_data_size);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glInvalidateFramebuffer", target,
                                     "target");
     return error::kNoError;
@@ -2581,7 +2581,7 @@ error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glInvalidateSubFramebuffer", target,
                                     "target");
     return error::kNoError;
@@ -4707,7 +4707,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2DMultisampleEXT(
   GLuint texture = c.texture;
   GLint level = static_cast<GLint>(c.level);
   GLsizei samples = static_cast<GLsizei>(c.samples);
-  if (!validators_->frame_buffer_target.IsValid(target)) {
+  if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2DMultisampleEXT",
                                     target, "target");
     return error::kNoError;

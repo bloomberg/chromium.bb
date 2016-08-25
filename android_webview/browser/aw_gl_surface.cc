@@ -17,7 +17,7 @@ bool AwGLSurface::IsOffscreen() {
   return false;
 }
 
-unsigned int AwGLSurface::GetBackingFrameBufferObject() {
+unsigned int AwGLSurface::GetBackingFramebufferObject() {
   return fbo_;
 }
 

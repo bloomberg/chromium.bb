@@ -569,7 +569,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_format.AddValue(GL_SRGB_EXT);
     validators_.texture_format.AddValue(GL_SRGB_ALPHA_EXT);
     validators_.render_buffer_format.AddValue(GL_SRGB8_ALPHA8_EXT);
-    validators_.frame_buffer_parameter.AddValue(
+    validators_.framebuffer_parameter.AddValue(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
@@ -863,8 +863,8 @@ void FeatureInfo::InitializeFeatures() {
         gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile;
     if (ext_has_multisample) {
       feature_flags_.chromium_framebuffer_multisample = true;
-      validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
-      validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
+      validators_.framebuffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
+      validators_.framebuffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
       validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
       validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
       validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
@@ -882,7 +882,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_parameter.AddValue(
         GL_RENDERBUFFER_SAMPLES_EXT);
     validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
-    validators_.frame_buffer_parameter.AddValue(
+    validators_.framebuffer_parameter.AddValue(
         GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
     AddExtensionString("GL_EXT_multisampled_render_to_texture");
   }

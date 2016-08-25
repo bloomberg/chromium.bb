@@ -3728,7 +3728,7 @@ std::string GLES2Util::GetStringFaceType(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringFrameBufferParameter(uint32_t value) {
+std::string GLES2Util::GetStringFramebufferParameter(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
        "GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE"},
@@ -3761,7 +3761,7 @@ std::string GLES2Util::GetStringFrameBufferParameter(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringFrameBufferTarget(uint32_t value) {
+std::string GLES2Util::GetStringFramebufferTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_FRAMEBUFFER, "GL_FRAMEBUFFER"},
       {GL_DRAW_FRAMEBUFFER, "GL_DRAW_FRAMEBUFFER"},

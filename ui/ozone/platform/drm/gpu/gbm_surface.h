@@ -27,7 +27,7 @@ class GbmSurface : public GbmSurfaceless {
              gfx::AcceleratedWidget widget);
 
   // gl::GLSurface:
-  unsigned int GetBackingFrameBufferObject() override;
+  unsigned int GetBackingFramebufferObject() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,

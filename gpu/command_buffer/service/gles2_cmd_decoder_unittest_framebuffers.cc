@@ -3129,7 +3129,7 @@ TEST_P(GLES2DecoderWithShaderTest,
 
 TEST_P(GLES2DecoderTest, CanChangeSurface) {
   scoped_refptr<GLSurfaceMock> other_surface(new GLSurfaceMock);
-  EXPECT_CALL(*other_surface.get(), GetBackingFrameBufferObject())
+  EXPECT_CALL(*other_surface.get(), GetBackingFramebufferObject())
       .WillOnce(Return(7));
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER_EXT, 7));
 
