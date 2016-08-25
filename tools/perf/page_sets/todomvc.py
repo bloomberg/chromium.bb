@@ -41,7 +41,7 @@ class TodoMVCPage(page_module.Page):
         this.idleCallback = function(deadline) {
             let idletime = deadline.timeRemaining();
             console.time("time remaining: " + idletime);
-            if (idletime > 20)
+            if (idletime > 10)
                 this.becameIdle = true;
             else
                 requestIdleCallback(this.idleCallback);
