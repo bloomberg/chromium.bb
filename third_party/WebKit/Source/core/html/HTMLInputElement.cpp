@@ -328,7 +328,7 @@ void HTMLInputElement::updateFocusAppearance(SelectionBehaviorOnFocus selectionB
     if (isTextField()) {
         switch (selectionBehavior) {
         case SelectionBehaviorOnFocus::Reset:
-            select(DispatchSelectEvent);
+            select();
             break;
         case SelectionBehaviorOnFocus::Restore:
             restoreCachedSelection();

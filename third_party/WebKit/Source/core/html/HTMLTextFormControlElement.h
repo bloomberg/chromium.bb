@@ -67,7 +67,7 @@ public:
     void setSelectionStart(int);
     void setSelectionEnd(int);
     void setSelectionDirection(const String&);
-    void select(NeedToDispatchSelectEvent = DispatchSelectEvent);
+    void select();
     virtual void setRangeText(const String& replacement, ExceptionState&);
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
     // Web-exposed setSelectionRange() function. This translates "none"

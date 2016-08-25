@@ -187,9 +187,9 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
     setSelectionRangeForBinding(selectionStart(), selectionEnd(), direction);
 }
 
-void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
+void HTMLTextFormControlElement::select()
 {
-    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour);
+    setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, DispatchSelectEvent);
     focus();
 }
 

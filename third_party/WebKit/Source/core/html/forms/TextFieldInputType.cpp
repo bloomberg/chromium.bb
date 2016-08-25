@@ -538,7 +538,7 @@ void TextFieldInputType::updateView()
 void TextFieldInputType::focusAndSelectSpinButtonOwner()
 {
     element().focus();
-    element().select(NotDispatchSelectEvent);
+    element().setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, NotDispatchSelectEvent);
 }
 
 bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents()
