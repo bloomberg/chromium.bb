@@ -376,7 +376,8 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
 
         // v8::kGCCallbackFlagCollectAllAvailableGarbage is used when V8 handles
         // low memory notifications.
-        if (flags & v8::kGCCallbackFlagCollectAllAvailableGarbage) {
+        if ((flags & v8::kGCCallbackFlagCollectAllAvailableGarbage)
+            || (flags & v8::kGCCallbackFlagCollectAllExternalMemory)) {
             // This single GC is not enough. See the above comment.
             ThreadHeap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
