@@ -2307,6 +2307,8 @@
             'workers/SharedWorkerRepositoryClient.h',
             'workers/SharedWorkerThread.cpp',
             'workers/SharedWorkerThread.h',
+            'workers/ThreadedWorkletGlobalScope.cpp',
+            'workers/ThreadedWorkletGlobalScope.h',
             'workers/ThreadedWorkletGlobalScopeProxy.h',
             'workers/Worker.cpp',
             'workers/Worker.h',

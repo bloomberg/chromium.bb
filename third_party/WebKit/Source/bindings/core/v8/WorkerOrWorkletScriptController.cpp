@@ -185,7 +185,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 
     // Name new context for debugging. For main thread worklet global scopes
     // this is done once the context is initialized.
-    if (m_globalScope->isWorkerGlobalScope()) {
+    if (m_globalScope->isWorkerGlobalScope() || m_globalScope->isThreadedWorkletGlobalScope()) {
         WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
         if (debugger)
             debugger->contextCreated(context);
