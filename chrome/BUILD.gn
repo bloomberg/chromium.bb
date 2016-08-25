@@ -1702,6 +1702,7 @@ if (enable_resource_whitelist_generation) {
       "-o",
       rebase_path(_outfile, root_build_dir),
       "--out-dir=.",
+      "--use-existing-resource-ids",
     ]
   }
 }
