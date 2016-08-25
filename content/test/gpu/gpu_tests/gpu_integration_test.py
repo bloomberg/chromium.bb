@@ -58,7 +58,7 @@ class GpuIntegrationTest(
     self.StartBrowser()
     self.tab = self.browser.tabs[0]
 
-  def _RunGpuTest(self, url, test_name, args):
+  def _RunGpuTest(self, url, test_name, *args):
     temp_page = _EmulatedPage(url, test_name)
     expectations = self.__class__.GetExpectations()
     expectation = expectations.GetExpectationForPage(
