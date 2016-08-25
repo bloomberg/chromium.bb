@@ -454,7 +454,7 @@ std::unique_ptr<ParseNode> Parser::ParseExpression(int precedence) {
 }
 
 std::unique_ptr<ParseNode> Parser::Block(Token token) {
-  // This entrypoing into ParseBlock means its part of an expression and we
+  // This entrypoint into ParseBlock means it's part of an expression and we
   // always want the result.
   return ParseBlock(token, BlockNode::RETURNS_SCOPE);
 }
@@ -820,6 +820,10 @@ void Parser::AssignComments(ParseNode* file) {
   // Assign line comments to syntax immediately following.
   int cur_comment = 0;
   for (auto* node : pre) {
+    if (node->GetRange().is_null()) {
+      CHECK_EQ(node, file) << "Only expected on top file node";
+      continue;
+    }
     const Location& start = node->GetRange().begin();
     while (cur_comment < static_cast<int>(line_comment_tokens_.size())) {
       if (start.byte() >= line_comment_tokens_[cur_comment].location().byte()) {
