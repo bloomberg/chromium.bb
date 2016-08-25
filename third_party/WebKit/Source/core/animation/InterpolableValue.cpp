@@ -16,9 +16,9 @@ bool InterpolableNumber::equals(const InterpolableValue& other) const
 bool InterpolableList::equals(const InterpolableValue& other) const
 {
     const InterpolableList& otherList = toInterpolableList(other);
-    if (m_size != otherList.m_size)
+    if (length() != otherList.length())
         return false;
-    for (size_t i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < length(); i++) {
         if (!m_values[i]->equals(*otherList.m_values[i]))
             return false;
     }
@@ -54,10 +54,10 @@ void InterpolableList::interpolate(const InterpolableValue& to, const double pro
     const InterpolableList& toList = toInterpolableList(to);
     InterpolableList& resultList = toInterpolableList(result);
 
-    DCHECK_EQ(toList.m_size, m_size);
-    DCHECK_EQ(resultList.m_size, m_size);
+    DCHECK_EQ(toList.length(), length());
+    DCHECK_EQ(resultList.length(), length());
 
-    for (size_t i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < length(); i++) {
         DCHECK(m_values[i]);
         DCHECK(toList.m_values[i]);
         m_values[i]->interpolate(*(toList.m_values[i]), progress, *(resultList.m_values[i]));
@@ -66,8 +66,8 @@ void InterpolableList::interpolate(const InterpolableValue& to, const double pro
 
 std::unique_ptr<InterpolableValue> InterpolableList::cloneAndZero() const
 {
-    std::unique_ptr<InterpolableList> result = InterpolableList::create(m_size);
-    for (size_t i = 0; i < m_size; i++)
+    std::unique_ptr<InterpolableList> result = InterpolableList::create(length());
+    for (size_t i = 0; i < length(); i++)
         result->set(i, m_values[i]->cloneAndZero());
     return std::move(result);
 }
@@ -79,7 +79,7 @@ void InterpolableNumber::scale(double scale)
 
 void InterpolableList::scale(double scale)
 {
-    for (size_t i = 0; i < m_size; i++)
+    for (size_t i = 0; i < length(); i++)
         m_values[i]->scale(scale);
 }
 
@@ -91,8 +91,8 @@ void InterpolableNumber::scaleAndAdd(double scale, const InterpolableValue& othe
 void InterpolableList::scaleAndAdd(double scale, const InterpolableValue& other)
 {
     const InterpolableList& otherList = toInterpolableList(other);
-    DCHECK_EQ(otherList.m_size, m_size);
-    for (size_t i = 0; i < m_size; i++)
+    DCHECK_EQ(otherList.length(), length());
+    for (size_t i = 0; i < length(); i++)
         m_values[i]->scaleAndAdd(scale, *otherList.m_values[i]);
 }
 
