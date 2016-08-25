@@ -185,8 +185,12 @@ class HeadlessDevToolsClientExperimentalTest
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
     // Check that experimental commands require parameter objects.
-    devtools_client_->GetRuntime()->GetExperimental()->RunIfWaitingForDebugger(
-        runtime::RunIfWaitingForDebuggerParams::Builder().Build());
+    devtools_client_->GetRuntime()
+        ->GetExperimental()
+        ->SetCustomObjectFormatterEnabled(
+            runtime::SetCustomObjectFormatterEnabledParams::Builder()
+                .SetEnabled(false)
+                .Build());
 
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
