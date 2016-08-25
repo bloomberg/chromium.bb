@@ -106,6 +106,27 @@ TEST_F(WebmParserTest, DefaultParse) {
   EXPECT_EQ(Status::kOkCompleted, status.code);
 }
 
+TEST_F(WebmParserTest, UnknownElement) {
+  BufferReader reader = {
+      0x80,  // ID = 0x80.
+      0x80,  // Size = 0.
+  };
+
+  MockCallback callback;
+  {
+    InSequence dummy;
+
+    ElementMetadata metadata = {static_cast<Id>(0x80), 2, 0, 0};
+    EXPECT_CALL(callback, OnElementBegin(metadata, NotNull())).Times(1);
+    EXPECT_CALL(callback, OnUnknownElement(metadata, NotNull(), NotNull()))
+        .Times(1);
+  }
+
+  WebmParser parser;
+  Status status = parser.Feed(&callback, &reader);
+  EXPECT_EQ(Status::kOkCompleted, status.code);
+}
+
 TEST_F(WebmParserTest, SeekEbml) {
   BufferReader reader = {
       0x1A, 0x45, 0xDF, 0xA3,  // ID = 0x1A45DFA3 (EBML).

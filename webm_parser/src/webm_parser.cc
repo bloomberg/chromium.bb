@@ -13,6 +13,7 @@
 #include "src/ebml_parser.h"
 #include "src/master_parser.h"
 #include "src/segment_parser.h"
+#include "src/unknown_parser.h"
 #include "webm/element.h"
 
 namespace webm {
@@ -123,7 +124,7 @@ class WebmParser::DocumentParser {
             if (child_metadata_.size == kUnknownElementSize) {
               return Status(Status::kIndefiniteUnknownElement);
             }
-            child_parser_ = &skip_parser_;
+            child_parser_ = &unknown_parser_;
           }
           state_ = State::kGettingAction;
           continue;
@@ -216,6 +217,9 @@ class WebmParser::DocumentParser {
 
   // The parser used when skipping elements (if the element's size is known).
   SkipParser skip_parser_;
+
+  // The parser used for unknown children.
+  UnknownParser unknown_parser_;
 
   // The callback used when skipping elements.
   SkipCallback skip_callback_;
