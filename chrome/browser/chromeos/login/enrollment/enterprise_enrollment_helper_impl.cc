@@ -352,6 +352,8 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
         case policy::DM_STATUS_SERVICE_DOMAIN_MISMATCH:
           UMA(policy::kMetricEnrollmentRegisterPolicyDomainMismatch);
           break;
+        case policy::DM_STATUS_CANNOT_SIGN_REQUEST:
+          UMA(policy::kMetricEnrollmentRegisterCannotSignRequest);
       }
       break;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:

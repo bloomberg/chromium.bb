@@ -57,9 +57,11 @@ void DBusDataMethodCallback(
     callback.Run(result, data);
 }
 
-AttestationKeyType GetKeyTypeForProfile(
-    AttestationCertificateProfile profile) {
-  switch (profile) {
+}  // namespace
+
+AttestationKeyType AttestationFlow::GetKeyTypeForProfile(
+    AttestationCertificateProfile certificate_profile) {
+  switch (certificate_profile) {
     case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
     case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return KEY_DEVICE;
@@ -71,22 +73,21 @@ AttestationKeyType GetKeyTypeForProfile(
   return KEY_USER;
 }
 
-std::string GetKeyNameForProfile(AttestationCertificateProfile profile,
-                                 const std::string& origin) {
-  switch (profile) {
+std::string AttestationFlow::GetKeyNameForProfile(
+    AttestationCertificateProfile certificate_profile,
+    const std::string& request_origin) {
+  switch (certificate_profile) {
     case PROFILE_ENTERPRISE_MACHINE_CERTIFICATE:
     case PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return kEnterpriseMachineKey;
     case PROFILE_ENTERPRISE_USER_CERTIFICATE:
       return kEnterpriseUserKey;
     case PROFILE_CONTENT_PROTECTION_CERTIFICATE:
-      return std::string(kContentProtectionKeyPrefix) + origin;
+      return std::string(kContentProtectionKeyPrefix) + request_origin;
   }
   NOTREACHED();
   return "";
 }
-
-}  // namespace
 
 AttestationFlow::AttestationFlow(cryptohome::AsyncMethodCaller* async_caller,
                                  CryptohomeClient* cryptohome_client,

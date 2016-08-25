@@ -252,7 +252,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
       DeviceCloudPolicyManagerChromeOS::GetMachineID(),
       DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
       kPolicyVerificationKeyHash, device_management_service,
-      g_browser_process->system_request_context());
+      g_browser_process->system_request_context(),
+      nullptr /* signing_service */);
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

@@ -43,6 +43,7 @@ POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdatePermission[];
 POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdate[];
 POLICY_EXPORT extern const char kValueRequestGcmIdUpdate[];
 POLICY_EXPORT extern const char kValueRequestCheckAndroidManagement[];
+POLICY_EXPORT extern const char kValueRequestCertBasedRegister[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];
@@ -102,6 +103,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_DEPROVISIONED = 13,
   // Service error: Device registration for the wrong domain.
   DM_STATUS_SERVICE_DOMAIN_MISMATCH = 14,
+  // Client error: Reuest could not be signed.
+  DM_STATUS_CANNOT_SIGN_REQUEST = 15,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };

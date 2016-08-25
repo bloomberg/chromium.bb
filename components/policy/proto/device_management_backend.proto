@@ -8,14 +8,15 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-// The wrapper message of any data and its signature.
-// Note: this should be compatible with the definition of SignedData in:
-// "third_party/chromiumos_platform_cryptohome/attestation.proto"
+// Data along with a cryptographic signature verifying their authenticity.
 message SignedData {
   // The data to be signed.
   optional bytes data = 1;
   // The signature of the data field.
   optional bytes signature = 2;
+  // How many bytes were added to the end of original data before signature
+  // (e.g. a nonce to avoid proxy attacks of the signing service).
+  optional int32 extra_data_bytes = 3;
 }
 
 // Request from device to server to register device.
@@ -1093,10 +1094,12 @@ message CheckAndroidManagementResponse {}
 // certificate).
 // The response message will be the DeviceRegisterReponse.
 message CertificateBasedDeviceRegisterRequest {
-  // signed_request.data is CertificateBasedDeviceRegistrationData type
-  // signed_request.signature is a signature generated with device cert's
-  // private key
-  optional SignedData signed_request = 2;
+  // Signed request to register with a certificate. The signed_request.data
+  // field contains a CertificateBasedDeviceRegistrationData with a nonce
+  // (as added by the Chrome OS cryptohome client) appended. The
+  // signed_request.signature field is a signature of the data field signed
+  // with the enrollment certificate's private key.
+  optional SignedData signed_request = 1;
 }
 
 message CertificateBasedDeviceRegistrationData {
@@ -1142,6 +1145,7 @@ message CertificateBasedDeviceRegistrationData {
 //     * attribute_update
 //     * gcm_id_update
 //     * check_android_management
+//     * certificate_based_register
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -1155,9 +1159,10 @@ message CertificateBasedDeviceRegistrationData {
 //     and gcm id update requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
-//   * The Authorization header isn't used for enterprise_check
-//     request, nor for register requests using OAuth. In the latter case,
-//     the OAuth token is passed in the "oauth" parameter.
+//   * The Authorization header isn't used for enterprise_check or for
+//     certificate_based_register requests, nor for register requests
+//     using OAuth. In the latter case, the OAuth token is passed in the
+//     "oauth" parameter.
 //
 // DeviceManagementRequest should only contain one request which matches the
 // HTTP query parameter - request, as listed below. Other requests within the
@@ -1177,6 +1182,7 @@ message CertificateBasedDeviceRegistrationData {
 //   attribute_update: device_attribute_update_request
 //   gcm_id_update: gcm_id_update_request
 //   check_android_management: check_android_management_request
+//   certificate_based_register: cert_based_register_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1229,6 +1235,11 @@ message DeviceManagementRequest {
 
   // Check if user is a managed Android-for-Work user with DPC enforcement.
   optional CheckAndroidManagementRequest check_android_management_request = 17;
+
+  // Request to register with a registration certificate.
+  optional CertificateBasedDeviceRegisterRequest
+      cert_based_register_request = 18;
+
 }
 
 // Response from server to device.

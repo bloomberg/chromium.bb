@@ -222,6 +222,8 @@ enum MetricEnrollment {
   kMetricEnrollmentLockModeMismatch = 51,
   // A registration certificate could not be fetched from the PCA.
   kMetricEnrollmentRegistrationCertificateFetchFailed = 52,
+  // The request to enroll could not be signed.
+  kMetricEnrollmentRegisterCannotSignRequest = 53,
 };
 
 // Events related to policy refresh.

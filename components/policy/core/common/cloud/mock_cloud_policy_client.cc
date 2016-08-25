@@ -17,6 +17,7 @@ MockCloudPolicyClient::MockCloudPolicyClient()
                         std::string(),
                         std::string(),
                         nullptr,
+                        nullptr,
                         nullptr) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}

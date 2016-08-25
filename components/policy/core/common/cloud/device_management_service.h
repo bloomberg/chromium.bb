@@ -55,6 +55,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_ATTRIBUTE_UPDATE,
     TYPE_GCM_ID_UPDATE,
     TYPE_ANDROID_MANAGEMENT_CHECK,
+    TYPE_CERT_BASED_REGISTRATION,
   };
 
   typedef base::Callback<

@@ -67,7 +67,8 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
 
   std::unique_ptr<CloudPolicyClient> client(new CloudPolicyClient(
       std::string(), std::string(), kPolicyVerificationKeyHash,
-      device_management_service, system_request_context));
+      device_management_service, system_request_context,
+      nullptr /* signing_service */));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client;

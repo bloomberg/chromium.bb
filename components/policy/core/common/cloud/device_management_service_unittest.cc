@@ -94,6 +94,20 @@ class DeviceManagementServiceTestBase : public testing::Test {
     return job;
   }
 
+  DeviceManagementRequestJob* StartCertBasedRegistrationJob() {
+    DeviceManagementRequestJob* job = service_->CreateJob(
+        DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
+        request_context_.get());
+    job->SetGaiaToken(kGaiaAuthToken);
+    job->SetClientID(kClientID);
+    job->GetRequest()->mutable_register_request();
+    job->SetRetryCallback(base::Bind(
+        &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
+    job->Start(base::Bind(&DeviceManagementServiceTestBase::OnJobDone,
+                          base::Unretained(this)));
+    return job;
+  }
+
   DeviceManagementRequestJob* StartApiAuthCodeFetchJob() {
     DeviceManagementRequestJob* job = service_->CreateJob(
         DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
@@ -211,6 +225,18 @@ TEST_P(DeviceManagementServiceFailedRequestTest, RegisterRequest) {
   EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
   std::unique_ptr<DeviceManagementRequestJob> request_job(
       StartRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  SendResponse(fetcher, GetParam().error_, GetParam().http_status_,
+               GetParam().response_);
+}
+
+TEST_P(DeviceManagementServiceFailedRequestTest, CertBasedRegisterRequest) {
+  EXPECT_CALL(*this, OnJobDone(GetParam().expected_status_, _, _));
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartCertBasedRegistrationJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
 
@@ -427,6 +453,32 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   SendResponse(fetcher, net::OK, 200, response_data);
 }
 
+TEST_F(DeviceManagementServiceTest, CertBasedRegisterRequest) {
+  em::DeviceManagementResponse expected_response;
+  expected_response.mutable_register_response()->
+      set_device_management_token(kDMToken);
+  EXPECT_CALL(*this, OnJobDone(DM_STATUS_SUCCESS, _,
+                               MessageEquals(expected_response)));
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartCertBasedRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  CheckURLAndQueryParams(fetcher->GetOriginalURL(),
+                         dm_protocol::kValueRequestCertBasedRegister,
+                         kClientID);
+
+  std::string expected_data;
+  ASSERT_TRUE(request_job->GetRequest()->SerializeToString(&expected_data));
+  EXPECT_EQ(expected_data, fetcher->upload_data());
+
+  // Generate the response.
+  std::string response_data;
+  ASSERT_TRUE(expected_response.SerializeToString(&response_data));
+  SendResponse(fetcher, net::OK, 200, response_data);
+}
+
 TEST_F(DeviceManagementServiceTest, ApiAuthCodeFetchRequest) {
   em::DeviceManagementResponse expected_response;
   expected_response.mutable_service_api_access_response()->set_auth_code(
@@ -491,6 +543,18 @@ TEST_F(DeviceManagementServiceTest, CancelRegisterRequest) {
   EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
   std::unique_ptr<DeviceManagementRequestJob> request_job(
       StartRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  // There shouldn't be any callbacks.
+  request_job.reset();
+}
+
+TEST_F(DeviceManagementServiceTest, CancelCertBasedRegisterRequest) {
+  EXPECT_CALL(*this, OnJobDone(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_)).Times(0);
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartCertBasedRegistrationJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
 

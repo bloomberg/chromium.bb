@@ -256,6 +256,7 @@ void CloudPolicyRefreshScheduler::ScheduleRefresh() {
       return;
     case DM_STATUS_REQUEST_FAILED:
     case DM_STATUS_TEMPORARY_UNAVAILABLE:
+    case DM_STATUS_CANNOT_SIGN_REQUEST:
       RefreshAfter(error_retry_delay_ms_);
       return;
     case DM_STATUS_REQUEST_INVALID:

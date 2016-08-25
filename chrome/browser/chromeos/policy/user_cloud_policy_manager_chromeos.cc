@@ -133,7 +133,8 @@ void UserCloudPolicyManagerChromeOS::Connect(
   // fully initialized (required so we can perform the initial policy load).
   std::unique_ptr<CloudPolicyClient> cloud_policy_client(new CloudPolicyClient(
       std::string(), std::string(), kPolicyVerificationKeyHash,
-      device_management_service, system_request_context));
+      device_management_service, system_request_context,
+      nullptr /* signing_service */));
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     system_request_context,
                                     cloud_policy_client.get());
