@@ -42,8 +42,10 @@ using media_gpu::StubPathMap;
 
 namespace media {
 
+namespace {
+
 // Only H.264 with 4:2:0 chroma sampling is supported.
-static const VideoCodecProfile kSupportedProfiles[] = {
+const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_EXTENDED,
     H264PROFILE_HIGH,
     // TODO(hubbe): Try to re-enable this again somehow. Currently it seems
@@ -56,21 +58,21 @@ static const VideoCodecProfile kSupportedProfiles[] = {
 };
 
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
-static const int kNALUHeaderLength = 4;
+const int kNALUHeaderLength = 4;
 
 // We request 5 picture buffers from the client, each of which has a texture ID
 // that we can bind decoded frames to. We need enough to satisfy preroll, and
 // enough to avoid unnecessary stalling, but no more than that. The resource
 // requirements are low, as we don't need the textures to be backed by storage.
-static const int kNumPictureBuffers = limits::kMaxVideoFrames + 1;
+const int kNumPictureBuffers = limits::kMaxVideoFrames + 1;
 
 // Maximum number of frames to queue for reordering before we stop asking for
 // more. (NotifyEndOfBitstreamBuffer() is called when frames are moved into the
 // reorder queue.)
-static const int kMaxReorderQueueSize = 16;
+const int kMaxReorderQueueSize = 16;
 
 // Build an |image_config| dictionary for VideoToolbox initialization.
-static base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
+base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
     CMVideoDimensions coded_dimensions) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config;
 
@@ -106,11 +108,11 @@ static base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
 // successful.
 //
 // TODO(sandersd): Merge with ConfigureDecoder(), as the code is very similar.
-static bool CreateVideoToolboxSession(const uint8_t* sps,
-                                      size_t sps_size,
-                                      const uint8_t* pps,
-                                      size_t pps_size,
-                                      bool require_hardware) {
+bool CreateVideoToolboxSession(const uint8_t* sps,
+                               size_t sps_size,
+                               const uint8_t* pps,
+                               size_t pps_size,
+                               bool require_hardware) {
   const uint8_t* data_ptrs[] = {sps, pps};
   const size_t data_sizes[] = {sps_size, pps_size};
 
@@ -172,7 +174,7 @@ static bool CreateVideoToolboxSession(const uint8_t* sps,
 // must actually create a decompression session. If creating a decompression
 // session fails, hardware decoding will be disabled (Initialize() will always
 // return false).
-static bool InitializeVideoToolboxInternal() {
+bool InitializeVideoToolboxInternal() {
   if (!IsVtInitialized()) {
     // CoreVideo is also required, but the loader stops after the first path is
     // loaded. Instead we rely on the transitive dependency from VideoToolbox to
@@ -213,32 +215,46 @@ static bool InitializeVideoToolboxInternal() {
   return true;
 }
 
-bool InitializeVideoToolbox() {
-  // InitializeVideoToolbox() is called only from the GPU process main thread;
-  // once for sandbox warmup, and then once each time a VTVideoDecodeAccelerator
-  // is initialized.
-  static bool attempted = false;
-  static bool succeeded = false;
+// TODO(sandersd): Share this computation with the VAAPI decoder.
+int32_t ComputeReorderWindow(const H264SPS* sps) {
+  // TODO(sandersd): Compute MaxDpbFrames.
+  int32_t max_dpb_frames = kMaxReorderQueueSize;
 
-  if (!attempted) {
-    attempted = true;
-    succeeded = InitializeVideoToolboxInternal();
+  // See AVC spec section E.2.1 definition of |max_num_reorder_frames|.
+  if (sps->vui_parameters_present_flag && sps->bitstream_restriction_flag) {
+    return std::min(sps->max_num_reorder_frames, max_dpb_frames);
+  } else if (sps->constraint_set3_flag) {
+    if (sps->profile_idc == 44 || sps->profile_idc == 86 ||
+        sps->profile_idc == 100 || sps->profile_idc == 110 ||
+        sps->profile_idc == 122 || sps->profile_idc == 244) {
+      return 0;
+    }
   }
-
-  return succeeded;
+  return max_dpb_frames;
 }
 
 // Route decoded frame callbacks back into the VTVideoDecodeAccelerator.
-static void OutputThunk(void* decompression_output_refcon,
-                        void* source_frame_refcon,
-                        OSStatus status,
-                        VTDecodeInfoFlags info_flags,
-                        CVImageBufferRef image_buffer,
-                        CMTime presentation_time_stamp,
-                        CMTime presentation_duration) {
+void OutputThunk(void* decompression_output_refcon,
+                 void* source_frame_refcon,
+                 OSStatus status,
+                 VTDecodeInfoFlags info_flags,
+                 CVImageBufferRef image_buffer,
+                 CMTime presentation_time_stamp,
+                 CMTime presentation_duration) {
   VTVideoDecodeAccelerator* vda =
       reinterpret_cast<VTVideoDecodeAccelerator*>(decompression_output_refcon);
   vda->Output(source_frame_refcon, status, image_buffer);
+}
+
+}  // namespace
+
+bool InitializeVideoToolbox() {
+  // InitializeVideoToolbox() is called only from the GPU process main thread:
+  // once for sandbox warmup, and then once each time a VTVideoDecodeAccelerator
+  // is initialized. This ensures that everything is loaded whether or not the
+  // sandbox is enabled.
+  static bool succeeded = InitializeVideoToolboxInternal();
+  return succeeded;
 }
 
 VTVideoDecodeAccelerator::Task::Task(TaskType type) : type(type) {}
@@ -597,11 +613,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
           if (nalu.nal_unit_type == H264NALU::kIDRSlice)
             frame->is_idr = true;
 
-          if (sps->vui_parameters_present_flag &&
-              sps->bitstream_restriction_flag) {
-            frame->reorder_window =
-                std::min(sps->max_num_reorder_frames, kMaxReorderQueueSize - 1);
-          }
+          frame->reorder_window = ComputeReorderWindow(sps);
         }
         has_slice = true;
       default:

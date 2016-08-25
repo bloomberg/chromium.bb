@@ -67,14 +67,13 @@ bool H264POC::ComputePicOrderCnt(
   int32_t max_pic_order_cnt_lsb =
       1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
 
-  // Check for invalid (including duplicate) |frame_num| values. All cases are
-  // treated as gaps, which is to say that nothing is done. (Gaps don't affect
-  // POC computation.)
-  if (!slice_hdr.idr_pic_flag &&
-      slice_hdr.frame_num != (prev_frame_num_ + 1) % max_frame_num) {
-    if (!sps->gaps_in_frame_num_value_allowed_flag)
-      DLOG(WARNING) << "Invalid gap in frame_num";
-  }
+  // Note: Duplicate frame numbers are ignored. They occur in many videos
+  // despite appearing to be invalid according to the spec.
+  // TODO(sandersd): Check if these videos are using slices or have redundant
+  // streams.
+
+  // Note: Gaps in frame numbers are also ignored. They do not affect POC
+  // computation.
 
   // Based on T-REC-H.264 8.2.1, "Decoding process for picture order
   // count", available from http://www.itu.int/rec/T-REC-H.264.
