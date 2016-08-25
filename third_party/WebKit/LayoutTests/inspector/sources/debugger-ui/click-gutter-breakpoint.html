@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/click-breakpoints.js"></script>
+<script>
+function test()
+{
+    function clickCodeMirrorLineNumber(lineNumber)
+    {
+        var element = Array.from(document.getElementsByClassName("CodeMirror-linenumber")).filter(x => x.textContent === (lineNumber + 1).toString())[0];
+        if (!element) {
+            InspectorTest.addResult("CodeMirror Gutter Not Found:" + lineNumber);
+            InspectorTest.completeDebuggerTest();
+            return false;
+        }
+        var rect = element.getBoundingClientRect();
+        eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+        return true;
+    }
+
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.panels.sources;
+    var scriptFormatter;
+    var formattedSourceFrame;
+
+    InspectorTest.startDebuggerTest(() => InspectorTest.showScriptSource("click-breakpoints.js", didShowScriptSource));
+
+
+    function didShowScriptSource()
+    {
+        clickCodeMirrorLineNumber(2);
+        clickCodeMirrorLineNumber(2);
+        clickCodeMirrorLineNumber(3);
+        InspectorTest.waitUntilPaused(pausedInF2);
+        InspectorTest.evaluateInPageWithTimeout("f2()");
+    }
+
+    function pausedInF2(callFrames)
+    {
+        InspectorTest.dumpBreakpointSidebarPane("while paused");
+        InspectorTest.completeDebuggerTest();
+    }
+
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that breakpoints can be added and removed by clicking the gutter.
+</p>
+</body>
+</html>
