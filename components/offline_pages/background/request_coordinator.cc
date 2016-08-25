@@ -51,6 +51,10 @@ int64_t GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
 
+// In case we start processing from SavePageLater, we need a callback, but there
+// is nothing for it to do.
+void EmptySchedulerCallback(bool started) {}
+
 }  // namespace
 
 RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
@@ -59,6 +63,8 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                                        std::unique_ptr<Scheduler> scheduler)
     : is_busy_(false),
       is_stopped_(false),
+      use_test_connection_type_(false),
+      test_connection_type_(),
       offliner_(nullptr),
       policy_(std::move(policy)),
       factory_(std::move(factory)),
@@ -185,12 +191,37 @@ void RequestCoordinator::ResumeRequests(
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 }
 
+net::NetworkChangeNotifier::ConnectionType
+RequestCoordinator::GetConnectionType() {
+  // If we have a connection type set for test, use that.
+  if (use_test_connection_type_)
+    return test_connection_type_;
+
+  return net::NetworkChangeNotifier::GetConnectionType();
+}
+
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
   NotifyAdded(request);
   // Inform the scheduler that we have an outstanding task..
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
+
+  // If it makes sense, start processing now.
+  if (is_busy_) return;
+
+  // Check for network
+  net::NetworkChangeNotifier::ConnectionType connection = GetConnectionType();
+
+  if ((connection !=
+       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) &&
+      request.user_requested()) {
+    // Create device conditions.
+    DeviceConditions device_conditions(false, 0, connection);
+
+    // Start processing if it makes sense. (net, user requested)
+    StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
+  }
 }
 
 // Called in response to updating a request in the request queue.

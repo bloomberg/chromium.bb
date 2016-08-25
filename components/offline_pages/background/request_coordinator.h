@@ -211,6 +211,16 @@ class RequestCoordinator : public KeyedService,
   // if needed.
   void GetOffliner();
 
+  // Method to wrap calls to getting the connection type so it can be
+  // changed for tests.
+  net::NetworkChangeNotifier::ConnectionType GetConnectionType();
+
+  void SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType connection) {
+    use_test_connection_type_ = true;
+    test_connection_type_ = connection;
+  }
+
   void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
     offliner_timeout_ = timeout;
   }
@@ -227,6 +237,10 @@ class RequestCoordinator : public KeyedService,
   bool is_busy_;
   // True if the current request has been canceled.
   bool is_stopped_;
+  // True if we should use the test connection type instead of the actual type.
+  bool use_test_connection_type_;
+  // For use by tests, a fake network connection type
+  net::NetworkChangeNotifier::ConnectionType test_connection_type_;
   // Unowned pointer to the current offliner, if any.
   Offliner* offliner_;
   base::Time operation_start_time_;

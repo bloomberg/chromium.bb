@@ -234,6 +234,11 @@ class RequestCoordinatorTest
     offliner_->enable_callback(enable);
   }
 
+  void SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType connection) {
+    coordinator()->SetNetworkConditionsForTest(connection);
+  }
+
   void SetOfflinerTimeoutForTest(const base::TimeDelta& timeout) {
     coordinator_->SetOfflinerTimeoutForTest(timeout);
   }
@@ -340,12 +345,14 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
 }
 
 TEST_F(RequestCoordinatorTest, StartProcessingWithRequestInProgress) {
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
   // Put the request on the queue.
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
 
   // Set up for the call to StartProcessing by building arguments.
-  DeviceConditions device_conditions(false, 75,
-                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  DeviceConditions device_conditions(
+      false, 75, net::NetworkChangeNotifier::CONNECTION_3G);
   base::Callback<void(bool)> callback =
       base::Bind(&RequestCoordinatorTest::EmptyCallbackFunction,
                  base::Unretained(this));
@@ -826,6 +833,22 @@ TEST_F(RequestCoordinatorTest, RemoveRequest) {
             observer().last_status());
   EXPECT_EQ(1UL, last_remove_results().size());
   EXPECT_EQ(kRequestId1, std::get<0>(last_remove_results().at(0)));
+}
+
+TEST_F(RequestCoordinatorTest, SavePageStartsProcessingWhenConnected) {
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  PumpLoop();
+  EXPECT_TRUE(is_busy());
+}
+
+TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl1, kClientId1, kUserRequested));
+  PumpLoop();
+  EXPECT_FALSE(is_busy());
 }
 
 }  // namespace offline_pages
