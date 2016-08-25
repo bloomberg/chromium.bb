@@ -77,6 +77,9 @@ function runTest(element, platform) {
     assertDirection('backward', element, 'extending selection backward by character');
     testCache('backward', element);
 
+    element.blur();
+    element.value = element.value + 'foo';
+    assertDirection(noneOnMacAndForwardOnOthers, element, 'updating value');
 }
 
 function runTestFor(platform) {

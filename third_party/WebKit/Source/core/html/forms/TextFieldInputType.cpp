@@ -163,10 +163,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
         element().updateView();
 
     unsigned max = visibleValue().length();
-    if (element().focused())
-        element().setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
-    else
-        element().cacheSelectionInResponseToSetValue(max);
+    element().setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
 
     if (!valueChanged)
         return;

@@ -270,11 +270,7 @@ void HTMLTextFormControlElement::setSelectionRangeForBinding(int start, int end,
         direction = SelectionHasForwardDirection;
     else if (directionString == "backward")
         direction = SelectionHasBackwardDirection;
-
-    if (direction == SelectionHasNoDirection && document().frame() && document().frame()->editor().behavior().shouldConsiderSelectionAsDirectional())
-        direction = SelectionHasForwardDirection;
-
-    return setSelectionRange(start, end, direction);
+    setSelectionRange(start, end, direction);
 }
 
 static Position positionForIndex(HTMLElement* innerEditor, int index)
@@ -351,6 +347,9 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     DCHECK_GE(editorValueLength, 0);
     end = std::max(std::min(end, editorValueLength), 0);
     start = std::min(std::max(start, 0), end);
+    LocalFrame* frame = document().frame();
+    if (direction == SelectionHasNoDirection && frame && frame->editor().behavior().shouldConsiderSelectionAsDirectional())
+        direction = SelectionHasForwardDirection;
     cacheSelection(start, end, direction);
 
     if (document().focusedElement() != this) {
@@ -359,7 +358,6 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         return;
     }
 
-    LocalFrame* frame = document().frame();
     HTMLElement* innerEditor = innerEditorElement();
     if (!frame || !innerEditor)
         return;
@@ -471,11 +469,10 @@ static const AtomicString& directionString(TextFieldSelectionDirection direction
 
 const AtomicString& HTMLTextFormControlElement::selectionDirection() const
 {
-    if (!isTextFormControl())
-        return directionString(SelectionHasNoDirection);
+    // Ensured by HTMLInputElement::selectionDirectionForBinding().
+    DCHECK(isTextFormControl());
     if (document().focusedElement() != this)
         return directionString(m_cachedSelectionDirection);
-
     return directionString(computeSelectionDirection());
 }
 

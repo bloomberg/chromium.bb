@@ -221,8 +221,6 @@ public:
     bool needsToUpdateViewValue() const { return m_needsToUpdateViewValue; }
     void setInnerEditorValue(const String&) override;
 
-    void cacheSelectionInResponseToSetValue(int caretOffset) { cacheSelection(caretOffset, caretOffset, SelectionHasNoDirection); }
-
     // For test purposes.
     void selectColorInColorChooser(const Color&);
     void endColorChooser();
