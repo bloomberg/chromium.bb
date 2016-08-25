@@ -161,9 +161,11 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
 int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 
-#if defined(OS_ANDROID)
-  // Android may report 6 to 8 CPUs for big.LITTLE configurations.
-  // Limit the number of raster threads based on maximum of 4 big cores.
+#if defined(OS_ANDROID) || \
+    (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
+  // Android and ChromeOS ARM devices may report 6 to 8 CPUs for big.LITTLE
+  // configurations. Limit the number of raster threads based on maximum of
+  // 4 big cores.
   num_processors = std::min(num_processors, 4);
 #endif
 
