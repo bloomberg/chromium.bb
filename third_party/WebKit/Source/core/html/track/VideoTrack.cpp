@@ -30,10 +30,8 @@ void VideoTrack::setSelected(bool selected)
 
     m_selected = selected;
 
-    if (mediaElement()) {
-        WebMediaPlayer::TrackId selectedTrackId = id();
-        mediaElement()->selectedVideoTrackChanged(selected ? &selectedTrackId : 0);
-    }
+    if (mediaElement())
+        mediaElement()->selectedVideoTrackChanged(this);
 }
 
 const AtomicString& VideoTrack::alternativeKeyword()

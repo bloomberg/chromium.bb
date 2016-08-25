@@ -176,7 +176,6 @@ private:
     double m_timestampOffset;
     Member<AudioTrackList> m_audioTracks;
     Member<VideoTrackList> m_videoTracks;
-    bool m_activeTrack = false;
     double m_appendWindowStart;
     double m_appendWindowEnd;
     bool m_firstInitializationSegmentReceived;

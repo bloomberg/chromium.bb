@@ -45,6 +45,7 @@
 namespace blink {
 
 class AudioSourceProviderClient;
+class AudioTrack;
 class AudioTrackList;
 class AutoplayUmaHelper;
 class ContentType;
@@ -65,6 +66,7 @@ class TextTrackContainer;
 class TextTrackList;
 class TimeRanges;
 class URLRegistry;
+class VideoTrack;
 class VideoTrackList;
 class WebAudioSourceProvider;
 class WebInbandTextTrack;
@@ -184,10 +186,10 @@ public:
     void togglePlayState();
 
     AudioTrackList& audioTracks();
-    void audioTrackChanged(WebMediaPlayer::TrackId, bool enabled);
+    void audioTrackChanged(AudioTrack*);
 
     VideoTrackList& videoTracks();
-    void selectedVideoTrackChanged(WebMediaPlayer::TrackId*);
+    void selectedVideoTrackChanged(VideoTrack*);
 
     TextTrack* addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
 

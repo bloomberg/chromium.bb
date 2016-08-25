@@ -39,7 +39,10 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/track/AudioTrackList.h"
+#include "core/html/track/VideoTrackList.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
+#include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -416,6 +419,26 @@ TimeRanges* MediaSource::seekable() const
     return TimeRanges::create(0, sourceDuration);
 }
 
+void MediaSource::onTrackChanged(TrackBase* track)
+{
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    SourceBuffer* sourceBuffer = SourceBufferTrackBaseSupplement::sourceBuffer(*track);
+    if (!sourceBuffer)
+        return;
+
+    DCHECK(m_sourceBuffers->contains(sourceBuffer));
+    if (track->type() == WebMediaPlayer::AudioTrack) {
+        sourceBuffer->audioTracks().scheduleChangeEvent();
+    } else if (track->type() == WebMediaPlayer::VideoTrack) {
+        if (static_cast<VideoTrack*>(track)->selected())
+            sourceBuffer->videoTracks().trackSelected(track->id());
+        sourceBuffer->videoTracks().scheduleChangeEvent();
+    }
+
+    bool isActive = (sourceBuffer->videoTracks().selectedIndex() != -1) || sourceBuffer->audioTracks().hasEnabledTrack();
+    setSourceBufferActive(sourceBuffer, isActive);
+}
+
 void MediaSource::setDuration(double duration, ExceptionState& exceptionState)
 {
     // 2.1 http://www.w3.org/TR/media-source/#widl-MediaSource-duration
@@ -601,9 +624,16 @@ bool MediaSource::isOpen() const
     return readyState() == openKeyword();
 }
 
-void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
+void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer, bool isActive)
 {
-    DCHECK(!m_activeSourceBuffers->contains(sourceBuffer));
+    if (!isActive) {
+        DCHECK(m_activeSourceBuffers->contains(sourceBuffer));
+        m_activeSourceBuffers->remove(sourceBuffer);
+        return;
+    }
+
+    if (m_activeSourceBuffers->contains(sourceBuffer))
+        return;
 
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-activeSourceBuffers
     // SourceBuffer objects in SourceBuffer.activeSourceBuffers must appear in

@@ -2408,14 +2408,15 @@ AudioTrackList& HTMLMediaElement::audioTracks()
     return *m_audioTracks;
 }
 
-void HTMLMediaElement::audioTrackChanged(WebMediaPlayer::TrackId trackId, bool enabled)
+void HTMLMediaElement::audioTrackChanged(AudioTrack* track)
 {
-    BLINK_MEDIA_LOG << "audioTrackChanged(" << (void*)this << ") trackId= " << String(trackId) << " enabled=" << boolString(enabled);
+    BLINK_MEDIA_LOG << "audioTrackChanged(" << (void*)this << ") trackId= " << String(track->id()) << " enabled=" << boolString(track->enabled());
     DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     audioTracks().scheduleChangeEvent();
 
-    // FIXME: Add call on m_mediaSource to notify it of track changes once the SourceBuffer.audioTracks attribute is added.
+    if (m_mediaSource)
+        m_mediaSource->onTrackChanged(track);
 
     if (!m_audioTracksTimer.isActive())
         m_audioTracksTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -2464,17 +2465,21 @@ VideoTrackList& HTMLMediaElement::videoTracks()
     return *m_videoTracks;
 }
 
-void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
+void HTMLMediaElement::selectedVideoTrackChanged(VideoTrack* track)
 {
-    BLINK_MEDIA_LOG << "selectedVideoTrackChanged(" << (void*)this << ") selectedTrackId=" << (selectedTrackId ? String(*selectedTrackId) : "none");
+    BLINK_MEDIA_LOG << "selectedVideoTrackChanged(" << (void*)this << ") selectedTrackId=" << (track->selected() ? String(track->id()) : "none");
     DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
-    if (selectedTrackId)
-        videoTracks().trackSelected(*selectedTrackId);
+    if (track->selected())
+        videoTracks().trackSelected(track->id());
 
-    // FIXME: Add call on m_mediaSource to notify it of track changes once the SourceBuffer.videoTracks attribute is added.
+    videoTracks().scheduleChangeEvent();
 
-    webMediaPlayer()->selectedVideoTrackChanged(selectedTrackId);
+    if (m_mediaSource)
+        m_mediaSource->onTrackChanged(track);
+
+    WebMediaPlayer::TrackId id = track->id();
+    webMediaPlayer()->selectedVideoTrackChanged(track->selected() ? &id : nullptr);
 }
 
 WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, WebMediaPlayerClient::VideoTrackKind kind, const WebString& label, const WebString& language, bool selected)

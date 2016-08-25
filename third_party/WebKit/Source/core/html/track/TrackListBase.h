@@ -59,7 +59,7 @@ public:
     {
         track->setMediaElement(m_mediaElement);
         m_tracks.append(track);
-        scheduleTrackEvent(EventTypeNames::addtrack, track);
+        scheduleEvent(TrackEvent::create(EventTypeNames::addtrack, track));
     }
 
     void remove(WebMediaPlayer::TrackId trackId)
@@ -69,7 +69,7 @@ public:
                 continue;
 
             m_tracks[i]->setMediaElement(0);
-            scheduleTrackEvent(EventTypeNames::removetrack, m_tracks[i]);
+            scheduleEvent(TrackEvent::create(EventTypeNames::removetrack, m_tracks[i].get()));
             m_tracks.remove(i);
             return;
         }
@@ -86,9 +86,7 @@ public:
 
     void scheduleChangeEvent()
     {
-        Event* event = Event::create(EventTypeNames::change);
-        event->setTarget(this);
-        m_mediaElement->scheduleEvent(event);
+        scheduleEvent(Event::create(EventTypeNames::change));
     }
 
     Node* owner() const { return m_mediaElement; }
@@ -108,9 +106,8 @@ public:
     }
 
 private:
-    void scheduleTrackEvent(const AtomicString& eventName, T* track)
+    void scheduleEvent(Event* event)
     {
-        Event* event = TrackEvent::create(eventName, track);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }

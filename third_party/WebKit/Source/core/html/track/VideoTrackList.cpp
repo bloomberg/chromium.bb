@@ -51,8 +51,6 @@ void VideoTrackList::trackSelected(WebMediaPlayer::TrackId selectedTrackId)
         else
             DCHECK(track->selected());
     }
-
-    scheduleChangeEvent();
 }
 
 } // namespace blink

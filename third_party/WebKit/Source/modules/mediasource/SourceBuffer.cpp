@@ -669,7 +669,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
 
     if (!RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
         if (!m_firstInitializationSegmentReceived) {
-            m_source->setSourceBufferActive(this);
+            m_source->setSourceBufferActive(this, true);
             m_firstInitializationSegmentReceived = true;
         }
         return true;
@@ -764,7 +764,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
     }
 
     // 4. Let active track flag equal false.
-    m_activeTrack = false;
+    bool activeTrack = false;
 
     // 5. If the first initialization segment received flag is false, then run the following steps:
     if (!m_firstInitializationSegmentReceived) {
@@ -798,7 +798,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
                 // 5.2.8.7.1 Set the enabled property on new audio track to true.
                 audioTrack->setEnabled(true);
                 // 5.2.8.7.2 Set active track flag to true.
-                m_activeTrack = true;
+                activeTrack = true;
             }
             // 5.2.8.8 Add new audio track to the audioTracks attribute on this SourceBuffer object.
             // 5.2.8.9 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the AudioTrackList object referenced by the audioTracks attribute on this SourceBuffer object.
@@ -835,7 +835,7 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
                 // 5.3.8.7.1 Set the selected property on new audio track to true.
                 videoTrack->setSelected(true);
                 // 5.3.8.7.2 Set active track flag to true.
-                m_activeTrack = true;
+                activeTrack = true;
             }
             // 5.3.8.8 Add new video track to the videoTracks attribute on this SourceBuffer object.
             // 5.3.8.9 Queue a task to fire a trusted event named addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent interface, at the VideoTrackList object referenced by the videoTracks attribute on this SourceBuffer object.
@@ -849,10 +849,10 @@ bool SourceBuffer::initializationSegmentReceived(const WebVector<MediaTrackInfo>
 
         // 5.5 If active track flag equals true, then run the following steps:
         // activesourcebuffers.
-        if (m_activeTrack) {
+        if (activeTrack) {
             // 5.5.1 Add this SourceBuffer to activeSourceBuffers.
             // 5.5.2 Queue a task to fire a simple event named addsourcebuffer at activeSourceBuffers
-            m_source->setSourceBufferActive(this);
+            m_source->setSourceBufferActive(this, true);
         }
 
         // 5.6. Set first initialization segment received flag to true.

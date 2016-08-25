@@ -120,6 +120,36 @@
                 }));
             }, "Media tracks must be removed when the HTMLMediaElement.load() is called");
 
+            mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+            {
+                loadMediaAndVerifyAddedTracks(test, mediaElement, segmentInfo, sourceBuffer, mediaData, test.step_func(function ()
+                {
+                    assert_equals(mediaSource.activeSourceBuffers.length, 1, "mediaSource.activeSourceBuffers.length == 1");
+                    assert_equals(mediaSource.activeSourceBuffers[0], sourceBuffer, "mediaSource.activeSourceBuffers[0]");
+                    assert_equals(sourceBuffer.videoTracks.selectedIndex, 0, "sourceBuffer.videoTracks.selectedIndex");
+                    test.expectEvent(mediaElement.audioTracks, "change", "mediaElement.audioTracks changed.");
+                    test.expectEvent(mediaElement.videoTracks, "change", "mediaElement.videoTracks changed.");
+                    test.expectEvent(sourceBuffer.audioTracks, "change", "mediaElement.audioTracks changed.");
+                    test.expectEvent(sourceBuffer.videoTracks, "change", "mediaElement.videoTracks changed.");
+                    test.expectEvent(mediaSource.activeSourceBuffers, "removesourcebuffer", "mediaSource.activeSourceBuffers.onchange");
+                    mediaElement.audioTracks[0].enabled = false;
+                    mediaElement.videoTracks[0].selected = false;
+                    test.waitForExpectedEvents(test.step_func(function()
+                    {
+                        assert_equals(mediaSource.activeSourceBuffers.length, 0, "mediaSource.activeSourceBuffers.length == 0");
+                        assert_equals(sourceBuffer.videoTracks.selectedIndex, -1, "sourceBuffer.videoTracks.selectedIndex");
+                        test.expectEvent(mediaElement.audioTracks, "change", "mediaElement.audioTracks changed.");
+                        test.expectEvent(mediaElement.videoTracks, "change", "mediaElement.videoTracks changed.");
+                        test.expectEvent(sourceBuffer.audioTracks, "change", "sourceBuffer.audioTracks changed.");
+                        test.expectEvent(sourceBuffer.videoTracks, "change", "sourceBuffer.videoTracks changed.");
+                        mediaElement.audioTracks[0].enabled = true;
+                        mediaElement.videoTracks[0].selected = true;
+                        test.expectEvent(mediaSource.activeSourceBuffers, "addsourcebuffer", "mediaSource.activeSourceBuffers.onchange");
+                        test.waitForExpectedEvents(test.step_func_done());
+                    }));
+                }));
+            }, "Change events must be fired on MediaElement and SourceBuffer track lists when enabling/disabling or selecting/deselecting tracks");
+
         </script>
     </body>
 </html>

@@ -42,6 +42,7 @@ namespace blink {
 class WebMediaSource;
 class HTMLMediaElement;
 class TimeRanges;
+class TrackBase;
 
 class CORE_EXPORT HTMLMediaSource : public URLRegistrable, public GarbageCollectedMixin {
 public:
@@ -62,6 +63,7 @@ public:
     virtual double duration() const = 0;
     virtual TimeRanges* buffered() const = 0;
     virtual TimeRanges* seekable() const = 0;
+    virtual void onTrackChanged(TrackBase*) = 0;
 
     // URLRegistrable
     URLRegistry& registry() const override { return *s_registry; }

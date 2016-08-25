@@ -22,9 +22,9 @@
                     assert_equals(video.videoTracks.selectedIndex, -1, "videoTracks.selectedIndex (first setter)");
                     assert_false(video.videoTracks[0].selected, "videoTrack.selected (first setter)");
 
-                    video.videoTracks.onchange = t.unreached_func("setting selected to false fired change event");
-                    setTimeout(t.step_func(function()
+                    video.videoTracks.onchange = t.step_func(function()
                     {
+                        assert_false(video.videoTracks[0].selected, "videoTrack.selected (first setter)");
                         video.videoTracks[0].selected = true;
                         assert_equals(video.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex (second setter)");
                         assert_true(video.videoTracks[0].selected, "videoTrack.selected (second setter)");
@@ -34,7 +34,7 @@
                             assert_equals(video.videoTracks.selectedIndex, 0, "videoTracks.selectedIndex (change event)");
                             assert_true(video.videoTracks[0].selected, "videoTrack.selected (change event)");
                         });
-                    }), 0);
+                    });
                 });
             }, "VideoTrackList track change");
         </script>
