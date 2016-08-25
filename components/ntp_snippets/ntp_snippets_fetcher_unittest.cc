@@ -426,6 +426,29 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
                                        /*count=*/1)));
 }
 
+TEST_F(NTPSnippetsContentSuggestionsFetcherTest, EmptyCategoryIsOK) {
+  const std::string kJsonStr =
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"Articles for You\""
+      "}]}";
+  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1,
+                                            /*interactive_request=*/true);
+  FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
+  EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              ElementsAre(base::Bucket(/*min=*/kTestJsonParsingLatencyMs,
+                                       /*count=*/1)));
+}
+
 TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   const std::string kJsonStr =
       "{\"categories\" : [{"

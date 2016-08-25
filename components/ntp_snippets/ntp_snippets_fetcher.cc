@@ -537,15 +537,19 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
       for (const auto& v : *categories) {
         int category_id = -1;
         const base::DictionaryValue* category_value = nullptr;
-        const base::ListValue* suggestions = nullptr;
         if (!(v->GetAsDictionary(&category_value) &&
               category_value->GetInteger("id", &category_id) &&
-              (category_id > 0) &&
-              category_value->GetList("suggestions", &suggestions))) {
+              (category_id > 0))) {
           return false;
         }
         Category category = category_factory_->FromRemoteCategory(category_id);
+        const base::ListValue* suggestions = nullptr;
         NTPSnippet::PtrVector* articles = &(*snippets)[category];
+        if (!category_value->GetList("suggestions", &suggestions)) {
+          // Absence of a list of suggestions is treated as an empty list, which
+          // is permissible.
+          continue;
+        }
         if (!AddSnippetsFromListValue(
                 /* content_suggestions_api = */ true, *suggestions, articles)) {
           return false;
