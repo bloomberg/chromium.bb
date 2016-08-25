@@ -95,6 +95,13 @@ if __name__ == '__main__':
     metavar='iossim',
   )
   parser.add_argument(
+    '-j',
+    '--args-json',
+    default='{}',
+    help='Specify "env_var": [...] and "test_args": [...] using a JSON dict.',
+    metavar='{}',
+  )
+  parser.add_argument(
     '-o',
     '--out-dir',
     help='Directory to store all test data in.',
@@ -128,5 +135,10 @@ if __name__ == '__main__':
     if not (args.iossim and args.platform and args.version):
       parser.error(
         'must specify all or none of -i/--iossim, -p/--platform, -v/--version')
+
+  args_json = json.loads(args.args_json)
+  args.env_var = args.env_var or []
+  args.env_var.extend(args_json.get('env_var', []))
+  test_args.extend(args_json.get('test_args', []))
 
   sys.exit(main(args, test_args))
