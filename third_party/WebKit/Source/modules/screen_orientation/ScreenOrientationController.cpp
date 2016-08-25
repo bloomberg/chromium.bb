@@ -93,7 +93,7 @@ void ScreenOrientationController::updateOrientation()
 
 bool ScreenOrientationController::isActiveAndVisible() const
 {
-    return m_orientation && m_client && frame() && page() && page()->isPageVisible();
+    return m_orientation && m_client && page() && page()->isPageVisible();
 }
 
 void ScreenOrientationController::pageVisibilityChanged()
