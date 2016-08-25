@@ -34,6 +34,7 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_framer.h"
@@ -125,54 +126,6 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
 }
 
 }  // namespace
-
-// Helper class to encapsulate MockReads and MockWrites for QUIC.
-// Simplify ownership issues and the interaction with the MockSocketFactory.
-class MockQuicData {
- public:
-  MockQuicData() : packet_number_(0) {}
-
-  ~MockQuicData() { base::STLDeleteElements(&packets_); }
-
-  void AddSynchronousRead(std::unique_ptr<QuicEncryptedPacket> packet) {
-    reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
-                              packet_number_++));
-    packets_.push_back(packet.release());
-  }
-
-  void AddRead(std::unique_ptr<QuicEncryptedPacket> packet) {
-    reads_.push_back(
-        MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
-    packets_.push_back(packet.release());
-  }
-
-  void AddRead(IoMode mode, int rv) {
-    reads_.push_back(MockRead(mode, rv, packet_number_++));
-  }
-
-  void AddWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
-    writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
-                                packet_number_++));
-    packets_.push_back(packet.release());
-  }
-
-  void AddSocketDataToFactory(MockClientSocketFactory* factory) {
-    MockRead* reads = reads_.empty() ? nullptr : &reads_[0];
-    MockWrite* writes = writes_.empty() ? nullptr : &writes_[0];
-    socket_data_.reset(
-        new SequencedSocketData(reads, reads_.size(), writes, writes_.size()));
-    factory->AddSocketDataProvider(socket_data_.get());
-  }
-
-  void Resume() { socket_data_->Resume(); }
-
- private:
-  std::vector<QuicEncryptedPacket*> packets_;
-  std::vector<MockWrite> writes_;
-  std::vector<MockRead> reads_;
-  size_t packet_number_;
-  std::unique_ptr<SequencedSocketData> socket_data_;
-};
 
 class HeadersHandler {
  public:

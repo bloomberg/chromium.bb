@@ -1596,6 +1596,8 @@
       'quic/chromium/crypto/proof_verifier_chromium_test.cc',
       'quic/chromium/crypto_test_utils_chromium.cc',
       'quic/chromium/crypto/proof_test_chromium.cc',
+      'quic/chromium/mock_quic_data.cc',
+      'quic/chromium/mock_quic_data.h',
       'quic/chromium/network_connection_unittest.cc',
       'quic/chromium/port_suggester_unittest.cc',
       'quic/chromium/quic_chromium_alarm_factory_test.cc',
