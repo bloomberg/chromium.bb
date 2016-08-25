@@ -12,7 +12,8 @@ WEBMOBJS  += common/file_util.o common/hdr_util.o
 OBJSA     := $(WEBMOBJS:.o=_a.o)
 OBJSSO    := $(WEBMOBJS:.o=_so.o)
 VTTOBJS   := webvtt/vttreader.o webvtt/webvttparser.o sample_muxer_metadata.o
-EXEOBJS   := sample.o sample_muxer.o dumpvtt.o vttdemux.o
+EXEOBJS   := mkvmuxer_sample.o mkvparser_sample.o dumpvtt.o vttdemux.o
+EXES      := mkvparser_sample mkvmuxer_sample dumpvtt vttdemux
 DEPS      := $(WEBMOBJS:.o=.d) $(OBJECTS1:.o=.d) $(OBJECTS2:.o=.d)
 DEPS      += $(OBJECTS3:.o=.d) $(OBJECTS4:.o=.d) $(OBJSA:.o=.d) $(OBJSSO:.o=.d)
 DEPS      += $(VTTOBJS:.o=.d) $(EXEOBJS:.o=.d)
@@ -21,10 +22,10 @@ CLEAN     += $(LIBWEBMSO) $(EXES) $(DEPS) $(INFOOBJS)
 
 all: $(EXES)
 
-sample: sample.o $(LIBWEBMA)
+mkvparser_sample: mkvparser_sample.o $(LIBWEBMA)
 	$(CXX) $^ -o $@
 
-sample_muxer: sample_muxer.o $(VTTOBJS) $(LIBWEBMA)
+mkvmuxer_sample: mkvmuxer_sample.o $(VTTOBJS) $(LIBWEBMA)
 	$(CXX) $^ -o $@
 
 dumpvtt: dumpvtt.o $(VTTOBJS) $(WEBMOBJS)
