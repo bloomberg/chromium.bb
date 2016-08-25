@@ -25,9 +25,9 @@ enum ModifierKey {
   kControlKey,  // Customizable.
   kAltKey,  // Customizable.
   kVoidKey,
-  kCapsLockKey,
-  kEscapeKey,
-  kBackspaceKey,
+  kCapsLockKey,  // Customizable.
+  kEscapeKey,  // Customizable.
+  kBackspaceKey,  // Customizable.
   // IMPORTANT: Add new key to the end, because the keys may have been stored
   // in user preferences.
   kNumModifierKeys,

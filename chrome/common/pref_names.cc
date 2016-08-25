@@ -547,6 +547,10 @@ const char kLanguageRemapAltKeyTo[] =
     "settings.language.xkb_remap_alt_key_to";
 const char kLanguageRemapCapsLockKeyTo[] =
     "settings.language.remap_caps_lock_key_to";
+const char kLanguageRemapEscapeKeyTo[] =
+    "settings.language.remap_escape_key_to";
+const char kLanguageRemapBackspaceKeyTo[] =
+    "settings.language.remap_backspace_key_to";
 const char kLanguageRemapDiamondKeyTo[] =
     "settings.language.remap_diamond_key_to";
 

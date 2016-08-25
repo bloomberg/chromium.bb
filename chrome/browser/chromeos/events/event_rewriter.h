@@ -34,8 +34,8 @@ class ImeKeyboard;
 
 // EventRewriter makes various changes to keyboard-related events,
 // including KeyEvents and some other events with keyboard modifier flags:
-// - maps modifiers keys (Control, Alt, Search, Caps, Diamond) according
-//   to user preferences;
+// - maps certain non-character keys according to user preferences
+//   (Control, Alt, Search, Caps Lock, Escape, Backspace, Diamond);
 // - maps Command to Control on Apple keyboards;
 // - converts numeric pad editing keys to their numeric forms;
 // - converts top-row function keys to special keys where necessary;

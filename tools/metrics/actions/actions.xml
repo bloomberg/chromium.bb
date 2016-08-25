@@ -11290,6 +11290,11 @@ should be able to be added at any place in this file.
   <description>Settings: Keyboard settings: Alt</description>
 </action>
 
+<action name="Options_KeyboardRemapBackspaceKey">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Backspace</description>
+</action>
+
 <action name="Options_KeyboardRemapCapsLockKey">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Keyboard settings: CapsLock</description>
@@ -11303,6 +11308,11 @@ should be able to be added at any place in this file.
 <action name="Options_KeyboardRemapDiamondKey">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Keyboard settings: Diamond</description>
+</action>
+
+<action name="Options_KeyboardRemapEscapeKey">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Keyboard settings: Escape</description>
 </action>
 
 <action name="Options_KeyboardRemapSearchKey">

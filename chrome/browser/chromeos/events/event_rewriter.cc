@@ -57,7 +57,8 @@ const int kHotrodRemoteProductId = 0x21cc;
 const int kUnknownVendorId = -1;
 const int kUnknownProductId = -1;
 
-// Table of properties of remappable keys and/or remapping targets.
+// Table of properties of remappable keys and/or remapping targets (not
+// strictly limited to "modifiers").
 //
 // This is used in two distinct ways: for rewriting key up/down events,
 // and for rewriting modifier EventFlags on any kind of event.
@@ -111,11 +112,11 @@ const struct ModifierRemapping {
       ui::VKEY_CAPITAL}},
     {ui::EF_NONE,
      input_method::kEscapeKey,
-     nullptr,
+     prefs::kLanguageRemapEscapeKeyTo,
      {ui::EF_NONE, ui::DomCode::ESCAPE, ui::DomKey::ESCAPE, ui::VKEY_ESCAPE}},
     {ui::EF_NONE,
      input_method::kBackspaceKey,
-     nullptr,
+     prefs::kLanguageRemapBackspaceKeyTo,
      {ui::EF_NONE, ui::DomCode::BACKSPACE, ui::DomKey::BACKSPACE,
       ui::VKEY_BACK}},
     {ui::EF_NONE,
@@ -668,6 +669,8 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   if (!pref_service)
     return false;
 
+  // Preserve a copy of the original before rewriting |state| based on
+  // user preferences, device configuration, and certain IME properties.
   MutableKeyState incoming = *state;
   state->flags = ui::EF_NONE;
   int characteristic_flag = ui::EF_NONE;
@@ -776,6 +779,14 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
       characteristic_flag = ui::EF_ALT_DOWN;
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapAltKeyTo, *pref_service);
+      break;
+    case ui::DomCode::ESCAPE:
+      remapped_key =
+          GetRemappedKey(prefs::kLanguageRemapEscapeKeyTo, *pref_service);
+      break;
+    case ui::DomCode::BACKSPACE:
+      remapped_key =
+          GetRemappedKey(prefs::kLanguageRemapBackspaceKeyTo, *pref_service);
       break;
     default:
       break;

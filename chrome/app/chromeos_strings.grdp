@@ -3617,6 +3617,14 @@ Press any key to continue exploring.
            desc="The label for customizing the caps-lock key in the 'Keyboard settings' overlay">
     Caps Lock
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE_KEY_LABEL"
+           desc="The label for customizing the escape key in the 'Keyboard settings' overlay">
+    Escape
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_BACKSPACE_KEY_LABEL"
+           desc="The label for customizing the backspace key in the 'Keyboard settings' overlay">
+    Backspace
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_DIAMOND_KEY_LABEL"
            desc="The label for customizing the diamond key in the 'Keyboard settings' overlay">
     Diamond
