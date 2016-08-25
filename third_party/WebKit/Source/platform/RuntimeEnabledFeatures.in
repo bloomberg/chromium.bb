@@ -41,7 +41,7 @@ EnableCanvas2dDynamicRenderingModeSwitching status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositeOpaqueScrollers
-ColorCorrectRendering status=experimental, settable_from_internals=True
+ColorCorrectRendering settable_from_internals=True
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=test

@@ -79,16 +79,12 @@ sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const
             return SkColorSpace::NewRGB(SkColorSpace::kLinear_GammaNamed, tmp->xyz());
         }
     case kLegacyCanvasColorSpace:
-        // TODO(crbug.com/637381): To uncomment the following block of code we need
-        // it to not cause a bunch of test failures.
-        /*
         if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
             // Legacy colorspace ensures color matching with CSS is preserved.
             // So if CSS is color corrected from sRGB to display space, then
             // canvas must do the same
             return SkColorSpace::NewNamed(SkColorSpace::kSRGB_Named);
         }
-        */
         return nullptr;
     };
     CHECK(false);
