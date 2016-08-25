@@ -335,7 +335,7 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
-    'Mac Retina Release (AMD)': {
+    'Mac 10.11 Retina Release (AMD)': {
       'swarming_dimensions': {
         'gpu': '1002:6821',
         'hidpi': '1',
