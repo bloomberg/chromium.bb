@@ -33,7 +33,7 @@ class Element;
 class ComputedStyle;
 
 // ElementResolveContext is immutable and serves as an input to the style resolve process.
-class ElementResolveContext {
+class CORE_EXPORT ElementResolveContext {
     STACK_ALLOCATED();
 public:
     explicit ElementResolveContext(const Document&);

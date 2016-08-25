@@ -260,6 +260,7 @@ public:
     bool isShadowSelector() const { return m_relation == ShadowPseudo || m_relation == ShadowDeep; }
     bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
+    bool isUserActionPseudoClass() const;
     bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
 
     RelationType relation() const { return static_cast<RelationType>(m_relation); }
@@ -481,6 +482,14 @@ inline const AtomicString& CSSSelector::serializingValue() const
     // AtomicString is really just a StringImpl* so the cast below is safe.
     // FIXME: Perhaps call sites could be changed to accept StringImpl?
     return *reinterpret_cast<const AtomicString*>(&m_data.m_value);
+}
+
+inline bool CSSSelector::isUserActionPseudoClass() const
+{
+    return m_pseudoType == PseudoHover
+        || m_pseudoType == PseudoActive
+        || m_pseudoType == PseudoFocus
+        || m_pseudoType == PseudoDrag;
 }
 
 } // namespace blink

@@ -4091,6 +4091,7 @@
             'css/parser/SizesCalcParserTest.cpp',
             'css/resolver/FontBuilderTest.cpp',
             'css/resolver/MatchResultTest.cpp',
+            'css/resolver/SharedStyleFinderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/AttrTest.cpp',
             'dom/CSSSelectorWatchTest.cpp',

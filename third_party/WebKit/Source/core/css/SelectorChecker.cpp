@@ -598,10 +598,20 @@ bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context, Mat
         // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
         if (subContext.selector->getPseudoType() == CSSSelector::PseudoVisited || (subContext.selector->getPseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
             return true;
-        // context.scope is not available if m_mode == SharingRules.
-        // We cannot determine whether :host or :scope matches a given element or not.
-        if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->getPseudoType() == CSSSelector::PseudoScope))
-            return true;
+        if (m_mode == SharingRules) {
+            // context.scope is not available if m_mode == SharingRules.
+            // We cannot determine whether :host or :scope matches a given element or not.
+            if (subContext.selector->isHostPseudoClass() || subContext.selector->getPseudoType() == CSSSelector::PseudoScope)
+                return true;
+            // :hover, :active, :focus, :-webkit-drag relies on setting flags on
+            // ComputedStyle even if the whole selector may not match. That
+            // means we cannot share style between elements which may fail
+            // matching the same selector for different reasons. An example is
+            // [attr]:hover which both fail for :hover, but an element without
+            // attr won't reach the :hover selector, hence not setting the bit.
+            if (subContext.selector->isUserActionPseudoClass())
+                return true;
+        }
         if (!checkOne(subContext, result))
             return true;
     }
@@ -765,6 +775,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoVisited:
         return element.isLink() && context.visitedMatchType == VisitedMatchEnabled;
     case CSSSelector::PseudoDrag:
+        if (m_mode == SharingRules)
+            return true;
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
                 m_elementStyle->setAffectedByDrag();
@@ -775,6 +787,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         }
         return element.isDragged();
     case CSSSelector::PseudoFocus:
+        if (m_mode == SharingRules)
+            return true;
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
                 m_elementStyle->setAffectedByFocus();
@@ -785,6 +799,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         }
         return matchesFocusPseudoClass(element);
     case CSSSelector::PseudoHover:
+        if (m_mode == SharingRules)
+            return true;
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
                 m_elementStyle->setAffectedByHover();
@@ -799,6 +815,8 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
             return true;
         return element.hovered();
     case CSSSelector::PseudoActive:
+        if (m_mode == SharingRules)
+            return true;
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
                 m_elementStyle->setAffectedByActive();

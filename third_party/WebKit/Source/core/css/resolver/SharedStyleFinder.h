@@ -34,7 +34,7 @@ class RuleSet;
 class SpaceSplitString;
 class StyleResolver;
 
-class SharedStyleFinder {
+class CORE_EXPORT SharedStyleFinder {
     STACK_ALLOCATED();
 public:
     // RuleSets are passed non-const as the act of matching against them can cause them
@@ -76,6 +76,8 @@ private:
     Member<RuleSet> m_uncommonAttributeRuleSet;
     Member<StyleResolver> m_styleResolver;
     const ElementResolveContext& m_context;
+
+    friend class SharedStyleFinderTest;
 };
 
 } // namespace blink
