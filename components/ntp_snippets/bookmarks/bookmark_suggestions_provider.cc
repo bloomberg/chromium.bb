@@ -41,6 +41,7 @@ const char* kMinBookmarksParamName = "bookmarks_min_count";
 const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
 const char* kUseCreationDateFallbackForDaysParamName =
     "bookmarks_creation_date_fallback_days";
+const char* kShowIfEmptyParamName = "bookmarks_show_if_empty";
 
 base::Time GetThresholdTime() {
   std::string age_in_days_string = variations::GetVariationParamValueByFeature(
@@ -74,7 +75,7 @@ int GetMaxCount() {
   if (base::StringToInt(max_count_string, &max_count))
     return max_count;
   if (!max_count_string.empty())
-    LOG(WARNING) << "Failed to parse max bookmarks count" << max_count_string;
+    LOG(WARNING) << "Failed to parse max bookmarks count " << max_count_string;
 
   return kMaxBookmarks;
 }
@@ -86,9 +87,21 @@ int GetMinCount() {
   if (base::StringToInt(min_count_string, &min_count))
     return min_count;
   if (!min_count_string.empty())
-    LOG(WARNING) << "Failed to parse min bookmarks count" << min_count_string;
+    LOG(WARNING) << "Failed to parse min bookmarks count " << min_count_string;
 
   return kMinBookmarks;
+}
+
+bool ShouldShowIfEmpty() {
+  std::string show_if_empty = variations::GetVariationParamValueByFeature(
+      ntp_snippets::kBookmarkSuggestionsFeature, kShowIfEmptyParamName);
+  if (show_if_empty.empty() || show_if_empty == "false")
+    return false;
+  if (show_if_empty == "true")
+    return true;
+
+  LOG(WARNING) << "Failed to parse show if empty " << show_if_empty;
+  return false;
 }
 
 }  // namespace
@@ -151,7 +164,8 @@ CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
       l10n_util::GetStringUTF16(IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
       /* has_more_button */ true,
-      /* show_if_empty */ true);
+      /* show_if_empty */ ShouldShowIfEmpty() &&
+          bookmark_model_->HasBookmarks());
   // TODO(treib): Setting show_if_empty to true is a temporary hack, see
   // crbug.com/640568.
 }
