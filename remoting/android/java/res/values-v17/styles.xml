@@ -46,5 +46,10 @@
         <!--suppress NewApi -->
         <item name="android:elevation">4dp</item>
         <item name="contentInsetStart">@dimen/toolbar_content_inset_start</item>
+        <item name="titleTextAppearance">@style/ToolbarStyle.Title</item>
+    </style>
+
+    <style name="ToolbarStyle.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
     </style>
 </resources>
