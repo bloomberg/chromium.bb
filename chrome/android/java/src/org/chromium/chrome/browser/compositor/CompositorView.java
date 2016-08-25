@@ -9,11 +9,14 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.os.Build;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
@@ -21,7 +24,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
@@ -47,6 +49,7 @@ import org.chromium.ui.resources.ResourceManager;
 public class CompositorView
         extends SurfaceView implements ContentOffsetProvider, SurfaceHolder.Callback {
     private static final String TAG = "CompositorView";
+    private static final long NANOSECONDS_PER_MILLISECOND = 1000000;
 
     // Cache objects that should not be created every frame
     private final Rect mCacheViewport = new Rect();
@@ -60,6 +63,9 @@ public class CompositorView
     private int mPreviousWindowTop = -1;
 
     private int mLastLayerCount;
+
+    // A conservative estimate of when a frame is guaranteed to be presented after being submitted.
+    private long mFramePresentationDelay;
 
     // Resource Management
     private ResourceManager mResourceManager;
@@ -187,6 +193,18 @@ public class CompositorView
         setBackgroundColor(Color.WHITE);
         setVisibility(View.VISIBLE);
 
+        mFramePresentationDelay = 0;
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            Display display =
+                    ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
+                    .getDefaultDisplay();
+            long presentationDeadline = display.getPresentationDeadlineNanos()
+                    / NANOSECONDS_PER_MILLISECOND;
+            long vsyncPeriod = mWindowAndroid.getVsyncPeriodInMillis();
+            mFramePresentationDelay = Math.min(3 * vsyncPeriod,
+                    ((presentationDeadline + vsyncPeriod - 1) / vsyncPeriod) * vsyncPeriod);
+        }
+
         // Grab the Resource Manager
         mResourceManager = nativeGetResourceManager(mNativeCompositorView);
     }
@@ -289,12 +307,12 @@ public class CompositorView
     private void onSwapBuffersCompleted(int pendingSwapBuffersCount) {
         // Clear the color used to cover the uninitialized surface.
         if (getBackground() != null) {
-            post(new Runnable() {
+            postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     setBackgroundResource(0);
                 }
-            });
+            }, mFramePresentationDelay);
         }
 
         mRenderHost.onSwapBuffersCompleted(pendingSwapBuffersCount);
