@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
-
+#include <blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h>
 #include <GLES2/gl2.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -38,8 +37,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
     DCHECK(!mapped_);
-    DCHECK_EQ(stride_, gfx::RowSizeForBufferFormat(size_.width(),
-                                                   format_, 0));
+    DCHECK_EQ(stride_, gfx::RowSizeForBufferFormat(size_.width(), format_, 0));
     if (!shared_memory_->Map(offset_ +
                              gfx::BufferSizeForBufferFormat(size_, format_)))
       return false;
@@ -51,7 +49,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     DCHECK(mapped_);
     DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
     return reinterpret_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
-        gfx::BufferOffsetForBufferFormat(size_, format_, plane);
+           gfx::BufferOffsetForBufferFormat(size_, format_, plane);
   }
 
   void Unmap() override {

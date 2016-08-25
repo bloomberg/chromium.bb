@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h>
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
-#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
+#include "cc/layers/layer.h"
 #include "cc/proto/compositor_message.pb.h"
+#include "cc/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,8 +37,6 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override {
     return BlobImageSerializationProcessor::current();
   }
-  void DidCompleteSwapBuffers() override {}
-  void DidCommitAndDrawFrame() override {}
 
   void SendWebGestureEvent(
       int render_widget_id,
@@ -65,8 +65,13 @@ class MockBlimpCompositorClient : public BlimpCompositorClient {
 class BlimpCompositorForTesting : public BlimpCompositor {
  public:
   BlimpCompositorForTesting(int render_widget_id,
+                            cc::SurfaceManager* surface_manager,
+                            uint32_t surface_client_id,
                             BlimpCompositorClient* client)
-  : BlimpCompositor(render_widget_id, client) {}
+      : BlimpCompositor(render_widget_id,
+                        surface_manager,
+                        surface_client_id,
+                        client) {}
 
   void SendProto(const cc::proto::CompositorMessage& proto) {
     SendCompositorProto(proto);
@@ -81,18 +86,18 @@ class BlimpCompositorForTesting : public BlimpCompositor {
 
 class BlimpCompositorTest : public testing::Test {
  public:
-  BlimpCompositorTest():
-    render_widget_id_(1),
-    loop_(new base::MessageLoop),
-    window_(42u) {}
+  BlimpCompositorTest() : render_widget_id_(1), loop_(new base::MessageLoop) {}
 
   void SetUp() override {
-    compositor_.reset(new BlimpCompositorForTesting(render_widget_id_,
-                                                    &compositor_client_));
+    surface_manager_ = base::MakeUnique<cc::SurfaceManager>();
+    compositor_.reset(new BlimpCompositorForTesting(
+        render_widget_id_, surface_manager_.get(), surface_client_id_++,
+        &compositor_client_));
   }
 
   void TearDown() override {
     compositor_.reset();
+    surface_manager_.reset();
   }
 
   ~BlimpCompositorTest() override {}
@@ -121,32 +126,24 @@ class BlimpCompositorTest : public testing::Test {
   }
 
   int render_widget_id_;
+  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  uint32_t surface_client_id_ = 1;
   std::unique_ptr<base::MessageLoop> loop_;
   MockBlimpCompositorClient compositor_client_;
   std::unique_ptr<BlimpCompositorForTesting> compositor_;
-  gfx::AcceleratedWidget window_;
 };
 
-TEST_F(BlimpCompositorTest, ToggleVisibilityAndWidgetWithHost) {
-  // Make the compositor visible and give it a widget when we don't have a host.
+TEST_F(BlimpCompositorTest, ToggleVisibilityWithHost) {
+  // Make the compositor visible when we don't have a host.
   compositor_->SetVisible(true);
-  compositor_->SetAcceleratedWidget(window_);
   SendInitializeMessage();
 
   // Check that the visibility is set correctly on the host.
   EXPECT_NE(compositor_->host(), nullptr);
   EXPECT_TRUE(compositor_->host()->visible());
 
-  // Make the compositor invisible. This should drop the output surface and
-  // make the |host_| invisible.
+  // Make the compositor invisible. This should make the |host_| invisible.
   compositor_->SetVisible(false);
-  EXPECT_FALSE(compositor_->host()->visible());
-
-  // Make the compositor visible and release the widget. This should make the
-  // |host_| invisible.
-  compositor_->SetVisible(true);
-  EXPECT_TRUE(compositor_->host()->visible());
-  compositor_->ReleaseAcceleratedWidget();
   EXPECT_FALSE(compositor_->host()->visible());
 
   SendShutdownMessage();
@@ -157,7 +154,6 @@ TEST_F(BlimpCompositorTest, DestroyAndRecreateHost) {
   // Create the host and make it visible.
   SendInitializeMessage();
   compositor_->SetVisible(true);
-  compositor_->SetAcceleratedWidget(window_);
 
   // Destroy this host and recreate a new one. Make sure that the visibility is
   // set correctly on this host.

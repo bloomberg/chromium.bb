@@ -13,13 +13,18 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "blimp/client/core/compositor/delegated_output_surface.h"
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
-#include "blimp/client/feature/compositor/blimp_delegating_output_surface.h"
-#include "blimp/client/feature/compositor/blimp_output_surface.h"
+#include "blimp/net/blimp_stats.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/output/output_surface.h"
 #include "cc/proto/compositor_message.pb.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "net/base/net_errors.h"
 #include "ui/gl/gl_surface.h"
@@ -27,48 +32,59 @@
 namespace blimp {
 namespace client {
 
+namespace {
+
+void SatisfyCallback(cc::SurfaceManager* manager,
+                     const cc::SurfaceSequence& sequence) {
+  std::vector<uint32_t> sequences;
+  sequences.push_back(sequence.sequence);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
+}
+
+void RequireCallback(cc::SurfaceManager* manager,
+                     const cc::SurfaceId& id,
+                     const cc::SurfaceSequence& sequence) {
+  cc::Surface* surface = manager->GetSurfaceForId(id);
+  if (!surface) {
+    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
+}
+
+}  // namespace
+
 BlimpCompositor::BlimpCompositor(int render_widget_id,
+                                 cc::SurfaceManager* surface_manager,
+                                 uint32_t surface_client_id,
                                  BlimpCompositorClient* client)
     : render_widget_id_(render_widget_id),
       client_(client),
-      window_(gfx::kNullAcceleratedWidget),
       host_should_be_visible_(false),
-      output_surface_request_pending_(false),
-      remote_proto_channel_receiver_(nullptr) {}
+      output_surface_(nullptr),
+      surface_manager_(surface_manager),
+      surface_id_allocator_(
+          base::MakeUnique<cc::SurfaceIdAllocator>(surface_client_id)),
+      layer_(cc::Layer::Create()),
+      remote_proto_channel_receiver_(nullptr),
+      weak_factory_(this) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
+}
 
 BlimpCompositor::~BlimpCompositor() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (host_)
     DestroyLayerTreeHost();
+  surface_manager_->InvalidateSurfaceClientId(
+      surface_id_allocator_->client_id());
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
   host_should_be_visible_ = visible;
-  SetVisibleInternal(host_should_be_visible_);
-}
-
-void BlimpCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
-  if (widget == window_)
-    return;
-
-  DCHECK(window_ == gfx::kNullAcceleratedWidget);
-  window_ = widget;
-
-  // The compositor should not be visible if there is no output surface.
-  DCHECK(!host_ || !host_->visible());
-
-  // This will properly set visibility and will build the output surface if
-  // necessary.
-  SetVisibleInternal(host_should_be_visible_);
-}
-
-void BlimpCompositor::ReleaseAcceleratedWidget() {
-  if (window_ == gfx::kNullAcceleratedWidget)
-    return;
-
-  // Hide the compositor and drop the output surface if necessary.
-  SetVisibleInternal(false);
-
-  window_ = gfx::kNullAcceleratedWidget;
+  if (host_)
+    host_->SetVisible(host_should_be_visible_);
 }
 
 bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
@@ -77,46 +93,31 @@ bool BlimpCompositor::OnTouchEvent(const ui::MotionEvent& motion_event) {
   return false;
 }
 
-void BlimpCompositor::WillBeginMainFrame() {}
-
-void BlimpCompositor::DidBeginMainFrame() {}
-
-void BlimpCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {}
-
-void BlimpCompositor::BeginMainFrameNotExpectedSoon() {}
-
-void BlimpCompositor::UpdateLayerTreeHost() {}
-
-void BlimpCompositor::ApplyViewportDeltas(
-    const gfx::Vector2dF& inner_delta,
-    const gfx::Vector2dF& outer_delta,
-    const gfx::Vector2dF& elastic_overscroll_delta,
-    float page_scale,
-    float top_controls_delta) {}
-
 void BlimpCompositor::RequestNewOutputSurface() {
-  output_surface_request_pending_ = true;
-  HandlePendingOutputSurfaceRequest();
+  DCHECK(!surface_factory_)
+      << "Any connection to the old output surface should have been destroyed";
+
+  scoped_refptr<BlimpContextProvider> compositor_context_provider =
+      BlimpContextProvider::Create(gfx::kNullAcceleratedWidget,
+                                   client_->GetGpuMemoryBufferManager());
+
+  // TODO(khushalsagar): Make a worker context and bind it to the current
+  // thread:
+  // Worker context is bound to the main thread in RenderThreadImpl. One day
+  // that will change and then this will have to be removed.
+  // worker_context_provider->BindToCurrentThread();
+
+  std::unique_ptr<DelegatedOutputSurface> delegated_output_surface =
+      base::MakeUnique<DelegatedOutputSurface>(
+          std::move(compositor_context_provider), nullptr,
+          base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
+
+  host_->SetOutputSurface(std::move(delegated_output_surface));
 }
-
-void BlimpCompositor::DidInitializeOutputSurface() {
-}
-
-void BlimpCompositor::DidFailToInitializeOutputSurface() {}
-
-void BlimpCompositor::WillCommit() {}
-
-void BlimpCompositor::DidCommit() {}
 
 void BlimpCompositor::DidCommitAndDrawFrame() {
-  client_->DidCommitAndDrawFrame();
+  BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
 }
-
-void BlimpCompositor::DidCompleteSwapBuffers() {
-  client_->DidCompleteSwapBuffers();
-}
-
-void BlimpCompositor::DidCompletePageScaleAnimation() {}
 
 void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
   remote_proto_channel_receiver_ = receiver;
@@ -164,29 +165,74 @@ void BlimpCompositor::SendWebGestureEvent(
   client_->SendWebGestureEvent(render_widget_id_, gesture_event);
 }
 
-void BlimpCompositor::SetVisibleInternal(bool visible) {
-  if (!host_)
+void BlimpCompositor::BindToOutputSurface(
+    base::WeakPtr<BlimpOutputSurface> output_surface) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!output_surface_);
+  DCHECK(!surface_factory_);
+
+  output_surface_ = output_surface;
+  surface_factory_ =
+      base::MakeUnique<cc::SurfaceFactory>(surface_manager_, this);
+}
+
+void BlimpCompositor::SwapCompositorFrame(cc::CompositorFrame frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(surface_factory_);
+
+  cc::RenderPass* root_pass =
+      frame.delegated_frame_data->render_pass_list.back().get();
+  gfx::Size surface_size = root_pass->output_rect.size();
+
+  if (surface_id_.is_null() || current_surface_size_ != surface_size) {
+    DestroyDelegatedContent();
+    DCHECK(layer_->children().empty());
+
+    surface_id_ = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(surface_id_);
+    current_surface_size_ = surface_size;
+
+    // Manager must outlive compositors using it.
+    scoped_refptr<cc::SurfaceLayer> content_layer = cc::SurfaceLayer::Create(
+        base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
+        base::Bind(&RequireCallback, base::Unretained(surface_manager_)));
+    content_layer->SetSurfaceId(surface_id_, 1.f, surface_size);
+    content_layer->SetBounds(current_surface_size_);
+    content_layer->SetIsDrawable(true);
+    content_layer->SetContentsOpaque(true);
+
+    layer_->AddChild(content_layer);
+  }
+
+  surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
+                                          base::Closure());
+}
+
+void BlimpCompositor::UnbindOutputSurface() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(surface_factory_);
+
+  DestroyDelegatedContent();
+  surface_factory_.reset();
+  output_surface_ = nullptr;
+}
+
+void BlimpCompositor::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {
+  DCHECK(surface_factory_);
+  compositor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&BlimpOutputSurface::ReclaimCompositorResources,
+                            output_surface_, resources));
+}
+
+void BlimpCompositor::DestroyDelegatedContent() {
+  if (surface_id_.is_null())
     return;
 
-  VLOG(1) << "Setting visibility to: " << visible
-          << " for render widget: " << render_widget_id_;
-
-  if (visible && window_ != gfx::kNullAcceleratedWidget) {
-    // If we're supposed to be visible and we have a valid
-    // gfx::AcceleratedWidget make our compositor visible. If the compositor
-    // had an outstanding output surface request, trigger the request again so
-    // we build the output surface.
-    host_->SetVisible(true);
-    if (output_surface_request_pending_)
-      HandlePendingOutputSurfaceRequest();
-  } else if (!visible) {
-    // If not visible, hide the compositor and have it drop it's output
-    // surface.
-    host_->SetVisible(false);
-    if (!host_->output_surface_lost()) {
-      host_->ReleaseOutputSurface();
-    }
-  }
+  // Remove any references for the surface layer that uses this |surface_id_|.
+  layer_->RemoveAllChildren();
+  surface_factory_->Destroy(surface_id_);
+  surface_id_ = cc::SurfaceId();
 }
 
 void BlimpCompositor::CreateLayerTreeHost(
@@ -205,22 +251,16 @@ void BlimpCompositor::CreateLayerTreeHost(
   params.settings = client_->GetLayerTreeSettings();
   params.animation_host = cc::AnimationHost::CreateMainInstance();
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
-      client_->GetCompositorTaskRunner();
+  compositor_task_runner_ = client_->GetCompositorTaskRunner();
 
-  host_ =
-      cc::LayerTreeHost::CreateRemoteClient(this /* remote_proto_channel */,
-                                            compositor_task_runner, &params);
-
-  // Now that we have a host, set the visiblity on it correctly.
-  SetVisibleInternal(host_should_be_visible_);
+  host_ = cc::LayerTreeHost::CreateRemoteClient(
+      this /* remote_proto_channel */, compositor_task_runner_, &params);
+  host_->SetVisible(host_should_be_visible_);
 
   DCHECK(!input_manager_);
-  input_manager_ =
-      BlimpInputManager::Create(this,
-                                base::ThreadTaskRunnerHandle::Get(),
-                                compositor_task_runner,
-                                host_->GetInputHandler());
+  input_manager_ = BlimpInputManager::Create(
+      this, base::ThreadTaskRunnerHandle::Get(), compositor_task_runner_,
+      host_->GetInputHandler());
 }
 
 void BlimpCompositor::DestroyLayerTreeHost() {
@@ -229,7 +269,8 @@ void BlimpCompositor::DestroyLayerTreeHost() {
           << render_widget_id_;
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
-  SetVisibleInternal(false);
+  DestroyDelegatedContent();
+  surface_factory_.reset();
 
   // Destroy the old LayerTreeHost state.
   host_.reset();
@@ -240,47 +281,8 @@ void BlimpCompositor::DestroyLayerTreeHost() {
   // BlimpInputManager.
   input_manager_.reset();
 
-  // Reset other state.
-  output_surface_request_pending_ = false;
-
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);
-}
-
-void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
-  DCHECK(output_surface_request_pending_);
-
-  // We might have had a request from a LayerTreeHost that was then
-  // hidden (and hidden means we don't have a native surface).
-  // Also make sure we only handle this once.
-  if (!host_->visible() || window_ == gfx::kNullAcceleratedWidget)
-    return;
-
-  scoped_refptr<BlimpContextProvider> display_context_provider =
-      BlimpContextProvider::Create(window_,
-                                   client_->GetGpuMemoryBufferManager());
-  scoped_refptr<BlimpContextProvider> compositor_context_provider =
-      BlimpContextProvider::Create(gfx::kNullAcceleratedWidget,
-                                   client_->GetGpuMemoryBufferManager());
-  scoped_refptr<BlimpContextProvider> worker_context_provider = nullptr;
-  // TODO(khushalsagar): Make a worker context and bind it to the current
-  // thread:
-  // Worker context is bound to the main thread in RenderThreadImpl. One day
-  // that will change and then this will have to be removed.
-  // worker_context_provider->BindToCurrentThread();
-
-  auto display_output_surface =
-      base::MakeUnique<BlimpOutputSurface>(std::move(display_context_provider));
-  auto delegating_output_surface =
-      base::MakeUnique<BlimpDelegatingOutputSurface>(
-          std::move(compositor_context_provider),
-          std::move(worker_context_provider), std::move(display_output_surface),
-          client_->GetGpuMemoryBufferManager(),
-          host_->settings().renderer_settings,
-          client_->GetCompositorTaskRunner().get());
-
-  host_->SetOutputSurface(std::move(delegating_output_surface));
-  output_surface_request_pending_ = false;
 }
 
 }  // namespace client

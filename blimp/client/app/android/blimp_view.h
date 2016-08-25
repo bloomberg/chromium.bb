@@ -18,13 +18,13 @@ class Size;
 
 namespace blimp {
 namespace client {
-
+class BrowserCompositor;
 class RenderWidgetFeature;
 
 // The native component of org.chromium.blimp.BlimpView.  This builds and
 // maintains a BlimpCompositorAndroid and handles notifying the compositor of
 // SurfaceView surface changes (size, creation, destruction, etc.).
-class BlimpView : public BlimpCompositorManagerClient {
+class BlimpView {
  public:
   static bool RegisterJni(JNIEnv* env);
 
@@ -42,8 +42,12 @@ class BlimpView : public BlimpCompositorManagerClient {
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
-  void SetNeedsComposite(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& jobj);
+  void OnContentAreaSizeChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint width,
+      jint height,
+      jfloat dpToPx);
   void OnSurfaceChanged(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& jobj,
                         jint format,
@@ -54,9 +58,6 @@ class BlimpView : public BlimpCompositorManagerClient {
                         const base::android::JavaParamRef<jobject>& jobj);
   void OnSurfaceDestroyed(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj);
-  void SetVisibility(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jobj,
-                     jboolean visible);
   jboolean OnTouchEvent(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -90,16 +91,16 @@ class BlimpView : public BlimpCompositorManagerClient {
  private:
   virtual ~BlimpView();
 
-  void ReleaseAcceleratedWidget();
+  void OnSwapBuffersCompleted();
 
-  // BlimpCompositorManagerClient implementation.
-  void OnSwapBuffersCompleted() override;
-  void DidCommitAndDrawFrame() override;
+  void SetSurface(jobject surface);
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
 
   const float device_scale_factor_;
+
+  std::unique_ptr<BrowserCompositor> compositor_;
 
   std::unique_ptr<BlimpCompositorManagerAndroid> compositor_manager_;
 
@@ -108,6 +109,8 @@ class BlimpView : public BlimpCompositorManagerClient {
   int current_surface_format_;
 
   gfx::AcceleratedWidget window_;
+
+  base::WeakPtrFactory<BlimpView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpView);
 };

@@ -26,7 +26,9 @@ BlimpCompositorManagerAndroid::Create(
     const gfx::Size& real_size,
     const gfx::Size& size,
     RenderWidgetFeature* render_widget_feature,
-    BlimpCompositorManagerClient* client) {
+    cc::SurfaceManager* surface_manager,
+    BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    SurfaceIdAllocationCallback callback) {
   gfx::Size device_size(real_size);
   bool real_size_supported = true;
   if (device_size.IsEmpty()) {
@@ -34,15 +36,21 @@ BlimpCompositorManagerAndroid::Create(
     device_size = size;
   }
   return base::WrapUnique(new BlimpCompositorManagerAndroid(
-      device_size, real_size_supported, render_widget_feature, client));
+      device_size, real_size_supported, render_widget_feature, surface_manager,
+      gpu_memory_buffer_manager, callback));
 }
 
 BlimpCompositorManagerAndroid::BlimpCompositorManagerAndroid(
     const gfx::Size& size,
     bool real_size_supported,
     RenderWidgetFeature* render_widget_feature,
-    BlimpCompositorManagerClient* client)
-    : BlimpCompositorManager(render_widget_feature, client),
+    cc::SurfaceManager* surface_manager,
+    BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    SurfaceIdAllocationCallback callback)
+    : BlimpCompositorManager(render_widget_feature,
+                             surface_manager,
+                             gpu_memory_buffer_manager,
+                             callback),
       portrait_width_(std::min(size.width(), size.height())),
       landscape_width_(std::max(size.width(), size.height())),
       real_size_supported_(real_size_supported) {}

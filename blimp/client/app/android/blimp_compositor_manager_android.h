@@ -36,19 +36,23 @@ class BlimpCompositorManagerAndroid : public BlimpCompositorManager {
       const gfx::Size& real_size,
       const gfx::Size& size,
       RenderWidgetFeature* render_widget_feature,
-      BlimpCompositorManagerClient* client);
+      cc::SurfaceManager* surface_manager,
+      BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+      SurfaceIdAllocationCallback callback);
 
   ~BlimpCompositorManagerAndroid() override;
 
  protected:
   // |size| is the size of the display.  |real_size_supported| determines
   // whether or not this size is the real display size or the display size
-  // not including the system decorations.  |dp_to_px| is the scale factor that
-  // is required to convert from dp (device pixels) to px.
-  BlimpCompositorManagerAndroid(const gfx::Size& size,
-                                bool real_size_supported,
-                                RenderWidgetFeature* render_widget_feature,
-                                BlimpCompositorManagerClient* client);
+  // not including the system decorations.
+  BlimpCompositorManagerAndroid(
+      const gfx::Size& size,
+      bool real_size_supported,
+      RenderWidgetFeature* render_widget_feature,
+      cc::SurfaceManager* surface_manager,
+      BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+      SurfaceIdAllocationCallback callback);
 
   // BlimpCompositor implementation.
   void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings) override;

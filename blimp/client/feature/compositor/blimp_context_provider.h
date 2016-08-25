@@ -48,9 +48,8 @@ class BlimpContextProvider : public cc::ContextProvider {
   uint32_t GetCopyTextureInternalFormat();
 
  protected:
-  BlimpContextProvider(
-      gfx::AcceleratedWidget widget,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+  BlimpContextProvider(gfx::AcceleratedWidget widget,
+                       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~BlimpContextProvider() override;
 
  private:

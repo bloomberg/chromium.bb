@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"
+#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/proto/compositor_message.pb.h"
@@ -23,14 +24,21 @@ const int kDummyTabId = 0;
 
 BlimpCompositorManager::BlimpCompositorManager(
     RenderWidgetFeature* render_widget_feature,
-    BlimpCompositorManagerClient* client)
-    : visible_(false),
-      window_(gfx::kNullAcceleratedWidget),
-      gpu_memory_buffer_manager_(new BlimpGpuMemoryBufferManager),
-      active_compositor_(nullptr),
-      render_widget_feature_(render_widget_feature),
-      client_(client) {
+    cc::SurfaceManager* surface_manager,
+    BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    SurfaceIdAllocationCallback callback)
+    : render_widget_feature_(render_widget_feature),
+      surface_manager_(surface_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_id_allocation_callback_(callback),
+      visible_(false),
+      layer_(cc::Layer::Create()),
+      active_compositor_(nullptr) {
   DCHECK(render_widget_feature_);
+  DCHECK(surface_manager_);
+  DCHECK(gpu_memory_buffer_manager_);
+  DCHECK(!surface_id_allocation_callback_.is_null());
+
   render_widget_feature_->SetDelegate(kDummyTabId, this);
 }
 
@@ -43,20 +51,7 @@ BlimpCompositorManager::~BlimpCompositorManager() {
 void BlimpCompositorManager::SetVisible(bool visible) {
   visible_ = visible;
   if (active_compositor_)
-    active_compositor_->SetVisible(visible);
-}
-
-void BlimpCompositorManager::SetAcceleratedWidget(
-    gfx::AcceleratedWidget widget) {
-  window_ = widget;
-  if (active_compositor_)
-    active_compositor_->SetAcceleratedWidget(widget);
-}
-
-void BlimpCompositorManager::ReleaseAcceleratedWidget() {
-  window_ = gfx::kNullAcceleratedWidget;
-  if (active_compositor_)
-    active_compositor_->ReleaseAcceleratedWidget();
+    active_compositor_->SetVisible(visible_);
 }
 
 bool BlimpCompositorManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
@@ -72,15 +67,19 @@ void BlimpCompositorManager::GenerateLayerTreeSettings(
 
 std::unique_ptr<BlimpCompositor> BlimpCompositorManager::CreateBlimpCompositor(
     int render_widget_id,
+    cc::SurfaceManager* surface_manager,
+    uint32_t surface_client_id,
     BlimpCompositorClient* client) {
-  return base::MakeUnique<BlimpCompositor>(render_widget_id, client);
+  return base::MakeUnique<BlimpCompositor>(render_widget_id, surface_manager,
+                                           surface_client_id, client);
 }
 
 void BlimpCompositorManager::OnRenderWidgetCreated(int render_widget_id) {
   CHECK(!GetCompositor(render_widget_id));
 
-  compositors_[render_widget_id] = CreateBlimpCompositor(render_widget_id,
-                                                         this);
+  compositors_[render_widget_id] =
+      CreateBlimpCompositor(render_widget_id, surface_manager_,
+                            surface_id_allocation_callback_.Run(), this);
 }
 
 void BlimpCompositorManager::OnRenderWidgetInitialized(int render_widget_id) {
@@ -88,18 +87,20 @@ void BlimpCompositorManager::OnRenderWidgetInitialized(int render_widget_id) {
       active_compositor_->render_widget_id() == render_widget_id)
     return;
 
+  // Detach the content layer from the old compositor.
+  layer_->RemoveAllChildren();
+
   if (active_compositor_) {
     VLOG(1) << "Hiding currently active compositor for render widget: "
             << active_compositor_->render_widget_id();
     active_compositor_->SetVisible(false);
-    active_compositor_->ReleaseAcceleratedWidget();
   }
 
   active_compositor_ = GetCompositor(render_widget_id);
   CHECK(active_compositor_);
 
   active_compositor_->SetVisible(visible_);
-  active_compositor_->SetAcceleratedWidget(window_);
+  layer_->AddChild(active_compositor_->layer());
 }
 
 void BlimpCompositorManager::OnRenderWidgetDeleted(int render_widget_id) {
@@ -107,8 +108,10 @@ void BlimpCompositorManager::OnRenderWidgetDeleted(int render_widget_id) {
   CHECK(it != compositors_.end());
 
   // Reset the |active_compositor_| if that is what we're destroying right now.
-  if (active_compositor_ == it->second.get())
+  if (active_compositor_ == it->second.get()) {
+    layer_->RemoveAllChildren();
     active_compositor_ = nullptr;
+  }
 
   compositors_.erase(it);
 }
@@ -141,16 +144,6 @@ cc::LayerTreeSettings* BlimpCompositorManager::GetLayerTreeSettings() {
   return settings_.get();
 }
 
-void BlimpCompositorManager::DidCompleteSwapBuffers() {
-  DCHECK(client_);
-  client_->OnSwapBuffersCompleted();
-}
-
-void BlimpCompositorManager::DidCommitAndDrawFrame() {
-  DCHECK(client_);
-  client_->DidCommitAndDrawFrame();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 BlimpCompositorManager::GetCompositorTaskRunner() {
   if (compositor_thread_)
@@ -180,7 +173,7 @@ cc::TaskGraphRunner* BlimpCompositorManager::GetTaskGraphRunner() {
 
 gpu::GpuMemoryBufferManager*
 BlimpCompositorManager::GetGpuMemoryBufferManager() {
-  return gpu_memory_buffer_manager_.get();
+  return gpu_memory_buffer_manager_;
 }
 
 cc::ImageSerializationProcessor*

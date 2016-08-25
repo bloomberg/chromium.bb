@@ -24,7 +24,10 @@ group("public") {
 # //blimp/client/public to ensure there are no circular dependencies or
 # duplicate symbols regardless of whether enable_blimp_client is set or not.
 source_set("public_headers") {
-  visibility = [ "//blimp/client/*" ]
+  visibility = [
+    "//blimp/client/*",
+    "//blimp/test/*",
+  ]
 
   sources = [
     "blimp_client_context.h",

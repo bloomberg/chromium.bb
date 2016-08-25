@@ -12,9 +12,13 @@ source_set("test") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
+    "//blimp/client/core",
     "//blimp/client/public:public_headers",
-    "//google_apis:google_apis",
     "//google_apis:test_support",
+    "//mojo/edk/system",
+    "//net",
+    "//ui/gfx",
   ]
 
   public_deps = [

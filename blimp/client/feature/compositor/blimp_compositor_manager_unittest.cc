@@ -5,7 +5,9 @@
 #include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "cc/proto/compositor_message.pb.h"
+#include "cc/surfaces/surface_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
@@ -16,6 +18,7 @@ using testing::Sequence;
 
 namespace blimp {
 namespace client {
+namespace {
 
 class MockRenderWidgetFeature : public RenderWidgetFeature {
  public:
@@ -32,13 +35,16 @@ class MockRenderWidgetFeature : public RenderWidgetFeature {
 
 class MockBlimpCompositor : public BlimpCompositor {
  public :
-  explicit MockBlimpCompositor(const int render_widget_id)
-  : BlimpCompositor(render_widget_id, nullptr) {
-  }
+  explicit MockBlimpCompositor(const int render_widget_id,
+                               cc::SurfaceManager* surface_manager,
+                               int surface_client_id,
+                               BlimpCompositorClient* client)
+      : BlimpCompositor(render_widget_id,
+                        surface_manager,
+                        surface_client_id,
+                        client) {}
 
   MOCK_METHOD1(SetVisible, void(bool));
-  MOCK_METHOD1(SetAcceleratedWidget, void(gfx::AcceleratedWidget));
-  MOCK_METHOD0(ReleaseAcceleratedWidget, void());
   MOCK_METHOD1(OnTouchEvent, bool(const ui::MotionEvent& motion_event));
 
   void OnCompositorMessageReceived(
@@ -52,15 +58,24 @@ class MockBlimpCompositor : public BlimpCompositor {
 class BlimpCompositorManagerForTesting : public BlimpCompositorManager {
  public:
   explicit BlimpCompositorManagerForTesting(
-      RenderWidgetFeature* render_widget_feature)
-      : BlimpCompositorManager(render_widget_feature, nullptr) {}
+      RenderWidgetFeature* render_widget_feature,
+      cc::SurfaceManager* surface_manager,
+      BlimpGpuMemoryBufferManager* gpu_memory_buffer_manager,
+      SurfaceIdAllocationCallback callback)
+      : BlimpCompositorManager(render_widget_feature,
+                               surface_manager,
+                               gpu_memory_buffer_manager,
+                               callback) {}
 
   using BlimpCompositorManager::GetCompositor;
 
   std::unique_ptr<BlimpCompositor> CreateBlimpCompositor(
       int render_widget_id,
+      cc::SurfaceManager* surface_manager,
+      uint32_t surface_client_id,
       BlimpCompositorClient* client) override {
-    return base::MakeUnique<MockBlimpCompositor>(render_widget_id);
+    return base::MakeUnique<MockBlimpCompositor>(
+        render_widget_id, surface_manager, surface_client_id, client);
   }
 };
 
@@ -70,13 +85,22 @@ class BlimpCompositorManagerTest : public testing::Test {
     EXPECT_CALL(render_widget_feature_, SetDelegate(_, _)).Times(1);
     EXPECT_CALL(render_widget_feature_, RemoveDelegate(_)).Times(1);
 
-    compositor_manager_.reset(
-        new BlimpCompositorManagerForTesting(&render_widget_feature_));
+    surface_manager_ = base::MakeUnique<cc::SurfaceManager>();
+    compositor_manager_.reset(new BlimpCompositorManagerForTesting(
+        &render_widget_feature_, surface_manager_.get(),
+        &gpu_memory_buffer_manager_,
+        base::Bind(&BlimpCompositorManagerTest::AllocateId,
+                   base::Unretained(this))));
   }
 
   void TearDown() override {
+    mock_compositor1_ = nullptr;
+    mock_compositor2_ = nullptr;
     compositor_manager_.reset();
+    surface_manager_.reset();
   }
+
+  uint32_t AllocateId() { return ++id_; }
 
   void SetUpCompositors() {
     delegate()->OnRenderWidgetCreated(1);
@@ -100,7 +124,10 @@ class BlimpCompositorManagerTest : public testing::Test {
         (compositor_manager_.get());
   }
 
+  uint32_t id_ = 1;
   std::unique_ptr<BlimpCompositorManagerForTesting> compositor_manager_;
+  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
   MockRenderWidgetFeature render_widget_feature_;
   MockBlimpCompositor* mock_compositor1_;
   MockBlimpCompositor* mock_compositor2_;
@@ -117,8 +144,6 @@ TEST_F(BlimpCompositorManagerTest, ForwardsMessagesToCorrectCompositor) {
               MockableOnCompositorMessageReceived(_)).Times(1);
   EXPECT_CALL(*mock_compositor1_,
                 SetVisible(false)).Times(1);
-  EXPECT_CALL(*mock_compositor1_,
-                SetAcceleratedWidget(gfx::kNullAcceleratedWidget)).Times(1);
 
   delegate()->OnCompositorMessageReceived(
       1, base::WrapUnique(new cc::proto::CompositorMessage));
@@ -137,40 +162,30 @@ TEST_F(BlimpCompositorManagerTest, ForwardsViewEventsToCorrectCompositor) {
   SetUpCompositors();
 
   EXPECT_CALL(*mock_compositor1_, SetVisible(true));
-  EXPECT_CALL(*mock_compositor1_, SetAcceleratedWidget(
-      gfx::kNullAcceleratedWidget));
   EXPECT_CALL(*mock_compositor1_, OnTouchEvent(_));
   EXPECT_CALL(*mock_compositor1_, SetVisible(false));
-  EXPECT_CALL(*mock_compositor1_, ReleaseAcceleratedWidget());
 
   EXPECT_CALL(*mock_compositor2_, SetVisible(true));
-  EXPECT_CALL(*mock_compositor2_, SetAcceleratedWidget(
-      gfx::kNullAcceleratedWidget));
   EXPECT_CALL(*mock_compositor2_, SetVisible(false));
-  EXPECT_CALL(*mock_compositor2_, ReleaseAcceleratedWidget());
 
-  // Make the compositor manager visible and give it the accelerated widget
-  // while we don't have any render widget initialized.
+  // Make the compositor manager visible while we don't have any render widget
+  // initialized.
   compositor_manager_->SetVisible(true);
-  compositor_manager_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 
   // Initialize the first render widget. This should propagate the visibility,
-  // the accelerated widget and the touch events to the corresponding
-  // compositor.
+  // and the touch events to the corresponding compositor.
   delegate()->OnRenderWidgetInitialized(1);
   compositor_manager_->OnTouchEvent(
       ui::MotionEventGeneric(ui::MotionEvent::Action::ACTION_NONE,
                              base::TimeTicks::Now(), ui::PointerProperties()));
 
   // Now initialize the second render widget. This should swap the compositors
-  // and make the first one invisible and release the accelerated widget.
+  // and make the first one invisible.
   delegate()->OnRenderWidgetInitialized(2);
 
-  // Now make the compositor manager invisible and release the accelerated
-  // widget from it. This should make the current compositor invisible and
-  // release the widget.
+  // Now make the compositor manager invisible. This should make the current
+  // compositor invisible.
   compositor_manager_->SetVisible(false);
-  compositor_manager_->ReleaseAcceleratedWidget();
 
   // Destroy all the widgets. We should not be receiving any calls for the view
   // events forwarded after this.
@@ -180,5 +195,6 @@ TEST_F(BlimpCompositorManagerTest, ForwardsViewEventsToCorrectCompositor) {
   compositor_manager_->SetVisible(true);
 }
 
+}  // namespace
 }  // namespace client
 }  // namespace blimp

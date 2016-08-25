@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -25,7 +26,8 @@ import org.chromium.ui.UiUtils;
  * a native compositor.
  */
 @JNINamespace("blimp::client")
-public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
+public class BlimpView
+        extends SurfaceView implements SurfaceHolder.Callback, View.OnLayoutChangeListener {
     private long mNativeBlimpViewPtr;
 
     /**
@@ -37,6 +39,7 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
         super(context, attrs);
         setFocusable(true);
         setFocusableInTouchMode(true);
+        addOnLayoutChangeListener(this);
     }
 
     /**
@@ -76,21 +79,13 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Triggers a redraw of the native compositor, pushing a new frame.
-     */
-    public void setNeedsComposite() {
+    // View.OnLayoutChangeListener implementation.
+    @Override
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
         if (mNativeBlimpViewPtr == 0) return;
-        nativeSetNeedsComposite(mNativeBlimpViewPtr);
-    }
-
-    /**
-     * Toggles whether or not the native compositor draws to this {@link View} or not.
-     * @param visible Whether or not the compositor should draw or not.
-     */
-    public void setCompositorVisibility(boolean visible) {
-        if (mNativeBlimpViewPtr == 0) return;
-        nativeSetVisibility(mNativeBlimpViewPtr, visible);
+        nativeOnContentAreaSizeChanged(mNativeBlimpViewPtr, right - left, bottom - top,
+                getContext().getResources().getDisplayMetrics().density);
     }
 
     // View overrides.
@@ -191,12 +186,12 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
     private native long nativeInit(BlimpClientSession blimpClientSession, int physicalWidth,
             int physicalHeight, int displayWidth, int displayHeight, float dpToPixel);
     private native void nativeDestroy(long nativeBlimpView);
-    private native void nativeSetNeedsComposite(long nativeBlimpView);
+    private native void nativeOnContentAreaSizeChanged(
+            long nativeBlimpView, int width, int height, float dpToPx);
     private native void nativeOnSurfaceChanged(
             long nativeBlimpView, int format, int width, int height, Surface surface);
     private native void nativeOnSurfaceCreated(long nativeBlimpView);
     private native void nativeOnSurfaceDestroyed(long nativeBlimpView);
-    private native void nativeSetVisibility(long nativeBlimpView, boolean visible);
     private native boolean nativeOnTouchEvent(
             long nativeBlimpView, MotionEvent event,
             long timeMs, int action, int pointerCount, int historySize, int actionIndex,

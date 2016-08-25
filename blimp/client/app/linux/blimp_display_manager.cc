@@ -4,7 +4,9 @@
 
 #include "blimp/client/app/linux/blimp_display_manager.h"
 
+#include "blimp/client/app/compositor/browser_compositor.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/feature/compositor/blimp_compositor_manager.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,24 +24,28 @@ BlimpDisplayManager::BlimpDisplayManager(
     : device_pixel_ratio_(1.f),
       delegate_(delegate),
       tab_control_feature_(tab_control_feature),
-      blimp_compositor_manager_(
-          new BlimpCompositorManager(render_widget_feature, this)),
+      compositor_(base::MakeUnique<BrowserCompositor>()),
       platform_window_(new ui::X11Window(this)) {
+  blimp_compositor_manager_ = base::MakeUnique<BlimpCompositorManager>(
+      render_widget_feature, BrowserCompositor::GetSurfaceManager(),
+      BrowserCompositor::GetGpuMemoryBufferManager(),
+      base::Bind(&BrowserCompositor::AllocateSurfaceClientId));
   platform_window_->SetBounds(gfx::Rect(window_size));
   platform_window_->Show();
+
   tab_control_feature_->SetSizeAndScale(platform_window_->GetBounds().size(),
                                         device_pixel_ratio_);
 
-  blimp_compositor_manager_->SetVisible(true);
+  compositor_->SetSize(platform_window_->GetBounds().size());
+  compositor_->SetContentLayer(blimp_compositor_manager_->layer());
 }
 
 BlimpDisplayManager::~BlimpDisplayManager() {}
 
 void BlimpDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
+  compositor_->SetSize(new_bounds.size());
   tab_control_feature_->SetSizeAndScale(new_bounds.size(), device_pixel_ratio_);
 }
-
-void BlimpDisplayManager::OnDamageRect(const gfx::Rect& damaged_region) {}
 
 void BlimpDisplayManager::DispatchEvent(ui::Event* event) {
   // TODO(dtrainor): Look into using web_input_event_aura to translate these to
@@ -48,6 +54,7 @@ void BlimpDisplayManager::DispatchEvent(ui::Event* event) {
 
 void BlimpDisplayManager::OnCloseRequest() {
   blimp_compositor_manager_->SetVisible(false);
+  compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   platform_window_->Close();
 }
 
@@ -56,11 +63,6 @@ void BlimpDisplayManager::OnClosed() {
     delegate_->OnClosed();
 }
 
-void BlimpDisplayManager::OnWindowStateChanged(
-    ui::PlatformWindowState new_state) {}
-
-void BlimpDisplayManager::OnLostCapture() {}
-
 void BlimpDisplayManager::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
@@ -68,19 +70,16 @@ void BlimpDisplayManager::OnAcceleratedWidgetAvailable(
   tab_control_feature_->SetSizeAndScale(platform_window_->GetBounds().size(),
                                         device_pixel_ratio_);
 
-  if (widget != gfx::kNullAcceleratedWidget)
-    blimp_compositor_manager_->SetAcceleratedWidget(widget);
+  if (widget != gfx::kNullAcceleratedWidget) {
+    blimp_compositor_manager_->SetVisible(true);
+    compositor_->SetAcceleratedWidget(widget);
+  }
 }
 
 void BlimpDisplayManager::OnAcceleratedWidgetDestroyed() {
-  blimp_compositor_manager_->ReleaseAcceleratedWidget();
+  blimp_compositor_manager_->SetVisible(false);
+  compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
-
-void BlimpDisplayManager::OnActivationChanged(bool active) {}
-
-void BlimpDisplayManager::OnSwapBuffersCompleted() {}
-
-void BlimpDisplayManager::DidCommitAndDrawFrame() {}
 
 }  // namespace client
 }  // namespace blimp

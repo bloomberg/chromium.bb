@@ -10,10 +10,13 @@ source_set("compositor") {
     "blimp_client_picture_cache.h",
     "blimp_image_decoder.cc",
     "blimp_image_decoder.h",
+    "blimp_output_surface.h",
     "blob_image_serialization_processor.cc",
     "blob_image_serialization_processor.h",
     "decoding_image_generator.cc",
     "decoding_image_generator.h",
+    "delegated_output_surface.cc",
+    "delegated_output_surface.h",
   ]
 
   deps = [
@@ -37,11 +40,13 @@ source_set("unit_tests") {
 
   sources = [
     "blimp_client_picture_cache_unittest.cc",
+    "delegated_output_surface_unittest.cc",
   ]
 
   deps = [
     ":compositor",
     "//blimp/test:support",
+    "//cc:test_support",
     "//skia",
     "//testing/gtest",
   ]

@@ -27,7 +27,10 @@ group("core_shim") {
 }
 
 group("core") {
-  visibility = [ "//blimp/client/*" ]
+  visibility = [
+    "//blimp/client/*",
+    "//blimp/test/*",
+  ]
 
   deps = [
     ":context",
@@ -142,7 +145,10 @@ if (is_android) {
   }
 
   java_group("core_java") {
-    visibility = [ "//blimp/client/*" ]
+    visibility = [
+      "//blimp/client/*",
+      "//blimp:blimp_unittests_java_deps",
+    ]
 
     deps = [
       ":context_java",

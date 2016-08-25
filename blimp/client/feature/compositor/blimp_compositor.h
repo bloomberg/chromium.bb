@@ -6,11 +6,12 @@
 #define BLIMP_CLIENT_FEATURE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "blimp/client/core/compositor/blimp_output_surface.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -21,18 +22,27 @@
 namespace base {
 class SingleThreadTaskRunner;
 class Thread;
-}
+}  // namespace base
 
 namespace cc {
 namespace proto {
 class CompositorMessage;
 class InitializeImpl;
-}
+}  // namespace proto
+class Layer;
 class LayerTreeHost;
-}
+class Surface;
+class SurfaceId;
+class SurfaceIdAllocator;
+class SurfaceFactory;
+class SurfaceManager;
+}  // namespace cc
+
+namespace gpu {
+class GpuMemoryBufferManager;
+}  // namespace gpu
 
 namespace blimp {
-
 class BlimpMessage;
 
 namespace client {
@@ -51,8 +61,6 @@ class BlimpCompositorClient {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
   virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
-  virtual void DidCompleteSwapBuffers() = 0;
-  virtual void DidCommitAndDrawFrame() = 0;
 
   // Should send web gesture events which could not be handled locally by the
   // compositor to the engine.
@@ -71,50 +79,28 @@ class BlimpCompositorClient {
 };
 
 // BlimpCompositor provides the basic framework and setup to host a
-// LayerTreeHost.  The class that owns the LayerTreeHost is usually called the
-// compositor, but the LayerTreeHost does the compositing work.  The rendering
-// surface this compositor draws to is defined by the gfx::AcceleratedWidget set
-// by SetAcceleratedWidget().  This class should only be accessed from the main
-// thread.  Any interaction with the compositing thread should happen through
-// the LayerTreeHost.
-//
-// The Blimp compositor owns the remote client cc::LayerTreeHost, which performs
-// the compositing work for the remote server LayerTreeHost. The server
+// LayerTreeHost. This class owns the remote client cc::LayerTreeHost, which
+// performs the compositing work for the remote server LayerTreeHost. The server
 // LayerTreeHost for a BlimpCompositor is owned by the
 // content::RenderWidgetCompositor. Thus, each BlimpCompositor is tied to a
 // RenderWidget, identified by a custom |render_widget_id| generated on the
 // engine. The lifetime of this compositor is controlled by its corresponding
 // RenderWidget.
-class BlimpCompositor
-    : public cc::LayerTreeHostClient,
-      public cc::RemoteProtoChannel,
-      public BlimpInputManagerClient {
+// This class should only be accessed from the main thread.
+class BlimpCompositor : public cc::LayerTreeHostClient,
+                        public cc::RemoteProtoChannel,
+                        public BlimpInputManagerClient,
+                        public BlimpOutputSurfaceClient,
+                        public cc::SurfaceFactoryClient {
  public:
-  BlimpCompositor(const int render_widget_id, BlimpCompositorClient* client);
+  BlimpCompositor(const int render_widget_id,
+                  cc::SurfaceManager* surface_manager,
+                  uint32_t surface_client_id,
+                  BlimpCompositorClient* client);
 
   ~BlimpCompositor() override;
 
-  // Sets whether or not this compositor actually draws to the output surface.
-  // Setting this to false will make the compositor drop all of its resources
-  // and the output surface.  Setting it to true again will rebuild the output
-  // surface from the gfx::AcceleratedWidget (see SetAcceleratedWidget).
-  // virtual for testing.
   virtual void SetVisible(bool visible);
-
-  // Lets this compositor know that it can draw to |widget|.  This means that,
-  // if this compositor is visible, it will build an output surface and GL
-  // context around |widget| and will draw to it.  ReleaseAcceleratedWidget()
-  // *must* be called before SetAcceleratedWidget() is called with the same
-  // gfx::AcceleratedWidget on another compositor.
-  // virtual for testing.
-  virtual void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
-
-  // Releases the internally stored gfx::AcceleratedWidget and the associated
-  // output surface.  This must be called before calling
-  // SetAcceleratedWidget() with the same gfx::AcceleratedWidget on another
-  // compositor.
-  // virtual for testing.
-  virtual void ReleaseAcceleratedWidget();
 
   // Forwards the touch event to the |input_manager_|.
   // virtual for testing.
@@ -126,30 +112,33 @@ class BlimpCompositor
   virtual void OnCompositorMessageReceived(
       std::unique_ptr<cc::proto::CompositorMessage> message);
 
+  scoped_refptr<cc::Layer> layer() const { return layer_; }
+
   int render_widget_id() const { return render_widget_id_; }
 
  private:
   friend class BlimpCompositorForTesting;
 
   // LayerTreeHostClient implementation.
-  void WillBeginMainFrame() override;
-  void DidBeginMainFrame() override;
-  void BeginMainFrame(const cc::BeginFrameArgs& args) override;
-  void BeginMainFrameNotExpectedSoon() override;
-  void UpdateLayerTreeHost() override;
+  void WillBeginMainFrame() override {}
+  void DidBeginMainFrame() override {}
+  void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
+  void BeginMainFrameNotExpectedSoon() override {}
+  void UpdateLayerTreeHost() override {}
   void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
                            const gfx::Vector2dF& outer_delta,
                            const gfx::Vector2dF& elastic_overscroll_delta,
                            float page_scale,
-                           float top_controls_delta) override;
+                           float top_controls_delta) override {}
   void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override;
-  void DidFailToInitializeOutputSurface() override;
-  void WillCommit() override;
-  void DidCommit() override;
+  // TODO(khushalsagar): Need to handle context initialization failures.
+  void DidInitializeOutputSurface() override {}
+  void DidFailToInitializeOutputSurface() override {}
+  void WillCommit() override {}
+  void DidCommit() override {}
   void DidCommitAndDrawFrame() override;
-  void DidCompleteSwapBuffers() override;
-  void DidCompletePageScaleAnimation() override;
+  void DidCompleteSwapBuffers() override {}
+  void DidCompletePageScaleAnimation() override {}
 
   // RemoteProtoChannel implementation.
   void SetProtoReceiver(ProtoReceiver* receiver) override;
@@ -159,22 +148,29 @@ class BlimpCompositor
   void SendWebGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
 
-  // Internal method to correctly set the visibility on the |host_|. It will
-  // make the |host_| visible if |visible| is true and we have a valid |window_|
-  // If |visible_| is false, the host will also release its output surface.
-  void SetVisibleInternal(bool visible);
+  // BlimpOutputSurfaceClient implementation.
+  void BindToOutputSurface(
+      base::WeakPtr<BlimpOutputSurface> output_surface) override;
+  void SwapCompositorFrame(cc::CompositorFrame frame) override;
+  void UnbindOutputSurface() override;
 
-  // Helper method to build the internal CC compositor instance from |message|.
+  // SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
+
+  // TODO(khushalsagar): Move all of this to the |DocumentView| or another
+  // platform specific class. So we use the DelegatedFrameHostAndroid like the
+  // RenderWidgetHostViewAndroid.
+  void DestroyDelegatedContent();
+
+  // Helper method to build the internal CC LayerTreeHost instance from
+  // |message|.
   void CreateLayerTreeHost(
       const cc::proto::InitializeImpl& initialize_message);
 
-  // Helper method to destroy the internal CC compositor instance and all its
+  // Helper method to destroy the internal CC LayerTreeHost instance and all its
   // associated state.
   void DestroyLayerTreeHost();
-
-  // Creates (if necessary) and returns a TaskRunner for a thread meant to run
-  // compositor rendering.
-  void HandlePendingOutputSurfaceRequest();
 
   // The unique identifier for the render widget for this compositor.
   const int render_widget_id_;
@@ -183,18 +179,27 @@ class BlimpCompositor
 
   std::unique_ptr<cc::LayerTreeHost> host_;
 
-  gfx::AcceleratedWidget window_;
-
   // Whether or not |host_| should be visible.  This is stored in case |host_|
-  // is null when SetVisible() is called or if we don't have a
-  // gfx::AcceleratedWidget to build an output surface from.
+  // is null when SetVisible() is called.
   bool host_should_be_visible_;
 
-  // Whether there is an OutputSurface request pending from the current
-  // |host_|. Becomes |true| if RequestNewOutputSurface is called, and |false|
-  // if |host_| is deleted or we succeed in creating *and* initializing an
-  // OutputSurface (which is essentially the contract with cc).
-  bool output_surface_request_pending_;
+  // The SurfaceFactory is bound to the lifetime of the BlimpOutputSurface. When
+  // detached, the surface factory will be destroyed.
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  base::WeakPtr<BlimpOutputSurface> output_surface_;
+
+  // Data for the current frame.
+  cc::SurfaceId surface_id_;
+  gfx::Size current_surface_size_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  base::ThreadChecker thread_checker_;
+
+  // Surfaces related stuff and layer which holds the delegated content from the
+  // compositor.
+  cc::SurfaceManager* surface_manager_;
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  scoped_refptr<cc::Layer> layer_;
 
   // To be notified of any incoming compositor protos that are specifically sent
   // to |render_widget_id_|.
@@ -206,6 +211,8 @@ class BlimpCompositor
   // the manager to be handled by the client compositor for the current render
   // widget.
   std::unique_ptr<BlimpInputManager> input_manager_;
+
+  base::WeakPtrFactory<BlimpCompositor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpCompositor);
 };
