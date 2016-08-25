@@ -304,16 +304,11 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
-  context_menu_runner_.reset(
-      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
-  if (context_menu_runner_->RunMenuAt(GetWidget(),
-                                      NULL,
-                                      gfx::Rect(point, gfx::Size()),
-                                      views::MENU_ANCHOR_TOPLEFT,
-                                      source_type) ==
-      views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  context_menu_runner_.reset(new views::MenuRunner(
+      menu_model, views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+                                  gfx::Rect(point, gfx::Size()),
+                                  views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 void AppListItemView::StateChanged() {

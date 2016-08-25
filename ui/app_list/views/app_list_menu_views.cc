@@ -21,7 +21,7 @@ AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate)
     : AppListMenu(delegate) {
   menu_delegate_.reset(new views::MenuModelAdapter(menu_model()));
   menu_ = new MenuItemView(menu_delegate_.get());
-  menu_runner_.reset(new views::MenuRunner(menu_, 0));
+  menu_runner_.reset(new views::MenuRunner(menu_, views::MenuRunner::ASYNC));
   menu_delegate_->BuildMenu(menu_);
 }
 

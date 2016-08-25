@@ -100,15 +100,11 @@ void SearchResultTileItemView::ShowContextMenuForView(
   if (!selected())
     result_container_->ClearSelectedIndex();
 
-  context_menu_runner_.reset(
-      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
-  // If RunMenuAt() fails, return immediately. This is future-proofing for
-  // adding code after this call.
-  if (context_menu_runner_->RunMenuAt(
-          GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-          views::MENU_ANCHOR_TOPLEFT,
-          source_type) == views::MenuRunner::MENU_DELETED)
-    return;
+  context_menu_runner_.reset(new views::MenuRunner(
+      menu_model, views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::ASYNC));
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                                  gfx::Rect(point, gfx::Size()),
+                                  views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 }  // namespace app_list
