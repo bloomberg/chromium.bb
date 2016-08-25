@@ -31,7 +31,7 @@ test(() => {
   // new MyElement() should synchronously call constructor.
   let c = new MyElement();
   assert_equals(c.ownerDocument, document);
-  assert_equals(constructors.length, e);
+  assert_equals(constructors.length, 3);
 
   assert_array_equals(constructors, [a, b, c]);
 }, 'createElement() and new MyElement should work in imported document.');
