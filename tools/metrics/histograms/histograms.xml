@@ -82620,6 +82620,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="63" label="UPDATE_PASSWORD_INFOBAR_DELEGATE"/>
   <int value="64" label="DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID"/>
   <int value="65" label="AUTOFILL_CC_ASSIST_INFOBAR_DELEGATE"/>
+  <int value="66" label="SUBRESOURCE_FILTER_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="67" label="INSTANT_APPS_INFOBAR_DELEGATE_ANDROID"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">

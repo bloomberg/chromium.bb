@@ -51,6 +51,7 @@
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/history_report/history_report_jni_bridge.h"
+#include "chrome/browser/android/instantapps/instant_apps_infobar_delegate.h"
 #include "chrome/browser/android/java_exception_reporter.h"
 #include "chrome/browser/android/large_icon_bridge.h"
 #include "chrome/browser/android/logo_bridge.h"
@@ -262,6 +263,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"GroupedPermissionInfoBar", GroupedPermissionInfoBar::Register},
     {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
+    {"InstantAppsInfobarDelegate", RegisterInstantAppsInfoBarDelegate},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
     {"SimpleConfirmInfoBarBuilder", RegisterSimpleConfirmInfoBarBuilder},
