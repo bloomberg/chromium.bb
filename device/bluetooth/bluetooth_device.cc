@@ -17,6 +17,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/string_util_icu.h"
 #include "grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -91,7 +92,7 @@ BluetoothDevice::ConnectionInfo::~ConnectionInfo() {}
 
 base::string16 BluetoothDevice::GetNameForDisplay() const {
   base::Optional<std::string> name = GetName();
-  if (name && !name.value().empty()) {
+  if (name && HasGraphicCharacter(name.value())) {
     return base::UTF8ToUTF16(name.value());
   } else {
     return GetAddressWithLocalizedDeviceTypeName();

@@ -136,6 +136,8 @@ component("bluetooth") {
     "bluetooth_task_manager_win.h",
     "bluetooth_uuid.cc",
     "bluetooth_uuid.h",
+    "string_util_icu.cc",
+    "string_util_icu.h",
   ]
 
   defines = [ "DEVICE_BLUETOOTH_IMPLEMENTATION" ]
