@@ -34,6 +34,7 @@
 #include "platform/weborigin/KURL.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -294,6 +295,11 @@ TEST(KURLTest, Decode)
     // Our decode should decode %00
     String zero = decodeURLEscapeSequences("%00");
     EXPECT_STRNE("%00", zero.utf8().data());
+
+    // Decode UTF-8.
+    String decoded = decodeURLEscapeSequences("%e6%bc%a2%e5%ad%97");
+    const UChar decodedExpected[] = {0x6F22, 0x5b57};
+    EXPECT_EQ(String(decodedExpected, WTF_ARRAY_LENGTH(decodedExpected)), decoded);
 
     // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
     String invalid = decodeURLEscapeSequences("%e4%a0%e5%a5%bd");

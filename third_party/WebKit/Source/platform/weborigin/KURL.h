@@ -229,8 +229,13 @@ PLATFORM_EXPORT bool protocolIsJavaScript(const String& url);
 PLATFORM_EXPORT bool isValidProtocol(const String&);
 
 // Unescapes the given string using URL escaping rules, given an optional
-// encoding (defaulting to UTF-8 otherwise). DANGER: If the URL has "%00"
-// in it, the resulting string will have embedded null characters!
+// encoding (defaulting to UTF-8 otherwise).
+//
+// DANGER: If the URL has "%00" in it, the resulting string will have embedded
+// null characters!
+//
+// This function is also used to decode javascript: URLs and as a general
+// purpose unescaping function.
 PLATFORM_EXPORT String decodeURLEscapeSequences(const String&);
 PLATFORM_EXPORT String decodeURLEscapeSequences(const String&, const WTF::TextEncoding&);
 

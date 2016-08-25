@@ -655,27 +655,8 @@ String decodeURLEscapeSequences(const String& string)
     return decodeURLEscapeSequences(string, UTF8Encoding());
 }
 
-// In KURL.cpp's implementation, this is called by every component getter.
-// It will unescape every character, including '\0'. This is scary, and may
-// cause security holes. We never call this function for components, and
-// just return the ASCII versions instead.
-//
-// This function is also used to decode javascript: URLs and as a general
-// purpose unescaping function.
-//
-// FIXME These should be merged to the KURL.cpp implementation.
 String decodeURLEscapeSequences(const String& string, const WTF::TextEncoding& encoding)
 {
-    // FIXME We can probably use KURL.cpp's version of this function
-    // without modification. However, I'm concerned about
-    // https://bugs.webkit.org/show_bug.cgi?id=20559 so am keeping this old
-    // custom code for now. Using their version will also fix the bug that
-    // we ignore the encoding.
-    //
-    // FIXME b/1350291: This does not get called very often. We just convert
-    // first to 8-bit UTF-8, then unescape, then back to 16-bit. This kind of
-    // sucks, and we don't use the encoding properly, which will make some
-    // obscure anchor navigations fail.
     StringUTF8Adaptor stringUTF8(string);
     url::RawCanonOutputT<base::char16> unescaped;
     url::DecodeURLEscapeSequences(stringUTF8.data(), stringUTF8.length(), &unescaped);
