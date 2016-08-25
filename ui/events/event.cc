@@ -464,7 +464,7 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
 
 MouseEvent::MouseEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
-      changed_button_flags_(0),
+      changed_button_flags_(pointer_event.changed_button_flags()),
       pointer_details_(pointer_event.pointer_details()) {
   DCHECK(pointer_event.IsMousePointerEvent());
   switch (pointer_event.type()) {
@@ -858,11 +858,13 @@ bool PointerEvent::CanConvertFrom(const Event& event) {
 PointerEvent::PointerEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
       pointer_id_(pointer_event.pointer_id()),
+      changed_button_flags_(pointer_event.changed_button_flags()),
       details_(pointer_event.pointer_details()) {}
 
 PointerEvent::PointerEvent(const MouseEvent& mouse_event)
     : LocatedEvent(mouse_event),
       pointer_id_(kMousePointerId),
+      changed_button_flags_(mouse_event.changed_button_flags()),
       details_(mouse_event.pointer_details()) {
   DCHECK(CanConvertFrom(mouse_event));
   switch (mouse_event.type()) {
@@ -895,6 +897,7 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
 PointerEvent::PointerEvent(const TouchEvent& touch_event)
     : LocatedEvent(touch_event),
       pointer_id_(touch_event.touch_id()),
+      changed_button_flags_(0),
       details_(touch_event.pointer_details()) {
   DCHECK(CanConvertFrom(touch_event));
   switch (touch_event.type()) {
@@ -924,6 +927,7 @@ PointerEvent::PointerEvent(EventType type,
                            const gfx::Point& root_location,
                            int flags,
                            int pointer_id,
+                           int changed_button_flags,
                            const PointerDetails& pointer_details,
                            base::TimeTicks time_stamp)
     : LocatedEvent(type,
@@ -932,6 +936,7 @@ PointerEvent::PointerEvent(EventType type,
                    time_stamp,
                    flags),
       pointer_id_(pointer_id),
+      changed_button_flags_(changed_button_flags),
       details_(pointer_details) {}
 
 const int PointerEvent::kMousePointerId = std::numeric_limits<int32_t>::max();

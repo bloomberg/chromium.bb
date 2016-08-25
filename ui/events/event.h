@@ -727,14 +727,18 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
                const gfx::Point& root_location,
                int flags,
                int pointer_id,
+               int changed_button_flags,
                const PointerDetails& pointer_details,
                base::TimeTicks time_stamp);
 
   int32_t pointer_id() const { return pointer_id_; }
+  int changed_button_flags() const { return changed_button_flags_; }
+  void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
   const PointerDetails& pointer_details() const { return details_; }
 
  private:
   int32_t pointer_id_;
+  int changed_button_flags_;
   PointerDetails details_;
 };
 

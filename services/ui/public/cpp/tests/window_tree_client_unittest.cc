@@ -477,7 +477,7 @@ TEST_F(WindowTreeClientTest, OnPointerEventObserved) {
   // Simulate the server sending an observed event.
   std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
       std::move(pointer_event_down), 0u);
@@ -493,7 +493,7 @@ TEST_F(WindowTreeClientTest, OnPointerEventObserved) {
 
   // Simulate another event from the server.
   std::unique_ptr<ui::PointerEvent> pointer_event_up(new ui::PointerEvent(
-      ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1,
+      ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnPointerEventObserved(
@@ -515,7 +515,7 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithPointerWatcher) {
   // Simulate the server dispatching an event that also matched the observer.
   std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 1,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks()));
   setup.window_tree_client()->OnWindowInputEvent(
       1, server_id(root), std::move(pointer_event_down), true);

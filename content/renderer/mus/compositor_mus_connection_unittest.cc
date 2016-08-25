@@ -443,7 +443,7 @@ TEST_F(CompositorMusConnectionTest, InputHandlerConsumes) {
 TEST_F(CompositorMusConnectionTest, RendererWillNotSendAck) {
   ui::TestWindow test_window;
   ui::PointerEvent event(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
       ui::EventTimeForNow());
 
@@ -468,7 +468,7 @@ TEST_F(CompositorMusConnectionTest, TouchEventConsumed) {
 
   ui::TestWindow test_window;
   ui::PointerEvent event(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       ui::EventTimeForNow());
 

@@ -909,28 +909,29 @@ TEST(EventTest, PointerEventToMouseEvent) {
     gfx::Point location;
     gfx::Point root_location;
     int flags;
+    int changed_button_flags;
   } kTestData[] = {
       {ui::ET_POINTER_DOWN, ui::ET_MOUSE_PRESSED, gfx::Point(10, 20),
-       gfx::Point(110, 120), 0},
+       gfx::Point(110, 120), 0, 0},
       {ui::ET_POINTER_MOVED, ui::ET_MOUSE_MOVED, gfx::Point(20, 10),
-       gfx::Point(1, 2), 0},
+       gfx::Point(1, 2), 0, 0},
       {ui::ET_POINTER_MOVED, ui::ET_MOUSE_DRAGGED, gfx::Point(20, 10),
-       gfx::Point(1, 2), EF_LEFT_MOUSE_BUTTON},
+       gfx::Point(1, 2), EF_LEFT_MOUSE_BUTTON, 0},
       {ui::ET_POINTER_MOVED, ui::ET_MOUSE_DRAGGED, gfx::Point(20, 10),
-       gfx::Point(1, 2), EF_RIGHT_MOUSE_BUTTON},
+       gfx::Point(1, 2), EF_RIGHT_MOUSE_BUTTON, 0},
       {ui::ET_POINTER_MOVED, ui::ET_MOUSE_DRAGGED, gfx::Point(20, 10),
-       gfx::Point(1, 2), EF_MIDDLE_MOUSE_BUTTON},
+       gfx::Point(1, 2), EF_MIDDLE_MOUSE_BUTTON, 0},
       {ui::ET_POINTER_ENTERED, ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
-       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON, 0},
       {ui::ET_POINTER_EXITED, ui::ET_MOUSE_EXITED, gfx::Point(5, 1),
-       gfx::Point(1, 5), EF_RIGHT_MOUSE_BUTTON},
+       gfx::Point(1, 5), EF_RIGHT_MOUSE_BUTTON, 0},
       {ui::ET_POINTER_UP, ui::ET_MOUSE_RELEASED, gfx::Point(1000, 1000),
-       gfx::Point(14, 15), EF_MIDDLE_MOUSE_BUTTON}};
+       gfx::Point(14, 15), EF_MIDDLE_MOUSE_BUTTON, EF_MIDDLE_MOUSE_BUTTON}};
 
   for (size_t i = 0; i < arraysize(kTestData); i++) {
     ui::PointerEvent pointer_event(
         kTestData[i].in_type, kTestData[i].location, kTestData[i].root_location,
-        kTestData[i].flags, 0,
+        kTestData[i].flags, 0, kTestData[i].changed_button_flags,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
         base::TimeTicks());
     ui::MouseEvent mouse_event(pointer_event);
@@ -939,6 +940,8 @@ TEST(EventTest, PointerEventToMouseEvent) {
     EXPECT_EQ(kTestData[i].location, mouse_event.location());
     EXPECT_EQ(kTestData[i].root_location, mouse_event.root_location());
     EXPECT_EQ(kTestData[i].flags, mouse_event.flags());
+    EXPECT_EQ(kTestData[i].changed_button_flags,
+              mouse_event.changed_button_flags());
   }
 }
 
@@ -952,7 +955,7 @@ TEST(EventTest, PointerEventToTouchEventType) {
 
   for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
     ui::PointerEvent pointer_event(
-        kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0,
+        kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0, 0,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
         base::TimeTicks());
     ui::TouchEvent touch_event(pointer_event);

@@ -167,6 +167,7 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::pointer_data(
   if (event->IsPointerEvent()) {
     const ui::PointerEvent* pointer_event = event->AsPointerEvent();
     pointer_data->pointer_id = pointer_event->pointer_id();
+    pointer_data->changed_button_flags = pointer_event->changed_button_flags();
     pointer_details = &pointer_event->pointer_details();
   } else {
     const ui::MouseWheelEvent* wheel_event = event->AsMouseWheelEvent();
@@ -287,6 +288,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
           out->reset(new ui::PointerEvent(
               MojoPointerEventTypeToUIEvent(event.action()), location,
               screen_location, event.flags(), ui::PointerEvent::kMousePointerId,
+              pointer_data->changed_button_flags,
               ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
               ui::EventTimeForNow()));
           return true;
@@ -295,6 +297,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
           out->reset(new ui::PointerEvent(
               MojoPointerEventTypeToUIEvent(event.action()), location,
               screen_location, event.flags(), pointer_data->pointer_id,
+              pointer_data->changed_button_flags,
               ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                                  pointer_data->brush_data->width,
                                  pointer_data->brush_data->height,

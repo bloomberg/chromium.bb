@@ -63,6 +63,7 @@ struct LocationData {
 // TODO(rjkroege,sadrul): Add gesture representation.
 struct PointerData {
   int32 pointer_id;
+  int32 changed_button_flags;
   PointerKind kind;
   LocationData location;
   // Some devices (e.g. pen, finger) can extend across multiple pixels

@@ -157,7 +157,8 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
       // cancels.
       ui::PointerEvent event(
           event_type, gfx::Point(), gfx::Point(), ui::EF_NONE, pair.first,
-          ui::PointerDetails(pointer_type), ui::EventTimeForNow());
+          0 /* changed_button_flags */, ui::PointerDetails(pointer_type),
+          ui::EventTimeForNow());
       DispatchToPointerTarget(pair.second, event);
     }
     pointer_targets_.clear();
@@ -425,6 +426,7 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
     ui::PointerEvent exit_event(
         ui::ET_POINTER_EXITED, event.location(), event.root_location(),
         event.flags(), ui::PointerEvent::kMousePointerId,
+        0 /* changed_button_flags */,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
         event.time_stamp());
     DispatchToPointerTarget(pointer_targets_[pointer_id], exit_event);
