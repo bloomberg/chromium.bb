@@ -208,9 +208,11 @@ BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(const InitCallback& init_callback)
 }
 
 void BluetoothAdapterBlueZ::Init() {
-  // If the platform doesn't support Object Manager then Bluez 5 is probably
-  // not present. In this case we just return without initializing anything.
-  if (!bluez::BluezDBusManager::Get()->IsObjectManagerSupported()) {
+  // We may have been shutdown already, in which case do nothing. If the
+  // platform doesn't support Object Manager then Bluez 5 is probably not
+  // present. In this case we just return without initializing anything.
+  if (dbus_is_shutdown_ ||
+      !bluez::BluezDBusManager::Get()->IsObjectManagerSupported()) {
     initialized_ = true;
     init_callback_.Run();
     return;
