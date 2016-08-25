@@ -4,6 +4,7 @@
 
 import re
 
+from benchmarks import v8_helper
 from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.timeline import chrome_trace_config
@@ -47,6 +48,10 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
       'renderer.scheduler',
       'v8',
       'webkit.console',
+      # TODO(crbug.com/616441, primiano): Remove this temporary workaround,
+      # which enables memory-infra V8 code stats in V8 code size benchmarks
+      # only (to not slow down detailed memory dumps in other benchmarks).
+      'disabled-by-default-memory-infra.v8.code_stats',
     ]
     options = timeline_based_measurement.Options(
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -64,7 +69,7 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'v8.browsing_%s' % cls.PLATFORM
+    return 'v8.browsing_%s%s' % (cls.PLATFORM, cls.TEST_SUFFIX)
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
@@ -81,8 +86,7 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
-class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'desktop'
+class _V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -93,10 +97,41 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
 
     return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
-@benchmark.Disabled('reference')  # http://crbug.com/628631
-class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
-  PLATFORM = 'mobile'
+
+class _V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
+
+
+class V8DesktopBrowsingBenchmark(_V8DesktopBrowsingBenchmark):
+  PLATFORM = 'desktop'
+  TEST_SUFFIX = ''
+
+
+@benchmark.Disabled('reference')  # http://crbug.com/628631
+class V8MobileBrowsingBenchmark(_V8MobileBrowsingBenchmark):
+  PLATFORM = 'mobile'
+  TEST_SUFFIX = ''
+
+
+class V8DesktopIgnitionBrowsingBenchmark(_V8DesktopBrowsingBenchmark):
+  PLATFORM = 'desktop'
+  TEST_SUFFIX = '_ignition'
+
+  def SetExtraBrowserOptions(self, options):
+    super(V8DesktopIgnitionBrowsingBenchmark, self).SetExtraBrowserOptions(
+        options)
+    v8_helper.EnableIgnition(options)
+
+
+@benchmark.Disabled('reference')  # http://crbug.com/628631
+class V8MobileIgnitionBrowsingBenchmark(_V8MobileBrowsingBenchmark):
+  PLATFORM = 'mobile'
+  TEST_SUFFIX = '_ignition'
+
+  def SetExtraBrowserOptions(self, options):
+    super(V8MobileIgnitionBrowsingBenchmark, self).SetExtraBrowserOptions(
+        options)
+    v8_helper.EnableIgnition(options)

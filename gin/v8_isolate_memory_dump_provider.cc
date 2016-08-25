@@ -180,6 +180,9 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
   auto* heap_spaces_dump =
       process_memory_dump->CreateAllocatorDump(space_name_prefix);
 
+  // Dump statistics related to code and bytecode if requested.
+  DumpCodeStatistics(heap_spaces_dump, isolate_holder_);
+
   // Dump object statistics only for detailed dumps.
   if (args.level_of_detail !=
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
@@ -230,9 +233,6 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
         process_memory_dump->CreateAllocatorDump(object_name_prefix)->guid(),
         heap_spaces_dump->guid());
   }
-
-  // Dump statistics related to code and bytecode if requested.
-  DumpCodeStatistics(heap_spaces_dump, isolate_holder_);
 }
 
 }  // namespace gin
