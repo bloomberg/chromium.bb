@@ -11,6 +11,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "modules/webusb/USBConfiguration.h"
 #include "modules/webusb/USBControlTransferParameters.h"
 #include "modules/webusb/USBInTransferResult.h"
@@ -135,6 +136,8 @@ HeapVector<Member<USBConfiguration>> USBDevice::configurations() const
 
 ScriptPromise USBDevice::open(ScriptState* scriptState)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceOpen);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
@@ -151,6 +154,8 @@ ScriptPromise USBDevice::open(ScriptState* scriptState)
 
 ScriptPromise USBDevice::close(ScriptState* scriptState)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceClose);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
@@ -167,6 +172,8 @@ ScriptPromise USBDevice::close(ScriptState* scriptState)
 
 ScriptPromise USBDevice::selectConfiguration(ScriptState* scriptState, uint8_t configurationValue)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceSelectConfiguration);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
@@ -190,6 +197,8 @@ ScriptPromise USBDevice::selectConfiguration(ScriptState* scriptState, uint8_t c
 
 ScriptPromise USBDevice::claimInterface(ScriptState* scriptState, uint8_t interfaceNumber)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceClaimInterface);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
@@ -211,6 +220,8 @@ ScriptPromise USBDevice::claimInterface(ScriptState* scriptState, uint8_t interf
 
 ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t interfaceNumber)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceReleaseInterface);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
@@ -235,6 +246,8 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t inte
 
 ScriptPromise USBDevice::selectAlternateInterface(ScriptState* scriptState, uint8_t interfaceNumber, uint8_t alternateSetting)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceSelectAlternateInterface);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureInterfaceClaimed(interfaceNumber, resolver)) {
@@ -258,6 +271,8 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* scriptState, uint
 
 ScriptPromise USBDevice::controlTransferIn(ScriptState* scriptState, const USBControlTransferParameters& setup, unsigned length)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceControlTransferIn);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
@@ -272,6 +287,8 @@ ScriptPromise USBDevice::controlTransferIn(ScriptState* scriptState, const USBCo
 
 ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBControlTransferParameters& setup)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceControlTransferOut);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
@@ -286,6 +303,8 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
 
 ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBControlTransferParameters& setup, const ArrayBufferOrArrayBufferView& data)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceControlTransferOut);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
@@ -302,6 +321,8 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
 
 ScriptPromise USBDevice::clearHalt(ScriptState* scriptState, String direction, uint8_t endpointNumber)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceClearHalt);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(direction == "in", endpointNumber, resolver)) {
@@ -313,6 +334,8 @@ ScriptPromise USBDevice::clearHalt(ScriptState* scriptState, String direction, u
 
 ScriptPromise USBDevice::transferIn(ScriptState* scriptState, uint8_t endpointNumber, unsigned length)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceTransferIn);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver)) {
@@ -324,6 +347,8 @@ ScriptPromise USBDevice::transferIn(ScriptState* scriptState, uint8_t endpointNu
 
 ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceTransferOut);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
@@ -337,6 +362,8 @@ ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointN
 
 ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t endpointNumber, Vector<unsigned> packetLengths)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceIsochronousTransferIn);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver)) {
@@ -348,6 +375,8 @@ ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t
 
 ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data, Vector<unsigned> packetLengths)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceIsochronousTransferOut);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
@@ -359,6 +388,8 @@ ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_
 
 ScriptPromise USBDevice::reset(ScriptState* scriptState)
 {
+    UseCounter::count(scriptState->getExecutionContext(), UseCounter::UsbDeviceReset);
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {

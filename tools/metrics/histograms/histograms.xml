@@ -79752,6 +79752,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1516" label="NavigatorPointerEnabled"/>
   <int value="1517" label="InputSelectionGettersThrow"/>
   <int value="1518" label="DocumentCreateEventVRDisplayEvent"/>
+  <int value="1519" label="UsbGetDevices"/>
+  <int value="1520" label="UsbRequestDevice"/>
+  <int value="1521" label="UsbDeviceOpen"/>
+  <int value="1522" label="UsbDeviceClose"/>
+  <int value="1523" label="UsbDeviceSelectConfiguration"/>
+  <int value="1524" label="UsbDeviceClaimInterface"/>
+  <int value="1525" label="UsbDeviceReleaseInterface"/>
+  <int value="1526" label="UsbDeviceSelectAlternateInterface"/>
+  <int value="1527" label="UsbDeviceControlTransferIn"/>
+  <int value="1528" label="UsbDeviceControlTransferOut"/>
+  <int value="1529" label="UsbDeviceClearHalt"/>
+  <int value="1530" label="UsbDeviceTransferIn"/>
+  <int value="1531" label="UsbDeviceTransferOut"/>
+  <int value="1532" label="UsbDeviceIsochronousTransferIn"/>
+  <int value="1533" label="UsbDeviceIsochronousTransferOut"/>
+  <int value="1534" label="UsbDeviceReset"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

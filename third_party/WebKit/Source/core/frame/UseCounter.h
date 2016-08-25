@@ -1289,6 +1289,22 @@ public:
         NavigatorPointerEnabled = 1516,
         InputSelectionGettersThrow = 1517,
         DocumentCreateEventVRDisplayEvent = 1518,
+        UsbGetDevices = 1519,
+        UsbRequestDevice = 1520,
+        UsbDeviceOpen = 1521,
+        UsbDeviceClose = 1522,
+        UsbDeviceSelectConfiguration = 1523,
+        UsbDeviceClaimInterface = 1524,
+        UsbDeviceReleaseInterface = 1525,
+        UsbDeviceSelectAlternateInterface = 1526,
+        UsbDeviceControlTransferIn = 1527,
+        UsbDeviceControlTransferOut = 1528,
+        UsbDeviceClearHalt = 1529,
+        UsbDeviceTransferIn = 1530,
+        UsbDeviceTransferOut = 1531,
+        UsbDeviceIsochronousTransferIn = 1532,
+        UsbDeviceIsochronousTransferOut = 1533,
+        UsbDeviceReset = 1534,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
