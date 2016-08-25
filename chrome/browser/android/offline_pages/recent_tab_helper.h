@@ -55,12 +55,16 @@ class RecentTabHelper
   };
   void SetDelegate(std::unique_ptr<RecentTabHelper::Delegate> delegate);
 
+  bool is_page_ready_for_snapshot() const {
+    return is_page_ready_for_snapshot_;
+  }
+
  private:
   explicit RecentTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<RecentTabHelper>;
 
 
-  void LazyInitialize();
+  void EnsureInitialized();
   void ContinueSnapshotWithIdsToPurge(const std::vector<int64_t>& page_ids);
   void ContinueSnapshotAfterPurge(OfflinePageModel::DeletePageResult result);
   void SavePageCallback(OfflinePageModel::SavePageResult result,
@@ -70,16 +74,23 @@ class RecentTabHelper
   bool IsSamePage() const;
   ClientId client_id() const;
 
-  // Page model is a service, no ownership.
+  // Page model is a service, no ownership. Can be null - for example, in
+  // case when tab is in incognito profile.
   OfflinePageModel* page_model_;
   // If false, never make snapshots off the attached WebContents.
+  // Not page-specific.
   bool snapshots_enabled_;
+  // Becomes true during navigation if the page is ready for snapshot as
+  // indicated by at least one callback from SnapshotController.
+  bool is_page_ready_for_snapshot_;
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
 
   // The URL of the page that is currently being snapshotted. Used to check,
   // during async operations, that WebContents still contains the same page.
   GURL snapshot_url_;
+  // This starts out null and used as a flag for EnsureInitialized() to do the
+  // initialization only once.
   std::unique_ptr<SnapshotController> snapshot_controller_;
 
   std::unique_ptr<Delegate> delegate_;

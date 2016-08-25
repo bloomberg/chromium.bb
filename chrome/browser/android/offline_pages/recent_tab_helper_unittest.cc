@@ -7,11 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
@@ -102,6 +104,7 @@ class RecentTabHelperTest
   size_t model_removed_count_;
   std::vector<OfflinePageItem> all_pages_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   base::WeakPtrFactory<RecentTabHelperTest> weak_ptr_factory_;
 
@@ -150,6 +153,8 @@ RecentTabHelperTest::RecentTabHelperTest()
 
 void RecentTabHelperTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();
+
+  scoped_feature_list_.InitAndEnableFeature(kOffliningRecentPagesFeature);
   // Sets up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
       browser_context(), BuildTestOfflinePageModel);
@@ -199,13 +204,17 @@ void RecentTabHelperTest::FastForwardSnapshotController() {
 }
 
 TEST_F(RecentTabHelperTest, Basic) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
   EXPECT_NE(nullptr, recent_tab_helper());
 }
 
 TEST_F(RecentTabHelperTest, SimpleCapture) {
   NavigateAndCommit(kTestPageUrl);
+  EXPECT_FALSE(recent_tab_helper()->is_page_ready_for_snapshot());
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   RunUntilIdle();
+  EXPECT_TRUE(recent_tab_helper()->is_page_ready_for_snapshot());
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
   EXPECT_EQ(1U, all_pages().size());
@@ -222,7 +231,7 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
-  // No page shodul be captured.
+  // No page should be captured.
   EXPECT_EQ(0U, all_pages().size());
 }
 
@@ -289,6 +298,18 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
+  EXPECT_EQ(0U, all_pages().size());
+}
+
+TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
+  NavigateAndCommit(kTestPageUrl);
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  GetAllPages();
+  // No page should be captured.
   EXPECT_EQ(0U, all_pages().size());
 }
 

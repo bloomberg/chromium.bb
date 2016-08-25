@@ -65,7 +65,6 @@
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
-#include "components/offline_pages/offline_page_feature.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -197,8 +196,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   DataUseTabHelper::CreateForWebContents(web_contents);
 
   offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
-  if (offline_pages::IsOffliningRecentPagesEnabled())
-    offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+  offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
 
   SingleTabModeTabHelper::CreateForWebContents(web_contents);
   ViewAndroidHelper::CreateForWebContents(web_contents);
