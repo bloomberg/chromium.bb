@@ -172,7 +172,7 @@ void AudioNodeInput::sumAllConnections(AudioBus* summingBus, size_t framesToProc
     DCHECK(deferredTaskHandler().isAudioThread());
 
     // We shouldn't be calling this method if there's only one connection, since it's less efficient.
-    DCHECK(numberOfRenderingConnections() > 1 || handler().internalChannelCountMode() != AudioHandler::Max);
+    //    DCHECK(numberOfRenderingConnections() > 1 || handler().internalChannelCountMode() != AudioHandler::Max);
 
     DCHECK(summingBus);
     if (!summingBus)

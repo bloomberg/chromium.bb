@@ -72,8 +72,8 @@ PannerHandler::PannerHandler(
 
     // Node-specific default mixing rules.
     m_channelCount = 2;
-    setInternalChannelCountMode(ClampedMax);
-    setInternalChannelInterpretation(AudioBus::Speakers);
+    m_channelCountMode = ClampedMax;
+    m_channelInterpretation = AudioBus::Speakers;
 
     // Explicitly set the default panning model here so that the histograms
     // include the default value.
@@ -565,7 +565,7 @@ void PannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& 
     if (channelCount > 0 && channelCount <= 2) {
         if (m_channelCount != channelCount) {
             m_channelCount = channelCount;
-            if (internalChannelCountMode() != Max)
+            if (m_channelCountMode != Max)
                 updateChannelsForInputs();
         }
     } else {
@@ -586,16 +586,25 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
     DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
+    ChannelCountMode oldMode = m_channelCountMode;
+
     if (mode == "clamped-max") {
-        setInternalChannelCountMode(ClampedMax);
+        m_newChannelCountMode = ClampedMax;
     } else if (mode == "explicit") {
-        setInternalChannelCountMode(Explicit);
+        m_newChannelCountMode = Explicit;
     } else if (mode == "max") {
         // This is not supported for a PannerNode, which can only handle 1 or 2 channels.
         exceptionState.throwDOMException(
             NotSupportedError,
                 "Panner: 'max' is not allowed");
+        m_newChannelCountMode = oldMode;
+    } else {
+        // Do nothing for other invalid values.
+        m_newChannelCountMode = oldMode;
     }
+
+    if (m_newChannelCountMode != oldMode)
+        context()->deferredTaskHandler().addChangedChannelCountMode(this);
 }
 
 bool PannerHandler::hasSampleAccurateValues() const

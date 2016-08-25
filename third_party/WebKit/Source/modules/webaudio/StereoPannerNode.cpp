@@ -26,8 +26,8 @@ StereoPannerHandler::StereoPannerHandler(AudioNode& node, float sampleRate, Audi
     // The node-specific default mixing rules declare that StereoPannerNode
     // can handle mono to stereo and stereo to stereo conversion.
     m_channelCount = 2;
-    setInternalChannelCountMode(ClampedMax);
-    setInternalChannelInterpretation(AudioBus::Speakers);
+    m_channelCountMode = ClampedMax;
+    m_channelInterpretation = AudioBus::Speakers;
 
     initialize();
 }
@@ -89,7 +89,7 @@ void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionS
     if (channelCount > 0 && channelCount <= 2) {
         if (m_channelCount != channelCount) {
             m_channelCount = channelCount;
-            if (internalChannelCountMode() != Max)
+            if (m_channelCountMode != Max)
                 updateChannelsForInputs();
         }
     } else {
@@ -110,17 +110,26 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
     DCHECK(isMainThread());
     BaseAudioContext::AutoLocker locker(context());
 
+    ChannelCountMode oldMode = m_channelCountMode;
+
     if (mode == "clamped-max") {
-        setInternalChannelCountMode(ClampedMax);
+        m_newChannelCountMode = ClampedMax;
     } else if (mode == "explicit") {
-        setInternalChannelCountMode(Explicit);
+        m_newChannelCountMode = Explicit;
     } else if (mode == "max") {
         // This is not supported for a StereoPannerNode, which can only handle
         // 1 or 2 channels.
         exceptionState.throwDOMException(
             NotSupportedError,
                 "StereoPanner: 'max' is not allowed");
+        m_newChannelCountMode = oldMode;
+    } else {
+        // Do nothing for other invalid values.
+        m_newChannelCountMode = oldMode;
     }
+
+    if (m_newChannelCountMode != oldMode)
+        context()->deferredTaskHandler().addChangedChannelCountMode(this);
 }
 
 // ----------------------------------------------------------------

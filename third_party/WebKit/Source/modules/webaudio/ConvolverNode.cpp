@@ -51,8 +51,8 @@ ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
 
     // Node-specific default mixing rules.
     m_channelCount = 2;
-    setInternalChannelCountMode(ClampedMax);
-    setInternalChannelInterpretation(AudioBus::Speakers);
+    m_channelCountMode = ClampedMax;
+    m_channelInterpretation = AudioBus::Speakers;
 
     initialize();
 }

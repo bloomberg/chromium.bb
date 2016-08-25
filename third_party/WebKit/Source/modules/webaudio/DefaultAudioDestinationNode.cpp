@@ -36,8 +36,8 @@ DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioNode& node)
 {
     // Node-specific default mixing rules.
     m_channelCount = 2;
-    setInternalChannelCountMode(Explicit);
-    setInternalChannelInterpretation(AudioBus::Speakers);
+    m_channelCountMode = Explicit;
+    m_channelInterpretation = AudioBus::Speakers;
 }
 
 PassRefPtr<DefaultAudioDestinationHandler> DefaultAudioDestinationHandler::create(AudioNode& node)

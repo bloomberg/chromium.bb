@@ -56,7 +56,7 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate
     addOutput(numberOfOutputChannels);
 
     m_channelCount = numberOfInputChannels;
-    setInternalChannelCountMode(Explicit);
+    m_channelCountMode = Explicit;
 
     initialize();
 }

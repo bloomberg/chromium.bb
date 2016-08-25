@@ -91,6 +91,14 @@ void BiquadProcessor::process(const AudioBus* source, AudioBus* destination, siz
         return;
     }
 
+    // Synchronize with possible dynamic changes to the impulse response.
+    MutexTryLocker tryLocker(m_processLock);
+    if (!tryLocker.locked()) {
+        // Can't get the lock. We must be in the middle of changing something.
+        destination->zero();
+        return;
+    }
+
     checkForDirtyCoefficients();
 
     // For each channel of our input, process using the corresponding BiquadDSPKernel into the output channel.

@@ -43,7 +43,7 @@ ChannelMergerHandler::ChannelMergerHandler(AudioNode& node, float sampleRate, un
 {
     // These properties are fixed for the node and cannot be changed by user.
     m_channelCount = 1;
-    setInternalChannelCountMode(Explicit);
+    m_channelCountMode = Explicit;
 
     // Create the requested number of inputs.
     for (unsigned i = 0; i < numberOfInputs; ++i)

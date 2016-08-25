@@ -212,27 +212,11 @@ public:
     String channelInterpretation();
     void setChannelInterpretation(const String&, ExceptionState&);
 
-    void setInternalChannelCountMode(ChannelCountMode newMode)
-    {
-        releaseStore(&m_channelCountMode, newMode);
-    }
+    ChannelCountMode internalChannelCountMode() const { return m_channelCountMode; }
+    AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }
 
-    ChannelCountMode internalChannelCountMode() const
-    {
-        return static_cast<ChannelCountMode>(
-            acquireLoad(&m_channelCountMode));
-    }
-
-    void setInternalChannelInterpretation(unsigned newValue)
-    {
-        releaseStore(&m_channelInterpretation, newValue);
-    }
-
-    AudioBus::ChannelInterpretation internalChannelInterpretation() const
-    {
-        return static_cast<AudioBus::ChannelInterpretation>(
-            acquireLoad(&m_channelInterpretation));
-    }
+    void updateChannelCountMode();
+    void updateChannelInterpretation();
 
 protected:
     // Inputs and outputs must be created before the AudioHandler is
@@ -284,13 +268,15 @@ private:
 
 protected:
     unsigned m_channelCount;
+    ChannelCountMode m_channelCountMode;
+    AudioBus::ChannelInterpretation m_channelInterpretation;
+    // The new channel count mode that will be used to set the actual mode in the pre or post
+    // rendering phase.
+    ChannelCountMode m_newChannelCountMode;
+    // The new channel interpretation that will be used to set the actual
+    // intepretation in the pre or post rendering phase.
+    AudioBus::ChannelInterpretation m_newChannelInterpretation;
 
-private:
-    // These are private to force use of the setters and getters.
-
-    // The internal representation of the channel count mode and interpretation.
-    unsigned m_channelCountMode;
-    unsigned m_channelInterpretation;
 };
 
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
