@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zwp_remote_shell_v1" version="10">
+  <interface name="zwp_remote_shell_v1" version="11">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -63,6 +63,7 @@
       <entry name="maximized" value="3" summary="maximized window state"/>
       <entry name="fullscreen" value="4" summary="fullscreen window state"/>
       <entry name="pinned" value="5" summary="pinned window state"/>
+      <entry name="trusted_pinned" value="6" summary="trusted pinned window state"/>
     </enum>
 
     <enum name="error">
@@ -167,7 +168,7 @@
     </event>
   </interface>
 
-  <interface name="zwp_remote_surface_v1" version="10">
+  <interface name="zwp_remote_surface_v1" version="11">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -503,6 +504,22 @@
 	Make the surface active and bring it to the front.
       </description>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
+    </request>
+
+    <!-- Version 11 additions -->
+
+    <request name="pin_with_trusted_flag" since="11">
+      <description summary="set window mode as pinned with taking a trasted flag.">
+	Request that surface is pinned.
+
+	This is only a request that the window should be pinned.
+	The compositor may choose to ignore this request. The client should
+	listen to set_pinned events to determine if the window was
+	pinned or not. If trusted flag is non-zero, the app can prevent users
+	from exiting the pinned mode.
+      </description>
+      <arg name="trusted" type="int" summary="whether the app can enforce users
+          to stay in the pinned mode."/>
     </request>
   </interface>
 

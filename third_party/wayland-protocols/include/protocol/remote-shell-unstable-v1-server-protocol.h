@@ -187,6 +187,10 @@ enum zwp_remote_shell_v1_state_type {
 	 * pinned window state
 	 */
 	ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED = 5,
+	/**
+	 * trusted pinned window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED = 6,
 };
 #endif /* ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -570,15 +574,31 @@ struct zwp_remote_surface_v1_interface {
 							  struct wl_resource *resource,
 							  wl_fixed_t opacity);
 	/**
-	 * activate surface
+	 * make the surface active
 	 *
-	 * Make surface active.
-	 *
+	 * Make the surface active and bring it to the front.
+	 * @param serial the serial of the user event
 	 * @since 10
 	 */
 	void (*activate)(struct wl_client *client,
-				struct wl_resource *resource,
-				uint32_t serial);
+			 struct wl_resource *resource,
+			 uint32_t serial);
+	/**
+	 * set window mode as pinned with taking a trasted flag.
+	 *
+	 * Request that surface is pinned.
+	 *
+	 * This is only a request that the window should be pinned. The
+	 * compositor may choose to ignore this request. The client should
+	 * listen to set_pinned events to determine if the window was
+	 * pinned or not. If trusted flag is non-zero, the app can prevent
+	 * users from exiting the pinned mode.
+	 * @param trusted whether the app can enforce users           to stay in the pinned mode.
+	 * @since 11
+	 */
+	void (*pin_with_trusted_flag)(struct wl_client *client,
+				      struct wl_resource *resource,
+				      int32_t trusted);
 };
 
 #define ZWP_REMOTE_SURFACE_V1_SET_FULLSCREEN	0

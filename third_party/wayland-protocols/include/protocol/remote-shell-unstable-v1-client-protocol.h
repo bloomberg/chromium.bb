@@ -184,6 +184,10 @@ enum zwp_remote_shell_v1_state_type {
 	 * pinned window state
 	 */
 	ZWP_REMOTE_SHELL_V1_STATE_TYPE_PINNED = 5,
+	/**
+	 * trusted pinned window state
+	 */
+	ZWP_REMOTE_SHELL_V1_STATE_TYPE_TRUSTED_PINNED = 6,
 };
 #endif /* ZWP_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -548,6 +552,7 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
 #define ZWP_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL	15
 #define ZWP_REMOTE_SURFACE_V1_SET_RECTANGULAR_SHADOW_BACKGROUND_OPACITY	16
 #define ZWP_REMOTE_SURFACE_V1_ACTIVATE	17
+#define ZWP_REMOTE_SURFACE_V1_PIN_WITH_TRUSTED_FLAG	18
 
 /**
  * @ingroup iface_zwp_remote_surface_v1
@@ -621,6 +626,10 @@ zwp_remote_surface_v1_add_listener(struct zwp_remote_surface_v1 *zwp_remote_surf
  * @ingroup iface_zwp_remote_surface_v1
  */
 #define ZWP_REMOTE_SURFACE_V1_ACTIVATE_SINCE_VERSION	10
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ */
+#define ZWP_REMOTE_SURFACE_V1_PIN_WITH_TRUSTED_FLAG_SINCE_VERSION	11
 
 /** @ingroup iface_zwp_remote_surface_v1 */
 static inline void
@@ -932,6 +941,24 @@ zwp_remote_surface_v1_activate(struct zwp_remote_surface_v1 *zwp_remote_surface_
 {
 	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
 			 ZWP_REMOTE_SURFACE_V1_ACTIVATE, serial);
+}
+
+/**
+ * @ingroup iface_zwp_remote_surface_v1
+ *
+ * Request that surface is pinned.
+ *
+ * This is only a request that the window should be pinned.
+ * The compositor may choose to ignore this request. The client should
+ * listen to set_pinned events to determine if the window was
+ * pinned or not. If trusted flag is non-zero, the app can prevent users
+ * from exiting the pinned mode.
+ */
+static inline void
+zwp_remote_surface_v1_pin_with_trusted_flag(struct zwp_remote_surface_v1 *zwp_remote_surface_v1, int32_t trusted)
+{
+	wl_proxy_marshal((struct wl_proxy *) zwp_remote_surface_v1,
+			 ZWP_REMOTE_SURFACE_V1_PIN_WITH_TRUSTED_FLAG, trusted);
 }
 
 #define ZWP_NOTIFICATION_SURFACE_V1_DESTROY	0
