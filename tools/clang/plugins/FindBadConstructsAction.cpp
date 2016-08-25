@@ -57,8 +57,7 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // and http://crbug.com/356816 are fixed.
       options_.check_enum_last_value = true;
     } else if (args[i] == "check-templates") {
-      // TODO(thakis): This is now always on. Remove support for this flag once
-      // the build no longer passes it in.
+      options_.check_templates = true;
     } else if (args[i] == "follow-macro-expansion") {
       // TODO(thakis): This is now always on. Remove support for this flag once
       // the build no longer passes it in.

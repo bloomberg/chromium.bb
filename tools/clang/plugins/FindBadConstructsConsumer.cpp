@@ -221,7 +221,7 @@ void FindBadConstructsConsumer::CheckChromeClass(SourceLocation record_location,
   // That was only a mistake; once Chromium code passes these checks, we should
   // remove the "check-templates" option and remove this code.
   // See crbug.com/441916
-  if (IsPodOrTemplateType(*record))
+  if (!options_.check_templates && IsPodOrTemplateType(*record))
     return;
 
   bool implementation_file = InImplementationFile(record_location);
