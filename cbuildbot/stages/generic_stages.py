@@ -343,6 +343,25 @@ class BuilderStage(object):
     return self._run.site_config.GetSlavesForMaster(
         self._run.config, self._run.options)
 
+  def _GetSlaveConfigMap(self, important_only=True, active_only=True):
+    """Get slave config map for the current build config.
+
+    This assumes self._run.config is a master config.
+
+    Args:
+      important_only: If True, only get important slaves.
+      active_only: If True, only get slaves having active_waterfall.
+
+    Returns:
+      A map of slave_name to slave_config for the current master.
+
+    Raises:
+      See config_lib.Config.GetSlaveConfigMapForMaster for details.
+    """
+    return self._run.site_config.GetSlaveConfigMapForMaster(
+        self._run.config, self._run.options,
+        important_only=important_only, active_only=active_only)
+
   def _Begin(self):
     """Called before a stage is performed. May be overriden."""
 

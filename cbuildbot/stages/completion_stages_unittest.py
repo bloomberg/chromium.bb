@@ -133,6 +133,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         build_type=self.build_type,
         master=True,
         manifest_version=True,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test1',
@@ -146,6 +147,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test2',
@@ -159,6 +161,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test3',
@@ -172,6 +175,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=True,
         master=False,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test4',
@@ -185,6 +189,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=True,
         internal=True,
         master=False,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test5',
@@ -198,6 +203,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
+        active_waterfall=constants.WATERFALL_INTERNAL,
     )
     return test_config
 

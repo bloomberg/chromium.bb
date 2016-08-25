@@ -23,8 +23,6 @@ from chromite.lib import git
 
 site_config = config_lib.GetConfig()
 
-BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
-
 class ChromiteUpgradeNeeded(Exception):
   """Exception thrown when it's detected that we need to upgrade chromite."""
 
@@ -236,7 +234,7 @@ class RemoteTryJob(object):
     """
 
     body = json.dumps({
-        'bucket': BUILDBUCKET_BUCKET,
+        'bucket': constants.TRYSERVER_BUILDBUCKET_BUCKET,
         'parameters_json': json.dumps({
             'builder_name': self._GetBuilder(bot),
             'properties': self._GetProperties(bot),
@@ -248,7 +246,7 @@ class RemoteTryJob(object):
 
     if buildbucket_id is not None:
       print(self.BUILDBUCKET_PUT_RESP_FORMAT %
-            (BUILDBUCKET_BUCKET, bot, buildbucket_id))
+            (constants.TRYSERVER_BUILDBUCKET_BUCKET, bot, buildbucket_id))
 
   def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.

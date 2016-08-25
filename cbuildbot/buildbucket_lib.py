@@ -18,6 +18,7 @@ from __future__ import print_function
 import json
 import os
 
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import topology
 from chromite.lib import auth
 from chromite.lib import cros_logging as logging
@@ -35,6 +36,22 @@ GET_METHOD = 'GET'
 STARTED_STATUS = 'STARTED'
 SCHEDULED_STATUS = 'SCHEDULED'
 COMPLETED_STATUS = 'COMPLETED'
+
+WATERFALL_BUCKET_MAP = {
+    constants.WATERFALL_INTERNAL:
+        constants.CHROMEOS_BUILDBUCKET_BUCKET,
+    constants.WATERFALL_EXTERNAL:
+        constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
+}
+
+class BuildbucketResponseException(Exception):
+  """Exception got from Buildbucket Response."""
+
+class NoBuildbucketBucketFoundException(Exception):
+  """Failed to found the corresponding buildbucket bucket."""
+
+class NoBuildBucketHttpException(Exception):
+  """No Buildbucket http instance exception."""
 
 def GetServiceAccount(service_account=None):
   """Get service account file.
@@ -83,6 +100,9 @@ def BuildBucketRequest(http, url, method, body, dryrun):
 
   Returns:
     Content if request succeeds.
+
+  Raises:
+    BuildbucketResponseException when response['status'] is invalid.
   """
   if dryrun:
     logging.info('Dryrun mode is on; Would have made a request '
@@ -98,9 +118,9 @@ def BuildBucketRequest(http, url, method, body, dryrun):
     )
 
     if int(response['status']) // 100 != 2:
-      raise Exception('Got a %s response from buildbucket '
-                      'with url: %s\ncontent: %s'
-                      % (response['status'], url, content))
+      raise BuildbucketResponseException(
+          'Got a %s response from buildbucket with url: %s\n'
+          'content: %s' % (response['status'], url, content))
 
     # Return content_dict
     return json.loads(content)

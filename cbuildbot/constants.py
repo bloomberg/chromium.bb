@@ -971,3 +971,8 @@ MAX_RELEASE_GROUP_BOARDS = 4
 
 CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
                                         'service-account-chromeos.json')
+
+# Buildbucket buckets
+TRYSERVER_BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
+CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
+CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'

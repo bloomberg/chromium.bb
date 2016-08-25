@@ -11,6 +11,7 @@ import ConfigParser
 import contextlib
 import datetime
 import itertools
+import json
 import os
 import re
 import shutil
@@ -75,6 +76,7 @@ PRECQ_EXPIRY_MSG = (
     'In order to protect the CQ from picking up stale changes, the pre-cq '
     'status for changes are cleared after a generous timeout. This change '
     'will be re-tested by the pre-cq before the CQ picks it up.')
+
 
 class PatchChangesStage(generic_stages.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
@@ -364,6 +366,12 @@ class SyncStage(generic_stages.BuilderStage):
     # at self.internal when it can always be retrieved from config?
     self.internal = self._run.config.internal
 
+    self.buildbucket_http = None
+    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+      self.buildbucket_http = buildbucket_lib.BuildBucketAuth(
+          service_account=buildbucket_lib.GetServiceAccount(
+              constants.CHROMEOS_SERVICE_ACCOUNT))
+
   def _GetManifestVersionsRepoUrl(self, internal=None, test=False):
     if internal is None:
       internal = self._run.config.internal
@@ -457,6 +465,94 @@ class SyncStage(generic_stages.BuilderStage):
                                          x[cros_patch.ATTR_PATCH_NUMBER],
                                          x[cros_patch.ATTR_REMOTE]))
     self._run.attrs.metadata.UpdateWithDict({'changes': changes_list})
+
+  def _GetBuildbucketBucket(self, build_name, build_config):
+    """Get the corresponding Buildbucket bucket.
+
+    Args:
+      build_name: name of the build to put to Buildbucket.
+      build_config: config of the build to put to Buildbucket.
+
+    Raises:
+      NoBuildbucketBucketFoundException when no Buildbucket bucket found.
+    """
+    bucket = buildbucket_lib.WATERFALL_BUCKET_MAP.get(
+        build_config.active_waterfall)
+
+    if bucket is None:
+      raise buildbucket_lib.NoBuildbucketBucketFoundException(
+          'No Buildbucket bucket found for builder %s waterfall: %s' %
+          (build_name, build_config.active_waterfall))
+
+    return bucket
+
+  def PostSlaveBuildToBuildbucket(self, build_name, build_config,
+                                  master_build_id, dryrun):
+    """Send a Put slave build request to Buildbucket.
+
+    Args:
+      build_name: Salve build name to put to Buildbucket.
+      build_config: Slave build config to put to Buildbucket.
+      master_build_id: Master build id of the slave build.
+      dryrun: Whether a dryrun.
+    """
+    body = json.dumps({
+        'bucket': self._GetBuildbucketBucket(build_name, build_config),
+        'parameters_json': json.dumps({
+            'builder_name': build_name,
+            'properties': {
+                'cbb_config': build_name,
+                'cbb_branch': self._run.manifest_branch,
+                'cbb_master_build_id': master_build_id,
+            }
+        }),
+    })
+
+    content = buildbucket_lib.PutBuildBucket(
+        body, self.buildbucket_http, self._run.options.test_tryjob,
+        dryrun)
+
+    buildbucket_id = buildbucket_lib.GetBuildId(content)
+
+    logging.info('Buildbucket_id for %s: %s' %
+                 (build_name, buildbucket_id))
+
+  def ScheduleSlaveBuildsViaBuildbucket(self, important_only, dryrun):
+    """Schedule slave builds by sending PUT requests to Buildbucket.
+
+    Args:
+      important_only: Whether only schedule important slave builds.
+      dryrun: Whether a dryrun.
+    """
+    if self.buildbucket_http is None:
+      if cros_build_lib.HostIsCIBuilder() and not dryrun:
+        # If it's a buildbot running on a CI builder and not in dryrun.
+        # mode, buildbucket_http cannot be None in order to trigger slave
+        # builds.
+        raise buildbucket_lib.NoBuildBucketHttpException(
+            'No Buildbucket http instance in this CI Builder. '
+            'Please check the service account file %s.' %
+            constants.CHROMEOS_SERVICE_ACCOUNT)
+      else:
+        logging.info('No buildbucket_http. Skip scheduling slaves.')
+        return
+
+    build_id, _ = self._run.GetCIDBHandle()
+    if build_id is None:
+      logging.info('No build id. Skip scheduling slaves.')
+      return
+
+    # Get all active slave build configs.
+    slave_config_map = self._GetSlaveConfigMap(important_only)
+    for slave_name, slave_config in slave_config_map.iteritems():
+      try:
+        self.PostSlaveBuildToBuildbucket(slave_name, slave_config,
+                                         build_id, dryrun)
+      except buildbucket_lib.BuildbucketResponseException as e:
+        # TODO: Catch and log the error. Should raise the exception
+        # when Buildbucket is enabled to trigger slave builds and
+        # scheduling important slave builds are failed.
+        logging.error('Failed to schedule %s: %s' % (slave_name, e))
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -941,8 +1037,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
   What makes this stage different is that the CQ master finds the
   patches on Gerrit which are ready to be committed, apply them, and
-  includes the pathces in the new manifest. The slaves sync to the
-  manifest, and apply the paches written in the manifest.
+  includes the patches in the new manifest. The slaves sync to the
+  manifest, and apply the patches written in the manifest.
   """
 
   # The amount of time we wait before assuming that the Pre-CQ is down and
@@ -1114,6 +1210,18 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
 
     self.WriteChangesToMetadata(self.pool.applied)
 
+    # If this builder is a cq-master but not force_version build,
+    # schedule all slave builders via Buildbucket. If it's a debug mode run,
+    # PutSlaveBuildToBuildbucket would be a dryrun.
+    if (self._run.config.name == constants.CQ_MASTER and
+        not self._run.options.force_version and
+        self._run.options.buildbot):
+      # TODO: dryrun is default to True now, should set
+      # dryrun=self._run.options.debug after confirming the buildbucket
+      # server works and removing the git-based schedulers.
+      self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
+                                             dryrun=True)
+
 
 class PreCQSyncStage(SyncStage):
   """Sync and apply patches to test if they compile."""
@@ -1193,11 +1301,6 @@ class PreCQLauncherStage(SyncStage):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
     self.last_cycle_launch_count = 0
-    self.buildbucket_http = None
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      self.buildbucket_http = buildbucket_lib.BuildBucketAuth(
-          service_account=buildbucket_lib.GetServiceAccount(
-              constants.CHROMEOS_SERVICE_ACCOUNT))
 
 
   def _HasTimedOut(self, start, now, timeout_minutes):
