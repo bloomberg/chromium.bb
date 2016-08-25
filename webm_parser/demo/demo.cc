@@ -217,6 +217,18 @@ std::ostream& operator<<(std::ostream& os, Id id) {
       return os << "LuminanceMax";
     case Id::kLuminanceMin:
       return os << "LuminanceMin";
+    case Id::kProjection:
+      return os << "Projection";
+    case Id::kProjectionType:
+      return os << "kProjectionType";
+    case Id::kProjectionPrivate:
+      return os << "kProjectionPrivate";
+    case Id::kProjectionPoseYaw:
+      return os << "kProjectionPoseYaw";
+    case Id::kProjectionPosePitch:
+      return os << "kProjectionPosePitch";
+    case Id::kProjectionPoseRoll:
+      return os << "ProjectionPoseRoll";
     case Id::kAudio:
       return os << "Audio";
     case Id::kSamplingFrequency:
@@ -436,6 +448,19 @@ std::ostream& operator<<(std::ostream& os, Primaries value) {
       return os << "10 (SMPTE ST 428-1)";
     case Primaries::kJedecP22Phosphors:
       return os << "22 (EBU Tech. 3213-E/JEDEC P22 phosphors)";
+    default:
+      return PrintUnknownEnumValue(os, value);
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, ProjectionType value) {
+  switch (value) {
+    case ProjectionType::kRectangular:
+      return os << "0 (rectangular)";
+    case ProjectionType::kEquirectangular:
+      return os << "1 (equirectangular)";
+    case ProjectionType::kCubeMap:
+      return os << "2 (cube map)";
     default:
       return PrintUnknownEnumValue(os, value);
   }
@@ -684,6 +709,7 @@ class DemoCallback : public Callback {
     PrintOptionalElement("AspectRatioType", video.aspect_ratio_type);
     PrintOptionalElement("FrameRate", video.frame_rate);
     PrintMasterElement("Colour", video.colour);
+    PrintMasterElement("Projection", video.projection);
   }
 
   void PrintMasterElement(const Colour& colour) {
@@ -723,6 +749,14 @@ class DemoCallback : public Callback {
                          mastering_metadata.white_point_chromaticity_y);
     PrintOptionalElement("LuminanceMax", mastering_metadata.luminance_max);
     PrintOptionalElement("LuminanceMin", mastering_metadata.luminance_min);
+  }
+
+  void PrintMasterElement(const Projection& projection) {
+    PrintMandatoryElement("ProjectionType", projection.type);
+    PrintOptionalElement("ProjectionPrivate", projection.projection_private);
+    PrintMandatoryElement("ProjectionPoseYaw", projection.pose_yaw);
+    PrintMandatoryElement("ProjectionPosePitch", projection.pose_pitch);
+    PrintMandatoryElement("ProjectionPoseRoll", projection.pose_roll);
   }
 
   void PrintMasterElement(const Audio& audio) {

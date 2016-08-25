@@ -884,6 +884,66 @@ struct Colour {
 };
 
 /**
+ A parsed \WebMID{ProjectionType} element.
+ */
+enum class ProjectionType : std::uint64_t {
+  /**
+   Rectangular.
+   */
+  kRectangular = 0,
+
+  /**
+   Equirectangular.
+   */
+  kEquirectangular = 1,
+
+  /**
+   Cube map.
+   */
+  kCubeMap = 2,
+};
+
+/**
+ A parsed \WebMID{Projection} element.
+ */
+struct Projection {
+  /**
+   A parsed \WebMID{ProjectionType} element.
+   */
+  Element<ProjectionType> type;
+
+  /**
+   A parsed \WebMID{ProjectionPrivate} element.
+   */
+  Element<std::vector<std::uint8_t>> projection_private;
+
+  /**
+   A parsed \WebMID{ProjectionPoseYaw} element.
+   */
+  Element<double> pose_yaw;
+
+  /**
+   A parsed \WebMID{ProjectionPosePitch} element.
+   */
+  Element<double> pose_pitch;
+
+  /**
+   A parsed \WebMID{ProjectionPoseRoll} element.
+   */
+  Element<double> pose_roll;
+
+  /**
+   Returns true if every member within the two objects are equal.
+   */
+  bool operator==(const Projection& other) const {
+    return type == other.type &&
+           projection_private == other.projection_private &&
+           pose_yaw == other.pose_yaw && pose_pitch == other.pose_pitch &&
+           pose_roll == other.pose_roll;
+  }
+};
+
+/**
  A parsed \WebMID{FlagInterlaced} element.
  */
 enum class FlagInterlaced : std::uint64_t {
@@ -1114,6 +1174,11 @@ struct Video {
   Element<Colour> colour;
 
   /**
+   A parsed \WebMID{Projection} element.
+   */
+  Element<Projection> projection;
+
+  /**
    Returns true if every member within the two objects are equal.
    */
   bool operator==(const Video& other) const {
@@ -1128,7 +1193,8 @@ struct Video {
            display_height == other.display_height &&
            display_unit == other.display_unit &&
            aspect_ratio_type == other.aspect_ratio_type &&
-           frame_rate == other.frame_rate && colour == other.colour;
+           frame_rate == other.frame_rate && colour == other.colour &&
+           projection == other.projection;
   }
 };
 
