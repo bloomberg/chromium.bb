@@ -204,6 +204,15 @@ public:
         return *this != static_cast<const_iterator>(other);
     }
 
+    std::ostream& printTo(std::ostream& stream) const
+    {
+        if (m_position == m_endPosition)
+            return stream << "iterator representing <end>";
+        // TODO(tkent): Change |m_position| to |*m_position| to show the
+        // pointed object. It requires a lot of new stream printer functions.
+        return stream << "iterator pointing to " << m_position;
+    }
+
 private:
     PointerType m_position;
     PointerType m_endPosition;
@@ -212,6 +221,12 @@ private:
     int64_t m_containerModifications;
 #endif
 };
+
+template <typename Key, typename Value, typename Extractor, typename Hash, typename Traits, typename KeyTraits, typename Allocator>
+std::ostream& operator<<(std::ostream& stream, const HashTableConstIterator<Key, Value, Extractor, Hash, Traits, KeyTraits, Allocator>& iterator)
+{
+    return iterator.printTo(stream);
+}
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 class HashTableIterator final {
@@ -249,10 +264,17 @@ public:
     bool operator!=(const const_iterator& other) const { return m_iterator != other; }
 
     operator const_iterator() const { return m_iterator; }
+    std::ostream& printTo(std::ostream& stream) const { return m_iterator.printTo(stream); }
 
 private:
     const_iterator m_iterator;
 };
+
+template <typename Key, typename Value, typename Extractor, typename Hash, typename Traits, typename KeyTraits, typename Allocator>
+std::ostream& operator<<(std::ostream& stream, const HashTableIterator<Key, Value, Extractor, Hash, Traits, KeyTraits, Allocator>& iterator)
+{
+    return iterator.printTo(stream);
+}
 
 using std::swap;
 
@@ -1460,6 +1482,12 @@ template <typename HashTableType, typename Traits> struct HashTableConstIterator
     typename HashTableType::const_iterator m_impl;
 };
 
+template <typename HashTable, typename Traits>
+std::ostream& operator<<(std::ostream& stream, const HashTableConstIteratorAdapter<HashTable, Traits>& iterator)
+{
+    return stream << iterator.m_impl;
+}
+
 template <typename HashTableType, typename Traits> struct HashTableIteratorAdapter {
     STACK_ALLOCATED();
     typedef typename Traits::IteratorGetType GetType;
@@ -1483,6 +1511,12 @@ template <typename HashTableType, typename Traits> struct HashTableIteratorAdapt
 
     typename HashTableType::iterator m_impl;
 };
+
+template <typename HashTable, typename Traits>
+std::ostream& operator<<(std::ostream& stream, const HashTableIteratorAdapter<HashTable, Traits>& iterator)
+{
+    return stream << iterator.m_impl;
+}
 
 template <typename T, typename U>
 inline bool operator==(const HashTableConstIteratorAdapter<T, U>& a, const HashTableConstIteratorAdapter<T, U>& b)

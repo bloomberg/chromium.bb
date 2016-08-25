@@ -186,8 +186,7 @@ void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree()
             rootTree = treeScopeEventContext.get();
             continue;
         }
-        // TODO(tkent): Add a stream printer for HashMap::iterator.
-        ASSERT(treeScopeEventContextMap.find(parent) != treeScopeEventContextMap.end());
+        DCHECK_NE(treeScopeEventContextMap.find(parent), treeScopeEventContextMap.end());
         treeScopeEventContextMap.find(parent)->value->addChild(*treeScopeEventContext.get());
     }
     DCHECK(rootTree);

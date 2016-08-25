@@ -143,7 +143,7 @@ void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 {
     DCHECK_EQ(button->type(), InputTypeNames::radio);
     auto it = m_members.find(button);
-    ASSERT(it != m_members.end());
+    DCHECK_NE(it, m_members.end());
     bool wasValid = isValid();
     // Synchronize the 'required' flag for the button, along with
     // updating the overall count.
