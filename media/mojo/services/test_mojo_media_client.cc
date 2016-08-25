@@ -91,9 +91,9 @@ AudioRendererSink* TestMojoMediaClient::GetAudioRendererSink() {
 VideoRendererSink* TestMojoMediaClient::GetVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   if (!video_renderer_sink_) {
-    video_renderer_sink_ = base::WrapUnique(
-        new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
-                          NullVideoSink::NewFrameCB(), task_runner));
+    video_renderer_sink_ = base::MakeUnique<NullVideoSink>(
+        false, base::TimeDelta::FromSecondsD(1.0 / 60),
+        NullVideoSink::NewFrameCB(), task_runner);
   }
 
   return video_renderer_sink_.get();
@@ -102,7 +102,7 @@ VideoRendererSink* TestMojoMediaClient::GetVideoRendererSink(
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     shell::mojom::InterfaceProvider* /* interface_provider */) {
   DVLOG(1) << __FUNCTION__;
-  return base::WrapUnique(new DefaultCdmFactory());
+  return base::MakeUnique<DefaultCdmFactory>();
 }
 
 }  // namespace media

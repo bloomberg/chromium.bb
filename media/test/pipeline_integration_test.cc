@@ -696,8 +696,8 @@ class PipelineIntegrationTestHost : public shell::test::ServiceTest,
     media_service_factory_->CreateRenderer(std::string(),
                                            mojo::GetProxy(&mojo_renderer));
 
-    return base::WrapUnique(new MojoRenderer(message_loop_.task_runner(),
-                                             std::move(mojo_renderer)));
+    return base::MakeUnique<MojoRenderer>(message_loop_.task_runner(),
+                                          std::move(mojo_renderer));
   }
 
  private:

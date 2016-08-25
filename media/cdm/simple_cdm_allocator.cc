@@ -68,7 +68,7 @@ cdm::Buffer* SimpleCdmAllocator::CreateCdmBuffer(size_t capacity) {
 
 // Creates a new SimpleCdmVideoFrame on every request.
 std::unique_ptr<VideoFrameImpl> SimpleCdmAllocator::CreateCdmVideoFrame() {
-  return base::WrapUnique(new SimpleCdmVideoFrame());
+  return base::MakeUnique<SimpleCdmVideoFrame>();
 }
 
 }  // namespace media

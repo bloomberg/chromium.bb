@@ -21,8 +21,8 @@ std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
     shell::mojom::InterfaceProvider* interface_provider) {
   mojom::ProvisionFetcherPtr provision_fetcher_ptr;
   shell::GetInterface(interface_provider, &provision_fetcher_ptr);
-  return base::WrapUnique(
-      new MojoProvisionFetcher(std::move(provision_fetcher_ptr)));
+  return base::MakeUnique<MojoProvisionFetcher>(
+      std::move(provision_fetcher_ptr));
 }
 
 }  // namespace
@@ -35,13 +35,13 @@ AndroidMojoMediaClient::~AndroidMojoMediaClient() {}
 
 std::unique_ptr<AudioDecoder> AndroidMojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new MediaCodecAudioDecoder(task_runner));
+  return base::MakeUnique<MediaCodecAudioDecoder>(task_runner);
 }
 
 std::unique_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
     shell::mojom::InterfaceProvider* interface_provider) {
-  return base::WrapUnique(new AndroidCdmFactory(
-      base::Bind(&CreateProvisionFetcher, interface_provider)));
+  return base::MakeUnique<AndroidCdmFactory>(
+      base::Bind(&CreateProvisionFetcher, interface_provider));
 }
 
 }  // namespace media

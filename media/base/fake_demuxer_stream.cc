@@ -200,10 +200,9 @@ void FakeDemuxerStream::DoRead() {
 
   // TODO(xhwang): Output out-of-order buffers if needed.
   if (is_encrypted_) {
-    buffer->set_decrypt_config(base::WrapUnique(
-        new DecryptConfig(std::string(kKeyId, kKeyId + arraysize(kKeyId)),
-                          std::string(kIv, kIv + arraysize(kIv)),
-                          std::vector<SubsampleEntry>())));
+    buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+        std::string(kKeyId, kKeyId + arraysize(kKeyId)),
+        std::string(kIv, kIv + arraysize(kIv)), std::vector<SubsampleEntry>()));
   }
   buffer->set_timestamp(current_timestamp_);
   buffer->set_duration(duration_);

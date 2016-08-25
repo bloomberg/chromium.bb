@@ -192,8 +192,8 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
 PipelineStatus PipelineIntegrationTestBase::Start(const uint8_t* data,
                                                   size_t size,
                                                   uint8_t test_type) {
-  return StartInternal(base::WrapUnique(new MemoryDataSource(data, size)),
-                       nullptr, test_type);
+  return StartInternal(base::MakeUnique<MemoryDataSource>(data, size), nullptr,
+                       test_type);
 }
 
 void PipelineIntegrationTestBase::Play() {

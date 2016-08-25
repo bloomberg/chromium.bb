@@ -24,7 +24,7 @@ namespace media {
 std::unique_ptr<shell::Service> CreateMojoMediaApplication(
     const base::Closure& quit_closure) {
   return std::unique_ptr<shell::Service>(new MojoMediaApplication(
-      base::WrapUnique(new DefaultClient()), quit_closure));
+      base::MakeUnique<DefaultClient>(), quit_closure));
 }
 
 }  // namespace media

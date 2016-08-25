@@ -267,7 +267,7 @@ bool MediaCodecDecoderTest::WaitForCondition(const Predicate& condition,
 }
 
 void MediaCodecDecoderTest::CreateAudioDecoder() {
-  decoder_ = base::WrapUnique(new AudioMediaCodecDecoder(
+  decoder_ = base::MakeUnique<AudioMediaCodecDecoder>(
       task_runner_, &frame_statistics_,
       base::Bind(&MediaCodecDecoderTest::OnDataRequested,
                  base::Unretained(this)),
@@ -278,14 +278,14 @@ void MediaCodecDecoderTest::CreateAudioDecoder() {
       base::Bind(&MediaCodecDecoderTest::OnKeyRequired, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnError, base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnUpdateCurrentTime,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 
   data_available_cb_ = base::Bind(&MediaCodecDecoder::OnDemuxerDataAvailable,
                                   base::Unretained(decoder_.get()));
 }
 
 void MediaCodecDecoderTest::CreateVideoDecoder() {
-  decoder_ = base::WrapUnique(new VideoMediaCodecDecoder(
+  decoder_ = base::MakeUnique<VideoMediaCodecDecoder>(
       task_runner_, &frame_statistics_,
       base::Bind(&MediaCodecDecoderTest::OnDataRequested,
                  base::Unretained(this)),
@@ -298,7 +298,7 @@ void MediaCodecDecoderTest::CreateVideoDecoder() {
       base::Bind(&MediaCodecDecoderTest::OnUpdateCurrentTime,
                  base::Unretained(this)),
       base::Bind(&MediaCodecDecoderTest::OnVideoSizeChanged,
-                 base::Unretained(this))));
+                 base::Unretained(this)));
 
   data_available_cb_ = base::Bind(&MediaCodecDecoder::OnDemuxerDataAvailable,
                                   base::Unretained(decoder_.get()));
@@ -330,7 +330,7 @@ TEST_F(MediaCodecDecoderTest, AudioPrefetch) {
   CreateAudioDecoder();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new AudioFactory(duration)));
+  SetDataFactory(base::MakeUnique<AudioFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -343,7 +343,7 @@ TEST_F(MediaCodecDecoderTest, VideoPrefetch) {
   CreateVideoDecoder();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -382,7 +382,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureNoParams) {
   // We have to prefetch decoder.
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -405,7 +405,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureNoSurface) {
   // We have to prefetch decoder.
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -429,7 +429,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
   // We have to prefetch decoder.
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -463,7 +463,7 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureValidParams) {
   // We have to prefetch decoder.
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
                                 base::Unretained(this), true));
@@ -492,7 +492,7 @@ TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
 
   // Do the prefetch.
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(500);
-  SetDataFactory(base::WrapUnique(new AudioFactory(duration)));
+  SetDataFactory(base::MakeUnique<AudioFactory>(duration));
 
   // Prefetch to avoid starvation at the beginning of playback.
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,
@@ -564,7 +564,7 @@ TEST_F(MediaCodecDecoderTest, MAYBE_VideoPlayTillCompletion) {
   // the codec does initial configuration at this time. We increase the timeout
   // to leave a room of 1 second for this initial configuration.
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(1500);
-  SetDataFactory(base::WrapUnique(new VideoFactory(duration)));
+  SetDataFactory(base::MakeUnique<VideoFactory>(duration));
 
   // Prefetch
   decoder_->Prefetch(base::Bind(&MediaCodecDecoderTest::SetPrefetched,

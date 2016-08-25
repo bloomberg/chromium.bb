@@ -125,9 +125,8 @@ void MojoCdmService::SetServerCertificate(
     mojo::Array<uint8_t> certificate_data,
     const SetServerCertificateCallback& callback) {
   DVLOG(2) << __FUNCTION__;
-  cdm_->SetServerCertificate(
-      certificate_data.storage(),
-      base::WrapUnique(new SimpleMojoCdmPromise(callback)));
+  cdm_->SetServerCertificate(certificate_data.storage(),
+                             base::MakeUnique<SimpleMojoCdmPromise>(callback));
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
@@ -139,7 +138,7 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
   cdm_->CreateSessionAndGenerateRequest(
       static_cast<MediaKeys::SessionType>(session_type),
       static_cast<EmeInitDataType>(init_data_type), init_data.storage(),
-      base::WrapUnique(new NewSessionMojoCdmPromise(callback)));
+      base::MakeUnique<NewSessionMojoCdmPromise>(callback));
 }
 
 void MojoCdmService::LoadSession(
@@ -149,7 +148,7 @@ void MojoCdmService::LoadSession(
   DVLOG(2) << __FUNCTION__;
   cdm_->LoadSession(static_cast<MediaKeys::SessionType>(session_type),
                     session_id.To<std::string>(),
-                    base::WrapUnique(new NewSessionMojoCdmPromise(callback)));
+                    base::MakeUnique<NewSessionMojoCdmPromise>(callback));
 }
 
 void MojoCdmService::UpdateSession(const mojo::String& session_id,
@@ -165,14 +164,14 @@ void MojoCdmService::CloseSession(const mojo::String& session_id,
                                   const CloseSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->CloseSession(session_id.To<std::string>(),
-                     base::WrapUnique(new SimpleMojoCdmPromise(callback)));
+                     base::MakeUnique<SimpleMojoCdmPromise>(callback));
 }
 
 void MojoCdmService::RemoveSession(const mojo::String& session_id,
                                    const RemoveSessionCallback& callback) {
   DVLOG(2) << __FUNCTION__;
   cdm_->RemoveSession(session_id.To<std::string>(),
-                      base::WrapUnique(new SimpleMojoCdmPromise(callback)));
+                      base::MakeUnique<SimpleMojoCdmPromise>(callback));
 }
 
 scoped_refptr<MediaKeys> MojoCdmService::GetCdm() {

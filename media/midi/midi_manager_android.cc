@@ -108,7 +108,7 @@ void MidiManagerAndroid::OnInitialized(
 
   for (jsize i = 0; i < length; ++i) {
     jobject raw_device = env->GetObjectArrayElement(devices, i);
-    AddDevice(base::WrapUnique(new MidiDeviceAndroid(env, raw_device, this)));
+    AddDevice(base::MakeUnique<MidiDeviceAndroid>(env, raw_device, this));
   }
   CompleteInitialization(Result::OK);
 }
@@ -116,7 +116,7 @@ void MidiManagerAndroid::OnInitialized(
 void MidiManagerAndroid::OnAttached(JNIEnv* env,
                                     const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
-  AddDevice(base::WrapUnique(new MidiDeviceAndroid(env, raw_device, this)));
+  AddDevice(base::MakeUnique<MidiDeviceAndroid>(env, raw_device, this));
 }
 
 void MidiManagerAndroid::OnDetached(JNIEnv* env,

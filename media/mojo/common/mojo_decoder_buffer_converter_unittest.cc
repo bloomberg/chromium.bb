@@ -111,14 +111,14 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
-      base::WrapUnique(new DecryptConfig(kKeyId, kIv, subsamples)));
+      base::MakeUnique<DecryptConfig>(kKeyId, kIv, subsamples));
 
   scoped_refptr<DecoderBuffer> result = ConvertDecoderBufferAndBack(buffer);
   CompareDecoderBuffer(buffer, result);
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
-  buffer->set_decrypt_config(base::WrapUnique(
-      new DecryptConfig(kKeyId, "", std::vector<SubsampleEntry>())));
+  buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+      kKeyId, "", std::vector<SubsampleEntry>()));
   result = ConvertDecoderBufferAndBack(buffer);
   CompareDecoderBuffer(buffer, result);
 }

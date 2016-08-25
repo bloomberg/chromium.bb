@@ -15,7 +15,7 @@ namespace media {
 class ADTSStreamParserTest : public StreamParserTestBase, public testing::Test {
  public:
   ADTSStreamParserTest()
-      : StreamParserTestBase(base::WrapUnique(new ADTSStreamParser())) {}
+      : StreamParserTestBase(base::MakeUnique<ADTSStreamParser>()) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

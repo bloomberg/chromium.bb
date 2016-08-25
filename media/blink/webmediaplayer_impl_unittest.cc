@@ -123,8 +123,8 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     wmpi_.reset(new WebMediaPlayerImpl(
         web_local_frame_, &client_, nullptr, delegate_.AsWeakPtr(),
-        base::WrapUnique(new DefaultRendererFactory(
-            media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB())),
+        base::MakeUnique<DefaultRendererFactory>(
+            media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB()),
         url_index_,
         WebMediaPlayerParams(
             WebMediaPlayerParams::DeferLoadCB(),

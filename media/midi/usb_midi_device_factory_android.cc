@@ -80,7 +80,7 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
     const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobject>& device) {
   delegate_->OnDeviceAttached(
-      base::WrapUnique(new UsbMidiDeviceAndroid(device, delegate_)));
+      base::MakeUnique<UsbMidiDeviceAndroid>(device, delegate_));
 }
 
 // Called from the Java world.

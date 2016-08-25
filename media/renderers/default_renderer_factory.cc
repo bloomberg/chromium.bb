@@ -118,8 +118,8 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       CreateVideoDecoders(media_task_runner, request_surface_cb, gpu_factories),
       true, gpu_factories, media_log_));
 
-  return base::WrapUnique(new RendererImpl(
-      media_task_runner, std::move(audio_renderer), std::move(video_renderer)));
+  return base::MakeUnique<RendererImpl>(
+      media_task_runner, std::move(audio_renderer), std::move(video_renderer));
 }
 
 }  // namespace media

@@ -417,9 +417,9 @@ std::unique_ptr<media::DecryptConfig>
 TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::mojom::DecryptConfigPtr>::
     Convert(const media::mojom::DecryptConfigPtr& input) {
-  return base::WrapUnique(new media::DecryptConfig(
+  return base::MakeUnique<media::DecryptConfig>(
       input->key_id, input->iv,
-      input->subsamples.To<std::vector<media::SubsampleEntry>>()));
+      input->subsamples.To<std::vector<media::SubsampleEntry>>());
 }
 
 // static
@@ -590,10 +590,10 @@ std::unique_ptr<media::CdmKeyInformation>
 TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
               media::mojom::CdmKeyInformationPtr>::
     Convert(const media::mojom::CdmKeyInformationPtr& input) {
-  return base::WrapUnique(new media::CdmKeyInformation(
+  return base::MakeUnique<media::CdmKeyInformation>(
       input->key_id.storage(),
       static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
-      input->system_code));
+      input->system_code);
 }
 
 // static

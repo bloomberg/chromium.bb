@@ -258,7 +258,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
-      base::WrapUnique(new DecryptConfig(kKeyId, kIv, subsamples)));
+      base::MakeUnique<DecryptConfig>(kKeyId, kIv, subsamples));
 
   // Convert from and back.
   mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
@@ -271,8 +271,8 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
-  buffer->set_decrypt_config(base::WrapUnique(
-      new DecryptConfig(kKeyId, "", std::vector<SubsampleEntry>())));
+  buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+      kKeyId, "", std::vector<SubsampleEntry>()));
   result =
       mojom::DecoderBuffer::From(buffer).To<scoped_refptr<DecoderBuffer>>();
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));

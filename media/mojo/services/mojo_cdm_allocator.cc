@@ -198,9 +198,9 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
 // Creates a new MojoCdmVideoFrame on every request.
 std::unique_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::WrapUnique(new MojoCdmVideoFrame(
+  return base::MakeUnique<MojoCdmVideoFrame>(
       base::Bind(&MojoCdmAllocator::AddBufferToAvailableMap,
-                 weak_ptr_factory_.GetWeakPtr())));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 mojo::ScopedSharedBufferHandle MojoCdmAllocator::AllocateNewBuffer(

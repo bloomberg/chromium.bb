@@ -265,10 +265,10 @@ int main(int argc, char** argv) {
   std::unique_ptr<media::cast::CastTransport> transport_sender =
       media::cast::CastTransport::Create(
           cast_environment->Clock(), base::TimeDelta::FromSeconds(1),
-          base::WrapUnique(new TransportClient(cast_environment->logger())),
-          base::WrapUnique(new media::cast::UdpTransport(
+          base::MakeUnique<TransportClient>(cast_environment->logger()),
+          base::MakeUnique<media::cast::UdpTransport>(
               nullptr, io_message_loop.task_runner(), net::IPEndPoint(),
-              remote_endpoint, base::Bind(&UpdateCastTransportStatus))),
+              remote_endpoint, base::Bind(&UpdateCastTransportStatus)),
           io_message_loop.task_runner());
 
   // Set up event subscribers.

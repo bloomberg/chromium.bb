@@ -32,7 +32,7 @@ MojoResult ServiceMain(MojoHandle mojo_handle) {
   logging::InitLogging(settings);
 
   shell::ServiceRunner runner(new media::MojoMediaApplication(
-      base::WrapUnique(new media::TestMojoMediaClient()),
+      base::MakeUnique<media::TestMojoMediaClient>(),
       base::Bind(&QuitApplication)));
   g_runner = &runner;
   return runner.Run(mojo_handle, false /* init_base */);

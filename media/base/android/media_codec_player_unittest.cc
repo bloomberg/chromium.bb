@@ -515,7 +515,7 @@ void MockDemuxerAndroid::PostConfigs(const DemuxerConfigs& configs) {
   if (client_)
     client_->OnDemuxerConfigsAvailable(configs);
   else
-    pending_configs_ = base::WrapUnique(new DemuxerConfigs(configs));
+    pending_configs_ = base::MakeUnique<DemuxerConfigs>(configs);
 }
 
 void MockDemuxerAndroid::PostInternalConfigs() {
@@ -713,7 +713,7 @@ bool MediaCodecPlayerTest::StartVideoPlayback(base::TimeDelta duration,
                                               const char* test_name) {
   const base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(800);
 
-  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::MakeUnique<VideoFactory>(duration));
 
   CreatePlayer();
 
@@ -945,7 +945,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioPlayTillCompletion) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
   base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(2000);
 
-  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::MakeUnique<AudioFactory>(duration));
 
   CreatePlayer();
 
@@ -979,7 +979,7 @@ TEST_F(MediaCodecPlayerTest, AudioNoPermission) {
 
   manager_.SetPlaybackAllowed(false);
 
-  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::MakeUnique<AudioFactory>(duration));
 
   CreatePlayer();
 
@@ -1032,7 +1032,7 @@ TEST_F(MediaCodecPlayerTest, VideoNoPermission) {
 
   manager_.SetPlaybackAllowed(false);
 
-  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::MakeUnique<VideoFactory>(duration));
 
   CreatePlayer();
 
@@ -1124,7 +1124,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlay) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
 
-  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::MakeUnique<AudioFactory>(duration));
 
   CreatePlayer();
 
@@ -1158,7 +1158,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlayThenConfig) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta seek_position = base::TimeDelta::FromMilliseconds(500);
 
-  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(duration)));
+  demuxer_->SetAudioFactory(base::MakeUnique<AudioFactory>(duration));
 
   CreatePlayer();
 
@@ -1765,8 +1765,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollVideoEndsWhilePrerolling) {
 
   demuxer_->SetVideoPrerollInterval(video_preroll_intvl);
 
-  demuxer_->SetAudioFactory(base::WrapUnique(new AudioFactory(audio_duration)));
-  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(video_duration)));
+  demuxer_->SetAudioFactory(base::MakeUnique<AudioFactory>(audio_duration));
+  demuxer_->SetVideoFactory(base::MakeUnique<VideoFactory>(video_duration));
 
   CreatePlayer();
   SetVideoSurface();
@@ -1841,7 +1841,7 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoConfigChangeWhilePlaying) {
   base::TimeDelta start_timeout = base::TimeDelta::FromMilliseconds(2000);
   base::TimeDelta completion_timeout = base::TimeDelta::FromMilliseconds(3000);
 
-  demuxer_->SetVideoFactory(base::WrapUnique(new VideoFactory(duration)));
+  demuxer_->SetVideoFactory(base::MakeUnique<VideoFactory>(duration));
 
   demuxer_->video_factory()->RequestConfigChange(config_change_position);
 

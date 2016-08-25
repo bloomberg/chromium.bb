@@ -98,11 +98,11 @@ void InProcessReceiver::StartOnMainThread() {
   transport_ = CastTransport::Create(
       cast_environment_->Clock(), base::TimeDelta(),
       base::WrapUnique(new InProcessReceiver::TransportClient(this)),
-      base::WrapUnique(new UdpTransport(
+      base::MakeUnique<UdpTransport>(
           nullptr, cast_environment_->GetTaskRunner(CastEnvironment::MAIN),
           local_end_point_, remote_end_point_,
           base::Bind(&InProcessReceiver::UpdateCastTransportStatus,
-                     base::Unretained(this)))),
+                     base::Unretained(this))),
       cast_environment_->GetTaskRunner(CastEnvironment::MAIN));
 
   cast_receiver_ = CastReceiver::Create(

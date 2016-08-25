@@ -701,7 +701,7 @@ std::unique_ptr<GpuVideoDecoder::SHMBuffer> GpuVideoDecoder::GetSHM(
     // CreateSharedMemory() can return NULL during Shutdown.
     if (!shm)
       return NULL;
-    return base::WrapUnique(new SHMBuffer(std::move(shm), size_to_allocate));
+    return base::MakeUnique<SHMBuffer>(std::move(shm), size_to_allocate);
   }
   std::unique_ptr<SHMBuffer> ret(available_shm_segments_.back());
   available_shm_segments_.pop_back();

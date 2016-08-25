@@ -32,7 +32,7 @@ FakeAudioLogFactory::~FakeAudioLogFactory() {}
 
 std::unique_ptr<AudioLog> FakeAudioLogFactory::CreateAudioLog(
     AudioComponent component) {
-  return base::WrapUnique(new FakeAudioLogImpl());
+  return base::MakeUnique<FakeAudioLogImpl>();
 }
 
 }  // namespace media

@@ -158,7 +158,7 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedAudio(audio_params,
-                             base::WrapUnique(new std::string(encoded_data)),
+                             base::MakeUnique<std::string>(encoded_data),
                              base::TimeTicks::Now());
 
   // First time around WriteCallback() is pinged a number of times to write the
@@ -174,7 +174,7 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
       .WillRepeatedly(
           WithArgs<0>(Invoke(this, &WebmMuxerTest::SaveEncodedDataLen)));
   webm_muxer_.OnEncodedAudio(audio_params,
-                             base::WrapUnique(new std::string(encoded_data)),
+                             base::MakeUnique<std::string>(encoded_data),
                              base::TimeTicks::Now());
 
   // The second time around the callbacks should include a SimpleBlock header,

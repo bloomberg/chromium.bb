@@ -118,7 +118,7 @@ TEST(DecoderBufferTest, DecryptConfig) {
   DecryptConfig decrypt_config(kKeyId, kIv, subsamples);
 
   buffer->set_decrypt_config(
-      base::WrapUnique(new DecryptConfig(kKeyId, kIv, subsamples)));
+      base::MakeUnique<DecryptConfig>(kKeyId, kIv, subsamples));
 
   EXPECT_TRUE(buffer->decrypt_config());
   EXPECT_TRUE(buffer->decrypt_config()->Matches(decrypt_config));

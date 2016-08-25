@@ -39,7 +39,7 @@ std::unique_ptr<mojo::DataPipe> CreateDataPipe(DemuxerStream::Type type) {
     options.capacity_num_bytes = 512 * 1024;
   }
 
-  return base::WrapUnique(new mojo::DataPipe(options));
+  return base::MakeUnique<mojo::DataPipe>(options);
 }
 
 }  // namespace

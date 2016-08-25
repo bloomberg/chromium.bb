@@ -638,8 +638,8 @@ void MidiManagerAlsa::AlsaSeqState::ClientStart(int client_id,
                                                 const std::string& client_name,
                                                 snd_seq_client_type_t type) {
   ClientExit(client_id);
-  clients_.insert(std::make_pair(
-      client_id, base::WrapUnique(new Client(client_name, type))));
+  clients_.insert(
+      std::make_pair(client_id, base::MakeUnique<Client>(client_name, type)));
   if (IsCardClient(type, client_id))
     ++card_client_count_;
 }
@@ -666,7 +666,7 @@ void MidiManagerAlsa::AlsaSeqState::PortStart(
   auto it = clients_.find(client_id);
   if (it != clients_.end())
     it->second->AddPort(port_id,
-                        base::WrapUnique(new Port(port_name, direction, midi)));
+                        base::MakeUnique<Port>(port_name, direction, midi));
 }
 
 void MidiManagerAlsa::AlsaSeqState::PortExit(int client_id, int port_id) {
@@ -739,15 +739,15 @@ MidiManagerAlsa::AlsaSeqState::ToMidiPortState(const AlsaCardMap& alsa_cards) {
         PortDirection direction = port->direction();
         if (direction == PortDirection::kInput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->push_back(base::WrapUnique(new MidiPort(
+          midi_ports->push_back(base::MakeUnique<MidiPort>(
               path, id, client_id, port_id, midi_device, client->name(),
-              port->name(), manufacturer, version, MidiPort::Type::kInput)));
+              port->name(), manufacturer, version, MidiPort::Type::kInput));
         }
         if (direction == PortDirection::kOutput ||
             direction == PortDirection::kDuplex) {
-          midi_ports->push_back(base::WrapUnique(new MidiPort(
+          midi_ports->push_back(base::MakeUnique<MidiPort>(
               path, id, client_id, port_id, midi_device, client->name(),
-              port->name(), manufacturer, version, MidiPort::Type::kOutput)));
+              port->name(), manufacturer, version, MidiPort::Type::kOutput));
         }
       }
     }

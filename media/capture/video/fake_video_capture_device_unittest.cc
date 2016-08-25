@@ -89,8 +89,7 @@ class MockClient : public VideoCaptureDevice::Client {
                  storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
-    return base::WrapUnique(
-        new MockBuffer(0, frame_format.ImageAllocationSize()));
+    return base::MakeUnique<MockBuffer>(0, frame_format.ImageAllocationSize());
   }
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& frame_format,

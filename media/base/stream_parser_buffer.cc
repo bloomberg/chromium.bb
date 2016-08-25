@@ -34,9 +34,9 @@ static scoped_refptr<StreamParserBuffer> CopyBuffer(
   copied_buffer->set_splice_timestamp(buffer.splice_timestamp());
   const DecryptConfig* decrypt_config = buffer.decrypt_config();
   if (decrypt_config) {
-    copied_buffer->set_decrypt_config(base::WrapUnique(
-        new DecryptConfig(decrypt_config->key_id(), decrypt_config->iv(),
-                          decrypt_config->subsamples())));
+    copied_buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+        decrypt_config->key_id(), decrypt_config->iv(),
+        decrypt_config->subsamples()));
   }
 
   return copied_buffer;

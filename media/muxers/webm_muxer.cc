@@ -144,8 +144,8 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
     if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
       encoded_frames_queue_.clear();
 
-    encoded_frames_queue_.push_back(base::WrapUnique(new EncodedVideoFrame(
-        std::move(encoded_data), timestamp, is_key_frame)));
+    encoded_frames_queue_.push_back(base::MakeUnique<EncodedVideoFrame>(
+        std::move(encoded_data), timestamp, is_key_frame));
     return;
   }
 
