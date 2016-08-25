@@ -299,18 +299,15 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   const Extension* extension = GetExtension(params);
   if (!extension)
     return NULL;
-  Profile* profile = params.profile;
 
   WebContents* tab = NULL;
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(params.profile);
   prefs->SetActiveBit(extension->id(), true);
 
   if (CanLaunchViaEvent(extension)) {
-    apps::LaunchPlatformAppWithCommandLine(profile,
-                                           extension,
-                                           params.command_line,
-                                           params.current_directory,
-                                           params.source);
+    apps::LaunchPlatformAppWithCommandLine(
+        params.profile, extension, params.command_line,
+        params.current_directory, params.source, params.play_store_status);
     return NULL;
   }
 
@@ -326,7 +323,7 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
     // Record the launch time in the site engagement service. A recent bookmark
     // app launch will provide an engagement boost to the origin.
-    SiteEngagementService* service = SiteEngagementService::Get(profile);
+    SiteEngagementService* service = SiteEngagementService::Get(params.profile);
     if (service)
       service->SetLastShortcutLaunchTime(url);
   }
