@@ -140,15 +140,8 @@ void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
   ime_type_ = type;
 
   ui::InputMethod* const input_method = GetInputMethod();
-  if (input_method) {
+  if (input_method)
     input_method->OnTextInputTypeChanged(this);
-    // TODO(crbug.com/581282): Remove this piggyback call when
-    // ImeInstance::ShowImeIfNeeded is wired to ARC.
-    if (input_method->GetTextInputClient() == this &&
-        ime_type_ != ui::TEXT_INPUT_TYPE_NONE) {
-      input_method->ShowImeIfNeeded();
-    }
-  }
 }
 
 void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect) {

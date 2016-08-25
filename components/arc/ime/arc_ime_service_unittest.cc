@@ -142,19 +142,12 @@ TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
   ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
 
+  // Text input type change does not imply the show ime request.
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(0, fake_input_method_->count_show_ime_if_needed());
+
+  instance_->ShowImeIfNeeded();
   EXPECT_EQ(1, fake_input_method_->count_show_ime_if_needed());
-
-  // The type is not changing, hence no call.
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_EQ(1, fake_input_method_->count_show_ime_if_needed());
-
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_SEARCH);
-  EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
-
-  // Change to NONE should not trigger the showing event.
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
-  EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
 }
 
 TEST_F(ArcImeServiceTest, CancelComposition) {
