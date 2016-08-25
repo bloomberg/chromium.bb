@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/filters/h264_parser.h"
 #include "media/gpu/shared_memory_region.h"
 
 #define NOTIFY_ERROR(x)                        \
@@ -52,6 +53,33 @@
       PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
   } while (0)
 
+namespace {
+const uint8_t kH264StartCode[] = {0, 0, 0, 1};
+const size_t kH264StartCodeSize = sizeof(kH264StartCode);
+
+// Copy a H.264 NALU of size |src_size| (without start code), located at |src|,
+// into a buffer starting at |dst| of size |dst_size|, prepending it with
+// a H.264 start code (as long as both fit). After copying, update |dst| to
+// point to the address immediately after the copied data, and update |dst_size|
+// to contain remaining destination buffer size.
+static void CopyNALUPrependingStartCode(const uint8_t* src,
+                                        size_t src_size,
+                                        uint8_t** dst,
+                                        size_t* dst_size) {
+  size_t size_to_copy = kH264StartCodeSize + src_size;
+  if (size_to_copy > *dst_size) {
+    DVLOG(1) << "Could not copy a NALU, not enough space in destination buffer";
+    return;
+  }
+
+  memcpy(*dst, kH264StartCode, kH264StartCodeSize);
+  memcpy(*dst + kH264StartCodeSize, src, src_size);
+
+  *dst += size_to_copy;
+  *dst_size -= size_to_copy;
+}
+}  // namespace
+
 namespace media {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
@@ -66,7 +94,7 @@ V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {}
 V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() {}
 
 V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord()
-    : at_device(false), address(NULL), length(0) {}
+    : at_device(false), address(nullptr), length(0) {}
 
 V4L2VideoEncodeAccelerator::OutputRecord::~OutputRecord() {}
 
@@ -85,7 +113,6 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       input_planes_count_(0),
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
-      stream_header_size_(0),
       device_(device),
       input_streamon_(false),
       input_buffer_queued_count_(0),
@@ -402,6 +429,76 @@ void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(
   }
 }
 
+size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
+    const uint8_t* bitstream_data,
+    size_t bitstream_size,
+    std::unique_ptr<BitstreamBufferRef> buffer_ref) {
+  uint8_t* dst_ptr = static_cast<uint8_t*>(buffer_ref->shm->memory());
+  size_t remaining_dst_size = buffer_ref->shm->size();
+
+  if (!inject_sps_and_pps_) {
+    if (bitstream_size <= remaining_dst_size) {
+      memcpy(dst_ptr, bitstream_data, bitstream_size);
+      return bitstream_size;
+    } else {
+      DVLOG(1) << "Output data did not fit in the BitstreamBuffer";
+      return 0;
+    }
+  }
+
+  // Cache the newest SPS and PPS found in the stream, and inject them before
+  // each IDR found.
+  H264Parser parser;
+  parser.SetStream(bitstream_data, bitstream_size);
+  H264NALU nalu;
+
+  while (parser.AdvanceToNextNALU(&nalu) == H264Parser::kOk) {
+    // nalu.size is always without the start code, regardless of the NALU type.
+    if (nalu.size + kH264StartCodeSize > remaining_dst_size) {
+      DVLOG(1) << "Output data did not fit in the BitstreamBuffer";
+      break;
+    }
+
+    switch (nalu.nal_unit_type) {
+      case H264NALU::kSPS:
+        cached_sps_.resize(nalu.size);
+        memcpy(cached_sps_.data(), nalu.data, nalu.size);
+        cached_h264_header_size_ =
+            cached_sps_.size() + cached_pps_.size() + 2 * kH264StartCodeSize;
+        break;
+
+      case H264NALU::kPPS:
+        cached_pps_.resize(nalu.size);
+        memcpy(cached_pps_.data(), nalu.data, nalu.size);
+        cached_h264_header_size_ =
+            cached_sps_.size() + cached_pps_.size() + 2 * kH264StartCodeSize;
+        break;
+
+      case H264NALU::kIDRSlice:
+        // Only inject if we have both headers cached, and enough space for both
+        // the headers and the NALU itself.
+        if (cached_sps_.empty() || cached_pps_.empty() ||
+            cached_h264_header_size_ + nalu.size + kH264StartCodeSize >
+                remaining_dst_size) {
+          DVLOG(1) << "Not enough space to inject a stream header before IDR";
+          break;
+        }
+
+        CopyNALUPrependingStartCode(cached_sps_.data(), cached_sps_.size(),
+                                    &dst_ptr, &remaining_dst_size);
+        CopyNALUPrependingStartCode(cached_pps_.data(), cached_pps_.size(),
+                                    &dst_ptr, &remaining_dst_size);
+        DVLOG(2) << "Stream header injected before IDR";
+        break;
+    }
+
+    CopyNALUPrependingStartCode(nalu.data, nalu.size, &dst_ptr,
+                                &remaining_dst_size);
+  }
+
+  return buffer_ref->shm->size() - remaining_dst_size;
+}
+
 void V4L2VideoEncodeAccelerator::EncodeTask(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
@@ -441,8 +538,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask(
   DVLOG(3) << "UseOutputBitstreamBufferTask(): id=" << buffer_ref->id;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  encoder_output_queue_.push_back(
-      linked_ptr<BitstreamBufferRef>(buffer_ref.release()));
+  encoder_output_queue_.push_back(std::move(buffer_ref));
   Enqueue();
 
   if (encoder_state_ == kInitialized) {
@@ -617,51 +713,27 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     const bool key_frame = ((dqbuf.flags & V4L2_BUF_FLAG_KEYFRAME) != 0);
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
     DCHECK(output_record.at_device);
-    DCHECK(output_record.buffer_ref.get());
+    DCHECK(output_record.buffer_ref);
 
-    void* output_data = output_record.address;
-    size_t output_size = dqbuf.m.planes[0].bytesused;
-    // This shouldn't happen, but just in case. We should be able to recover
-    // after next keyframe after showing some corruption.
-    DCHECK_LE(output_size, output_buffer_byte_size_);
-    if (output_size > output_buffer_byte_size_)
-      output_size = output_buffer_byte_size_;
-    uint8_t* target_data =
-        reinterpret_cast<uint8_t*>(output_record.buffer_ref->shm->memory());
-    if (output_format_fourcc_ == V4L2_PIX_FMT_H264) {
-      if (stream_header_size_ == 0) {
-        // Assume that the first buffer dequeued is the stream header.
-        stream_header_size_ = output_size;
-        stream_header_.reset(new uint8_t[stream_header_size_]);
-        memcpy(stream_header_.get(), output_data, stream_header_size_);
-      }
-      if (key_frame &&
-          output_buffer_byte_size_ - stream_header_size_ >= output_size) {
-        // Insert stream header before every keyframe.
-        memcpy(target_data, stream_header_.get(), stream_header_size_);
-        memcpy(target_data + stream_header_size_, output_data, output_size);
-        output_size += stream_header_size_;
-      } else {
-        memcpy(target_data, output_data, output_size);
-      }
-    } else {
-      memcpy(target_data, output_data, output_size);
-    }
+    int32_t bitstream_buffer_id = output_record.buffer_ref->id;
+    size_t output_data_size = CopyIntoOutputBuffer(
+        static_cast<uint8_t*>(output_record.address),
+        base::checked_cast<size_t>(dqbuf.m.planes[0].bytesused),
+        std::move(output_record.buffer_ref));
 
     DVLOG(3) << "Dequeue(): returning "
-             << "bitstream_buffer_id=" << output_record.buffer_ref->id
-             << ", size=" << output_size
-             << ", key_frame=" << key_frame;
+             << "bitstream_buffer_id=" << bitstream_buffer_id
+             << ", size=" << output_data_size << ", key_frame=" << key_frame;
+
     child_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &Client::BitstreamBufferReady, client_,
-            output_record.buffer_ref->id, output_size, key_frame,
-            base::TimeDelta::FromMicroseconds(
-                dqbuf.timestamp.tv_usec +
-                dqbuf.timestamp.tv_sec * base::Time::kMicrosecondsPerSecond)));
+        FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
+                              bitstream_buffer_id, output_data_size, key_frame,
+                              base::TimeDelta::FromMicroseconds(
+                                  dqbuf.timestamp.tv_usec +
+                                  dqbuf.timestamp.tv_sec *
+                                      base::Time::kMicrosecondsPerSecond)));
+
     output_record.at_device = false;
-    output_record.buffer_ref.reset();
     free_output_buffers_.push_back(dqbuf.index);
     output_buffer_queued_count_--;
   }
@@ -732,11 +804,10 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
   DCHECK(!encoder_output_queue_.empty());
 
   // Enqueue an output (VIDEO_CAPTURE) buffer.
-  linked_ptr<BitstreamBufferRef> output_buffer = encoder_output_queue_.back();
   const int index = free_output_buffers_.back();
   OutputRecord& output_record = output_buffer_map_[index];
   DCHECK(!output_record.at_device);
-  DCHECK(!output_record.buffer_ref.get());
+  DCHECK(!output_record.buffer_ref);
   struct v4l2_buffer qbuf;
   struct v4l2_plane qbuf_planes[1];
   memset(&qbuf, 0, sizeof(qbuf));
@@ -748,7 +819,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord() {
   qbuf.length = 1;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   output_record.at_device = true;
-  output_record.buffer_ref = output_buffer;
+  output_record.buffer_ref = std::move(encoder_output_queue_.back());
   encoder_output_queue_.pop_back();
   free_output_buffers_.pop_back();
   output_buffer_queued_count_++;
@@ -1044,6 +1115,14 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   return true;
 }
 
+bool V4L2VideoEncodeAccelerator::IsCtrlExposed(uint32_t ctrl_id) {
+  struct v4l2_queryctrl query_ctrl;
+  memset(&query_ctrl, 0, sizeof(query_ctrl));
+  query_ctrl.id = ctrl_id;
+
+  return device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0;
+}
+
 bool V4L2VideoEncodeAccelerator::SetExtCtrls(
     std::vector<struct v4l2_ext_control> ctrls) {
   struct v4l2_ext_controls ext_ctrls;
@@ -1069,9 +1148,31 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
     return false;
   }
 
-  // Optional controls.
   ctrls.clear();
   if (output_format_fourcc_ == V4L2_PIX_FMT_H264) {
+#ifndef V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR
+#define V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR (V4L2_CID_MPEG_BASE + 388)
+#endif
+    // Request to inject SPS and PPS before each IDR, if the device supports
+    // that feature. Otherwise we'll have to cache and inject ourselves.
+    if (IsCtrlExposed(V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR)) {
+      memset(&ctrl, 0, sizeof(ctrl));
+      ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR;
+      ctrl.value = 1;
+      ctrls.push_back(ctrl);
+      if (!SetExtCtrls(ctrls)) {
+        NOTIFY_ERROR(kPlatformFailureError);
+        return false;
+      }
+      ctrls.clear();
+      inject_sps_and_pps_ = false;
+      DVLOG(1) << "Device supports injecting SPS+PPS before each IDR";
+    } else {
+      inject_sps_and_pps_ = true;
+      DVLOG(1) << "Will inject SPS+PPS before each IDR, unsupported by device";
+    }
+
+    // Optional controls.
     // No B-frames, for lowest decoding latency.
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_B_FRAMES;
@@ -1090,10 +1191,10 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
     ctrl.value = V4L2_MPEG_VIDEO_H264_LEVEL_4_0;
     ctrls.push_back(ctrl);
 
-    // Separate stream header so we can cache it and insert into the stream.
+    // Ask not to put SPS and PPS into separate bitstream buffers.
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_HEADER_MODE;
-    ctrl.value = V4L2_MPEG_VIDEO_HEADER_MODE_SEPARATE;
+    ctrl.value = V4L2_MPEG_VIDEO_HEADER_MODE_JOINED_WITH_1ST_FRAME;
     ctrls.push_back(ctrl);
   }
 
@@ -1178,7 +1279,7 @@ bool V4L2VideoEncodeAccelerator::CreateOutputBuffers() {
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
 
   DCHECK(output_buffer_map_.empty());
-  output_buffer_map_.resize(reqbufs.count);
+  output_buffer_map_ = std::vector<OutputRecord>(reqbufs.count);
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     struct v4l2_plane planes[1];
     struct v4l2_buffer buffer;

@@ -9,13 +9,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -78,7 +77,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     OutputRecord();
     ~OutputRecord();
     bool at_device;
-    linked_ptr<BitstreamBufferRef> buffer_ref;
+    std::unique_ptr<BitstreamBufferRef> buffer_ref;
     void* address;
     size_t length;
   };
@@ -201,8 +200,20 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Set controls in |ctrls| and return true if successful.
   bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
 
+  // Return true if a V4L2 control of |ctrl_id| is supported by the device,
+  // false otherwise.
+  bool IsCtrlExposed(uint32_t ctrl_id);
+
   // Recycle output buffer of image processor with |output_buffer_index|.
   void ReuseImageProcessorOutputBuffer(int output_buffer_index);
+
+  // Copy encoded stream data from an output V4L2 buffer at |bitstream_data|
+  // of size |bitstream_size| into a BitstreamBuffer referenced by |buffer_ref|,
+  // injecting stream headers if required. Return the size in bytes of the
+  // resulting stream in the destination buffer.
+  size_t CopyIntoOutputBuffer(const uint8_t* bitstream_data,
+                              size_t bitstream_size,
+                              std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
@@ -227,10 +238,18 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Encoder state.
   State encoder_state_;
 
-  // We need to provide the stream header with every keyframe, to allow
-  // midstream decoding restarts.  Store it here.
-  std::unique_ptr<uint8_t[]> stream_header_;
-  size_t stream_header_size_;
+  // For H264, for resilience, we prepend each IDR with SPS and PPS. Some
+  // devices support this via the V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR
+  // control. For devices that don't, we cache the latest SPS and PPS and inject
+  // them into the stream before every IDR.
+  bool inject_sps_and_pps_ = false;
+  // Cached SPS (without H.264 start code).
+  std::vector<uint8_t> cached_sps_;
+  // Cached PPS (without H.264 start code).
+  std::vector<uint8_t> cached_pps_;
+  // Size in bytes required to inject cached SPS and PPS, including H.264
+  // start codes.
+  size_t cached_h264_header_size_ = 0;
 
   // Video frames ready to be encoded.
   std::queue<scoped_refptr<VideoFrame>> encoder_input_queue_;
@@ -259,7 +278,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Bitstream buffers ready to be used to return encoded output, as a LIFO
   // since we don't care about ordering.
-  std::vector<linked_ptr<BitstreamBufferRef>> encoder_output_queue_;
+  std::vector<std::unique_ptr<BitstreamBufferRef>> encoder_output_queue_;
 
   // Image processor, if one is in use.
   std::unique_ptr<V4L2ImageProcessor> image_processor_;
