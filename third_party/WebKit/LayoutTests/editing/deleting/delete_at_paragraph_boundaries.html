@@ -118,4 +118,23 @@
             '</div>',
         ].join('')),
         'Deleting when a selection starts at the beginning of a paragraph preceded by another block and extends into the middle of a following paragraph.');
+
+
+    test(() => assert_selection(
+        [
+            '<div contenteditable>',
+                '<div>',
+                    'one<p>two</p><p>three</p><p>fo^ur|</p>',
+                '</div>',
+            '</div>',
+        ].join(''),
+        'delete',
+        [
+            '<div contenteditable>',
+                '<div>',
+                    'one<p>two</p><p>three</p><p>fo|</p>',
+                '</div>',
+            '</div>',
+        ].join('')),
+        'Deleting when a selection starts in the middle of the last paragraph and extends to the end of that paragraph');
 </script>
