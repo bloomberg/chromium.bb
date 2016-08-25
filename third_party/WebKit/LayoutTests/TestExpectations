@@ -92,7 +92,7 @@ crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-r
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
-crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Skip ]
+crbug.com/630870 svg/animations/use-animate-width-and-height.html [ Timeout ]
 
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-1.html [ Skip ]
 crbug.com/630967 [ Linux Debug ] svg/parser/whitespace-length-invalid-2.html [ Skip ]
