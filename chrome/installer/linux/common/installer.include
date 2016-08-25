@@ -169,15 +169,6 @@ stage_install_common() {
     install -m 644 "${BUILDDIR}/libEGL.so" "${STAGEDIR}/${INSTALLDIR}/"
   fi
 
-  # Pepper Flash.
-  PEPPERFLASH_SRCDIR="${BUILDDIR}/PepperFlash"
-  PEPPERFLASH_DESTDIR="${STAGEDIR}/${INSTALLDIR}/PepperFlash"
-  install -m 755 -d "${PEPPERFLASH_DESTDIR}"
-  install -m 644 -s "${PEPPERFLASH_SRCDIR}/libpepflashplayer.so" \
-    "${PEPPERFLASH_DESTDIR}/"
-  install -m 644 "${PEPPERFLASH_SRCDIR}/manifest.json" \
-    "${PEPPERFLASH_DESTDIR}/"
-
   # libc++
   if [ -f "${BUILDDIR}/lib/libc++.so" ]; then
     install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"

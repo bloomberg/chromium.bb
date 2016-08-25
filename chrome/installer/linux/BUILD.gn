@@ -168,7 +168,6 @@ group("installer_deps") {
     "//chrome",
     "//chrome:packed_resources",
     "//sandbox/linux:chrome_sandbox",
-    "//third_party/adobe/flash:flapper_binaries",
   ]
   if (enable_nacl) {
     public_deps += [
@@ -217,8 +216,6 @@ template("linux_package") {
 
     "$root_out_dir/nacl_helper",
     "$root_out_dir/nacl_helper_bootstrap",
-    "$root_out_dir/PepperFlash/libpepflashplayer.so",
-    "$root_out_dir/PepperFlash/manifest.json",
   ]
 
   if (current_cpu == "x86") {
