@@ -94,7 +94,7 @@ split_static_library("ui") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/pdf/browser",
-    "//components/policy",
+    "//components/policy:generated",
     "//components/pref_registry",
     "//components/proximity_auth",
     "//components/proxy_config",

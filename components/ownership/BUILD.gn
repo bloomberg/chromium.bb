@@ -23,8 +23,8 @@ if (is_chromeos) {
     deps = [
       "//base",
       "//components/keyed_service/core",
-      "//components/policy",
-      "//components/policy:policy_component_common",
+      "//components/policy:generated",
+      "//components/policy/core/common",
       "//components/policy/proto",
       "//crypto",
     ]

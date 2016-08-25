@@ -30,10 +30,7 @@ static_library("syncable_prefs") {
     # This define is only used for compiling the .cc files in this target.
     defines = [ "SYNCABLE_PREFS_USE_POLICY" ]
 
-    deps += [
-      "//components/policy:policy_component_browser",
-      "//components/policy:policy_component_common",
-    ]
+    deps += [ "//components/policy/core/browser" ]
   }
 }
 

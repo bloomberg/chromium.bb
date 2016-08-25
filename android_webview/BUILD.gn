@@ -625,8 +625,8 @@ source_set("common") {
 
   if (enable_configuration_policy) {
     deps += [
-      "//components/policy",
-      "//components/policy:policy_component",
+      "//components/policy:generated",
+      "//components/policy/core/browser",
     ]
   }
 

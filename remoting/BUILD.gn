@@ -26,7 +26,7 @@ group("remoting_all") {
   testonly = true
 
   deps = [
-    "//remoting:remoting_unittests",
+    ":remoting_unittests",
     "//remoting/test:chromoting_test_driver",
     "//remoting/webapp:browser_test_resources",
     "//remoting/webapp:unit_tests",
@@ -131,12 +131,7 @@ group("test_support") {
   ]
 
   if (enable_configuration_policy) {
-    deps += [
-      "//components/policy:test_support",
-
-      # TODO(zijiehe): This should belong to //components/policy:test_support
-      "//components/prefs",
-    ]
+    deps += [ "//components/policy/core/browser:test_support" ]
   }
 
   if (enable_remoting_host) {
@@ -195,7 +190,7 @@ test("remoting_unittests") {
   }
 
   if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy_component_test_support" ]
+    #deps += [ "//components/policy/core/browser:test_support" ]
   }
 }
 

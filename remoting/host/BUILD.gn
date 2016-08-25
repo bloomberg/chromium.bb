@@ -403,7 +403,7 @@ static_library("host") {
 
   deps = [
     "//base:i18n",
-    "//components/policy:policy_component_common",
+    "//components/policy/core/common",
     "//crypto",
     "//device/power_save_blocker",
     "//google_apis",
@@ -417,7 +417,7 @@ static_library("host") {
   ]
 
   if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy" ]
+    deps += [ "//components/policy:generated" ]
   }
 
   if (is_linux && !is_chromeos) {
@@ -685,7 +685,7 @@ source_set("unit_tests") {
   ]
 
   if (enable_configuration_policy) {
-    deps += [ "//components/policy:policy_component_test_support" ]
+    deps += [ "//components/policy/core/browser:test_support" ]
   }
 }
 
@@ -1195,7 +1195,7 @@ if (enable_me2me_host) {
     deps = [
       "//base",
       "//base:i18n",
-      "//components/policy:policy_component_common",
+      "//components/policy/core/common",
       "//net",
       "//remoting/base",
       "//remoting/host",
@@ -1204,7 +1204,7 @@ if (enable_me2me_host) {
     ]
 
     if (enable_configuration_policy) {
-      deps += [ "//components/policy" ]
+      deps += [ "//components/policy:generated" ]
     }
 
     if (enable_webrtc) {

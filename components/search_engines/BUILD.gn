@@ -87,8 +87,8 @@ static_library("search_engines") {
       "default_search_policy_handler.h",
     ]
     deps += [
-      "//components/policy",
-      "//components/policy:policy_component",
+      "//components/policy:generated",
+      "//components/policy/core/browser",
     ]
   }
 }
@@ -143,8 +143,8 @@ source_set("unit_tests") {
     sources += [ "default_search_policy_handler_unittest.cc" ]
 
     deps += [
-      "//components/policy",
-      "//components/policy:policy_component_test_support",
+      "//components/policy:generated",
+      "//components/policy/core/browser:test_support",
     ]
   }
 }

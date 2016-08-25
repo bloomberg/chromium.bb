@@ -323,7 +323,7 @@ if (is_win) {
         "//chrome/install_static:install_static_util",
         "//chrome_elf",
         "//components/crash/content/app",
-        "//components/policy",
+        "//components/policy:generated",
         "//content/app/resources",
         "//crypto",
         "//net:net_resources",
@@ -951,7 +951,7 @@ if (is_win) {
       "//chrome/app:command_ids",
       "//chrome/common:features",
       "//components/crash/content/app",
-      "//components/policy",
+      "//components/policy:generated",
       "//content/public/app:both",
       "//third_party/cld",
     ]

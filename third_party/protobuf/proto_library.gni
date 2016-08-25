@@ -319,8 +319,9 @@ template("proto_library") {
   target(link_target_type, target_name) {
     forward_variables_from(invoker,
                            [
-                             "visibility",
                              "defines",
+                             "testonly",
+                             "visibility",
                            ])
 
     sources = get_target_outputs(":$action_name")

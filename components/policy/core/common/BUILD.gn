@@ -4,13 +4,22 @@
 
 import("//build/config/features.gni")
 
-source_set("common") {
-  visibility = [
-    "//components/policy/*",
-    "//components/syncable_prefs/*",
-  ]
+group("common") {
+  if (is_component_build) {
+    public_deps = [
+      "//components/policy",
+    ]
+  } else {
+    public_deps = [
+      ":internal",
+    ]
+  }
+}
 
-  defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
+source_set("internal") {
+  visibility = [ "//components/policy/*" ]
+
+  configs += [ "//components/policy:component_implementation" ]
 
   if (enable_configuration_policy) {
     sources = [
@@ -128,6 +137,7 @@ source_set("common") {
     configs += [ "//build/config:precompiled_headers" ]
 
     public_deps = [
+      "//components/policy:generated",
       "//components/policy/proto",
     ]
     deps = [
@@ -135,7 +145,6 @@ source_set("common") {
       "//base/third_party/dynamic_annotations",
       "//components/data_use_measurement/core",
       "//components/json_schema",
-      "//components/policy",
       "//components/prefs",
       "//google_apis",
       "//net",
@@ -219,6 +228,62 @@ source_set("common") {
 }
 
 if (enable_configuration_policy) {
+  static_library("test_support") {
+    testonly = true
+    sources = [
+      "cloud/mock_cloud_external_data_manager.cc",
+      "cloud/mock_cloud_external_data_manager.h",
+      "cloud/mock_cloud_policy_client.cc",
+      "cloud/mock_cloud_policy_client.h",
+      "cloud/mock_cloud_policy_store.cc",
+      "cloud/mock_cloud_policy_store.h",
+      "cloud/mock_device_management_service.cc",
+      "cloud/mock_device_management_service.h",
+      "cloud/mock_user_cloud_policy_store.cc",
+      "cloud/mock_user_cloud_policy_store.h",
+      "cloud/policy_builder.cc",
+      "cloud/policy_builder.h",
+      "configuration_policy_provider_test.cc",
+      "configuration_policy_provider_test.h",
+      "fake_async_policy_loader.cc",
+      "fake_async_policy_loader.h",
+      "mock_configuration_policy_provider.cc",
+      "mock_configuration_policy_provider.h",
+      "mock_policy_service.cc",
+      "mock_policy_service.h",
+      "policy_test_utils.cc",
+      "policy_test_utils.h",
+      "preferences_mock_mac.cc",
+      "preferences_mock_mac.h",
+      "remote_commands/test_remote_command_job.cc",
+      "remote_commands/test_remote_command_job.h",
+      "remote_commands/testing_remote_commands_server.cc",
+      "remote_commands/testing_remote_commands_server.h",
+    ]
+
+    if (is_chromeos) {
+      sources -= [
+        "cloud/mock_user_cloud_policy_store.cc",
+        "cloud/mock_user_cloud_policy_store.h",
+      ]
+    }
+
+    public_deps = [
+      ":common",
+      "//base",
+
+      # Explicitly link in the generated policy target into the test support
+      # so it will be linked to dependent targets. Otherwise in component
+      # build, it will be hidden inside the policy component.
+      "//components/policy:generated",
+      "//components/policy/proto",
+      "//crypto",
+      "//net",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+
   source_set("unit_tests") {
     testonly = true
     sources = [
@@ -283,10 +348,10 @@ if (enable_configuration_policy) {
     }
 
     deps = [
+      ":test_support",
       "//base",
       "//base/test:test_support",
-      "//components/policy",
-      "//components/policy:policy_component_test_support",
+      "//components/policy:generated",
       "//components/prefs:test_support",
       "//components/prefs:test_support",
       "//google_apis",

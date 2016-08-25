@@ -15,7 +15,7 @@ source_set("path_parser") {
   deps = [
     "//base",
     "//chrome/common:constants",
-    "//components/policy",
+    "//components/policy:generated",
   ]
 
   if (is_win) {

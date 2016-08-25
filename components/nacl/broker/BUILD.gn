@@ -160,7 +160,7 @@ if (current_cpu == "x86") {
       "//chrome/installer/util:with_no_strings",
       "//components/browser_watcher:browser_watcher_client",
       "//components/flags_ui:switches",
-      "//components/policy",
+      "//components/policy:generated",
       "//content/public/common:static_switches",
       "//ipc",
       "//third_party/kasko",

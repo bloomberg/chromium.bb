@@ -141,8 +141,8 @@ split_static_library("browser") {
     "//components/packed_ct_ev_whitelist",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
-    "//components/policy",
-    "//components/policy:policy_component",
+    "//components/policy:generated",
+    "//components/policy/core/browser",
     "//components/policy/proto",
     "//components/proxy_config",
     "//components/query_parser",
@@ -1246,10 +1246,7 @@ static_library("test_support") {
       "policy/test/local_policy_test_server.cc",
       "policy/test/local_policy_test_server.h",
     ]
-    public_deps += [
-      "//components/policy:policy_component_test_support",
-      "//components/policy:test_support",
-    ]
+    public_deps += [ "//components/policy/core/browser:test_support" ]
   }
 
   if (safe_browsing_mode == 1) {

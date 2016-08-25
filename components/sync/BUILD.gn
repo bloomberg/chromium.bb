@@ -588,8 +588,8 @@ static_library("sync") {
       "driver/sync_policy_handler.h",
     ]
     deps += [
-      "//components/policy",
-      "//components/policy:policy_component",
+      "//components/policy:generated",
+      "//components/policy/core/browser",
     ]
   }
 
@@ -946,8 +946,8 @@ source_set("unit_tests") {
   if (enable_configuration_policy) {
     sources += [ "driver/sync_policy_handler_unittest.cc" ]
     deps += [
-      "//components/policy",
-      "//components/policy:policy_component",
+      "//components/policy:generated",
+      "//components/policy/core/browser",
     ]
   }
 

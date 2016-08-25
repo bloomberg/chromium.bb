@@ -4,8 +4,19 @@
 
 import("//build/config/features.gni")
 
-# GYP version: components/policy.gypi:policy_component_core_browser
-source_set("browser") {
+group("browser") {
+  if (is_component_build) {
+    public_deps = [
+      "//components/policy",
+    ]
+  } else {
+    public_deps = [
+      ":internal",
+    ]
+  }
+}
+
+source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
     # Note that these sources are always included, even for builds that disable
@@ -15,14 +26,15 @@ source_set("browser") {
     "url_blacklist_manager.h",
   ]
 
-  defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
+  configs += [ "//components/policy:component_implementation" ]
 
-  deps = [
+  public_deps = [
     "//base",
+  ]
+  deps = [
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/managed",
     "//components/keyed_service/core",
-    "//components/policy/core/common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/strings",
@@ -69,10 +81,9 @@ source_set("browser") {
       "url_blacklist_policy_handler.h",
     ]
 
+    public_deps += [ "//components/policy/core/common:internal" ]
     deps += [
       "//components/autofill/core/common",
-      "//components/policy",
-      "//components/policy/proto",
       "//components/proxy_config",
       "//google_apis",
       "//net",
@@ -82,6 +93,28 @@ source_set("browser") {
 }
 
 if (enable_configuration_policy) {
+  static_library("test_support") {
+    testonly = true
+    sources = [
+      "configuration_policy_pref_store_test.cc",
+      "configuration_policy_pref_store_test.h",
+    ]
+
+    public_deps = [
+      ":browser",
+      "//base",
+
+      # Explicitly link in the generated policy target into the test support
+      # so it will be linked to dependent targets. Otherwise in component
+      # build, it will be hidden inside the policy component.
+      "//components/policy:generated",
+      "//components/policy/core/common:test_support",
+    ]
+    deps = [
+      "//testing/gtest",
+    ]
+  }
+
   source_set("unit_tests") {
     testonly = true
     sources = [
@@ -96,10 +129,10 @@ if (enable_configuration_policy) {
       "url_blacklist_policy_handler_unittest.cc",
     ]
     deps = [
+      ":test_support",
       "//base",
       "//components/autofill/core/common",
-      "//components/policy",
-      "//components/policy:policy_component_test_support",
+      "//components/policy:generated",
       "//components/prefs:test_support",
       "//components/proxy_config",
       "//components/url_formatter",

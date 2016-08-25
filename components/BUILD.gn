@@ -210,7 +210,7 @@ test("components_unittests") {
       "//components/zoom:unit_tests",
 
       # These are the deps required by the code in this target.
-      "//components/policy:policy_component",
+      "//components/policy/core/browser",
       "//content/test:test_support",
       "//ui/gl:test_support",
     ]

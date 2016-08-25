@@ -12,54 +12,25 @@ if (is_mac) {
   import("//build/util/branding.gni")
 }
 
-# About the policy component:
-#
-# There should really be two components. One called "policy" that includes all
-# generated code, and one "policy/proto" like we have now. The proto needs to
-# be separate for cases like SesssionManagerClient which uses the protos to
-# communicate with the Chrome OS system layer, but doesn't need the rest of the
-# policy stuff).
-#
-# The reason the rest of the targets exist are artifacts of the way the GYP
-# build works. The current "policy" target which is really just some generated
-# code (which should be folded into the new "policy" component described above)
-# exists so code outside which depends on the generated headers can depend on
-# the hard policy target without having to make all policy targets hard
-# dependencies (GN will do the right thing without this extra target).
 if (is_component_build) {
-  component("policy_component") {
-    public_deps = [
+  # External code should depend on either //components/policy/core/browser or
+  # .../common depending on what code it needs.
+  component("policy") {
+    output_name = "policy_component"
+    visibility = [
       "//components/policy/core/browser",
       "//components/policy/core/common",
     ]
-  }
-  group("policy_component_browser") {
     public_deps = [
-      ":policy_component",
+      "//components/policy/core/browser:internal",
+      "//components/policy/core/common:internal",
     ]
   }
-  group("policy_component_common") {
-    public_deps = [
-      ":policy_component",
-    ]
-  }
-} else {  # Compile to separate libraries.
-  group("policy_component") {
-    public_deps = [
-      ":policy_component_browser",
-      ":policy_component_common",
-    ]
-  }
-  component("policy_component_browser") {
-    public_deps = [
-      "//components/policy/core/browser",
-    ]
-  }
-  component("policy_component_common") {
-    public_deps = [
-      "//components/policy/core/common",
-    ]
-  }
+}
+
+# Used by taregts that compile into the implementation.
+config("component_implementation") {
+  defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
 }
 
 if (enable_configuration_policy) {
@@ -174,7 +145,8 @@ if (enable_configuration_policy) {
   }
 
   # This target builds the "full" protobuf, used for tests only.
-  proto_library("chrome_settings_proto_generated_compile") {
+  proto_library("chrome_settings_proto") {
+    testonly = true
     sources = [
       chrome_settings_proto_path,
     ]
@@ -186,20 +158,7 @@ if (enable_configuration_policy) {
     ]
   }
 
-  # The dependencies here are kind of messed up.
-  #
-  # //components/policy/core/browser and .../common depend on this target,
-  # and require it to be compiled with POLICY_COMPONENT_IMPLEMENTATION to
-  # export the necessary symbols in a component build. But other targets like
-  # //chrome/browser also depend on this target, which in component build
-  # ends up in another shared library, but with the IMPLEMENTATION flag set
-  # incorrectly.
-  #
-  # This only reason this works is that this target is a shared library and
-  # the compilation units that this depends on in policy/core/common happen to
-  # not be brought in in the "bad" case. This needs serious untangling, maybe
-  # these files can just be put into policy/core/common?
-  static_library("policy") {
+  static_library("generated") {
     sources = [
       constants_header_path,
       constants_source_path,
@@ -207,75 +166,11 @@ if (enable_configuration_policy) {
       risk_tag_header_path,
     ]
 
-    defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
-
     public_deps = [
       ":cloud_policy_code_generate",
       ":cloud_policy_proto_generated_compile",
       "//base",
       "//third_party/protobuf:protobuf_lite",
-    ]
-  }
-
-  group("test_support") {
-    public_deps = [
-      ":chrome_settings_proto_generated_compile",
-      ":policy_component",
-    ]
-  }
-
-  static_library("policy_component_test_support") {
-    testonly = true
-    sources = [
-      "core/browser/configuration_policy_pref_store_test.cc",
-      "core/browser/configuration_policy_pref_store_test.h",
-      "core/common/cloud/mock_cloud_external_data_manager.cc",
-      "core/common/cloud/mock_cloud_external_data_manager.h",
-      "core/common/cloud/mock_cloud_policy_client.cc",
-      "core/common/cloud/mock_cloud_policy_client.h",
-      "core/common/cloud/mock_cloud_policy_store.cc",
-      "core/common/cloud/mock_cloud_policy_store.h",
-      "core/common/cloud/mock_device_management_service.cc",
-      "core/common/cloud/mock_device_management_service.h",
-      "core/common/cloud/mock_user_cloud_policy_store.cc",
-      "core/common/cloud/mock_user_cloud_policy_store.h",
-      "core/common/cloud/policy_builder.cc",
-      "core/common/cloud/policy_builder.h",
-      "core/common/configuration_policy_provider_test.cc",
-      "core/common/configuration_policy_provider_test.h",
-      "core/common/fake_async_policy_loader.cc",
-      "core/common/fake_async_policy_loader.h",
-      "core/common/mock_configuration_policy_provider.cc",
-      "core/common/mock_configuration_policy_provider.h",
-      "core/common/mock_policy_service.cc",
-      "core/common/mock_policy_service.h",
-      "core/common/policy_test_utils.cc",
-      "core/common/policy_test_utils.h",
-      "core/common/preferences_mock_mac.cc",
-      "core/common/preferences_mock_mac.h",
-      "core/common/remote_commands/test_remote_command_job.cc",
-      "core/common/remote_commands/test_remote_command_job.h",
-      "core/common/remote_commands/testing_remote_commands_server.cc",
-      "core/common/remote_commands/testing_remote_commands_server.h",
-    ]
-
-    if (is_chromeos) {
-      sources -= [
-        "core/common/cloud/mock_user_cloud_policy_store.cc",
-        "core/common/cloud/mock_user_cloud_policy_store.h",
-      ]
-    }
-
-    public_deps = [
-      ":policy",
-      ":policy_component",
-      ":test_support",
-      "//base",
-      "//components/policy/proto",
-      "//crypto",
-      "//net",
-      "//testing/gmock",
-      "//testing/gtest",
     ]
   }
 
