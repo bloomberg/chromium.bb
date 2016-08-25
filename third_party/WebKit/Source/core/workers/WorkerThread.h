@@ -205,13 +205,22 @@ private:
     ExitCode getExitCodeForTesting();
 
     // Accessed only on the main thread.
-    bool m_started = false;
+    bool m_requestedToStart = false;
 
     // Set on the main thread and checked on both the main and worker threads.
-    bool m_terminated = false;
+    bool m_requestedToTerminate = false;
 
-    // Set on the worker thread and checked on both the main and worker threads.
-    bool m_readyToShutdown = false;
+    // Represents the state of this worker thread. A caller may need to acquire
+    // a lock |m_threadStateMutex| before accessing this:
+    //   - Only the worker thread can set this with the lock.
+    //   - The worker thread can read this without the lock.
+    //   - The main thread can read this with the lock.
+    enum class ThreadState {
+        NotStarted,
+        Running,
+        ReadyToShutdown,
+    };
+    ThreadState m_threadState = ThreadState::NotStarted;
 
     // Accessed only on the worker thread.
     bool m_pausedInDebugger = false;
@@ -229,8 +238,8 @@ private:
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
 
-    // This lock protects |m_globalScope|, |m_terminated|, |m_readyToShutdown|,
-    // |m_runningDebuggerTask|, |m_exitCode| and |m_microtaskRunner|.
+    // This lock protects |m_globalScope|, |m_requestedToTerminate|,
+    // |m_threadState|, |m_runningDebuggerTask| and |m_exitCode|.
     Mutex m_threadStateMutex;
 
     Persistent<ConsoleMessageStorage> m_consoleMessageStorage;
