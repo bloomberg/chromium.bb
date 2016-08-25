@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 
 namespace arc {
 
@@ -28,7 +29,7 @@ void ArcStandaloneBridgeRunner::Stop(int exit_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
   exit_code_ = exit_code;
   CHECK(run_loop_);
-  message_loop_.PostTask(FROM_HERE, run_loop_->QuitClosure());
+  message_loop_.task_runner()->PostTask(FROM_HERE, run_loop_->QuitClosure());
 }
 
 }  // namespace arc

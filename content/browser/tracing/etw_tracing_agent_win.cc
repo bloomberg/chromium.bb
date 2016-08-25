@@ -10,6 +10,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -63,10 +64,9 @@ void EtwTracingAgent::StartAgentTracing(
 
   // Start the consumer thread and start consuming events.
   thread_.Start();
-  thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&EtwTracingAgent::TraceAndConsumeOnThread,
-                 base::Unretained(this)));
+  thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&EtwTracingAgent::TraceAndConsumeOnThread,
+                            base::Unretained(this)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -81,10 +81,9 @@ void EtwTracingAgent::StopAgentTracing(
   }
 
   // Stop consuming and flush events.
-  thread_.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&EtwTracingAgent::FlushOnThread,
-                 base::Unretained(this),
-                 callback));
+  thread_.task_runner()->PostTask(FROM_HERE,
+                                  base::Bind(&EtwTracingAgent::FlushOnThread,
+                                             base::Unretained(this), callback));
 }
 
 void EtwTracingAgent::OnStopSystemTracingDone(

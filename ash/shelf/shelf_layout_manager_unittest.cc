@@ -32,6 +32,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -89,7 +90,7 @@ class ShelfAnimationWaiter : views::WidgetObserver {
     if (IsDoneAnimating())
       done_waiting_ = true;
     else
-      base::MessageLoop::current()->Run();
+      base::RunLoop().Run();
   }
 
   // Returns true if the animation has completed and it was valid.

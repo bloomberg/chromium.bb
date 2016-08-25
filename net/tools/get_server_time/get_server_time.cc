@@ -25,6 +25,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -252,7 +253,7 @@ int main(int argc, char* argv[]) {
       start_ticks.ToInternalValue());
 
   // |delegate| quits |main_loop| when the request is done.
-  main_loop.Run();
+  base::RunLoop().Run();
 
   const base::Time end_time = base::Time::Now();
   const base::TimeTicks end_ticks = base::TimeTicks::Now();

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_process_host.h"
@@ -124,7 +125,8 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   // Pump startup related events.
-  base::MessageLoopForUI::current()->RunUntilIdle();
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  base::RunLoop().RunUntilIdle();
 
 #if defined(OS_MACOSX)
   pool.Recycle();

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
@@ -141,25 +142,19 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   XAtom target2 = atom_cache_.GetAtom("TARGET2");
 
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  loop->PostTask(FROM_HERE,
-                 base::Bind(&PerformBlockingConvertSelection,
-                            base::Unretained(requestor_.get()),
-                            base::Unretained(&atom_cache_),
-                            selection,
-                            target2,
-                            "Data2"));
-  loop->PostTask(FROM_HERE,
-                 base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                            base::Unretained(this),
-                            selection,
-                            target1,
-                            "Data1"));
-  loop->PostTask(FROM_HERE,
-                 base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                            base::Unretained(this),
-                            selection,
-                            target2,
-                            "Data2"));
+  loop->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&PerformBlockingConvertSelection,
+                 base::Unretained(requestor_.get()),
+                 base::Unretained(&atom_cache_), selection, target2, "Data2"));
+  loop->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
+                 base::Unretained(this), selection, target1, "Data1"));
+  loop->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
+                 base::Unretained(this), selection, target2, "Data2"));
   PerformBlockingConvertSelection(
       requestor_.get(), &atom_cache_, selection, target1, "Data1");
 }

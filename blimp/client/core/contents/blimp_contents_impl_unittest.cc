@@ -5,6 +5,7 @@
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "blimp/client/core/contents/fake_navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/public/contents/blimp_contents_observer.h"
@@ -58,7 +59,7 @@ TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   EXPECT_CALL(observer2, OnNavigationStateChanged()).Times(2);
 
   navigation_controller.LoadURL(GURL(kExampleURL));
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kExampleURL, navigation_controller.GetURL().spec());
 
@@ -66,7 +67,7 @@ TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   blimp_contents.RemoveObserver(&observer1);
 
   navigation_controller.LoadURL(GURL(kOtherExampleURL));
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kOtherExampleURL, navigation_controller.GetURL().spec());
 }

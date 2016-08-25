@@ -8,7 +8,9 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
@@ -57,7 +59,8 @@ void AppShellTest::SetUpOnMainThread() {
 }
 
 void AppShellTest::RunTestOnMainThreadLoop() {
-  base::MessageLoopForUI::current()->RunUntilIdle();
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  base::RunLoop().RunUntilIdle();
 
   SetUpOnMainThread();
 

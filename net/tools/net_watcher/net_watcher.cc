@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -206,7 +207,7 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Watching for network events...";
 
   // Start watching for events.
-  network_loop.Run();
+  base::RunLoop().Run();
 
   proxy_config_service->RemoveObserver(&net_watcher);
 

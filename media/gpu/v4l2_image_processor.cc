@@ -150,7 +150,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   }
 
   // StartDevicePoll will NotifyError on failure, so IgnoreResult is fine here.
-  device_thread_.message_loop()->PostTask(
+  device_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&V4L2ImageProcessor::StartDevicePoll),
                  base::Unretained(this)));
@@ -228,7 +228,7 @@ void V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
   job_record->output_buffer_index = output_buffer_index;
   job_record->ready_cb = cb;
 
-  device_thread_.message_loop()->PostTask(
+  device_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::ProcessTask,
                             base::Unretained(this), base::Passed(&job_record)));
 }
@@ -251,7 +251,7 @@ void V4L2ImageProcessor::Destroy() {
 
   // If the device thread is running, destroy using posted task.
   if (device_thread_.IsRunning()) {
-    device_thread_.message_loop()->PostTask(
+    device_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&V4L2ImageProcessor::DestroyTask, base::Unretained(this)));
     // Wait for tasks to finish/early-exit.
@@ -429,7 +429,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch encoder state from this thread.
-  device_thread_.message_loop()->PostTask(
+  device_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::ServiceDeviceTask,
                             base::Unretained(this)));
 }
@@ -453,7 +453,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
   bool poll_device =
       (input_buffer_queued_count_ > 0 || output_buffer_queued_count_ > 0);
 
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::DevicePollTask,
                             base::Unretained(this), poll_device));
 
@@ -656,7 +656,7 @@ bool V4L2ImageProcessor::StartDevicePoll() {
   }
   // Enqueue a poll task with no devices to poll on - will wait only for the
   // poll interrupt
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::DevicePollTask,
                             base::Unretained(this), false));
 

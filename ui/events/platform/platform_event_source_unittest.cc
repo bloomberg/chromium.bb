@@ -500,17 +500,12 @@ class PlatformEventTestWithMessageLoop : public PlatformEventTest {
 
   void Run() {
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PlatformEventTestWithMessageLoop::RunTest,
+        FROM_HERE, base::Bind(&PlatformEventTestWithMessageLoop::RunTestImpl,
                               base::Unretained(this)));
-    message_loop_.Run();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  void RunTest() {
-    RunTestImpl();
-    message_loop_.QuitWhenIdle();
-  }
-
   virtual void RunTestImpl() = 0;
 
  private:
@@ -631,8 +626,8 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
     EXPECT_EQ(10, (*list)[1]);
     list->clear();
 
-    // Terminate the message-loop.
-    base::MessageLoopForUI::current()->QuitNow();
+    // Terminate the run loop.
+    run_loop_.Quit();
   }
 
   // PlatformEventTestWithMessageLoop:
@@ -654,7 +649,6 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
     list.clear();
 
     overriding.SetScopedHandle(std::move(override_handle));
-    base::RunLoop run_loop;
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->task_runner()->PostTask(
@@ -664,7 +658,7 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
                 NestedTask,
             base::Unretained(this), base::Unretained(&list),
             base::Unretained(&overriding)));
-    run_loop.Run();
+    run_loop_.Run();
 
     // Dispatching the event should now reach the default dispatcher.
     source()->Dispatch(*event);
@@ -672,6 +666,9 @@ class DestroyedNestedOverriddenDispatcherQuitsNestedLoopIteration
     EXPECT_EQ(15, list[0]);
     EXPECT_EQ(10, list[1]);
   }
+
+ private:
+  base::RunLoop run_loop_;
 };
 
 RUN_TEST_IN_MESSAGE_LOOP(
@@ -730,7 +727,7 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     list->clear();
 
     // Terminate the message-loop.
-    base::MessageLoopForUI::current()->QuitNow();
+    run_loop_.Quit();
   }
 
   // PlatformEventTestWithMessageLoop:
@@ -754,7 +751,6 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     // Start a nested message-loop, and destroy |override_handle| in the nested
     // loop. That should terminate the nested loop, restore the previous
     // dispatchers, and return control to this function.
-    base::RunLoop run_loop;
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->task_runner()->PostTask(
@@ -764,7 +760,7 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
                 NestedTask,
             base::Unretained(this), base::Passed(&override_handle),
             base::Unretained(&list)));
-    run_loop.Run();
+    run_loop_.Run();
 
     // Dispatching the event should now reach the default dispatcher.
     source()->Dispatch(*event);
@@ -772,6 +768,9 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     EXPECT_EQ(15, list[0]);
     EXPECT_EQ(10, list[1]);
   }
+
+ private:
+  base::RunLoop run_loop_;
 };
 
 RUN_TEST_IN_MESSAGE_LOOP(

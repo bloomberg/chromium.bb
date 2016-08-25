@@ -7,7 +7,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -51,7 +50,7 @@ void NaClBrokerListener::Listen() {
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
   CHECK(channel_->Connect());
-  base::MessageLoop::current()->Run();
+  run_loop_.Run();
 }
 
 // NOTE: changes to this method need to be reviewed by the security team.
@@ -88,7 +87,7 @@ bool NaClBrokerListener::OnMessageReceived(const IPC::Message& msg) {
 
 void NaClBrokerListener::OnChannelError() {
   // The browser died unexpectedly, quit to avoid a zombie process.
-  base::MessageLoop::current()->QuitWhenIdle();
+  run_loop_.QuitWhenIdle();
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
@@ -144,5 +143,5 @@ void NaClBrokerListener::OnLaunchDebugExceptionHandler(
 }
 
 void NaClBrokerListener::OnStopBroker() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  run_loop_.QuitWhenIdle();
 }

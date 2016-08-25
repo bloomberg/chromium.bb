@@ -123,7 +123,7 @@ class ProtocolPerfTest
     host_thread_.task_runner()->DeleteSoon(FROM_HERE, host_.release());
     host_thread_.task_runner()->DeleteSoon(FROM_HERE,
                                            host_signaling_.release());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // ClientUserInterface interface.

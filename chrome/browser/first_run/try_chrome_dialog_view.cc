@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/grit/chromium_strings.h"
@@ -288,7 +289,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   popup_->Show();
   if (!listener.is_null())
     listener.Run(popup_->GetNativeView());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   if (!listener.is_null())
     listener.Run(NULL);
   return result_;

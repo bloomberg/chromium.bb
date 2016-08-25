@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel.h"
@@ -334,7 +336,8 @@ void WorkerProcessLauncherTest::StopWorker() {
 }
 
 void WorkerProcessLauncherTest::QuitMainMessageLoop() {
-  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 void WorkerProcessLauncherTest::DoLaunchProcess() {
@@ -391,7 +394,7 @@ TEST_F(WorkerProcessLauncherTest, Start) {
 
   StartWorker();
   StopWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Starts and connects to the worker process. Expect OnChannelConnected to be
@@ -410,7 +413,7 @@ TEST_F(WorkerProcessLauncherTest, StartAndConnect) {
       .Times(0);
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Kills the worker process after the 1st connect and expects it to be
@@ -434,7 +437,7 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
       .Times(0);
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Drops the IPC channel to the worker process after the 1st connect and expects
@@ -457,7 +460,7 @@ TEST_F(WorkerProcessLauncherTest, DropIpcChannel) {
       .Times(0);
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Returns a permanent error exit code and expects OnPermanentError() to be
@@ -480,7 +483,7 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
                                   &WorkerProcessLauncherTest::StopWorker));
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Requests the worker to crash and expects it to honor the request.
@@ -505,7 +508,7 @@ TEST_F(WorkerProcessLauncherTest, Crash) {
           EXCEPTION_BREAKPOINT)));
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 // Requests the worker to crash and terminates the worker even if it does not
@@ -530,7 +533,7 @@ TEST_F(WorkerProcessLauncherTest, CrashAnyway) {
           this, &WorkerProcessLauncherTest::SendFakeMessageToLauncher));
 
   StartWorker();
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace remoting

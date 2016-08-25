@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -229,7 +230,7 @@ void MessageCenterViewTest::SetUp() {
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 }
 
 void MessageCenterViewTest::TearDown() {
@@ -439,7 +440,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdate) {
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   EXPECT_EQ(2, GetMessageListView()->child_count());
   EXPECT_EQ(GetMessageListView()->height(),
@@ -462,7 +463,7 @@ TEST_F(MessageCenterViewTest, SizeAfterRemove) {
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   EXPECT_EQ(1, GetMessageListView()->child_count());
 
@@ -497,7 +498,7 @@ TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   // The vertical position of the target from bottom should be kept over change.
   int current_vertical_pos_from_bottom =
@@ -525,7 +526,7 @@ TEST_F(MessageCenterViewTest, PositionAfterRemove) {
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
   EXPECT_EQ(1, GetMessageListView()->child_count());
 
@@ -556,7 +557,7 @@ TEST_F(MessageCenterViewTest, CloseButton) {
 
   ((views::ButtonListener*)GetButtonBar())
       ->ButtonPressed(close_button, DummyEvent());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_TRUE(GetMessageCenter()->remove_all_closable_notification_called_);
 }
 
@@ -569,14 +570,14 @@ TEST_F(MessageCenterViewTest, CloseButtonEnablity) {
   EXPECT_TRUE(close_button->enabled());
 
   RemoveNotification(kNotificationId1, false);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // There should be 1 non-pinned notification.
   EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
   EXPECT_TRUE(close_button->enabled());
 
   RemoveNotification(kNotificationId2, false);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // There should be no notification.
   EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());

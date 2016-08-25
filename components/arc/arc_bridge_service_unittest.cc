@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
@@ -37,7 +38,8 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
   void OnBridgeStopped(ArcBridgeService::StopReason stop_reason) override {
     state_ = ArcBridgeService::State::STOPPED;
     stop_reason_ = stop_reason;
-    message_loop_.PostTask(FROM_HERE, message_loop_.QuitWhenIdleClosure());
+    message_loop_.task_runner()->PostTask(FROM_HERE,
+                                          message_loop_.QuitWhenIdleClosure());
   }
 
   bool ready() const { return ready_; }

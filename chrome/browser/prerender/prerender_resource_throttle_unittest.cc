@@ -190,9 +190,7 @@ class PrerenderResourceThrottleTest : public testing::Test {
   }
 
   // Runs any tasks queued on either thread.
-  void RunEvents() {
-    message_loop_.RunUntilIdle();
-  }
+  void RunEvents() { base::RunLoop().RunUntilIdle(); }
 
  private:
   base::MessageLoopForIO message_loop_;

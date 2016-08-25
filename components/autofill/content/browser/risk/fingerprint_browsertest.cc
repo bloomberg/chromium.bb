@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
                  base::Unretained(this)));
 
   // Wait for the callback to be called.
-  message_loop_.Run();
+  base::RunLoop().Run();
 }
 
 }  // namespace risk

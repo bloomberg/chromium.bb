@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -414,7 +415,7 @@ void NativeBackendKWalletTest::SetUp() {
 void NativeBackendKWalletTest::TearDown() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   db_thread_.Stop();
 }
 

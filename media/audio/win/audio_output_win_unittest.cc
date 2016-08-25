@@ -12,6 +12,7 @@
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
@@ -151,11 +152,11 @@ class WinAudioTest : public ::testing::Test {
   WinAudioTest() {
     audio_manager_ =
         AudioManager::CreateForTesting(message_loop_.task_runner());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   ~WinAudioTest() override {
     audio_manager_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

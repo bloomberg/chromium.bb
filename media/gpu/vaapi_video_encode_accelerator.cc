@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/shared_memory_region.h"
@@ -752,7 +753,7 @@ void VaapiVideoEncodeAccelerator::Destroy() {
 
   // Early-exit encoder tasks if they are running and join the thread.
   if (encoder_thread_.IsRunning()) {
-    encoder_thread_.message_loop()->PostTask(
+    encoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&VaapiVideoEncodeAccelerator::DestroyTask,
                               base::Unretained(this)));
     encoder_thread_.Stop();

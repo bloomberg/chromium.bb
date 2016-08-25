@@ -37,7 +37,7 @@ class MessageLoopTaskRunnerTest : public testing::Test {
     task_thread_.Start();
 
     // Allow us to pause the |task_thread_|'s MessageLoop.
-    task_thread_.message_loop()->task_runner()->PostTask(
+    task_thread_.task_runner()->PostTask(
         FROM_HERE, Bind(&MessageLoopTaskRunnerTest::BlockTaskThreadHelper,
                         Unretained(this)));
   }

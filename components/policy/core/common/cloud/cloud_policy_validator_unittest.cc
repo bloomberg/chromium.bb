@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -72,7 +73,7 @@ class CloudPolicyValidatorTest : public testing::Test {
     validator.release()->StartValidation(
         base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
                    base::Unretained(this)));
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(this);
   }
 

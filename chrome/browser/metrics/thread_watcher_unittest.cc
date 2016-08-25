@@ -707,7 +707,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
       FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
-  message_loop_for_ui.Run();
+  base::RunLoop().Run();
 
   CheckState(false /* has_thread_watcher_list */,
              true /* stopped */,
@@ -719,7 +719,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
       FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds + 1));
-  message_loop_for_ui.Run();
+  base::RunLoop().Run();
 
   CheckState(true /* has_thread_watcher_list */,
              false /* stopped */,
@@ -731,7 +731,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
       FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(
           ThreadWatcherList::g_initialize_delay_seconds));
-  message_loop_for_ui.Run();
+  base::RunLoop().Run();
 
   CheckState(false /* has_thread_watcher_list */,
              true /* stopped */,

@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sync_socket.h"
 #include "base/task_runner.h"
@@ -158,7 +159,7 @@ void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
   EXPECT_CALL(*audio_output_ipc_,
               RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
   audio_device_->RequestDeviceAuthorization();
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Simulate response from browser
   OutputDeviceStatus device_status =
@@ -183,7 +184,7 @@ void AudioOutputDeviceTest::ReceiveAuthorization(OutputDeviceStatus status) {
 
   audio_device_->OnDeviceAuthorized(device_status_, default_audio_parameters_,
                                     kDefaultDeviceId);
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void AudioOutputDeviceTest::StartAudioDevice() {
@@ -193,7 +194,7 @@ void AudioOutputDeviceTest::StartAudioDevice() {
     EXPECT_CALL(callback_, OnRenderError());
 
   audio_device_->Start();
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void AudioOutputDeviceTest::CreateStream() {
@@ -218,7 +219,7 @@ void AudioOutputDeviceTest::CreateStream() {
   audio_device_->OnStreamCreated(
       duplicated_memory_handle,
       SyncSocket::UnwrapHandle(audio_device_socket_descriptor), kMemorySize);
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void AudioOutputDeviceTest::ExpectRenderCallback() {
@@ -249,7 +250,7 @@ void AudioOutputDeviceTest::WaitUntilRenderCallback() {
   io_loop_.task_runner()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TestTimeouts::action_timeout());
-  io_loop_.Run();
+  base::RunLoop().Run();
 }
 
 void AudioOutputDeviceTest::StopAudioDevice() {
@@ -257,7 +258,7 @@ void AudioOutputDeviceTest::StopAudioDevice() {
     EXPECT_CALL(*audio_output_ipc_, CloseStream());
 
   audio_device_->Stop();
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(AudioOutputDeviceTest, Initialize) {
@@ -357,13 +358,13 @@ TEST_P(AudioOutputDeviceTest, AuthorizationTimedOut) {
                  base::Unretained(this), OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT),
       event.GetClosure());
 
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Runs the loop and waits for |thread| to call event's closure.
   event.RunAndWait();
 
   audio_device_->Stop();
-  io_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 INSTANTIATE_TEST_CASE_P(Render, AudioOutputDeviceTest, Values(false));

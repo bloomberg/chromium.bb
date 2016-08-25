@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -50,7 +51,7 @@ class DistillerURLFetcherTest : public testing::Test {
         url,
         base::Bind(&DistillerURLFetcherTest::FetcherCallback,
                    base::Unretained(this)));
-    loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     CHECK_EQ(expected_response, response_);
   }
 

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -195,7 +196,7 @@ TEST_F(MessagePumpGLibTest, TestQuit) {
   injector()->Reset();
   // Quit from an event
   injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
-  loop()->Run();
+  RunLoop().Run();
   EXPECT_EQ(1, injector()->processed_events());
 }
 
@@ -215,7 +216,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
   injector()->AddEventAsTask(0, posted_task);
   injector()->AddEventAsTask(0, Bind(&DoNothing));
   injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
-  loop()->Run();
+  RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
 
   injector()->Reset();
@@ -226,7 +227,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
   injector()->AddEventAsTask(0, posted_task);
   injector()->AddEventAsTask(10, Bind(&DoNothing));
   injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
-  loop()->Run();
+  RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
 }
 
@@ -235,15 +236,15 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   // Tests that we process tasks while waiting for new events.
   // The event queue is empty at first.
   for (int i = 0; i < 10; ++i) {
-    loop()->PostTask(FROM_HERE, Bind(&IncrementInt, &task_count));
+    loop()->task_runner()->PostTask(FROM_HERE,
+                                    Bind(&IncrementInt, &task_count));
   }
   // After all the previous tasks have executed, enqueue an event that will
   // quit.
-  loop()->PostTask(
-      FROM_HERE,
-      Bind(&EventInjector::AddEvent, Unretained(injector()), 0,
-                 MessageLoop::QuitWhenIdleClosure()));
-  loop()->Run();
+  loop()->task_runner()->PostTask(
+      FROM_HERE, Bind(&EventInjector::AddEvent, Unretained(injector()), 0,
+                      MessageLoop::QuitWhenIdleClosure()));
+  RunLoop().Run();
   ASSERT_EQ(10, task_count);
   EXPECT_EQ(1, injector()->processed_events());
 
@@ -251,21 +252,19 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   injector()->Reset();
   task_count = 0;
   for (int i = 0; i < 10; ++i) {
-    loop()->PostDelayedTask(
-        FROM_HERE,
-        Bind(&IncrementInt, &task_count),
-        TimeDelta::FromMilliseconds(10*i));
+    loop()->task_runner()->PostDelayedTask(FROM_HERE,
+                                           Bind(&IncrementInt, &task_count),
+                                           TimeDelta::FromMilliseconds(10 * i));
   }
   // After all the previous tasks have executed, enqueue an event that will
   // quit.
   // This relies on the fact that delayed tasks are executed in delay order.
   // That is verified in message_loop_unittest.cc.
-  loop()->PostDelayedTask(
-      FROM_HERE,
-      Bind(&EventInjector::AddEvent, Unretained(injector()), 10,
-                 MessageLoop::QuitWhenIdleClosure()),
+  loop()->task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&EventInjector::AddEvent, Unretained(injector()), 10,
+                      MessageLoop::QuitWhenIdleClosure()),
       TimeDelta::FromMilliseconds(150));
-  loop()->Run();
+  RunLoop().Run();
   ASSERT_EQ(10, task_count);
   EXPECT_EQ(1, injector()->processed_events());
 }
@@ -287,7 +286,7 @@ TEST_F(MessagePumpGLibTest, TestEventsWhileWaitingForWork) {
 
   // And then quit (relies on the condition tested by TestEventTaskInterleave).
   injector()->AddEvent(10, MessageLoop::QuitWhenIdleClosure());
-  loop()->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(12, injector()->processed_events());
 }
@@ -363,12 +362,12 @@ TEST_F(MessagePumpGLibTest, TestConcurrentEventPostedTask) {
       0, Bind(&ConcurrentHelper::FromEvent, helper.get()));
 
   // Similarly post 2 tasks.
-  loop()->PostTask(
+  loop()->task_runner()->PostTask(
       FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper.get()));
-  loop()->PostTask(
+  loop()->task_runner()->PostTask(
       FROM_HERE, Bind(&ConcurrentHelper::FromTask, helper.get()));
 
-  loop()->Run();
+  RunLoop().Run();
   EXPECT_EQ(0, helper->event_count());
   EXPECT_EQ(0, helper->task_count());
 }
@@ -396,10 +395,9 @@ void AddEventsAndDrainGLib(EventInjector* injector) {
 
 TEST_F(MessagePumpGLibTest, TestDrainingGLib) {
   // Tests that draining events using GLib works.
-  loop()->PostTask(
-      FROM_HERE,
-      Bind(&AddEventsAndDrainGLib, Unretained(injector())));
-  loop()->Run();
+  loop()->task_runner()->PostTask(
+      FROM_HERE, Bind(&AddEventsAndDrainGLib, Unretained(injector())));
+  RunLoop().Run();
 
   EXPECT_EQ(3, injector()->processed_events());
 }
@@ -512,10 +510,9 @@ TEST_F(MessagePumpGLibTest, TestGLibLoop) {
   // loop is not run by MessageLoop::Run() but by a straight GLib loop.
   // Note that in this case we don't make strong guarantees about niceness
   // between events and posted tasks.
-  loop()->PostTask(
-      FROM_HERE,
-      Bind(&TestGLibLoopInternal, Unretained(injector())));
-  loop()->Run();
+  loop()->task_runner()->PostTask(
+      FROM_HERE, Bind(&TestGLibLoopInternal, Unretained(injector())));
+  RunLoop().Run();
 }
 
 TEST_F(MessagePumpGLibTest, TestGtkLoop) {
@@ -523,10 +520,9 @@ TEST_F(MessagePumpGLibTest, TestGtkLoop) {
   // loop is not run by MessageLoop::Run() but by a straight Gtk loop.
   // Note that in this case we don't make strong guarantees about niceness
   // between events and posted tasks.
-  loop()->PostTask(
-      FROM_HERE,
-      Bind(&TestGtkLoopInternal, Unretained(injector())));
-  loop()->Run();
+  loop()->task_runner()->PostTask(
+      FROM_HERE, Bind(&TestGtkLoopInternal, Unretained(injector())));
+  RunLoop().Run();
 }
 
 }  // namespace base

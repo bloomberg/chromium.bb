@@ -12,6 +12,8 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -429,10 +431,10 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   // Wait for approximately 10 seconds. The user shall hear his own voice
   // in loop back during this time. At the same time, delay recordings are
   // performed and stored in the output text file.
-  message_loop()->PostDelayedTask(FROM_HERE,
-                                  base::MessageLoop::QuitWhenIdleClosure(),
-                                  TestTimeouts::action_timeout());
-  message_loop()->Run();
+  message_loop()->task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TestTimeouts::action_timeout());
+  base::RunLoop().Run();
 
   aos->Stop();
   ais->Stop();

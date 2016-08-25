@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -58,7 +59,7 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothAdapterProfileBlueZTest::AdapterCallback,
                    base::Unretained(this)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
@@ -181,7 +182,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, DelegateCount) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(profile_);
   EXPECT_EQ(1U, success_callback_count_);
@@ -218,7 +219,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, BlackHole) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(profile_);
   EXPECT_EQ(1U, success_callback_count_);
@@ -232,7 +233,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, BlackHole) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -253,7 +254,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, Routing) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(profile_);
   ASSERT_EQ(1U, success_callback_count_);
@@ -274,7 +275,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, Routing) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -289,7 +290,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, Routing) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -305,7 +306,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, Routing) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(4U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -339,7 +340,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegister) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(profile_user_ptr_);
   EXPECT_EQ(2U, success_callback_count_);
@@ -350,7 +351,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegister) {
   adapter->ReleaseProfile(fake_delegate_autopair_.device_path_,
                           profile_user_ptr_);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegisterFail) {
@@ -380,7 +381,7 @@ TEST_F(BluetoothAdapterProfileBlueZTest, SimultaneousRegisterFail) {
       base::Bind(&BluetoothAdapterProfileBlueZTest::BasicErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(profile_user_ptr_);
   EXPECT_EQ(0U, success_callback_count_);

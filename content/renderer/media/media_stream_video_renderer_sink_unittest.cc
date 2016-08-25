@@ -149,12 +149,12 @@ TEST_F(MediaStreamVideoRendererSinkAsyncAddFrameReadyTest,
   const scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(160, 80));
   OnVideoFrame(video_frame);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, frame_ready_cbs_.size());
 
   EXPECT_CALL(*this, RepaintCallback(video_frame)).Times(1);
   frame_ready_cbs_[0].Run();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   media_stream_video_renderer_sink_->Stop();
 }
@@ -190,7 +190,7 @@ TEST_F(MediaStreamVideoRendererSinkTransparencyTest,
       media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12A, kSize,
                                      gfx::Rect(kSize), kSize, kTimestamp);
   OnVideoFrame(video_frame);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   media_stream_video_renderer_sink_->Stop();
 }

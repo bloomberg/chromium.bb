@@ -282,10 +282,9 @@ class SGIVideoSyncVSyncProvider
         shim_(new SGIVideoSyncProviderThreadShim(config, glx_window)),
         cancel_vsync_flag_(shim_->cancel_vsync_flag()),
         vsync_lock_(shim_->vsync_lock()) {
-    vsync_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&SGIVideoSyncProviderThreadShim::Initialize,
-                   base::Unretained(shim_.get())));
+    vsync_thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&SGIVideoSyncProviderThreadShim::Initialize,
+                              base::Unretained(shim_.get())));
   }
 
   ~SGIVideoSyncVSyncProvider() override {
@@ -295,9 +294,7 @@ class SGIVideoSyncVSyncProvider
     }
 
     // Hand-off |shim_| to be deleted on the |vsync_thread_|.
-    vsync_thread_->message_loop()->DeleteSoon(
-        FROM_HERE,
-        shim_.release());
+    vsync_thread_->task_runner()->DeleteSoon(FROM_HERE, shim_.release());
   }
 
   void GetVSyncParameters(
@@ -314,12 +311,12 @@ class SGIVideoSyncVSyncProvider
     if (!pending_callback_) {
       pending_callback_.reset(
           new gfx::VSyncProvider::UpdateVSyncCallback(callback));
-      vsync_thread_->message_loop()->PostTask(
+      vsync_thread_->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&SGIVideoSyncProviderThreadShim::GetVSyncParameters,
-                     base::Unretained(shim_.get()),
-                     base::Bind(
-                         &SGIVideoSyncVSyncProvider::PendingCallbackRunner,
+          base::Bind(
+              &SGIVideoSyncProviderThreadShim::GetVSyncParameters,
+              base::Unretained(shim_.get()),
+              base::Bind(&SGIVideoSyncVSyncProvider::PendingCallbackRunner,
                          AsWeakPtr())));
     }
   }

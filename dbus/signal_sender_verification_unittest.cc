@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -117,7 +118,7 @@ class SignalSenderVerificationTest : public testing::Test {
   void OnOwnership(bool expected, bool success) {
     ASSERT_EQ(expected, success);
     // PostTask to quit the MessageLoop as this is called from D-Bus thread.
-    message_loop_.PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&SignalSenderVerificationTest::OnOwnershipInternal,
                    base::Unretained(this)));

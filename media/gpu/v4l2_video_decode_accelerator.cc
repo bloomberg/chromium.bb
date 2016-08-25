@@ -290,7 +290,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   decoder_state_ = kInitialized;
 
   // StartDevicePoll will NOTIFY_ERROR on failure, so IgnoreResult is fine here.
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(base::IgnoreResult(
                                 &V4L2VideoDecodeAccelerator::StartDevicePoll),
                             base::Unretained(this)));
@@ -313,7 +313,7 @@ void V4L2VideoDecodeAccelerator::Decode(
   }
 
   // DecodeTask() will take care of running a DecodeBufferTask().
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DecodeTask,
                             base::Unretained(this), bitstream_buffer));
 }
@@ -323,7 +323,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   DVLOGF(3) << "buffer_count=" << buffers.size();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2VideoDecodeAccelerator::AssignPictureBuffersTask,
                  base::Unretained(this), buffers));
@@ -442,7 +442,7 @@ void V4L2VideoDecodeAccelerator::CreateEGLImages(
     egl_images.push_back(egl_image);
   }
 
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::AssignEGLImages,
                             base::Unretained(this), buffers, egl_images));
 }
@@ -521,7 +521,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   std::unique_ptr<EGLSyncKHRRef> egl_sync_ref(
       new EGLSyncKHRRef(egl_display_, egl_sync));
 
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
                             base::Unretained(this), picture_buffer_id,
                             base::Passed(&egl_sync_ref)));
@@ -530,7 +530,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
 void V4L2VideoDecodeAccelerator::Flush() {
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::FlushTask,
                             base::Unretained(this)));
 }
@@ -538,7 +538,7 @@ void V4L2VideoDecodeAccelerator::Flush() {
 void V4L2VideoDecodeAccelerator::Reset() {
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ResetTask,
                             base::Unretained(this)));
 }
@@ -553,7 +553,7 @@ void V4L2VideoDecodeAccelerator::Destroy() {
 
   // If the decoder thread is running, destroy using posted task.
   if (decoder_thread_.IsRunning()) {
-    decoder_thread_.message_loop()->PostTask(
+    decoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DestroyTask,
                               base::Unretained(this)));
     // DestroyTask() will cause the decoder_thread_ to flush all tasks.
@@ -835,7 +835,7 @@ void V4L2VideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
     buffers_to_decode++;
   if (decoder_decode_buffer_tasks_scheduled_ < buffers_to_decode) {
     decoder_decode_buffer_tasks_scheduled_++;
-    decoder_thread_.message_loop()->PostTask(
+    decoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DecodeBufferTask,
                               base::Unretained(this)));
   }
@@ -1049,7 +1049,7 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
   //   respectively, and we should have early-outed already.
   DCHECK(device_poll_thread_.message_loop());
   // Queue the DevicePollTask() now.
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DevicePollTask,
                             base::Unretained(this), poll_device));
 
@@ -1518,7 +1518,7 @@ void V4L2VideoDecodeAccelerator::FinishReset() {
   // jobs will early-out in the kResetting state.
   decoder_state_ = kResetting;
   SendPictureReady();  // Send all pending PictureReady.
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ResetDoneTask,
                             base::Unretained(this)));
 }
@@ -1590,7 +1590,7 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::DevicePollTask,
                             base::Unretained(this), 0));
 
@@ -1742,7 +1742,7 @@ void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::ServiceDeviceTask,
                             base::Unretained(this), event_pending));
 }
@@ -2192,7 +2192,7 @@ void V4L2VideoDecodeAccelerator::ResolutionChangeDestroyBuffers() {
   }
 
   // Finish resolution change on decoder thread.
-  decoder_thread_.message_loop()->PostTask(
+  decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::FinishResolutionChange,
                             base::Unretained(this)));
 }

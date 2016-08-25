@@ -216,12 +216,11 @@ class ServiceDiscoveryTest : public ::testing::Test {
 
  protected:
   void RunFor(base::TimeDelta time_period) {
-    base::CancelableCallback<void()> callback(base::Bind(
-        &ServiceDiscoveryTest::Stop, base::Unretained(this)));
+    base::RunLoop run_loop;
+    base::CancelableCallback<void()> callback(run_loop.QuitWhenIdleClosure());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
-
-    base::MessageLoop::current()->Run();
+    run_loop.Run();
     callback.Cancel();
   }
 
@@ -288,7 +287,7 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 
@@ -310,7 +309,7 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServicesMultiple) {
                                          "gdbye._privet._tcp.local"))
       .Times(Exactly(1));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 
@@ -328,7 +327,7 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
 
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_CHANGED,
                                          "hello._privet._tcp.local"))
@@ -338,7 +337,7 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
 
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ServiceDiscoveryTest, SinglePacket) {
@@ -356,7 +355,7 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
   // Reset the "already updated" flag.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_CHANGED,
                                          "hello._privet._tcp.local"))
@@ -366,7 +365,7 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
 
   socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
@@ -390,7 +389,7 @@ TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
 
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
@@ -403,7 +402,7 @@ TEST_F(ServiceDiscoveryTest, ActivelyRefreshServices) {
 
   RunFor(base::TimeDelta::FromSeconds(2));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 
@@ -454,7 +453,7 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
 
   socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(
       *this, OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,

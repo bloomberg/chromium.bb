@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -86,12 +87,12 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     FlushIndexedDBTaskRunner();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
   FlushIndexedDBTaskRunner();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(base::DirectoryExists(normal_path));
   EXPECT_FALSE(base::DirectoryExists(session_only_path));
@@ -121,11 +122,11 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     session_only_path = idb_context->GetFilePathForTesting(kSessionOnlyOrigin);
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Make sure we wait until the destructor has run.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // No data was cleared because of SetForceKeepSessionState.
   EXPECT_TRUE(base::DirectoryExists(normal_path));
@@ -217,11 +218,11 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                        &IndexedDBContextImpl::DeleteForOrigin),
                    idb_context, kTestOrigin));
     FlushIndexedDBTaskRunner();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Make sure we wait until the destructor has run.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(open_db_callbacks->forced_close_called());
   EXPECT_FALSE(closed_db_callbacks->forced_close_called());

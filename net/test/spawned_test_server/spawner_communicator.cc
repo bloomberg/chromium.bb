@@ -162,9 +162,11 @@ void SpawnerCommunicator::SendCommandAndWaitForResult(
   // Since the method will be blocked until SpawnerCommunicator gets result
   // from the spawner server or timed-out. It's safe to use base::Unretained
   // when using base::Bind.
-  io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread,
-      base::Unretained(this), command, post_data, result_code, data_received));
+  io_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread,
+                 base::Unretained(this), command, post_data, result_code,
+                 data_received));
   WaitForResponse();
 }
 

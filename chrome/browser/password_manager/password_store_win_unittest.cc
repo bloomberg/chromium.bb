@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -160,7 +161,7 @@ class PasswordStoreWinTest : public testing::Test {
     done.Wait();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     db_thread_.Stop();
   }
 
@@ -274,7 +275,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
                             UnorderedPasswordFormElementsAre(&expected_forms)));
 
   store_->GetLogins(form, &consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
@@ -308,7 +309,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   wdbs_->ShutdownDatabase();
   wdbs_ = nullptr;
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Hangs flakily, see http://crbug.com/43836.
@@ -386,8 +387,8 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   // Run the MessageLoop twice: once for the GetIE7Login that PasswordStoreWin
   // schedules on the DB thread and once for the one we just scheduled on the UI
   // thread.
-  base::MessageLoop::current()->Run();
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyLogins) {
@@ -419,7 +420,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
 
   store_->GetLogins(form, &consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
@@ -435,7 +436,7 @@ TEST_F(PasswordStoreWinTest, EmptyBlacklistLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
 
   store_->GetBlacklistLogins(&consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
@@ -451,5 +452,5 @@ TEST_F(PasswordStoreWinTest, EmptyAutofillableLogins) {
   EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
 
   store_->GetAutofillableLogins(&consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }

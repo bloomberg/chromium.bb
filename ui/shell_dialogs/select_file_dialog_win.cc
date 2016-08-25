@@ -17,6 +17,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
@@ -333,10 +334,9 @@ void SelectFileDialogImpl::SelectFileImpl(
                                      default_path, file_types, file_type_index,
                                      default_extension, BeginRun(owner),
                                      owner, params);
-  execute_params.run_state.dialog_thread->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
-                 execute_params));
+  execute_params.run_state.dialog_thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
+                            execute_params));
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {

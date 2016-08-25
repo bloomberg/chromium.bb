@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -189,7 +190,7 @@ int DemoMain() {
   window2.AddChild(&window3);
 
   host->Show();
-  base::MessageLoopForUI::current()->Run();
+  base::RunLoop().Run();
 
   return 0;
 }

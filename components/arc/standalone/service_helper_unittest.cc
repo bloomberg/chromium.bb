@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
@@ -29,7 +30,7 @@ class ServiceHelperTest : public ::testing::Test {
   void Quit() {
     CHECK(base_loop_);
     CHECK(run_loop_);
-    base_loop_->PostTask(FROM_HERE, run_loop_->QuitClosure());
+    base_loop_->task_runner()->PostTask(FROM_HERE, run_loop_->QuitClosure());
   }
 
   void Init() {

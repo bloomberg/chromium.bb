@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -254,10 +255,10 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   // |RunWithDispatcher()| below.
   base::RunLoop run_loop;
   base::Closure quit_runloop = run_loop.QuitClosure();
-  message_loop()->PostTask(FROM_HERE,
-                           base::Bind(&QuitNestedLoopAndCloseWidget,
-                                      base::Passed(&widget),
-                                      base::Unretained(&quit_runloop)));
+  message_loop()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&QuitNestedLoopAndCloseWidget, base::Passed(&widget),
+                 base::Unretained(&quit_runloop)));
   run_loop.Run();
 }
 

@@ -15,6 +15,8 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
@@ -235,11 +237,11 @@ class WASAPIAudioOutputStreamTest : public ::testing::Test {
   WASAPIAudioOutputStreamTest() {
     audio_manager_ =
         AudioManager::CreateForTesting(message_loop_.task_runner());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   ~WASAPIAudioOutputStreamTest() override {
     audio_manager_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -400,10 +402,10 @@ TEST_F(WASAPIAudioOutputStreamTest, ValidPacketSize) {
       .WillRepeatedly(Return(0));
 
   aos->Start(&source);
-  message_loop_.PostDelayedTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure(),
-                                TestTimeouts::action_timeout());
-  message_loop_.Run();
+  message_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TestTimeouts::action_timeout());
+  base::RunLoop().Run();
   aos->Stop();
   aos->Close();
 }
@@ -590,10 +592,10 @@ TEST_F(WASAPIAudioOutputStreamTest,
       .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
-  message_loop_.PostDelayedTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure(),
-                                TestTimeouts::action_timeout());
-  message_loop_.Run();
+  message_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TestTimeouts::action_timeout());
+  base::RunLoop().Run();
   aos->Stop();
   aos->Close();
 }
@@ -623,10 +625,10 @@ TEST_F(WASAPIAudioOutputStreamTest,
       .WillRepeatedly(Return(aosw.samples_per_packet()));
 
   aos->Start(&source);
-  message_loop_.PostDelayedTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure(),
-                                TestTimeouts::action_timeout());
-  message_loop_.Run();
+  message_loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      TestTimeouts::action_timeout());
+  base::RunLoop().Run();
   aos->Stop();
   aos->Close();
 }

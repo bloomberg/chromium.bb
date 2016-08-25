@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -426,7 +427,7 @@ class NativeBackendGnomeTest : public testing::Test {
   void TearDown() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     db_thread_.Stop();
   }
 
@@ -438,7 +439,7 @@ class NativeBackendGnomeTest : public testing::Test {
     // quit so we can get on with the rest of the test.
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&PostQuitTask, &message_loop_));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   static void PostQuitTask(base::MessageLoop* loop) {

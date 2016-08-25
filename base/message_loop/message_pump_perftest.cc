@@ -101,7 +101,7 @@ class ScheduleWorkTest : public testing::Test {
     }
 
     for (int i = 0; i < num_scheduling_threads; ++i) {
-      scheduling_threads[i]->message_loop()->task_runner()->PostTask(
+      scheduling_threads[i]->task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&ScheduleWorkTest::Schedule, base::Unretained(this), i));
     }

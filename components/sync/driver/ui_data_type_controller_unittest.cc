@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
@@ -75,7 +76,7 @@ class SyncUIDataTypeControllerTest : public testing::Test,
     PumpLoop();
   }
 
-  void PumpLoop() { message_loop_.RunUntilIdle(); }
+  void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   base::MessageLoopForUI message_loop_;
   const syncer::ModelType type_;

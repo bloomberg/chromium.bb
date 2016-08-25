@@ -21,6 +21,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/safe_strerror.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -286,7 +287,7 @@ void MidiManagerAlsa::StartInitialization() {
   // Start processing events. Don't do this before enumeration of both
   // ALSA and udev.
   event_thread_.Start();
-  event_thread_.message_loop()->PostTask(
+  event_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::ScheduleEventLoop, base::Unretained(this)));
   send_thread_.Start();
@@ -336,13 +337,13 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
     delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
   }
 
-  send_thread_.message_loop()->PostDelayedTask(
+  send_thread_.task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&MidiManagerAlsa::SendMidiData,
                             base::Unretained(this), port_index, data),
       delay);
 
   // Acknowledge send.
-  send_thread_.message_loop()->PostTask(
+  send_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&MidiManagerAlsa::AccumulateMidiBytesSent,
                             base::Unretained(this), client, data.size()));
 }
@@ -886,7 +887,7 @@ void MidiManagerAlsa::SendMidiData(uint32_t port_index,
 }
 
 void MidiManagerAlsa::ScheduleEventLoop() {
-  event_thread_.message_loop()->PostTask(
+  event_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
 }

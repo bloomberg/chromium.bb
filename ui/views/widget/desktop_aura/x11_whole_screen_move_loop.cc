@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -89,7 +90,7 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         // Post a task to dispatch mouse movement event when control returns to
         // the message loop. This allows smoother dragging since the events are
         // dispatched without waiting for the drag widget updates.
-        base::MessageLoopForUI::current()->PostTask(
+        base::MessageLoopForUI::current()->task_runner()->PostTask(
             FROM_HERE,
             base::Bind(&X11WholeScreenMoveLoop::DispatchMouseMovement,
                        weak_factory_.GetWeakPtr()));

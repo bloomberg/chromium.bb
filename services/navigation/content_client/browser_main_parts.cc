@@ -4,7 +4,7 @@
 
 #include "services/navigation/content_client/browser_main_parts.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -42,7 +42,7 @@ void BrowserMainParts::PostMainMessageLoopRun() {
 }
 
 bool BrowserMainParts::MainMessageLoopRun(int* result_code) {
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   return true;
 }
 

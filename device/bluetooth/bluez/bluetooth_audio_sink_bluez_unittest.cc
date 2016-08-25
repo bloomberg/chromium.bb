@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -134,7 +135,7 @@ class BluetoothAudioSinkBlueZTest : public testing::Test {
     BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothAudioSinkBlueZTest::GetAdapterCallback,
                    base::Unretained(this)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
   // Called whenever BluetoothAdapter is retrieved successfully.

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/threading/platform_thread.h"
@@ -53,12 +54,11 @@ namespace {
 
 bool g_good_shutdown = false;
 
-void ShutdownTask(base::MessageLoop* loop) {
+void ShutdownTask(base::RunLoop* loop) {
   // Quit the main message loop.
   ASSERT_FALSE(g_good_shutdown);
   g_good_shutdown = true;
-  loop->task_runner()->PostTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure());
+  loop->QuitWhenIdle();
 }
 
 }  // namespace
@@ -230,19 +230,19 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestReadyFalse) {
 MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   base::PlatformThread::SetName("ServiceProcessStateTestShutdownMainThread");
   base::MessageLoop message_loop;
+  base::RunLoop run_loop;
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
   base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   EXPECT_TRUE(io_thread_.StartWithOptions(options));
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
-  EXPECT_TRUE(state.SignalReady(
-      io_thread_.task_runner().get(),
-      base::Bind(&ShutdownTask, base::MessageLoop::current())));
+  EXPECT_TRUE(state.SignalReady(io_thread_.task_runner().get(),
+                                base::Bind(&ShutdownTask, &run_loop)));
   message_loop.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, run_loop.QuitWhenIdleClosure(),
       TestTimeouts::action_max_timeout());
   EXPECT_FALSE(g_good_shutdown);
-  message_loop.Run();
+  run_loop.Run();
   EXPECT_TRUE(g_good_shutdown);
   return 0;
 }
@@ -283,9 +283,9 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.task_runner().get(), base::Closure()));
-    loop_.task_runner()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-        TestTimeouts::action_max_timeout());
+    loop_.task_runner()->PostDelayedTask(FROM_HERE,
+                                         run_loop_.QuitWhenIdleClosure(),
+                                         TestTimeouts::action_max_timeout());
   }
 
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }
@@ -296,11 +296,12 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
   base::SingleThreadTaskRunner* GetIOTaskRunner() {
     return io_thread_.task_runner().get();
   }
-  void Run() { loop_.Run(); }
+  void Run() { run_loop_.Run(); }
 
  private:
   base::ScopedTempDir temp_dir_;
   base::MessageLoopForUI loop_;
+  base::RunLoop run_loop_;
   base::Thread io_thread_;
   base::FilePath executable_path_, bundle_path_;
   std::unique_ptr<MockLaunchd> mock_launchd_;

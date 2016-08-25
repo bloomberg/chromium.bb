@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2016,12 +2017,12 @@ class WindowEventDispatcherTestWithMessageLoop
     std::unique_ptr<ui::MouseEvent> mouse(new ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(10, 10),
         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
-    message_loop()->PostTask(
+    message_loop()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
-                   host()->dispatcher(),
-                   base::Passed(&mouse)));
-    message_loop()->PostTask(FROM_HERE, message_loop()->QuitWhenIdleClosure());
+                   host()->dispatcher(), base::Passed(&mouse)));
+    message_loop()->task_runner()->PostTask(
+        FROM_HERE, message_loop()->QuitWhenIdleClosure());
 
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop());
     base::RunLoop loop;
@@ -2065,11 +2066,10 @@ TEST_F(WindowEventDispatcherTestWithMessageLoop, EventRepostedInNonNestedLoop) {
   CHECK(!message_loop()->is_running());
   // Perform the test in a callback, so that it runs after the message-loop
   // starts.
-  message_loop()->PostTask(
-      FROM_HERE, base::Bind(
-          &WindowEventDispatcherTestWithMessageLoop::RunTest,
-          base::Unretained(this)));
-  message_loop()->Run();
+  message_loop()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&WindowEventDispatcherTestWithMessageLoop::RunTest,
+                            base::Unretained(this)));
+  base::RunLoop().Run();
 }
 
 class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {

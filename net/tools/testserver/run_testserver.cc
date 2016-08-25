@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -121,6 +122,6 @@ int main(int argc, const char* argv[]) {
   printf("testserver running at %s (type ctrl+c to exit)\n",
          test_server->host_port_pair().ToString().c_str());
 
-  message_loop.Run();
+  base::RunLoop().Run();
   return 0;
 }

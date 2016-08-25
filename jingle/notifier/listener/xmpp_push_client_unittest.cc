@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client_observer.h"
@@ -48,7 +49,7 @@ class XmppPushClientTest : public testing::Test {
 
   void TearDown() override {
     // Clear out any messages posted by XmppPushClient.
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     xmpp_push_client_->RemoveObserver(&mock_observer_);
     xmpp_push_client_.reset();
   }

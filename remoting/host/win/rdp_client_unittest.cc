@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/win/scoped_com_initializer.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/win/rdp_client.h"
@@ -140,8 +141,9 @@ void RdpClientTest::OnRdpConnected() {
   EXPECT_TRUE(WtsTerminalMonitor::LookupTerminalId(session_id, &id));
   EXPECT_EQ(id, terminal_id_);
 
-  message_loop_.PostTask(FROM_HERE, base::Bind(&RdpClientTest::CloseRdpClient,
-                                               base::Unretained(this)));
+  message_loop_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&RdpClientTest::CloseRdpClient, base::Unretained(this)));
 }
 
 void RdpClientTest::CloseRdpClient() {

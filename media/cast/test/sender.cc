@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -343,15 +344,15 @@ int main(int argc, char** argv) {
                  base::Bind(&QuitLoopOnInitializationResult),
                  media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
                  media::cast::CreateDefaultVideoEncodeMemoryCallback()));
-  io_message_loop.Run();  // Wait for video initialization.
+  base::RunLoop().Run();  // Wait for video initialization.
   io_message_loop.task_runner()->PostTask(
       FROM_HERE, base::Bind(&media::cast::CastSender::InitializeAudio,
                             base::Unretained(cast_sender.get()), audio_config,
                             base::Bind(&QuitLoopOnInitializationResult)));
-  io_message_loop.Run();  // Wait for audio initialization.
+  base::RunLoop().Run();  // Wait for audio initialization.
 
   fake_media_source->Start(cast_sender->audio_frame_input(),
                            cast_sender->video_frame_input());
-  io_message_loop.Run();
+  base::RunLoop().Run();
   return 0;
 }

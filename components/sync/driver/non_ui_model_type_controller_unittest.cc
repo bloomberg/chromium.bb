@@ -280,7 +280,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
   }
 
   // Runs any tasks posted on UI thread.
-  void RunQueuedUIThreadTasks() { ui_loop_.RunUntilIdle(); }
+  void RunQueuedUIThreadTasks() { base::RunLoop().RunUntilIdle(); }
 
   // Runs any tasks posted on model thread.
   void RunQueuedModelThreadTasks() {

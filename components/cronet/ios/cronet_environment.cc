@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/worker_pool.h"
 #include "components/cronet/ios/version.h"
@@ -74,7 +75,7 @@ void CronetEnvironment::PostToNetworkThread(
 void CronetEnvironment::PostToFileUserBlockingThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  file_user_blocking_thread_->message_loop()->PostTask(from_here, task);
+  file_user_blocking_thread_->task_runner()->PostTask(from_here, task);
 }
 
 net::URLRequestContext* CronetEnvironment::GetURLRequestContext() const {

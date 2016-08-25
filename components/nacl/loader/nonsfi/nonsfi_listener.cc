@@ -8,6 +8,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
@@ -49,7 +50,7 @@ void NonSfiListener::Listen() {
       io_thread_.task_runner().get(),
       true,  // Create pipe now.
       &shutdown_event_);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 }
 
 bool NonSfiListener::OnMessageReceived(const IPC::Message& msg) {

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "remoting/protocol/fake_connection_to_host.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/test/connection_setup_info.h"
@@ -86,7 +87,7 @@ void TestChromotingClientTest::TearDown() {
   // The IceTransportFactory destroys the PortAllocator via a DeleteSoon
   // operation. If we do not allow the message loop to run here, we run the
   // risk of the DeleteSoon task being dropped and incurring a memory leak.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void TestChromotingClientTest::ConnectionStateChanged(

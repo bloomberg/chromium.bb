@@ -1300,7 +1300,7 @@ TEST_F(IPCChannelMojoTest, VerifyGlobalPid) {
   CreateChannel(&listener);
   ASSERT_TRUE(ConnectChannel());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   channel()->Close();
 
   EXPECT_TRUE(WaitForClientShutdown());
@@ -1313,7 +1313,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestVerifyGlobalPidClient,
   ListenerThatQuits listener;
   Connect(&listener);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   Close();
 }

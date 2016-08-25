@@ -95,7 +95,7 @@ class IceTransportTest : public testing::Test {
     host_message_pipe_.reset();
     client_transport_.reset();
     host_transport_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ProcessTransportInfo(std::unique_ptr<IceTransport>* target_transport,

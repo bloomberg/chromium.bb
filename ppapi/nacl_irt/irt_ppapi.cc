@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_logging.h"
 #include "ppapi/nacl_irt/irt_interfaces.h"
@@ -42,7 +43,7 @@ int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
       ppapi::GetRendererIPCChannelHandle());
   plugin_globals.SetPluginProxyDelegate(&ppapi_dispatcher);
 
-  loop.Run();
+  base::RunLoop().Run();
 
   return 0;
 }

@@ -241,11 +241,10 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   base::ThreadTicks current_cpu_time = GetWatchedThreadTime();
   base::TimeDelta time_since_arm = current_cpu_time - arm_cpu_time_;
   if (use_thread_cpu_time_ && (time_since_arm < timeout_)) {
-    message_loop()->PostDelayedTask(
+    task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(
-            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
-            weak_factory_.GetWeakPtr()),
+        base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+                   weak_factory_.GetWeakPtr()),
         timeout_ - time_since_arm);
     return;
   }

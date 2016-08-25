@@ -82,7 +82,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
 
     message_loop_.task_runner()->DeleteSoon(FROM_HERE,
                                             browser_context_.release());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
 #else

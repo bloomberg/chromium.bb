@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
@@ -121,11 +122,10 @@ class MockTest : public testing::Test {
       int timeout_ms,
       ObjectProxy::ResponseCallback response_callback) {
     Response* response = CreateMockProxyResponse(method_call, timeout_ms);
-    message_loop_.PostTask(FROM_HERE,
-                           base::Bind(&MockTest::RunResponseCallback,
-                                      base::Unretained(this),
-                                      response_callback,
-                                      response));
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&MockTest::RunResponseCallback, base::Unretained(this),
+                   response_callback, response));
   }
 
   // Runs the given response callback with the given response.

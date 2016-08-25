@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -42,8 +42,8 @@ const int kTilesPerPage = kCols * kRows;
 
 class PageFlipWaiter : public PaginationModelObserver {
  public:
-  PageFlipWaiter(base::MessageLoopForUI* ui_loop, PaginationModel* model)
-      : ui_loop_(ui_loop), model_(model), wait_(false) {
+  explicit PageFlipWaiter(PaginationModel* model)
+      : model_(model), wait_(false) {
     model_->AddObserver(this);
   }
 
@@ -53,7 +53,8 @@ class PageFlipWaiter : public PaginationModelObserver {
     DCHECK(!wait_);
     wait_ = true;
 
-    ui_loop_->Run();
+    ui_run_loop_.reset(new base::RunLoop);
+    ui_run_loop_->Run();
     wait_ = false;
   }
 
@@ -70,12 +71,12 @@ class PageFlipWaiter : public PaginationModelObserver {
     selected_pages_ += base::IntToString(new_selected);
 
     if (wait_)
-      ui_loop_->QuitWhenIdle();
+      ui_run_loop_->QuitWhenIdle();
   }
   void TransitionStarted() override {}
   void TransitionChanged() override {}
 
-  base::MessageLoopForUI* ui_loop_;
+  std::unique_ptr<base::RunLoop> ui_run_loop_;
   PaginationModel* model_;
   bool wait_;
   std::string selected_pages_;
@@ -569,7 +570,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   test_api_->SetPageFlipDelay(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
-  PageFlipWaiter page_flip_waiter(message_loop(), GetPaginationModel());
+  PageFlipWaiter page_flip_waiter(GetPaginationModel());
 
   const int kPages = 3;
   model_->PopulateApps(kPages * kTilesPerPage);

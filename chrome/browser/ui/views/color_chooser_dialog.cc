@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/skia_utils_win.h"
@@ -37,7 +38,8 @@ ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
   HWND owning_hwnd = views::HWNDForNativeWindow(owning_window);
   ExecuteOpenParams execute_params(initial_color, BeginRun(owning_hwnd),
                                    owning_hwnd);
-  execute_params.run_state.dialog_thread->message_loop()->PostTask(FROM_HERE,
+  execute_params.run_state.dialog_thread->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&ColorChooserDialog::ExecuteOpen, this, execute_params));
 }
 

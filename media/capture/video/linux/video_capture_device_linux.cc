@@ -9,6 +9,7 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 
@@ -62,7 +63,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
     client->OnError(FROM_HERE, "Failed to create VideoCaptureDelegate");
     return;
   }
-  v4l2_thread_.message_loop()->PostTask(
+  v4l2_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2CaptureDelegate::AllocateAndStart, capture_impl_,
                  params.requested_format.frame_size.width(),
@@ -73,7 +74,7 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
 void VideoCaptureDeviceLinux::StopAndDeAllocate() {
   if (!v4l2_thread_.IsRunning())
     return;  // Wrong state.
-  v4l2_thread_.message_loop()->PostTask(
+  v4l2_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&V4L2CaptureDelegate::StopAndDeAllocate, capture_impl_));
   v4l2_thread_.Stop();
@@ -83,7 +84,7 @@ void VideoCaptureDeviceLinux::StopAndDeAllocate() {
 
 void VideoCaptureDeviceLinux::SetRotation(int rotation) {
   if (v4l2_thread_.IsRunning()) {
-    v4l2_thread_.message_loop()->PostTask(
+    v4l2_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&V4L2CaptureDelegate::SetRotation, capture_impl_, rotation));
   }

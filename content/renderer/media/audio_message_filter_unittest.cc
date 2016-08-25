@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "content/common/media/audio_messages.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "media/audio/audio_output_ipc.h"
@@ -193,7 +194,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   EXPECT_TRUE(delegate2.state_changed_received());
   delegate2.Reset();
 
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   ipc1->CloseStream();
   ipc2->CloseStream();

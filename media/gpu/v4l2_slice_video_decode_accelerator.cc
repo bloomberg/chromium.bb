@@ -863,7 +863,7 @@ void V4L2SliceVideoDecodeAccelerator::SchedulePollIfNeeded() {
 
   DVLOGF(4) << "Scheduling device poll task";
 
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
                             base::Unretained(this), true));
 
@@ -1169,7 +1169,7 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
     output_streamon_ = true;
   }
 
-  device_poll_thread_.message_loop()->PostTask(
+  device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
                             base::Unretained(this), true));
 

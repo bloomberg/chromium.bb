@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sync_channel.h"
@@ -101,7 +102,7 @@ class TranslatorCompileListener : public IPC::Listener {
 void ServeTranslateRequest(const struct nacl_irt_pnacl_compile_funcs* funcs) {
   base::MessageLoop loop;
   new TranslatorCompileListener(ppapi::GetRendererIPCChannelHandle(), funcs);
-  loop.Run();
+  base::RunLoop().Run();
 }
 
 }

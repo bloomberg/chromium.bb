@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -465,7 +466,7 @@ void MDnsTest::RunFor(base::TimeDelta time_period) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, callback.callback(), time_period);
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   callback.Cancel();
 }
 
@@ -1185,7 +1186,7 @@ TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
 
   EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet_));
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MDnsConnectionTest, Error) {
@@ -1200,7 +1201,7 @@ TEST_F(MDnsConnectionTest, Error) {
 
   EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
   callback.Run(ERR_SOCKET_NOT_CONNECTED);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 class MDnsConnectionSendTest : public MDnsConnectionTest {
@@ -1235,7 +1236,7 @@ TEST_F(MDnsConnectionSendTest, SendError) {
 
   connection_.Send(sample_buffer_, sample_packet_.size());
   EXPECT_CALL(delegate_, OnConnectionError(ERR_SOCKET_NOT_CONNECTED));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(MDnsConnectionSendTest, SendQueued) {

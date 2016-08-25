@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
 #include "blimp/client/core/contents/fake_navigation_feature.h"
@@ -51,7 +52,7 @@ TEST(BlimpNavigationControllerImplTest, BackForwardNavigation) {
   navigation_controller.GoForward();
   navigation_controller.Reload();
 
-  loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace

@@ -289,7 +289,7 @@ class DataUseAggregatorTest : public testing::Test {
     reporting_network_delegate_->set_data_use_context_map(data_use_context_map);
 
     request->Start();
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     return request;
   }

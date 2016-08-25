@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -315,7 +316,7 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   ~BatteryStatusNotificationThread() override {
     // Make sure to shutdown the dbus connection if it is still open in the very
     // end. It needs to happen on the BatteryStatusNotificationThread.
-    message_loop()->PostTask(
+    message_loop()->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BatteryStatusNotificationThread::ShutdownDBusConnection,
                    base::Unretained(this)));
@@ -464,9 +465,8 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
 
     // Shutdown DBus connection later because there may be pending tasks on
     // this thread.
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&dbus::Bus::ShutdownAndBlock,
-                                        system_bus_));
+    message_loop()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, system_bus_));
     system_bus_ = NULL;
   }
 
@@ -569,7 +569,7 @@ bool BatteryStatusManagerLinux::StartListeningBatteryChange() {
   if (!StartNotifierThreadIfNecessary())
     return false;
 
-  notifier_thread_->message_loop()->PostTask(
+  notifier_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StartListening,
                             base::Unretained(notifier_thread_.get())));
   return true;
@@ -579,7 +579,7 @@ void BatteryStatusManagerLinux::StopListeningBatteryChange() {
   if (!notifier_thread_)
     return;
 
-  notifier_thread_->message_loop()->PostTask(
+  notifier_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&BatteryStatusNotificationThread::StopListening,
                             base::Unretained(notifier_thread_.get())));
 }

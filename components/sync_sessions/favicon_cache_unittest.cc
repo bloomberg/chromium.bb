@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -456,7 +457,7 @@ void SyncFaviconCacheTest::TriggerSyncFaviconReceived(
                                  icon_url,
                                  icon_bytes,
                                  last_visit_time_ms);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // A freshly constructed cache should be empty.

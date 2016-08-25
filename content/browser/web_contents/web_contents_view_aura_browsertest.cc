@@ -173,7 +173,7 @@ class NavigationWatcher : public WebContentsObserver {
     if (navigated_)
       return;
     should_quit_loop_ = true;
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
   }
 
  private:

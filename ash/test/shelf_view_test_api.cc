@@ -10,6 +10,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_view.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
@@ -93,7 +94,7 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
 
   // This nested loop will quit when TestAPIAnimationObserver's
   // OnBoundsAnimatorDone is called.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   shelf_view_->bounds_animator_->RemoveObserver(observer.get());
 }

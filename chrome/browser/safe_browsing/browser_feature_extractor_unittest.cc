@@ -179,7 +179,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     // Feature extraction takes ownership of the request object
     // and passes it along to the done callback in the end.
     StartExtractMalwareFeatures(request);
-    base::MessageLoopForUI::current()->Run();
+    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    base::RunLoop().Run();
     EXPECT_EQ(1U, success_.count(request));
     EXPECT_TRUE(success_[request]);
   }

@@ -123,7 +123,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   void GetAdapter() {
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &BluetoothGattBlueZTest::AdapterCallback, base::Unretained(this)));
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     ASSERT_TRUE(adapter_.get() != NULL);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
@@ -487,7 +487,7 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredAfterAdapterIsCreated) {
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   // Run the message loop so that the characteristics/descriptors appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   properties->services_resolved.ReplaceValue(true);
 
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
@@ -522,7 +522,7 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredAfterAdapterIsCreated) {
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   // Run the message loop so that the characteristics/descriptors appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   properties->services_resolved.ReplaceValue(true);
 
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
@@ -704,7 +704,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicAddedAndRemoved) {
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // 3 characteristics should appear. Only 1 of the characteristics sends
   // value changed signals. Service changed should be fired once for
@@ -770,7 +770,7 @@ TEST_F(BluetoothGattBlueZTest, GattDescriptorAddedAndRemoved) {
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ(0, observer.gatt_service_changed_count());
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
@@ -857,7 +857,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   // Issue write request to non-writable characteristics.
   observer.Reset();
@@ -1073,7 +1073,7 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicProperties) {
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   BluetoothRemoteGattCharacteristic* characteristic =
       service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
@@ -1119,7 +1119,7 @@ TEST_F(BluetoothGattBlueZTest, GattDescriptorValue) {
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ(0, observer.gatt_service_changed_count());
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
@@ -1197,7 +1197,7 @@ TEST_F(BluetoothGattBlueZTest, GattDescriptorValue) {
                  base::Unretained(this)),
       base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
                  base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(1U, update_sessions_.size());
@@ -1239,7 +1239,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   BluetoothRemoteGattCharacteristic* characteristic =
       service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
@@ -1282,7 +1282,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
 
   // Run the main loop. The initial call should complete. The queued call should
   // succeed immediately.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1290,7 +1290,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
   EXPECT_EQ(3U, update_sessions_.size());
 
   // Notifications should be getting sent regularly now.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_GT(observer.gatt_characteristic_value_changed_count(), 1);
 
   // Stop one of the sessions. The session should become inactive but the
@@ -1334,7 +1334,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
   EXPECT_TRUE(characteristic->IsNotifying());
 
   // Run the message loop. Notifications should begin.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1344,7 +1344,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessions) {
   EXPECT_TRUE(characteristic->IsNotifying());
 
   // Check that notifications are happening.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
   EXPECT_GT(observer.gatt_characteristic_value_changed_count(), 1);
 
   // Request another session. This should return immediately.
@@ -1389,7 +1389,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessionsMadeInactive) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 
   // Run the message loop so that the characteristics appear.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   BluetoothRemoteGattCharacteristic* characteristic =
       service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
@@ -1431,7 +1431,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessionsMadeInactive) {
 
   // Run the main loop. The initial call should complete. The queued calls
   // should succeed immediately.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(4, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
@@ -1475,7 +1475,7 @@ TEST_F(BluetoothGattBlueZTest, NotifySessionsMadeInactive) {
   EXPECT_TRUE(characteristic->IsNotifying());
   EXPECT_TRUE(update_sessions_.empty());
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);

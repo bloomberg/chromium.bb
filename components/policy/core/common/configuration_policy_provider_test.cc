@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -143,7 +144,7 @@ void PolicyTestBase::SetUp() {
 }
 
 void PolicyTestBase::TearDown() {
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 bool PolicyTestBase::RegisterSchema(const PolicyNamespace& ns,
@@ -212,7 +213,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
   provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
@@ -235,7 +236,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
   // Install the value, reload policy and check the provider for the value.
   install_value.Run();
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(policy_name, harness_->policy_level(), harness_->policy_scope(),
@@ -252,7 +253,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
 
 TEST_P(ConfigurationPolicyProviderTest, Empty) {
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
@@ -343,7 +344,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   provider_->AddObserver(&observer);
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_TRUE(provider_->policies().Equals(bundle));
@@ -352,7 +353,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   harness_->InstallStringPolicy(harness_->key_string(), "value");
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -402,7 +403,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   harness_->Install3rdPartyPolicy(&policy_3rdparty);
 
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   PolicyMap expected_policy;
   expected_policy.Set(harness_->key_dictionary(), harness_->policy_level(),

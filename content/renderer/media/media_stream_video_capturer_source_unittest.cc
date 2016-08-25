@@ -309,10 +309,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _));
   blink::WebMediaStreamTrack track = StartSource();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   OnStarted(true);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             webkit_source_.getReadyState());
 
@@ -320,7 +320,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
 
   EXPECT_CALL(mock_delegate(), StopCapture());
   OnStarted(false);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             webkit_source_.getReadyState());
   // Verify that MediaStreamSource::SourceStoppedCallback has been triggered.

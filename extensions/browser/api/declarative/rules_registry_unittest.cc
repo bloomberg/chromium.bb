@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
@@ -143,7 +144,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
 
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST(RulesRegistryTest, FillOptionalPriority) {
@@ -179,7 +180,7 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
 
   // Make sure that deletion traits of registry are executed.
   registry = NULL;
-  message_loop.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 // Test verifies 2 rules defined in the manifest appear in the registry.

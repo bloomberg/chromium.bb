@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,12 +36,12 @@ class SystemMessageWindowWinTest : public testing::Test {
 TEST_F(SystemMessageWindowWinTest, DevicesChanged) {
   EXPECT_CALL(observer_, OnDevicesChanged(testing::_)).Times(1);
   window_.OnDeviceChange(DBT_DEVNODES_CHANGED, NULL);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SystemMessageWindowWinTest, RandomMessage) {
   window_.OnDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media

@@ -612,10 +612,9 @@ class MenuControllerTest : public ViewsTestBase {
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::TestEventTargeter,
-                 base::Unretained(this)));
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MenuControllerTest::TestEventTargeter,
+                            base::Unretained(this)));
   RunMenu();
 }
 #endif  // defined(OS_LINUX) && defined(USE_X11)
@@ -636,17 +635,13 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   event_generator()->PressTouchId(1);
   event_generator()->ReleaseTouchId(0);
 
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::ReleaseTouchId,
-                 base::Unretained(this),
-                 1));
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MenuControllerTest::ReleaseTouchId,
+                            base::Unretained(this), 1));
 
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::PressKey,
-                 base::Unretained(this),
-                 ui::VKEY_ESCAPE));
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&MenuControllerTest::PressKey,
+                            base::Unretained(this), ui::VKEY_ESCAPE));
 
   RunMenu();
 
@@ -1357,7 +1352,7 @@ TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
 TEST_F(MenuControllerTest, SynchronousCancelEvent) {
   ExitMenuRun();
   // Post actual test to run once the menu has created a nested message loop.
-  base::MessageLoopForUI::current()->PostTask(
+  base::MessageLoopForUI::current()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestCancelEvent, base::Unretained(this)));
   int mouse_event_flags = 0;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -82,7 +83,7 @@ class BluetoothSocketBlueZTest : public testing::Test {
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &BluetoothSocketBlueZTest::AdapterCallback, base::Unretained(this)));
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
@@ -200,7 +201,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -221,7 +222,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
                           base::Unretained(this)),
                base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                           base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -237,7 +238,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
                              base::Unretained(this)),
                   base::Bind(&BluetoothSocketBlueZTest::ReceiveErrorCallback,
                              base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -262,7 +263,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
                              base::Unretained(this)),
                   base::Bind(&BluetoothSocketBlueZTest::ReceiveErrorCallback,
                              base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -281,7 +282,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
                           base::Unretained(this)),
                base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                           base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -294,7 +295,7 @@ TEST_F(BluetoothSocketBlueZTest, Connect) {
   socket->Disconnect(base::Bind(&BluetoothSocketBlueZTest::SuccessCallback,
                                 base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
   EXPECT_EQ(1U, success_callback_count_);
 }
 
@@ -307,7 +308,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -336,7 +337,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
       bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(&base::DoNothing), base::Bind(&DoNothingDBusErrorCallback));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   server_socket->Accept(
       base::Bind(&BluetoothSocketBlueZTest::AcceptSuccessCallback,
@@ -344,7 +345,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -360,7 +361,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
   client_socket->Disconnect(base::Bind(
       &BluetoothSocketBlueZTest::SuccessCallback, base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   client_socket = nullptr;
@@ -375,14 +376,14 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   fake_bluetooth_device_client->ConnectProfile(
       static_cast<BluetoothDeviceBlueZ*>(device)->object_path(),
       bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(&base::DoNothing), base::Bind(&DoNothingDBusErrorCallback));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -398,7 +399,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
   client_socket->Disconnect(base::Bind(
       &BluetoothSocketBlueZTest::SuccessCallback, base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   client_socket = nullptr;
@@ -410,7 +411,7 @@ TEST_F(BluetoothSocketBlueZTest, Listen) {
       base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
 }
@@ -430,7 +431,7 @@ TEST_F(BluetoothSocketBlueZTest, ListenBeforeAdapterStart) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -456,7 +457,7 @@ TEST_F(BluetoothSocketBlueZTest, ListenBeforeAdapterStart) {
   // Make the adapter visible. This should register a profile.
   fake_bluetooth_adapter_client->SetVisible(true);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
@@ -468,7 +469,7 @@ TEST_F(BluetoothSocketBlueZTest, ListenBeforeAdapterStart) {
       base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
 }
@@ -486,7 +487,7 @@ TEST_F(BluetoothSocketBlueZTest, ListenAcrossAdapterRestart) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -513,12 +514,12 @@ TEST_F(BluetoothSocketBlueZTest, ListenAcrossAdapterRestart) {
   // the profile since this doesn't happen automatically.
   fake_bluetooth_adapter_client->SetVisible(false);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Then make the adapter visible again. This should re-register the profile.
   fake_bluetooth_adapter_client->SetVisible(true);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   profile_service_provider =
       fake_bluetooth_profile_manager_client->GetProfileServiceProvider(
@@ -530,7 +531,7 @@ TEST_F(BluetoothSocketBlueZTest, ListenAcrossAdapterRestart) {
       base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
 }
@@ -546,7 +547,7 @@ TEST_F(BluetoothSocketBlueZTest, PairedConnectFails) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -558,7 +559,7 @@ TEST_F(BluetoothSocketBlueZTest, PairedConnectFails) {
                  base::Unretained(this)),
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(0U, success_callback_count_);
   EXPECT_EQ(2U, error_callback_count_);
@@ -574,7 +575,7 @@ TEST_F(BluetoothSocketBlueZTest, SocketListenTwice) {
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(0U, error_callback_count_);
@@ -594,7 +595,7 @@ TEST_F(BluetoothSocketBlueZTest, SocketListenTwice) {
 
   server_socket = nullptr;
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -607,7 +608,7 @@ TEST_F(BluetoothSocketBlueZTest, SocketListenTwice) {
       base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
-  message_loop_.Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(2U, success_callback_count_);
   EXPECT_EQ(1U, error_callback_count_);
@@ -626,7 +627,7 @@ TEST_F(BluetoothSocketBlueZTest, SocketListenTwice) {
 
   server_socket = nullptr;
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2U, success_callback_count_);
   EXPECT_EQ(2U, error_callback_count_);

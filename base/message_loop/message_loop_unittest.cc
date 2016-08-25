@@ -18,6 +18,7 @@
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -157,7 +158,7 @@ void SubPumpFunc() {
 }
 
 void RunTest_PostDelayedTask_SharedTimer_SubPump() {
-  MessageLoop loop(MessageLoop::TYPE_UI);
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   // Test that the interval of the timer, used to run the next delayed task, is
   // set to a value corresponding to when the next delayed task should run.
@@ -167,23 +168,20 @@ void RunTest_PostDelayedTask_SharedTimer_SubPump() {
   int num_tasks = 1;
   Time run_time;
 
-  loop.PostTask(FROM_HERE, Bind(&SubPumpFunc));
+  message_loop.task_runner()->PostTask(FROM_HERE, Bind(&SubPumpFunc));
 
   // This very delayed task should never run.
-  loop.PostDelayedTask(
-      FROM_HERE,
-      Bind(&RecordRunTimeFunc, &run_time, &num_tasks),
+  message_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&RecordRunTimeFunc, &run_time, &num_tasks),
       TimeDelta::FromSeconds(1000));
 
   // This slightly delayed task should run from within SubPumpFunc.
-  loop.PostDelayedTask(
-      FROM_HERE,
-      Bind(&PostQuitMessage, 0),
-      TimeDelta::FromMilliseconds(10));
+  message_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&PostQuitMessage, 0), TimeDelta::FromMilliseconds(10));
 
   Time start_time = Time::Now();
 
-  loop.Run();
+  RunLoop().Run();
   EXPECT_EQ(1, num_tasks);
 
   // Ensure that we ran in far less time than the slower timer.
@@ -323,27 +321,25 @@ void QuitFunc(TaskList* order, int cookie) {
   order->RecordEnd(QUITMESSAGELOOP, cookie);
 }
 
-void RecursiveFuncWin(MessageLoop* target,
+void RecursiveFuncWin(scoped_refptr<SingleThreadTaskRunner> task_runner,
                       HANDLE event,
                       bool expect_window,
                       TaskList* order,
                       bool is_reentrant) {
-  target->PostTask(FROM_HERE,
-                   Bind(&RecursiveFunc, order, 1, 2, is_reentrant));
-  target->PostTask(FROM_HERE,
-                   Bind(&MessageBoxFunc, order, 2, is_reentrant));
-  target->PostTask(FROM_HERE,
-                   Bind(&RecursiveFunc, order, 3, 2, is_reentrant));
+  task_runner->PostTask(FROM_HERE,
+                        Bind(&RecursiveFunc, order, 1, 2, is_reentrant));
+  task_runner->PostTask(FROM_HERE,
+                        Bind(&MessageBoxFunc, order, 2, is_reentrant));
+  task_runner->PostTask(FROM_HERE,
+                        Bind(&RecursiveFunc, order, 3, 2, is_reentrant));
   // The trick here is that for recursive task processing, this task will be
   // ran _inside_ the MessageBox message loop, dismissing the MessageBox
   // without a chance.
   // For non-recursive task processing, this will be executed _after_ the
   // MessageBox will have been dismissed by the code below, where
   // expect_window_ is true.
-  target->PostTask(FROM_HERE,
-                   Bind(&EndDialogFunc, order, 4));
-  target->PostTask(FROM_HERE,
-                   Bind(&QuitFunc, order, 5));
+  task_runner->PostTask(FROM_HERE, Bind(&EndDialogFunc, order, 4));
+  task_runner->PostTask(FROM_HERE, Bind(&QuitFunc, order, 5));
 
   // Enforce that every tasks are sent before starting to run the main thread
   // message loop.
@@ -381,16 +377,12 @@ void RunTest_RecursiveDenial2(MessageLoop::Type message_loop_type) {
   ASSERT_EQ(true, worker.StartWithOptions(options));
   TaskList order;
   win::ScopedHandle event(CreateEvent(NULL, FALSE, FALSE, NULL));
-  worker.message_loop()->PostTask(FROM_HERE,
-                                  Bind(&RecursiveFuncWin,
-                                             MessageLoop::current(),
-                                             event.Get(),
-                                             true,
-                                             &order,
-                                             false));
+  worker.task_runner()->PostTask(
+      FROM_HERE, Bind(&RecursiveFuncWin, ThreadTaskRunnerHandle::Get(),
+                      event.Get(), true, &order, false));
   // Let the other thread execute.
   WaitForSingleObject(event.Get(), INFINITE);
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   ASSERT_EQ(17u, order.Size());
   EXPECT_EQ(order.Get(0), TaskItem(RECURSIVE, 1, true));
@@ -425,16 +417,12 @@ void RunTest_RecursiveSupport2(MessageLoop::Type message_loop_type) {
   ASSERT_EQ(true, worker.StartWithOptions(options));
   TaskList order;
   win::ScopedHandle event(CreateEvent(NULL, FALSE, FALSE, NULL));
-  worker.message_loop()->PostTask(FROM_HERE,
-                                  Bind(&RecursiveFuncWin,
-                                             MessageLoop::current(),
-                                             event.Get(),
-                                             false,
-                                             &order,
-                                             true));
+  worker.task_runner()->PostTask(
+      FROM_HERE, Bind(&RecursiveFuncWin, ThreadTaskRunnerHandle::Get(),
+                      event.Get(), false, &order, true));
   // Let the other thread execute.
   WaitForSingleObject(event.Get(), INFINITE);
-  MessageLoop::current()->Run();
+  RunLoop().Run();
 
   ASSERT_EQ(18u, order.Size());
   EXPECT_EQ(order.Get(0), TaskItem(RECURSIVE, 1, true));
@@ -541,12 +529,9 @@ void RunTest_IOHandler() {
   options.message_loop_type = MessageLoop::TYPE_IO;
   ASSERT_TRUE(thread.StartWithOptions(options));
 
-  MessageLoop* thread_loop = thread.message_loop();
-  ASSERT_TRUE(NULL != thread_loop);
-
   TestIOHandler handler(kPipeName, callback_called.Get(), false);
-  thread_loop->PostTask(FROM_HERE, Bind(&TestIOHandler::Init,
-                                              Unretained(&handler)));
+  thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&TestIOHandler::Init, Unretained(&handler)));
   // Make sure the thread runs and sleeps for lack of work.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
 
@@ -582,19 +567,16 @@ void RunTest_WaitForIO() {
   options.message_loop_type = MessageLoop::TYPE_IO;
   ASSERT_TRUE(thread.StartWithOptions(options));
 
-  MessageLoop* thread_loop = thread.message_loop();
-  ASSERT_TRUE(NULL != thread_loop);
-
   TestIOHandler handler1(kPipeName1, callback1_called.Get(), false);
   TestIOHandler handler2(kPipeName2, callback2_called.Get(), true);
-  thread_loop->PostTask(FROM_HERE, Bind(&TestIOHandler::Init,
-                                              Unretained(&handler1)));
+  thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&TestIOHandler::Init, Unretained(&handler1)));
   // TODO(ajwong): Do we really need such long Sleeps in this function?
   // Make sure the thread runs and sleeps for lack of work.
   TimeDelta delay = TimeDelta::FromMilliseconds(100);
   PlatformThread::Sleep(delay);
-  thread_loop->PostTask(FROM_HERE, Bind(&TestIOHandler::Init,
-                                              Unretained(&handler2)));
+  thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&TestIOHandler::Init, Unretained(&handler2)));
   PlatformThread::Sleep(delay);
 
   // At this time handler1 is waiting to be called, and the thread is waiting
@@ -707,26 +689,26 @@ TEST(MessageLoopTest, WaitForIO) {
 }
 
 TEST(MessageLoopTest, HighResolutionTimer) {
-  MessageLoop loop;
+  MessageLoop message_loop;
   Time::EnableHighResolutionTimer(true);
 
   const TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
   const TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
 
-  EXPECT_FALSE(loop.HasHighResolutionTasks());
+  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
   // Post a fast task to enable the high resolution timers.
-  loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
-                       kFastTimer);
-  EXPECT_TRUE(loop.HasHighResolutionTasks());
-  loop.Run();
-  EXPECT_FALSE(loop.HasHighResolutionTasks());
+  message_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&PostNTasksThenQuit, 1), kFastTimer);
+  EXPECT_TRUE(message_loop.HasHighResolutionTasks());
+  RunLoop().Run();
+  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
   EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
   // Check that a slow task does not trigger the high resolution logic.
-  loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
-                       kSlowTimer);
-  EXPECT_FALSE(loop.HasHighResolutionTasks());
-  loop.Run();
-  EXPECT_FALSE(loop.HasHighResolutionTasks());
+  message_loop.task_runner()->PostDelayedTask(
+      FROM_HERE, Bind(&PostNTasksThenQuit, 1), kSlowTimer);
+  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
+  RunLoop().Run();
+  EXPECT_FALSE(message_loop.HasHighResolutionTasks());
   Time::EnableHighResolutionTimer(false);
 }
 
@@ -992,7 +974,7 @@ TEST(MessageLoopTest, AlwaysHaveUserMessageWhenNesting) {
 
   ASSERT_TRUE(PostMessage(message_hwnd, kSignalMsg, 0, 1));
 
-  loop.Run();
+  RunLoop().Run();
 
   ASSERT_TRUE(UnregisterClass(MAKEINTATOM(atom), instance));
 }
