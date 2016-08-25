@@ -47,7 +47,6 @@ using CreateCdmFileIOCB =
 class MEDIA_EXPORT CdmAdapter : public MediaKeys,
                                 public CdmContext,
                                 public Decryptor,
-                                NON_EXPORTED_BASE(public cdm::Host_7),
                                 NON_EXPORTED_BASE(public cdm::Host_8) {
  public:
   // Create the CDM using |cdm_path| and initialize it using |key_system| and
@@ -110,7 +109,7 @@ class MEDIA_EXPORT CdmAdapter : public MediaKeys,
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
 
-  // cdm::Host_7 and cdm::Host_8 implementation.
+  // cdm::Host_8 implementation.
   cdm::Buffer* Allocate(uint32_t capacity) override;
   void SetTimer(int64_t delay_ms, void* context) override;
   cdm::Time GetCurrentWallTime() override;

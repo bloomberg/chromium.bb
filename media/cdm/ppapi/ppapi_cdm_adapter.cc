@@ -1268,9 +1268,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       // Current version is supported.
       IsSupportedCdmHostVersion(cdm::Host_8::kVersion) &&
       // Include all previous supported versions (if any) here.
-      IsSupportedCdmHostVersion(cdm::Host_7::kVersion) &&
       // One older than the oldest supported version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_7::kVersion - 1));
+      !IsSupportedCdmHostVersion(cdm::Host_8::kVersion - 1));
   PP_DCHECK(IsSupportedCdmHostVersion(host_interface_version));
 
   PpapiCdmAdapter* cdm_adapter = static_cast<PpapiCdmAdapter*>(user_data);
@@ -1278,8 +1277,6 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   switch (host_interface_version) {
     case cdm::Host_8::kVersion:
       return static_cast<cdm::Host_8*>(cdm_adapter);
-    case cdm::Host_7::kVersion:
-      return static_cast<cdm::Host_7*>(cdm_adapter);
     default:
       PP_NOTREACHED();
       return NULL;

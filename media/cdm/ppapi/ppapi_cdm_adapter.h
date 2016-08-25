@@ -38,7 +38,6 @@ void* GetCdmHost(int host_interface_version, void* user_data);
 // Content Decryption Module (CDM).
 class PpapiCdmAdapter : public pp::Instance,
                         public pp::ContentDecryptor_Private,
-                        public cdm::Host_7,
                         public cdm::Host_8 {
  public:
   PpapiCdmAdapter(PP_Instance instance, pp::Module* module);
@@ -86,7 +85,7 @@ class PpapiCdmAdapter : public pp::Instance,
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) override;
 
-  // cdm::Host_7 and cdm::Host_8 implementation.
+  // cdm::Host_8 implementation.
   cdm::Buffer* Allocate(uint32_t capacity) override;
   void SetTimer(int64_t delay_ms, void* context) override;
   cdm::Time GetCurrentWallTime() override;
