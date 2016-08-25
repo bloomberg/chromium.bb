@@ -89,6 +89,9 @@ public:
     void setWebAnimatedAttribute(const QualifiedName& attribute, SVGPropertyBase*);
     void clearWebAnimatedAttributes();
 
+    void setAnimatedAttribute(const QualifiedName&, SVGPropertyBase*);
+    void clearAnimatedAttribute(const QualifiedName&);
+
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;
 

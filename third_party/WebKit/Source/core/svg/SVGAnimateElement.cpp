@@ -190,20 +190,18 @@ void SVGAnimateElement::resetAnimatedType()
             addReferenceTo(element);
 
         if (!m_animatedProperty)
-            m_animatedProperty = m_animator.startAnimValAnimation(animatedElements);
+            m_animatedProperty = m_animator.startAnimValAnimation();
         else
-            m_animatedProperty = m_animator.resetAnimValToBaseVal(animatedElements);
+            m_animatedProperty = m_animator.resetAnimValToBaseVal();
 
         return;
     }
+    DCHECK_EQ(shouldApply, ApplyCSSAnimation);
 
     // CSS properties animation code-path.
     String baseValue;
-
-    if (shouldApply == ApplyCSSAnimation) {
-        ASSERT(SVGAnimationElement::isTargetAttributeCSSProperty(targetElement, attributeName));
-        computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
-    }
+    DCHECK(isTargetAttributeCSSProperty(targetElement, attributeName));
+    computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
 
     m_animatedProperty = m_animator.constructFromString(baseValue);
 }
@@ -282,8 +280,7 @@ void SVGAnimateElement::clearAnimatedType()
 
     // SVG DOM animVal animation code-path.
     if (m_animatedProperty) {
-        SVGElementInstances animatedElements = findElementInstances(targetElement);
-        m_animator.stopAnimValAnimation(animatedElements);
+        m_animator.stopAnimValAnimation();
         notifyTargetAndInstancesAboutAnimValChange(targetElement, attributeName());
     }
 

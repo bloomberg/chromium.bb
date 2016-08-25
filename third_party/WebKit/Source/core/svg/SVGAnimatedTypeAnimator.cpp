@@ -161,55 +161,32 @@ void SVGAnimatedTypeAnimator::calculateFromAndByValues(Member<SVGPropertyBase>& 
     to->add(from, m_contextElement);
 }
 
-namespace {
-
-void setAnimatedValueOnAllTargetProperties(const SVGElementInstances& list, const QualifiedName& attributeName, SVGPropertyBase* value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimation()
 {
-    for (SVGElement* elementInstance : list) {
-        if (SVGAnimatedPropertyBase* animatedProperty = elementInstance->propertyFromAttribute(attributeName))
-            animatedProperty->setAnimatedValue(value);
-    }
-}
-
-} // namespace
-
-SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimation(const SVGElementInstances& list)
-{
-    ASSERT(isAnimatingSVGDom());
+    DCHECK(isAnimatingSVGDom());
+    DCHECK(m_contextElement);
     SVGPropertyBase* animatedValue = m_animatedProperty->createAnimatedValue();
-    ASSERT(animatedValue->type() == m_type);
-    setAnimatedValueOnAllTargetProperties(list, m_animatedProperty->attributeName(), animatedValue);
-
+    DCHECK_EQ(animatedValue->type(), m_type);
+    m_contextElement->setAnimatedAttribute(m_animatedProperty->attributeName(), animatedValue);
     return animatedValue;
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::startAnimValAnimation(const SVGElementInstances& list)
+SVGPropertyBase* SVGAnimatedTypeAnimator::startAnimValAnimation()
 {
-    ASSERT(isAnimatingSVGDom());
-    SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
-
-    return resetAnimation(list);
+    return resetAnimation();
 }
 
-void SVGAnimatedTypeAnimator::stopAnimValAnimation(const SVGElementInstances& list)
+void SVGAnimatedTypeAnimator::stopAnimValAnimation()
 {
     if (!isAnimatingSVGDom())
         return;
-
-    ASSERT(m_contextElement);
-    SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
-
-    for (SVGElement* elementInstance : list) {
-        if (SVGAnimatedPropertyBase* animatedProperty = elementInstance->propertyFromAttribute(m_animatedProperty->attributeName()))
-            animatedProperty->animationEnded();
-    }
+    DCHECK(m_contextElement);
+    m_contextElement->clearAnimatedAttribute(m_animatedProperty->attributeName());
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimValToBaseVal(const SVGElementInstances& list)
+SVGPropertyBase* SVGAnimatedTypeAnimator::resetAnimValToBaseVal()
 {
-    SVGElement::InstanceUpdateBlocker blocker(m_contextElement);
-
-    return resetAnimation(list);
+    return resetAnimation();
 }
 
 class ParsePropertyFromString {

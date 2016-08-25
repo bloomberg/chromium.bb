@@ -26,7 +26,6 @@
 #define SVGAnimationElement_h
 
 #include "core/CoreExport.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 #include "wtf/Functional.h"

@@ -238,6 +238,16 @@ void SVGElement::applyActiveWebAnimations()
 }
 
 template<typename T>
+static void updateInstancesAnimatedAttributeNoInvalidate(SVGElement* element, const QualifiedName& attribute, T callback)
+{
+    SVGElement::InstanceUpdateBlocker blocker(element);
+    for (SVGElement* instance : SVGAnimateElement::findElementInstances(element)) {
+        if (SVGAnimatedPropertyBase* animatedProperty = instance->propertyFromAttribute(attribute))
+            callback(*animatedProperty);
+    }
+}
+
+template<typename T>
 static void updateInstancesAnimatedAttribute(SVGElement* element, const QualifiedName& attribute, T callback)
 {
     SVGElement::InstanceUpdateBlocker blocker(element);
@@ -268,6 +278,20 @@ void SVGElement::clearWebAnimatedAttributes()
         });
     }
     svgRareData()->webAnimatedAttributes().clear();
+}
+
+void SVGElement::setAnimatedAttribute(const QualifiedName& attribute, SVGPropertyBase* value)
+{
+    updateInstancesAnimatedAttributeNoInvalidate(this, attribute, [&value](SVGAnimatedPropertyBase& animatedProperty) {
+        animatedProperty.setAnimatedValue(value);
+    });
+}
+
+void SVGElement::clearAnimatedAttribute(const QualifiedName& attribute)
+{
+    updateInstancesAnimatedAttributeNoInvalidate(this, attribute, [](SVGAnimatedPropertyBase& animatedProperty) {
+        animatedProperty.animationEnded();
+    });
 }
 
 AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const
