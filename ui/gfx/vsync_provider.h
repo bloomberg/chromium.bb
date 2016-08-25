@@ -28,6 +28,22 @@ class GFX_EXPORT VSyncProvider {
   virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) = 0;
 };
 
+// Provides a constant timebase and interval.
+class GFX_EXPORT FixedVSyncProvider : public VSyncProvider {
+ public:
+  FixedVSyncProvider(base::TimeTicks timebase, base::TimeDelta interval)
+    : timebase_(timebase), interval_(interval) {
+  }
+
+  ~FixedVSyncProvider() override {}
+
+  void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
+
+ private:
+  base::TimeTicks timebase_;
+  base::TimeDelta interval_;
+};
+
 }  // namespace gfx
 
 #endif  // UI_GFX_VSYNC_PROVIDER_H_

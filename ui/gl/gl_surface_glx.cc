@@ -9,6 +9,7 @@ extern "C" {
 }
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -403,7 +404,9 @@ bool GLSurfaceGLX::InitializeOneOff() {
       HasGLXExtension("GLX_OML_sync_control");
   g_glx_get_msc_rate_oml_supported = g_glx_oml_sync_control_supported;
   g_glx_sgi_video_sync_supported =
-      HasGLXExtension("GLX_SGI_video_sync");
+      HasGLXExtension("GLX_SGI_video_sync") &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSgiVideoSync);
 
   if (!g_glx_get_msc_rate_oml_supported && g_glx_sgi_video_sync_supported)
     SGIVideoSyncProviderThreadShim::display_ = gfx::OpenNewXDisplay();
@@ -500,10 +503,22 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurface::Format format) {
   DCHECK(config_);
   glx_window_ = glXCreateWindow(g_display, config_, window_, NULL);
 
-  if (g_glx_oml_sync_control_supported)
+  if (g_glx_oml_sync_control_supported) {
     vsync_provider_.reset(new OMLSyncControlVSyncProvider(glx_window_));
-  else if (g_glx_sgi_video_sync_supported)
+  } else if (g_glx_sgi_video_sync_supported) {
     vsync_provider_.reset(new SGIVideoSyncVSyncProvider(config_, glx_window_));
+  } else {
+    // Assume a refresh rate of 59.9 Hz, which will cause us to skip
+    // 1 frame every 10 seconds on a 60Hz monitor, but will prevent us
+    // from blocking the GPU service due to back pressure. This would still
+    // encounter backpressure on a <60Hz monitor, but hopefully that is
+    // not common.
+    const base::TimeTicks kDefaultTimebase;
+    const base::TimeDelta kDefaultInterval =
+        base::TimeDelta::FromSeconds(1) / 59.9;
+    vsync_provider_.reset(
+        new gfx::FixedVSyncProvider(kDefaultTimebase, kDefaultInterval));
+  }
 
   return true;
 }

@@ -194,6 +194,7 @@ component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "vsync_provider.cc",
     "vsync_provider.h",
     "win/direct_manipulation.cc",
     "win/direct_manipulation.h",
