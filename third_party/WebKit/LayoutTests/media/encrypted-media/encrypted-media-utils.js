@@ -91,7 +91,7 @@ function getSimpleConfigurationForInitDataType(initDataType)
 // both audio and video capabilities for the specified file..
 function getConfigurationForFile(mediaFile)
 {
-    if (mediaFile.toLowerCase().endsWith('webm')) {
+    if (mediaFile.toLowerCase().endsWith('.webm')) {
         return [ {
             initDataTypes: [ 'webm' ],
             audioCapabilities: [ { contentType: 'audio/webm; codecs="opus"' } ],
@@ -294,7 +294,7 @@ function extractSingleKeyIdFromMessage(message)
 // Create a MediaKeys object for Clear Key with 1 session. KeyId and key
 // required for the video are already known and provided. Returns a promise
 // that resolves to the MediaKeys object created.
-function createMediaKeys(keyId, key)
+function createClearKeyMediaKeysAndInitializeWithOneKey(keyId, key)
 {
     var mediaKeys;
     var mediaKeySession;

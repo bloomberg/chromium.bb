@@ -18,13 +18,13 @@
                 var content = '../content/test-encrypted.webm';
                 var duration = 0.2;
 
-                return createMediaKeys(keyId, rawKey).then(function(mediaKeys) {
+                return createClearKeyMediaKeysAndInitializeWithOneKey(keyId, rawKey).then(function(mediaKeys) {
                     return video.setMediaKeys(mediaKeys);
                 }).then(function() {
                     return playVideoAndWaitForTimeupdate(video, content, duration);
                 }).then(function() {
                     // Now create a second MediaKeys.
-                    return createMediaKeys(keyId, rawKey);
+                    return createClearKeyMediaKeysAndInitializeWithOneKey(keyId, rawKey);
                 }).then(function(mediaKeys) {
                     // video is currently playing, so should not be able to
                     // change MediaKeys now.
