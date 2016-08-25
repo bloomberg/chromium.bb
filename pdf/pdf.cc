@@ -115,6 +115,14 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
   return ret;
 }
 
+void SetPDFEnsureTypefaceCharactersAccessible(
+    PDFEnsureTypefaceCharactersAccessible func) {
+  PDFEngineExports::Get()->SetPDFEnsureTypefaceCharactersAccessible(func);
+}
+
+void SetPDFUseGDIPrinting(bool enable) {
+  PDFEngineExports::Get()->SetPDFUseGDIPrinting(enable);
+}
 #endif  // defined(OS_WIN)
 
 bool GetPDFDocInfo(const void* pdf_buffer,

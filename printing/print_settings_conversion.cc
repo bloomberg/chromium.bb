@@ -191,6 +191,13 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode));
   settings->set_color(static_cast<ColorModel>(color));
 
+#if defined(OS_WIN)
+  // Modifiable implies HTML and not other formats like PDF.
+  bool can_modify = false;
+  if (job_settings.GetBoolean(kSettingPreviewModifiable, &can_modify))
+    settings->set_print_text_with_gdi(can_modify);
+#endif
+
   return true;
 }
 

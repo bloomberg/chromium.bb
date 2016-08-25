@@ -13,14 +13,13 @@
 
 namespace printing {
 
-PrintingContextSytemDialogWin::PrintingContextSytemDialogWin(Delegate* delegate)
-    : PrintingContextWin(delegate) {
-}
+PrintingContextSystemDialogWin::PrintingContextSystemDialogWin(
+    Delegate* delegate)
+    : PrintingContextWin(delegate) {}
 
-PrintingContextSytemDialogWin::~PrintingContextSytemDialogWin() {
-}
+PrintingContextSystemDialogWin::~PrintingContextSystemDialogWin() {}
 
-void PrintingContextSytemDialogWin::AskUserForSettings(
+void PrintingContextSystemDialogWin::AskUserForSettings(
     int max_pages,
     bool has_selection,
     bool is_scripted,
@@ -32,11 +31,9 @@ void PrintingContextSytemDialogWin::AskUserForSettings(
 
   // Show the OS-dependent dialog box.
   // If the user press
-  // - OK, the settings are reset and reinitialized with the new settings. OK
-  // is
+  // - OK, the settings are reset and reinitialized with the new settings. OK is
   //   returned.
-  // - Apply then Cancel, the settings are reset and reinitialized with the
-  // new
+  // - Apply then Cancel, the settings are reset and reinitialized with the new
   //   settings. CANCEL is returned.
   // - Cancel, the settings are not changed, the previous setting, if it was
   //   initialized before, are kept. CANCEL is returned.
@@ -77,7 +74,7 @@ void PrintingContextSytemDialogWin::AskUserForSettings(
   callback.Run(ParseDialogResultEx(dialog_options));
 }
 
-HRESULT PrintingContextSytemDialogWin::ShowPrintDialog(PRINTDLGEX* options) {
+HRESULT PrintingContextSystemDialogWin::ShowPrintDialog(PRINTDLGEX* options) {
   // Runs always on the UI thread.
   static bool is_dialog_shown = false;
   if (is_dialog_shown)
@@ -97,7 +94,7 @@ HRESULT PrintingContextSytemDialogWin::ShowPrintDialog(PRINTDLGEX* options) {
   return PrintDlgEx(options);
 }
 
-bool PrintingContextSytemDialogWin::InitializeSettingsWithRanges(
+bool PrintingContextSystemDialogWin::InitializeSettingsWithRanges(
     const DEVMODE& dev_mode,
     const std::wstring& new_device_name,
     const PRINTPAGERANGE* ranges,
@@ -143,12 +140,14 @@ bool PrintingContextSytemDialogWin::InitializeSettingsWithRanges(
   return true;
 }
 
-PrintingContext::Result PrintingContextSytemDialogWin::ParseDialogResultEx(
+PrintingContext::Result PrintingContextSystemDialogWin::ParseDialogResultEx(
     const PRINTDLGEX& dialog_options) {
   // If the user clicked OK or Apply then Cancel, but not only Cancel.
   if (dialog_options.dwResultAction != PD_RESULT_CANCEL) {
-    // Start fresh.
+    // Start fresh, but preserve GDI print setting.
+    bool print_text_with_gdi = settings_.print_text_with_gdi();
     ResetSettings();
+    settings_.set_print_text_with_gdi(print_text_with_gdi);
 
     DEVMODE* dev_mode = NULL;
     if (dialog_options.hDevMode) {
@@ -216,55 +215,6 @@ PrintingContext::Result PrintingContextSytemDialogWin::ParseDialogResultEx(
     default:
       return FAILED;
   }
-}
-
-PrintingContext::Result PrintingContextSytemDialogWin::ParseDialogResult(
-    const PRINTDLG& dialog_options) {
-  // If the user clicked OK or Apply then Cancel, but not only Cancel.
-  // Start fresh.
-  ResetSettings();
-
-  DEVMODE* dev_mode = NULL;
-  if (dialog_options.hDevMode) {
-    dev_mode = reinterpret_cast<DEVMODE*>(GlobalLock(dialog_options.hDevMode));
-    DCHECK(dev_mode);
-  }
-
-  std::wstring device_name;
-  if (dialog_options.hDevNames) {
-    DEVNAMES* dev_names =
-        reinterpret_cast<DEVNAMES*>(GlobalLock(dialog_options.hDevNames));
-    DCHECK(dev_names);
-    if (dev_names) {
-      device_name = reinterpret_cast<const wchar_t*>(
-          reinterpret_cast<const wchar_t*>(dev_names) +
-          dev_names->wDeviceOffset);
-      GlobalUnlock(dialog_options.hDevNames);
-    }
-  }
-
-  bool success = false;
-  if (dev_mode && !device_name.empty()) {
-    set_context(dialog_options.hDC);
-    success =
-        InitializeSettingsWithRanges(*dev_mode, device_name, NULL, 0, false);
-  }
-
-  if (!success && dialog_options.hDC) {
-    DeleteDC(dialog_options.hDC);
-    set_context(NULL);
-  }
-
-  if (dev_mode) {
-    GlobalUnlock(dialog_options.hDevMode);
-  }
-
-  if (dialog_options.hDevMode != NULL)
-    GlobalFree(dialog_options.hDevMode);
-  if (dialog_options.hDevNames != NULL)
-    GlobalFree(dialog_options.hDevNames);
-
-  return context() ? OK : FAILED;
 }
 
 }  // namespace printing

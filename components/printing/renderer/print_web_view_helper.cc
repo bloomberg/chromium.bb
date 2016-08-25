@@ -1704,6 +1704,7 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
   }
   params.margin_type = margin_type;
   params.is_scripted = is_scripted;
+  params.is_modifiable = !PrintingNodeOrPdfFrame(frame, node);
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 

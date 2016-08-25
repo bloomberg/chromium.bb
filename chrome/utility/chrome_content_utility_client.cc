@@ -102,7 +102,7 @@ void CreateResourceUsageReporter(
     mojo::InterfaceRequest<mojom::ResourceUsageReporter> request) {
   new ResourceUsageReporterImpl(std::move(request));
 }
-#endif  // OS_ANDROID
+#endif  // !defined(OS_ANDROID)
 
 void CreateImageDecoder(mojo::InterfaceRequest<mojom::ImageDecoder> request) {
   content::UtilityThread::Get()->EnsureBlinkInitialized();

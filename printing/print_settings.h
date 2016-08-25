@@ -106,8 +106,8 @@ class PRINTING_EXPORT PrintSettings {
 #endif  // defined(OS_MACOSX)
   }
 
-  void set_ranges(const PageRanges& ranges) { ranges_ = ranges; };
-  const PageRanges& ranges() const { return ranges_; };
+  void set_ranges(const PageRanges& ranges) { ranges_ = ranges; }
+  const PageRanges& ranges() const { return ranges_; }
 
   void set_selection_only(bool selection_only) {
     selection_only_ = selection_only;
@@ -143,6 +143,11 @@ class PRINTING_EXPORT PrintSettings {
   DuplexMode duplex_mode() const { return duplex_mode_; }
 
   int desired_dpi() const { return desired_dpi_; }
+
+#if defined(OS_WIN)
+  void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
+  bool print_text_with_gdi() const { return print_text_with_gdi_; }
+#endif
 
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
@@ -203,6 +208,11 @@ class PRINTING_EXPORT PrintSettings {
 
   // True if this printer supports AlphaBlend.
   bool supports_alpha_blend_;
+
+#if defined(OS_WIN)
+  // True to print text with GDI.
+  bool print_text_with_gdi_;
+#endif
 
   // If margin type is custom, this is what was requested.
   PageMargins requested_custom_margins_in_points_;

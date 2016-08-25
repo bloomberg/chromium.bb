@@ -16,11 +16,11 @@
 
 namespace printing {
 
-class PRINTING_EXPORT PrintingContextSytemDialogWin
+class PRINTING_EXPORT PrintingContextSystemDialogWin
     : public PrintingContextWin {
  public:
-  explicit PrintingContextSytemDialogWin(Delegate* delegate);
-  ~PrintingContextSytemDialogWin() override;
+  explicit PrintingContextSystemDialogWin(Delegate* delegate);
+  ~PrintingContextSystemDialogWin() override;
 
   // PrintingContext implementation.
   void AskUserForSettings(
@@ -44,9 +44,8 @@ class PRINTING_EXPORT PrintingContextSytemDialogWin
 
   // Parses the result of a PRINTDLGEX result.
   Result ParseDialogResultEx(const PRINTDLGEX& dialog_options);
-  Result ParseDialogResult(const PRINTDLG& dialog_options);
 
-  DISALLOW_COPY_AND_ASSIGN(PrintingContextSytemDialogWin);
+  DISALLOW_COPY_AND_ASSIGN(PrintingContextSystemDialogWin);
 };
 
 }  // namespace printing

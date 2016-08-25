@@ -149,6 +149,9 @@ void PrintSettings::Clear() {
   color_ = UNKNOWN_COLOR_MODEL;
   copies_ = 0;
   duplex_mode_ = UNKNOWN_DUPLEX_MODE;
+#if defined(OS_WIN)
+  print_text_with_gdi_ = false;
+#endif
 }
 
 void PrintSettings::SetPrinterPrintableArea(

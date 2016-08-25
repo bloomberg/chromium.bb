@@ -8,6 +8,16 @@
 #include "ppapi/c/ppb.h"
 #include "ppapi/cpp/module.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
+#if defined(OS_WIN)
+typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
+                                                      const wchar_t* text,
+                                                      size_t text_length);
+#endif
+
 namespace chrome_pdf {
 
 class PDFModule : public pp::Module {
@@ -67,7 +77,13 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
                        bool keep_aspect_ratio,
                        bool center_in_bounds,
                        bool autorotate);
-#endif
+
+void SetPDFEnsureTypefaceCharactersAccessible(
+    PDFEnsureTypefaceCharactersAccessible func);
+
+void SetPDFUseGDIPrinting(bool enable);
+#endif  // defined(OS_WIN)
+
 // |page_count| and |max_page_width| are optional and can be NULL.
 // Returns false if the document is not valid.
 bool GetPDFDocInfo(const void* pdf_buffer,

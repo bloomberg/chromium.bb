@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
 
 #include <stdint.h>
+#include <windows.h>
 
 #include <memory>
 #include <queue>
@@ -107,12 +108,17 @@ class PdfToEmfUtilityProcessHostClient
       const PdfRenderSettings& settings);
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
+             bool print_text_with_gdi,
              const PdfToEmfConverter::StartCallback& start_callback);
 
   void GetPage(int page_number,
                const PdfToEmfConverter::GetPageCallback& get_page_callback);
 
   void Stop();
+
+  // Needs to be public to handle ChromeUtilityHostMsg_PreCacheFontCharacters
+  // sync message replies.
+  bool Send(IPC::Message* msg);
 
   // UtilityProcessHostClient implementation.
   void OnProcessCrashed(int exit_code) override;
@@ -154,14 +160,14 @@ class PdfToEmfUtilityProcessHostClient
 
   ~PdfToEmfUtilityProcessHostClient() override;
 
-  bool Send(IPC::Message* msg);
-
   // Message handlers.
   void OnPageCount(int page_count);
   void OnPageDone(bool success, float scale_factor);
+  void OnPreCacheFontCharacters(const LOGFONT& log_font,
+                                const base::string16& characters);
 
   void OnFailed();
-  void OnTempPdfReady(ScopedTempFile pdf);
+  void OnTempPdfReady(bool print_text_with_gdi, ScopedTempFile pdf);
   void OnTempEmfReady(GetPageCallbackData* callback_data, ScopedTempFile emf);
 
   scoped_refptr<RefCountedTempDir> temp_dir_;
@@ -193,6 +199,7 @@ class PdfToEmfConverterImpl : public PdfToEmfConverter {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
+             bool print_text_with_gdi,
              const StartCallback& start_callback) override;
 
   void GetPage(int page_number,
@@ -297,14 +304,13 @@ PdfToEmfUtilityProcessHostClient::~PdfToEmfUtilityProcessHostClient() {
 
 void PdfToEmfUtilityProcessHostClient::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
+    bool print_text_with_gdi,
     const PdfToEmfConverter::StartCallback& start_callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(&PdfToEmfUtilityProcessHostClient::Start,
-                                       this,
-                                       data,
-                                       start_callback));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PdfToEmfUtilityProcessHostClient::Start, this, data,
+                   print_text_with_gdi, start_callback));
     return;
   }
 
@@ -321,20 +327,21 @@ void PdfToEmfUtilityProcessHostClient::Start(
       IDS_UTILITY_PROCESS_EMF_CONVERTOR_NAME));
 
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateTempPdfFile, data, &temp_dir_),
-      base::Bind(&PdfToEmfUtilityProcessHostClient::OnTempPdfReady, this));
+      base::Bind(&PdfToEmfUtilityProcessHostClient::OnTempPdfReady, this,
+                 print_text_with_gdi));
 }
 
-void PdfToEmfUtilityProcessHostClient::OnTempPdfReady(ScopedTempFile pdf) {
+void PdfToEmfUtilityProcessHostClient::OnTempPdfReady(bool print_text_with_gdi,
+                                                      ScopedTempFile pdf) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_ || !pdf)
     return OnFailed();
   // Should reply with OnPageCount().
   Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
-      IPC::GetPlatformFileForTransit(pdf->GetPlatformFile(), false),
-      settings_));
+      IPC::GetPlatformFileForTransit(pdf->GetPlatformFile(), false), settings_,
+      print_text_with_gdi));
 }
 
 void PdfToEmfUtilityProcessHostClient::OnPageCount(int page_count) {
@@ -418,6 +425,38 @@ void PdfToEmfUtilityProcessHostClient::OnPageDone(bool success,
   get_page_callbacks_.pop();
 }
 
+void PdfToEmfUtilityProcessHostClient::OnPreCacheFontCharacters(
+    const LOGFONT& font,
+    const base::string16& str) {
+  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
+  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
+  // Eventually this shouldn't be added and should be moved to
+  // FontCacheDispatcher too. http://crbug.com/356346.
+
+  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
+  // Except that for True Type fonts,
+  // GetTextMetrics will not load the font in memory.
+  // The only way windows seem to load properly, it is to create a similar
+  // device (like the one in which we print), then do an ExtTextOut,
+  // as we do in the printing thread, which is sandboxed.
+  HDC hdc = CreateEnhMetaFile(nullptr, nullptr, nullptr, nullptr);
+  HFONT font_handle = CreateFontIndirect(&font);
+  DCHECK(font_handle != nullptr);
+
+  HGDIOBJ old_font = SelectObject(hdc, font_handle);
+  DCHECK(old_font != nullptr);
+
+  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), nullptr);
+
+  SelectObject(hdc, old_font);
+  DeleteObject(font_handle);
+
+  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
+
+  if (metafile)
+    DeleteEnhMetaFile(metafile);
+}
+
 void PdfToEmfUtilityProcessHostClient::Stop() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
@@ -445,6 +484,8 @@ bool PdfToEmfUtilityProcessHostClient::OnMessageReceived(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount, OnPageCount)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
                         OnPageDone)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_PreCacheFontCharacters,
+                        OnPreCacheFontCharacters)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -477,11 +518,12 @@ PdfToEmfConverterImpl::~PdfToEmfConverterImpl() {
 void PdfToEmfConverterImpl::Start(
     const scoped_refptr<base::RefCountedMemory>& data,
     const PdfRenderSettings& conversion_settings,
+    bool print_text_with_gdi,
     const StartCallback& start_callback) {
   DCHECK(!utility_client_.get());
   utility_client_ = new PdfToEmfUtilityProcessHostClient(
       weak_ptr_factory_.GetWeakPtr(), conversion_settings);
-  utility_client_->Start(data, start_callback);
+  utility_client_->Start(data, print_text_with_gdi, start_callback);
 }
 
 void PdfToEmfConverterImpl::GetPage(int page_number,

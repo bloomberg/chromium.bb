@@ -97,7 +97,8 @@ class PrintJob : public PrintJobWorkerOwner,
   void StartPdfToEmfConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size,
-      const gfx::Rect& content_area);
+      const gfx::Rect& content_area,
+      bool print_text_with_gdi);
 #endif  // defined(OS_WIN)
 
  protected:

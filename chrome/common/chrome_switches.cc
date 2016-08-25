@@ -1198,6 +1198,10 @@ const char kRelauncherProcessDMGDevice[]    = "dmg-device";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+// Disables using GDI to print text as simply text. Fallback to printing text
+// as paths.
+const char kDisableGDITextPrinting[] = "disable-gdi-text-printing";
+
 // Disables per monitor DPI for supported Windows versions.
 // This flag overrides kEnablePerMonitorDpi.
 const char kDisablePerMonitorDpi[]          = "disable-per-monitor-dpi";

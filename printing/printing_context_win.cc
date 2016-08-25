@@ -26,7 +26,7 @@ namespace printing {
 
 namespace {
 
-void AssingResult(PrintingContext::Result* out, PrintingContext::Result in) {
+void AssignResult(PrintingContext::Result* out, PrintingContext::Result in) {
   *out = in;
 }
 
@@ -35,10 +35,10 @@ void AssingResult(PrintingContext::Result* out, PrintingContext::Result in) {
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 #if defined(ENABLE_BASIC_PRINTING)
-  return base::WrapUnique(new PrintingContextSytemDialogWin(delegate));
-#else   // ENABLE_BASIC_PRINTING
+  return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
+#else
   return base::WrapUnique(new PrintingContextWin(delegate));
-#endif  // EENABLE_BASIC_PRINTING
+#endif
 }
 
 PrintingContextWin::PrintingContextWin(Delegate* delegate)
@@ -209,12 +209,11 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   if (show_system_dialog) {
     PrintingContext::Result result = PrintingContext::FAILED;
     AskUserForSettings(page_count, false, false,
-                       base::Bind(&AssingResult, &result));
+                       base::Bind(&AssignResult, &result));
     return result;
-  } else {
-    scoped_dev_mode = CreateDevMode(printer.Get(), scoped_dev_mode.get());
   }
   // Set printer then refresh printer settings.
+  scoped_dev_mode = CreateDevMode(printer.Get(), scoped_dev_mode.get());
   return InitializeSettings(settings_.device_name(), scoped_dev_mode.get());
 }
 

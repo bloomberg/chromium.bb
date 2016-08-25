@@ -742,6 +742,10 @@ class PDFiumEngineExports : public PDFEngineExports {
                          int page_number,
                          const RenderingSettings& settings,
                          HDC dc) override;
+  void SetPDFEnsureTypefaceCharactersAccessible(
+      PDFEnsureTypefaceCharactersAccessible func) override;
+
+  void SetPDFUseGDIPrinting(bool enable) override;
 #endif  // defined(OS_WIN)
   bool RenderPDFPageToBitmap(const void* pdf_buffer,
                              int pdf_buffer_size,

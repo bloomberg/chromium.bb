@@ -65,13 +65,13 @@ int PrinterQuery::cookie() const {
   return cookie_;
 }
 
-void PrinterQuery::GetSettings(
-    GetSettingsAskParam ask_user_for_settings,
-    int expected_page_count,
-    bool has_selection,
-    MarginType margin_type,
-    bool is_scripted,
-    const base::Closure& callback) {
+void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
+                               int expected_page_count,
+                               bool has_selection,
+                               MarginType margin_type,
+                               bool is_scripted,
+                               bool is_modifiable,
+                               const base::Closure& callback) {
   DCHECK(RunsTasksOnCurrentThread());
   DCHECK(!is_print_dialog_box_shown_ || !is_scripted);
 
@@ -80,14 +80,11 @@ void PrinterQuery::GetSettings(
   // Real work is done in PrintJobWorker::GetSettings().
   is_print_dialog_box_shown_ =
       ask_user_for_settings == GetSettingsAskParam::ASK_USER;
-  worker_->PostTask(FROM_HERE,
-                    base::Bind(&PrintJobWorker::GetSettings,
-                               base::Unretained(worker_.get()),
-                               is_print_dialog_box_shown_,
-                               expected_page_count,
-                               has_selection,
-                               margin_type,
-                               is_scripted));
+  worker_->PostTask(
+      FROM_HERE,
+      base::Bind(&PrintJobWorker::GetSettings, base::Unretained(worker_.get()),
+                 is_print_dialog_box_shown_, expected_page_count, has_selection,
+                 margin_type, is_scripted, is_modifiable));
 }
 
 void PrinterQuery::SetSettings(

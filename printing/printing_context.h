@@ -29,8 +29,8 @@ class PRINTING_EXPORT PrintingContext {
   // Printing context delegate.
   class Delegate {
    public:
-    Delegate() {};
-    virtual ~Delegate() {};
+    Delegate() {}
+    virtual ~Delegate() {}
 
     // Returns parent view to use for modal dialogs.
     virtual gfx::NativeView GetParentView() = 0;
@@ -121,6 +121,7 @@ class PRINTING_EXPORT PrintingContext {
   static std::unique_ptr<PrintingContext> Create(Delegate* delegate);
 
   void set_margin_type(MarginType type);
+  void set_is_modifiable(bool is_modifiable);
 
   const PrintSettings& settings() const {
     return settings_;

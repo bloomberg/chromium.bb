@@ -40,9 +40,22 @@ void ReleaseProcessIfNeeded() {
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }
 
+#if defined(OS_WIN)
+void PreCacheFontCharacters(const LOGFONT* logfont,
+                            const wchar_t* text,
+                            size_t text_length) {
+  Send(new ChromeUtilityHostMsg_PreCacheFontCharacters(
+      *logfont, base::string16(text, text_length)));
+}
+#endif
+
 }  // namespace
 
-PrintingHandler::PrintingHandler() {}
+PrintingHandler::PrintingHandler() {
+#if defined(OS_WIN)
+  chrome_pdf::SetPDFEnsureTypefaceCharactersAccessible(PreCacheFontCharacters);
+#endif
+}
 
 PrintingHandler::~PrintingHandler() {}
 
@@ -73,8 +86,10 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
 void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
-    const PdfRenderSettings& settings) {
+    const PdfRenderSettings& settings,
+    bool print_text_with_gdi) {
   pdf_rendering_settings_ = settings;
+  chrome_pdf::SetPDFUseGDIPrinting(print_text_with_gdi);
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int page_count = LoadPDF(std::move(pdf_file));
   Send(

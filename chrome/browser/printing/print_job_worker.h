@@ -45,12 +45,13 @@ class PrintJobWorker {
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
   // |is_scripted| should be true for calls coming straight from window.print().
-  void GetSettings(
-      bool ask_user_for_settings,
-      int document_page_count,
-      bool has_selection,
-      MarginType margin_type,
-      bool is_scripted);
+  // |is_modifiable| implies HTML and not other formats like PDF.
+  void GetSettings(bool ask_user_for_settings,
+                   int document_page_count,
+                   bool has_selection,
+                   MarginType margin_type,
+                   bool is_scripted,
+                   bool is_modifiable);
 
   // Set the new print settings.
   void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings);

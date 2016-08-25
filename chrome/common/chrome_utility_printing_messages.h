@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
@@ -15,6 +16,10 @@
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
@@ -66,8 +71,8 @@ IPC_STRUCT_TRAITS_END()
 
 // Tell the utility process to render the given PDF into a PWGRaster.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
-                     IPC::PlatformFileForTransit, /* Input PDF file */
-                     printing::PdfRenderSettings, /* PDF render settings */
+                     IPC::PlatformFileForTransit /* Input PDF file */,
+                     printing::PdfRenderSettings /* PDF render settings */,
                      // PWG transform settings.
                      printing::PwgRasterSettings,
                      IPC::PlatformFileForTransit /* Output PWG file */)
@@ -93,9 +98,10 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
 // Tell the utility process to start rendering the given PDF into a metafile.
 // Utility process would be alive until
 // ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop message.
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
-                     IPC::PlatformFileForTransit, /* input_file */
-                     printing::PdfRenderSettings /* settings */)
+IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
+                     IPC::PlatformFileForTransit /* input_file */,
+                     printing::PdfRenderSettings /* settings */,
+                     bool /* print_text_with_gdi */)
 
 // Requests conversion of the next page.
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,
@@ -152,4 +158,12 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
                      bool /* success */,
                      float /* scale_factor */)
+
+// Request that the given font characters be loaded by the browser so it's
+// cached by the OS. Please see
+// PdfToEmfUtilityProcessHostClient::OnPreCacheFontCharacters for details.
+IPC_SYNC_MESSAGE_CONTROL2_0(ChromeUtilityHostMsg_PreCacheFontCharacters,
+                            LOGFONT /* font_data */,
+                            base::string16 /* characters */)
+
 #endif  // ENABLE_PRINTING && OS_WIN

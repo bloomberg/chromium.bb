@@ -29,6 +29,12 @@
 #include "ppapi/cpp/var_array.h"
 #include "ui/base/window_open_disposition.h"
 
+#if defined(OS_WIN)
+typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
+                                                      const wchar_t* text,
+                                                      size_t text_length);
+#endif
+
 namespace pp {
 class InputEvent;
 class VarDictionary;
@@ -329,7 +335,13 @@ class PDFEngineExports {
                                  int page_number,
                                  const RenderingSettings& settings,
                                  HDC dc) = 0;
-#endif  // OS_WIN
+
+  virtual void SetPDFEnsureTypefaceCharactersAccessible(
+      PDFEnsureTypefaceCharactersAccessible func) = 0;
+
+  virtual void SetPDFUseGDIPrinting(bool enable) = 0;
+#endif  // defined(OS_WIN)
+
   // See the definition of RenderPDFPageToBitmap in pdf.cc for details.
   virtual bool RenderPDFPageToBitmap(const void* pdf_buffer,
                                      int pdf_buffer_size,

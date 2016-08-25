@@ -132,9 +132,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   // Messages for OOP font loading.
   void OnLoadFont(const FontDescriptor& font, IPC::Message* reply_msg);
   void SendLoadFontReply(IPC::Message* reply, FontLoader::Result* result);
-#elif defined(OS_WIN)
-  void OnPreCacheFontCharacters(const LOGFONT& log_font,
-                                const base::string16& characters);
 #endif
 
   void OnGenerateRoutingID(int* route_id);

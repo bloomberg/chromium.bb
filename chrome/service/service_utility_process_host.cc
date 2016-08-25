@@ -99,7 +99,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
       return false;
     return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
         IPC::TakePlatformFileForTransit(std::move(pdf_file)),
-        conversion_settings));
+        conversion_settings, false /* print_text_with_gdi */));
   }
 
   void GetMorePages() {

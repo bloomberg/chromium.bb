@@ -212,9 +212,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         OnCacheableMetadataAvailableForCacheStorage)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_LoadFont, OnLoadFont)
-#elif defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_PreCacheFontCharacters,
-                        OnPreCacheFontCharacters)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -321,42 +318,7 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
   Send(reply);
 }
 
-#elif defined(OS_WIN)
-
-void RenderMessageFilter::OnPreCacheFontCharacters(
-    const LOGFONT& font,
-    const base::string16& str) {
-  // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
-  // GDI fonts (http://crbug.com/383227), even when using DirectWrite.
-  // Eventually this shouldn't be added and should be moved to
-  // FontCacheDispatcher too. http://crbug.com/356346.
-
-  // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
-  // Except that for True Type fonts,
-  // GetTextMetrics will not load the font in memory.
-  // The only way windows seem to load properly, it is to create a similar
-  // device (like the one in which we print), then do an ExtTextOut,
-  // as we do in the printing thread, which is sandboxed.
-  HDC hdc = CreateEnhMetaFile(NULL, NULL, NULL, NULL);
-  HFONT font_handle = CreateFontIndirect(&font);
-  DCHECK(NULL != font_handle);
-
-  HGDIOBJ old_font = SelectObject(hdc, font_handle);
-  DCHECK(NULL != old_font);
-
-  ExtTextOut(hdc, 0, 0, ETO_GLYPH_INDEX, 0, str.c_str(), str.length(), NULL);
-
-  SelectObject(hdc, old_font);
-  DeleteObject(font_handle);
-
-  HENHMETAFILE metafile = CloseEnhMetaFile(hdc);
-
-  if (metafile)
-    DeleteEnhMetaFile(metafile);
-}
-
-
-#endif  // OS_*
+#endif  // defined(OS_MACOSX)
 
 void RenderMessageFilter::AllocateSharedMemoryOnFileThread(
     uint32_t buffer_size,

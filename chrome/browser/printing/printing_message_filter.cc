@@ -26,15 +26,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include <fcntl.h>
-
-#include <map>
-
-#include "base/files/file_util.h"
-#include "base/lazy_instance.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/printing/print_view_manager_basic.h"
@@ -163,15 +154,10 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
   printer_query->GetSettings(
-      PrinterQuery::GetSettingsAskParam::DEFAULTS,
-      0,
-      false,
-      DEFAULT_MARGINS,
-      false,
-      base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply,
-                 this,
-                 printer_query,
-                 reply_msg));
+      PrinterQuery::GetSettingsAskParam::DEFAULTS, 0, false, DEFAULT_MARGINS,
+      false, false,
+      base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply, this,
+                 printer_query, reply_msg));
 }
 
 void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
@@ -208,15 +194,11 @@ void PrintingMessageFilter::OnScriptedPrint(
         queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
   }
   printer_query->GetSettings(
-      PrinterQuery::GetSettingsAskParam::ASK_USER,
-      params.expected_pages_count,
-      params.has_selection,
-      params.margin_type,
-      params.is_scripted,
-      base::Bind(&PrintingMessageFilter::OnScriptedPrintReply,
-                 this,
-                 printer_query,
-                 reply_msg));
+      PrinterQuery::GetSettingsAskParam::ASK_USER, params.expected_pages_count,
+      params.has_selection, params.margin_type, params.is_scripted,
+      params.is_modifiable,
+      base::Bind(&PrintingMessageFilter::OnScriptedPrintReply, this,
+                 printer_query, reply_msg));
 }
 
 void PrintingMessageFilter::OnScriptedPrintReply(

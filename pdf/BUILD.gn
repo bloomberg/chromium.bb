@@ -65,7 +65,8 @@ static_library("pdf") {
     ]
   }
 
+  defines = [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
   if (pdf_enable_xfa) {
-    defines = [ "PDF_ENABLE_XFA" ]
+    defines += [ "PDF_ENABLE_XFA" ]
   }
 }

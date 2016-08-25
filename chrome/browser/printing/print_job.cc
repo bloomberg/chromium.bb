@@ -234,8 +234,10 @@ class PrintJob::PdfToEmfState {
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,
+             bool print_text_with_gdi,
              const PdfToEmfConverter::StartCallback& start_callback) {
-    converter_->Start(data, conversion_settings, start_callback);
+    converter_->Start(data, conversion_settings, print_text_with_gdi,
+                      start_callback);
   }
 
   void GetMorePages(
@@ -277,13 +279,14 @@ void PrintJob::AppendPrintedPage(int page_number) {
 void PrintJob::StartPdfToEmfConversion(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const gfx::Size& page_size,
-    const gfx::Rect& content_area) {
+    const gfx::Rect& content_area,
+    bool print_text_with_gdi) {
   DCHECK(!pdf_to_emf_state_);
   pdf_to_emf_state_ = base::MakeUnique<PdfToEmfState>(page_size, content_area);
   const int kPrinterDpi = settings().dpi();
-  pdf_to_emf_state_->Start(bytes,
-                           PdfRenderSettings(content_area, kPrinterDpi, true),
-                           base::Bind(&PrintJob::OnPdfToEmfStarted, this));
+  pdf_to_emf_state_->Start(
+      bytes, PdfRenderSettings(content_area, kPrinterDpi, true),
+      print_text_with_gdi, base::Bind(&PrintJob::OnPdfToEmfStarted, this));
 }
 
 void PrintJob::OnPdfToEmfStarted(int page_count) {

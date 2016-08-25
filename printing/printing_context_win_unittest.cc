@@ -40,6 +40,7 @@ class PrintingContextTest : public PrintingTest<testing::Test>,
 };
 
 namespace {
+
 struct FreeHandleTraits {
   typedef HANDLE Handle;
   static void CloseHandle(HANDLE handle) { GlobalFree(handle); }
@@ -49,12 +50,13 @@ struct FreeHandleTraits {
 typedef base::win::GenericScopedHandle<FreeHandleTraits,
                                        base::win::DummyVerifierTraits>
     ScopedGlobalAlloc;
-}
 
-class MockPrintingContextWin : public PrintingContextSytemDialogWin {
+}  // namespace
+
+class MockPrintingContextWin : public PrintingContextSystemDialogWin {
  public:
-  MockPrintingContextWin(Delegate* delegate)
-      : PrintingContextSytemDialogWin(delegate) {}
+  explicit MockPrintingContextWin(Delegate* delegate)
+      : PrintingContextSystemDialogWin(delegate) {}
 
  protected:
   // This is a fake PrintDlgEx implementation that sets the right fields in

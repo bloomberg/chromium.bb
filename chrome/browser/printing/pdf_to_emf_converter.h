@@ -35,6 +35,7 @@ class PdfToEmfConverter {
   // with positive |page_count|. |page_count| is 0 if initialization failed.
   virtual void Start(const scoped_refptr<base::RefCountedMemory>& data,
                      const PdfRenderSettings& conversion_settings,
+                     bool print_text_with_gdi,
                      const StartCallback& start_callback) = 0;
 
   // Requests conversion of the page. |page_number| is 0-base page number in

@@ -310,7 +310,7 @@ extern const char kWebApkServerUrl[];
 
 #if defined(OS_CHROMEOS)
 extern const char kEnableNativeCups[];
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_ASH)
 extern const char kOpenAsh[];
@@ -348,6 +348,7 @@ extern const char kRelauncherProcessDMGDevice[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+extern const char kDisableGDITextPrinting[];
 extern const char kDisablePerMonitorDpi[];
 extern const char kEnableCloudPrintXps[];
 extern const char kEnablePerMonitorDpi[];

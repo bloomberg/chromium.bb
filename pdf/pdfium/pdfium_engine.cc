@@ -53,6 +53,7 @@
 #include "third_party/pdfium/public/fpdf_searchex.h"
 #include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "third_party/pdfium/public/fpdf_transformpage.h"
+#include "third_party/pdfium/public/fpdfview.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
@@ -3875,6 +3876,16 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
   FPDF_ClosePage(page);
   FPDF_CloseDocument(doc);
   return true;
+}
+
+void PDFiumEngineExports::SetPDFEnsureTypefaceCharactersAccessible(
+    PDFEnsureTypefaceCharactersAccessible func) {
+  FPDF_SetTypefaceAccessibleFunc(
+      reinterpret_cast<PDFiumEnsureTypefaceCharactersAccessible>(func));
+}
+
+void PDFiumEngineExports::SetPDFUseGDIPrinting(bool enable) {
+  FPDF_SetPrintTextWithGDI(enable);
 }
 #endif  // defined(OS_WIN)
 
