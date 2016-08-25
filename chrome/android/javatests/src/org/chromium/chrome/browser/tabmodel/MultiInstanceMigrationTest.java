@@ -70,11 +70,14 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
     public void testMigrateData() throws IOException {
         // Write old state files.
         File[] stateDirs = createOldStateDirs(TabWindowManager.MAX_SIMULTANEOUS_SELECTORS, true);
-        File stateFile0 = new File(stateDirs[0], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
-        File stateFile1 = new File(stateDirs[1], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
-        File stateFile2 = new File(stateDirs[2], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile0 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+        File stateFile1 = new File(
+                stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+        File stateFile2 = new File(
+                stateDirs[2], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File customTabsStateFile = new File(
-                stateDirs[3], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+                stateDirs[3], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
 
         assertTrue("Could not create state file 0", stateFile0.createNewFile());
         assertTrue("Could not create state file 1", stateFile1.createNewFile());
@@ -163,8 +166,10 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
     public void testMigrationLeavesOtherFilesAlone() throws IOException {
         // Write old state files and an extra file.
         File[] stateDirs = createOldStateDirs(2, false);
-        File stateFile0 = new File(stateDirs[0], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
-        File stateFile1 = new File(stateDirs[1], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile0 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+        File stateFile1 = new File(
+                stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File tab0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File tab1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File otherFile = new File(stateDirs[1], "other.file");
@@ -211,8 +216,10 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
     public void testMigrateDataDuplicateTabFiles() throws IOException {
         // Write old state files.
         File[] stateDirs = createOldStateDirs(2, false);
-        File stateFile0 = new File(stateDirs[0], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
-        File stateFile1 = new File(stateDirs[1], TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile0 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+        File stateFile1 = new File(
+                stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
 
         assertTrue("Could not create state file 0", stateFile0.createNewFile());
         assertTrue("Could not create state file 1", stateFile1.createNewFile());

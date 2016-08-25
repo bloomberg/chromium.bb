@@ -345,7 +345,7 @@ public class DocumentModeAssassin {
                     // will overwrite the new tab state file that our document tabs migrated to.
                     File oldMetadataFile = new File(
                             getTabbedDataDirectory(),
-                            TabbedModeTabPersistencePolicy.SAVED_STATE_FILE);
+                            TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
                     if (oldMetadataFile.exists() && !oldMetadataFile.delete()) {
                         Log.e(TAG, "Failed to delete old tab state file: " + oldMetadataFile);
                     }

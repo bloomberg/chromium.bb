@@ -100,7 +100,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
-        File stateFile = new File(filesDir, TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile = new File(filesDir, TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File tab0 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File tab1 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File tab2 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "2");
@@ -159,7 +159,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
-        File stateFile = new File(filesDir, TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile = new File(filesDir, TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File tab0 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File tab1 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File tab2 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "2");
@@ -217,7 +217,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
 
         // Write old state files.
         File filesDir = mAppContext.getFilesDir();
-        File stateFile = new File(filesDir, TabPersistencePolicy.SAVED_STATE_FILE_PREFIX);
+        File stateFile = new File(filesDir, TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File tab0 = new File(filesDir, TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File otherFile = new File(filesDir, "other.file");
 

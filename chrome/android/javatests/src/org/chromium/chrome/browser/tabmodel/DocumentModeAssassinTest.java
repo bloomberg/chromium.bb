@@ -661,6 +661,6 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 TabState.SAVED_TAB_STATE_FILE_PREFIX + "_unparseable");
 
         writeUselessFileToDirectory(mTabbedModeDirectory.getDataDirectory(),
-                TabbedModeTabPersistencePolicy.SAVED_STATE_FILE);
+                TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
     }
 }

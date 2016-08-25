@@ -39,9 +39,9 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     private static final String TAG = "tabmodel";
 
-    /** The name of the file where the state is saved. */
+    /** <M53 The name of the file where the old tab metadata file is saved per directory. */
     @VisibleForTesting
-    public static final String SAVED_STATE_FILE = "tab_state";
+    static final String LEGACY_SAVED_STATE_FILE = "tab_state";
 
     @VisibleForTesting
     static final String PREF_HAS_RUN_FILE_MIGRATION =
@@ -189,7 +189,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         // Attempt migration if we have no tab state file in the new directory.
         if (newFiles == null || newFiles.length == 0) {
             File oldFolder = mContext.getFilesDir();
-            File modelFile = new File(oldFolder, SAVED_STATE_FILE);
+            File modelFile = new File(oldFolder, LEGACY_SAVED_STATE_FILE);
             if (modelFile.exists()) {
                 if (!modelFile.renameTo(new File(newFolder, getStateFileName()))) {
                     Log.e(TAG, "Failed to rename file: " + modelFile);
@@ -218,7 +218,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     private void performMultiInstanceMigration() {
         // 1. Rename tab metadata file for tab directory "0".
         File stateDir = getOrCreateStateDirectory();
-        File metadataFile = new File(stateDir, SAVED_STATE_FILE);
+        File metadataFile = new File(stateDir, LEGACY_SAVED_STATE_FILE);
         if (metadataFile.exists()) {
             if (!metadataFile.renameTo(new File(stateDir, getStateFileName()))) {
                 Log.e(TAG, "Failed to rename file: " + metadataFile);
@@ -236,7 +236,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             if (otherStateDir == null || !otherStateDir.exists()) continue;
 
             // Rename tab state file.
-            metadataFile = new File(otherStateDir, SAVED_STATE_FILE);
+            metadataFile = new File(otherStateDir, LEGACY_SAVED_STATE_FILE);
             if (metadataFile.exists()) {
                 if (!metadataFile.renameTo(new File(stateDir, getStateFileName(i)))) {
                     Log.e(TAG, "Failed to rename file: " + metadataFile);
