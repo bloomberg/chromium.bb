@@ -31,15 +31,16 @@
 #ifndef WebSocketHandle_h
 #define WebSocketHandle_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
-class WebSecurityOrigin;
+class InterfaceProvider;
+class KURL;
+class SecurityOrigin;
 class WebSocketHandleClient;
-class WebString;
-class WebURL;
 
 // WebSocketHandle is an interface class designed to be a handle of WebSocket connection.
 // WebSocketHandle will be used together with WebSocketHandleClient.
@@ -47,7 +48,7 @@ class WebURL;
 // Once a WebSocketHandle is deleted there will be no notification to the corresponding WebSocketHandleClient.
 // Once a WebSocketHandleClient receives DidClose, any method of the corresponding WebSocketHandle can't be called.
 
-class WebSocketHandle {
+class WebSocketHandle : public mojom::blink::WebSocketClient {
 public:
     enum MessageType {
         MessageTypeContinuation,
@@ -55,12 +56,38 @@ public:
         MessageTypeBinary,
     };
 
-    virtual ~WebSocketHandle() { }
+    WebSocketHandle();
+    virtual ~WebSocketHandle();
 
-    virtual void connect(const WebURL&, const WebVector<WebString>& protocols, const WebSecurityOrigin&, const WebURL& first_party_for_cookies, const WebString& user_agent_override, WebSocketHandleClient*) = 0;
-    virtual void send(bool fin, MessageType, const char* data, size_t /* size */) = 0;
-    virtual void flowControl(int64_t quota) = 0;
-    virtual void close(unsigned short code, const WebString& reason) = 0;
+    // This method may optionally be called before connect() to specify an
+    // InterfaceProvider to get a WebSocket instance. By default, connect() will
+    // use Platform::interfaceProvider().
+    void initialize(InterfaceProvider*);
+
+    virtual void connect(const KURL&, const Vector<String>& protocols, SecurityOrigin*, const KURL& firstPartyForCookies, const String& userAgentOverride, WebSocketHandleClient*);
+    virtual void send(bool fin, MessageType, const char* data, size_t);
+    virtual void flowControl(int64_t quota);
+    virtual void close(unsigned short code, const String& reason);
+
+private:
+
+    void disconnect();
+    void onConnectionError();
+
+    // mojom::blink::WebSocketClient methods:
+    void OnFailChannel(const String& reason) override;
+    void OnStartOpeningHandshake(mojom::blink::WebSocketHandshakeRequestPtr) override;
+    void OnFinishOpeningHandshake(mojom::blink::WebSocketHandshakeResponsePtr) override;
+    void OnAddChannelResponse(const String& selectedProtocol, const String& extensions) override;
+    void OnDataFrame(bool fin, mojom::blink::WebSocketMessageType, const Vector<uint8_t>& data) override;
+    void OnFlowControl(int64_t quota) override;
+    void OnDropChannel(bool wasClean, uint16_t code, const String& reason) override;
+    void OnClosingHandshake() override;
+
+    WebSocketHandleClient* m_client;
+
+    mojom::blink::WebSocketPtr m_websocket;
+    mojo::Binding<mojom::blink::WebSocketClient> m_clientBinding;
 };
 
 } // namespace blink

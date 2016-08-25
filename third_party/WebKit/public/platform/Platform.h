@@ -107,7 +107,6 @@ class WebSandboxSupport;
 class WebScrollbarBehavior;
 class WebSecurityOrigin;
 class WebServiceWorkerCacheStorage;
-class WebSocketHandle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
@@ -303,9 +302,6 @@ public:
 
     // May return null.
     virtual WebPrescientNetworking* prescientNetworking() { return nullptr; }
-
-    // Returns a new WebSocketHandle instance.
-    virtual WebSocketHandle* createWebSocketHandle() { return nullptr; }
 
     // Returns the User-Agent string.
     virtual WebString userAgent() { return WebString(); }

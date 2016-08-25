@@ -91,6 +91,7 @@ public:
     void didFinishDocumentLoad(WebLocalFrame*) override;
     bool isControlledByServiceWorker(WebDataSource&) override;
     int64_t serviceWorkerID(WebDataSource&) override;
+    InterfaceProvider* interfaceProvider() override;
 
     // WebDevToolsAgentClient overrides.
     void sendProtocolMessage(int sessionId, int callId, const WebString&, const WebString&) override;

@@ -13,10 +13,6 @@
 #include "content/browser/websockets/websocket_impl.h"
 #include "content/common/content_export.h"
 
-namespace shell {
-class InterfaceRegistry;
-}  // namespace shell
-
 namespace content {
 class StoragePartition;
 
@@ -29,7 +25,7 @@ class CONTENT_EXPORT WebSocketManager
  public:
   // Called on the UI thread:
   static void CreateWebSocket(int process_id, int frame_id,
-                              mojom::WebSocketRequest request);
+                              blink::mojom::WebSocketRequest request);
 
  protected:
   class Handle;
@@ -41,15 +37,16 @@ class CONTENT_EXPORT WebSocketManager
   // All other methods must run on the IO thread.
 
   ~WebSocketManager() override;
-  void DoCreateWebSocket(int frame_id, mojom::WebSocketRequest request);
+  void DoCreateWebSocket(int frame_id, blink::mojom::WebSocketRequest request);
   base::TimeDelta CalculateDelay() const;
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
-  virtual WebSocketImpl* CreateWebSocketImpl(WebSocketImpl::Delegate* delegate,
-                                             mojom::WebSocketRequest request,
-                                             int frame_id,
-                                             base::TimeDelta delay);
+  virtual WebSocketImpl* CreateWebSocketImpl(
+      WebSocketImpl::Delegate* delegate,
+      blink::mojom::WebSocketRequest request,
+      int frame_id,
+      base::TimeDelta delay);
 
   // WebSocketImpl::Delegate methods:
   int GetClientProcessId() override;

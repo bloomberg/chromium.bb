@@ -18,7 +18,6 @@
           'common/render_frame_message_filter.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
-          'common/websocket.mojom',
           '../third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom',
         ],
         'mojom_typemaps': [
