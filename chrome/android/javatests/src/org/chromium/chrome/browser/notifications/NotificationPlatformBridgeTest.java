@@ -18,9 +18,9 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -54,7 +54,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         // Validate the contents of the notification.
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertEquals("Hello", notification.extras.getString(Notification.EXTRA_TEXT));
-        assertEquals(UrlUtilities.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */),
+        assertEquals(UrlFormatter.formatUrlForSecurityDisplay(getOrigin(), false /* showScheme */),
                 notification.extras.getString(Notification.EXTRA_SUB_TEXT));
 
         // Verify that the ticker text contains the notification's title and body.

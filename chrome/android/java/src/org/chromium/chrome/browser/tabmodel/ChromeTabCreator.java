@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -106,7 +106,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
 
             // Sanitize the url.
-            loadUrlParams.setUrl(UrlUtilities.fixupUrl(loadUrlParams.getUrl()));
+            loadUrlParams.setUrl(UrlFormatter.fixupUrl(loadUrlParams.getUrl()));
             loadUrlParams.setTransitionType(getTransitionType(type, intent));
 
             // Check if the tab is being created asynchronously.

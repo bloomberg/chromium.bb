@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.metrics.MediaSessionUMA;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.MediaMetadata;
@@ -185,7 +185,7 @@ public class MediaSessionTabHelper {
 
             String origin = mTab.getUrl();
             try {
-                origin = UrlUtilities.formatUrlForSecurityDisplay(new URI(origin), true);
+                origin = UrlFormatter.formatUrlForSecurityDisplay(new URI(origin), true);
             } catch (URISyntaxException e) {
                 Log.e(TAG, "Unable to parse the origin from the URL. "
                                 + "Using the full URL instead.");

@@ -79,47 +79,6 @@ public class UrlUtilities {
     }
 
     /**
-     * Refer to url_formatter::FixupURL.
-     *
-     * Given a URL-like string, returns a real URL or null. For example:
-     *  - "google.com" -> "http://google.com/"
-     *  - "about:" -> "chrome://version/"
-     *  - "//mail.google.com:/" -> "file:///mail.google.com:/"
-     *  - "..." -> null
-     */
-    public static String fixupUrl(String uri) {
-        if (TextUtils.isEmpty(uri)) return null;
-        return nativeFixupUrl(uri, null);
-    }
-
-    /**
-     * Builds a String that strips down the URL to its scheme, host, and port.
-     * @param uri URI to break down.
-     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
-     *                   is ignored.
-     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
-     *         it fails to parse it.
-     */
-    public static String formatUrlForSecurityDisplay(URI uri, boolean showScheme) {
-        return formatUrlForSecurityDisplay(uri.toString(), showScheme);
-    }
-
-    /**
-     * Builds a String that strips down |url| to its scheme, host, and port.
-     * @param uri The URI to break down.
-     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
-     *                   is ignored.
-     * @return Stripped-down String containing the essential bits of the URL, or the original URL if
-     *         it fails to parse it.
-     */
-    public static String formatUrlForSecurityDisplay(String uri, boolean showScheme) {
-        if (showScheme) {
-            return nativeFormatUrlForSecurityDisplay(uri);
-        } else {
-            return nativeFormatUrlForSecurityDisplayOmitScheme(uri);
-        }
-    }
-    /**
      * Determines whether or not the given URLs belong to the same broad domain or host.
      * "Broad domain" is defined as the TLD + 1 or the host.
      *
@@ -342,9 +301,6 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
-    public static native String nativeFormatUrlForSecurityDisplay(String url);
-    public static native String nativeFormatUrlForSecurityDisplayOmitScheme(String url);
-    private static native String nativeFixupUrl(String url, String desiredTld);
     private static native boolean nativeUrlsMatchIgnoringFragments(String url, String url2);
     private static native boolean nativeUrlsFragmentsDiffer(String url, String url2);
 }

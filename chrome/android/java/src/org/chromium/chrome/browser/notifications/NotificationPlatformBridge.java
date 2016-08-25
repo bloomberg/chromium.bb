@@ -36,9 +36,9 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
@@ -245,7 +245,7 @@ public class NotificationPlatformBridge {
         // native library is loaded at this point. The native library is needed for the preferences
         // activity, and it loads the library, but there are some native calls even before that
         // activity is started: from RecordUserAction.record and (indirectly) from
-        // UrlUtilities.formatUrlForSecurityDisplay.
+        // UrlFormatter.formatUrlForSecurityDisplay.
         try {
             ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
         } catch (ProcessInitException e) {
@@ -530,7 +530,7 @@ public class NotificationPlatformBridge {
                         .setTicker(createTickerText(title, body))
                         .setTimestamp(timestamp)
                         .setRenotify(renotify)
-                        .setOrigin(UrlUtilities.formatUrlForSecurityDisplay(
+                        .setOrigin(UrlFormatter.formatUrlForSecurityDisplay(
                                 origin, false /* showScheme */));
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {

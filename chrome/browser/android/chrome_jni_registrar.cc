@@ -161,6 +161,7 @@
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/spellcheck/browser/android/component_jni_registrar.h"
 #include "components/sync/android/sync_jni_registrar.h"
+#include "components/url_formatter/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
@@ -182,6 +183,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"Policy", policy::android::RegisterPolicy},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"Signin", signin::android::RegisterSigninJni},
+    {"UrlFormatter", url_formatter::android::RegisterUrlFormatter},
     {"WebContentsDelegateAndroid",
      web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},
     // Register JNI for chrome classes.

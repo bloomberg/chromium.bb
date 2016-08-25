@@ -502,6 +502,7 @@
             '../components/components.gyp:web_contents_delegate_android_java',
             '../components/components.gyp:web_restrictions_java_browser',
             '../components/components_strings.gyp:components_strings',
+            '../components/url_formatter/url_formatter.gyp:url_formatter_java',
             '../content/content.gyp:content_java',
             '../media/media.gyp:media_java',
             '../mojo/mojo_public.gyp:mojo_bindings_java',

@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -557,7 +558,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             String originToDisplay;
             try {
                 URI parsedUrl = new URI(mFullUrl);
-                originToDisplay = UrlUtilities.formatUrlForSecurityDisplay(parsedUrl, false);
+                originToDisplay = UrlFormatter.formatUrlForSecurityDisplay(parsedUrl, false);
             } catch (URISyntaxException e) {
                 // The URL is invalid - just display the full URL.
                 originToDisplay = mFullUrl;

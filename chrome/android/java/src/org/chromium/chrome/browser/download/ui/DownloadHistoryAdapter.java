@@ -27,9 +27,9 @@ import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.Offlin
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -193,7 +193,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         Context context = holder.mFilesizeView.getContext();
         holder.mFilenameView.setText(item.getDisplayFileName());
         holder.mHostnameView.setText(
-                UrlUtilities.formatUrlForSecurityDisplay(item.getUrl(), false));
+                UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
         holder.mFilesizeView.setText(
                 Formatter.formatFileSize(context, item.getFileSize()));
         holder.mItemView.initialize(item);

@@ -2,14 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("url_formatter") {
   sources = [
+    "android/component_jni_registrar.cc",
+    "android/component_jni_registrar.h",
     "elide_url.cc",
     "elide_url.h",
     "url_fixer.cc",
     "url_fixer.h",
     "url_formatter.cc",
     "url_formatter.h",
+    "url_formatter_android.cc",
+    "url_formatter_android.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -22,7 +30,9 @@ static_library("url_formatter") {
     "//url",
   ]
 
-  if (!is_android) {
+  if (is_android) {
+    deps += [ "android:jni_headers" ]
+  } else {
     deps += [ "//ui/gfx" ]
   }
 }

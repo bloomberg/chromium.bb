@@ -7,8 +7,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/url_formatter/elide_url.h"
-#include "components/url_formatter/url_fixer.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -108,25 +106,6 @@ static jboolean IsGoogleSearchUrl(JNIEnv* env,
   return google_util::IsGoogleSearchUrl(gurl);
 }
 
-static ScopedJavaLocalRef<jstring> FormatUrlForSecurityDisplay(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& url) {
-  return base::android::ConvertUTF16ToJavaString(
-      env, url_formatter::FormatUrlForSecurityDisplay(
-               ConvertJavaStringToGURL(env, url)));
-}
-
-static ScopedJavaLocalRef<jstring> FormatUrlForSecurityDisplayOmitScheme(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& url) {
-  return base::android::ConvertUTF16ToJavaString(
-      env, url_formatter::FormatUrlForSecurityDisplay(
-               ConvertJavaStringToGURL(env, url),
-               url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-}
-
 static jboolean IsGoogleHomePageUrl(JNIEnv* env,
                                     const JavaParamRef<jclass>& clazz,
                                     const JavaParamRef<jstring>& url) {
@@ -134,23 +113,6 @@ static jboolean IsGoogleHomePageUrl(JNIEnv* env,
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleHomePageUrl(gurl);
-}
-
-static ScopedJavaLocalRef<jstring> FixupUrl(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& url,
-    const JavaParamRef<jstring>& optional_desired_tld) {
-  DCHECK(url);
-  GURL fixed_url = url_formatter::FixupURL(
-      base::android::ConvertJavaStringToUTF8(env, url),
-      optional_desired_tld
-          ? base::android::ConvertJavaStringToUTF8(env, optional_desired_tld)
-          : std::string());
-
-  return fixed_url.is_valid()
-             ? base::android::ConvertUTF8ToJavaString(env, fixed_url.spec())
-             : ScopedJavaLocalRef<jstring>();
 }
 
 static jboolean UrlsMatchIgnoringFragments(JNIEnv* env,

@@ -245,6 +245,7 @@ android_library("chrome_java") {
       "//components/safe_json/android:safe_json_java",
       "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",
+      "//components/url_formatter/android:url_formatter_java",
       "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     ]
   }
@@ -314,6 +315,7 @@ junit_binary("chrome_junit_tests") {
     "//components/invalidation/impl:java",
     "//components/sync:sync_java_test_support",
     "//components/sync/android:sync_java",
+    "//components/url_formatter/android:url_formatter_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
@@ -379,6 +381,7 @@ android_library("chrome_test_java") {
     "//components/sync:sync_java_test_support",
     "//components/sync/android:sync_java",
     "//components/sync/android:sync_javatests",
+    "//components/url_formatter/android:url_formatter_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",

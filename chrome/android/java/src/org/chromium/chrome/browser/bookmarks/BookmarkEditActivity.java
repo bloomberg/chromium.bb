@@ -17,10 +17,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
  * The activity that enables the user to modify the title, url and parent folder of a bookmark.
@@ -142,7 +142,7 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
 
             if (!mUrlEditText.isEmpty()
                     && mModel.getBookmarkById(mBookmarkId).isUrlEditable()) {
-                String fixedUrl = UrlUtilities.fixupUrl(url);
+                String fixedUrl = UrlFormatter.fixupUrl(url);
                 if (fixedUrl != null && !fixedUrl.equals(originalUrl)) {
                     mModel.setBookmarkUrl(mBookmarkId, fixedUrl);
                 }
