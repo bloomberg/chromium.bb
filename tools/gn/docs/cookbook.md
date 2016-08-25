@@ -8,6 +8,7 @@
 |:-------------------------------------------------|:---------------------------------------------------|
 | `'type': 'static_library', 'name': 'foo',`       | `static_library("foo") {` or `source_set("foo") {` |
 | `'type': 'shared_library', 'name': 'foo',`       | `shared_library("foo") {`                          |
+| `'type': 'loadable_module', 'name': 'foo',`      | `loadable_module("foo") {`                         |
 | `'type': '<(component)', 'name': 'foo',`         | `component("foo") {`                               |
 | `'type': 'executable', 'name': 'foo',`           | `executable("foo") {`                              |
 | `'type': '<(gtest_target_type)', 'name': 'foo',` | `test("foo") {`                                    |
