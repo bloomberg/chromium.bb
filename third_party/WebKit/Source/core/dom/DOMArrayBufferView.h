@@ -64,6 +64,7 @@ public:
     void* baseAddress() const { return view()->baseAddress(); }
     unsigned byteOffset() const { return view()->byteOffset(); }
     unsigned byteLength() const { return view()->byteLength(); }
+    unsigned typeSize() const { return view()->typeSize(); }
     void setNeuterable(bool flag) { return view()->setNeuterable(flag); }
     bool isShared() const { return view()->isShared(); }
 

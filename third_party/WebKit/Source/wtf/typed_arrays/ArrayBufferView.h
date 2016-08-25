@@ -68,6 +68,7 @@ public:
     }
 
     virtual unsigned byteLength() const = 0;
+    virtual unsigned typeSize() const = 0;
 
     void setNeuterable(bool flag) { m_isNeuterable = flag; }
     bool isNeuterable() const { return m_isNeuterable; }

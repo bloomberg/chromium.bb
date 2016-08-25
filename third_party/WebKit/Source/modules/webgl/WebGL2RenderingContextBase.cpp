@@ -41,36 +41,12 @@ GLsync syncObjectOrZero(const WebGLSync* object)
     return object ? object->object() : nullptr;
 }
 
-size_t getViewTypeSize(WTF::ArrayBufferView::ViewType viewType)
-{
-    switch (viewType) {
-    case WTF::ArrayBufferView::TypeInt8:
-    case WTF::ArrayBufferView::TypeUint8:
-    case WTF::ArrayBufferView::TypeUint8Clamped:
-        return 1;
-    case WTF::ArrayBufferView::TypeInt16:
-    case WTF::ArrayBufferView::TypeUint16:
-        return 2;
-    case WTF::ArrayBufferView::TypeInt32:
-    case WTF::ArrayBufferView::TypeUint32:
-    case WTF::ArrayBufferView::TypeFloat32:
-        return 4;
-    case WTF::ArrayBufferView::TypeFloat64:
-        return 8;
-    case WTF::ArrayBufferView::TypeDataView:
-        return 1;
-    default:
-        NOTREACHED();
-        return 0;
-    }
-}
-
 bool validateSubSourceAndGetData(DOMArrayBufferView* view, GLuint subOffset, GLuint subLength, void** outBaseAddress, long long* outByteLength)
 {
     // This is guaranteed to be non-null by DOM.
     DCHECK(view);
 
-    size_t typeSize = getViewTypeSize(view->type());
+    size_t typeSize = view->typeSize();
     DCHECK_GE(8u, typeSize);
     long long byteLength = 0;
     if (subLength) {
@@ -993,7 +969,8 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint in
 void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
     GLint border, GLenum format, GLenum type, DOMArrayBufferView* data, GLuint srcOffset)
 {
-    // TODO(zmo): To be implemented.
+    texImageHelperDOMArrayBufferView(TexImage2D, target, level, internalformat, width, height, 1, border,
+        format, type, 0, 0, 0, data, NullNotReachable, srcOffset);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
@@ -1060,7 +1037,8 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
     GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
 {
-    // TODO(zmo): To be implemented.
+    texImageHelperDOMArrayBufferView(TexSubImage2D, target, level, 0, width, height, 1, 0, format, type,
+        xoffset, yoffset, 0, pixels, NullNotReachable, srcOffset);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -1142,13 +1120,15 @@ void WebGL2RenderingContextBase::texStorage3D(GLenum target, GLsizei levels, GLe
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
     GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    texImageHelperDOMArrayBufferView(TexImage3D, target, level, internalformat, width, height, border, format, type, depth, 0, 0, 0, pixels);
+    texImageHelperDOMArrayBufferView(TexImage3D, target, level, internalformat, width, height, depth, border,
+        format, type, 0, 0, 0, pixels, NullAllowed, 0);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
     GLint border, GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
 {
-    // TODO(zmo): To be implemented.
+    texImageHelperDOMArrayBufferView(TexImage3D, target, level, internalformat, width, height, depth, border,
+        format, type, 0, 0, 0, pixels, NullNotReachable, srcOffset);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
@@ -1203,8 +1183,8 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,
     GLenum format, GLenum type, DOMArrayBufferView* pixels, GLuint srcOffset)
 {
-    // TODO(zmo): To be implemented.
-    texImageHelperDOMArrayBufferView(TexSubImage3D, target, level, 0, width, height, 0, format, type, depth, xoffset, yoffset, zoffset, pixels);
+    texImageHelperDOMArrayBufferView(TexSubImage3D, target, level, 0, width, height, depth, 0, format, type,
+        xoffset, yoffset, zoffset, pixels, NullNotReachable, srcOffset);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth,

@@ -28,6 +28,7 @@ public:
 
     unsigned byteLength() const override { return m_byteLength; }
     ViewType type() const override { return TypeDataView; }
+    unsigned typeSize() const override { return 1; }
 
 protected:
     void neuter() override

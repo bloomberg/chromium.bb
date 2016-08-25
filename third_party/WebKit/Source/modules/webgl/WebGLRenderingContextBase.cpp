@@ -4123,8 +4123,9 @@ const char* WebGLRenderingContextBase::getTexImageFunctionName(TexImageFunctionI
 }
 
 void WebGLRenderingContextBase::texImageHelperDOMArrayBufferView(TexImageFunctionID functionID,
-    GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border,
-    GLenum format, GLenum type, GLsizei depth, GLint xoffset, GLint yoffset, GLint zoffset, DOMArrayBufferView* pixels)
+    GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth,
+    GLint border, GLenum format, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset,
+    DOMArrayBufferView* pixels, NullDisposition nullDisposition, GLuint srcOffset)
 {
     const char* funcName = getTexImageFunctionName(functionID);
     if (isContextLost())
@@ -4143,18 +4144,14 @@ void WebGLRenderingContextBase::texImageHelperDOMArrayBufferView(TexImageFunctio
         sourceType = Tex2D;
     else
         sourceType = Tex3D;
-    switch (functionID) {
-    case TexImage2D:
-    case TexImage3D:
-        if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, NullAllowed))
-            return;
-        break;
-    case TexSubImage2D:
-    case TexSubImage3D:
-        if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, NullNotAllowed))
-            return;
+    if (!validateTexFuncData(funcName, sourceType, level, width, height, depth, format, type, pixels, nullDisposition, srcOffset))
+        return;
+    uint8_t* data = reinterpret_cast<uint8_t*>(pixels ? pixels->baseAddress() : 0);
+    if (srcOffset) {
+        DCHECK(pixels);
+        // No need to check overflow because validateTexFuncData() already did.
+        data += srcOffset * pixels->typeSize();
     }
-    void* data = pixels ? pixels->baseAddress() : 0;
     Vector<uint8_t> tempData;
     bool changeUnpackAlignment = false;
     if (data && (m_unpackFlipY || m_unpackPremultiplyAlpha)) {
@@ -4189,7 +4186,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     GLsizei width, GLsizei height, GLint border,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    texImageHelperDOMArrayBufferView(TexImage2D, target, level, internalformat, width, height, border, format, type, 1, 0, 0, 0, pixels);
+    texImageHelperDOMArrayBufferView(TexImage2D, target, level, internalformat, width, height, 1, border, format, type, 0, 0, 0, pixels, NullAllowed, 0);
 }
 
 void WebGLRenderingContextBase::texImageHelperImageData(TexImageFunctionID functionID,
@@ -4642,7 +4639,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     GLsizei width, GLsizei height,
     GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
-    texImageHelperDOMArrayBufferView(TexSubImage2D, target, level, 0, width, height, 0, format, type, 1, xoffset, yoffset, 0, pixels);
+    texImageHelperDOMArrayBufferView(TexSubImage2D, target, level, 0, width, height, 1, 0, format, type, xoffset, yoffset, 0, pixels, NullNotAllowed, 0);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -5679,10 +5676,11 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, TexImageDimension texDimension, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition)
+bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, TexImageDimension texDimension, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition disposition, GLuint srcOffset)
 {
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     if (!pixels) {
+        DCHECK_NE(disposition, NullNotReachable);
         if (disposition == NullAllowed)
             return true;
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no pixels");
@@ -5764,7 +5762,11 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, Te
         synthesizeGLError(error, functionName, "invalid texture dimensions");
         return false;
     }
-    if (pixels->byteLength() < totalBytesRequired + skipBytes) {
+    CheckedInt<uint32_t> total = srcOffset;
+    total *= pixels->typeSize();
+    total += totalBytesRequired;
+    total += skipBytes;
+    if (!total.isValid() || pixels->byteLength() < total.value()) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "ArrayBufferView not big enough for request");
         return false;
     }

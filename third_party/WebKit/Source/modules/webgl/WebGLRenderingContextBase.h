@@ -894,13 +894,14 @@ protected:
 
     enum NullDisposition {
         NullAllowed,
-        NullNotAllowed
+        NullNotAllowed,
+        NullNotReachable
     };
 
     // Helper function to validate that the given ArrayBufferView
     // is of the correct type and contains enough data for the texImage call.
     // Generates GL error and returns false if parameters are invalid.
-    bool validateTexFuncData(const char* functionName, TexImageDimension, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition);
+    bool validateTexFuncData(const char* functionName, TexImageDimension, GLint level, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, DOMArrayBufferView* pixels, NullDisposition, GLuint srcOffset);
 
     // Helper function to validate a given texture format is settable as in
     // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and
@@ -1102,7 +1103,7 @@ protected:
     ImageBitmap* transferToImageBitmapBase();
 
     // Helper functions for tex(Sub)Image2D && texSubImage3D
-    void texImageHelperDOMArrayBufferView(TexImageFunctionID, GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, GLsizei, GLint, GLint, GLint, DOMArrayBufferView*);
+    void texImageHelperDOMArrayBufferView(TexImageFunctionID, GLenum, GLint, GLint, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, GLint, GLint, GLint, DOMArrayBufferView*, NullDisposition, GLuint srcOffset);
     void texImageHelperImageData(TexImageFunctionID, GLenum, GLint, GLint, GLint, GLenum, GLenum, GLsizei, GLint, GLint, GLint, ImageData*);
     void texImageHelperHTMLImageElement(TexImageFunctionID, GLenum, GLint, GLint, GLenum, GLenum, GLint, GLint, GLint, HTMLImageElement*, ExceptionState&);
     void texImageHelperHTMLCanvasElement(TexImageFunctionID, GLenum, GLint, GLint, GLenum, GLenum, GLint, GLint, GLint, HTMLCanvasElement*, ExceptionState&);
