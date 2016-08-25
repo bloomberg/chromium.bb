@@ -1516,10 +1516,15 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
 
 void RenderWidget::convertViewportToWindow(blink::WebRect* rect) {
   if (IsUseZoomForDSFEnabled()) {
+    float reverse = 1 / GetOriginalDeviceScaleFactor();
     // TODO(oshima): We may need to allow pixel precision here as the the
     // anchor element can be placed at half pixel.
-    *rect =
-        gfx::ScaleToEnclosingRect(*rect, 1.f / GetOriginalDeviceScaleFactor());
+    gfx::Rect window_rect =
+        gfx::ScaleToEnclosedRect(gfx::Rect(*rect), reverse);
+    rect->x = window_rect.x();
+    rect->y = window_rect.y();
+    rect->width = window_rect.width();
+    rect->height = window_rect.height();
   }
 }
 
