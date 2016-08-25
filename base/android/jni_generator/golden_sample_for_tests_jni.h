@@ -280,6 +280,30 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, const
 
 }
 
+static base::subtle::AtomicWord g_SampleForTests_javaMethodWithAnnotatedParam =
+    0;
+static void Java_SampleForTests_javaMethodWithAnnotatedParam(JNIEnv* env, const
+    base::android::JavaRefOrBare<jobject>& obj, JniIntWrapper foo) {
+  CHECK_CLAZZ(env, obj.obj(),
+      SampleForTests_clazz(env));
+  jmethodID method_id =
+      base::android::MethodID::LazyGet<
+      base::android::MethodID::TYPE_INSTANCE>(
+      env, SampleForTests_clazz(env),
+      "javaMethodWithAnnotatedParam",
+
+"("
+"I"
+")"
+"V",
+      &g_SampleForTests_javaMethodWithAnnotatedParam);
+
+     env->CallVoidMethod(obj.obj(),
+          method_id, as_jint(foo));
+  jni_generator::CheckException(env);
+
+}
+
 static base::subtle::AtomicWord g_InnerStructA_create = 0;
 static base::android::ScopedJavaLocalRef<jobject>
     Java_InnerStructA_create(JNIEnv* env, jlong l,

@@ -197,20 +197,20 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private void onNewSuggestions(/* @CategoryInt */ int category) {
+    private void onNewSuggestions(@CategoryInt int category) {
         assert mNativeSnippetsBridge != 0;
         assert mObserver != null;
         mObserver.onNewSuggestions(category);
     }
 
     @CalledByNative
-    private void onCategoryStatusChanged(/* @CategoryInt */ int category, /* @CategoryStatusEnum */
-            int newStatus) {
+    private void onCategoryStatusChanged(@CategoryInt int category,
+            @CategoryStatusEnum int newStatus) {
         if (mObserver != null) mObserver.onCategoryStatusChanged(category, newStatus);
     }
 
     @CalledByNative
-    private void onSuggestionInvalidated(/* @CategoryInt */ int category, String suggestionId) {
+    private void onSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
         if (mObserver != null) mObserver.onSuggestionInvalidated(category, suggestionId);
     }
 

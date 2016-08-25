@@ -136,5 +136,7 @@ int main() {
                                                               my_java_object);
   base::android::Java_SampleForTests_methodThatThrowsException(env,
                                                                my_java_object);
+  base::android::Java_SampleForTests_javaMethodWithAnnotatedParam(
+      env, my_java_object, 42);
   return 0;
 }

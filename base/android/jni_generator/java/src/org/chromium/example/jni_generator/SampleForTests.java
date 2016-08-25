@@ -165,6 +165,13 @@ class SampleForTests {
     // String constants that look like comments don't confuse the generator:
     private String mArrgh = "*/*";
 
+    private @interface SomeAnnotation {}
+
+    // The generator is not confused by @Annotated parameters.
+    @CalledByNative
+    void javaMethodWithAnnotatedParam(@SomeAnnotation int foo) {
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Java fields which are accessed from C++ code only must be annotated with @AccessedByNative to
     // prevent them being eliminated when unreferenced code is stripped.

@@ -356,8 +356,14 @@ class JniParams(object):
     ret = []
     for p in [p.strip() for p in params.split(',')]:
       items = p.split(' ')
+
+      # Remove @Annotations from parameters.
+      while items[0].startswith('@'):
+        del items[0]
+
       if 'final' in items:
         items.remove('final')
+
       param = Param(
           datatype=items[0],
           name=(items[1] if len(items) > 1 else 'p%s' % len(ret)),
