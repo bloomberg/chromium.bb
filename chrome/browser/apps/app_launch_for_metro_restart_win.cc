@@ -44,7 +44,8 @@ void LaunchAppWithId(Profile* profile,
     return;
 
   AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-      profile, extension, extensions::SOURCE_RESTART, nullptr);
+      profile, extension, extensions::SOURCE_RESTART,
+      std::unique_ptr<extensions::api::app_runtime::ActionData>());
 }
 
 }  // namespace

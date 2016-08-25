@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,7 +48,6 @@ namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
 using extensions::AppRuntimeEventRouter;
-using extensions::api::app_runtime::PlayStoreStatus;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::FileHandlerCanHandleEntry;
 using extensions::app_file_handler_util::FileHandlerForId;
@@ -205,12 +203,8 @@ class PlatformAppPathLauncher
     if (!app)
       return;
 
-    std::unique_ptr<app_runtime::LaunchData> launch_data =
-        base::MakeUnique<app_runtime::LaunchData>();
-    launch_data->action_data = std::move(action_data_);
-
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-        profile_, app, launch_source_, std::move(launch_data));
+        profile_, app, launch_source_, std::move(action_data_));
   }
 
   void OnAreDirectoriesCollected(
@@ -358,11 +352,10 @@ class PlatformAppPathLauncher
 }  // namespace
 
 void LaunchPlatformAppWithCommandLine(Profile* profile,
-                                      const extensions::Extension* app,
+                                      const Extension* app,
                                       const base::CommandLine& command_line,
                                       const base::FilePath& current_directory,
-                                      extensions::AppLaunchSource source,
-                                      PlayStoreStatus play_store_status) {
+                                      extensions::AppLaunchSource source) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -393,12 +386,8 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
   // causes problems on the bots.
   if (args.empty() || (command_line.HasSwitch(switches::kTestType) &&
                        args[0] == about_blank_url)) {
-    std::unique_ptr<app_runtime::LaunchData> launch_data =
-        base::MakeUnique<app_runtime::LaunchData>();
-    if (play_store_status != PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN)
-      launch_data->play_store_status = play_store_status;
-    AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, app, source,
-                                                   std::move(launch_data));
+    AppRuntimeEventRouter::DispatchOnLaunchedEvent(
+        profile, app, source, std::unique_ptr<app_runtime::ActionData>());
     return;
   }
 
@@ -465,7 +454,8 @@ void RestartPlatformApp(Profile* profile, const Extension* app) {
 
   if (listening_to_launch && had_windows) {
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-        profile, app, extensions::SOURCE_RESTART, nullptr);
+        profile, app, extensions::SOURCE_RESTART,
+        std::unique_ptr<app_runtime::ActionData>());
   }
 }
 

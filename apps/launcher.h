@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 
 class GURL;
@@ -36,15 +35,11 @@ namespace apps {
 // |command_line| means there is no launch data. If non-empty,
 // |current_directory| is used to expand any relative paths on the command line.
 // |source| is one of the enumerated values which trace how the app is launched.
-void LaunchPlatformAppWithCommandLine(
-    Profile* profile,
-    const extensions::Extension* app,
-    const base::CommandLine& command_line,
-    const base::FilePath& current_directory,
-    extensions::AppLaunchSource source,
-    extensions::api::app_runtime::PlayStoreStatus play_store_status =
-        extensions::api::app_runtime::PlayStoreStatus::
-            PLAY_STORE_STATUS_UNKNOWN);
+void LaunchPlatformAppWithCommandLine(Profile* profile,
+                                      const extensions::Extension* app,
+                                      const base::CommandLine& command_line,
+                                      const base::FilePath& current_directory,
+                                      extensions::AppLaunchSource source);
 
 // Launches the platform app |app| by issuing an onLaunched event with the
 // contents of |file_path| available through the launch data.

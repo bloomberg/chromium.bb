@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_prefs.h"
@@ -12,38 +11,19 @@
 #include "extensions/common/extension.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
-#include "components/arc/arc_bridge_service.h"
-#endif
-
 using extensions::ExtensionPrefs;
-using extensions::api::app_runtime::PlayStoreStatus;
 
 AppLaunchParams::AppLaunchParams(Profile* profile,
                                  const extensions::Extension* extension,
                                  extensions::LaunchContainer container,
                                  WindowOpenDisposition disposition,
-                                 extensions::AppLaunchSource source,
-                                 bool set_playstore_status)
+                                 extensions::AppLaunchSource source)
     : profile(profile),
       extension_id(extension ? extension->id() : std::string()),
       container(container),
       disposition(disposition),
       command_line(base::CommandLine::NO_PROGRAM),
-      source(source),
-      play_store_status(PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN) {
-#if defined(OS_CHROMEOS)
-  if (set_playstore_status) {
-    if (arc::ArcAuthService::IsAllowedForProfile(profile)) {
-      play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_ENABLED;
-    } else if (arc::ArcBridgeService::GetAvailable(
-                   base::CommandLine::ForCurrentProcess())) {
-      play_store_status = PlayStoreStatus::PLAY_STORE_STATUS_AVAILABLE;
-    }  // else, default to PLAY_STORE_STATUS_UNKNOWN.
-  }
-#endif
-}
+      source(source) {}
 
 AppLaunchParams::AppLaunchParams(const AppLaunchParams& other) = default;
 

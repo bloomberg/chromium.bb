@@ -67,9 +67,6 @@ class ArcBridgeService {
   // switch.
   static bool GetEnabled(const base::CommandLine* command_line);
 
-  // Return true if ARC is available on the current board.
-  static bool GetAvailable(const base::CommandLine* command_line);
-
   // HandleStartup() should be called upon profile startup.  This will only
   // launch an instance if the instance is enabled.
   // This can only be called on the thread that this class was created on.

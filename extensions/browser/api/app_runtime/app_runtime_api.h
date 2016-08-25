@@ -27,7 +27,6 @@ namespace extensions {
 namespace api {
 namespace app_runtime {
 struct ActionData;
-struct LaunchData;
 }
 }
 
@@ -48,7 +47,7 @@ class AppRuntimeEventRouter {
       content::BrowserContext* context,
       const Extension* extension,
       AppLaunchSource source,
-      std::unique_ptr<api::app_runtime::LaunchData> launch_data);
+      std::unique_ptr<api::app_runtime::ActionData> action_data);
 
   // Dispatches the onRestarted event to the given app, providing a list of
   // restored file entries from the previous run.
