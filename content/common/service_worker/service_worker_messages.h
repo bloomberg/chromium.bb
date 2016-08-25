@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -255,33 +256,41 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_SetVersionId,
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_InstallEventFinished,
+IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_InstallEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult,
-                    bool /* has_fetch_event_handler */)
+                    bool /* has_fetch_event_handler */,
+                    base::Time /* dispatch_event_time */)
 
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_ActivateEventFinished,
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ActivateEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_ExtendableMessageEventFinished,
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_ExtendableMessageEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventResponse,
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_FetchEventResponse,
                     int /* response_id */,
                     content::ServiceWorkerFetchEventResult,
-                    content::ServiceWorkerResponse)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FetchEventFinished,
+                    content::ServiceWorkerResponse,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_FetchEventFinished,
                     int /* event_finish_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_NotificationClickEventFinished,
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NotificationClickEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_NotificationCloseEventFinished,
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NotificationCloseEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PushEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
+                    blink::WebServiceWorkerEventResult,
+                    base::Time /* dispatch_event_time */)
 
 // Responds to a Ping from the browser.
 // Routed to the target ServiceWorkerVersion.

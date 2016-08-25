@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
@@ -441,9 +442,11 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
 void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
     blink::WebServiceWorkerEventResult result,
-    bool has_fetch_handler) {
+    bool has_fetch_handler,
+    base::Time dispatch_event_time) {
   new_version()->FinishRequest(
-      request_id, result == blink::WebServiceWorkerEventResultCompleted);
+      request_id, result == blink::WebServiceWorkerEventResultCompleted,
+      dispatch_event_time);
 
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   switch (result) {

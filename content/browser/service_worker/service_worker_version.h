@@ -26,6 +26,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -239,7 +240,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Pass the result of the event to |was_handled|, which is used to record
   // statistics based on the event status.
   // TODO(mek): Use something other than a bool for event status.
-  bool FinishRequest(int request_id, bool was_handled);
+  bool FinishRequest(int request_id,
+                     bool was_handled,
+                     base::Time dispatch_event_time);
 
   // Connects to a specific mojo service exposed by the (running) service
   // worker. If a connection to a service for the same Interface already exists
@@ -425,7 +428,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   struct PendingRequest {
     PendingRequest(const StatusCallback& error_callback,
-                   const base::TimeTicks& time,
+                   base::Time time,
+                   const base::TimeTicks& time_ticks,
                    ServiceWorkerMetrics::EventType event_type);
     ~PendingRequest();
 
@@ -433,7 +437,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // For all requests. Set by StartRequest.
     // ------------------------------------------------------------------------
     StatusCallback error_callback;
-    base::TimeTicks start_time;
+    base::Time start_time;
+    base::TimeTicks start_time_ticks;
     ServiceWorkerMetrics::EventType event_type;
 
     // -------------------------------------------------------------------------
@@ -572,7 +577,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                     const ServiceWorkerClientQueryOptions& options);
 
   void OnSimpleEventResponse(int request_id,
-                             blink::WebServiceWorkerEventResult result);
+                             blink::WebServiceWorkerEventResult result,
+                             base::Time dispatch_event_time);
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,

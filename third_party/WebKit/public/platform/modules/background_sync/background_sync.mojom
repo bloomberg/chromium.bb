@@ -48,6 +48,8 @@ interface BackgroundSyncService {
 };
 
 interface BackgroundSyncServiceClient {
+  // TODO(horo): Use mojo.common.mojom.Time for |dispatch_event_time|. It is
+  // using double as the UTC time in seconds, counted from January 1, 1970.
   Sync(string tag, BackgroundSyncEventLastChance last_chance)
-      => (ServiceWorkerEventStatus status);
+      => (ServiceWorkerEventStatus status, double dispatch_event_time);
 };

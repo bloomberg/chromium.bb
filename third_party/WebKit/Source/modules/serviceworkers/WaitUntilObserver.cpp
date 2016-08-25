@@ -84,6 +84,7 @@ WaitUntilObserver* WaitUntilObserver::create(ExecutionContext* context, EventTyp
 
 void WaitUntilObserver::willDispatchEvent()
 {
+    m_eventDispatchTime = WTF::currentTime();
     // When handling a notificationclick event, we want to allow one window to
     // be focused or opened. These calls are allowed between the call to
     // willDispatchEvent() and the last call to decrementPendingActivity(). If
@@ -131,9 +132,6 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, EventType type, 
     : ContextLifecycleObserver(context)
     , m_type(type)
     , m_eventID(eventID)
-    , m_pendingActivity(0)
-    , m_hasError(false)
-    , m_eventDispatched(false)
     , m_consumeWindowInteractionTimer(this, &WaitUntilObserver::consumeWindowInteraction)
 {
 }
@@ -161,30 +159,30 @@ void WaitUntilObserver::decrementPendingActivity()
     WebServiceWorkerEventResult result = m_hasError ? WebServiceWorkerEventResultRejected : WebServiceWorkerEventResultCompleted;
     switch (m_type) {
     case Activate:
-        client->didHandleActivateEvent(m_eventID, result);
+        client->didHandleActivateEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case Fetch:
-        client->didHandleFetchEvent(m_eventID, result);
+        client->didHandleFetchEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case Install:
-        client->didHandleInstallEvent(m_eventID, result);
+        client->didHandleInstallEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case Message:
-        client->didHandleExtendableMessageEvent(m_eventID, result);
+        client->didHandleExtendableMessageEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case NotificationClick:
-        client->didHandleNotificationClickEvent(m_eventID, result);
+        client->didHandleNotificationClickEvent(m_eventID, result, m_eventDispatchTime);
         m_consumeWindowInteractionTimer.stop();
         consumeWindowInteraction(nullptr);
         break;
     case NotificationClose:
-        client->didHandleNotificationCloseEvent(m_eventID, result);
+        client->didHandleNotificationCloseEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case Push:
-        client->didHandlePushEvent(m_eventID, result);
+        client->didHandlePushEvent(m_eventID, result, m_eventDispatchTime);
         break;
     case Sync:
-        client->didHandleSyncEvent(m_eventID, result);
+        client->didHandleSyncEvent(m_eventID, result, m_eventDispatchTime);
         break;
     }
     setContext(nullptr);

@@ -146,6 +146,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int responseID, int event
     eventInit.setIsReload(webRequest.isReload());
     FetchEvent* fetchEvent = FetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::fetch, eventInit, respondWithObserver, waitUntilObserver);
     waitUntilObserver->willDispatchEvent();
+    respondWithObserver->willDispatchEvent();
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     respondWithObserver->didDispatchEvent(dispatchResult);
     // false is okay because waitUntil for fetch event doesn't care about the
@@ -160,8 +161,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, in
         // no events should be dispatched.
         // TODO(mek): Ideally the browser wouldn't even start the service worker
         // if its tokens have expired.
-        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->respondToFetchEvent(responseID);
-        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleFetchEvent(eventFinishID, WebServiceWorkerEventResultCompleted);
+        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->respondToFetchEvent(responseID, WTF::currentTime());
+        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleFetchEvent(eventFinishID, WebServiceWorkerEventResultCompleted, WTF::currentTime());
         return;
     }
 
@@ -177,6 +178,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, in
     eventInit.setOrigin(origin->toString());
     ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(workerGlobalScope()->scriptController()->getScriptState(), EventTypeNames::foreignfetch, eventInit, respondWithObserver, waitUntilObserver);
     waitUntilObserver->willDispatchEvent();
+    respondWithObserver->willDispatchEvent();
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     respondWithObserver->didDispatchEvent(dispatchResult);
     // false is okay because waitUntil for foreign fetch event doesn't care
@@ -226,7 +228,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebString& tag, LastChanceOption lastChance)
 {
     if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
-        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleSyncEvent(eventID, WebServiceWorkerEventResultCompleted);
+        ServiceWorkerGlobalScopeClient::from(workerGlobalScope())->didHandleSyncEvent(eventID, WebServiceWorkerEventResultCompleted, WTF::currentTime());
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Sync, eventID);

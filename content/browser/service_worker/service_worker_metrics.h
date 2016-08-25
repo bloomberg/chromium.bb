@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
@@ -224,6 +225,13 @@ class ServiceWorkerMetrics {
   static void RecordEventDuration(EventType event,
                                   base::TimeDelta time,
                                   bool was_handled);
+
+  // Records the time taken between sending an event IPC from the browser
+  // process to a Service Worker and executing the event handler in the Service
+  // Worker.
+  static void RecordEventDispatchingDelay(EventType event,
+                                          base::TimeDelta time,
+                                          Site site_for_metrics);
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,

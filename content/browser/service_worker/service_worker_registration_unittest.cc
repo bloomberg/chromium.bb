@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -272,7 +273,8 @@ TEST_F(ServiceWorkerActivationTest, NoInflightRequest) {
   EXPECT_EQ(version_1.get(), reg->active_version());
 
   // Finish the request. Activation should happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
+                           base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_2.get(), reg->active_version());
 }
@@ -285,7 +287,8 @@ TEST_F(ServiceWorkerActivationTest, NoControllee) {
 
   // Finish the request. Since there is a controllee, activation should not yet
   // happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
+                           base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
@@ -303,7 +306,8 @@ TEST_F(ServiceWorkerActivationTest, SkipWaiting) {
 
   // Finish the in-flight request. Since there is a controllee,
   // activation should not happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
+                           base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_1.get(), reg->active_version());
 
@@ -326,7 +330,8 @@ TEST_F(ServiceWorkerActivationTest, SkipWaitingWithInflightRequest) {
   EXPECT_EQ(version_1.get(), reg->active_version());
 
   // Finish the request. Activation should happen.
-  version_1->FinishRequest(inflight_request_id(), true /* was_handled */);
+  version_1->FinishRequest(inflight_request_id(), true /* was_handled */,
+                           base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(version_2.get(), reg->active_version());
 }

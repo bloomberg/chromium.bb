@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/time/time.h"
 #include "content/child/background_sync/background_sync_provider.h"
 #include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
@@ -38,7 +39,8 @@ void BackgroundSyncClientImpl::Sync(
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   if (!client) {
-    callback.Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
+    callback.Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
+                 base::Time::Now().ToDoubleT());
     return;
   }
 

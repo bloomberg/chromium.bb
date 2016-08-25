@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/resource_context_impl.h"
@@ -376,10 +377,11 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+        base::Time::Now()));
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id, event_finish_id,
-        blink::WebServiceWorkerEventResultCompleted));
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  private:
@@ -459,10 +461,11 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+        base::Time::Now()));
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id, event_finish_id,
-        blink::WebServiceWorkerEventResultCompleted));
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
   std::string blob_uuid_;
@@ -542,10 +545,11 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+        base::Time::Now()));
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id, event_finish_id,
-        blink::WebServiceWorkerEventResultCompleted));
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
   const GURL stream_url_;
@@ -952,7 +956,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   void FinishWaitUntil() {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id_, event_finish_id_,
-        blink::WebServiceWorkerEventResultCompleted));
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  protected:
@@ -971,7 +975,8 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+        base::Time::Now()));
   }
 
  private:
@@ -1024,10 +1029,11 @@ class DelayedResponseHelper : public EmbeddedWorkerTestHelper {
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
             std::string() /* response_cache_storage_cache_name */,
-            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+        base::Time::Now()));
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
         embedded_worker_id_, event_finish_id_,
-        blink::WebServiceWorkerEventResultCompleted));
+        blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
   }
 
  protected:

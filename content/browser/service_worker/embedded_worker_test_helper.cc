@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -212,14 +213,14 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
                                                int request_id) {
   SimulateSend(new ServiceWorkerHostMsg_ActivateEventFinished(
       embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted));
+      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(int embedded_worker_id,
                                                         int request_id) {
   SimulateSend(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
       embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted));
+      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
@@ -229,7 +230,7 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
     return;
   SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
       embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted, true));
+      blink::WebServiceWorkerEventResultCompleted, true, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -246,10 +247,11 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
           blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
           false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
-          ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
+          ServiceWorkerHeaderList() /* cors_exposed_header_names */),
+      base::Time::Now()));
   SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
       embedded_worker_id, event_finish_id,
-      blink::WebServiceWorkerEventResultCompleted));
+      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
@@ -257,7 +259,7 @@ void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,
                                            const PushEventPayload& payload) {
   SimulateSend(new ServiceWorkerHostMsg_PushEventFinished(
       embedded_worker_id, request_id,
-      blink::WebServiceWorkerEventResultCompleted));
+      blink::WebServiceWorkerEventResultCompleted, base::Time::Now()));
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(

@@ -669,9 +669,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                      ServiceWorkerStatusCode* out_result,
                                      int request_id,
                                      blink::WebServiceWorkerEventResult result,
-                                     bool has_fetch_handler) {
+                                     bool has_fetch_handler,
+                                     base::Time dispatch_event_time) {
     version_->FinishRequest(
-        request_id, result == blink::WebServiceWorkerEventResultCompleted);
+        request_id, result == blink::WebServiceWorkerEventResultCompleted,
+        dispatch_event_time);
     version_->set_fetch_handler_existence(
         has_fetch_handler
             ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS

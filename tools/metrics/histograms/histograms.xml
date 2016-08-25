@@ -53212,6 +53212,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.EventDispatchingDelay" units="ms">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The time taken between sending an event IPC from the browser process to a
+    Service Worker and executing the event handler in the Service Worker.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.EventHandledRatioType.Fetch"
     enum="ServiceWorkerEventHandleRatioType">
   <owner>kinuko@chromium.org</owner>
@@ -103592,6 +103600,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="NAVIGATION_HINT_LINK_TAP_UNCONFIRMED"/>
   <suffix name="NAVIGATION_HINT_LINK_TAP_DOWN"
       label="NAVIGATION_HINT_LINK_TAP_DOWN"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay"/>
   <affected-histogram name="ServiceWorker.StartWorker.StatusByPurpose"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_DuringStartup"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_ExistingProcess"/>
@@ -103718,6 +103727,41 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ServiceWorkerSpecialAppsForEventDispatchingDelay"
+    separator=".">
+  <suffix name="docs" label="Custom histogram for Google Docs and Drive"/>
+  <suffix name="gmail" label="Custom histogram for GMail"/>
+  <suffix name="inbox" label="Custom histogram for Inbox"/>
+  <suffix name="ntp" label="Custom histogram for New Tab Page"/>
+  <suffix name="plus" label="Custom histogram for Google+"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_ACTIVATE"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_FETCH_MAIN_FRAME"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_FETCH_SHARED_WORKER"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_FETCH_SUB_FRAME"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_FETCH_SUB_RESOURCE"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_FOREIGN_FETCH"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_GEOFENCING"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_INSTALL"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_MESSAGE"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_NAVIGATION_HINT_LINK_MOUSE_DOWN"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_NAVIGATION_HINT_LINK_TAP_DOWN"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_NAVIGATION_HINT_LINK_TAP_UNCONFIRMED"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_NOTIFICATION_CLICK"/>
+  <affected-histogram
+      name="ServiceWorker.EventDispatchingDelay_NOTIFICATION_CLOSE"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_PUSH"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_SYNC"/>
+  <affected-histogram name="ServiceWorker.EventDispatchingDelay_UNKNOWN"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SessionRestoreTabCountMemoryPressure">

@@ -161,6 +161,11 @@ void RespondWithObserver::contextDestroyed()
     m_state = Done;
 }
 
+void RespondWithObserver::willDispatchEvent()
+{
+    m_eventDispatchTime = WTF::currentTime();
+}
+
 void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
 {
     ASSERT(getExecutionContext());
@@ -173,7 +178,7 @@ void RespondWithObserver::didDispatchEvent(DispatchEventResult dispatchResult)
         return;
     }
 
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, m_eventDispatchTime);
     m_state = Done;
     m_observer.clear();
 }
@@ -201,7 +206,7 @@ void RespondWithObserver::responseWasRejected(WebServiceWorkerResponseError erro
     // to a network error.
     WebServiceWorkerResponse webResponse;
     webResponse.setError(error);
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse, m_eventDispatchTime);
     m_state = Done;
     m_observer->decrementPendingActivity();
     m_observer.clear();
@@ -267,7 +272,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
             buffer->startLoading(FetchDataLoader::createLoaderAsStream(outStream), new NoopLoaderClient);
         }
     }
-    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse);
+    ServiceWorkerGlobalScopeClient::from(getExecutionContext())->respondToFetchEvent(m_eventID, webResponse, m_eventDispatchTime);
     m_state = Done;
     m_observer->decrementPendingActivity();
     m_observer.clear();

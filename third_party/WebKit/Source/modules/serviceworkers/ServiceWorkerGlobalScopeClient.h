@@ -69,18 +69,18 @@ public:
 
     virtual WebURL scope() const = 0;
 
-    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult) = 0;
+    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
     // Calling respondToFetchEvent without response means no response was
     // provided by the service worker in the fetch events, so fallback to native.
-    virtual void respondToFetchEvent(int responseID) = 0;
-    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse&) = 0;
-    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult) = 0;
+    virtual void respondToFetchEvent(int responseID, double eventDispatchTime) = 0;
+    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse&, double eventDispatchTime) = 0;
+    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
+    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult, double eventDispatchTime) = 0;
     virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
     virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, std::unique_ptr<WebMessagePortChannelArray>) = 0;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;

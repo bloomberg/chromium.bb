@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -826,7 +827,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {
   const int kRequestId = 91;  // Dummy value
   dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_FetchEventResponse(
       version_->embedded_worker()->embedded_worker_id(), kRequestId,
-      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse()));
+      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse(),
+      base::Time::Now()));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, dispatcher_host_->bad_messages_received_count_);

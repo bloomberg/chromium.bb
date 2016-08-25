@@ -112,11 +112,11 @@ public:
     virtual WebDevToolsAgentClient::WebKitClientMessageLoop* createDevToolsMessageLoop() { return nullptr; }
 
     // ServiceWorker specific method.
-    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // Called after ExtendableMessageEvent is handled by the ServiceWorker's
     // script context.
-    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific methods. respondFetchEvent will be called after
     // FetchEvent returns a response by the ServiceWorker's script context, and
@@ -124,34 +124,34 @@ public:
     // lifecycle. When no response is provided, the browser should fallback to
     // native fetch. EventIDs are the same with the ids passed from
     // dispatchFetchEvent respectively.
-    virtual void respondToFetchEvent(int responseID) { };
-    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse& response) { };
-    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult result) { };
+    virtual void respondToFetchEvent(int responseID, double eventDispatchTime) {}
+    virtual void respondToFetchEvent(int responseID, const WebServiceWorkerResponse& response, double eventDispatchTime) {}
+    virtual void didHandleFetchEvent(int eventFinishID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific method. Called after InstallEvent (dispatched
     // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
     // script context.
-    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific method. Called after NotificationClickEvent
     // (dispatched via WebServiceWorkerContextProxy) is handled by the
     // ServiceWorker's script context.
-    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific method. Called after NotificationCloseEvent
     // (dispatched via WebServiceWorkerContextProxy) is handled by the
     // ServiceWorker's script context.
-    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific method. Called after PushEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.
-    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // ServiceWorker specific method. Called after SyncEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.
-    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult result, double eventDispatchTime) {}
 
     // Ownership of the returned object is transferred to the caller.
     // This is called on the main thread.

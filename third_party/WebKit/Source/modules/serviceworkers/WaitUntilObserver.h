@@ -64,9 +64,10 @@ private:
 
     EventType m_type;
     int m_eventID;
-    int m_pendingActivity;
-    bool m_hasError;
-    bool m_eventDispatched;
+    int m_pendingActivity = 0;
+    bool m_hasError = false;
+    bool m_eventDispatched = false;
+    double m_eventDispatchTime = 0;
     Timer<WaitUntilObserver> m_consumeWindowInteractionTimer;
 };
 

@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/request_extra_data.h"
@@ -176,7 +177,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   using SkipWaitingCallbacksMap =
       IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
   using SyncEventCallbacksMap =
-      IDMap<const base::Callback<void(blink::mojom::ServiceWorkerEventStatus)>,
+      IDMap<const base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
+                                      double /* dispatch_event_time */)>,
             IDMapOwnPointer>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
@@ -491,34 +493,43 @@ ServiceWorkerContextClient::createDevToolsMessageLoop() {
 
 void ServiceWorkerContextClient::didHandleActivateEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_ActivateEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleExtendableMessageEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleInstallEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_InstallEventFinished(
-      GetRoutingID(), request_id, result, proxy_->hasFetchEventHandler()));
-}
-
-void ServiceWorkerContextClient::respondToFetchEvent(int response_id) {
-  Send(new ServiceWorkerHostMsg_FetchEventResponse(
-      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-      ServiceWorkerResponse()));
+      GetRoutingID(), request_id, result, proxy_->hasFetchEventHandler(),
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::respondToFetchEvent(
     int response_id,
-    const blink::WebServiceWorkerResponse& web_response) {
+    double event_dispatch_time) {
+  Send(new ServiceWorkerHostMsg_FetchEventResponse(
+      GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+      ServiceWorkerResponse(), base::Time::FromDoubleT(event_dispatch_time)));
+}
+
+void ServiceWorkerContextClient::respondToFetchEvent(
+    int response_id,
+    const blink::WebServiceWorkerResponse& web_response,
+    double event_dispatch_time) {
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
   ServiceWorkerHeaderList cors_exposed_header_names;
@@ -534,48 +545,59 @@ void ServiceWorkerContextClient::respondToFetchEvent(
       web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
   Send(new ServiceWorkerHostMsg_FetchEventResponse(
       GetRoutingID(), response_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-      response));
+      response, base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleFetchEvent(
     int event_finish_id,
-    blink::WebServiceWorkerEventResult result) {
-  Send(new ServiceWorkerHostMsg_FetchEventFinished(GetRoutingID(),
-                                                   event_finish_id, result));
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
+  Send(new ServiceWorkerHostMsg_FetchEventFinished(
+      GetRoutingID(), event_finish_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleNotificationClickEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_NotificationClickEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleNotificationCloseEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_NotificationCloseEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandlePushEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   Send(new ServiceWorkerHostMsg_PushEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result,
+      base::Time::FromDoubleT(event_dispatch_time)));
 }
 
 void ServiceWorkerContextClient::didHandleSyncEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    double event_dispatch_time) {
   const SyncCallback* callback =
       context_->sync_event_callbacks.Lookup(request_id);
   if (!callback)
     return;
   if (result == blink::WebServiceWorkerEventResultCompleted) {
-    callback->Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+    callback->Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                  event_dispatch_time);
   } else {
-    callback->Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
+    callback->Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
+                  event_dispatch_time);
   }
   context_->sync_event_callbacks.Remove(request_id);
 }

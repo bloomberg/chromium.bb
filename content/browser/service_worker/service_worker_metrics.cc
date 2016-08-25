@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -110,11 +111,46 @@ std::string GetWorkerPreparationSuffix(
   return "_UNKNOWN";
 }
 
+std::string GetSiteSuffix(ServiceWorkerMetrics::Site site) {
+  switch (site) {
+    case ServiceWorkerMetrics::Site::OTHER:
+    case ServiceWorkerMetrics::Site::WITH_FETCH_HANDLER:
+    case ServiceWorkerMetrics::Site::WITHOUT_FETCH_HANDLER:
+      return "";
+    case ServiceWorkerMetrics::Site::NEW_TAB_PAGE:
+      return ".ntp";
+    case ServiceWorkerMetrics::Site::PLUS:
+      return ".plus";
+    case ServiceWorkerMetrics::Site::INBOX:
+      return ".inbox";
+    case ServiceWorkerMetrics::Site::DOCS:
+      return ".docs";
+    case ServiceWorkerMetrics::Site::NUM_TYPES:
+      NOTREACHED() << static_cast<int>(site);
+  }
+  NOTREACHED();
+  return "";
+}
+
 // Use this for histograms with dynamically generated names, which
 // otherwise can't use the UMA_HISTOGRAM macro without code duplication.
 void RecordSuffixedTimeHistogram(const std::string& name,
                                  const std::string& suffix,
                                  base::TimeDelta sample) {
+  const std::string name_with_suffix = name + suffix;
+  // This unrolls UMA_HISTOGRAM_TIMES.
+  base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
+      name_with_suffix, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSeconds(10), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram_pointer->AddTime(sample);
+}
+
+// Use this for histograms with dynamically generated names, which
+// otherwise can't use the UMA_MEDIUM_HISTOGRAM macro without code duplication.
+void RecordSuffixedMediumTimeHistogram(const std::string& name,
+                                       const std::string& suffix,
+                                       base::TimeDelta sample) {
   const std::string name_with_suffix = name + suffix;
   // This unrolls UMA_HISTOGRAM_MEDIUM_TIMES.
   base::HistogramBase* histogram_pointer = base::Histogram::FactoryTimeGet(
@@ -330,9 +366,9 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
   if (is_installed) {
     std::string name = "ServiceWorker.StartWorker.Time";
     UMA_HISTOGRAM_MEDIUM_TIMES(name, time);
-    RecordSuffixedTimeHistogram(name, StartSituationToSuffix(start_situation),
-                                time);
-    RecordSuffixedTimeHistogram(
+    RecordSuffixedMediumTimeHistogram(
+        name, StartSituationToSuffix(start_situation), time);
+    RecordSuffixedMediumTimeHistogram(
         "ServiceWorker.StartWorker.Time",
         StartSituationToSuffix(start_situation) + EventTypeToSuffix(purpose),
         time);
@@ -348,7 +384,7 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationTimeForMainFrame(
   std::string name =
       "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, time);
-  RecordSuffixedTimeHistogram(
+  RecordSuffixedMediumTimeHistogram(
       name, GetWorkerPreparationSuffix(initial_worker_status, start_situation),
       time);
 }
@@ -425,6 +461,16 @@ void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
       // Do nothing.
       break;
   }
+}
+
+void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
+                                                       base::TimeDelta time,
+                                                       Site site_for_metrics) {
+  const std::string name = "ServiceWorker.EventDispatchingDelay";
+  UMA_HISTOGRAM_TIMES(name, time);
+  const std::string event_type_suffix = EventTypeToSuffix(event_type);
+  const std::string site_suffix = GetSiteSuffix(site_for_metrics);
+  RecordSuffixedTimeHistogram(name, event_type_suffix + site_suffix, time);
 }
 
 void ServiceWorkerMetrics::RecordNavigationHintPrecision(
@@ -588,16 +634,16 @@ void ServiceWorkerMetrics::RecordTimeToSendStartWorker(
     StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToSendStartWorker";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                              duration);
+  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                    duration);
 }
 
 void ServiceWorkerMetrics::RecordTimeToURLJob(base::TimeDelta duration,
                                               StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToURLJob";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                              duration);
+  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                    duration);
 }
 
 void ServiceWorkerMetrics::RecordTimeToLoad(base::TimeDelta duration,
@@ -608,20 +654,20 @@ void ServiceWorkerMetrics::RecordTimeToLoad(base::TimeDelta duration,
     case LoadSource::NETWORK:
       name = "EmbeddedWorkerInstance.Start.TimeToLoad.Network";
       UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                                  duration);
+      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                        duration);
       break;
     case LoadSource::HTTP_CACHE:
       name = "EmbeddedWorkerInstance.Start.TimeToLoad.HttpCache";
       UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                                  duration);
+      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                        duration);
       break;
     case LoadSource::SERVICE_WORKER_STORAGE:
       name = "EmbeddedWorkerInstance.Start.TimeToLoad.InstalledScript";
       UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-      RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                                  duration);
+      RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                        duration);
       break;
     default:
       NOTREACHED() << static_cast<int>(source);
@@ -632,8 +678,8 @@ void ServiceWorkerMetrics::RecordTimeToStartThread(base::TimeDelta duration,
                                                    StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToStartThread";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                              duration);
+  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                    duration);
 }
 
 void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
@@ -641,8 +687,8 @@ void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
     StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToEvaluateScript";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedTimeHistogram(name, StartSituationToSuffix(situation),
-                              duration);
+  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
+                                    duration);
 }
 
 const char* ServiceWorkerMetrics::LoadSourceToString(LoadSource source) {

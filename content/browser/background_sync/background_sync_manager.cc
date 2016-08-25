@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
@@ -149,10 +150,12 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          const ServiceWorkerVersion::StatusCallback& callback,
-                         blink::mojom::ServiceWorkerEventStatus status) {
+                         blink::mojom::ServiceWorkerEventStatus status,
+                         double dispatch_event_time) {
   if (!active_version->FinishRequest(
           request_id,
-          status == blink::mojom::ServiceWorkerEventStatus::COMPLETED)) {
+          status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+          base::Time::FromDoubleT(dispatch_event_time))) {
     return;
   }
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));

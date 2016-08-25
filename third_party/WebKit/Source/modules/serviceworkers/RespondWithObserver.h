@@ -32,6 +32,7 @@ public:
 
     void contextDestroyed() override;
 
+    void willDispatchEvent();
     void didDispatchEvent(DispatchEventResult dispatchResult);
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
@@ -54,6 +55,8 @@ private:
     WebURLRequest::FetchRequestMode m_requestMode;
     WebURLRequest::FrameType m_frameType;
     WebURLRequest::RequestContext m_requestContext;
+
+    double m_eventDispatchTime = 0;
 
     enum State { Initial, Pending, Done };
     State m_state;

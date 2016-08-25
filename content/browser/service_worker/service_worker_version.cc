@@ -550,8 +550,8 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
-  PendingRequest* request =
-      new PendingRequest(error_callback, base::TimeTicks::Now(), event_type);
+  PendingRequest* request = new PendingRequest(
+      error_callback, base::Time::Now(), base::TimeTicks::Now(), event_type);
   int request_id = pending_requests_.Add(request);
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
                            request, "Request id", request_id, "Event type",
@@ -562,15 +562,20 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   return request_id;
 }
 
-bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
+bool ServiceWorkerVersion::FinishRequest(int request_id,
+                                         bool was_handled,
+                                         base::Time dispatch_event_time) {
   PendingRequest* request = pending_requests_.Lookup(request_id);
   if (!request)
     return false;
   // TODO(kinuko): Record other event statuses too.
   metrics_->RecordEventHandledStatus(request->event_type, was_handled);
   ServiceWorkerMetrics::RecordEventDuration(
-      request->event_type, base::TimeTicks::Now() - request->start_time,
+      request->event_type, base::TimeTicks::Now() - request->start_time_ticks,
       was_handled);
+  ServiceWorkerMetrics::RecordEventDispatchingDelay(
+      request->event_type, dispatch_event_time - request->start_time,
+      site_for_uma());
 
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
@@ -767,9 +772,13 @@ bool ServiceWorkerVersion::RequestInfo::operator>(
 
 ServiceWorkerVersion::PendingRequest::PendingRequest(
     const StatusCallback& callback,
-    const base::TimeTicks& time,
+    base::Time time,
+    const base::TimeTicks& time_ticks,
     ServiceWorkerMetrics::EventType event_type)
-    : error_callback(callback), start_time(time), event_type(event_type) {}
+    : error_callback(callback),
+      start_time(time),
+      start_time_ticks(time_ticks),
+      event_type(event_type) {}
 
 ServiceWorkerVersion::PendingRequest::~PendingRequest() {}
 
@@ -991,14 +1000,16 @@ void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
 
 void ServiceWorkerVersion::OnSimpleEventResponse(
     int request_id,
-    blink::WebServiceWorkerEventResult result) {
+    blink::WebServiceWorkerEventResult result,
+    base::Time dispatch_event_time) {
   // Copy error callback before calling FinishRequest.
   PendingRequest* request = pending_requests_.Lookup(request_id);
   DCHECK(request) << "Invalid request id";
   StatusCallback callback = request->error_callback;
 
   FinishRequest(request_id,
-                result == blink::WebServiceWorkerEventResultCompleted);
+                result == blink::WebServiceWorkerEventResultCompleted,
+                dispatch_event_time);
 
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
   if (result == blink::WebServiceWorkerEventResultRejected)

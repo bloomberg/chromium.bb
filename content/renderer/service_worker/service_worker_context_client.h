@@ -65,7 +65,8 @@ class ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
   using SyncCallback =
-      base::Callback<void(blink::mojom::ServiceWorkerEventStatus)>;
+      base::Callback<void(blink::mojom::ServiceWorkerEventStatus,
+                          double /* dispatch_event_time */)>;
 
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
@@ -129,29 +130,37 @@ class ServiceWorkerContextClient
   blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
   createDevToolsMessageLoop() override;
   void didHandleActivateEvent(int request_id,
-                              blink::WebServiceWorkerEventResult) override;
+                              blink::WebServiceWorkerEventResult,
+                              double dispatch_event_time) override;
   void didHandleExtendableMessageEvent(
       int request_id,
-      blink::WebServiceWorkerEventResult result) override;
-  void didHandleInstallEvent(
-      int request_id,
-      blink::WebServiceWorkerEventResult result) override;
-  void respondToFetchEvent(int response_id) override;
-  void respondToFetchEvent(
-      int response_id,
-      const blink::WebServiceWorkerResponse& response) override;
+      blink::WebServiceWorkerEventResult result,
+      double dispatch_event_time) override;
+  void didHandleInstallEvent(int request_id,
+                             blink::WebServiceWorkerEventResult result,
+                             double event_dispatch_time) override;
+  void respondToFetchEvent(int response_id,
+                           double event_dispatch_time) override;
+  void respondToFetchEvent(int response_id,
+                           const blink::WebServiceWorkerResponse& response,
+                           double event_dispatch_time) override;
   void didHandleFetchEvent(int event_finish_id,
-                           blink::WebServiceWorkerEventResult result) override;
+                           blink::WebServiceWorkerEventResult result,
+                           double dispatch_event_time) override;
   void didHandleNotificationClickEvent(
       int request_id,
-      blink::WebServiceWorkerEventResult result) override;
+      blink::WebServiceWorkerEventResult result,
+      double dispatch_event_time) override;
   void didHandleNotificationCloseEvent(
       int request_id,
-      blink::WebServiceWorkerEventResult result) override;
+      blink::WebServiceWorkerEventResult result,
+      double dispatch_event_time) override;
   void didHandlePushEvent(int request_id,
-                          blink::WebServiceWorkerEventResult result) override;
+                          blink::WebServiceWorkerEventResult result,
+                          double dispatch_event_time) override;
   void didHandleSyncEvent(int request_id,
-                          blink::WebServiceWorkerEventResult result) override;
+                          blink::WebServiceWorkerEventResult result,
+                          double dispatch_event_time) override;
 
   // Called on the main thread.
   blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(

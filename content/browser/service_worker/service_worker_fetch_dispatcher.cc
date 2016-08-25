@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -81,10 +82,11 @@ class ServiceWorkerFetchDispatcher::ResponseCallback {
 
   void Run(int request_id,
            ServiceWorkerFetchEventResult fetch_result,
-           const ServiceWorkerResponse& response) {
+           const ServiceWorkerResponse& response,
+           base::Time dispatch_event_time) {
     const bool handled =
         (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
-    if (!version_->FinishRequest(request_id, handled))
+    if (!version_->FinishRequest(request_id, handled, dispatch_event_time))
       NOTREACHED() << "Should only receive one reply per event";
 
     // |fetch_dispatcher| is null if the URLRequest was killed.

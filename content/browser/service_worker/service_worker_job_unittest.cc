@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/time/time.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -1444,12 +1445,12 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
       install_callback_.Run();
     SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
         embedded_worker_id, request_id, install_event_result_,
-        has_fetch_handler_));
+        has_fetch_handler_, base::Time::Now()));
   }
   void OnActivateEvent(int embedded_worker_id, int request_id) override {
-    SimulateSend(
-        new ServiceWorkerHostMsg_ActivateEventFinished(
-            embedded_worker_id, request_id, activate_event_result_));
+    SimulateSend(new ServiceWorkerHostMsg_ActivateEventFinished(
+        embedded_worker_id, request_id, activate_event_result_,
+        base::Time::Now()));
   }
 
   void set_install_callback(const base::Closure& callback) {
