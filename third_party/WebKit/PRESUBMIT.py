@@ -137,11 +137,16 @@ def _CheckStyle(input_api, output_api):
     re_chromium_style_file = re.compile(r'\b[a-z_]+\.(cc|h)$')
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
         'Tools', 'Scripts', 'check-webkit-style')
-    args = ([input_api.python_executable, style_checker_path, '--diff-files']
-            + [input_api.os_path.join('..', '..', f.LocalPath())
-               for f in input_api.AffectedFiles()
-               # Filter out files that follow Chromium's coding style.
-               if not re_chromium_style_file.search(f.LocalPath())])
+    args = [input_api.python_executable, style_checker_path, '--diff-files']
+    files = [input_api.os_path.join('..', '..', f.LocalPath())
+             for f in input_api.AffectedFiles()
+             # Filter out files that follow Chromium's coding style.
+             if not re_chromium_style_file.search(f.LocalPath())]
+    # Do not call check-webkit-style with empty affected file list if all
+    # input_api.AffectedFiles got filtered.
+    if not files:
+        return []
+    args += files
     results = []
 
     try:
