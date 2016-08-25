@@ -446,8 +446,8 @@ void WorkerThreadableLoader::MainThreadLoaderHolder::createAndStart(
         return;
     }
     mainThreadLoaderHolder->m_workerLoader = workerLoader;
-    mainThreadLoaderHolder->start(*toDocument(executionContext), std::move(request), options, resourceLoaderOptions);
     forwarder->forwardTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerThreadableLoader::didStart, wrapCrossThreadPersistent(workerLoader), wrapCrossThreadPersistent(mainThreadLoaderHolder)));
+    mainThreadLoaderHolder->start(*toDocument(executionContext), std::move(request), options, resourceLoaderOptions);
 }
 
 WorkerThreadableLoader::MainThreadLoaderHolder::~MainThreadLoaderHolder()

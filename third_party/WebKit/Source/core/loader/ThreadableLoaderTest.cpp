@@ -852,6 +852,26 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck)
     serveRequests();
 }
 
+// This test case checks blink doesn't crash even when the response arrives
+// synchronously.
+TEST_P(ThreadableLoaderTest, GetResponseSynchronously)
+{
+    InSequence s;
+    EXPECT_CALL(checkpoint(), Call(1));
+    createLoader(UseAccessControl);
+    callCheckpoint(1);
+
+    EXPECT_CALL(*client(), didFailAccessControlCheck(_));
+    EXPECT_CALL(checkpoint(), Call(2));
+
+    // Currently didFailAccessControlCheck is dispatched synchronously. This
+    // test is not saying that didFailAccessControlCheck should be dispatched
+    // synchronously, but is saying that even when a response is served
+    // synchronously it should not lead to a crash.
+    startLoader(KURL(KURL(), "about:blank"));
+    callCheckpoint(2);
+}
+
 } // namespace
 
 } // namespace blink
