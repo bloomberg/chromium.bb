@@ -662,6 +662,7 @@ private:
 
     class AutoplayHelperClientImpl;
 
+    friend class AutoplayUmaHelper; // for isAutoplayAllowedPerSettings
     friend class Internals;
     friend class TrackDisplayUpdateScope;
     friend class AutoplayExperimentHelper;

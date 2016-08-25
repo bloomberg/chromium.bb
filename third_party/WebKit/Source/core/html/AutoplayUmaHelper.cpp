@@ -8,6 +8,7 @@
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "platform/Histogram.h"
 
@@ -46,15 +47,31 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source)
     DEFINE_STATIC_LOCAL(EnumerationHistogram, videoHistogram, ("Media.Video.Autoplay", static_cast<int>(AutoplaySource::NumberOfSources)));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, mutedVideoHistogram, ("Media.Video.Autoplay.Muted", static_cast<int>(AutoplaySource::NumberOfSources)));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, audioHistogram, ("Media.Audio.Autoplay", static_cast<int>(AutoplaySource::NumberOfSources)));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, blockedMutedVideoHistogram, ("Media.Video.Autoplay.Muted.Blocked", AutoplayBlockedReasonMax));
 
     m_source = source;
 
+    // Record the source.
     if (m_element->isHTMLVideoElement()) {
         videoHistogram.count(static_cast<int>(m_source));
         if (m_element->muted())
             mutedVideoHistogram.count(static_cast<int>(m_source));
     } else {
         audioHistogram.count(static_cast<int>(m_source));
+    }
+
+    // Record if it will be blocked by Data Saver or Autoplay setting.
+    if (m_element->isHTMLVideoElement() && m_element->muted() && RuntimeEnabledFeatures::autoplayMutedVideosEnabled()) {
+        bool dataSaverEnabled = m_element->document().settings() && m_element->document().settings()->dataSaverEnabled();
+        bool blockedBySetting = !m_element->isAutoplayAllowedPerSettings();
+
+        if (dataSaverEnabled && blockedBySetting) {
+            blockedMutedVideoHistogram.count(AutoplayBlockedReasonDataSaverAndSetting);
+        } else if (dataSaverEnabled) {
+            blockedMutedVideoHistogram.count(AutoplayBlockedReasonDataSaver);
+        } else if (blockedBySetting) {
+            blockedMutedVideoHistogram.count(AutoplayBlockedReasonSetting);
+        }
     }
 
     if (m_source == AutoplaySource::Method && m_element->isHTMLVideoElement() && m_element->muted())

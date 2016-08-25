@@ -23453,6 +23453,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the autoplay source of muted videos.</summary>
 </histogram>
 
+<histogram name="Media.Video.Autoplay.Muted.Blocked"
+    enum="AutoplayBlockedReason">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    Records the reason why autoplay of muted videos was blocked.
+  </summary>
+</histogram>
+
 <histogram name="Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"
     enum="Boolean">
   <owner>avayvod@chromium.org</owner>
@@ -69486,6 +69496,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
   <int value="2" label="[Deprecated] AUTO_LAUNCH_FOREGROUND"/>
   <int value="3" label="[Deprecated] AUTO_LAUNCH_FOREGROUND_USELESS"/>
+</enum>
+
+<enum name="AutoplayBlockedReason" type="int">
+  <int value="0" label="Data Saver enabled"/>
+  <int value="1" label="Disabled by setting"/>
+  <int value="2" label="Data Saver and setting"/>
 </enum>
 
 <enum name="AutoplaySource" type="int">

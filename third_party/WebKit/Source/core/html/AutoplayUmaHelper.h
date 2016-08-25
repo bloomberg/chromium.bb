@@ -27,6 +27,15 @@ enum class AutoplayUnmuteActionStatus {
     NumberOfStatus = 2,
 };
 
+// These values are used for histograms. Do not reorder.
+enum AutoplayBlockedReason {
+    AutoplayBlockedReasonDataSaver = 0,
+    AutoplayBlockedReasonSetting = 1,
+    AutoplayBlockedReasonDataSaverAndSetting = 2,
+    // Keey at the end.
+    AutoplayBlockedReasonMax = 3
+};
+
 class Document;
 class ElementVisibilityObserver;
 class HTMLMediaElement;
