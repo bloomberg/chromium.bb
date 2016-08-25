@@ -13,7 +13,7 @@
 #include "media/base/media_log.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
-#include "media/blink/buffered_data_source.h"
+#include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/mock_webframeclient.h"
 #include "media/blink/mock_weburlloader.h"
 #include "media/blink/multibuffer_data_source.h"
@@ -1098,7 +1098,7 @@ TEST_F(MultibufferDataSourceTest, LocalResource_DeferStrategy) {
   CheckCapacityDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1116,7 +1116,7 @@ TEST_F(MultibufferDataSourceTest, LocalResource_PreloadMetadata_DeferStrategy) {
   CheckCapacityDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1134,7 +1134,7 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Reponse200_DeferStrategy) {
   CheckCapacityDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1154,7 +1154,7 @@ TEST_F(MultibufferDataSourceTest,
   CheckCapacityDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1172,17 +1172,17 @@ TEST_F(MultibufferDataSourceTest, ExternalResource_Reponse206_DeferStrategy) {
   CheckCapacityDefer();
   set_might_be_reused_from_cache_in_future(true);
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckNeverDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_NORMAL);
+      MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
 
   set_might_be_reused_from_cache_in_future(false);
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1203,16 +1203,16 @@ TEST_F(MultibufferDataSourceTest,
 
   set_might_be_reused_from_cache_in_future(true);
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckNeverDefer();
 
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_NORMAL);
+      MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
   data_source_->MediaIsPlaying();
   CheckCapacityDefer();
   set_might_be_reused_from_cache_in_future(false);
   data_source_->SetBufferingStrategy(
-      BufferedDataSourceInterface::BUFFERING_STRATEGY_AGGRESSIVE);
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
   CheckCapacityDefer();
 
   Stop();
@@ -1260,7 +1260,7 @@ TEST_F(MultibufferDataSourceTest,
 
 TEST_F(MultibufferDataSourceTest,
        ExternalResource_Response206_CancelAfterPlay) {
-  set_preload(BufferedDataSource::METADATA);
+  set_preload(MultibufferDataSource::METADATA);
   InitializeWith206Response();
 
   EXPECT_EQ(MultibufferDataSource::METADATA, preload());

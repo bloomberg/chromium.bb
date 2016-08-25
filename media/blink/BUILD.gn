@@ -28,12 +28,8 @@ component("blink") {
   sources = [
     "active_loader.cc",
     "active_loader.h",
-    "buffered_data_source.cc",
-    "buffered_data_source.h",
     "buffered_data_source_host_impl.cc",
     "buffered_data_source_host_impl.h",
-    "buffered_resource_loader.cc",
-    "buffered_resource_loader.h",
     "cache_util.cc",
     "cache_util.h",
     "cdm_result_promise.h",
@@ -130,8 +126,6 @@ test("media_blink_unittests") {
 
   sources = [
     "buffered_data_source_host_impl_unittest.cc",
-    "buffered_data_source_unittest.cc",
-    "buffered_resource_loader_unittest.cc",
     "cache_util_unittest.cc",
     "interval_map_unittest.cc",
     "key_system_config_selector_unittest.cc",

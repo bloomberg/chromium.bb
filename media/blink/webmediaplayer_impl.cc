@@ -174,9 +174,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       highest_ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
-      preload_(BufferedDataSource::AUTO),
-      buffering_strategy_(
-          BufferedDataSourceInterface::BUFFERING_STRATEGY_NORMAL),
+      preload_(MultibufferDataSource::AUTO),
+      buffering_strategy_(MultibufferDataSource::BUFFERING_STRATEGY_NORMAL),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(params.media_task_runner()),
       worker_task_runner_(params.worker_task_runner()),
@@ -363,24 +362,10 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     supports_save_ = false;
     StartPipeline();
   } else {
-    // TODO(hubbe): This experiment is temporary and should be removed once
-    // we have enough data to support the primacy of the new media cache.
-    // See http://crbug.com/514719 for details.
-    // Otherwise it's a regular request which requires resolving the URL first.
-    if (base::FeatureList::IsEnabled(kUseNewMediaCache)) {
-      // Remove this when MultiBufferDataSource becomes default.
-      LOG(WARNING) << "Using MultibufferDataSource";
-      data_source_.reset(new MultibufferDataSource(
-          url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
-          url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
-          base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
-    } else {
-      data_source_.reset(new BufferedDataSource(
-          url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-          main_task_runner_, frame_, media_log_.get(),
-          &buffered_data_source_host_,
-          base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
-    }
+    data_source_.reset(new MultibufferDataSource(
+        url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
+        url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
+        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
     data_source_->SetPreload(preload_);
     data_source_->SetBufferingStrategy(buffering_strategy_);
     data_source_->Initialize(
@@ -563,24 +548,24 @@ void WebMediaPlayerImpl::setSinkId(
                  callback));
 }
 
-STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadNone, BufferedDataSource::NONE);
+STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadNone, MultibufferDataSource::NONE);
 STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadMetaData,
-                   BufferedDataSource::METADATA);
-STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadAuto, BufferedDataSource::AUTO);
+                   MultibufferDataSource::METADATA);
+STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadAuto, MultibufferDataSource::AUTO);
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __func__ << "(" << preload << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  preload_ = static_cast<BufferedDataSource::Preload>(preload);
+  preload_ = static_cast<MultibufferDataSource::Preload>(preload);
   if (data_source_)
     data_source_->SetPreload(preload_);
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Normal,
-                   BufferedDataSource::BUFFERING_STRATEGY_NORMAL);
+                   MultibufferDataSource::BUFFERING_STRATEGY_NORMAL);
 STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Aggressive,
-                   BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
+                   MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
 
 void WebMediaPlayerImpl::setBufferingStrategy(
     WebMediaPlayer::BufferingStrategy buffering_strategy) {
@@ -592,10 +577,10 @@ void WebMediaPlayerImpl::setBufferingStrategy(
   // of the platform media player and may have data usage penalties.
   // TODO(dalecurtis, hubbe): We should probably stop using "pause-and-buffer"
   // everywhere. See http://crbug.com/594669 for more details.
-  buffering_strategy_ = BufferedDataSource::BUFFERING_STRATEGY_NORMAL;
+  buffering_strategy_ = MultibufferDataSource::BUFFERING_STRATEGY_NORMAL;
 #else
   buffering_strategy_ =
-      static_cast<BufferedDataSource::BufferingStrategy>(buffering_strategy);
+      static_cast<MultibufferDataSource::BufferingStrategy>(buffering_strategy);
 #endif
 
   if (data_source_)
@@ -1000,7 +985,7 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   // If we're not in an aggressive buffering state, tell the data source we have
   // enough data so that it may release the connection.
   if (buffering_strategy_ !=
-      BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE) {
+      MultibufferDataSource::BUFFERING_STRATEGY_AGGRESSIVE) {
     if (data_source_)
       data_source_->OnBufferingHaveEnough(true);
   }

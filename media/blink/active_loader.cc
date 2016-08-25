@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "media/blink/buffered_resource_loader.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 
 namespace media {

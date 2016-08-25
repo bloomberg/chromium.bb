@@ -31,7 +31,6 @@ class MEDIA_BLINK_EXPORT ActiveLoader {
   bool deferred() { return deferred_; }
 
  private:
-  friend class BufferedDataSourceTest;
   friend class MultibufferDataSourceTest;
 
   std::unique_ptr<blink::WebURLLoader> loader_;

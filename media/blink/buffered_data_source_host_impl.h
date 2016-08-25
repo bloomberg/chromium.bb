@@ -9,10 +9,26 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "media/blink/buffered_data_source.h"
+#include "media/base/ranges.h"
+#include "media/blink/interval_map.h"
 #include "media/blink/media_blink_export.h"
 
 namespace media {
+
+// Interface for testing purposes.
+class MEDIA_BLINK_EXPORT BufferedDataSourceHost {
+ public:
+  // Notify the host of the total size of the media file.
+  virtual void SetTotalBytes(int64_t total_bytes) = 0;
+
+  // Notify the host that byte range [start,end] has been buffered.
+  // TODO(fischman): remove this method when demuxing is push-based instead of
+  // pull-based.  http://crbug.com/131444
+  virtual void AddBufferedByteRange(int64_t start, int64_t end) = 0;
+
+ protected:
+  virtual ~BufferedDataSourceHost() {}
+};
 
 // Provides an implementation of BufferedDataSourceHost that translates the
 // buffered byte ranges into estimated time ranges.
