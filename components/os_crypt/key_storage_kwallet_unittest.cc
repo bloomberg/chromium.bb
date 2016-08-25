@@ -30,7 +30,7 @@ constexpr KWalletDBus::Error CANNOT_CONTACT =
 
 // These names are not allowed to change in prod, unless we intentionally
 // migrate.
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
 const char kExpectedFolderName[] = "Chrome Keys";
 const char kExpectedEntryName[] = "Chrome Safe Storage";
 #else
