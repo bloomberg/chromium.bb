@@ -14,6 +14,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -115,9 +116,23 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private final SpaceDisplay mSpaceDisplay;
     private final ListView mFilterView;
     private final RecyclerView mRecyclerView;
+    private final View mEmptyView;
 
     private BasicNativePage mNativePage;
     private final AtomicInteger mNumberOfFilesBeingDeleted = new AtomicInteger();
+
+    private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            if (mHistoryAdapter.getItemCount() == 0) {
+                mEmptyView.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
+            } else {
+                mEmptyView.setVisibility(View.GONE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+            }
+        }
+    };
 
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
@@ -131,6 +146,9 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
         mHistoryAdapter.initialize(mBackendProvider);
         addObserver(mHistoryAdapter);
+        mHistoryAdapter.registerAdapterDataObserver(mAdapterObserver);
+
+        mEmptyView = mMainView.findViewById(R.id.empty_view);
 
         mSpaceDisplay = new SpaceDisplay(mMainView, mHistoryAdapter);
         mHistoryAdapter.registerAdapterDataObserver(mSpaceDisplay);
@@ -190,6 +208,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         mBackendProvider.getOfflinePageBridge().destroy();
 
+        mHistoryAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         mHistoryAdapter.unregisterAdapterDataObserver(mSpaceDisplay);
     }
 
