@@ -44,6 +44,7 @@ namespace content {
 namespace {
 
 const char kTestURL[] = "http://foo";
+const char kTestHTTPSURL[] = "https://foo";
 const char kTestData[] = "blah!";
 
 const char kFtpDirMimeType[] = "text/vnd.chromium.ftp-dir";
@@ -309,6 +310,18 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 
+  void DoReceiveHTTPSRedirect() {
+    EXPECT_FALSE(client()->did_receive_redirect());
+    net::RedirectInfo redirect_info;
+    redirect_info.status_code = 302;
+    redirect_info.new_method = "GET";
+    redirect_info.new_url = GURL(kTestHTTPSURL);
+    redirect_info.new_first_party_for_cookies = GURL(kTestHTTPSURL);
+    peer()->OnReceivedRedirect(redirect_info,
+                               content::ResourceResponseInfo());
+    EXPECT_TRUE(client()->did_receive_redirect());
+  }
+
   void DoReceiveResponse() {
     EXPECT_FALSE(client()->did_receive_response());
     peer()->OnReceivedResponse(content::ResourceResponseInfo());
@@ -382,6 +395,18 @@ TEST_F(WebURLLoaderImplTest, Success) {
 TEST_F(WebURLLoaderImplTest, Redirect) {
   DoStartAsyncRequest();
   DoReceiveRedirect();
+  DoReceiveResponse();
+  DoReceiveData();
+  DoCompleteRequest();
+  EXPECT_FALSE(dispatcher()->canceled());
+  EXPECT_EQ(kTestData, client()->received_data());
+}
+
+// Tests that a redirect to an HTTPS URL with no security info does not
+// crash. Regression test for https://crbug.com/519120
+TEST_F(WebURLLoaderImplTest, RedirectToHTTPSWithEmptySecurityInfo) {
+  DoStartAsyncRequest();
+  DoReceiveHTTPSRedirect();
   DoReceiveResponse();
   DoReceiveData();
   DoCompleteRequest();
