@@ -7,7 +7,6 @@
 #include <numeric>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "device/core/mock_device_client.h"
