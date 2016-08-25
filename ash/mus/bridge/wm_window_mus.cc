@@ -29,10 +29,6 @@
 
 MUS_DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::WmWindowMus*);
 
-// TODO(sky): fully implement this. Making DVLOG as too spammy to be useful.
-#undef NOTIMPLEMENTED
-#define NOTIMPLEMENTED() DVLOG(1) << "notimplemented"
-
 namespace {
 
 MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::mus::WmWindowMus,
@@ -718,10 +714,12 @@ WmWindow* WmWindowMus::GetChildByShellWindowId(int id) {
 }
 
 void WmWindowMus::ShowResizeShadow(int component) {
+  // TODO: http://crbug.com/640773.
   NOTIMPLEMENTED();
 }
 
 void WmWindowMus::HideResizeShadow() {
+  // TODO: http://crbug.com/640773.
   NOTIMPLEMENTED();
 }
 

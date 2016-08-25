@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This has to be before any other includes, else default is picked up.
+// See base/logging for details on this.
+#define NOTIMPLEMENTED_POLICY 5
+
 #include "ui/views/mus/screen_mus.h"
 
 #include "services/shell/public/cpp/connection.h"
@@ -11,11 +15,6 @@
 #include "ui/display/display_observer.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
-
-#ifdef NOTIMPLEMENTED
-#undef NOTIMPLEMENTED
-#define NOTIMPLEMENTED() DVLOG(1) << "notimplemented"
-#endif
 
 namespace mojo {
 

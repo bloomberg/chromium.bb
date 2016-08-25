@@ -217,4 +217,6 @@ source_set("unittests") {
     ":mus",
     "//mash/quick_launch",
   ]
+
+  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
 }
