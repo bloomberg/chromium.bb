@@ -39,7 +39,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 #include "core/editing/Editor.h"
 #include "core/events/DOMWindowEventQueue.h"
 #include "core/events/HashChangeEvent.h"
@@ -1318,21 +1318,21 @@ void LocalDOMWindow::cancelIdleCallback(int id)
         document->cancelIdleCallback(id);
 }
 
-CustomElementsRegistry* LocalDOMWindow::customElements(ScriptState* scriptState) const
+CustomElementRegistry* LocalDOMWindow::customElements(ScriptState* scriptState) const
 {
     if (!scriptState->world().isMainWorld())
         return nullptr;
     return customElements();
 }
 
-CustomElementsRegistry* LocalDOMWindow::customElements() const
+CustomElementRegistry* LocalDOMWindow::customElements() const
 {
     if (!m_customElements && m_document)
-        m_customElements = CustomElementsRegistry::create(this);
+        m_customElements = CustomElementRegistry::create(this);
     return m_customElements;
 }
 
-CustomElementsRegistry* LocalDOMWindow::maybeCustomElements() const
+CustomElementRegistry* LocalDOMWindow::maybeCustomElements() const
 {
     return m_customElements;
 }

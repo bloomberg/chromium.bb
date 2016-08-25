@@ -466,7 +466,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callAsConstructor(v8::Isolate* isolate
     // TODO(dominicc): When inspector supports tracing object
     // invocation, change this to use v8::Object instead of
     // v8::Function. All callers use functions because
-    // CustomElementsRegistry#define's IDL signature is Function.
+    // CustomElementRegistry#define's IDL signature is Function.
     CHECK(constructor->IsFunction());
     v8::Local<v8::Function> function = constructor.As<v8::Function>();
 

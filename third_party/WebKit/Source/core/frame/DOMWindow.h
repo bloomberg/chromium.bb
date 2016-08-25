@@ -20,7 +20,7 @@ class ApplicationCache;
 class BarProp;
 class CSSRuleList;
 class CSSStyleDeclaration;
-class CustomElementsRegistry;
+class CustomElementRegistry;
 class DOMSelection;
 class DOMVisualViewport;
 class DOMWindowCSS;
@@ -178,7 +178,7 @@ public:
     virtual void cancelIdleCallback(int id) = 0;
 
     // Custom elements
-    virtual CustomElementsRegistry* customElements(ScriptState*) const = 0;
+    virtual CustomElementRegistry* customElements(ScriptState*) const = 0;
 
     // Obsolete APIs
     void captureEvents() { }

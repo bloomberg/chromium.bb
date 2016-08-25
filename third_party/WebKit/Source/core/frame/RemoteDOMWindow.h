@@ -76,7 +76,7 @@ public:
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
-    CustomElementsRegistry* customElements(ScriptState*) const override;
+    CustomElementRegistry* customElements(ScriptState*) const override;
 
     void frameDetached();
 

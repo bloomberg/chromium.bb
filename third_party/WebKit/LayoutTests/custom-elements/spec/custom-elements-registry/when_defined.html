@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Custom Elements: CustomElementsRegistry.whenDefined</title>
+<title>Custom Elements: CustomElementRegistry.whenDefined</title>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../resources/custom-elements-helpers.js"></script>
@@ -8,7 +8,7 @@
 <script>
 'use strict';
 (() => {
-  // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
+  // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementregistry-whendefined
   // Use window from iframe to isolate the test.
   function setup() {
     const iframe = document.createElement('iframe');
@@ -43,7 +43,7 @@
       assert_not_equals(promiseBeforeDefined, promiseNotDefined,
           'whenDefined() returns different promises for different names.');
       customElements.define(kNameToBeDefined, class {});
-      // 3. If this CustomElementsRegistry contains an entry with name name,
+      // 3. If this CustomElementRegistry contains an entry with name name,
       // then return a new promise resolved with undefined and abort these
       // steps.
       const promiseAfterDefined = customElements.whenDefined(kNameToBeDefined);

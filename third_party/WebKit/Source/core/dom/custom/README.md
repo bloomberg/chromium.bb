@@ -25,7 +25,7 @@ moment there is only one: ScriptCustomElementDefinition.
 
 ScriptCustomElementDefinition is linked to its constructor by an ID
 number. The ID number is stored in a map, keyed by constructor, in a
-hidden value of the CustomElementsRegistry wrapper. The ID is an index
+hidden value of the CustomElementRegistry wrapper. The ID is an index
 into a list of definitions stored in V8PerContextData.
 
 ###### CustomElementDescriptor
@@ -36,7 +36,7 @@ these strings will be different. In that case, the local name is the
 element's tag name and the custom element name is related to the value
 of the &ldquo;is&rdquo; attribute.
 
-###### CustomElementsRegistry
+###### CustomElementRegistry
 
 Implements the `window.customElements` property. This maintains the
 set of registered names. The wrapper of this object is used by
@@ -56,7 +56,7 @@ kept around indefinitely because they could be created in future by
 the parser. On the other hand, we must not leak when a window can no
 longer run script.
 
-We use a V8HiddenValue on the CustomElementsRegistry wrapper which
+We use a V8HiddenValue on the CustomElementRegistry wrapper which
 points to a map that keeps constructors and prototypes alive. See
 ScriptCustomElementDefinition.
 
@@ -65,9 +65,7 @@ ScriptCustomElementDefinition.
 In comments and prose, write custom elements, not Custom Elements, to
 match the HTML standard.
 
-Prefix type names with CustomElement (singular). The one exception to
-this rule is CustomElementsRegistry, which uses a plural to match the
-name of the interface in the specification.
+Prefix type names with CustomElement (singular).
 
 ## Testing
 

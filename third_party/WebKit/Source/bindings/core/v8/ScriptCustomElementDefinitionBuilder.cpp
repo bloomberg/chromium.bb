@@ -20,7 +20,7 @@ ScriptCustomElementDefinitionBuilder* ScriptCustomElementDefinitionBuilder
 
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* scriptState,
-    CustomElementsRegistry* registry,
+    CustomElementRegistry* registry,
     const ScriptValue& constructor,
     ExceptionState& exceptionState)
     : m_prev(s_stack)
@@ -41,7 +41,7 @@ bool ScriptCustomElementDefinitionBuilder::checkConstructorIntrinsics()
 {
     DCHECK(m_scriptState->world().isMainWorld());
 
-    // The signature of CustomElementsRegistry.define says this is a
+    // The signature of CustomElementRegistry.define says this is a
     // Function
     // https://html.spec.whatwg.org/multipage/scripting.html#customelementsregistry
     CHECK(m_constructorValue->IsFunction());

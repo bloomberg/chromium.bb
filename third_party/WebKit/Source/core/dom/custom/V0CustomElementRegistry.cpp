@@ -35,7 +35,7 @@
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -105,7 +105,7 @@ bool V0CustomElementRegistry::nameIsDefined(const AtomicString& name) const
     return m_registeredTypeNames.contains(name);
 }
 
-void V0CustomElementRegistry::setV1(const CustomElementsRegistry* v1)
+void V0CustomElementRegistry::setV1(const CustomElementRegistry* v1)
 {
     DCHECK(!m_v1.get());
     m_v1 = v1;

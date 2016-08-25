@@ -9,7 +9,7 @@
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementReactionStack.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -20,12 +20,12 @@
 
 namespace blink {
 
-CustomElementsRegistry* CustomElement::registry(const Element& element)
+CustomElementRegistry* CustomElement::registry(const Element& element)
 {
     return registry(element.document());
 }
 
-CustomElementsRegistry* CustomElement::registry(const Document& document)
+CustomElementRegistry* CustomElement::registry(const Document& document)
 {
     if (LocalDOMWindow* window = document.executingWindow())
         return window->customElements();
@@ -93,7 +93,7 @@ bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName)
 
 static CustomElementDefinition* definitionForName(const Document& document, const QualifiedName& name)
 {
-    if (CustomElementsRegistry* registry = CustomElement::registry(document))
+    if (CustomElementRegistry* registry = CustomElement::registry(document))
         return registry->definitionForName(name.localName());
     return nullptr;
 }
@@ -238,7 +238,7 @@ void CustomElement::tryToUpgrade(Element* element)
 
     DCHECK_EQ(element->getCustomElementState(), CustomElementState::Undefined);
 
-    CustomElementsRegistry* registry = CustomElement::registry(*element);
+    CustomElementRegistry* registry = CustomElement::registry(*element);
     if (!registry)
         return;
     if (CustomElementDefinition* definition = registry->definitionForName(element->localName()))

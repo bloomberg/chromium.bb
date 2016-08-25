@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
-#include "bindings/core/v8/V8CustomElementsRegistry.h"
+#include "bindings/core/v8/V8CustomElementRegistry.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -24,9 +24,9 @@ namespace blink {
 
 // Retrieves the custom elements constructor -> name map, creating it
 // if necessary. The same map is used to keep prototypes alive.
-static v8::Local<v8::Map> ensureCustomElementsRegistryMap(
+static v8::Local<v8::Map> ensureCustomElementRegistryMap(
     ScriptState* scriptState,
-    CustomElementsRegistry* registry)
+    CustomElementRegistry* registry)
 {
     CHECK(scriptState->world().isMainWorld());
     v8::Local<v8::String> name = V8HiddenValue::customElementsRegistryMap(
@@ -44,11 +44,11 @@ static v8::Local<v8::Map> ensureCustomElementsRegistryMap(
 
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
     ScriptState* scriptState,
-    CustomElementsRegistry* registry,
+    CustomElementRegistry* registry,
     const v8::Local<v8::Value>& constructor)
 {
     v8::Local<v8::Map> map =
-        ensureCustomElementsRegistryMap(scriptState, registry);
+        ensureCustomElementRegistryMap(scriptState, registry);
     v8::Local<v8::Value> nameValue = map->Get(scriptState->context(), constructor).ToLocalChecked();
     if (!nameValue->IsString())
         return nullptr;
@@ -64,12 +64,12 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
     //    Audit the use of V8HiddenValue/hidden values in general and
     //    how the map is handled--it should never be leaked to script.
     //
-    // 2. CustomElementsRegistry does not overwrite definitions with a
-    //    given name--see the CHECK in CustomElementsRegistry::define
+    // 2. CustomElementRegistry does not overwrite definitions with a
+    //    given name--see the CHECK in CustomElementRegistry::define
     //    --and adds ScriptCustomElementDefinitions to the map without
     //    fail.
     //
-    // 3. The relationship between the CustomElementsRegistry and its
+    // 3. The relationship between the CustomElementRegistry and its
     //    map is never mixed up; this is guaranteed by the bindings
     //    system which provides a stable wrapper, and the map hangs
     //    off the wrapper.
@@ -100,7 +100,7 @@ static void keepAlive(v8::Local<v8::Array>& array, uint32_t index,
 
 ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     ScriptState* scriptState,
-    CustomElementsRegistry* registry,
+    CustomElementRegistry* registry,
     const CustomElementDescriptor& descriptor,
     const v8::Local<v8::Object>& constructor,
     const v8::Local<v8::Object>& prototype,
@@ -126,7 +126,7 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::create(
     v8::Local<v8::Value> nameValue =
         v8String(scriptState->isolate(), descriptor.name());
     v8::Local<v8::Map> map =
-        ensureCustomElementsRegistryMap(scriptState, registry);
+        ensureCustomElementRegistryMap(scriptState, registry);
     map->Set(scriptState->context(), constructor, nameValue).ToLocalChecked();
     definition->m_constructor.setPhantom();
 

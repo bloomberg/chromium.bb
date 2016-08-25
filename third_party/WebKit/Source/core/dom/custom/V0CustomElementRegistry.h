@@ -42,7 +42,7 @@
 
 namespace blink {
 
-class CustomElementsRegistry;
+class CustomElementRegistry;
 class ExceptionState;
 class V0CustomElementConstructorBuilder;
 
@@ -62,7 +62,7 @@ protected:
     V0CustomElementDefinition* find(const V0CustomElementDescriptor&) const;
 
     bool nameIsDefined(const AtomicString& name) const;
-    void setV1(const CustomElementsRegistry*);
+    void setV1(const CustomElementRegistry*);
 
 private:
     bool v1NameIsDefined(const AtomicString& name) const;
@@ -70,7 +70,7 @@ private:
     typedef HeapHashMap<V0CustomElementDescriptor, Member<V0CustomElementDefinition>> DefinitionMap;
     DefinitionMap m_definitions;
     HashSet<AtomicString> m_registeredTypeNames;
-    Member<const CustomElementsRegistry> m_v1;
+    Member<const CustomElementRegistry> m_v1;
     bool m_documentWasDetached;
 };
 

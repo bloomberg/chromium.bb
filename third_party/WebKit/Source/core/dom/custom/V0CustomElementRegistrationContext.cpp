@@ -158,7 +158,7 @@ bool V0CustomElementRegistrationContext::nameIsDefined(const AtomicString& name)
     return m_registry.nameIsDefined(name);
 }
 
-void V0CustomElementRegistrationContext::setV1(const CustomElementsRegistry* v1)
+void V0CustomElementRegistrationContext::setV1(const CustomElementRegistry* v1)
 {
     m_registry.setV1(v1);
 }

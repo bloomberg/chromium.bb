@@ -915,7 +915,7 @@ interface CryptoKey
     getter type
     getter usages
     method constructor
-interface CustomElementsRegistry
+interface CustomElementRegistry
     attribute @@toStringTag
     method constructor
     method define

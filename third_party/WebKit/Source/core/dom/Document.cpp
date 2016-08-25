@@ -107,7 +107,7 @@
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -463,7 +463,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
         FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
 
-        CustomElementsRegistry* registry = m_frame->localDOMWindow()
+        CustomElementRegistry* registry = m_frame->localDOMWindow()
             ? m_frame->localDOMWindow()->maybeCustomElements()
             : nullptr;
         if (registry && m_registrationContext)

@@ -13,13 +13,13 @@ namespace blink {
 
 class CustomElementDefinition;
 class CustomElementDescriptor;
-class CustomElementsRegistry;
+class CustomElementRegistry;
 class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
 // Implement CustomElementDefinitionBuilder to provide
-// technology-specific steps for CustomElementsRegistry.define.
+// technology-specific steps for CustomElementRegistry.define.
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-define
 class CORE_EXPORT CustomElementDefinitionBuilder {
     STACK_ALLOCATED();
@@ -28,7 +28,7 @@ public:
     CustomElementDefinitionBuilder() { }
 
     // This API necessarily sounds JavaScript specific; this implements
-    // some steps of the CustomElementsRegistry.define process, which
+    // some steps of the CustomElementRegistry.define process, which
     // are defined in terms of JavaScript.
 
     // Check the constructor is valid. Return false if processing

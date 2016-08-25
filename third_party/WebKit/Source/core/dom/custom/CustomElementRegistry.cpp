@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
@@ -39,12 +39,12 @@ static bool throwIfInvalidName(
 }
 
 
-class CustomElementsRegistry::NameIsBeingDefined final {
+class CustomElementRegistry::NameIsBeingDefined final {
     STACK_ALLOCATED();
     DISALLOW_IMPLICIT_CONSTRUCTORS(NameIsBeingDefined);
 public:
     NameIsBeingDefined(
-        CustomElementsRegistry* registry,
+        CustomElementRegistry* registry,
         const AtomicString& name)
         : m_registry(registry)
         , m_name(name)
@@ -59,14 +59,14 @@ public:
     }
 
 private:
-    Member<CustomElementsRegistry> m_registry;
+    Member<CustomElementRegistry> m_registry;
     const AtomicString& m_name;
 };
 
-CustomElementsRegistry* CustomElementsRegistry::create(
+CustomElementRegistry* CustomElementRegistry::create(
     const LocalDOMWindow* owner)
 {
-    CustomElementsRegistry* registry = new CustomElementsRegistry(owner);
+    CustomElementRegistry* registry = new CustomElementRegistry(owner);
     Document* document = owner->document();
     if (V0CustomElementRegistrationContext* v0 =
         document ? document->registrationContext() : nullptr)
@@ -74,14 +74,14 @@ CustomElementsRegistry* CustomElementsRegistry::create(
     return registry;
 }
 
-CustomElementsRegistry::CustomElementsRegistry(const LocalDOMWindow* owner)
+CustomElementRegistry::CustomElementRegistry(const LocalDOMWindow* owner)
     : m_owner(owner)
     , m_v0 (new V0RegistrySet())
     , m_upgradeCandidates(new UpgradeCandidateMap())
 {
 }
 
-DEFINE_TRACE(CustomElementsRegistry)
+DEFINE_TRACE(CustomElementRegistry)
 {
     visitor->trace(m_definitions);
     visitor->trace(m_owner);
@@ -90,7 +90,7 @@ DEFINE_TRACE(CustomElementsRegistry)
     visitor->trace(m_whenDefinedPromiseMap);
 }
 
-void CustomElementsRegistry::define(
+void CustomElementRegistry::define(
     ScriptState* scriptState,
     const AtomicString& name,
     const ScriptValue& constructor,
@@ -106,7 +106,7 @@ void CustomElementsRegistry::define(
 }
 
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
-void CustomElementsRegistry::define(
+void CustomElementRegistry::define(
     const AtomicString& name,
     CustomElementDefinitionBuilder& builder,
     const ElementRegistrationOptions& options,
@@ -183,7 +183,7 @@ void CustomElementsRegistry::define(
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
-ScriptValue CustomElementsRegistry::get(const AtomicString& name)
+ScriptValue CustomElementRegistry::get(const AtomicString& name)
 {
     CustomElementDefinition* definition = definitionForName(name);
     if (!definition) {
@@ -194,7 +194,7 @@ ScriptValue CustomElementsRegistry::get(const AtomicString& name)
     return definition->getConstructorForScript();
 }
 
-CustomElementDefinition* CustomElementsRegistry::definitionFor(const CustomElementDescriptor& desc) const
+CustomElementDefinition* CustomElementRegistry::definitionFor(const CustomElementDescriptor& desc) const
 {
     CustomElementDefinition* definition = definitionForName(desc.name());
     if (!definition)
@@ -206,18 +206,18 @@ CustomElementDefinition* CustomElementsRegistry::definitionFor(const CustomEleme
     return definition->descriptor() == desc ? definition : nullptr;
 }
 
-bool CustomElementsRegistry::nameIsDefined(const AtomicString& name) const
+bool CustomElementRegistry::nameIsDefined(const AtomicString& name) const
 {
     return m_definitions.contains(name);
 }
 
-void CustomElementsRegistry::entangle(V0CustomElementRegistrationContext* v0)
+void CustomElementRegistry::entangle(V0CustomElementRegistrationContext* v0)
 {
     m_v0->add(v0);
     v0->setV1(this);
 }
 
-bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name)
+bool CustomElementRegistry::v0NameIsDefined(const AtomicString& name)
 {
     for (const auto& v0 : *m_v0) {
         if (v0->nameIsDefined(name))
@@ -226,13 +226,13 @@ bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name)
     return false;
 }
 
-CustomElementDefinition* CustomElementsRegistry::definitionForName(
+CustomElementDefinition* CustomElementRegistry::definitionForName(
     const AtomicString& name) const
 {
     return m_definitions.get(name);
 }
 
-void CustomElementsRegistry::addCandidate(Element* candidate)
+void CustomElementRegistry::addCandidate(Element* candidate)
 {
     const AtomicString& name = candidate->localName();
     if (nameIsDefined(name) || v0NameIsDefined(name))
@@ -250,7 +250,7 @@ void CustomElementsRegistry::addCandidate(Element* candidate)
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
-ScriptPromise CustomElementsRegistry::whenDefined(
+ScriptPromise CustomElementRegistry::whenDefined(
     ScriptState* scriptState,
     const AtomicString& name,
     ExceptionState& exceptionState)
@@ -269,7 +269,7 @@ ScriptPromise CustomElementsRegistry::whenDefined(
     return newResolver->promise();
 }
 
-void CustomElementsRegistry::collectCandidates(
+void CustomElementRegistry::collectCandidates(
     const CustomElementDescriptor& desc,
     HeapVector<Member<Element>>* elements)
 {

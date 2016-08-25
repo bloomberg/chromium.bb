@@ -16,7 +16,7 @@
 namespace blink {
 
 class CustomElementDescriptor;
-class CustomElementsRegistry;
+class CustomElementRegistry;
 
 class CORE_EXPORT ScriptCustomElementDefinition final :
     public CustomElementDefinition {
@@ -24,12 +24,12 @@ class CORE_EXPORT ScriptCustomElementDefinition final :
 public:
     static ScriptCustomElementDefinition* forConstructor(
         ScriptState*,
-        CustomElementsRegistry*,
+        CustomElementRegistry*,
         const v8::Local<v8::Value>& constructor);
 
     static ScriptCustomElementDefinition* create(
         ScriptState*,
-        CustomElementsRegistry*,
+        CustomElementRegistry*,
         const CustomElementDescriptor&,
         const v8::Local<v8::Object>& constructor,
         const v8::Local<v8::Object>& prototype,

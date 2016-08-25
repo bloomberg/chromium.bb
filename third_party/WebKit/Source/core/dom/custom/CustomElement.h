@@ -24,11 +24,11 @@ class CustomElementRegistry;
 class CORE_EXPORT CustomElement {
     STATIC_ONLY(CustomElement);
 public:
-    // Retrieves the CustomElementsRegistry for Element, if any. This
+    // Retrieves the CustomElementRegistry for Element, if any. This
     // may be a different object for a given element over its lifetime
     // as it moves between documents.
-    static CustomElementsRegistry* registry(const Element&);
-    static CustomElementsRegistry* registry(const Document&);
+    static CustomElementRegistry* registry(const Element&);
+    static CustomElementRegistry* registry(const Document&);
 
     static CustomElementDefinition* definitionForElement(const Element*);
 

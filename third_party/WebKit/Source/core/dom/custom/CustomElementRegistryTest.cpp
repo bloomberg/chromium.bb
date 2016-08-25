@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class CustomElementsRegistryTest : public ::testing::Test {
+class CustomElementRegistryTest : public ::testing::Test {
 protected:
     void SetUp()
     {
@@ -39,7 +39,7 @@ protected:
 
     Document& document() { return m_page->document(); }
 
-    CustomElementsRegistry& registry()
+    CustomElementRegistry& registry()
     {
         return *m_page->frame().localDOMWindow()->customElements();
     }
@@ -69,7 +69,7 @@ private:
 };
 
 TEST_F(
-    CustomElementsRegistryTest,
+    CustomElementRegistryTest,
     collectCandidates_shouldNotIncludeElementsRemovedFromDocument)
 {
     Element* element = CreateElement("a-a").inDocument(&document());
@@ -88,7 +88,7 @@ TEST_F(
 }
 
 TEST_F(
-    CustomElementsRegistryTest,
+    CustomElementRegistryTest,
     collectCandidates_shouldNotIncludeElementsInDifferentDocument)
 {
     Element* element = CreateElement("a-a").inDocument(&document());
@@ -112,7 +112,7 @@ TEST_F(
 }
 
 TEST_F(
-    CustomElementsRegistryTest,
+    CustomElementRegistryTest,
     collectCandidates_shouldOnlyIncludeCandidatesMatchingDescriptor)
 {
     CustomElementDescriptor descriptor("hello-world", "hello-world");
@@ -144,7 +144,7 @@ TEST_F(
         << "the matching element should have been found";
 }
 
-TEST_F(CustomElementsRegistryTest, collectCandidates_oneCandidate)
+TEST_F(CustomElementRegistryTest, collectCandidates_oneCandidate)
 {
     Element* element = CreateElement("a-a").inDocument(&document());
     registry().addCandidate(element);
@@ -161,7 +161,7 @@ TEST_F(CustomElementsRegistryTest, collectCandidates_oneCandidate)
         << "the candidate should be the element that was added";
 }
 
-TEST_F(CustomElementsRegistryTest, collectCandidates_shouldBeInDocumentOrder)
+TEST_F(CustomElementRegistryTest, collectCandidates_shouldBeInDocumentOrder)
 {
     CreateElement factory = CreateElement("a-a");
     factory.inDocument(&document());
@@ -326,7 +326,7 @@ public:
     }
 };
 
-TEST_F(CustomElementsRegistryTest, define_upgradesInDocumentElements)
+TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 
@@ -373,7 +373,7 @@ TEST_F(CustomElementsRegistryTest, define_upgradesInDocumentElements)
         << "upgrade should not invoke other callbacks";
 }
 
-TEST_F(CustomElementsRegistryTest, attributeChangedCallback)
+TEST_F(CustomElementRegistryTest, attributeChangedCallback)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 
@@ -410,7 +410,7 @@ TEST_F(CustomElementsRegistryTest, attributeChangedCallback)
         << "upgrade should not invoke other callbacks";
 }
 
-TEST_F(CustomElementsRegistryTest, disconnectedCallback)
+TEST_F(CustomElementRegistryTest, disconnectedCallback)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 
@@ -442,7 +442,7 @@ TEST_F(CustomElementsRegistryTest, disconnectedCallback)
         << "remove() should not invoke other callbacks";
 }
 
-TEST_F(CustomElementsRegistryTest, adoptedCallback)
+TEST_F(CustomElementRegistryTest, adoptedCallback)
 {
     ScriptForbiddenScope doNotRelyOnScript;
 

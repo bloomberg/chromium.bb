@@ -88,7 +88,7 @@
 
     // Custom elements
     // http://w3c.github.io/webcomponents/spec/custom/#custom-elements-api
-    [RuntimeEnabled=CustomElementsV1, CallWith=ScriptState] readonly attribute CustomElementsRegistry customElements;
+    [RuntimeEnabled=CustomElementsV1, CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;
 
     // HTML obsolete features
     // https://html.spec.whatwg.org/#Window-partial

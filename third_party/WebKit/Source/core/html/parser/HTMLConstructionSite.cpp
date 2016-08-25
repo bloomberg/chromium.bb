@@ -42,7 +42,7 @@
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
+#include "core/dom/custom/CustomElementRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
@@ -767,8 +767,8 @@ CustomElementDefinition* HTMLConstructionSite::lookUpCustomElementDefinition(Doc
         return nullptr;
 
     // "3. Let registry be document's browsing context's Window's
-    // CustomElementsRegistry object."
-    CustomElementsRegistry* registry = window->maybeCustomElements();
+    // CustomElementRegistry object."
+    CustomElementRegistry* registry = window->maybeCustomElements();
     if (!registry)
         return nullptr;
 

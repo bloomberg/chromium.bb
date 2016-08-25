@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementsRegistry_h
-#define CustomElementsRegistry_h
+#ifndef CustomElementRegistry_h
+#define CustomElementRegistry_h
 
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -29,15 +29,15 @@ class ScriptState;
 class ScriptValue;
 class V0CustomElementRegistrationContext;
 
-class CORE_EXPORT CustomElementsRegistry final
-    : public GarbageCollectedFinalized<CustomElementsRegistry>
+class CORE_EXPORT CustomElementRegistry final
+    : public GarbageCollectedFinalized<CustomElementRegistry>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WTF_MAKE_NONCOPYABLE(CustomElementsRegistry);
+    WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
 public:
-    static CustomElementsRegistry* create(const LocalDOMWindow*);
+    static CustomElementRegistry* create(const LocalDOMWindow*);
 
-    virtual ~CustomElementsRegistry() = default;
+    virtual ~CustomElementRegistry() = default;
 
     void define(
         ScriptState*,
@@ -73,9 +73,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    friend class CustomElementsRegistryTest;
+    friend class CustomElementRegistryTest;
 
-    CustomElementsRegistry(const LocalDOMWindow*);
+    CustomElementRegistry(const LocalDOMWindow*);
 
     bool v0NameIsDefined(const AtomicString& name);
 
@@ -108,4 +108,4 @@ private:
 
 } // namespace blink
 
-#endif // CustomElementsRegistry_h
+#endif // CustomElementRegistry_h
