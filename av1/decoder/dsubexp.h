@@ -18,7 +18,13 @@
 extern "C" {
 #endif
 
-void av1_diff_update_prob(aom_reader *r, aom_prob *p);
+#if CONFIG_ACCOUNTING
+#define av1_diff_update_prob(r, p, str) av1_diff_update_prob_(r, p, str)
+#else
+#define av1_diff_update_prob(r, p, str) av1_diff_update_prob_(r, p)
+#endif
+
+void av1_diff_update_prob_(aom_reader *r, aom_prob *p ACCT_STR_PARAM);
 
 #ifdef __cplusplus
 }  // extern "C"

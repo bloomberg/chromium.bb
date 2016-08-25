@@ -87,6 +87,10 @@ AV1_COMMON_SRCS-yes += common/od_dering.h
 AV1_COMMON_SRCS-yes += common/dering.c
 AV1_COMMON_SRCS-yes += common/dering.h
 endif
+ifeq ($(CONFIG_ACCOUNTING),yes)
+AV1_COMMON_SRCS-yes += common/accounting.h
+AV1_COMMON_SRCS-yes += common/accounting.c
+endif
 AV1_COMMON_SRCS-yes += common/odintrin.c
 AV1_COMMON_SRCS-yes += common/odintrin.h
 

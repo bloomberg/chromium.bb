@@ -22,6 +22,9 @@
 #include "av1/common/thread_common.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/decoder/dthread.h"
+#if CONFIG_ACCOUNTING
+#include "av1/common/accounting.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +87,9 @@ typedef struct AV1Decoder {
   int inv_tile_order;
   int need_resync;   // wait for key/intra-only frame.
   int hold_ref_buf;  // hold the reference buffer.
+#if CONFIG_ACCOUNTING
+  Accounting accounting;
+#endif
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,

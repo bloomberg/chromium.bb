@@ -53,6 +53,7 @@ Advanced options:
   ${toggle_temporal_denoising}    enable temporal denoising and disable the spatial denoiser
   ${toggle_webm_io}               enable input from and output to WebM container
   ${toggle_libyuv}                enable libyuv
+  ${toggle_accounting}            enable bit accounting
 
 Codecs:
   Codecs can be selectively enabled or disabled individually, or by family:
@@ -310,6 +311,7 @@ CONFIG_LIST="
     unit_tests
     webm_io
     libyuv
+    accounting
     decode_perf_tests
     encode_perf_tests
     multi_res_encoding
@@ -366,6 +368,7 @@ CMDLINE_SELECT="
     unit_tests
     webm_io
     libyuv
+    accounting
     decode_perf_tests
     encode_perf_tests
     multi_res_encoding

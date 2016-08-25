@@ -53,6 +53,7 @@
 #include "av1/decoder/dsubexp.h"
 
 #define MAX_AV1_HEADER_SIZE 80
+#define ACCT_STR __func__
 
 static int is_compound_reference_allowed(const AV1_COMMON *cm) {
   int i;
@@ -105,8 +106,8 @@ static TX_MODE read_tx_mode(struct aom_read_bit_buffer *rb) {
 }
 #else
 static TX_MODE read_tx_mode(aom_reader *r) {
-  TX_MODE tx_mode = aom_read_literal(r, 2);
-  if (tx_mode == ALLOW_32X32) tx_mode += aom_read_bit(r);
+  TX_MODE tx_mode = aom_read_literal(r, 2, ACCT_STR);
+  if (tx_mode == ALLOW_32X32) tx_mode += aom_read_bit(r, ACCT_STR);
   return tx_mode;
 }
 #endif
@@ -116,22 +117,22 @@ static void read_tx_mode_probs(struct tx_probs *tx_probs, aom_reader *r) {
 
   for (i = 0; i < TX_SIZE_CONTEXTS; ++i)
     for (j = TX_4X4; j < TX_SIZES - 3; ++j)
-      av1_diff_update_prob(r, &tx_probs->p8x8[i][j]);
+      av1_diff_update_prob(r, &tx_probs->p8x8[i][j], ACCT_STR);
 
   for (i = 0; i < TX_SIZE_CONTEXTS; ++i)
     for (j = TX_4X4; j < TX_SIZES - 2; ++j)
-      av1_diff_update_prob(r, &tx_probs->p16x16[i][j]);
+      av1_diff_update_prob(r, &tx_probs->p16x16[i][j], ACCT_STR);
 
   for (i = 0; i < TX_SIZE_CONTEXTS; ++i)
     for (j = TX_4X4; j < TX_SIZES - 1; ++j)
-      av1_diff_update_prob(r, &tx_probs->p32x32[i][j]);
+      av1_diff_update_prob(r, &tx_probs->p32x32[i][j], ACCT_STR);
 }
 
 static void read_switchable_interp_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j;
   for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j) {
     for (i = 0; i < SWITCHABLE_FILTERS - 1; ++i)
-      av1_diff_update_prob(r, &fc->switchable_interp_prob[j][i]);
+      av1_diff_update_prob(r, &fc->switchable_interp_prob[j][i], ACCT_STR);
 #if CONFIG_DAALA_EC
     av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
                     fc->switchable_interp_cdf[j]);
@@ -143,18 +144,18 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i;
 #if CONFIG_REF_MV
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->newmv_prob[i]);
+    av1_diff_update_prob(r, &fc->newmv_prob[i], ACCT_STR);
   for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->zeromv_prob[i]);
+    av1_diff_update_prob(r, &fc->zeromv_prob[i], ACCT_STR);
   for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->refmv_prob[i]);
+    av1_diff_update_prob(r, &fc->refmv_prob[i], ACCT_STR);
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->drl_prob[i]);
+    av1_diff_update_prob(r, &fc->drl_prob[i], ACCT_STR);
 #else
   int j;
   for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
     for (j = 0; j < INTER_MODES - 1; ++j)
-      av1_diff_update_prob(r, &fc->inter_mode_probs[i][j]);
+      av1_diff_update_prob(r, &fc->inter_mode_probs[i][j], ACCT_STR);
 #endif
 }
 
@@ -173,8 +174,9 @@ static REFERENCE_MODE read_frame_reference_mode(
 static REFERENCE_MODE read_frame_reference_mode(const AV1_COMMON *cm,
                                                 aom_reader *r) {
   if (is_compound_reference_allowed(cm)) {
-    return aom_read_bit(r)
-               ? (aom_read_bit(r) ? REFERENCE_MODE_SELECT : COMPOUND_REFERENCE)
+    return aom_read_bit(r, ACCT_STR)
+               ? (aom_read_bit(r, ACCT_STR) ? REFERENCE_MODE_SELECT
+                                            : COMPOUND_REFERENCE)
                : SINGLE_REFERENCE;
   } else {
     return SINGLE_REFERENCE;
@@ -188,24 +190,23 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
 
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i)
-      av1_diff_update_prob(r, &fc->comp_inter_prob[i]);
+      av1_diff_update_prob(r, &fc->comp_inter_prob[i], ACCT_STR);
 
   if (cm->reference_mode != COMPOUND_REFERENCE)
     for (i = 0; i < REF_CONTEXTS; ++i)
       for (j = 0; j < (SINGLE_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->single_ref_prob[i][j]);
+        av1_diff_update_prob(r, &fc->single_ref_prob[i][j], ACCT_STR);
 
   if (cm->reference_mode != SINGLE_REFERENCE)
 #if CONFIG_EXT_REFS
     for (i = 0; i < REF_CONTEXTS; ++i) {
       for (j = 0; j < (FWD_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->comp_fwdref_prob[i][j]);
-      for (j = 0; j < (BWD_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->comp_bwdref_prob[i][j]);
+        av1_diff_update_prob(r, &fc->comp_fwdref_prob[i][j], ACCT_STR);
+      for (j = 0; j < (BWD_REFS - 1); ++j) (r, &fc->comp_bwdref_prob[i][j]);
     }
 #else
     for (i = 0; i < REF_CONTEXTS; ++i)
-      av1_diff_update_prob(r, &fc->comp_ref_prob[i]);
+      av1_diff_update_prob(r, &fc->comp_ref_prob[i], ACCT_STR);
 #endif  // CONFIG_EXT_REFS
 }
 
@@ -213,9 +214,10 @@ static void update_mv_probs(aom_prob *p, int n, aom_reader *r) {
   int i;
   for (i = 0; i < n; ++i)
 #if CONFIG_MISC_FIXES
-    av1_diff_update_prob(r, &p[i]);
+    av1_diff_update_prob(r, &p[i], ACCT_STR);
 #else
-    if (aom_read(r, MV_UPDATE_PROB)) p[i] = (aom_read_literal(r, 7) << 1) | 1;
+    if (aom_read(r, MV_UPDATE_PROB, ACCT_STR))
+      p[i] = (aom_read_literal(r, 7, ACCT_STR) << 1) | 1;
 #endif
 }
 
@@ -469,6 +471,9 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
 
+#if CONFIG_ACCOUNTING
+  aom_accounting_set_context(&pbi->accounting, mi_col, mi_row);
+#endif
   MB_MODE_INFO *mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis,
                                    y_mis, bwl, bhl);
 
@@ -599,14 +604,14 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (has_rows && has_cols)
 #if CONFIG_DAALA_EC
     p = (PARTITION_TYPE)aom_read_symbol(r, cm->fc->partition_cdf[ctx],
-                                        PARTITION_TYPES);
+                                        PARTITION_TYPES, ACCT_STR);
 #else
-    p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs);
+    p = (PARTITION_TYPE)aom_read_tree(r, av1_partition_tree, probs, ACCT_STR);
 #endif
   else if (!has_rows && has_cols)
-    p = aom_read(r, probs[1]) ? PARTITION_SPLIT : PARTITION_HORZ;
+    p = aom_read(r, probs[1], ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
   else if (has_rows && !has_cols)
-    p = aom_read(r, probs[2]) ? PARTITION_SPLIT : PARTITION_VERT;
+    p = aom_read(r, probs[2], ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
   else
     p = PARTITION_SPLIT;
 
@@ -705,13 +710,13 @@ static void read_coef_probs_common(av1_coeff_probs_model *coef_probs,
                                    aom_reader *r) {
   int i, j, k, l, m;
 
-  if (aom_read_bit(r))
+  if (aom_read_bit(r, ACCT_STR))
     for (i = 0; i < PLANE_TYPES; ++i)
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
           for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l)
             for (m = 0; m < UNCONSTRAINED_NODES; ++m)
-              av1_diff_update_prob(r, &coef_probs[i][j][k][l][m]);
+              av1_diff_update_prob(r, &coef_probs[i][j][k][l][m], ACCT_STR);
 }
 
 static void read_coef_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r) {
@@ -1266,7 +1271,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         aom_memalign(32, tile_cols * tile_rows * (sizeof(*pbi->tile_data))));
     pbi->total_tiles = tile_rows * tile_cols;
   }
-
+#if CONFIG_ACCOUNTING
+  aom_accounting_reset(&pbi->accounting);
+#endif
   // Load all tile information into tile_data.
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
@@ -1284,6 +1291,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       setup_token_decoder(buf->data, data_end, buf->size, &cm->error,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
+#if CONFIG_ACCOUNTING
+      tile_data->bit_reader.accounting = &pbi->accounting;
+#endif
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
 #if CONFIG_PALETTE
       tile_data->xd.plane[0].color_index_map = tile_data->color_index_map[0];
@@ -1301,6 +1311,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         const int col =
             pbi->inv_tile_order ? tile_cols - tile_col - 1 : tile_col;
         tile_data = pbi->tile_data + tile_cols * tile_row + col;
+#if CONFIG_ACCOUNTING
+        tile_data->bit_reader.accounting->last_tell_frac =
+            aom_reader_tell_frac(&tile_data->bit_reader);
+#endif
         av1_tile_set_col(&tile, tile_data->cm, col);
         av1_zero(tile_data->xd.left_context);
         av1_zero(tile_data->xd.left_seg_context);
@@ -1341,6 +1355,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         av1_frameworker_broadcast(pbi->cur_buf, mi_row << MAX_MIB_SIZE_LOG2);
     }
   }
+
+#if CONFIG_ACCOUNTING
+// aom_accounting_dump(&pbi->accounting);
+#endif
 
   // Loopfilter remaining rows in the frame.
   if (cm->lf.filter_level && !cm->skip_loop_filter) {
@@ -1956,11 +1974,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
 static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j, k;
-  if (aom_read(r, GROUP_DIFF_UPDATE_PROB)) {
+  if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
     for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
       for (j = 0; j < TX_TYPES; ++j) {
         for (k = 0; k < TX_TYPES - 1; ++k)
-          av1_diff_update_prob(r, &fc->intra_ext_tx_prob[i][j][k]);
+          av1_diff_update_prob(r, &fc->intra_ext_tx_prob[i][j][k], ACCT_STR);
 #if CONFIG_DAALA_EC
         av1_tree_to_cdf(av1_ext_tx_tree, fc->intra_ext_tx_prob[i][j],
                         fc->intra_ext_tx_cdf[i][j]);
@@ -1968,10 +1986,10 @@ static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
       }
     }
   }
-  if (aom_read(r, GROUP_DIFF_UPDATE_PROB)) {
+  if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
     for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
       for (k = 0; k < TX_TYPES - 1; ++k)
-        av1_diff_update_prob(r, &fc->inter_ext_tx_prob[i][k]);
+        av1_diff_update_prob(r, &fc->inter_ext_tx_prob[i][k], ACCT_STR);
 #if CONFIG_DAALA_EC
       av1_tree_to_cdf(av1_ext_tx_tree, fc->inter_ext_tx_prob[i],
                       fc->inter_ext_tx_cdf[i]);
@@ -2002,16 +2020,16 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   read_coef_probs(fc, cm->tx_mode, &r);
 
   for (k = 0; k < SKIP_CONTEXTS; ++k)
-    av1_diff_update_prob(&r, &fc->skip_probs[k]);
+    av1_diff_update_prob(&r, &fc->skip_probs[k], ACCT_STR);
 
 #if CONFIG_MISC_FIXES
   if (cm->seg.enabled && cm->seg.update_map) {
     if (cm->seg.temporal_update) {
       for (k = 0; k < PREDICTION_PROBS; k++)
-        av1_diff_update_prob(&r, &cm->fc->seg.pred_probs[k]);
+        av1_diff_update_prob(&r, &cm->fc->seg.pred_probs[k], ACCT_STR);
     }
     for (k = 0; k < MAX_SEGMENTS - 1; k++)
-      av1_diff_update_prob(&r, &cm->fc->seg.tree_probs[k]);
+      av1_diff_update_prob(&r, &cm->fc->seg.tree_probs[k], ACCT_STR);
 #if CONFIG_DAALA_EC
     av1_tree_to_cdf(av1_segment_tree, cm->fc->seg.tree_probs,
                     cm->fc->seg.tree_cdf);
@@ -2020,11 +2038,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   for (j = 0; j < INTRA_MODES; j++)
     for (i = 0; i < INTRA_MODES - 1; ++i)
-      av1_diff_update_prob(&r, &fc->uv_mode_prob[j][i]);
+      av1_diff_update_prob(&r, &fc->uv_mode_prob[j][i], ACCT_STR);
 
   for (j = 0; j < PARTITION_CONTEXTS; ++j) {
     for (i = 0; i < PARTITION_TYPES - 1; ++i)
-      av1_diff_update_prob(&r, &fc->partition_prob[j][i]);
+      av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
 #if CONFIG_DAALA_EC
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[j],
                     fc->partition_cdf[j]);
@@ -2038,7 +2056,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     for (k = 0; k < INTRA_MODES; k++)
       for (j = 0; j < INTRA_MODES; j++)
         for (i = 0; i < INTRA_MODES - 1; ++i)
-          av1_diff_update_prob(&r, &cm->kf_y_prob[k][j][i]);
+          av1_diff_update_prob(&r, &cm->kf_y_prob[k][j][i], ACCT_STR);
 #endif
   } else {
 #if !CONFIG_REF_MV
@@ -2050,14 +2068,14 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     for (j = 0; j < BLOCK_SIZES; ++j)
       if (is_motion_variation_allowed_bsize(j)) {
         for (i = 0; i < MOTION_MODES - 1; ++i)
-          av1_diff_update_prob(&r, &fc->motion_mode_prob[j][i]);
+          av1_diff_update_prob(&r, &fc->motion_mode_prob[j][i], ACCT_STR);
       }
 #endif  // CONFIG_MOTION_VAR
 
     if (cm->interp_filter == SWITCHABLE) read_switchable_interp_probs(fc, &r);
 
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
-      av1_diff_update_prob(&r, &fc->intra_inter_prob[i]);
+      av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
 
 #if !CONFIG_MISC_FIXES
     cm->reference_mode = read_frame_reference_mode(cm, &r);
@@ -2068,12 +2086,12 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
     for (j = 0; j < BLOCK_SIZE_GROUPS; j++)
       for (i = 0; i < INTRA_MODES - 1; ++i)
-        av1_diff_update_prob(&r, &fc->y_mode_prob[j][i]);
+        av1_diff_update_prob(&r, &fc->y_mode_prob[j][i], ACCT_STR);
 
 #if !CONFIG_MISC_FIXES
     for (j = 0; j < PARTITION_CONTEXTS; ++j) {
       for (i = 0; i < PARTITION_TYPES - 1; ++i)
-        av1_diff_update_prob(&r, &fc->partition_prob[j][i]);
+        av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
 #if CONFIG_DAALA_EC
       av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[j],
                       fc->partition_cdf[j]);
