@@ -1,35 +1,14 @@
-<html>
-<head>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<input id="sample" value="foo bar">
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
+    test(() => {
+        var sample = document.getElementById('sample');
+        sample.focus();
+        document.execCommand('selectAll');
+        document.execCommand('delete');
+        assert_equals(sample.value, '');
+    }, 'document.execCommand works with INPUT');
 </script>
-
-<script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
-}
-</script>
-<script src="../editing.js"></script>
-</head>
-<body>
-<div>Bug 9358: REGRESSION: Assertion failure in HTMLInputElement::setValueFromRenderer (value == constrainValue(value)) when deleting all text</div>
-<div><a href="https://bugs.webkit.org/show_bug.cgi?id=9358">https://bugs.webkit.org/show_bug.cgi?id=9358</a></div>
-<div><br></div>
-<form>
-Assertion fails when all characters are deleted: <input type="text" id="t" value="X">
-</form>
-<script>
-document.getElementById("t").focus();
-document.execCommand("SelectAll");
-document.execCommand("Delete");
-</script>
-<div>SUCCESS if the test didn't crash and you see this message.</div>
-<script>
-if (window.testRunner) {
-    testRunner.notifyDone()
-}
-</script>
-<body>
-</html>
