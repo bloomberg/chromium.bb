@@ -910,6 +910,8 @@ component("base") {
     "trace_event/heap_profiler_type_name_deduplicator.h",
     "trace_event/java_heap_dump_provider_android.cc",
     "trace_event/java_heap_dump_provider_android.h",
+    "trace_event/malloc_dump_provider.cc",
+    "trace_event/malloc_dump_provider.h",
     "trace_event/memory_allocator_dump.cc",
     "trace_event/memory_allocator_dump.h",
     "trace_event/memory_allocator_dump_guid.cc",
@@ -954,8 +956,6 @@ component("base") {
     "trace_event/trace_sampling_thread.h",
     "trace_event/tracing_agent.cc",
     "trace_event/tracing_agent.h",
-    "trace_event/winheap_dump_provider_win.cc",
-    "trace_event/winheap_dump_provider_win.h",
     "tracked_objects.cc",
     "tracked_objects.h",
     "tracking_info.cc",
@@ -1082,8 +1082,6 @@ component("base") {
       "process/process_iterator_linux.cc",
       "process/process_metrics_linux.cc",
       "sys_info_linux.cc",
-      "trace_event/malloc_dump_provider.cc",
-      "trace_event/malloc_dump_provider.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 
@@ -1298,10 +1296,6 @@ component("base") {
 
   # Desktop Mac.
   if (is_mac) {
-    sources += [
-      "trace_event/malloc_dump_provider.cc",
-      "trace_event/malloc_dump_provider.h",
-    ]
     libs = [
       "ApplicationServices.framework",
       "AppKit.framework",
@@ -1332,11 +1326,6 @@ component("base") {
 
   # Linux.
   if (is_linux) {
-    sources += [
-      "trace_event/malloc_dump_provider.cc",
-      "trace_event/malloc_dump_provider.h",
-    ]
-
     if (is_asan || is_lsan || is_msan || is_tsan) {
       # For llvm-sanitizer.
       data += [ "//third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6" ]
@@ -1982,7 +1971,6 @@ test("base_unittests") {
     "trace_event/trace_event_synthetic_delay_unittest.cc",
     "trace_event/trace_event_system_stats_monitor_unittest.cc",
     "trace_event/trace_event_unittest.cc",
-    "trace_event/winheap_dump_provider_win_unittest.cc",
     "tracked_objects_unittest.cc",
     "tuple_unittest.cc",
     "values_unittest.cc",
