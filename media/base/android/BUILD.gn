@@ -53,23 +53,15 @@ if (is_android) {
 
   source_set("android") {
     sources = [
-      "access_unit_queue.cc",
-      "access_unit_queue.h",
       "android_cdm_factory.cc",
       "android_cdm_factory.h",
       "audio_decoder_job.cc",
       "audio_decoder_job.h",
-      "audio_media_codec_decoder.cc",
-      "audio_media_codec_decoder.h",
       "demuxer_android.h",
       "demuxer_stream_player_params.cc",
       "demuxer_stream_player_params.h",
       "media_client_android.cc",
       "media_client_android.h",
-      "media_codec_decoder.cc",
-      "media_codec_decoder.h",
-      "media_codec_player.cc",
-      "media_codec_player.h",
       "media_codec_util.cc",
       "media_codec_util.h",
       "media_decoder_job.cc",
@@ -95,8 +87,6 @@ if (is_android) {
       "media_source_player.h",
       "media_statistics.cc",
       "media_statistics.h",
-      "media_task_runner.cc",
-      "media_task_runner.h",
       "media_url_interceptor.h",
       "provision_fetcher.h",
       "sdk_media_codec_bridge.cc",
@@ -104,8 +94,6 @@ if (is_android) {
       "stream_texture_wrapper.h",
       "video_decoder_job.cc",
       "video_decoder_job.h",
-      "video_media_codec_decoder.cc",
-      "video_media_codec_decoder.h",
     ]
     configs += [
       "//media:media_config",
@@ -127,8 +115,6 @@ if (is_android) {
   source_set("unittests") {
     testonly = true
     sources = [
-      "access_unit_queue_unittest.cc",
-      "media_codec_decoder_unittest.cc",
       "media_drm_bridge_unittest.cc",
       "media_player_bridge_unittest.cc",
       "media_source_player_unittest.cc",
@@ -137,10 +123,6 @@ if (is_android) {
       "test_data_factory.h",
       "test_statistics.h",
     ]
-
-    if (proprietary_codecs) {
-      sources += [ "media_codec_player_unittest.cc" ]
-    }
 
     deps = [
       ":android",

@@ -23,9 +23,7 @@ MEDIA_EXPORT extern const char kDisableMediaSuspend[];
 MEDIA_EXPORT extern const char kReportVp9AsAnUnsupportedMimeType[];
 
 #if defined(OS_ANDROID)
-MEDIA_EXPORT extern const char kDisableMediaThreadForMediaPlayback[];
 MEDIA_EXPORT extern const char kDisableUnifiedMediaPipeline[];
-MEDIA_EXPORT extern const char kEnableMediaThreadForMediaPlayback[];
 #endif
 
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)

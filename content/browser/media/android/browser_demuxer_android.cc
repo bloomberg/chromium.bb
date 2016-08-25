@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "content/common/media/media_player_messages_android.h"
-#include "media/base/android/media_task_runner.h"
 #include "media/base/media_switches.h"
 
 namespace content {
@@ -55,15 +54,9 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
 };
 
 BrowserDemuxerAndroid::BrowserDemuxerAndroid()
-    : BrowserMessageFilter(MediaPlayerMsgStart) {
-  const bool use_media_thread = media::UseMediaThreadForMediaPlayback();
-  VLOG(1) << "Using " << (use_media_thread ? "media" : "UI") << " thread"
-          << " for MSE playback";
-  task_runner_ =
-      use_media_thread
-          ? media::GetMediaTaskRunner().get()
-          : BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get();
-}
+    : BrowserMessageFilter(MediaPlayerMsgStart),
+      task_runner_(
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get()) {}
 
 BrowserDemuxerAndroid::~BrowserDemuxerAndroid() {}
 
