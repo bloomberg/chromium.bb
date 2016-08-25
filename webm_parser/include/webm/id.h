@@ -98,7 +98,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{Void} element ID.
 
-   \WebMTable{Binary, g, No, No, No, , 0}
+   \WebMTable{Binary, g, No, No, No, , }
    */
   kVoid = 0xEC,
 
@@ -126,7 +126,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{SeekID} element ID.
 
-   \WebMTable{Binary, 3, Yes, No, No, , 0}
+   \WebMTable{Binary, 3, Yes, No, No, , }
    */
   kSeekId = 0x53AB,
 
@@ -210,7 +210,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{SimpleBlock} element ID.
 
-   \WebMTable{Binary, 2, No, Yes, No, , 0}
+   \WebMTable{Binary, 2, No, Yes, No, , }
    */
   kSimpleBlock = 0xA3,
 
@@ -224,14 +224,14 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{Block} element ID.
 
-   \WebMTable{Binary, 3, Yes, No, No, , 0}
+   \WebMTable{Binary, 3, Yes, No, No, , }
    */
   kBlock = 0xA1,
 
   /**
    \MatroskaID{BlockVirtual} (deprecated) element ID.
 
-   \WebMTable{Binary, 3, No, No, No, , 0}
+   \WebMTable{Binary, 3, No, No, No, , }
    */
   kBlockVirtual = 0xA2,
 
@@ -259,7 +259,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{BlockAdditional} element ID.
 
-   \WebMTable{Binary, 5, Yes, No, No, , 0}
+   \WebMTable{Binary, 5, Yes, No, No, , }
    */
   kBlockAdditional = 0xA5,
 
@@ -399,7 +399,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{CodecPrivate} element ID.
 
-   \WebMTable{Binary, 3, No, No, No, , 0}
+   \WebMTable{Binary, 3, No, No, No, , }
    */
   kCodecPrivate = 0x63A2,
 
@@ -791,7 +791,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{ContentEncKeyID} element ID.
 
-   \WebMTable{Binary, 6, No, No, No, , 0}
+   \WebMTable{Binary, 6, No, No, No, , }
    */
   kContentEncKeyId = 0x47E2,
 
@@ -1029,7 +1029,7 @@ enum class Id : std::uint32_t {
   /**
    \MatroskaID{TagBinary} element ID.
 
-   \WebMTable{Binary, 4, No, No, No, , 0}
+   \WebMTable{Binary, 4, No, No, No, , }
    */
   kTagBinary = 0x4485,
 };
