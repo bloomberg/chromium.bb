@@ -106,6 +106,17 @@ TEST_F(ScopedJavaRefTest, RefCounts) {
       EXPECT_EQ(2, g_local_refs);
     }
     EXPECT_EQ(1, g_local_refs);
+    {
+      ScopedJavaLocalRef<jstring> str4((ScopedJavaLocalRef<jstring>(str2)));
+      EXPECT_EQ(2, g_local_refs);
+    }
+    EXPECT_EQ(1, g_local_refs);
+    {
+      ScopedJavaLocalRef<jstring> str5;
+      str5 = ScopedJavaLocalRef<jstring>(str2);
+      EXPECT_EQ(2, g_local_refs);
+    }
+    EXPECT_EQ(1, g_local_refs);
     str2.Reset();
     EXPECT_EQ(0, g_local_refs);
     global_str.Reset();

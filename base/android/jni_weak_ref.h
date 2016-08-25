@@ -18,14 +18,18 @@ class BASE_EXPORT JavaObjectWeakGlobalRef {
  public:
   JavaObjectWeakGlobalRef();
   JavaObjectWeakGlobalRef(const JavaObjectWeakGlobalRef& orig);
+  JavaObjectWeakGlobalRef(JavaObjectWeakGlobalRef&& orig);
   JavaObjectWeakGlobalRef(JNIEnv* env, jobject obj);
+  JavaObjectWeakGlobalRef(JNIEnv* env,
+                          const base::android::JavaRef<jobject>& obj);
   virtual ~JavaObjectWeakGlobalRef();
 
   void operator=(const JavaObjectWeakGlobalRef& rhs);
+  void operator=(JavaObjectWeakGlobalRef&& rhs);
 
   base::android::ScopedJavaLocalRef<jobject> get(JNIEnv* env) const;
 
-  bool is_empty() const { return obj_ == NULL; }
+  bool is_empty() const { return obj_ == nullptr; }
 
   void reset();
 
