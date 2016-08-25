@@ -46,7 +46,8 @@ int GetSmartBubbleDismissalThreshold() {
   std::string param = variations::GetVariationParamValue(
       kSmartBubbleExperimentName, kSmartBubbleThresholdParam);
   int threshold = 0;
-  return base::StringToInt(param, &threshold) ? threshold : 0;
+  // 3 is the default magic number that proved to show the best result.
+  return base::StringToInt(param, &threshold) ? threshold : 3;
 }
 
 bool IsSmartLockUser(const sync_driver::SyncService* sync_service) {
