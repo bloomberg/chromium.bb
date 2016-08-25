@@ -95,7 +95,7 @@ const base::Feature kPushMessagingBackgroundMode{
 
 // Enables or disables the Material Design version of chrome://history.
 const base::Feature kMaterialDesignHistory{
-    "MaterialDesignHistory", base::FEATURE_ENABLED_BY_DEFAULT};
+    "MaterialDesignHistory", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Material Design version of chrome://settings.
 // Also affects chrome://help.
