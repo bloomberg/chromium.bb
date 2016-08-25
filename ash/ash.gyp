@@ -776,8 +776,6 @@
       'wm/session_state_animator_impl.h',
       'wm/stacking_controller.cc',
       'wm/stacking_controller.h',
-      'wm/stylus_metrics_recorder.cc',
-      'wm/stylus_metrics_recorder.h',
       'wm/system_background_controller.cc',
       'wm/system_background_controller.h',
       'wm/system_gesture_event_filter.cc',
@@ -1195,9 +1193,7 @@
             'touch/touchscreen_util.cc',
             'touch/touchscreen_util.h',
             'virtual_keyboard_controller.cc',
-            'virtual_keyboard_controller.h',
-            'wm/stylus_metrics_recorder.cc',
-            'wm/stylus_metrics_recorder.h'
+            'virtual_keyboard_controller.h'
           ],
         }],
       ],

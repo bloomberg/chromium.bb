@@ -140,8 +140,6 @@ component("ash") {
       "touch/touchscreen_util.h",
       "virtual_keyboard_controller.cc",
       "virtual_keyboard_controller.h",
-      "wm/stylus_metrics_recorder.cc",
-      "wm/stylus_metrics_recorder.h",
     ]
   }
 

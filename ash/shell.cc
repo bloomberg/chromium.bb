@@ -128,7 +128,6 @@
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/touch/touch_transformer_controller.h"
 #include "ash/virtual_keyboard_controller.h"
-#include "ash/wm/stylus_metrics_recorder.h"
 #include "base/bind_helpers.h"
 #include "base/sys_info.h"
 #include "chromeos/audio/audio_a11y_controller.h"
@@ -553,9 +552,6 @@ Shell::~Shell() {
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemovePreTargetHandler(mouse_cursor_filter_.get());
-#if defined(OS_CHROMEOS)
-  RemovePreTargetHandler(stylus_metrics_recorder_.get());
-#endif
   RemovePreTargetHandler(modality_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
@@ -644,7 +640,9 @@ Shell::~Shell() {
 
 #if defined(OS_CHROMEOS)
   touch_transformer_controller_.reset();
-  stylus_metrics_recorder_.reset();
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
   audio_a11y_controller_.reset();
 #endif  // defined(OS_CHROMEOS)
 
@@ -865,14 +863,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   screenshot_controller_.reset(new ScreenshotController());
   mouse_cursor_filter_.reset(new MouseCursorEventFilter());
   PrependPreTargetHandler(mouse_cursor_filter_.get());
-
-#if defined(OS_CHROMEOS)
-  // |stylus_metrics_recorder| records stylus metrics for certain events.
-  // It does not handle/consume any events, so prepend it as a pre-target hander
-  // before events are consumed elsewhere.
-  stylus_metrics_recorder_.reset(new StylusMetricsRecorder());
-  PrependPreTargetHandler(stylus_metrics_recorder_.get());
-#endif
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
