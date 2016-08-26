@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -26,6 +26,10 @@ Browser* GetBrowser() {
       ProfileManager::GetActiveUserProfile());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
+}
+
+void RecordInteractionWithChooser(bool has_null_handler) {
+  UMA_HISTOGRAM_BOOLEAN("Bluetooth.Web.ChooserInteraction", has_null_handler);
 }
 
 }  // namespace
@@ -78,6 +82,7 @@ base::string16 BluetoothChooserController::GetOption(size_t index) const {
 }
 
 void BluetoothChooserController::RefreshOptions() {
+  RecordInteractionWithChooser(event_handler_.is_null());
   if (event_handler_.is_null())
     return;
   ClearAllDevices();
@@ -89,10 +94,8 @@ base::string16 BluetoothChooserController::GetStatus() const {
 }
 
 void BluetoothChooserController::Select(size_t index) {
+  RecordInteractionWithChooser(event_handler_.is_null());
   if (event_handler_.is_null()) {
-    content::RecordRequestDeviceOutcome(
-        content::UMARequestDeviceOutcome::
-            BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID);
     return;
   }
   DCHECK_LT(index, devices_.size());
@@ -101,6 +104,7 @@ void BluetoothChooserController::Select(size_t index) {
 }
 
 void BluetoothChooserController::Cancel() {
+  RecordInteractionWithChooser(event_handler_.is_null());
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooser::Event::CANCELLED,
@@ -108,6 +112,7 @@ void BluetoothChooserController::Cancel() {
 }
 
 void BluetoothChooserController::Close() {
+  RecordInteractionWithChooser(event_handler_.is_null());
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooser::Event::CANCELLED,

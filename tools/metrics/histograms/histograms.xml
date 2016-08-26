@@ -4431,6 +4431,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.ChooserInteraction" enum="BooleanInvalid">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Counts how many times users interact with a regular chooser vs. an invalid
+    chooser. (A chooser is invalid when it's event handler becomes null.)
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.Web.ConnectGATT.Outcome"
     enum="WebBluetoothConnectGATTOutcome">
   <owner>jyasskin@chromium.org</owner>
@@ -70314,6 +70324,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanInForeground" type="int">
   <int value="0" label="Background"/>
   <int value="1" label="Foreground"/>
+</enum>
+
+<enum name="BooleanInvalid" type="int">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Invalid"/>
 </enum>
 
 <enum name="BooleanIsLastSharedAppInfoRetrieved" type="int">
