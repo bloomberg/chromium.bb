@@ -8851,8 +8851,9 @@
       'id': 341,
       'type': 'string',
       'schema' : { 'type': 'string' },
-      'tags': ['filtering'],
+      'tags': ['filtering', 'admin-sharing'],
       'supported_on': ['webview_android:54-'],
+      'future': True,
       'caption': '''Set an external source of URL restrictions''',
       'desc' : '''When this policy is set to a non-empty string the WebView will read URL restrictions from the content provider with the given authority name.''',
       'features': {
