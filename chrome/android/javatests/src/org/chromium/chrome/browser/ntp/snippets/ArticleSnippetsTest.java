@@ -332,5 +332,10 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void removeContextMenuCloseCallback(Callback<Menu> callback) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public void onLearnMoreClicked() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

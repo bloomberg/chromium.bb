@@ -23,7 +23,6 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
 
     private final int mMaxSnippetHeaderHeight;
     private final int mMaxPeekPadding;
-    private final TextView mHeaderTextView;
     private final NewTabPageRecyclerView mRecyclerView;
 
     private SectionHeader mHeaderListItem;
@@ -37,7 +36,6 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
         mMaxPeekPadding = itemView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
 
-        mHeaderTextView = (TextView) itemView.findViewById(R.id.suggestions_section_header);
         mRecyclerView = recyclerView;
         MarginResizer.createWithViewAdapter(itemView, config);
     }
@@ -45,7 +43,7 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     @Override
     public void onBindViewHolder(NewTabPageItem header) {
         mHeaderListItem = (SectionHeader) header;
-        mHeaderTextView.setText(mHeaderListItem.getHeaderText());
+        ((TextView) itemView).setText(mHeaderListItem.getHeaderText());
         updateDisplay(0, false);
     }
 

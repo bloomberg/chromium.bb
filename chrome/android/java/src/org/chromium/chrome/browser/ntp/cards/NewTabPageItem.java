@@ -65,6 +65,12 @@ public interface NewTabPageItem {
     public static final int VIEW_TYPE_ACTION = 7;
 
     /**
+     * View type for a {@link Footer}.
+     * @see Adapter#getItemViewType(int)
+     */
+    public static final int VIEW_TYPE_FOOTER = 8;
+
+    /**
       * Returns the type ({@link ViewType}) of this list item. This is so we can
       * distinguish between different elements that are held in a single RecyclerView holder.
       *

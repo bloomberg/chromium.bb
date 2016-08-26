@@ -258,6 +258,11 @@ public class NewTabPageView extends FrameLayout
          * called whenever a ContextMenu is closed.
          */
         void removeContextMenuCloseCallback(Callback<Menu> callback);
+
+        /**
+         * Handles clicks on the "learn more" link in the footer.
+         */
+        void onLearnMoreClicked();
     }
 
     /**

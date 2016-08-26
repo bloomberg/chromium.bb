@@ -246,7 +246,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     /**
      * Finds the view holder for the first header.
-     * @return The {@link ViewHolder} of the header, or null if it is not present.
+     * @return The {@code ViewHolder} of the header, or null if it is not present.
      */
     private SectionHeaderViewHolder findFirstHeader() {
         ViewHolder viewHolder =
@@ -258,7 +258,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     /**
      * Finds the view holder for the first card.
-     * @return The {@link ViewHolder} for the first card, or null if it is not present.
+     * @return The {@code ViewHolder} for the first card, or null if it is not present.
      */
     private CardViewHolder findFirstCard() {
         ViewHolder viewHolder =
@@ -269,21 +269,20 @@ public class NewTabPageRecyclerView extends RecyclerView {
     }
 
     /**
-     * Finds the view holder for the last content item: a card or status indicator.
-     * @return The {@link ViewHolder} of the last content item, or null if it is not present.
+     * Finds the view holder for the last content item: the footer.
+     * @return The {@code ViewHolder} of the last content item, or null if it is not present.
      */
     private ViewHolder findLastContentItem() {
         ViewHolder viewHolder = findViewHolderForAdapterPosition(
                 getNewTabPageAdapter().getLastContentItemPosition());
-        if (viewHolder instanceof CardViewHolder) return viewHolder;
-        if (viewHolder instanceof ProgressViewHolder) return viewHolder;
+        if (viewHolder instanceof Footer.ViewHolder) return viewHolder;
 
         return null;
     }
 
     /**
      * Finds the view holder for the bottom spacer.
-     * @return The {@link ViewHolder} of the bottom spacer, or null if it is not present.
+     * @return The {@code ViewHolder} of the bottom spacer, or null if it is not present.
      */
     private ViewHolder findBottomSpacer() {
         return findViewHolderForAdapterPosition(getNewTabPageAdapter().getBottomSpacerPosition());

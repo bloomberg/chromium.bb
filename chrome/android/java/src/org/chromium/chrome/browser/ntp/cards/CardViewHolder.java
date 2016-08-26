@@ -210,6 +210,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
     /**
      * Override this to provide a context menu for the card. This method will not be called if the
      * card is currently peeking.
+     * @param menu The menu to add menu items to.
      */
     protected void createContextMenu(ContextMenu menu) {}
 
@@ -291,6 +292,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
             case NewTabPageItem.VIEW_TYPE_HEADER:
             case NewTabPageItem.VIEW_TYPE_SPACING:
             case NewTabPageItem.VIEW_TYPE_PROGRESS:
+            case NewTabPageItem.VIEW_TYPE_FOOTER:
                 return false;
             default:
                 assert false;

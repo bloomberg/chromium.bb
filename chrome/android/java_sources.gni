@@ -546,6 +546,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/CardViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/DisplayStyleObserverAdapter.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/ItemGroup.java",
+  "java/src/org/chromium/chrome/browser/ntp/cards/Footer.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/MarginResizer.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageAdapter.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageItem.java",

@@ -59,6 +59,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      */
     private final List<ItemGroup> mGroups = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
+    private final Footer mFooter = new Footer();
     private final SpacingItem mBottomSpacer = new SpacingItem();
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
@@ -266,6 +267,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             return new ActionItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
         }
 
+        if (viewType == NewTabPageItem.VIEW_TYPE_FOOTER) {
+            return new Footer.ViewHolder(mRecyclerView, mNewTabPageManager);
+        }
+
         return null;
     }
 
@@ -299,10 +304,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public int getLastContentItemPosition() {
-        // TODO(mvanouwerkerk): Don't rely on getBottomSpacerPosition() here.
-        int bottomSpacerPosition = getBottomSpacerPosition();
-        if (bottomSpacerPosition == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
-        return bottomSpacerPosition - 1;
+        return getGroupPositionOffset(mFooter);
     }
 
     public int getBottomSpacerPosition() {
@@ -336,6 +338,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // TODO(treib,bauerb): Preserve the order of categories we got from getCategories.
         mGroups.addAll(mSections.values());
         if (!mSections.isEmpty()) {
+            mGroups.add(mFooter);
             mGroups.add(mBottomSpacer);
         }
 

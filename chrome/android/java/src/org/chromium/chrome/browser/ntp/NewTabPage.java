@@ -249,6 +249,14 @@ public class NewTabPage
             }
         }
 
+        @Override
+        public void onLearnMoreClicked() {
+            if (mIsDestroyed) return;
+            // TODO(mvanouwerkerk): UMA logging.
+            String url = "https://support.google.com/chrome/?p=new_tab";
+            openUrl(WindowOpenDisposition.CURRENT_TAB, url);
+        }
+
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private boolean switchToExistingTab(String url) {
             String matchPattern = CommandLine.getInstance().getSwitchValue(

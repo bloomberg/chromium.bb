@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2015 The Chromium Authors. All rights reserved.
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
@@ -7,8 +7,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textColor="@color/snippets_list_header_text_color"
+    android:textColor="@color/snippets_text_color"
     android:textSize="12sp"
-    android:paddingStart="@dimen/snippets_padding_and_peeking_card_height"
-    android:paddingTop="10dp"
-    android:gravity="start|center_vertical" />
+    android:textStyle="italic"
+    android:padding="12dp"
+    android:gravity="center" />
