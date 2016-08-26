@@ -29,6 +29,9 @@ ui::Window* CreateMusWindow(BrowserView* browser_view) {
   views::NativeWidgetMus::ConfigurePropertiesForNewWindow(
       GetWidgetParamsImpl(browser_view), &properties);
   const std::string chrome_app_id(extension_misc::kChromeAppId);
+  // Indicates mash shouldn't handle immersive, rather we will.
+  properties[ui::mojom::WindowManager::kDisableImmersive_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(true);
   properties[ui::mojom::WindowManager::kAppID_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(chrome_app_id);
   return views::WindowManagerConnection::Get()->NewWindow(properties);

@@ -36,7 +36,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   bool CanMinimize() const override { return true; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new ash::CustomFrameViewAsh(widget);
+    return new CustomFrameViewAsh(widget);
   }
 
  private:

@@ -246,5 +246,12 @@ bool ShouldRemoveStandardFrame(ui::Window* window) {
              ui::mojom::WindowManager::kRemoveStandardFrame_Property);
 }
 
+bool ShouldRenderParentTitleArea(ui::Window* window) {
+  return window->HasSharedProperty(
+             ui::mojom::WindowManager::kRendererParentTitleArea_Property) &&
+         window->GetSharedProperty<bool>(
+             ui::mojom::WindowManager::kRendererParentTitleArea_Property);
+}
+
 }  // namespace mus
 }  // namespace ash

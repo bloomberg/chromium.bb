@@ -20,6 +20,8 @@ namespace aura {
 class Window;
 }
 
+// See ash/mus/frame/README.md for description of how immersive mode works in
+// mash. This code works with both classic ash, and mash.
 class ImmersiveModeControllerAsh
     : public ImmersiveModeController,
       public ash::ImmersiveFullscreenControllerDelegate,
@@ -56,6 +58,13 @@ class ImmersiveModeControllerAsh
   // Updates whether the tab strip is painted in a short "light bar" style.
   // Returns true if the visibility of the tab indicators has changed.
   bool UpdateTabIndicators();
+
+  // Used when running in mash to create |mash_reveal_widget_|. Does nothing
+  // if already null.
+  void CreateMashRevealWidget();
+
+  // Destroys |mash_reveal_widget_| if valid, does nothing otherwise.
+  void DestroyMashRevealWidget();
 
   // ImmersiveFullscreenController::Delegate overrides:
   void OnImmersiveRevealStarted() override;
@@ -96,6 +105,10 @@ class ImmersiveModeControllerAsh
   // the top-of-window views are not revealed regardless of
   // |use_tab_indicators_|.
   double visible_fraction_;
+
+  // When running in mash a widget is created to draw the top container. This
+  // widget does not actually contain the top container, it just renders it.
+  std::unique_ptr<views::Widget> mash_reveal_widget_;
 
   content::NotificationRegistrar registrar_;
 

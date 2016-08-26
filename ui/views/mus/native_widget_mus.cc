@@ -1084,7 +1084,7 @@ void NativeWidgetMus::SetFullscreen(bool fullscreen) {
     return;
   if (fullscreen) {
     show_state_before_fullscreen_ = GetShowState(window_);
-    // TODO(markdittmer): Fullscreen not implemented in ui::Window.
+    SetShowState(ui::mojom::ShowState::FULLSCREEN);
   } else {
     switch (show_state_before_fullscreen_) {
       case ui::mojom::ShowState::MAXIMIZED:

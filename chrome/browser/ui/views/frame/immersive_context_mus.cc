@@ -1,0 +1,57 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
+
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/views/mus/window_manager_connection.h"
+
+ImmersiveContextMus::ImmersiveContextMus() {}
+
+ImmersiveContextMus::~ImmersiveContextMus() {}
+
+void ImmersiveContextMus::InstallResizeHandleWindowTargeter(
+    ash::ImmersiveFullscreenController* controller) {
+  // There shouldn't be a need to do anything here, the windowmanager takes care
+  // of this for us.
+}
+
+void ImmersiveContextMus::OnEnteringOrExitingImmersive(
+    ash::ImmersiveFullscreenController* controller,
+    bool entering) {
+  // TODO: see implementation in ImmersiveContextAsh, this needs to use mojo
+  // to poke some state in mash (shelf model, in immersive, shelf
+  // visibility...).
+  // http://crbug.com/640371.
+  NOTIMPLEMENTED();
+}
+
+gfx::Rect ImmersiveContextMus::GetDisplayBoundsInScreen(views::Widget* widget) {
+  return widget->GetWindowBoundsInScreen();
+}
+
+void ImmersiveContextMus::AddPointerWatcher(views::PointerWatcher* watcher,
+                                            bool wants_moves) {
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->AddPointerWatcher(watcher, wants_moves);
+}
+
+void ImmersiveContextMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->RemovePointerWatcher(watcher);
+}
+
+bool ImmersiveContextMus::DoesAnyWindowHaveCapture() {
+  return views::WindowManagerConnection::Get()->client()->GetCaptureWindow() !=
+         nullptr;
+}
+
+bool ImmersiveContextMus::IsMouseEventsEnabled() {
+  // TODO: http://crbug.com/640374.
+  NOTIMPLEMENTED();
+  return true;
+}

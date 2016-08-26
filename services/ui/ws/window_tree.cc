@@ -1292,8 +1292,10 @@ void WindowTree::AttachSurface(Id transport_window_id,
       GetWindowByClientId(ClientWindowId(transport_window_id));
   const bool success =
       window && access_policy_->CanSetWindowSurface(window, type);
-  if (!success)
+  if (!success) {
+    DVLOG(1) << "request to AttachSurface failed";
     return;
+  }
   window->CreateSurface(type, std::move(surface), std::move(client));
 }
 

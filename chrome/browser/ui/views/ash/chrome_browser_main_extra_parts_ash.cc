@@ -9,11 +9,14 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
+#include "chrome/browser/ui/views/frame/immersive_context_mus.h"
+#include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/env.h"
 #include "ui/keyboard/content/keyboard.h"
@@ -31,6 +34,11 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup())
     chrome::OpenAsh(gfx::kNullAcceleratedWidget);
+
+  if (chrome::IsRunningInMash()) {
+    immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
+    immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
+  }
 
 #if defined(OS_CHROMEOS)
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile

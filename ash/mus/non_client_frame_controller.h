@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "ash/mus/frame/detached_title_area_renderer_host.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "services/ui/public/cpp/window_observer.h"
@@ -14,10 +15,6 @@
 
 namespace gfx {
 class Insets;
-}
-
-namespace shell {
-class Connector;
 }
 
 namespace ui {
@@ -30,11 +27,11 @@ namespace mus {
 
 // Provides the non-client frame for mus Windows.
 class NonClientFrameController : public views::WidgetDelegateView,
-                                 public ui::WindowObserver {
+                                 public ui::WindowObserver,
+                                 public DetachedTitleAreaRendererHost {
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
-  static void Create(shell::Connector* connector,
-                     ui::Window* parent,
+  static void Create(ui::Window* parent,
                      ui::Window* window,
                      ui::WindowManagerClient* window_manager_client);
 
@@ -48,11 +45,14 @@ class NonClientFrameController : public views::WidgetDelegateView,
   ui::Window* window() { return window_; }
 
  private:
-  NonClientFrameController(shell::Connector* connector,
-                           ui::Window* parent,
+  NonClientFrameController(ui::Window* parent,
                            ui::Window* window,
                            ui::WindowManagerClient* window_manager_client);
   ~NonClientFrameController() override;
+
+  // DetachedTitleAreaRendererHost:
+  void OnDetachedTitleAreaRendererDestroyed(
+      DetachedTitleAreaRenderer* renderer) override;
 
   // views::WidgetDelegateView:
   base::string16 GetWindowTitle() const override;
@@ -64,6 +64,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
   views::ClientView* CreateClientView(views::Widget* widget) override;
 
   // ui::WindowObserver:
+  void OnTreeChanged(const TreeChangeParams& params) override;
   void OnWindowSharedPropertyChanged(
       ui::Window* window,
       const std::string& name,
@@ -79,6 +80,10 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.
   ui::Window* window_;
+
+  // Used if a child window is added that has the
+  // kRendererParentTitleArea_Property set.
+  DetachedTitleAreaRenderer* detached_title_area_renderer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };

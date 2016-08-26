@@ -46,7 +46,7 @@ void HeaderView::ResetWindowControls() {
 }
 
 int HeaderView::GetPreferredOnScreenHeight() const {
-  if (target_widget_->IsFullscreen()) {
+  if (is_immersive_delegate_ && target_widget_->IsFullscreen()) {
     return static_cast<int>(GetPreferredHeight() *
                             fullscreen_visible_fraction_);
   }

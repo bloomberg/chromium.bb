@@ -25,6 +25,10 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 interface WindowManager {
   // Whether the window is always on top. Type: bool.
   const string kAlwaysOnTop_Property = "prop:always_on_top";
+  // Disables the window manager from handling immersive fullscreen for the
+  // window. This is typically done if the client wants to handle immersive
+  // themselves. Type: bool.
+  const string kDisableImmersive_Property = "prop:disable_immersive";
   // Initial bounds to create the window at. If empty the WindowManager decides
   // the initial bounds.
   const string kInitialBounds_Property = "prop:initial_bounds";
@@ -32,6 +36,12 @@ interface WindowManager {
   const string kName_Property = "prop:name";
   // The window's preferred size as defined by its content. Type: gfx::Size.
   const string kPreferredSize_Property = "prop:preferred-size";
+  // If true the window manager renders the title area (including frame
+  // decorations) of the parent window in this window. This is only checked
+  // at the time the window is added to its parent, which must be a top level
+  // window (created by way of WindowTree::NewTopLevelWindow()). Type: bool.
+  const string kRendererParentTitleArea_Property =
+      "render-parent-non-client-area";
   // The window's resize behavior. Type: ResizeBehavior.
   const string kResizeBehavior_Property = "prop:resize-behavior";
   // Bounds the window is restored to. Type: gfx::Rect.

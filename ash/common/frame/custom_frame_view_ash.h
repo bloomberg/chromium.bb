@@ -21,6 +21,7 @@ namespace ash {
 class FrameCaptionButtonContainerView;
 class HeaderView;
 class ImmersiveFullscreenController;
+class ImmersiveFullscreenControllerDelegate;
 
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
@@ -33,7 +34,16 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit CustomFrameViewAsh(views::Widget* frame);
+  // |enable_immersive| controls whether ImmersiveFullscreenController is
+  // created for the CustomFrameViewAsh; if true and a WindowStateDelegate has
+  // not been set on the WindowState associated with |frame|, then an
+  // ImmersiveFullscreenController is created.
+  // If ImmersiveFullscreenControllerDelegate is not supplied, HeaderView is
+  // used as the ImmersiveFullscreenControllerDelegate.
+  explicit CustomFrameViewAsh(
+      views::Widget* frame,
+      ImmersiveFullscreenControllerDelegate* immersive_delegate = nullptr,
+      bool enable_immersive = true);
   ~CustomFrameViewAsh() override;
 
   // Inits |immersive_fullscreen_controller| so that the controller reveals
@@ -93,6 +103,8 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
   // View which contains the title and window controls.
   HeaderView* header_view_;
+
+  ImmersiveFullscreenControllerDelegate* immersive_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);
 };

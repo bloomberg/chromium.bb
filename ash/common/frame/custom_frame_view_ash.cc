@@ -44,15 +44,9 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
                                               public WmWindowObserver {
  public:
   CustomFrameViewAshWindowStateDelegate(wm::WindowState* window_state,
-                                        CustomFrameViewAsh* custom_frame_view)
+                                        CustomFrameViewAsh* custom_frame_view,
+                                        bool enable_immersive)
       : window_state_(nullptr) {
-    immersive_fullscreen_controller_ =
-        WmShell::Get()->CreateImmersiveFullscreenController();
-    if (immersive_fullscreen_controller_) {
-      custom_frame_view->InitImmersiveFullscreenControllerForView(
-          immersive_fullscreen_controller_.get());
-    }
-
     // Add a window state observer to exit fullscreen properly in case
     // fullscreen is exited without going through
     // WindowState::ToggleFullscreen(). This is the case when exiting
@@ -61,6 +55,16 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     window_state_ = window_state;
     window_state_->AddObserver(this);
     window_state_->window()->AddObserver(this);
+
+    if (!enable_immersive)
+      return;
+
+    immersive_fullscreen_controller_ =
+        WmShell::Get()->CreateImmersiveFullscreenController();
+    if (immersive_fullscreen_controller_) {
+      custom_frame_view->InitImmersiveFullscreenControllerForView(
+          immersive_fullscreen_controller_.get());
+    }
   }
   ~CustomFrameViewAshWindowStateDelegate() override {
     if (window_state_) {
@@ -179,8 +183,14 @@ bool CustomFrameViewAsh::OverlayView::DoesIntersectRect(
 // static
 const char CustomFrameViewAsh::kViewClassName[] = "CustomFrameViewAsh";
 
-CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
-    : frame_(frame), header_view_(new HeaderView(frame)) {
+CustomFrameViewAsh::CustomFrameViewAsh(
+    views::Widget* frame,
+    ImmersiveFullscreenControllerDelegate* immersive_delegate,
+    bool enable_immersive)
+    : frame_(frame),
+      header_view_(new HeaderView(frame)),
+      immersive_delegate_(immersive_delegate ? immersive_delegate
+                                             : header_view_) {
   WmWindow* frame_window = WmLookup::Get()->GetWindowForWidget(frame);
   frame_window->InstallResizeHandleWindowTargeter(nullptr);
   // |header_view_| is set as the non client view's overlay view so that it can
@@ -192,7 +202,8 @@ CustomFrameViewAsh::CustomFrameViewAsh(views::Widget* frame)
   wm::WindowState* window_state = frame_window->GetWindowState();
   if (!window_state->HasDelegate()) {
     window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
-        new CustomFrameViewAshWindowStateDelegate(window_state, this)));
+        new CustomFrameViewAshWindowStateDelegate(window_state, this,
+                                                  enable_immersive)));
   }
 }
 
@@ -200,7 +211,8 @@ CustomFrameViewAsh::~CustomFrameViewAsh() {}
 
 void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  immersive_fullscreen_controller->Init(header_view_, frame_, header_view_);
+  immersive_fullscreen_controller->Init(immersive_delegate_, frame_,
+                                        header_view_);
 }
 
 void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
@@ -313,9 +325,6 @@ void CustomFrameViewAsh::VisibilityChanged(views::View* starting_from,
   if (is_visible)
     header_view_->UpdateAvatarIcon();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// CustomFrameViewAsh, views::ViewTargeterDelegate overrides:
 
 views::View* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;

@@ -23,6 +23,7 @@
 #include "ash/common/wm_activation_observer.h"
 #include "ash/mus/accelerators/accelerator_controller_delegate_mus.h"
 #include "ash/mus/accelerators/accelerator_controller_registrar.h"
+#include "ash/mus/bridge/immersive_handler_factory_mus.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/container_ids.h"
@@ -126,6 +127,7 @@ WmShellMus::WmShellMus(
   SetAcceleratorController(base::MakeUnique<AcceleratorController>(
       accelerator_controller_delegate_.get(),
       accelerator_controller_registrar_.get()));
+  immersive_handler_factory_.reset(new ImmersiveHandlerFactoryMus);
 
   CreateMaximizeModeController();
 
@@ -345,8 +347,7 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
 
 std::unique_ptr<ImmersiveFullscreenController>
 WmShellMus::CreateImmersiveFullscreenController() {
-  // TODO(sky): port ImmersiveFullscreenController, http://crbug.com/548435.
-  return nullptr;
+  return base::MakeUnique<ImmersiveFullscreenController>();
 }
 
 void WmShellMus::OnOverviewModeStarting() {

@@ -150,10 +150,8 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
       mode_ == MODE_INACTIVE && !UsesCustomFrameColors()) {
     PaintHighlightForInactiveRestoredWindow(canvas);
   }
-  if (frame_->widget_delegate() &&
-      frame_->widget_delegate()->ShouldShowWindowTitle()) {
+  if (frame_->widget_delegate()->ShouldShowWindowTitle())
     PaintTitleBar(canvas);
-  }
   if (!UsesCustomFrameColors())
     PaintHeaderContentSeparator(canvas);
 }

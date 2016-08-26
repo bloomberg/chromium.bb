@@ -11,6 +11,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,7 +19,15 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
+#include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -54,6 +63,26 @@ class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
   std::unique_ptr<ash::ImmersiveRevealedLock> lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveRevealedLockAsh);
+};
+
+// TODO(sky): remove this, should instead create a layer that is clone of
+// existing layers. http://crbug.com/640378.
+class DelegatingPaintView : public views::View {
+ public:
+  explicit DelegatingPaintView(views::View* view) : view_(view) {}
+
+  ~DelegatingPaintView() override {}
+
+  // views::View:
+  void PaintChildren(const ui::PaintContext& context) override {
+    view_->Paint(ui::PaintContext(
+        context, ui::PaintContext::CLONE_WITHOUT_INVALIDATION));
+  }
+
+ private:
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelegatingPaintView);
 };
 
 }  // namespace
@@ -142,10 +171,20 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
                                                    ->exclusive_access_manager()
                                                    ->fullscreen_controller());
   if (enable) {
-    ash::wm::GetWindowState(native_window_)->AddObserver(this);
+    if (chrome::IsRunningInMash()) {
+      // TODO: http://crbug.com/640381.
+      NOTIMPLEMENTED();
+    } else {
+      ash::wm::GetWindowState(native_window_)->AddObserver(this);
+    }
     registrar_.Add(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
   } else {
-    ash::wm::GetWindowState(native_window_)->RemoveObserver(this);
+    if (chrome::IsRunningInMash()) {
+      // TODO: http://crbug.com/640381.
+      NOTIMPLEMENTED();
+    } else {
+      ash::wm::GetWindowState(native_window_)->RemoveObserver(this);
+    }
     registrar_.Remove(this, chrome::NOTIFICATION_FULLSCREEN_CHANGED, source);
   }
 }
@@ -185,16 +224,59 @@ bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
   return false;
 }
 
+void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
+  if (!chrome::IsRunningInMash())
+    return;
+
+  DCHECK(!mash_reveal_widget_);
+  mash_reveal_widget_.reset(new views::Widget);
+  views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_POPUP);
+  std::map<std::string, std::vector<uint8_t>> window_properties;
+  window_properties
+      [ui::mojom::WindowManager::kRendererParentTitleArea_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(true);
+  window_properties[ui::mojom::WindowManager::kName_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          std::string("ChromeImmersiveRevealWindow"));
+  init_params.native_widget = new views::NativeWidgetMus(
+      mash_reveal_widget_.get(),
+      views::WindowManagerConnection::Get()->client()->NewWindow(
+          &window_properties),
+      ui::mojom::SurfaceType::DEFAULT);
+  init_params.accept_events = false;
+  init_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  init_params.parent_mus = GetMusWindow(native_window_);
+  const gfx::Rect& top_container_bounds =
+      browser_view_->top_container()->bounds();
+  init_params.bounds =
+      gfx::Rect(0, -top_container_bounds.height(), top_container_bounds.width(),
+                top_container_bounds.height());
+  mash_reveal_widget_->Init(init_params);
+  mash_reveal_widget_->SetContentsView(
+      new DelegatingPaintView(browser_view_->top_container()));
+  mash_reveal_widget_->StackAtTop();
+  mash_reveal_widget_->Show();
+}
+
+void ImmersiveModeControllerAsh::DestroyMashRevealWidget() {
+  mash_reveal_widget_.reset();
+}
+
 void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
+  DestroyMashRevealWidget();
+
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer(true);
   browser_view_->top_container()->layer()->SetFillsBoundsOpaquely(false);
   UpdateTabIndicators();
   LayoutBrowserRootView();
+  CreateMashRevealWidget();
   FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
+  DestroyMashRevealWidget();
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer(false);
   UpdateTabIndicators();
@@ -202,6 +284,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
+  DestroyMashRevealWidget();
   browser_view_->top_container()->SetPaintToLayer(false);
   UpdateTabIndicators();
   LayoutBrowserRootView();
@@ -211,6 +294,12 @@ void ImmersiveModeControllerAsh::SetVisibleFraction(double visible_fraction) {
   if (visible_fraction_ != visible_fraction) {
     visible_fraction_ = visible_fraction;
     browser_view_->Layout();
+
+    if (mash_reveal_widget_) {
+      gfx::Rect bounds = mash_reveal_widget_->GetNativeWindow()->bounds();
+      bounds.set_y(visible_fraction * bounds.height() - bounds.height());
+      mash_reveal_widget_->SetBounds(bounds);
+    }
   }
 }
 
@@ -253,6 +342,12 @@ void ImmersiveModeControllerAsh::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
   if (!controller_->IsEnabled())
     return;
+
+  if (chrome::IsRunningInMash()) {
+    // TODO: http://crbug.com/640384.
+    NOTIMPLEMENTED();
+    return;
+  }
 
   bool tab_indicator_visibility_changed = UpdateTabIndicators();
 

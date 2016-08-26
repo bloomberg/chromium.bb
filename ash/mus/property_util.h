@@ -80,6 +80,9 @@ bool IsAlwaysOnTop(ui::Window* window);
 
 bool ShouldRemoveStandardFrame(ui::Window* window);
 
+// See description of |WindowManager::kRendererParentTitleArea_Property|.
+bool ShouldRenderParentTitleArea(ui::Window* window);
+
 }  // namespace mus
 }  // namespace ash
 

@@ -503,32 +503,28 @@ void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
 ClientSpecificId WindowManagerState::GetEventTargetClientId(
     const ServerWindow* window,
     bool in_nonclient_area) {
-  // If the event is in the non-client area the event goes to the owner of
-  // the window.
-  WindowTree* tree = nullptr;
   if (in_nonclient_area) {
-    tree = window_server()->GetTreeWithId(window->id().client_id);
-  } else {
-    // If the window is an embed root, forward to the embedded window.
-    tree = window_server()->GetTreeWithRoot(window);
-    if (!tree)
-      tree = window_server()->GetTreeWithId(window->id().client_id);
+    // Events in the non-client area always go to the window manager.
+    return window_tree_->id();
   }
 
-  if (tree) {
-    const ServerWindow* embed_root =
-        tree->HasRoot(window) ? window : GetEmbedRoot(window);
-    while (tree && tree->embedder_intercepts_events()) {
-      DCHECK(tree->HasRoot(embed_root));
-      tree = window_server()->GetTreeWithId(embed_root->id().client_id);
-      embed_root = GetEmbedRoot(embed_root);
-    }
-  }
-
+  // If the window is an embed root, it goes to the tree embedded in the window.
+  WindowTree* tree = window_server()->GetTreeWithRoot(window);
   if (!tree) {
-    DCHECK(in_nonclient_area);
-    tree = window_tree_;
+    // Window is not an embed root, event goes to owner of the window.
+    tree = window_server()->GetTreeWithId(window->id().client_id);
   }
+  DCHECK(tree);
+
+  // Ascend to the first tree marked as not embedder_intercepts_events().
+  const ServerWindow* embed_root =
+      tree->HasRoot(window) ? window : GetEmbedRoot(window);
+  while (tree && tree->embedder_intercepts_events()) {
+    DCHECK(tree->HasRoot(embed_root));
+    tree = window_server()->GetTreeWithId(embed_root->id().client_id);
+    embed_root = GetEmbedRoot(embed_root);
+  }
+  DCHECK(tree);
   return tree->id();
 }
 

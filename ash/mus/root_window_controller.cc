@@ -113,7 +113,7 @@ ui::Window* RootWindowController::NewTopLevelWindow(
   DCHECK(WmWindowMus::Get(container_window)->IsContainer());
 
   if (provide_non_client_frame) {
-    NonClientFrameController::Create(GetConnector(), container_window, window,
+    NonClientFrameController::Create(container_window, window,
                                      window_manager_->window_manager_client());
   } else {
     container_window->AddChild(window);

@@ -89,11 +89,15 @@ bool WindowManagerAccessPolicy::CanChangeWindowOpacity(
 bool WindowManagerAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     ui::mojom::SurfaceType surface_type) const {
+  // Allow the window manager to always provide the underlay. This is important
+  // when the window manager is asked to paint the title area to windows it did
+  // not create.
   if (surface_type == mojom::SurfaceType::UNDERLAY)
-    return WasCreatedByThisClient(window);
+    return true;
 
   if (delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window))
     return false;
+
   return WasCreatedByThisClient(window) ||
          (delegate_->HasRootForAccessPolicy(window));
 }
