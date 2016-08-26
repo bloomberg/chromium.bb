@@ -321,6 +321,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void SetPrerenderContentsFactoryForTest(
       PrerenderContents::Factory* prerender_contents_factory);
 
+  bool IsPrerenderSilenceExperimentForTesting(Origin origin) const {
+    return IsPrerenderSilenceExperiment(origin);
+  }
+
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
@@ -405,6 +409,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;
+
+  // Returns whether adding new prerenders should be disabled because of the
+  // experiment running.
+  bool IsPrerenderSilenceExperiment(Origin origin) const;
 
   // Returns whether prerendering is currently enabled or the reason why it is
   // disabled.

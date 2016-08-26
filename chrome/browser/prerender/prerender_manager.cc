@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
@@ -882,6 +883,9 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     origin = ORIGIN_GWS_PRERENDER;
   }
 
+  if (IsPrerenderSilenceExperiment(origin))
+    return nullptr;
+
   GURL url = url_arg;
   GURL alias_url;
   if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
@@ -1238,6 +1242,36 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
   DCHECK_GE(recent_profile_bytes, 0);
   histograms_->RecordNetworkBytes(
       origin, used, prerender_bytes, recent_profile_bytes);
+}
+
+bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
+  if (origin == ORIGIN_OFFLINE)
+    return false;
+
+  // The group name should contain expiration time formatted as:
+  //   "ExperimentYes_expires_YYYY-MM-DDTHH:MM:SSZ".
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PrerenderSilence");
+  const char kExperimentPrefix[] = "ExperimentYes";
+  if (!base::StartsWith(group_name, kExperimentPrefix,
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    return false;
+  }
+  const char kExperimentPrefixWithExpiration[] = "ExperimentYes_expires_";
+  if (!base::StartsWith(group_name, kExperimentPrefixWithExpiration,
+                        base::CompareCase::INSENSITIVE_ASCII)) {
+    // Without expiration day in the group name, behave as a normal experiment,
+    // i.e. sticky to the Chrome session.
+    return true;
+  }
+  base::Time expiration_time;
+  if (!base::Time::FromString(
+          group_name.c_str() + (arraysize(kExperimentPrefixWithExpiration) - 1),
+          &expiration_time)) {
+    DLOG(ERROR) << "Could not parse expiration date in group: " << group_name;
+    return false;
+  }
+  return GetCurrentTime() < expiration_time;
 }
 
 NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {

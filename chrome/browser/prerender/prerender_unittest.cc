@@ -148,6 +148,10 @@ class UnitTestPrerenderManager : public PrerenderManager {
     return prerender_contents;
   }
 
+  bool SetTime(const std::string& time_string) {
+    return base::Time::FromString(time_string.c_str(), &time_);
+  }
+
   void AdvanceTime(TimeDelta delta) {
     time_ += delta;
   }
@@ -1102,6 +1106,65 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
           url, content::Referrer(), nullptr, gfx::Rect(kSize)));
   EXPECT_FALSE(prerender_handle);
   EXPECT_FALSE(prerender_contents->prerendering_has_started());
+}
+
+// Checks that the "PrerenderSilence experiment does not disable offline
+// prerendering.
+TEST_F(PrerenderTest, PrerenderSilenceAllowsOffline) {
+  // Set the time to 30 seconds before the experiment expires.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:01:00Z"));
+  ASSERT_TRUE(prerender_manager()->SetTime("2016-12-20T00:00:30Z"));
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_handle->IsPrerendering());
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  EXPECT_EQ(prerender_contents, prerender_handle->contents());
+  EXPECT_EQ(ORIGIN_OFFLINE, prerender_handle->contents()->origin());
+}
+
+// Checks that the "PrerenderSilence" experiment disables prerendering.
+TEST_F(PrerenderTest, PrerenderSilenceDisallowsNonOffline) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:02:00Z"));
+  const Origin origins[] = {
+      ORIGIN_GWS_PRERENDER,
+      ORIGIN_OMNIBOX,
+      ORIGIN_NONE,
+      ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN,
+      ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
+      ORIGIN_EXTERNAL_REQUEST,
+      ORIGIN_INSTANT,
+      ORIGIN_LINK_REL_NEXT,
+      ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
+  };
+  ASSERT_TRUE(prerender_manager()->SetTime("2016-12-20T00:01:00Z"));
+  for (const Origin& origin : origins) {
+    EXPECT_TRUE(
+        prerender_manager()->IsPrerenderSilenceExperimentForTesting(origin));
+  }
+}
+
+// Checks that prerendering is enabled after expiration of the
+// "PrerenderSilence" experiment.
+TEST_F(PrerenderTest, PrerenderSilenceAllowsAfterExpiration) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "PrerenderSilence", "ExperimentYes_expires_2016-12-20T00:02:00Z"));
+  GURL url("http://www.google.com/");
+  ASSERT_TRUE(prerender_manager()->SetTime("2016-12-20T00:01:00Z"));
+  prerender_manager()->AdvanceTime(TimeDelta::FromSeconds(60));
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(url, FINAL_STATUS_USED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  std::unique_ptr<PrerenderContents> entry =
+      prerender_manager()->FindAndUseEntry(url);
+  ASSERT_EQ(prerender_contents, entry.get());
 }
 
 TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {
