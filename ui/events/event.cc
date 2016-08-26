@@ -104,6 +104,8 @@ std::string EventTypeName(ui::EventType type) {
     CASE_TYPE(ET_POINTER_CANCELLED);
     CASE_TYPE(ET_POINTER_ENTERED);
     CASE_TYPE(ET_POINTER_EXITED);
+    CASE_TYPE(ET_POINTER_WHEEL_CHANGED);
+    CASE_TYPE(ET_POINTER_CAPTURE_CHANGED);
     CASE_TYPE(ET_GESTURE_SCROLL_BEGIN);
     CASE_TYPE(ET_GESTURE_SCROLL_END);
     CASE_TYPE(ET_GESTURE_SCROLL_UPDATE);
@@ -494,6 +496,14 @@ MouseEvent::MouseEvent(const PointerEvent& pointer_event)
       SetType(ET_MOUSE_RELEASED);
       break;
 
+    case ET_POINTER_WHEEL_CHANGED:
+      SetType(ET_MOUSEWHEEL);
+      break;
+
+    case ET_POINTER_CAPTURE_CHANGED:
+      SetType(ET_MOUSE_CAPTURE_CHANGED);
+      break;
+
     default:
       NOTREACHED();
   }
@@ -845,6 +855,8 @@ bool PointerEvent::CanConvertFrom(const Event& event) {
     case ET_MOUSE_ENTERED:
     case ET_MOUSE_EXITED:
     case ET_MOUSE_RELEASED:
+    case ET_MOUSEWHEEL:
+    case ET_MOUSE_CAPTURE_CHANGED:
     case ET_TOUCH_PRESSED:
     case ET_TOUCH_MOVED:
     case ET_TOUCH_RELEASED:
@@ -887,6 +899,16 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
 
     case ET_MOUSE_RELEASED:
       SetType(ET_POINTER_UP);
+      break;
+
+    case ET_MOUSEWHEEL:
+      SetType(ET_POINTER_WHEEL_CHANGED);
+      details_ = PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                                mouse_event.AsMouseWheelEvent()->offset());
+      break;
+
+    case ET_MOUSE_CAPTURE_CHANGED:
+      SetType(ET_POINTER_CAPTURE_CHANGED);
       break;
 
     default:

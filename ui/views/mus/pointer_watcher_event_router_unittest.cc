@@ -131,6 +131,14 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
       ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_NONE, 1, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
       base::TimeTicks());
+  ui::PointerEvent pointer_event_wheel(
+      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
+      0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      base::TimeTicks());
+  ui::PointerEvent pointer_event_capture(
+      ui::ET_POINTER_CAPTURE_CHANGED, gfx::Point(), gfx::Point(), ui::EF_NONE,
+      1, 0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      base::TimeTicks());
 
   // PointerWatchers receive pointer down events.
   TestPointerWatcher watcher1;
@@ -142,6 +150,18 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
   // PointerWatchers receive pointer up events.
   OnPointerEventObserved(pointer_event_up);
   EXPECT_EQ(ui::ET_POINTER_UP, watcher1.last_event_observed()->type());
+  watcher1.Reset();
+
+  // PointerWatchers receive pointer wheel changed events.
+  OnPointerEventObserved(pointer_event_wheel);
+  EXPECT_EQ(ui::ET_POINTER_WHEEL_CHANGED,
+            watcher1.last_event_observed()->type());
+  watcher1.Reset();
+
+  // PointerWatchers receive pointer capture changed events.
+  OnPointerEventObserved(pointer_event_capture);
+  EXPECT_EQ(ui::ET_POINTER_CAPTURE_CHANGED,
+            watcher1.last_event_observed()->type());
   watcher1.Reset();
 
   // Two PointerWatchers can both receive a single observed event.

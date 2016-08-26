@@ -156,7 +156,7 @@ class EventDispatcher : public ServerWindowObserver {
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  void ProcessLocatedEvent(const ui::LocatedEvent& event);
+  void ProcessPointerEvent(const ui::PointerEvent& event);
 
   // Adds |pointer_target| to |pointer_targets_|.
   void StartTrackingPointer(int32_t pointer_id,

@@ -199,12 +199,8 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
     const MouseEventTest& test = tests[i];
     ASSERT_FALSE(dispatcher_delegate->has_queued_events())
         << " unexpected queued events before running " << i;
-    if (test.input_event.IsMouseWheelEvent())
-      dispatcher->ProcessEvent(test.input_event,
-                               EventDispatcher::AcceleratorMatchPhase::ANY);
-    else
-      dispatcher->ProcessEvent(ui::PointerEvent(test.input_event),
-                               EventDispatcher::AcceleratorMatchPhase::ANY);
+    dispatcher->ProcessEvent(ui::PointerEvent(test.input_event),
+                             EventDispatcher::AcceleratorMatchPhase::ANY);
 
     std::unique_ptr<DispatchedEventDetails> details =
         dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();

@@ -211,8 +211,9 @@ void DefaultPlatformDisplay::DispatchEvent(ui::Event* event) {
   if (event->IsScrollEvent()) {
     // TODO(moshayedi): crbug.com/602859. Dispatch scroll events as
     // they are once we have proper support for scroll events.
-    delegate_->OnEvent(ui::MouseWheelEvent(*event->AsScrollEvent()));
-  } else if (event->IsMouseEvent() && !event->IsMouseWheelEvent()) {
+    delegate_->OnEvent(
+        ui::PointerEvent(ui::MouseWheelEvent(*event->AsScrollEvent())));
+  } else if (event->IsMouseEvent()) {
     delegate_->OnEvent(ui::PointerEvent(*event->AsMouseEvent()));
   } else if (event->IsTouchEvent()) {
     delegate_->OnEvent(ui::PointerEvent(*event->AsTouchEvent()));

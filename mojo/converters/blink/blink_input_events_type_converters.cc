@@ -136,7 +136,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
 }
 
 std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
-    const ui::MouseWheelEvent& event) {
+    const ui::PointerEvent& event) {
   std::unique_ptr<blink::WebMouseWheelEvent> web_event(
       new blink::WebMouseWheelEvent);
   web_event->type = blink::WebInputEvent::MouseWheel;
@@ -149,8 +149,8 @@ std::unique_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   // TODO(rjkroege): Update the following code once Blink supports
   // DOM Level 3 wheel events
   // (http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents)
-  web_event->deltaX = event.x_offset();
-  web_event->deltaY = event.y_offset();
+  web_event->deltaX = event.pointer_details().offset.x();
+  web_event->deltaY = event.pointer_details().offset.y();
 
   web_event->wheelTicksX = web_event->deltaX / ui::MouseWheelEvent::kWheelDelta;
   web_event->wheelTicksY = web_event->deltaY / ui::MouseWheelEvent::kWheelDelta;
@@ -219,8 +219,7 @@ std::unique_ptr<blink::WebInputEvent> BuildWebTouchEvent(
 std::unique_ptr<blink::WebInputEvent>
 TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event>::Convert(
     const ui::Event& event) {
-  DCHECK(event.IsKeyEvent() || event.IsPointerEvent() ||
-         event.IsMouseWheelEvent());
+  DCHECK(event.IsKeyEvent() || event.IsPointerEvent());
   switch (event.type()) {
     case ui::ET_POINTER_DOWN:
     case ui::ET_POINTER_UP:
@@ -233,8 +232,8 @@ TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event>::Convert(
         return BuildWebTouchEvent(*event.AsPointerEvent());
       else
         return nullptr;
-    case ui::ET_MOUSEWHEEL:
-      return BuildWebMouseWheelEventFrom(*event.AsMouseWheelEvent());
+    case ui::ET_POINTER_WHEEL_CHANGED:
+      return BuildWebMouseWheelEventFrom(*event.AsPointerEvent());
     case ui::ET_KEY_PRESSED:
     case ui::ET_KEY_RELEASED:
       return BuildWebKeyboardEvent(*event.AsKeyEvent());

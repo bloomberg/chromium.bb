@@ -6,6 +6,7 @@
 
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -128,9 +129,15 @@ PointerWatcherEventRouter::DetermineEventTypes() {
 void PointerWatcherEventRouter::OnWindowTreeCaptureChanged(
     ui::Window* gained_capture,
     ui::Window* lost_capture) {
-  FOR_EACH_OBSERVER(PointerWatcher, move_watchers_, OnMouseCaptureChanged());
+  const ui::MouseEvent mouse_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
+                                   gfx::Point(), ui::EventTimeForNow(), 0, 0);
+  const ui::PointerEvent event(mouse_event);
+  gfx::Point location_in_screen =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
+  FOR_EACH_OBSERVER(PointerWatcher, move_watchers_,
+                    OnPointerEventObserved(event, location_in_screen, nullptr));
   FOR_EACH_OBSERVER(PointerWatcher, non_move_watchers_,
-                    OnMouseCaptureChanged());
+                    OnPointerEventObserved(event, location_in_screen, nullptr));
 }
 
 void PointerWatcherEventRouter::OnDidDestroyClient(

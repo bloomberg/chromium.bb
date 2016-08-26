@@ -131,7 +131,9 @@ class EVENTS_EXPORT Event {
   bool IsPointerEvent() const {
     return type_ == ET_POINTER_DOWN || type_ == ET_POINTER_MOVED ||
            type_ == ET_POINTER_UP || type_ == ET_POINTER_CANCELLED ||
-           type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED;
+           type_ == ET_POINTER_ENTERED || type_ == ET_POINTER_EXITED ||
+           type_ == ET_POINTER_WHEEL_CHANGED ||
+           type_ == ET_POINTER_CAPTURE_CHANGED;
   }
 
   // Convenience methods to check pointer type of |this|. Returns false if
@@ -412,15 +414,18 @@ struct EVENTS_EXPORT PointerDetails {
         force(force),
         tilt_x(tilt_x),
         tilt_y(tilt_y) {}
+  PointerDetails(EventPointerType pointer_type, const gfx::Vector2d& offset)
+      : pointer_type(pointer_type),
+        force(std::numeric_limits<float>::quiet_NaN()),
+        offset(offset) {}
 
   bool operator==(const PointerDetails& other) const {
-    return pointer_type == other.pointer_type &&
-           radius_x == other.radius_x &&
+    return pointer_type == other.pointer_type && radius_x == other.radius_x &&
            radius_y == other.radius_y &&
            (force == other.force ||
             (std::isnan(force) && std::isnan(other.force))) &&
-           tilt_x == other.tilt_x &&
-           tilt_y == other.tilt_y;
+           tilt_x == other.tilt_x && tilt_y == other.tilt_y &&
+           offset == other.offset;
   }
 
   // The type of pointer device.
@@ -441,6 +446,11 @@ struct EVENTS_EXPORT PointerDetails {
   // is towards the user. 0.0 if unknown.
   float tilt_x = 0.0;
   float tilt_y = 0.0;
+
+  // Only used by mouse wheel events. The amount to scroll. This is in multiples
+  // of kWheelDelta.
+  // Note: offset_.x() > 0/offset_.y() > 0 means scroll left/up.
+  gfx::Vector2d offset;
 };
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
@@ -713,9 +723,8 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
  public:
   static const int32_t kMousePointerId;
 
-  // Returns true if a PointerEvent can be constructed from the given mouse or
-  // touch event. For example, PointerEvent does not support ET_MOUSEWHEEL or
-  // ET_MOUSE_CAPTURE_CHANGED.
+  // Returns true if a PointerEvent can be constructed from |event|. Currently,
+  // only mouse and touch events can be converted to pointer events.
   static bool CanConvertFrom(const Event& event);
 
   PointerEvent(const PointerEvent& pointer_event);

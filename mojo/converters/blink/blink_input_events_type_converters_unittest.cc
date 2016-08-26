@@ -47,9 +47,10 @@ TEST(BlinkInputEventsConvertersTest, WheelEvent) {
       ui::MouseEvent(ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(),
                      base::TimeTicks(), 0, 0),
       kDeltaX, kDeltaY);
+  ui::PointerEvent pointer_event(ui_event);
   const std::unique_ptr<blink::WebInputEvent> web_event(
       TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event>::Convert(
-          ui_event));
+          pointer_event));
   ASSERT_TRUE(web_event);
   ASSERT_EQ(blink::WebInputEvent::MouseWheel, web_event->type);
   ASSERT_EQ(0, web_event->modifiers);

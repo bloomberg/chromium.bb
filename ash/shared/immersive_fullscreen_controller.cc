@@ -243,13 +243,6 @@ void ImmersiveFullscreenController::OnPointerEventObserved(
   }
 }
 
-void ImmersiveFullscreenController::OnMouseCaptureChanged() {
-  const ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
-                             gfx::Point(), ui::EventTimeForNow(), 0, 0);
-  OnMouseEvent(event, display::Screen::GetScreen()->GetCursorScreenPoint(),
-               nullptr);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetObserver overrides:
 

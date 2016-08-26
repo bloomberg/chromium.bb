@@ -738,12 +738,9 @@ TEST(EventTest, PointerEventCanConvertFrom) {
 
   // Common mouse events can be converted.
   const EventType mouse_allowed[] = {
-      ET_MOUSE_PRESSED,
-      ET_MOUSE_DRAGGED,
-      ET_MOUSE_MOVED,
-      ET_MOUSE_ENTERED,
-      ET_MOUSE_EXITED,
-      ET_MOUSE_RELEASED
+      ET_MOUSE_PRESSED, ET_MOUSE_DRAGGED,         ET_MOUSE_MOVED,
+      ET_MOUSE_ENTERED, ET_MOUSE_EXITED,          ET_MOUSE_RELEASED,
+      ET_MOUSEWHEEL,    ET_MOUSE_CAPTURE_CHANGED,
   };
   for (size_t i = 0; i < arraysize(mouse_allowed); i++) {
     MouseEvent event(mouse_allowed[i], point, point, time, 0, 0);
@@ -761,16 +758,6 @@ TEST(EventTest, PointerEventCanConvertFrom) {
     TouchEvent event(touch_allowed[i], point, 0, time);
     EXPECT_TRUE(PointerEvent::CanConvertFrom(event));
   }
-
-  // Capture changes cannot be converted.
-  EXPECT_FALSE(
-      PointerEvent::CanConvertFrom(
-          MouseEvent(ET_MOUSE_CAPTURE_CHANGED, point, point, time, 0, 0)));
-
-  // Wheel events cannot be converted.
-  EXPECT_FALSE(
-      PointerEvent::CanConvertFrom(
-          MouseWheelEvent(gfx::Vector2d(), point, point, time, 0, 0)));
 
   // Non-mouse non-touch events cannot be converted.
   EXPECT_FALSE(

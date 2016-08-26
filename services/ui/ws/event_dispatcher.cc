@@ -52,16 +52,6 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
   return true;
 }
 
-uint32_t PointerId(const ui::LocatedEvent& event) {
-  if (event.IsPointerEvent())
-    return event.AsPointerEvent()->pointer_id();
-  if (event.IsMouseWheelEvent())
-    return ui::PointerEvent::kMousePointerId;
-
-  NOTREACHED();
-  return 0;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -288,12 +278,9 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
     return;
   }
 
-  if (event.IsPointerEvent() || event.IsMouseWheelEvent()) {
-    ProcessLocatedEvent(*event.AsLocatedEvent());
-    return;
-  }
-
-  NOTREACHED();
+  DCHECK(event.IsPointerEvent());
+  ProcessPointerEvent(*event.AsPointerEvent());
+  return;
 }
 
 void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
@@ -317,10 +304,9 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
                              EventDispatcherDelegate::AcceleratorPhase::POST);
 }
 
-void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
-  DCHECK(event.IsPointerEvent() || event.IsMouseWheelEvent());
-  const bool is_mouse_event =
-      event.IsMousePointerEvent() || event.IsMouseWheelEvent();
+void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
+  DCHECK(event.IsPointerEvent());
+  const bool is_mouse_event = event.IsMousePointerEvent();
 
   if (is_mouse_event) {
     mouse_pointer_last_location_ = event.root_location();
@@ -348,7 +334,7 @@ void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
     return;
   }
 
-  const int32_t pointer_id = PointerId(event);
+  const int32_t pointer_id = event.pointer_id();
   if (!IsTrackingPointer(pointer_id) ||
       !pointer_targets_[pointer_id].is_pointer_down) {
     const bool any_pointers_down = AreAnyPointersDown();
