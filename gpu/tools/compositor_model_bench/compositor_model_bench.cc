@@ -30,6 +30,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -110,7 +111,6 @@ class Simulator {
     }
 
     base::AtExitManager at_exit;
-    base::MessageLoop loop;
     if (!InitX11() || !InitGLContext()) {
       LOG(FATAL) << "Failed to set up GUI.";
     }
@@ -119,10 +119,10 @@ class Simulator {
 
     LOG(INFO) << "Running " << sims_remaining_.size() << " simulations.";
 
-    loop.task_runner()->PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&Simulator::ProcessEvents, weak_factory_.GetWeakPtr()));
-    loop.Run();
+    run_loop_.Run();
   }
 
   void ProcessEvents() {
@@ -316,7 +316,7 @@ class Simulator {
 
     if (sims_remaining_.empty()) {
       DumpOutput();
-      base::MessageLoop::current()->QuitWhenIdle();
+      run_loop_.QuitWhenIdle();
       return false;
     }
 
@@ -329,6 +329,9 @@ class Simulator {
     if (current_sim_)
       current_sim_->Resize(window_width_, window_height_);
   }
+
+  base::MessageLoop message_loop_;
+  base::RunLoop run_loop_;
 
   // Simulation task list for this execution
   std::unique_ptr<RenderModelSimulator> current_sim_;
