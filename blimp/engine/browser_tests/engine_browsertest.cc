@@ -48,40 +48,88 @@ class EngineBrowserTest : public BlimpBrowserTest {
         kDummyTabId, &client_rw_feature_delegate_);
     client_session_->GetImeFeature()->set_delegate(
         &client_ime_feature_delegate_);
+
+    // Skip assigner. Engine info is already available.
+    client_session_->ConnectWithAssignment(client::ASSIGNMENT_REQUEST_RESULT_OK,
+                                           GetAssignment());
+    client_session_->GetTabControlFeature()->SetSizeAndScale(
+        gfx::Size(100, 100), 1);
+    client_session_->GetTabControlFeature()->CreateTab(kDummyTabId);
+
+    // Record the last page title known to the client. Page loads will sometimes
+    // involve multiple title changes in transition, including the requested
+    // URL. When a page is done loading, the last title should be the one from
+    // the <title> tag.
+    ON_CALL(client_nav_feature_delegate_,
+            OnTitleChanged(kDummyTabId, testing::_))
+        .WillByDefault(testing::SaveArg<1>(&last_page_title_));
+
+    EXPECT_TRUE(embedded_test_server()->Start());
+  }
+
+  // Given a path on the embedded local server, tell the client to navigate to
+  // that page by URL.
+  void NavigateToLocalUrl(const std::string& path) {
+    GURL url = embedded_test_server()->GetURL(path);
+    client_session_->GetNavigationFeature()->NavigateToUrlText(kDummyTabId,
+                                                               url.spec());
+  }
+
+  // Set mock expectations that a page will load. A page has loaded when the
+  // page load status changes to true, and then to false.
+  void ExpectPageLoad() {
+    testing::InSequence s;
+
+    // There may be redundant events indicating the page load status is true,
+    // so allow more than one.
+    EXPECT_CALL(client_nav_feature_delegate_,
+                OnLoadingChanged(kDummyTabId, true))
+        .Times(testing::AtLeast(1));
+    EXPECT_CALL(client_nav_feature_delegate_,
+                OnLoadingChanged(kDummyTabId, false))
+        .WillOnce(
+            InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
+  }
+
+  void RunAndVerify() {
+    RunUntilCompletion();
+    testing::Mock::VerifyAndClearExpectations(&client_rw_feature_delegate_);
+    testing::Mock::VerifyAndClearExpectations(&client_nav_feature_delegate_);
   }
 
   client::MockNavigationFeatureDelegate client_nav_feature_delegate_;
   client::MockRenderWidgetFeatureDelegate client_rw_feature_delegate_;
   client::MockImeFeatureDelegate client_ime_feature_delegate_;
   std::unique_ptr<client::TestClientSession> client_session_;
+  std::string last_page_title_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EngineBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
-  testing::InSequence s;
-
-  EXPECT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/hello.html");
-
   EXPECT_CALL(client_rw_feature_delegate_, OnRenderWidgetCreated(1));
-  EXPECT_CALL(client_nav_feature_delegate_,
-              OnTitleChanged(kDummyTabId, url.GetContent()));
-  EXPECT_CALL(client_nav_feature_delegate_,
-              OnTitleChanged(kDummyTabId, "hello"))
-      .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
+  ExpectPageLoad();
+  NavigateToLocalUrl("/page1.html");
+  RunAndVerify();
+  EXPECT_EQ("page1", last_page_title_);
+}
 
-  // Skip assigner. Engine info is already available.
-  client_session_->ConnectWithAssignment(client::ASSIGNMENT_REQUEST_RESULT_OK,
-                                         GetAssignment());
-  client_session_->GetTabControlFeature()->SetSizeAndScale(gfx::Size(100, 100),
-                                                           1);
-  client_session_->GetTabControlFeature()->CreateTab(kDummyTabId);
-  client_session_->GetNavigationFeature()->NavigateToUrlText(kDummyTabId,
-                                                             url.spec());
+IN_PROC_BROWSER_TEST_F(EngineBrowserTest, GoBack) {
+  ExpectPageLoad();
+  NavigateToLocalUrl("/page1.html");
+  RunAndVerify();
+  EXPECT_EQ("page1", last_page_title_);
 
-  RunUntilCompletion();
+  ExpectPageLoad();
+  NavigateToLocalUrl("/page2.html");
+  RunAndVerify();
+  EXPECT_EQ("page2", last_page_title_);
+
+  ExpectPageLoad();
+  client_session_->GetNavigationFeature()->GoBack(kDummyTabId);
+  RunAndVerify();
+  EXPECT_EQ("page1", last_page_title_);
 }
 
 }  // namespace
