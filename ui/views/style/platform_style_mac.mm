@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -25,6 +26,7 @@ const bool PlatformStyle::kDefaultLabelButtonHasBoldFont = false;
 const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
+const bool PlatformStyle::kUseRipples = false;
 
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_PRESS;
@@ -92,6 +94,16 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
   ButtonColorByState& colors = *color_by_state;
   colors[Button::STATE_PRESSED] =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
+}
+
+// static
+SkColor PlatformStyle::BackgroundColorForMdButton(
+    SkColor color,
+    Button::ButtonState state) {
+  // Per Harmony specs: Pressed state on Mac is + #000 at 0.05 alpha.
+  if (state == Button::STATE_PRESSED)
+    return color_utils::AlphaBlend(SK_ColorBLACK, color, 0x08);
+  return color;
 }
 
 }  // namespace views

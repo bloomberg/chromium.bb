@@ -53,6 +53,9 @@ class VIEWS_EXPORT PlatformStyle {
   // label for that row.
   static const bool kTreeViewSelectionPaintsEntireRow;
 
+  // Whether ripples should be used for visual feedback on control activation.
+  static const bool kUseRipples;
+
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
   // enabled, and false if the control is disabled. The |style| argument is the
@@ -84,6 +87,11 @@ class VIEWS_EXPORT PlatformStyle {
   // Button::STYLE_BUTTON buttons differ from those provided by ui::NativeTheme.
   static void ApplyLabelButtonTextStyle(Label* label,
                                         ButtonColorByState* color_by_state);
+
+  // Returns the background color that should be used for an MdTextButton or
+  // other MD controls when in the given state.
+  static SkColor BackgroundColorForMdButton(SkColor color,
+                                            Button::ButtonState state);
 
   // Applies the current system theme to the default border created by |button|.
   static std::unique_ptr<Border> CreateThemedLabelButtonBorder(

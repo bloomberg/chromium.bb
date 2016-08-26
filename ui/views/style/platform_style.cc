@@ -43,6 +43,7 @@ const bool PlatformStyle::kTextfieldDragVerticallyDragsToEnd = false;
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_RELEASE;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
+const bool PlatformStyle::kUseRipples = true;
 
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
@@ -86,6 +87,12 @@ SkColor PlatformStyle::TextColorForButton(
     const ButtonColorByState& color_by_state,
     const LabelButton& button) {
   return color_by_state[button.state()];
+}
+
+SkColor PlatformStyle::BackgroundColorForMdButton(
+    SkColor color,
+    Button::ButtonState state) {
+  return color;
 }
 
 #endif  // OS_MACOSX

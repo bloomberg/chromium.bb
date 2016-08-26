@@ -56,6 +56,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void SetText(const base::string16& text) override;
   void AdjustFontSize(int size_delta) override;
   void UpdateStyleToIndicateDefaultStatus() override;
+  void StateChanged() override;
 
  protected:
   // LabelButton:

@@ -16,6 +16,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/painter.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -178,6 +179,11 @@ std::unique_ptr<views::InkDropRipple> MdTextButton::CreateInkDropRipple()
           GetInkDropBaseColor(), ink_drop_visible_opacity()));
 }
 
+void MdTextButton::StateChanged() {
+  LabelButton::StateChanged();
+  UpdateColors();
+}
+
 std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   if (!ShouldShowInkDropHighlight())
@@ -235,7 +241,8 @@ MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       focus_ring_(new internal::MdFocusRing()),
       is_cta_(false) {
-  SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
+                                            : InkDropMode::OFF);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
@@ -305,6 +312,8 @@ void MdTextButton::UpdateColors() {
                 : is_default()
                       ? color_utils::BlendTowardOppositeLuma(text_color, 0xD8)
                       : SK_ColorTRANSPARENT;
+
+  bg_color = PlatformStyle::BackgroundColorForMdButton(bg_color, state());
 
   const SkAlpha kStrokeOpacity = 0x1A;
   SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))

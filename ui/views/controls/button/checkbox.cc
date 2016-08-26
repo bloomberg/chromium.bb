@@ -21,6 +21,7 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -35,7 +36,8 @@ Checkbox::Checkbox(const base::string16& label)
 
   if (UseMd()) {
     set_request_focus_on_press(false);
-    SetInkDropMode(InkDropMode::ON);
+    SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
+                                              : InkDropMode::OFF);
     set_has_ink_drop_action_on_click(true);
     // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
     set_ink_drop_size(gfx::Size(21, 21));
