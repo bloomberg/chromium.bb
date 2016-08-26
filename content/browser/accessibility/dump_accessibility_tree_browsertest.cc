@@ -886,13 +886,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-cross-process.html"));
 }
 
+// Flaky on all platforms: https://crbug.com/622387
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeCoordinates) {
+                       DISABLED_AccessibilityIframeCoordinates) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates.html"));
 }
 
+// Flaky on all platforms: https://crbug.com/622387
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeCoordinatesCrossProcess) {
+                       DISABLED_AccessibilityIframeCoordinatesCrossProcess) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates-cross-process.html"));
 }
 
@@ -907,13 +909,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-presentational.html"));
 }
 
+// Flaky on all platforms: https://crbug.com/622387
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeTransform) {
+                       DISABLED_AccessibilityIframeTransform) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform.html"));
 }
 
+// Flaky on all platforms: https://crbug.com/622387
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeTransformCrossProcess) {
+                       DISABLED_AccessibilityIframeTransformCrossProcess) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-cross-process.html"));
 }
 
