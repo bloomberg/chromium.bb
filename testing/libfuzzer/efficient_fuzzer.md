@@ -74,6 +74,19 @@ resources used for fuzzing. If large inputs make fuzzer too slow you have to
 adjust value of `-max_len` and find a trade-off between coverage and execution
 speed.
 
+*Note:* ClusterFuzz runs two different fuzzing engines (**LibFuzzer** and
+**AFL**) using the same target functions. AFL doesn't support `-max_len`
+parameter and may provide input of any length to the target. If your target has
+an input length limit that you would like to *strictly enforce*, it's
+recommended to add a sanity check to the beginning of your target function:
+
+```
+if (size > kSizeLimit)
+  return 0;
+```
+
+For more information check out the discussion in [issue 638836].
+
 
 ## Corpus Size
 
@@ -222,3 +235,4 @@ Other options may be passed through `libfuzzer_options` property.
 [AFL]: http://lcamtuf.coredump.cx/afl/
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
+[issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
