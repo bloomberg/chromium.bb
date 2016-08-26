@@ -23,9 +23,6 @@ WebRtcBrowserTest.CallWithDataAndMedia
 BrowserSideNavigationBrowserTest.BrowserInitiatedNavigations
 BrowserSideNavigationBrowserTest.FailedNavigation
 
-# crbug.com/461489
-ServiceWorkerVersionBrowserTest.TimeoutStartingWorker
-
 # http://crbug.com/464029
 WebRtcBrowserTest.CallAndModifyStream
 
