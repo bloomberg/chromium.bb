@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Access gate to C++ side offline pages functionalities.
@@ -415,9 +414,7 @@ public class OfflinePageBridge {
      * @param namespace The namespace for the offline page to be saved later.
      */
     public void savePageLaterForDownload(final String url, final String namespace) {
-        // Download UI needs "async_loading" namespace and a random (type 4) GUID.
-        String uuid = UUID.randomUUID().toString();
-        ClientId clientId = new ClientId(namespace, uuid);
+        ClientId clientId = ClientId.createGuidClientIdForNamespace(namespace);
         savePageLater(url, clientId, true /* userRequested */);
     }
 

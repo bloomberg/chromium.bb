@@ -360,7 +360,8 @@ public class OfflinePageUtils {
             public void onResult(OfflinePageItem item) {
                 if (item == null) {
                     // If the page has no offline copy, save the page offline.
-                    ClientId clientId = ClientId.createClientIdForTabSharing();
+                    ClientId clientId = ClientId.createGuidClientIdForNamespace(
+                            OfflinePageBridge.SHARE_NAMESPACE);
                     offlinePageBridge.savePage(webContents, clientId,
                             savePageCallback(prepareForSharing, offlinePageBridge));
                     return;

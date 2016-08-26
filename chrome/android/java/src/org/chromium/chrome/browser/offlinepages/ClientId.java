@@ -53,12 +53,12 @@ public class ClientId {
     }
 
     /**
-     * Create a client id for a tab when its contents need to be saved for sharing purposes.
-     * @param id The tab id to wrap.
-     * @return A {@link ClientId} that represents this TabId.
+     * Create a client id for a namespace.
+     * @param namespace The namespace for the client id.
+     * @return A {@link ClientId} for this namespace with generated UUID.
      */
-    public static ClientId createClientIdForTabSharing() {
+    public static ClientId createGuidClientIdForNamespace(String namespace) {
         String uuid = UUID.randomUUID().toString();
-        return new ClientId(OfflinePageBridge.SHARE_NAMESPACE, uuid);
+        return new ClientId(namespace, uuid);
     }
 }
