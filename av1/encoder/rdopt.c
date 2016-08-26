@@ -2314,6 +2314,10 @@ static int64_t rd_pick_best_sub8x8_mode(
           MV mvp_full;
           int max_mv;
           int cost_list[5];
+          int tmp_col_min = x->mv_col_min;
+          int tmp_col_max = x->mv_col_max;
+          int tmp_row_min = x->mv_row_min;
+          int tmp_row_max = x->mv_row_max;
 
           /* Is the best so far sufficiently good that we cant justify doing
            * and new motion search. */
@@ -2364,6 +2368,11 @@ static int64_t rd_pick_best_sub8x8_mode(
               cpi, x, bsize, &mvp_full, step_param, sadpb,
               cpi->sf.mv.subpel_search_method != SUBPEL_TREE ? cost_list : NULL,
               &bsi->ref_mv[0]->as_mv, new_mv, INT_MAX, 1);
+
+          x->mv_col_min = tmp_col_min;
+          x->mv_col_max = tmp_col_max;
+          x->mv_row_min = tmp_row_min;
+          x->mv_row_max = tmp_row_max;
 
           if (bestsme < INT_MAX) {
             int distortion;
@@ -2829,8 +2838,6 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     av1_setup_pre_planes(xd, 0, scaled_ref_frame, mi_row, mi_col, NULL);
   }
 
-  av1_set_mv_search_range(x, &ref_mv);
-
 #if CONFIG_REF_MV
   av1_set_mvcost(x, ref, 0, mbmi->ref_mv_idx);
 #endif
@@ -2881,6 +2888,8 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
     }
   }
+
+  av1_set_mv_search_range(x, &ref_mv);
 
 #if CONFIG_MOTION_VAR
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
