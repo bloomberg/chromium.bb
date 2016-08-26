@@ -206,38 +206,10 @@ void SVGAnimateElement::resetAnimatedType()
     m_animatedProperty = m_animator.constructFromString(baseValue);
 }
 
-static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElement, const QualifiedName& attributeName, const String& valueAsString)
+static bool targetIsUsable(SVGElement* targetElement, const QualifiedName& attribute)
 {
-    ASSERT(targetElement);
-    if (attributeName == anyQName() || !targetElement->isConnected() || !targetElement->parentNode())
-        return;
-
-    CSSPropertyID id = cssPropertyID(attributeName.localName());
-    MutableStylePropertySet* propertySet = targetElement->ensureAnimatedSMILStyleProperties();
-    if (!propertySet->setProperty(id, valueAsString, false, 0))
-        return;
-
-    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
-}
-
-static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetElement, const QualifiedName& attributeName)
-{
-    ASSERT(targetElement);
-    if (attributeName == anyQName() || !targetElement->isConnected() || !targetElement->parentNode())
-        return;
-
-    CSSPropertyID id = cssPropertyID(attributeName.localName());
-    targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
-    targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
-}
-
-static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* targetElement, const QualifiedName& attributeName)
-{
-    ASSERT(targetElement);
-    if (attributeName == anyQName() || !targetElement->isConnected() || !targetElement->parentNode())
-        return;
-
-    targetElement->invalidateAnimatedAttribute(attributeName);
+    return attribute != anyQName()
+        && targetElement->isConnected() && targetElement->parentNode();
 }
 
 void SVGAnimateElement::clearAnimatedType()
@@ -257,20 +229,19 @@ void SVGAnimateElement::clearAnimatedType()
     }
 
     ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement, attributeName());
-    if (shouldApply == ApplyXMLandCSSAnimation) {
-        removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
-    } else if (m_animator.isAnimatingCSSProperty()) {
+    if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingCSSProperty()) {
         // CSS properties animation code-path.
-        removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
-        m_animatedProperty.clear();
-        m_animator.clear();
-        return;
+        if (targetIsUsable(targetElement, attributeName())) {
+            CSSPropertyID id = cssPropertyID(attributeName().localName());
+            targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
+            targetElement->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
+        }
     }
-
-    // SVG DOM animVal animation code-path.
-    if (m_animatedProperty) {
+    if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingSVGDom()) {
+        // SVG DOM animVal animation code-path.
         m_animator.stopAnimValAnimation();
-        notifyTargetAndInstancesAboutAnimValChange(targetElement, attributeName());
+        if (targetIsUsable(targetElement, attributeName()))
+            targetElement->invalidateAnimatedAttribute(attributeName());
     }
 
     m_animatedProperty.clear();
@@ -288,19 +259,23 @@ void SVGAnimateElement::applyResultsToTarget()
 
     // We do update the style and the animation property independent of each other.
     ShouldApplyAnimationType shouldApply = shouldApplyAnimation(targetElement(), attributeName());
-    if (shouldApply == ApplyXMLandCSSAnimation) {
-        applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());
-    } else if (m_animator.isAnimatingCSSProperty()) {
-        // CSS properties animation code-path.
-        // Convert the result of the animation to a String and apply it as CSS property on the target & all instances.
-        applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());
+    DCHECK(targetElement());
+    if (!targetIsUsable(targetElement(), attributeName()))
         return;
+    if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingCSSProperty()) {
+        // CSS properties animation code-path.
+        // Convert the result of the animation to a String and apply it as CSS property on the target.
+        CSSPropertyID id = cssPropertyID(attributeName().localName());
+        MutableStylePropertySet* propertySet = targetElement()->ensureAnimatedSMILStyleProperties();
+        if (propertySet->setProperty(id, m_animatedProperty->valueAsString(), false, 0))
+            targetElement()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
     }
-
-    // SVG DOM animVal animation code-path.
-    // At this point the SVG DOM values are already changed, unlike for CSS.
-    // We only have to trigger update notifications here.
-    notifyTargetAndInstancesAboutAnimValChange(targetElement(), attributeName());
+    if (shouldApply == ApplyXMLandCSSAnimation || m_animator.isAnimatingSVGDom()) {
+        // SVG DOM animVal animation code-path.
+        // At this point the SVG DOM values are already changed, unlike for CSS.
+        // We only have to trigger update notifications here.
+        targetElement()->invalidateAnimatedAttribute(attributeName());
+    }
 }
 
 bool SVGAnimateElement::animatedPropertyTypeSupportsAddition()
