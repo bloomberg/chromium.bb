@@ -13,13 +13,6 @@
 <dom-module id="settings-display">
   <template>
     <style include="settings-shared">
-     .display-section {
-       align-self: flex-start;
-       font-size: 100%;
-       font-weight: 500;
-       margin: 10px 0;
-     }
-
      .settings-box.embedded {
        align-self: stretch;
        margin-left: 20px;
@@ -47,14 +40,14 @@
      }
     </style>
     <div class="settings-box first layout vertical self-stretch">
-      <div class="display-section">$i18n{displayArrangement}</div>
+      <h2>$i18n{displayArrangement}</h2>
       <display-layout id="displayLayout"
           selected-display="[[selectedDisplay]]"
           on-select-display="onSelectDisplay_">
       </display-layout>
     </div>
-    <div class="settings-box layout vertical">
-      <div class="display-section">[[selectedDisplay.name]]</div>
+    <div class="settings-box layout vertical first">
+      <h2>[[selectedDisplay.name]]</h2>
       <div class="settings-box embedded first">
         <paper-checkbox class="flex" checked="[[isMirrored_(displays)]]"
             hidden$="[[!showMirror_(displays)]]" on-tap="onMirroredTap_">
