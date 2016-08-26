@@ -658,6 +658,7 @@ EXCLUDED_PATHS = [
     'build/linux/debian_wheezy_arm-sysroot',
     'build/linux/debian_wheezy_i386-sysroot',
     'build/linux/debian_wheezy_mips-sysroot',
+    'build/linux/ubuntu_precise_amd64-sysroot',
 ]
 
 
