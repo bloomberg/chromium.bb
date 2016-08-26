@@ -116,7 +116,7 @@ bool GenerateAdtsHeader(int codec,
       hdr[2] |= 1;
       hdr[3] |= (2 << 6);
       break;
-    case 7:
+    case 8:
       // front-center, front-left, front-right, side-left, side-right,
       // back-left, back-right, LFE-channel
       hdr[2] |= 1;
