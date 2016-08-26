@@ -327,7 +327,8 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& selecti
     if (!editableNode || !hasEditableStyle(*editableNode))
         return;
 
-    chunkAndMarkAllMisspellingsAndBadGrammar(range);
+    TextCheckingParagraph fullParagraphToCheck(expandRangeToSentenceBoundary(range));
+    chunkAndMarkAllMisspellingsAndBadGrammar(fullParagraphToCheck);
 }
 
 void SpellChecker::markMisspellingsAfterApplyingCommand(const CompositeEditCommand& cmd)
@@ -415,36 +416,38 @@ void SpellChecker::markMisspellingsAfterReplaceSelectionCommand(const ReplaceSel
 {
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterReplaceSelectionCommand");
 
-    chunkAndMarkAllMisspellingsAndBadGrammar(cmd.insertedRange());
+    const EphemeralRange& insertedRange = cmd.insertedRange();
+    if (insertedRange.isNull())
+        return;
+
+    Node* node = cmd.endingSelection().rootEditableElement();
+    if (!node)
+        return;
+
+    EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
+    TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
+    chunkAndMarkAllMisspellingsAndBadGrammar(textToCheck);
 }
 
-void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const EphemeralRange& range)
+void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(const TextCheckingParagraph& fullParagraphToCheck)
 {
-    if (range.isNull())
+    if (fullParagraphToCheck.isEmpty())
         return;
-
-    Node* rootEditableElement = rootEditableElementOf(range.startPosition());
-    if (!rootEditableElement)
-        return;
-
-    const EphemeralRange& fullTextRange = EphemeralRange::rangeOfContents(*rootEditableElement);
-    int fullTextLength = TextIterator::rangeLength(fullTextRange.startPosition(), fullTextRange.endPosition());
-    if (fullTextLength <= 0)
-        return;
+    const EphemeralRange& paragraphRange = fullParagraphToCheck.paragraphRange();
 
     // Since the text may be quite big chunk it up and adjust to the sentence boundary.
     const int kChunkSize = 16 * 1024;
 
     // Check the full paragraph instead if the paragraph is short, which saves
     // the cost on sentence boundary finding.
-    if (fullTextLength <= kChunkSize) {
-        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, fullTextRange, 0);
+    if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
+        SpellCheckRequest* request = SpellCheckRequest::create(TextCheckingProcessBatch, paragraphRange, 0);
         if (request)
             m_spellCheckRequester->requestCheckingFor(request);
         return;
     }
 
-    CharacterIterator checkRangeIterator(range, TextIteratorEmitsObjectReplacementCharacter);
+    CharacterIterator checkRangeIterator(fullParagraphToCheck.checkingRange(), TextIteratorEmitsObjectReplacementCharacter);
     for (int requestNum = 0; !checkRangeIterator.atEnd(); requestNum++) {
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
         EphemeralRange checkRange = requestNum ? expandEndToSentenceBoundary(chunkRange) : expandRangeToSentenceBoundary(chunkRange);
