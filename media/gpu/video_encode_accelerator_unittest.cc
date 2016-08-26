@@ -570,6 +570,9 @@ class H264Validator : public StreamValidator {
 void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   h264_parser_.SetStream(stream, static_cast<off_t>(size));
 
+  // Run |frame_cb_| for only first nalu.
+  bool frame_cb_called = false;
+
   while (1) {
     H264NALU nalu;
     H264Parser::Result result;
@@ -590,10 +593,14 @@ void H264Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
         keyframe = true;
       // fallthrough
       case H264NALU::kNonIDRSlice: {
+        // Stream may contain at most one frame.
         ASSERT_TRUE(seen_idr_);
         seen_sps_ = seen_pps_ = false;
-        if (!frame_cb_.Run(keyframe))
-          return;
+        if (!frame_cb_called) {
+          frame_cb_called = true;
+          if (!frame_cb_.Run(keyframe))
+            return;
+        }
         break;
       }
 
@@ -1843,6 +1850,15 @@ INSTANTIATE_TEST_CASE_P(MultipleEncoders,
                                                           false,
                                                           false,
                                                           false)));
+
+#if defined(OS_MACOSX)
+INSTANTIATE_TEST_CASE_P(
+    VerifyTimestamp,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        std::make_tuple(1, false, 0, false, false, false, false, false, true)));
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN)
 INSTANTIATE_TEST_CASE_P(
     ForceBitrate,
