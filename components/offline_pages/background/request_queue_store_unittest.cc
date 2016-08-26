@@ -305,6 +305,7 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
             this->last_remove_results().at(0).second);
   ASSERT_EQ(RequestQueue::UpdateRequestResult::SUCCESS,
             this->last_remove_results().at(1).second);
+  ASSERT_EQ(2UL, this->last_requests().size());
   ASSERT_EQ(kRequestId, this->last_requests().at(0).request_id());
   this->ClearResults();
 
@@ -322,13 +323,13 @@ TYPED_TEST(RequestQueueStoreTest, RemoveRequests) {
   ASSERT_EQ(LastResult::kNone, this->last_result());
   this->PumpLoop();
   ASSERT_EQ(2ul, this->last_remove_results().size());
-  // Since the SQL statement returns true on a delete of an item that isn't
-  // present, SQL is returning SUCCESS, but the memory is returning
-  // REQUEST_DOES_NOT_EXIST, so we just check that the result is not failure.
-  ASSERT_NE(RequestQueue::UpdateRequestResult::STORE_FAILURE,
+  // When requests are missing, we expect the results to say so, but since they
+  // are missing, no requests should have been returned.
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST,
             this->last_remove_results().at(0).second);
-  ASSERT_NE(RequestQueue::UpdateRequestResult::STORE_FAILURE,
+  ASSERT_EQ(RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST,
             this->last_remove_results().at(1).second);
+  ASSERT_EQ(0UL, this->last_requests().size());
 }
 
 TYPED_TEST(RequestQueueStoreTest, PauseAndResumeRequest) {

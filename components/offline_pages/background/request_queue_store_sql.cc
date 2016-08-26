@@ -114,12 +114,18 @@ void BuildFailedResultList(const std::vector<int64_t>& request_ids,
         request_id, RequestQueue::UpdateRequestResult::STORE_FAILURE));
 }
 
-bool DeleteRequestById(sql::Connection* db, int64_t request_id) {
+RequestQueue::UpdateRequestResult DeleteRequestById(sql::Connection* db,
+                                                    int64_t request_id) {
   const char kSql[] =
       "DELETE FROM " REQUEST_QUEUE_TABLE_NAME " WHERE request_id=?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, request_id);
-  return statement.Run();
+  if (!statement.Run())
+    return RequestQueue::UpdateRequestResult::STORE_FAILURE;
+  else if (db->GetLastChangeCount() == 0)
+    return RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+  else
+    return RequestQueue::UpdateRequestResult::SUCCESS;
 }
 
 bool ChangeRequestState(sql::Connection* db,
@@ -150,15 +156,11 @@ bool DeleteRequestsByIds(sql::Connection* db,
   // the queue of requests that got deleted.
   for (int64_t request_id : request_ids) {
     SavePageRequest request = GetOneRequest(db, request_id);
-    RequestQueue::UpdateRequestResult result;
-    if (DeleteRequestById(db, request_id)) {
-      result = RequestQueue::UpdateRequestResult::SUCCESS;
-      requests.push_back(request);
-    } else {
-      result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
-    }
+    RequestQueue::UpdateRequestResult result =
+        DeleteRequestById(db, request_id);
     results.push_back(std::make_pair(request_id, result));
-    requests.push_back(request);
+    if (result == RequestQueue::UpdateRequestResult::SUCCESS)
+      requests.push_back(request);
   }
 
   if (!transaction.Commit()) {
