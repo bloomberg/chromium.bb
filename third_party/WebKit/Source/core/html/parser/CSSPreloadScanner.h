@@ -27,13 +27,18 @@
 #ifndef CSSPreloadScanner_h
 #define CSSPreloadScanner_h
 
-#include "core/html/parser/HTMLResourcePreloader.h"
+#include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/ResourceOwner.h"
+#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/PreloadRequest.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
 class SegmentedString;
+class HTMLResourcePreloader;
 
 class CSSPreloadScanner {
     DISALLOW_NEW();
@@ -78,6 +83,31 @@ private:
     // Below members only non-null during scan()
     PreloadRequestStream* m_requests = nullptr;
     const KURL* m_predictedBaseElementURL = nullptr;
+};
+
+// Each CSSPreloaderResourceClient keeps track of a single CSS resource, and
+// drives a CSSPreloadScanner as raw data arrives for it. This lets us preload
+// @import tags before parsing.
+class CORE_EXPORT CSSPreloaderResourceClient : public GarbageCollectedFinalized<CSSPreloaderResourceClient>, public ResourceOwner<CSSStyleSheetResource, StyleSheetResourceClient> {
+    USING_GARBAGE_COLLECTED_MIXIN(CSSPreloaderResourceClient);
+public:
+    CSSPreloaderResourceClient(Resource*, HTMLResourcePreloader*);
+    ~CSSPreloaderResourceClient();
+    void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
+    void didAppendFirstData(const CSSStyleSheetResource*) override;
+    String debugName() const override { return "CSSPreloaderResourceClient"; }
+
+    DECLARE_TRACE();
+
+protected:
+    // Protected for tests, which don't want to initialize a fully featured
+    // DocumentLoader.
+    virtual void fetchPreloads(PreloadRequestStream& preloads);
+
+private:
+    void scanCSS(const CSSStyleSheetResource*);
+
+    WeakMember<HTMLResourcePreloader> m_preloader;
 };
 
 } // namespace blink

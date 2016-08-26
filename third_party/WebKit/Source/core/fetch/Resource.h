@@ -87,6 +87,13 @@ public:
         DecodeError
     };
 
+    // Whether a resource client for a preload should mark the preload as
+    // referenced.
+    enum PreloadReferencePolicy {
+        MarkAsReferenced,
+        DontMarkAsReferenced,
+    };
+
     // Exposed for testing.
     static Resource* create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
     {
@@ -132,7 +139,10 @@ public:
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
     virtual ResourcePriority priorityFromObservers() { return ResourcePriority(); }
 
-    void addClient(ResourceClient*);
+    // The reference policy indicates that the client should not affect whether
+    // a preload is considered referenced or not. This allows for "passive"
+    // resource clients that simply observe the resource.
+    void addClient(ResourceClient*, PreloadReferencePolicy = MarkAsReferenced);
     void removeClient(ResourceClient*);
     virtual bool hasClientsOrObservers() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
 
@@ -263,7 +273,7 @@ protected:
     void finishPendingClients();
 
     virtual void didAddClient(ResourceClient*);
-    void willAddClientOrObserver();
+    void willAddClientOrObserver(PreloadReferencePolicy);
 
     // |this| object may be dead after didRemoveClientOrObserver().
     void didRemoveClientOrObserver();

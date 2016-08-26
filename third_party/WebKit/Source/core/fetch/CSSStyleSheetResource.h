@@ -55,6 +55,8 @@ public:
     StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext&);
     void saveParsedStyleSheet(StyleSheetContents*);
 
+    void appendData(const char* data, size_t length) override;
+
 private:
     class CSSStyleSheetResourceFactory : public ResourceFactory {
     public:
@@ -79,6 +81,8 @@ private:
     String m_decodedSheetText;
 
     Member<StyleSheetContents> m_parsedStyleSheetCache;
+
+    bool m_didNotifyFirstData;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

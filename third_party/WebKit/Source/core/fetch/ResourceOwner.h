@@ -76,7 +76,7 @@ protected:
         ThreadState::current()->registerPreFinalizer(this);
     }
 
-    void setResource(ResourceType*);
+    void setResource(ResourceType*, Resource::PreloadReferencePolicy = Resource::MarkAsReferenced);
     void clearResource() { setResource(nullptr); }
 
 private:
@@ -84,7 +84,7 @@ private:
 };
 
 template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(R* newResource)
+inline void ResourceOwner<R, C>::setResource(R* newResource, Resource::PreloadReferencePolicy preloadReferencePolicy)
 {
     if (newResource == m_resource)
         return;
@@ -96,7 +96,7 @@ inline void ResourceOwner<R, C>::setResource(R* newResource)
 
     if (newResource) {
         m_resource = newResource;
-        m_resource->addClient(this);
+        m_resource->addClient(this, preloadReferencePolicy);
     }
 }
 

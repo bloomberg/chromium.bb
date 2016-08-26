@@ -661,9 +661,9 @@ static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
     return false;
 }
 
-void Resource::willAddClientOrObserver()
+void Resource::willAddClientOrObserver(PreloadReferencePolicy policy)
 {
-    if (m_preloadResult == PreloadNotReferenced) {
+    if (policy == MarkAsReferenced && m_preloadResult == PreloadNotReferenced) {
         if (isLoaded())
             m_preloadResult = PreloadReferencedWhileComplete;
         else if (isLoading())
@@ -681,9 +681,9 @@ void Resource::willAddClientOrObserver()
         memoryCache()->makeLive(this);
 }
 
-void Resource::addClient(ResourceClient* client)
+void Resource::addClient(ResourceClient* client, PreloadReferencePolicy policy)
 {
-    willAddClientOrObserver();
+    willAddClientOrObserver(policy);
 
     if (m_isRevalidating) {
         m_clients.add(client);

@@ -128,7 +128,7 @@ void ImageResource::didAddClient(ResourceClient* client)
 
 void ImageResource::addObserver(ImageResourceObserver* observer)
 {
-    willAddClientOrObserver();
+    willAddClientOrObserver(MarkAsReferenced);
 
     m_observers.add(observer);
 

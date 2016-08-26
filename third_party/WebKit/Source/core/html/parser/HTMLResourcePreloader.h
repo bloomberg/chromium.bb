@@ -28,6 +28,7 @@
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
+#include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/NetworkHintsInterface.h"
@@ -42,6 +43,8 @@ class CORE_EXPORT HTMLResourcePreloader final : public GarbageCollected<HTMLReso
     friend class HTMLResourcePreloaderTest;
 public:
     static HTMLResourcePreloader* create(Document&);
+    int countPreloads();
+    Document* document() { return m_document.get(); }
     DECLARE_TRACE();
 
 protected:
@@ -51,6 +54,7 @@ private:
     explicit HTMLResourcePreloader(Document&);
 
     Member<Document> m_document;
+    HeapHashSet<Member<CSSPreloaderResourceClient>> m_cssPreloaders;
 };
 
 } // namespace blink

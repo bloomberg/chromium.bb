@@ -1400,6 +1400,10 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     // Keys: parseHTMLOnMainThreadSyncTokenize
     //       parseHTMLOnMainThreadCoalesceChunks
     "ParseHTMLOnMainThread",
+
+    // Keys: cssExternalScannerNoPreload
+    //       cssExternalScannerPreload
+    "CSSExternalScanner",
   };
 
   std::vector<std::string> blink_settings;

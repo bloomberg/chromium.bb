@@ -4214,6 +4214,7 @@
             'html/forms/StepRangeTest.cpp',
             'html/parser/AtomicHTMLTokenTest.cpp',
             'html/parser/CompactHTMLTokenTest.cpp',
+            'html/parser/CSSPreloadScannerTest.cpp',
             'html/parser/HTMLDocumentParserTest.cpp',
             'html/parser/HTMLEntityParserTest.cpp',
             'html/parser/HTMLParserIdiomsTest.cpp',

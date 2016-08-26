@@ -26,8 +26,10 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/Histogram.h"
 #include "public/platform/Platform.h"
@@ -48,6 +50,14 @@ HTMLResourcePreloader* HTMLResourcePreloader::create(Document& document)
 DEFINE_TRACE(HTMLResourcePreloader)
 {
     visitor->trace(m_document);
+    visitor->trace(m_cssPreloaders);
+}
+
+int HTMLResourcePreloader::countPreloads()
+{
+    if (m_document->loader())
+        return m_document->loader()->fetcher()->countPreloads();
+    return 0;
 }
 
 static void preconnectHost(PreloadRequest* request, const NetworkHintsInterface& networkHintsInterface)
@@ -80,7 +90,13 @@ void HTMLResourcePreloader::preload(std::unique_ptr<PreloadRequest> preload, con
     int duration = static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime()));
     DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDelayHistogram, ("WebCore.PreloadDelayMs", 0, 2000, 20));
     preloadDelayHistogram.count(duration);
-    m_document->loader()->startPreload(preload->resourceType(), request);
+
+    Resource* resource = m_document->loader()->startPreload(preload->resourceType(), request);
+    if (resource && preload->resourceType() == Resource::CSSStyleSheet) {
+        Settings* settings = m_document->settings();
+        if (settings && (settings->cssExternalScannerNoPreload() || settings->cssExternalScannerPreload()))
+            m_cssPreloaders.add(new CSSPreloaderResourceClient(resource, this));
+    }
 }
 
 } // namespace blink

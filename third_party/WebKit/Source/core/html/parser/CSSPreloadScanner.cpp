@@ -27,8 +27,14 @@
 
 #include "core/html/parser/CSSPreloadScanner.h"
 
+#include "core/dom/Document.h"
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLResourcePreloader.h"
+#include "core/loader/DocumentLoader.h"
+#include "platform/Histogram.h"
 #include "platform/text/SegmentedString.h"
 #include <memory>
 
@@ -232,6 +238,70 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
         m_state = DoneParsingImportRules;
     m_rule.clear();
     m_ruleValue.clear();
+}
+
+CSSPreloaderResourceClient::CSSPreloaderResourceClient(Resource* resource, HTMLResourcePreloader* preloader)
+    : m_preloader(preloader)
+{
+    DCHECK(resource->getType() == Resource::Type::CSSStyleSheet);
+    setResource(toCSSStyleSheetResource(resource), Resource::DontMarkAsReferenced);
+}
+
+CSSPreloaderResourceClient::~CSSPreloaderResourceClient()
+{
+}
+
+void CSSPreloaderResourceClient::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*)
+{
+    clearResource();
+}
+
+// Only attach for one appendData call, as that's where most imports will likely
+// be (according to spec).
+void CSSPreloaderResourceClient::didAppendFirstData(const CSSStyleSheetResource* resource)
+{
+    if (m_preloader)
+        scanCSS(resource);
+    clearResource();
+}
+
+void CSSPreloaderResourceClient::scanCSS(const CSSStyleSheetResource* resource)
+{
+    DCHECK(m_preloader);
+    // Passing an empty SegmentedString here results in PreloadRequest with no
+    // file/line information.
+    // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
+    // augmented to take care of this case without performing an additional
+    // copy.
+    const String& chunk = resource->decodedText();
+    if (chunk.isNull())
+        return;
+    CSSPreloadScanner cssPreloadScanner;
+    PreloadRequestStream preloads;
+    cssPreloadScanner.scan(chunk, SegmentedString(), preloads, resource->response().url());
+    fetchPreloads(preloads);
+}
+
+void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads)
+{
+    if (preloads.size()) {
+        m_preloader->document()->loader()->didObserveLoadingBehavior(WebLoadingBehaviorFlag::WebLoadingBehaviorCSSPreloadFound);
+    }
+
+    Settings* settings = m_preloader->document()->settings();
+    DCHECK(settings);
+    if (settings->cssExternalScannerPreload()) {
+        int currentPreloadCount = m_preloader->countPreloads();
+        m_preloader->takeAndPreload(preloads);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, cssImportHistogram, ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
+        cssImportHistogram.count(m_preloader->countPreloads() - currentPreloadCount);
+    }
+}
+
+DEFINE_TRACE(CSSPreloaderResourceClient)
+{
+    visitor->trace(m_preloader);
+    ResourceOwner<CSSStyleSheetResource>::trace(visitor);
 }
 
 } // namespace blink

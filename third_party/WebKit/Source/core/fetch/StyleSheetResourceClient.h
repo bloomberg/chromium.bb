@@ -26,6 +26,7 @@
 #ifndef StyleSheetResourceClient_h
 #define StyleSheetResourceClient_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceClient.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -33,13 +34,18 @@
 namespace blink {
 class CSSStyleSheetResource;
 
-class StyleSheetResourceClient : public GarbageCollectedMixin, public ResourceClient {
+class CORE_EXPORT StyleSheetResourceClient : public GarbageCollectedMixin, public ResourceClient {
 public:
     ~StyleSheetResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == StyleSheetType; }
     ResourceClientType getResourceClientType() const final { return StyleSheetType; }
     virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
+
+    // This gets called on the very first appendData call for the
+    // CSSStyleSheetResource. Note this is not called for StyleSheetResources
+    // other than CSSStyleSheetResources.
+    virtual void didAppendFirstData(const CSSStyleSheetResource*) {}
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
 };

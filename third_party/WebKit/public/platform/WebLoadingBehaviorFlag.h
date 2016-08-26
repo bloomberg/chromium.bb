@@ -24,6 +24,9 @@ enum WebLoadingBehaviorFlag {
     // Indicates that the page is a reload and has a synchronous, cross-origin document.written
     // script.
     WebLoadingBehaviorDocumentWriteBlockReload = 1 << 3,
+    // The page loaded external CSS that generated a PreloadRequest via the
+    // CSSPreloaderResourceClient.
+    WebLoadingBehaviorCSSPreloadFound = 1 << 4,
 };
 
 } // namespace blink
