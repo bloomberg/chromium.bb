@@ -49,6 +49,7 @@ Loaded modules:
     snippets
     source_frame
     sources
+    text_editor
     ui
     ui_lazy
     workspace
@@ -72,6 +73,7 @@ Loaded modules:
     snippets
     source_frame
     sources
+    text_editor
     ui
     ui_lazy
     workspace
@@ -95,6 +97,7 @@ Loaded modules:
     snippets
     source_frame
     sources
+    text_editor
     ui
     ui_lazy
     workspace
