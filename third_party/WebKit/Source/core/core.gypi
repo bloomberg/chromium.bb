@@ -2061,6 +2061,8 @@
             'page/scrolling/ScrollStateCallback.h',
             'page/scrolling/StickyPositionScrollingConstraints.cpp',
             'page/scrolling/StickyPositionScrollingConstraints.h',
+            'page/scrolling/TopDocumentRootScrollerController.cpp',
+            'page/scrolling/TopDocumentRootScrollerController.h',
             'page/scrolling/ViewportScrollCallback.cpp',
             'page/scrolling/ViewportScrollCallback.h',
             'paint/BackgroundImageGeometry.cpp',

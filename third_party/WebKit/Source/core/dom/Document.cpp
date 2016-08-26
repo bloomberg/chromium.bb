@@ -207,7 +207,7 @@
 #include "core/page/scrolling/ScrollStateCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
-#include "core/page/scrolling/ViewportScrollCallback.h"
+#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
@@ -473,7 +473,11 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = ResourceFetcher::create(nullptr);
     }
 
-    m_rootScrollerController = RootScrollerController::create(*this);
+    // TODO(bokan): This will probably blow up if we don't have an m_frame here
+    // since we'll assume a child RootScrollerController. crbug.com/505516.
+    m_rootScrollerController = isInMainFrame()
+        ? TopDocumentRootScrollerController::create(*this)
+        : RootScrollerController::create(*this);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
