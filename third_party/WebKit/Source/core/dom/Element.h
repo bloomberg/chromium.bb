@@ -663,7 +663,6 @@ private:
     void updatePresentationAttributeStyle();
 
     void inlineStyleChanged();
-    PropertySetCSSStyleDeclaration* inlineStyleCSSOMWrapper();
     void setInlineStyleFromString(const AtomicString&);
 
     // If the only inherited changes in the parent element are independent,
