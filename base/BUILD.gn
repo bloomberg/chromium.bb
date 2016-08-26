@@ -555,6 +555,7 @@ component("base") {
     "metrics/user_metrics.cc",
     "metrics/user_metrics.h",
     "metrics/user_metrics_action.h",
+    "native_library.cc",
     "native_library.h",
     "native_library_ios.mm",
     "native_library_mac.mm",
@@ -1133,6 +1134,7 @@ component("base") {
       "memory/discardable_shared_memory.cc",
       "memory/discardable_shared_memory.h",
       "memory/shared_memory_posix.cc",
+      "native_library.cc",
       "native_library_posix.cc",
       "path_service.cc",
       "process/kill.cc",
@@ -2007,12 +2009,17 @@ test("base_unittests") {
     ":i18n",
     ":message_loop_tests",
     "//base/allocator:features",
+    "//base/test:native_library_test_utils",
     "//base/test:run_all_base_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
+  ]
+
+  data_deps = [
+    "//base/test:test_shared_library",
   ]
 
   if (is_ios || is_mac) {
