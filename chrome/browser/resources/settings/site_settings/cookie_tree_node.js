@@ -47,7 +47,7 @@ var categoryLabels = {
   'database': loadTimeData.getString('cookieDatabaseStorage'),
   'file_system': loadTimeData.getString('cookieFileSystem'),
   'flash_lso': loadTimeData.getString('cookieFlashLso'),
-  'indexed_db': loadTimeData.getString('cookieLocalStorage'),
+  'indexed_db': loadTimeData.getString('cookieDatabaseStorage'),
   'local_storage': loadTimeData.getString('cookieLocalStorage'),
   'service_worker': loadTimeData.getString('cookieServiceWorker'),
 };
