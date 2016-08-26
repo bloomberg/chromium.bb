@@ -103,7 +103,7 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_DEPROVISIONED = 13,
   // Service error: Device registration for the wrong domain.
   DM_STATUS_SERVICE_DOMAIN_MISMATCH = 14,
-  // Client error: Reuest could not be signed.
+  // Client error: Request could not be signed.
   DM_STATUS_CANNOT_SIGN_REQUEST = 15,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
