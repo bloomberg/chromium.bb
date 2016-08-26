@@ -1,3 +1,5 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -6,7 +8,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -65,13 +66,19 @@
                                                     deviceListExpanded)]]">
           <div id="deviceList" class="list-frame vertical-list"
               on-device-event="onDeviceEvent_">
-            <template is="dom-repeat" items="[[deviceList]]"
-                filter="deviceIsPairedOrConnecting_">
-              <bluetooth-device-list-item device="[[item]]" class="list-item">
-              </bluetooth-device-list-item>
-            </template>
+            <div id="container" class="layout vertical" scrollable>
+              <iron-list items="[[getPairedOrConnecting_(deviceList.*)]]"
+                  selection-enabled selected-item="{{selectedItem}}"
+                  scroll-target="container">
+                <template>
+                  <bluetooth-device-list-item device="[[item]]"
+                      tabindex$="[[tabIndex]]">
+                  </bluetooth-device-list-item>
+                </template>
+              </iron-list>
+            </div>
             <div class="no-devices layout horizontal center"
-                hidden$="[[haveDevices_(deviceList.splices)]]">
+                hidden$="[[haveDevices_(deviceList.*)]]">
               $i18n{bluetoothNoDevices}
             </div>
           </div>
@@ -84,17 +91,19 @@
       </neon-animatable>
     </settings-animated-pages>
 
-    <bluetooth-device-dialog id="deviceDialog"
-        adapter-state="[[adapterState]]"
-        device-list="[[deviceList]]"
-        dialog-id="[[dialogId]]"
-        on-close="onDialogClosed_"
-        error-message="[[errorMessage]]"
-        on-device-event="onDeviceEvent_"
-        on-response="onResponse_"
-        pairing-device="[[pairingDevice]]"
-        pairing-event="[[pairingEvent]]">
-    </bluetooth-device-dialog>
+    <template is="dom-if" if="[[deviceListExpanded]]">
+      <bluetooth-device-dialog id="deviceDialog"
+          adapter-state="[[adapterState]]"
+          device-list="[[deviceList]]"
+          dialog-id="[[dialogId]]"
+          on-close="onDialogClosed_"
+          error-message="[[errorMessage]]"
+          on-device-event="onDeviceEvent_"
+          on-response="onResponse_"
+          pairing-device="[[pairingDevice]]"
+          pairing-event="[[pairingEvent]]">
+      </bluetooth-device-dialog>
+    </template>
 
   </template>
   <script src="bluetooth_page.js"></script>

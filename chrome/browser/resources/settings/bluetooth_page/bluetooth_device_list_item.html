@@ -22,8 +22,7 @@
     }
   </style>
   <template>
-    <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]"
-        on-tap="itemTapped_" actionable>
+    <div class="flex layout horizontal center" dropdown$="[[dropdownOpened]]">
       <span class="name" connected$="[[device.connected]]">
         [[getDeviceName_(device)]]
       </span>
@@ -31,11 +30,9 @@
       </iron-icon>
       <span class="flex"></span>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
-      <!-- <div on-tap> is usually [actionable], but this on-tap is just to
-           prevent triggering |itemTapped_| in the containing div. -->
-      <div hidden$="[[!device.paired]]" on-tap="doNothing_">
+      <div hidden$="[[!device.paired]]">
         <paper-icon-button icon="cr:more-vert" toggles
-            active="{{dropdownOpened}}">
+            active="{{dropdownOpened}}" tabindex$="[[tabindex]]">
         </paper-icon-button>
         <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_"
             vertical-align="auto" horizontal-align="right">

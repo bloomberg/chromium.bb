@@ -32,8 +32,20 @@ settings.BluetoothAddDeviceBehavior = {
       value: /** @return {Array} */ function() {
         return [];
       },
+      observer: 'deviceListChanged_',
+    },
+
+    /**
+     * Reflects the iron-list selecteditem property.
+     * @type {!chrome.bluetooth.Device}
+     */
+    selectedItem: {
+      type: Object,
+      observer: 'selectedItemChanged_',
     },
   },
+
+  /** @type {boolean} */ itemWasFocused_: false,
 
   /** @private */
   adapterStateChanged_: function() {
@@ -41,32 +53,45 @@ settings.BluetoothAddDeviceBehavior = {
       this.close();
   },
 
+  /** @private */
+  deviceListChanged_: function() {
+    this.updateScrollableContents();
+    if (this.itemWasFocused_ || !this.getUnpaired_().length)
+      return;
+    // If the iron-list is populated with at least one visible item then
+    // focus it.
+    let item = this.$$('iron-list bluetooth-device-list-item');
+    if (item && item.offsetParent != null) {
+      item.focus();
+      this.itemWasFocused_ = true;
+      return;
+    }
+    // Otherwise try again.
+    setTimeout(function() { this.deviceListChanged_(); }.bind(this), 100);
+  },
+
+  /** @private */
+  selectedItemChanged_: function() {
+    if (this.selectedItem)
+      this.fire('device-event', {action: 'connect', device: this.selectedItem});
+  },
+
   /**
-   * @param {!chrome.bluetooth.Device} device
-   * @return {boolean}
+   * @return {!Array<!chrome.bluetooth.Device>}
    * @private
    */
-  deviceNotPaired_: function(device) {
-    return !device.paired;
+  getUnpaired_: function() {
+    return this.deviceList.filter(function(device) {
+      return !device.paired;
+    });
   },
 
   /**
    * @return {boolean} True if deviceList contains any unpaired devices.
    * @private
    */
-  haveDevices_: function(deviceList) {
-    return this.deviceList.findIndex(function(d) {
-      return !d.paired;
-    }) != -1;
-  },
-
-  /**
-   * @param {!{detail: {action: string, device: !chrome.bluetooth.Device}}} e
-   * @private
-   */
-  onDeviceEvent_: function(e) {
-    this.fire('device-event', e.detail);
-    /** @type {Event} */ (e).stopPropagation();
+  haveUnpaired_: function(deviceList) {
+    return this.getUnpaired_().length > 0;
   },
 };
 
@@ -321,12 +346,16 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    CrScrollableBehavior,
     settings.BluetoothAddDeviceBehavior,
     settings.BluetoothPairDeviceBehavior,
   ],
 
   properties: {
-    /** Which version of this dialog to show (adding or pairing). */
+    /**
+     * The version of this dialog to show: 'addDevice', 'pairDevice', or
+     * 'connectError'. Must be set before the dialog is opened.
+     */
     dialogId: String,
   },
 
@@ -337,6 +366,7 @@ Polymer({
   open: function() {
     this.pinOrPass = '';
     this.getDialog_().showModal();
+    this.itemWasFocused_ = false;
   },
 
   close: function() {

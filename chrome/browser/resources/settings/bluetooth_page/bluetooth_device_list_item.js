@@ -23,32 +23,12 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  itemTapped_: function(e) {
-    this.fire('device-event', {
-      action: 'connect',
-      device: this.device,
-    });
-  },
-
-  /**
-   * @param {Event} e
-   * @private
-   */
   menuSelected_: function(e) {
     e.currentTarget.opened = false;
     this.fire('device-event', {
       action: e.target.id,
       device: this.device,
     });
-  },
-
-  /**
-   * @param {Event} e
-   * @private
-   */
-  doNothing_: function(e) {
-    // Avoid triggering itemTapped_.
-    e.stopPropagation();
   },
 
   /**

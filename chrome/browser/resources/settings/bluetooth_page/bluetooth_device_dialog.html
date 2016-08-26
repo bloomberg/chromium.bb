@@ -1,8 +1,9 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
@@ -26,10 +27,6 @@
         margin-top: 10px;
       }
 
-      iron-selector {
-        width: 100%;
-      }
-
       paper-spinner {
         height: 20px;
         margin: 0 10px;
@@ -41,8 +38,7 @@
       }
 
       div.contents {
-        max-height: 250px;
-        min-height: 250px;
+        height: 250px;
       }
 
       /* .display indicates a displayed pin code or passkey. */
@@ -85,22 +81,27 @@
       <div class="title">[[getTitle_(dialogId)]]</div>
       <div class="body">
         <div class="contents layout vertical center center-justified">
-          <template is="dom-if" if="[[isDialogType_(dialogId, 'addDevice')]]">
-            <div id="dialogDeviceList"
-                class="layout vertical flex start self-stretch"
-                on-device-event="onDeviceEvent_">
-              <span class="no-devices" hidden$="[[haveDevices_(deviceList)]]">
-                $i18n{bluetoothNoDevices}
-              </span>
-              <iron-selector class="flex">
-                <template is="dom-repeat" items="[[deviceList]]"
-                    filter="deviceNotPaired_" observe="paired">
-                  <bluetooth-device-list-item device="[[item]]">
+          <!-- Note: dialog + dom-if + iron-list makes sizing complicated so use
+               hidden here; this is almost always the first dialog shown. -->
+          <div id="dialogDeviceList"
+              hidden$="[[!isDialogType_(dialogId, 'addDevice')]]"
+              class="layout vertical flex start self-stretch">
+            <span class="no-devices" hidden$="[[haveUnpaired_(deviceList.*)]]">
+              $i18n{bluetoothNoDevices}
+            </span>
+            <div id="container" class="layout vertical flex self-stretch"
+                scrollable>
+              <iron-list items="[[getUnpaired_(deviceList.*)]]"
+                  selection-enabled selected-item="{{selectedItem}}"
+                  scroll-target="container" tabindex="0">
+                <template>
+                  <bluetooth-device-list-item device="[[item]]"
+                      tabindex$="[[tabIndex]]">
                   </bluetooth-device-list-item>
                 </template>
-              </iron-selector>
+              </iron-list>
             </div>
-          </template>
+          </div>
           <template is="dom-if" if="[[isDialogType_(dialogId, 'pairDevice')]]">
             <div id="pairing" class="settings-box first layout vertical center
                 center-justified">

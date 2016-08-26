@@ -32,9 +32,7 @@ var bluetoothPage = bluetoothPage || {
 Polymer({
   is: 'settings-bluetooth-page',
 
-  behaviors: [
-    I18nBehavior,
-  ],
+  behaviors: [I18nBehavior, CrScrollableBehavior],
 
   properties: {
     /** Whether bluetooth is enabled. */
@@ -62,7 +60,18 @@ Polymer({
      */
     deviceList: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
+    },
+
+    /**
+     * Reflects the iron-list selecteditem property.
+     * @type {!chrome.bluetooth.Device}
+     */
+    selectedItem: {
+      type: Object,
+      observer: 'selectedItemChanged_',
     },
 
     /**
@@ -191,10 +200,17 @@ Polymer({
     }
   },
 
+  /** @private */
   bluetoothEnabledChanged_: function() {
     // When bluetooth is enabled, auto-expand the device list.
     if (this.bluetoothEnabled)
       this.deviceListExpanded = true;
+  },
+
+  /** @private */
+  selectedItemChanged_: function() {
+    if (this.selectedItem)
+      this.connectDevice_(this.selectedItem);
   },
 
   /**
@@ -219,6 +235,7 @@ Polymer({
     }
     this.bluetooth.getDevices(function(devices) {
       this.deviceList = devices;
+      this.updateScrollableContents();
     }.bind(this));
   },
 
@@ -261,9 +278,7 @@ Polymer({
     }
     var index = this.getDeviceIndex_(address);
     if (index >= 0) {
-      // Use splice to update the item in order to update the dom-repeat lists.
-      // See https://github.com/Polymer/polymer/issues/3254.
-      this.splice('deviceList', index, 1, device);
+      this.set('deviceList.' + index, device);
       return;
     }
     this.push('deviceList', device);
@@ -346,7 +361,9 @@ Polymer({
   },
 
   /** @private */
-  onAddDeviceTap_: function() { this.openDialog_('addDevice'); },
+  onAddDeviceTap_: function() {
+    this.openDialog_('addDevice');
+  },
 
   /**
    * @param {!{detail: {action: string, device: !chrome.bluetooth.Device}}} e
@@ -406,15 +423,18 @@ Polymer({
    * @return {string} The text to display for |device| in the device list.
    * @private
    */
-  getDeviceName_: function(device) { return device.name || device.address; },
+  getDeviceName_: function(device) {
+    return device.name || device.address;
+  },
 
   /**
-   * @param {!chrome.bluetooth.Device} device
-   * @return {boolean}
+   * @return {!Array<!chrome.bluetooth.Device>}
    * @private
    */
-  deviceIsPairedOrConnecting_: function(device) {
-    return !!device.paired || !!device.connecting;
+  getPairedOrConnecting_: function() {
+    return this.deviceList.filter(function(device) {
+      return !!device.paired || !!device.connecting;
+    });
   },
 
   /**
@@ -423,7 +443,9 @@ Polymer({
    * @private
    */
   haveDevices_: function(deviceListChanges) {
-    return this.deviceList.findIndex(function(d) { return !!d.paired; }) != -1;
+    return this.deviceList.findIndex(function(d) {
+      return !!d.paired;
+    }) != -1;
   },
 
   /**
@@ -508,7 +530,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  dialogIsVisible_(dialogId, dialogToShow) { return dialogToShow == dialogId; },
+  dialogIsVisible_(dialogId, dialogToShow) {
+    return dialogToShow == dialogId;
+  },
 
   /**
    * @param {string} dialogId
