@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(OS_CHROMEOS)
-
 #include "chrome/browser/ui/webui/settings_utils.h"
 
 #include <stddef.h>
@@ -24,25 +22,24 @@ using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
 
-namespace settings_utils {
+namespace {
 
 // Command used to configure GNOME 2 proxy settings.
-const char* kGNOME2ProxyConfigCommand[] = {"gnome-network-properties", NULL};
+const char* const kGNOME2ProxyConfigCommand[] = {"gnome-network-properties",
+                                                 nullptr};
 // In GNOME 3, we might need to run gnome-control-center instead. We try this
 // only after gnome-network-properties is not found, because older GNOME also
 // has this but it doesn't do the same thing. See below where we use it.
-const char* kGNOME3ProxyConfigCommand[] = {"gnome-control-center", "network",
-                                           NULL};
+const char* const kGNOME3ProxyConfigCommand[] = {"gnome-control-center",
+                                                 "network", nullptr};
 // KDE3, 4, and 5 are only slightly different, but incompatible. Go figure.
-const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
-const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
-const char* kKDE5ProxyConfigCommand[] = {"kcmshell5", "proxy", NULL};
+const char* const kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", nullptr};
+const char* const kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", nullptr};
+const char* const kKDE5ProxyConfigCommand[] = {"kcmshell5", "proxy", nullptr};
 
 // The URL for Linux proxy configuration help when not running under a
 // supported desktop environment.
 const char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
-
-namespace {
 
 // Show the proxy config URL in the given tab.
 void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
@@ -62,7 +59,7 @@ void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
 }
 
 // Start the given proxy configuration utility.
-bool StartProxyConfigUtil(const char* command[]) {
+bool StartProxyConfigUtil(const char* const command[]) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // base::LaunchProcess() returns true ("success") if the fork()
   // succeeds, but not necessarily the exec(). We'd like to be able to
@@ -132,7 +129,9 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
       base::Bind(&ShowLinuxProxyConfigUrl, render_process_id, render_view_id));
 }
 
-}  // anonymous namespace
+}  // namespace
+
+namespace settings_utils {
 
 void ShowNetworkProxySettings(content::WebContents* web_contents) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -142,5 +141,3 @@ void ShowNetworkProxySettings(content::WebContents* web_contents) {
 }
 
 }  // namespace settings_utils
-
-#endif  // !defined(OS_CHROMEOS)
