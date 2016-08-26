@@ -15,12 +15,20 @@
 #include "media/base/media.h"
 #endif
 
+#if defined(ENABLE_MOJO_RENDERER)
+// TODO(xhwang): Enable tests by running AesDecryptor in remote mojo CDM and
+// using ExternalClearKey instead of ClearKey: crbug.com/641559
+#define DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS 1
+#endif
+
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
+#if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
+#endif
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
@@ -143,6 +151,7 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
+#if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
@@ -194,6 +203,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
   TestFrameSizeChange();
 }
+#endif  // !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer,
