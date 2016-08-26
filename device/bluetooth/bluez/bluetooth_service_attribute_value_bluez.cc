@@ -33,6 +33,11 @@ BluetoothServiceAttributeValueBlueZ::BluetoothServiceAttributeValueBlueZ(
   this->type_ = attribute.type_;
   this->size_ = attribute.size_;
 
+  if (attribute.type_ == NULLTYPE) {
+    this->value_ = base::Value::CreateNullValue();
+    return;
+  }
+
   if (attribute.type_ != SEQUENCE) {
     this->value_ = base::WrapUnique(attribute.value_->DeepCopy());
     return;
