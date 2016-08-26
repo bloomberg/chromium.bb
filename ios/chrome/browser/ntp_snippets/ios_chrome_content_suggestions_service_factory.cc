@@ -120,7 +120,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(state);
   if (state == State::DISABLED)
-    return service;
+    return std::move(service);
 
   // Create the BookmarkSuggestionsProvider.
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature)) {
@@ -171,5 +171,5 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     service->RegisterProvider(std::move(ntp_snippets_service));
   }
 
-  return service;
+  return std::move(service);
 }
