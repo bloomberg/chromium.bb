@@ -140,7 +140,8 @@ cursors.Cursor.prototype = {
     if (!this.node)
       return null;
 
-    if (this.node.role == RoleType.inlineTextBox)
+    if (this.node.role == RoleType.inlineTextBox ||
+        this.index_ == cursors.NODE_INDEX)
       return this.node.parent;
 
     return this.node;
@@ -165,9 +166,7 @@ cursors.Cursor.prototype = {
         sibling = sibling.previousSibling;
       }
     } else if (this.index_ == cursors.NODE_INDEX) {
-      // Indicies of this kind are buggy. Set it to 0 (different than the DOM
-      // index in parent convention).
-      adjustedIndex = 0;
+      adjustedIndex = this.node.indexInParent + 1;
     }
     return adjustedIndex;
   },
