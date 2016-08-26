@@ -195,6 +195,18 @@ class PrecacheManagerTest : public testing::Test {
     info_.headers = new net::HttpResponseHeaders("");
   }
 
+  void RecordStatsForPrecacheFetch(const GURL& url,
+                                   const std::string& referrer_host,
+                                   const base::TimeDelta& latency,
+                                   const base::Time& fetch_time,
+                                   const net::HttpResponseInfo& info,
+                                   int64_t size) {
+    precache_manager_->RecordStatsForFetch(url, GURL(referrer_host), latency,
+                                           fetch_time, info, size);
+    precache_database_->RecordURLPrefetch(url, referrer_host, fetch_time,
+                                          info.was_cached, size);
+  }
+
   // Must be declared first so that it is destroyed last.
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::ScopedTempDir scoped_temp_dir_;
@@ -216,6 +228,8 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecaching) {
   EXPECT_CALL(history_service_, TopHosts(NumTopHosts(), _))
       .WillOnce(SaveArg<1>(&top_hosts_callback));
 
+  factory_.SetFakeResponse(GURL(kConfigURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(GURL(kGoodManifestURL), "", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
@@ -244,6 +258,8 @@ TEST_F(PrecacheManagerTest, StartAndFinishPrecachingWithUnfinishedHosts) {
 
   EXPECT_FALSE(precache_manager_->IsPrecaching());
 
+  factory_.SetFakeResponse(GURL(kConfigURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(kEvilManifestURL), "",
       net::HTTP_OK, net::URLRequestStatus::SUCCESS);
@@ -389,9 +405,8 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
   precache_manager_->StartPrecaching(precache_callback_.GetCallback());
 
   EXPECT_TRUE(precache_manager_->IsPrecaching());
-  precache_manager_->RecordStatsForFetch(GURL("http://url.com"), GURL(),
-                                         base::TimeDelta(), base::Time(), info_,
-                                         1000);
+  RecordStatsForPrecacheFetch(GURL("http://url.com"), std::string(),
+                              base::TimeDelta(), base::Time(), info_, 1000);
   base::RunLoop().RunUntilIdle();
   precache_manager_->CancelPrecaching();
 
@@ -470,14 +485,14 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   EXPECT_TRUE(precache_manager_->IsPrecaching());
 
   // Precache a bunch of URLs, with different fetch times.
-  precache_manager_->RecordStatsForFetch(
-      GURL("http://old-fetch.com"), GURL(), base::TimeDelta(),
+  RecordStatsForPrecacheFetch(
+      GURL("http://old-fetch.com"), std::string(), base::TimeDelta(),
       kCurrentTime - base::TimeDelta::FromDays(61), info_, 1000);
-  precache_manager_->RecordStatsForFetch(
-      GURL("http://recent-fetch.com"), GURL(), base::TimeDelta(),
+  RecordStatsForPrecacheFetch(
+      GURL("http://recent-fetch.com"), std::string(), base::TimeDelta(),
       kCurrentTime - base::TimeDelta::FromDays(59), info_, 1000);
-  precache_manager_->RecordStatsForFetch(
-      GURL("http://yesterday-fetch.com"), GURL(), base::TimeDelta(),
+  RecordStatsForPrecacheFetch(
+      GURL("http://yesterday-fetch.com"), std::string(), base::TimeDelta(),
       kCurrentTime - base::TimeDelta::FromDays(1), info_, 1000);
   expected_histogram_count_map["Precache.DownloadedPrecacheMotivated"] += 3;
   expected_histogram_count_map["Precache.Fetch.PercentCompleted"]++;

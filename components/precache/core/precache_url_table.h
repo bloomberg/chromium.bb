@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_PRECACHE_CORE_PRECACHE_URL_TABLE_H_
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_URL_TABLE_H_
 
+#include <stdint.h>
+
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -33,15 +36,34 @@ class PrecacheURLTable {
   // Init must be called before any other methods.
   bool Init(sql::Connection* db);
 
-  // Adds a precached URL to the table, using the current time as the
-  // precache timestamp. Replaces the row if one already exists.
-  void AddURL(const GURL& url, const base::Time& precache_time);
+  // Adds an URL to the table, |referrer_host_id| is the id of the referrer host
+  // in PrecacheReferrerHostTable, |is_precached| indicates if the URL is
+  // precached, |time| is the timestamp. Replaces the row if one already exists.
+  void AddURL(const GURL& url,
+              int64_t referrer_host_id,
+              bool is_precached,
+              const base::Time& precache_time);
 
-  // Returns true if this URL exists in the table.
-  bool HasURL(const GURL& url);
+  // Returns true if the url is precached.
+  bool IsURLPrecached(const GURL& url);
 
-  // Deletes the row from the table that has the given URL, if it exists.
-  void DeleteURL(const GURL& url);
+  // Returns true if the url is precached, and was not used before.
+  bool IsURLPrecachedAndUnused(const GURL& url);
+
+  // Sets the precached URL as used.
+  void SetPrecachedURLAsUsed(const GURL& url);
+
+  // Set the previously precached URL as not precached, during user browsing.
+  void SetURLAsNotPrecached(const GURL& url);
+
+  // Populates the used and unused resource URLs for the referrer host with id
+  // |referrer_host_id|.
+  void GetURLListForReferrerHost(int64_t referrer_host_id,
+                                 std::vector<GURL>* used_urls,
+                                 std::vector<GURL>* unused_urls);
+
+  // Clears all URL entries for the referrer host |referrer_host_id|.
+  void ClearAllForReferrerHost(int64_t referrer_host_id);
 
   // Deletes entries that were precached before the time of |delete_end|.
   void DeleteAllPrecachedBefore(const base::Time& delete_end);

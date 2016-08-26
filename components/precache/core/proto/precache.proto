@@ -13,6 +13,13 @@ option optimize_for = LITE_RUNTIME;
 message PrecacheResource {
   // The URL of the resource. This field must always be present.
   optional string url = 1;
+
+  // The tophost this resource corresponds to.
+  optional string top_host_name = 2;
+};
+
+message PrecacheManifestId {
+  optional int64 id = 1;
 };
 
 // A manifest of cacheable resources to be precached for a specific host.
@@ -23,13 +30,16 @@ message PrecacheManifest {
 
   // Experiments running on this manifest.
   optional PrecacheExperiments experiments = 2;
+
+  // Identifier for the manifest sent by the server.
+  optional PrecacheManifestId id = 3;
 };
 
 message PrecacheExperiments {
   // A mapping between experiment groups and the resources that should be
   // considered for the experiment.
   map<fixed32, PrecacheResourceSelection> resources_by_experiment_group = 1;
-}
+};
 
 message PrecacheResourceSelection {
   // Select the resources as a std::bitset over the resources listed in the
@@ -42,7 +52,7 @@ message PrecacheResourceSelection {
   //
   // A missing bitset means that the experiment applies to all the resources.
   optional fixed64 bitset = 1 [default = 0xFFFFFFFFFFFFFFFF];
-}
+};
 
 message PrecacheConfigurationSettings {
   // The maximum rank of the user's most visited hosts to consider precaching

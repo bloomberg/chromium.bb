@@ -23,6 +23,8 @@
         'precache/core/precache_database.h',
         'precache/core/precache_fetcher.cc',
         'precache/core/precache_fetcher.h',
+        'precache/core/precache_referrer_host_table.cc',
+        'precache/core/precache_referrer_host_table.h',
         'precache/core/precache_switches.cc',
         'precache/core/precache_switches.h',
         'precache/core/precache_session_table.cc',

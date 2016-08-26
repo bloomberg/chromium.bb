@@ -32,9 +32,12 @@ using base::Bucket;
 using net::HttpResponseInfo;
 
 const GURL kURL("http://url.com");
+const int kReferrerID = 1;
 const base::TimeDelta kLatency = base::TimeDelta::FromMilliseconds(5);
 const base::Time kFetchTime = base::Time() + base::TimeDelta::FromHours(1000);
 const base::Time kOldFetchTime = kFetchTime - base::TimeDelta::FromDays(1);
+const base::Time kNewFetchTime =
+    base::Time() + base::TimeDelta::FromHours(2000);
 const int64_t kSize = 5000;
 const int64_t kFreshnessBucket10K = 9089;
 // One of the possible CacheEntryStatus for when the fetch was served from the
@@ -93,7 +96,7 @@ class PrecacheDatabaseTest : public testing::Test {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath db_path = scoped_temp_dir_.path().Append(
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
-    precache_database_->Init(db_path);
+    ASSERT_TRUE(precache_database_->Init(db_path));
   }
 
   std::map<GURL, base::Time> GetActualURLTableMap() {
@@ -108,6 +111,8 @@ class PrecacheDatabaseTest : public testing::Test {
   PrecacheURLTable* precache_url_table() {
     return &precache_database_->precache_url_table_;
   }
+
+  void Flush() { precache_database_->Flush(); }
 
   // Convenience methods for recording different types of URL fetches. These
   // exist to improve the readability of the tests.
@@ -168,7 +173,9 @@ void PrecacheDatabaseTest::RecordPrecacheFromNetwork(
     int64_t size) {
   const HttpResponseInfo info = CreateHttpResponseInfo(
       false /* was_cached */, false /* network_accessed */);
-  precache_database_->RecordURLPrefetch(url, latency, fetch_time, info, size);
+  precache_database_->RecordURLPrefetchMetrics(info, latency);
+  precache_database_->RecordURLPrefetch(url, std::string(), fetch_time,
+                                        info.was_cached, size);
 }
 
 void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
@@ -176,8 +183,10 @@ void PrecacheDatabaseTest::RecordPrecacheFromCache(const GURL& url,
                                                    int64_t size) {
   const HttpResponseInfo info = CreateHttpResponseInfo(
       true /* was_cached */, false /* network_accessed */);
-  precache_database_->RecordURLPrefetch(url, base::TimeDelta() /* latency */,
-                                        fetch_time, info, size);
+  precache_database_->RecordURLPrefetchMetrics(info,
+                                               base::TimeDelta() /* latency */);
+  precache_database_->RecordURLPrefetch(url, std::string(), fetch_time,
+                                        info.was_cached, size);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
@@ -250,7 +259,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
 }
 
 TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
-  precache_url_table()->AddURL(kURL, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
   RecordPrecacheFromCache(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been updated to have |kFetchTime| as the
@@ -313,7 +322,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
-  precache_url_table()->AddURL(kURL, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
   RecordFetchFromNetwork(kURL, kLatency, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -328,7 +337,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
-  precache_url_table()->AddURL(kURL, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
   RecordFetchFromCache(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -344,7 +353,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
-  precache_url_table()->AddURL(kURL, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
   RecordFetchFromCacheCellular(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -377,8 +386,10 @@ TEST_F(PrecacheDatabaseTest, DeleteExpiredPrecacheHistory) {
   const base::Time k59DaysAgo = kToday - base::TimeDelta::FromDays(59);
   const base::Time k61DaysAgo = kToday - base::TimeDelta::FromDays(61);
 
-  precache_url_table()->AddURL(GURL("http://expired-precache.com"), k61DaysAgo);
-  precache_url_table()->AddURL(GURL("http://old-precache.com"), k59DaysAgo);
+  precache_url_table()->AddURL(GURL("http://expired-precache.com"), kReferrerID,
+                               true, k61DaysAgo);
+  precache_url_table()->AddURL(GURL("http://old-precache.com"), kReferrerID,
+                               true, k59DaysAgo);
 
   precache_database_->DeleteExpiredPrecacheHistory(kToday);
 
@@ -479,6 +490,130 @@ TEST_F(PrecacheDatabaseTest, PrecacheFreshnessPrefetch) {
 
   EXPECT_THAT(histograms_.GetAllSamples("Precache.Freshness.Prefetch"),
               ElementsAre(Bucket(kFreshnessBucket10K, 1)));
+}
+
+TEST_F(PrecacheDatabaseTest, UpdateAndGetReferrerHost) {
+  // Invalid ID should be returned for referrer host that does not exist.
+  EXPECT_EQ(PrecacheReferrerHostEntry::kInvalidId,
+            precache_database_->GetReferrerHost(std::string()).id);
+  EXPECT_EQ(PrecacheReferrerHostEntry::kInvalidId,
+            precache_database_->GetReferrerHost("not_created_host.com").id);
+
+  // Create a new entry.
+  precache_database_->UpdatePrecacheReferrerHost("foo.com", 1, kFetchTime);
+  Flush();
+  auto actual_entry = precache_database_->GetReferrerHost("foo.com");
+  EXPECT_EQ("foo.com", actual_entry.referrer_host);
+  EXPECT_EQ(1, actual_entry.manifest_id);
+  EXPECT_EQ(kFetchTime, actual_entry.time);
+
+  // Update the existing entry.
+  precache_database_->UpdatePrecacheReferrerHost("foo.com", 2, kNewFetchTime);
+  Flush();
+  actual_entry = precache_database_->GetReferrerHost("foo.com");
+  EXPECT_EQ("foo.com", actual_entry.referrer_host);
+  EXPECT_EQ(2, actual_entry.manifest_id);
+  EXPECT_EQ(kNewFetchTime, actual_entry.time);
+}
+
+TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
+  precache_database_->UpdatePrecacheReferrerHost("foo.com", 1, kFetchTime);
+  precache_database_->UpdatePrecacheReferrerHost("bar.com", 2, kNewFetchTime);
+  precache_database_->UpdatePrecacheReferrerHost("foobar.com", 3,
+                                                 kNewFetchTime);
+  precache_database_->UpdatePrecacheReferrerHost("empty.com", 3, kNewFetchTime);
+
+  struct test_resource_info {
+    std::string url;
+    bool is_network_fetched;
+    bool is_cellular_fetched;
+    bool expected_in_used;
+  };
+
+  const struct {
+    std::string hostname;
+    std::vector<test_resource_info> resource_info;
+  } tests[] = {
+      {
+          "foo.com",
+          {
+              {"http://foo.com/from-cache.js", false, false, true},
+              {"http://some-cdn.com/from-network.js", true, false, false},
+              {"http://foo.com/from-cache-cellular.js", false, true, true},
+              {"http://foo.com/from-network-cellular.js", true, true, false},
+          },
+      },
+      {
+          "bar.com",
+          {
+              {"http://bar.com/a.js", false, false, true},
+              {"http://some-cdn.com/b.js", false, true, true},
+          },
+      },
+      {
+          "foobar.com",
+          {
+              {"http://some-cdn.com/not-used.js", true, true, false},
+          },
+      },
+      {
+          "empty.com", std::vector<test_resource_info>{},
+      },
+  };
+  // Add precached resources.
+  for (const auto& test : tests) {
+    for (const auto& resource : test.resource_info) {
+      precache_database_->RecordURLPrefetch(GURL(resource.url), test.hostname,
+                                            base::Time(), false, kSize);
+    }
+  }
+  // Update some resources as used due to user browsing.
+  for (const auto& test : tests) {
+    for (const auto& resource : test.resource_info) {
+      if (!resource.is_network_fetched && !resource.is_cellular_fetched) {
+        RecordFetchFromCache(GURL(resource.url), kFetchTime, kSize);
+      } else if (!resource.is_network_fetched && resource.is_cellular_fetched) {
+        RecordFetchFromCacheCellular(GURL(resource.url), kFetchTime, kSize);
+      } else if (resource.is_network_fetched && !resource.is_cellular_fetched) {
+        RecordFetchFromNetwork(GURL(resource.url), kLatency, kFetchTime, kSize);
+      } else if (resource.is_network_fetched && resource.is_cellular_fetched) {
+        RecordFetchFromNetworkCellular(GURL(resource.url), kLatency, kFetchTime,
+                                       kSize);
+      }
+    }
+  }
+  Flush();
+  // Verify the used and unused resources.
+  for (const auto& test : tests) {
+    std::vector<GURL> expected_used_urls, expected_unused_urls;
+    for (const auto& resource : test.resource_info) {
+      if (resource.expected_in_used) {
+        expected_used_urls.push_back(GURL(resource.url));
+      } else {
+        expected_unused_urls.push_back(GURL(resource.url));
+      }
+    }
+    std::vector<GURL> actual_used_urls, actual_unused_urls;
+    auto referrer_id = precache_database_->GetReferrerHost(test.hostname).id;
+    EXPECT_NE(PrecacheReferrerHostEntry::kInvalidId, referrer_id);
+    precache_database_->GetURLListForReferrerHost(
+        referrer_id, &actual_used_urls, &actual_unused_urls);
+    EXPECT_THAT(expected_used_urls, ::testing::ContainerEq(actual_used_urls));
+    EXPECT_THAT(expected_unused_urls,
+                ::testing::ContainerEq(actual_unused_urls));
+  }
+  // Subsequent manifest updates should clear the used and unused resources.
+  for (const auto& test : tests) {
+    precache_database_->UpdatePrecacheReferrerHost(test.hostname, 100,
+                                                   kNewFetchTime);
+    Flush();
+    std::vector<GURL> actual_used_urls, actual_unused_urls;
+    auto referrer_id = precache_database_->GetReferrerHost(test.hostname).id;
+    EXPECT_NE(PrecacheReferrerHostEntry::kInvalidId, referrer_id);
+    precache_database_->GetURLListForReferrerHost(
+        referrer_id, &actual_used_urls, &actual_unused_urls);
+    EXPECT_TRUE(actual_used_urls.empty());
+  }
 }
 
 }  // namespace

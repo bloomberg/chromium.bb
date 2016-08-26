@@ -117,6 +117,7 @@ class PrecacheManager : public KeyedService,
                                      bool is_user_traffic);
 
  private:
+  friend class PrecacheManagerTest;
   FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, DeleteExpiredPrecacheHistory);
   FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest,
                            RecordStatsForFetchDuringPrecaching);
@@ -169,6 +170,7 @@ class PrecacheManager : public KeyedService,
   // Update precache-related metrics in response to a URL being fetched. Called
   // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.
   void RecordStatsForFetchInternal(const GURL& url,
+                                   const std::string& referrer_host,
                                    const base::TimeDelta& latency,
                                    const base::Time& fetch_time,
                                    const net::HttpResponseInfo& info,

@@ -601,6 +601,7 @@
       'precache/core/fetcher_pool_unittest.cc',
       'precache/core/precache_database_unittest.cc',
       'precache/core/precache_fetcher_unittest.cc',
+      'precache/core/precache_referrer_host_table_unittest.cc',
       'precache/core/precache_session_table_unittest.cc',
       'precache/core/precache_url_table_unittest.cc',
     ],

@@ -16,11 +16,6 @@ message TopHost {
   optional string hostname = 1;
 };
 
-message PrecacheManifestURL {
-  // The URL that provides a manifest.
-  optional string url = 1;
-};
-
 // Information about the precache work that needs to be completed.
 message PrecacheUnfinishedWork {
   // Top hosts for which to fetch manifests.
@@ -28,8 +23,9 @@ message PrecacheUnfinishedWork {
 
   optional PrecacheConfigurationSettings config_settings = 2;
 
-  // Manifest URLs remaining to be fetched.
-  repeated PrecacheManifestURL manifest = 3;
+  // DEPRECATED: Manifest URLs remaining to be fetched.
+  // repeated DeprecatedPrecacheManifestURL deprecated_manifest = 3
+  //    [deprecated = true];
 
   // Resource URLs remaining to be fetched.
   repeated PrecacheResource resource = 4;
