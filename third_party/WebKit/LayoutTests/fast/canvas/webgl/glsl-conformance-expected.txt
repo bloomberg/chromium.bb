@@ -54,10 +54,10 @@ PASS [shaders/implicit/divide_int_vec4.vert/fshader]: implicit cast of vec4 divi
 PASS [shaders/implicit/divide_ivec2_vec2.vert/fshader]: implicit cast of vec2 divided by ivec2 should fail
 PASS [shaders/implicit/divide_ivec3_vec3.vert/fshader]: implicit cast of vec3 divided by ivec3 should fail
 PASS [shaders/implicit/divide_ivec4_vec4.vert/fshader]: implicit cast of vec4 divided by ivec4 should fail
-PASS [shaders/implicit/equal_int_float.vert/fshader]: implicit cast of int to float in comparision should fail
-PASS [shaders/implicit/equal_ivec2_vec2.vert/fshader]: implicit cast of ivec2 to vec2 in comparision should fail
-PASS [shaders/implicit/equal_ivec3_vec3.vert/fshader]: implicit cast of ivec3 to vec3 in comparision should fail
-PASS [shaders/implicit/equal_ivec4_vec4.vert/fshader]: implicit cast of ivec4 to vec4 in comparision should fail
+PASS [shaders/implicit/equal_int_float.vert/fshader]: implicit cast of int to float in comparison should fail
+PASS [shaders/implicit/equal_ivec2_vec2.vert/fshader]: implicit cast of ivec2 to vec2 in comparison should fail
+PASS [shaders/implicit/equal_ivec3_vec3.vert/fshader]: implicit cast of ivec3 to vec3 in comparison should fail
+PASS [shaders/implicit/equal_ivec4_vec4.vert/fshader]: implicit cast of ivec4 to vec4 in comparison should fail
 PASS [shaders/implicit/function_int_float.vert/fshader]: implicit cast of int to float in function argument should fail
 PASS [shaders/implicit/function_ivec2_vec2.vert/fshader]: implicit cast of ivec2 to vec2 in function argument should fail
 PASS [shaders/implicit/function_ivec3_vec3.vert/fshader]: implicit cast of ivec3 to vec3 in function argument should fail

@@ -454,7 +454,7 @@ function windowHandleMessage(event) {
             testPassed(currentTest.name);
         }
     } catch(e) {
-        testFailed(currentTest.name + ": on recieve: " + e + ". event.data = " + event.data);
+        testFailed(currentTest.name + ": on receive: " + e + ". event.data = " + event.data);
     }
     doneTest();
 }
