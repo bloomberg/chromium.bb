@@ -208,6 +208,8 @@ void Reader::OnReadManifest(
     EntryCache* cache,
     const CreateEntryForNameCallback& entry_created_callback,
     std::unique_ptr<Entry> entry) {
+  if (!entry)
+    return;
   shell::mojom::ResolveResultPtr result =
       shell::mojom::ResolveResult::From(*entry);
   AddEntryToCache(cache, std::move(entry));
