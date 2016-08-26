@@ -161,12 +161,7 @@ InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType
         return InputType::Undo;
     case CommandType::Redo:
         return InputType::Redo;
-    case CommandType::Copy:
-        return InputType::Copy;
-    case CommandType::Cut:
-        return InputType::Cut;
-    case CommandType::Paste:
-        return InputType::Paste;
+    // Cut and Paste will be handled in |Editor::dispatchCPPEvent()|.
 
     // Styling.
     case CommandType::Bold:
@@ -479,7 +474,7 @@ static bool executeCut(LocalFrame& frame, Event*, EditorCommandSource source, co
     // |canExecute()|. See also "Copy", and "Paste" command.
     if (!canWriteClipboard(frame, source))
         return false;
-    frame.editor().cut();
+    frame.editor().cut(source);
     return true;
 }
 
@@ -1126,7 +1121,7 @@ static bool executePaste(LocalFrame& frame, Event*, EditorCommandSource source, 
     // |canExecute()|. See also "Copy", and "Cut" command.
     if (!canReadClipboard(frame, source))
         return false;
-    frame.editor().paste();
+    frame.editor().paste(source);
     return true;
 }
 
@@ -1145,14 +1140,14 @@ static bool executePasteGlobalSelection(LocalFrame& frame, Event*, EditorCommand
 
     bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
     Pasteboard::generalPasteboard()->setSelectionMode(true);
-    frame.editor().paste();
+    frame.editor().paste(source);
     Pasteboard::generalPasteboard()->setSelectionMode(oldSelectionMode);
     return true;
 }
 
-static bool executePasteAndMatchStyle(LocalFrame& frame, Event*, EditorCommandSource, const String&)
+static bool executePasteAndMatchStyle(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
 {
-    frame.editor().pasteAsPlainText();
+    frame.editor().pasteAsPlainText(source);
     return true;
 }
 
@@ -1886,8 +1881,8 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
         }
     }
 
-    // 'beforeinput' event handler may destroy |frame()|.
-    if (!m_frame || !frame().document())
+    // 'beforeinput' event handler may destroy target frame.
+    if (m_frame->document()->frame() != m_frame)
         return false;
 
     frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();

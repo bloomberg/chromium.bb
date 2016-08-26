@@ -5,6 +5,7 @@
 #ifndef InputEvent_h
 #define InputEvent_h
 
+#include "core/clipboard/DataTransfer.h"
 #include "core/dom/StaticRange.h"
 #include "core/events/InputEventInit.h"
 #include "core/events/UIEvent.h"
@@ -30,6 +31,7 @@ public:
         InsertOrderedList,
         InsertUnorderedList,
         InsertHorizontalRule,
+        InsertFromPaste,
         // Deletion.
         DeleteComposedCharacterForward,
         DeleteComposedCharacterBackward,
@@ -39,12 +41,10 @@ public:
         DeleteLineForward,
         DeleteContentBackward,
         DeleteContentForward,
+        DeleteByCut,
         // Command.
         Undo,
         Redo,
-        Copy,
-        Cut,
-        Paste,
         // Styling.
         Bold,
         Italic,
@@ -88,10 +88,12 @@ public:
     };
 
     static InputEvent* createBeforeInput(InputType, const String& data, EventCancelable, EventIsComposing, const RangeVector*);
+    static InputEvent* createBeforeInput(InputType, DataTransfer*, EventCancelable, EventIsComposing, const RangeVector*);
     static InputEvent* createInput(InputType, const String& data, EventIsComposing, const RangeVector*);
 
     String inputType() const;
     const String& data() const { return m_data; }
+    DataTransfer* dataTransfer() const { return m_dataTransfer.get(); }
     bool isComposing() const { return m_isComposing; }
     // Returns a copy of target ranges during event dispatch, and returns an empty
     // vector after dispatch.
@@ -109,6 +111,7 @@ private:
 
     InputType m_inputType;
     String m_data;
+    Member<DataTransfer> m_dataTransfer;
     bool m_isComposing;
     // We have to stored |Range| internally and only expose |StaticRange|, please
     // see comments in |InputEventDispatchMediator::dispatchEvent()|.

@@ -24,6 +24,7 @@ const struct {
     { InputEvent::InputType::InsertOrderedList, "insertOrderedList" },
     { InputEvent::InputType::InsertUnorderedList, "insertUnorderedList" },
     { InputEvent::InputType::InsertHorizontalRule, "insertHorizontalRule" },
+    { InputEvent::InputType::InsertFromPaste, "insertFromPaste" },
     { InputEvent::InputType::DeleteComposedCharacterForward, "deleteComposedCharacterForward" },
     { InputEvent::InputType::DeleteComposedCharacterBackward, "deleteComposedCharacterBackward" },
     { InputEvent::InputType::DeleteWordBackward, "deleteWordBackward" },
@@ -32,11 +33,9 @@ const struct {
     { InputEvent::InputType::DeleteLineForward, "deleteLineForward" },
     { InputEvent::InputType::DeleteContentBackward, "deleteContentBackward" },
     { InputEvent::InputType::DeleteContentForward, "deleteContentForward" },
+    { InputEvent::InputType::DeleteByCut, "deleteByCut" },
     { InputEvent::InputType::Undo, "undo" },
     { InputEvent::InputType::Redo, "redo" },
-    { InputEvent::InputType::Copy, "copy" },
-    { InputEvent::InputType::Cut, "cut" },
-    { InputEvent::InputType::Paste, "paste" },
     { InputEvent::InputType::Bold, "bold" },
     { InputEvent::InputType::Italic, "italic" },
     { InputEvent::InputType::Underline, "underline" },
@@ -94,6 +93,8 @@ InputEvent::InputEvent(const AtomicString& type, const InputEventInit& initializ
         m_inputType = convertStringToInputType(initializer.inputType());
     if (initializer.hasData())
         m_data = initializer.data();
+    if (initializer.hasDataTransfer())
+        m_dataTransfer = initializer.dataTransfer();
     if (initializer.hasIsComposing())
         m_isComposing = initializer.isComposing();
     if (initializer.hasRanges())
@@ -111,6 +112,22 @@ InputEvent* InputEvent::createBeforeInput(InputType inputType, const String& dat
     // See InputEvent::InputEvent() for the second conversion.
     inputEventInit.setInputType(convertInputTypeToString(inputType));
     inputEventInit.setData(data);
+    inputEventInit.setIsComposing(isComposing == IsComposing);
+    if (ranges)
+        inputEventInit.setRanges(*ranges);
+
+    return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
+}
+
+/* static */
+InputEvent* InputEvent::createBeforeInput(InputType inputType, DataTransfer* dataTransfer, EventCancelable cancelable, EventIsComposing isComposing, const RangeVector* ranges)
+{
+    InputEventInit inputEventInit;
+
+    inputEventInit.setBubbles(true);
+    inputEventInit.setCancelable(cancelable == IsCancelable);
+    inputEventInit.setInputType(convertInputTypeToString(inputType));
+    inputEventInit.setDataTransfer(dataTransfer);
     inputEventInit.setIsComposing(isComposing == IsComposing);
     if (ranges)
         inputEventInit.setRanges(*ranges);
@@ -164,6 +181,7 @@ EventDispatchMediator* InputEvent::createMediator()
 DEFINE_TRACE(InputEvent)
 {
     UIEvent::trace(visitor);
+    visitor->trace(m_dataTransfer);
     visitor->trace(m_ranges);
 }
 

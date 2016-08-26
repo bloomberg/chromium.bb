@@ -9,6 +9,7 @@
 ] dictionary InputEventInit : UIEventInit {
     DOMString inputType = "";
     DOMString data = "";
+    DataTransfer? dataTransfer;
     boolean isComposing = false;
     sequence<Range> ranges = [];
 };

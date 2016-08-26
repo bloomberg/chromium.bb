@@ -83,8 +83,8 @@ test(function() {
     // Copy shouldn't fire 'input'.
     testExecCommandInputType('copy', null, NO_INPUT_EVENT_FIRED);
     // Cut/Paste should fire 'input'.
-    testExecCommandInputType('cut', null, 'cut');
-    testExecCommandInputType('paste', null, 'paste');
+    testExecCommandInputType('cut', null, 'deleteByCut');
+    testExecCommandInputType('paste', null, 'insertFromPaste');
 }, 'Testing input with execCommand');
 </script>
 </body>

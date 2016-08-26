@@ -87,10 +87,10 @@ public:
     bool canDelete() const;
     bool canSmartCopyOrDelete() const;
 
-    void cut();
+    void cut(EditorCommandSource);
     void copy();
-    void paste();
-    void pasteAsPlainText();
+    void paste(EditorCommandSource);
+    void pasteAsPlainText(EditorCommandSource);
     void performDelete();
 
     static void countEvent(ExecutionContext*, const Event*);

@@ -351,7 +351,7 @@ void SpellChecker::markMisspellingsAfterApplyingCommand(const CompositeEditComma
     // Note: Request spell checking for and only for |ReplaceSelectionCommand|s
     // created in |Editor::replaceSelectionWithFragment()|.
     // TODO(xiaochengh): May also need to do this after dragging crbug.com/298046.
-    if (cmd.inputType() != InputEvent::InputType::Paste)
+    if (cmd.inputType() != InputEvent::InputType::InsertFromPaste)
         return;
 
     markMisspellingsAfterReplaceSelectionCommand(toReplaceSelectionCommand(cmd));

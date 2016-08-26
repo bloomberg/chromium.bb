@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: beforeinput shouldn't crash in removed iframe</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+test(function() {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    function testBeforeInputCrash(expectedBeforeInputCount, beforeInputTrigger, comments) {
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        const childDocument = iframe.contentDocument;
+        childDocument.body.innerHTML = '<p id="editable" contenteditable>Foo</p>';
+
+        var actualBeforeInputCount = 0;
+        const editable = childDocument.getElementById('editable');
+        editable.addEventListener('beforeinput', event => {
+            actualBeforeInputCount++;
+            if (actualBeforeInputCount == expectedBeforeInputCount && iframe.parentNode)
+                iframe.remove();
+        });
+
+        editable.focus();
+        beforeInputTrigger(childDocument, editable);
+
+        if (iframe.parentNode)
+            iframe.remove();
+        assert_equals(actualBeforeInputCount, expectedBeforeInputCount, comments);
+    }
+
+    // Text command.
+    testBeforeInputCrash(1, () => eventSender.keyDown('a'), 'Testing insertText "a"');
+    testBeforeInputCrash(1, () => eventSender.keyDown('Enter', ['shiftKey']), 'Testing insertLineBreak');
+    testBeforeInputCrash(1, () => eventSender.keyDown('Delete'), 'Testing deleteCharacterForward');
+
+    // Styling command.
+    testBeforeInputCrash(1, (childDocument, editable) => {
+        var selection = childDocument.getSelection();
+        selection.collapse(editable, 0);
+        selection.extend(editable, 1);
+        testRunner.execCommand('bold');
+    }, 'Testing bold');
+
+    // Cut & Paste.
+    testBeforeInputCrash(1, (childDocument, editable) => {
+        var selection = childDocument.getSelection();
+        selection.collapse(editable, 0);
+        selection.extend(editable, 1);
+        eventSender.keyDown('Cut');
+    }, 'Testing deleteByCut');
+    testBeforeInputCrash(1, () => eventSender.keyDown('Paste'), 'Testing insertFromPaste');
+
+    // Undo & Redo.
+    testBeforeInputCrash(2, () => {
+        eventSender.keyDown('a');
+        testRunner.execCommand('undo');
+    }, 'Testing undo');
+    testBeforeInputCrash(3, () => {
+        eventSender.keyDown('a');
+        testRunner.execCommand('undo');
+        testRunner.execCommand('redo');
+    }, 'Testing redo');
+}, 'Testing beforeinput in removed iframe');
+</script>
+</body>
+</html>

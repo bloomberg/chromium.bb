@@ -190,6 +190,7 @@ bool CompositeEditCommand::apply()
         case InputEvent::InputType::InsertText:
         case InputEvent::InputType::InsertLineBreak:
         case InputEvent::InputType::InsertParagraph:
+        case InputEvent::InputType::InsertFromPaste:
         case InputEvent::InputType::DeleteComposedCharacterForward:
         case InputEvent::InputType::DeleteComposedCharacterBackward:
         case InputEvent::InputType::DeleteWordBackward:
@@ -198,10 +199,9 @@ bool CompositeEditCommand::apply()
         case InputEvent::InputType::DeleteLineForward:
         case InputEvent::InputType::DeleteContentBackward:
         case InputEvent::InputType::DeleteContentForward:
-        case InputEvent::InputType::Paste:
+        case InputEvent::InputType::DeleteByCut:
         case InputEvent::InputType::Drag:
         case InputEvent::InputType::SetWritingDirection:
-        case InputEvent::InputType::Cut:
         case InputEvent::InputType::None:
             break;
         default:

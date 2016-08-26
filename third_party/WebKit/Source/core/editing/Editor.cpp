@@ -542,7 +542,7 @@ void Editor::replaceSelectionWithFragment(DocumentFragment* fragment, bool selec
     if (matchStyle)
         options |= ReplaceSelectionCommand::MatchStyle;
     DCHECK(frame().document());
-    ReplaceSelectionCommand::create(*frame().document(), fragment, options, InputEvent::InputType::Paste)->apply();
+    ReplaceSelectionCommand::create(*frame().document(), fragment, options, InputEvent::InputType::InsertFromPaste)->apply();
     revealSelectionAfterEditingOperation();
 }
 
@@ -868,7 +868,7 @@ bool Editor::insertParagraphSeparator()
     return true;
 }
 
-void Editor::cut()
+void Editor::cut(EditorCommandSource source)
 {
     if (tryDHTMLCut())
         return; // DHTML did the whole operation
@@ -884,7 +884,15 @@ void Editor::cut()
         } else {
             writeSelectionToPasteboard();
         }
-        deleteSelectionWithSmartDelete(canSmartCopyOrDelete(), InputEvent::InputType::Cut);
+
+        if (source == CommandFromMenuOrKeyBinding) {
+            if (dispatchBeforeInputDataTransfer(findEventTargetFromSelection(), InputEvent::InputType::DeleteByCut, nullptr, nullptr) != DispatchEventResult::NotCanceled)
+                return;
+            // 'beforeinput' event handler may destroy target frame.
+            if (m_frame->document()->frame() != m_frame)
+                return;
+        }
+        deleteSelectionWithSmartDelete(canSmartCopyOrDelete(), InputEvent::InputType::DeleteByCut);
     }
 }
 
@@ -906,7 +914,7 @@ void Editor::copy()
     }
 }
 
-void Editor::paste()
+void Editor::paste(EditorCommandSource source)
 {
     DCHECK(frame().document());
     if (tryDHTMLPaste(AllMimeTypes))
@@ -916,13 +924,29 @@ void Editor::paste()
     spellChecker().updateMarkersForWordsAffectedByEditing(false);
     ResourceFetcher* loader = frame().document()->fetcher();
     ResourceCacheValidationSuppressor validationSuppressor(loader);
-    if (frame().selection().isContentRichlyEditable())
+
+    PasteMode pasteMode = frame().selection().isContentRichlyEditable() ? AllMimeTypes : PlainTextOnly;
+
+    if (source == CommandFromMenuOrKeyBinding) {
+        DataTransfer* dataTransfer = DataTransfer::create(
+            DataTransfer::CopyAndPaste,
+            DataTransferReadable,
+            DataObject::createFromPasteboard(pasteMode));
+
+        if (dispatchBeforeInputDataTransfer(findEventTargetFromSelection(), InputEvent::InputType::InsertFromPaste, dataTransfer, nullptr) != DispatchEventResult::NotCanceled)
+            return;
+        // 'beforeinput' event handler may destroy target frame.
+        if (m_frame->document()->frame() != m_frame)
+            return;
+    }
+
+    if (pasteMode == AllMimeTypes)
         pasteWithPasteboard(Pasteboard::generalPasteboard());
     else
         pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
 }
 
-void Editor::pasteAsPlainText()
+void Editor::pasteAsPlainText(EditorCommandSource source)
 {
     if (tryDHTMLPaste(PlainTextOnly))
         return;

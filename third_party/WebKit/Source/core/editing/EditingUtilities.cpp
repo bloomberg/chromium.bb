@@ -1891,6 +1891,16 @@ DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputE
     return target->dispatchEvent(beforeInputEvent);
 }
 
+DispatchEventResult dispatchBeforeInputDataTransfer(EventTarget* target, InputEvent::InputType inputType, DataTransfer* dataTransfer, const RangeVector* ranges)
+{
+    if (!RuntimeEnabledFeatures::inputEventEnabled())
+        return DispatchEventResult::NotCanceled;
+    if (!target)
+        return DispatchEventResult::NotCanceled;
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, dataTransfer, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing, ranges);
+    return target->dispatchEvent(beforeInputEvent);
+}
+
 InputEvent::InputType deletionInputTypeFromTextGranularity(DeleteDirection direction, TextGranularity granularity)
 {
     using InputType = InputEvent::InputType;
