@@ -62,6 +62,11 @@ union U {
   int m_hasPrefix;
 };
 
+// https://crbug.com/640749#c1: Some type traits are inside blink namespace.
+struct IsGarbageCollectedMixin {
+  static const bool value = true;
+};
+
 }  // namespace blink
 
 namespace WTF {
@@ -72,7 +77,7 @@ struct TypeTrait1 {
   static const bool value = true;
 };
 
-// Some type traits  are implemented as classes, not structs
+// Some type traits are implemented as classes, not structs
 // (e.g. WTF::IsGarbageCollectedType or WTF::IsAssignable).
 template <typename T>
 class TypeTrait2 {

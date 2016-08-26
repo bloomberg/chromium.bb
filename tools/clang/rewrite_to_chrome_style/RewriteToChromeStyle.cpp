@@ -585,13 +585,12 @@ int main(int argc, const char* argv[]) {
   //   };
   // matches |x|, |y|, and |VALUE|.
   auto field_decl_matcher = id("decl", fieldDecl(in_blink_namespace));
-  auto is_wtf_type_trait_value =
-      varDecl(hasName("value"), hasStaticStorageDuration(),
+  auto is_type_trait_value =
+      varDecl(hasName("value"), hasStaticStorageDuration(), isPublic(),
               hasType(isConstQualified()), hasType(booleanType()),
-              hasAncestor(recordDecl(hasAncestor(namespaceDecl(
-                  hasName("WTF"), hasParent(translationUnitDecl()))))));
+              unless(hasAncestor(recordDecl(has(functionDecl())))));
   auto var_decl_matcher =
-      id("decl", varDecl(in_blink_namespace, unless(is_wtf_type_trait_value)));
+      id("decl", varDecl(in_blink_namespace, unless(is_type_trait_value)));
   auto enum_member_decl_matcher =
       id("decl", enumConstantDecl(in_blink_namespace));
 
