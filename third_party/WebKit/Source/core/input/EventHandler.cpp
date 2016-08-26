@@ -1499,9 +1499,14 @@ void EventHandler::releasePointerCapture(int pointerId, EventTarget* target)
     m_pointerEventManager.releasePointerCapture(pointerId, target);
 }
 
-bool EventHandler::hasPointerCapture(int pointerId, EventTarget* target)
+bool EventHandler::hasPointerCapture(int pointerId, const EventTarget* target) const
 {
     return m_pointerEventManager.hasPointerCapture(pointerId, target);
+}
+
+bool EventHandler::hasProcessedPointerCapture(int pointerId, const EventTarget* target) const
+{
+    return m_pointerEventManager.hasProcessedPointerCapture(pointerId, target);
 }
 
 void EventHandler::elementRemoved(EventTarget* target)

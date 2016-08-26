@@ -453,7 +453,19 @@ public:
 
     void setPointerCapture(int pointerId, ExceptionState&);
     void releasePointerCapture(int pointerId, ExceptionState&);
-    bool hasPointerCapture(int pointerId);
+
+    // Returns true iff the element would capture the next pointer event. This
+    // is true between a setPointerCapture call and a releasePointerCapture (or
+    // implicit release) call:
+    // https://w3c.github.io/pointerevents/#dom-element-haspointercapture
+    bool hasPointerCapture(int pointerId) const;
+
+    // Returns true iff the element has received a gotpointercapture event for
+    // the |pointerId| but hasn't yet received a lostpointercapture event for
+    // the same id. The time window during which this is true is "delayed" from
+    // (but overlapping with) the time window for hasPointerCapture():
+    // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
+    bool hasProcessedPointerCapture(int pointerId) const;
 
     String textFromChildren();
 

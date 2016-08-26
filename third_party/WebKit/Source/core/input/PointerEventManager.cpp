@@ -760,9 +760,14 @@ void PointerEventManager::releasePointerCapture(int pointerId, EventTarget* targ
         releasePointerCapture(pointerId);
 }
 
-bool PointerEventManager::hasPointerCapture(int pointerId, EventTarget* target)
+bool PointerEventManager::hasPointerCapture(int pointerId, const EventTarget* target) const
 {
     return m_pendingPointerCaptureTarget.get(pointerId) == target;
+}
+
+bool PointerEventManager::hasProcessedPointerCapture(int pointerId, const EventTarget* target) const
+{
+    return m_pointerCaptureTarget.get(pointerId) == target;
 }
 
 void PointerEventManager::releasePointerCapture(int pointerId)

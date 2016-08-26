@@ -65,7 +65,12 @@ public:
 
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
-    bool hasPointerCapture(int, EventTarget*);
+
+    // See Element::hasPointerCapture(int).
+    bool hasPointerCapture(int, const EventTarget*) const;
+
+    // See Element::hasProcessedPointerCapture(int).
+    bool hasProcessedPointerCapture(int, const EventTarget*) const;
 
     bool isActive(const int) const;
 

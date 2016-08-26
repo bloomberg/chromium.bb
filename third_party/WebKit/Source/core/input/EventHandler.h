@@ -186,7 +186,8 @@ public:
 
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
-    bool hasPointerCapture(int, EventTarget*);
+    bool hasPointerCapture(int, const EventTarget*) const;
+    bool hasProcessedPointerCapture(int, const EventTarget*) const;
 
     void elementRemoved(EventTarget*);
 

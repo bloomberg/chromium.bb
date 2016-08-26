@@ -79892,6 +79892,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1532" label="UsbDeviceIsochronousTransferIn"/>
   <int value="1533" label="UsbDeviceIsochronousTransferOut"/>
   <int value="1534" label="UsbDeviceReset"/>
+  <int value="1535" label="PointerEnterLeaveFired"/>
+  <int value="1536" label="PointerOverOutFired"/>
+  <int value="1537" label="PointerEnterLeaveFiredWhileCaptured"/>
+  <int value="1538" label="PointerOverOutFiredWhileCaptured"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

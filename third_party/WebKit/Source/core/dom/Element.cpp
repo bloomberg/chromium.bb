@@ -2792,9 +2792,14 @@ void Element::releasePointerCapture(int pointerId, ExceptionState& exceptionStat
     }
 }
 
-bool Element::hasPointerCapture(int pointerId)
+bool Element::hasPointerCapture(int pointerId) const
 {
     return document().frame() && document().frame()->eventHandler().hasPointerCapture(pointerId, this);
+}
+
+bool Element::hasProcessedPointerCapture(int pointerId) const
+{
+    return document().frame() && document().frame()->eventHandler().hasProcessedPointerCapture(pointerId, this);
 }
 
 String Element::innerText()

@@ -1303,6 +1303,10 @@ public:
         UsbDeviceIsochronousTransferIn = 1532,
         UsbDeviceIsochronousTransferOut = 1533,
         UsbDeviceReset = 1534,
+        PointerEnterLeaveFired = 1535,
+        PointerOverOutFired = 1536,
+        PointerEnterLeaveFiredWhileCaptured = 1537,
+        PointerOverOutFiredWhileCaptured = 1538,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
