@@ -462,6 +462,22 @@ body.mirror #effects li canvas {
   top: -2px;
 }
 
+#buttons #take-picture.flash {
+  -webkit-animation: flashTake 600ms linear infinite;
+}
+
+@-webkit-keyframes flashTake {
+  from {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
 .buttons #toggle-timer {
   -webkit-appearance: none;
   background-image: -webkit-image-set(
@@ -721,7 +737,7 @@ body.album #album {
   height: 100%;
 }
 
-#browser img {
+#browser div.media-wrapper {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: -webkit-box;
   height: 72%;
@@ -730,13 +746,18 @@ body.album #album {
   transition: -webkit-transform 200ms;
 }
 
+#browser div.media-wrapper img,
+#browser div.media-wrapper video {
+  height: 100%;
+}
+
 #browser div.bounds-padder {
   display: -webkit-box;
   height: 1px;  /* Required to make the element visible. */
   width: 50%;
 }
 
-#browser img.selected {
+#browser div.media-wrapper.selected {
   -webkit-transform: scale(1.1);
 }
 
@@ -784,7 +805,7 @@ body.album #album {
 
   /* Reset styles to default on the borwser view, and set the maximum dimensions
      to 100%. */
-  #browser img.selected {
+  #browser div.media-wrapper.selected {
     -webkit-transform: scale(1);
     border: none;
     box-shadow: none;

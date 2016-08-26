@@ -103,21 +103,27 @@
     "message": "Check if the camera is properly connected.",
     "description": "Hint message shown below the main error message. A hint for a user why the error occured."
   },
-  "errorMsgGallerySaveFailed": {
-    "message": "Unable to save the picture to the gallery.",
-    "description": "Error message shown when saving a picture to the gallery failed."
-  },
   "errorMsgGalleryLoadFailed": {
     "message": "Unable to load the gallery.",
     "description": "Error message shown when loading the gallery failed."
   },
-  "errorMsgGalleryDeleteFailed": {
-    "message": "Unable to delete the selected picture.",
-    "description": "Error message shown when deleting the selected file from gallery failed."
+  "errorMsgGallerySaveFailed": {
+    "message": "Unable to add to the gallery.",
+    "description": "Error message shown when saving and adding a image or video to the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Unable to save the selected picture.",
-    "description": "Error message shown when saving the selected file to an external directory failed."
+    "message": "Unable to save $file$.",
+    "description": "Error message shown when saving to an external directory failed. Expects a file name to be passed in.",
+    "placeholders": {
+      "file": {
+        "content": "$1",
+        "example": "IMG_20160520_000000.jpg."
+      }
+    }
+  },
+  "errorMsgEmptyRecording": {
+    "message": "Nothing recorded.",
+    "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "errorMsgNoWebGL": {
     "message": "Hardware acceleration is not available.",
@@ -202,6 +208,14 @@
   "toggleMirrorInactiveMessage": {
     "message": "Mirroring inactive",
     "description": "Message shown when inactivating the preview mirroring."
+  },
+  "toggleRecActiveMessage": {
+    "message": "Recording active",
+    "description": "Message shown when activating the video recording feature."
+  },
+  "toggleRecInactiveMessage": {
+    "message": "Recording inactive",
+    "description": "Message shown when inactivating the video recording feature."
   },
   "dialogYesButton": {
     "message": "Yes",

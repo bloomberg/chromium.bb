@@ -165,6 +165,19 @@ camera.views.Browser.prototype.onBackgroundClicked_ = function(event) {
  * @private
  */
 camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
+  window.matchMedia('print').addListener(function(media) {
+    if (!media.matches) {
+      for (var index = 0; index < this.pictures.length; index++) {
+        // Force the div wrappers to redraw by accessing their display and
+        // offsetWidth property. Otherwise, they may not have the same width as
+        // their child image or video element after printing.
+        var wrapper = this.pictures[index].element;
+        wrapper.style.display = 'none';
+        wrapper.offsetWidth;  // Reference forces width recalculation.
+        wrapper.style.display = '';
+      }
+    }
+  }.bind(this));
   window.print();
 };
 
@@ -246,12 +259,62 @@ camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
  */
 camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
   var selectedPicture = this.lastSelectedPicture();
+
+  var wrappedElement = function(wrapper, tagName) {
+    return (wrapper.firstElementChild.tagName == tagName) ?
+        wrapper.firstElementChild : null;
+  };
+
+  var updateImage = function(wrapper, url) {
+    var img = wrappedElement(wrapper, 'IMG');
+    if (!img) {
+      // Remove the existing video element if any.
+      img = document.createElement('img');
+      img.tabIndex = -1;
+      img.onload = function() {
+        var video = wrappedElement(wrapper, 'VIDEO');
+        if (video) {
+          wrapper.replaceChild(img, video);
+        }
+      };
+      img.src = url;
+    } else if (img.src != url) {
+      img.src = url;
+    }
+  };
+
+  var updateVideo = function(wrapper, url) {
+    // Use a video element to play back the selected motion picture.
+    var video = document.createElement('video');
+    video.tabIndex = -1;
+    video.controls = true;
+    video.onloadeddata = function() {
+      // Add the video element only if the selection has not been changed and
+      // there is still the image element after loading.
+      if (wrapper == this.lastSelectedPicture().element) {
+        var img = wrappedElement(wrapper, 'IMG');
+        if (img) {
+          wrapper.replaceChild(video, img);
+        }
+      }
+    }.bind(this);
+    video.src = url;
+  }.bind(this);
+
   var updateResolutions = function() {
     for (var index = 0; index < this.pictures.length; index++) {
-      var picture = this.pictures[index];
-      picture.displayResolution = (picture == selectedPicture) ?
-          camera.views.GalleryBase.DOMPicture.DisplayResolution.HIGH :
-          camera.views.GalleryBase.DOMPicture.DisplayResolution.LOW;
+      var wrapper = this.pictures[index].element;
+      var picture = this.pictures[index].picture;
+      if (this.pictures[index] == selectedPicture) {
+        if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
+          updateVideo(wrapper, picture.pictureURL);
+        } else {
+          updateImage(wrapper, picture.pictureURL);
+        }
+      } else {
+        // Show thumbnails for both unselected still and motion pictures.
+        updateImage(wrapper, picture.thumbnailURL);
+      }
     }
   }.bind(this);
 
@@ -354,22 +417,27 @@ camera.views.Browser.prototype.onPictureDeleting = function(picture) {
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   var browser = document.querySelector('#browser .padder');
   var boundsPadder = browser.querySelector('.bounds-padder');
+  var wrapper = document.createElement('div');
+  wrapper.className = 'media-wrapper';
+  wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
+  wrapper.tabIndex = -1;
+  wrapper.setAttribute('aria-role', 'option');
+  wrapper.setAttribute('aria-selected', 'false');
   var img = document.createElement('img');
-  img.id = 'browser-picture-' + (this.lastPictureIndex_++);
   img.tabIndex = -1;
-  img.setAttribute('aria-role', 'option');
-  img.setAttribute('aria-selected', 'false');
-  browser.insertBefore(img, boundsPadder.nextSibling);
+  img.src = picture.thumbnailURL;
+  wrapper.appendChild(img);
+  browser.insertBefore(wrapper, boundsPadder.nextSibling);
 
   // Add to the collection.
-  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, img);
+  var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
   this.pictures.push(domPicture);
   this.updateScrollbarThumb_();
 
-  img.addEventListener('mousedown', function(event) {
+  wrapper.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
   });
-  img.addEventListener('click', function(event) {
+  wrapper.addEventListener('click', function(event) {
     // If scrolled while clicking, then discard this selection, since another
     // one will be choosen in the onScrollEnded handler.
     if (this.scrollTracker_.scrolling &&
@@ -379,7 +447,7 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
 
     this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
-  img.addEventListener('focus', function() {
+  wrapper.addEventListener('focus', function() {
     var index = this.pictures.indexOf(domPicture);
     if (this.lastSelectedIndex() != index)
       this.setSelectedIndex(index);
