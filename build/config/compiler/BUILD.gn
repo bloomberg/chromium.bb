@@ -1311,6 +1311,9 @@ if (is_win) {
   }
 }
 
+config("default_stack_frames") {
+}
+
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
