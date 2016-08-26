@@ -31,10 +31,11 @@ SettingsLanguagesPageBrowserTest.prototype = {
   },
 };
 
+// Flaky on Windows. See https://crbug.com/641400.
 // May time out on debug builders and memory bots because
 // the Settings page can take several seconds to load in a Release build
 // and several times that in a Debug build. See https://crbug.com/558434.
-GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
+GEN('#if defined(OS_WINDOWS) || defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
 GEN('#define MAYBE_LanguagesPage DISABLED_LanguagesPage');
 GEN('#else');
 GEN('#define MAYBE_LanguagesPage LanguagesPage');
