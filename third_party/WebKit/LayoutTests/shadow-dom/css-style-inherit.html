@@ -1,16 +1,43 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<style>
+  #host {
+    color: red;
+  }
+  </style>
 <div id="host">
-    <div slot="s1">This text should be green</div>
+  <template data-mode="open">
+    <style>
+      div {
+        color: green;
+      }
+      div.p1 {
+        color: blue;
+      }
+    </style>
+    <div>
+      <slot name="s1"></slot>
+    </div>
+  </template>
+  <span id="span0" slot="unassigned"></span>
+  <span id="span1" slot="s1"></span>
 </div>
 <script>
-    description("A changed inherited property on a slot parent should propagate down to slotted elements.");
+test(() => {
+  convertTemplatesToShadowRootsWithin(host);
 
-    var root = host.attachShadow({mode:"open"});
-    root.innerHTML = '<style>.p1 { color: green }</style><div id="p1"><slot name="s1"></slot></div>';
-    var p1 = root.querySelector("#p1");
-    var s1 = host.querySelector("[slot]");
-    shouldBeEqualToString("getComputedStyle(s1).color", "rgb(0, 0, 0)");
-    p1.className = "p1";
-    shouldBeEqualToString("getComputedStyle(s1).color", "rgb(0, 128, 0)");
+  assert_equals(getComputedStyle(span0).color, 'rgb(0, 0, 0)',
+                'An element which is not assigned to any slot should not inherit a style from the parent.');
+  assert_equals(getComputedStyle(host.shadowRoot.querySelector('slot')).color, 'rgb(0, 0, 0)',
+                'A slot should not inherit a style from the parent because Blink does not support "slots in the flat tree".');
+
+  assert_equals(getComputedStyle(span1).color, 'rgb(0, 128, 0)',
+                'An element which is assigned to a slot should inherit a style from the slot.');
+  host.shadowRoot.querySelector('div').className = 'p1';
+  assert_equals(getComputedStyle(span1).color, 'rgb(0, 0, 255)',
+                'The style change should propagate down to a slotted element.');
+}, 'CSS inheritance tests for assigned nodes, not-assigned nodes, and slots');
 </script>

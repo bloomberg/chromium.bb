@@ -28,10 +28,10 @@ var sr = document.getElementById("host").createShadowRoot();
 sr.innerHTML = '<style>div { color: blue }</style><div><content id="contentId" select="#div-child"></content></div>';
 
 shouldBe('getColorProperty("div-child")', '"rgb(0, 0, 255)"');
-shouldBe('getColorProperty("span-child")', '"rgb(255, 0, 0)"');
+shouldBe('getColorProperty("span-child")', '"rgb(0, 0, 0)"');
 
 sr.getElementById("contentId").select = "#span-child";
-shouldBe('getColorProperty("div-child")', '"rgb(255, 0, 0)"');
+shouldBe('getColorProperty("div-child")', '"rgb(0, 0, 0)"');
 shouldBe('getColorProperty("span-child")', '"rgb(0, 0, 255)"');
 
 if (window.testRunner)

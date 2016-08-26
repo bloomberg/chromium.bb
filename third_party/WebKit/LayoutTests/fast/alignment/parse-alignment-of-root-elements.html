@@ -4,7 +4,7 @@
 <script src="resources/alignment-parsing-utils-th.js"></script>
 <html>
  <body>
-     <p>Test to verify auto value resolution works as expected in root elements (eg. document root / shadow roots / slotted elements / elements inside<slot>)</p>
+     <p>Test to verify auto value resolution works as expected in root elements (eg. document root / shadow roots / slotted elements / elements inside slot)</p>
      <div id="log"></div>
 
      <div id="host">
@@ -161,7 +161,7 @@ test(function() {
     slotted.style.alignSelf = "start";
     checkValues(slotted, "alignSelf", "align-self", "start", "start");
     slotted.style.alignSelf = "auto";
-    checkValues(slotted, "alignSelf", "align-self", "auto", "center");
+    checkValues(slotted, "alignSelf", "align-self", "auto", "normal");
 }, "Check out how align-self uses the 'shadowHost' as 'slotted' element's parent while 'slot' is not assigned.");
 
 test(function() {
@@ -174,7 +174,7 @@ test(function() {
     slotted.style.justifySelf = "start";
     checkValues(slotted, "justifySelf", "justify-self", "start", "start");
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "center");
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "normal");
 }, "Check out how justify-self uses the 'shadowHost' as 'slotted' element's parent while 'slot' is not assigned.");
 
 test(function() {
@@ -186,13 +186,13 @@ test(function() {
     checkValues(document.documentElement, "justifyItems", "justify-items",  "legacy center", "legacy center");
     checkValues(shadowHost, "justifyItems", "justify-items",  "auto", "legacy center");
     slotted.style.justifyItems = "auto";
-    checkValues(slotted, "justifyItems", "justify-items",  "auto", "legacy center");
+    checkValues(slotted, "justifyItems", "justify-items",  "auto", "normal");
     slotted.style.justifySelf = "auto";
-    checkValues(slotted, "justifySelf", "justify-self",  "auto", "center");
+    checkValues(slotted, "justifySelf", "justify-self",  "auto", "normal");
     shadowNode.style.justifyItems = "auto";
     checkValues(shadowNode, "justifyItems", "justify-items", "auto", "legacy center");
-    checkValues(slotted, "justifyItems", "justify-items", "auto", "legacy center");
-    checkValues(slotted, "justifySelf", "justify-self", "auto", "center");
+    checkValues(slotted, "justifyItems", "justify-items", "auto", "normal");
+    checkValues(slotted, "justifySelf", "justify-self", "auto", "normal");
     document.documentElement.style.justifyItems = "auto";
 }, "Check out how the 'legacy' keyword in justify-items affects the 'slotted' elements while 'slot' is not assigned.");
 
@@ -256,8 +256,8 @@ test(function() {
     slot.style.alignSelf = "left";
     checkValues(slot, "alignSelf", "align-self",  "left", "left");
     slot.style.alignSelf = "auto";
-    checkValues(slot, "alignSelf", "align-self",  "auto", "right");
-}, "The 'slot' element uses its parent inside the ShadowDOM tree to resolve the align-self 'auto' values .");
+    checkValues(slot, "alignSelf", "align-self",  "auto", "normal");
+}, "The 'slot' element should not use its parent inside the ShadowDOM tree to resolve the align-self 'auto' values because Blink does not support slots in the flat tree.");
 
 test(function() {
     shadowHost.style.justifyItems = "center";
@@ -270,8 +270,8 @@ test(function() {
     slot.style.justifySelf = "left";
     checkValues(slot, "justifySelf", "justify-self",  "left", "left");
     slot.style.justifySelf = "auto";
-    checkValues(slot, "justifySelf", "justify-self",  "auto", "right");
-}, "The 'slot' element uses its parent inside the ShadowDOM tree to resolve the justify-self 'auto' values .");
+    checkValues(slot, "justifySelf", "justify-self",  "auto", "normal");
+}, "The 'slot' element should not use its parent inside the ShadowDOM tree to resolve the justify-self 'auto' values because Blink does not support slots in the flat tree.");
 
 </script>
 

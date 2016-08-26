@@ -1987,7 +1987,11 @@ PassRefPtr<ComputedStyle> Document::styleForElementIgnoringPendingStylesheets(El
 {
     DCHECK_EQ(element->document(), this);
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
-    return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->ensureComputedStyle() : 0);
+    if (!element->canParticipateInFlatTree())
+        return ensureStyleResolver().styleForElement(element, nullptr);
+    ContainerNode* parent = LayoutTreeBuilderTraversal::parent(*element);
+    return ensureStyleResolver().styleForElement(element, parent ? parent->ensureComputedStyle() : nullptr);
+
 }
 
 PassRefPtr<ComputedStyle> Document::styleForPage(int pageIndex)

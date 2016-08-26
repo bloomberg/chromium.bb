@@ -10,8 +10,8 @@ custom-element { color: red }
 <script>
 description("Check that getComputedStyle causes a shadow re-distribution when necessary.");
 
-var red = "rgb(255, 0, 0)";
 var green = "rgb(0, 128, 0)";
+var white = "rgb(0, 0, 0)";
 
 var custom = document.querySelector("custom-element");
 var shadowRoot = custom.createShadowRoot();
@@ -20,14 +20,12 @@ shadowRoot.innerHTML = '<style>::content div { color: green; }</style><content s
 var d1 = document.querySelector(".d1");
 var d2 = document.querySelector(".d2");
 
-shouldBe("getComputedStyle(d1).color", "red");
+shouldBe("getComputedStyle(d1).color", "white");
 shouldBe("getComputedStyle(d2).color", "green");
-
-document.body.offsetTop;
 
 shadowRoot.querySelector("content").setAttribute("select", ".d1");
 
 shouldBe("getComputedStyle(d1).color", "green");
-shouldBe("getComputedStyle(d2).color", "red");
+shouldBe("getComputedStyle(d2).color", "white");
 
 </script>
