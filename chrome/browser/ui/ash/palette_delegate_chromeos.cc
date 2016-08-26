@@ -11,6 +11,9 @@
 #include "ash/utility/screenshot_controller.h"
 #include "chrome/browser/chromeos/note_taking_app_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
 namespace {
@@ -21,9 +24,13 @@ Profile* GetProfile() {
 
 }  // namespace
 
-PaletteDelegateChromeOS::PaletteDelegateChromeOS() {}
+PaletteDelegateChromeOS::PaletteDelegateChromeOS() {
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+}
 
-PaletteDelegateChromeOS::~PaletteDelegateChromeOS() {}
+PaletteDelegateChromeOS::~PaletteDelegateChromeOS() {
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+}
 
 void PaletteDelegateChromeOS::CreateNote() {
   chromeos::LaunchNoteTakingAppForNewNote(GetProfile(), base::FilePath());
@@ -37,6 +44,16 @@ void PaletteDelegateChromeOS::SetPartialMagnifierState(bool enabled) {
   ash::PartialMagnificationController* controller =
       ash::Shell::GetInstance()->partial_magnification_controller();
   controller->SetEnabled(enabled);
+}
+
+void PaletteDelegateChromeOS::SetStylusStateChangedCallback(
+    const OnStylusStateChangedCallback& on_stylus_state_changed) {
+  on_stylus_state_changed_ = on_stylus_state_changed;
+}
+
+bool PaletteDelegateChromeOS::ShouldAutoOpenPalette() {
+  return GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kLaunchPaletteOnEjectEvent);
 }
 
 void PaletteDelegateChromeOS::TakeScreenshot() {
@@ -56,6 +73,10 @@ void PaletteDelegateChromeOS::TakePartialScreenshot() {
   screenshot_controller->set_pen_events_only(true);
   screenshot_controller->StartPartialScreenshotSession(
       screenshot_delegate, false /* draw_overlay_immediately */);
+}
+
+void PaletteDelegateChromeOS::OnStylusStateChanged(ui::StylusState state) {
+  on_stylus_state_changed_.Run(state);
 }
 
 }  // namespace chromeos

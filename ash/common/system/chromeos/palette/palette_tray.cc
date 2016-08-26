@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
+#include "ash/common/palette_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -22,6 +23,7 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -120,7 +122,8 @@ class TitleView : public views::View, public views::ButtonListener {
 
 PaletteTray::PaletteTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
-      palette_tool_manager_(new PaletteToolManager(this)) {
+      palette_tool_manager_(new PaletteToolManager(this)),
+      weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
   SetContentsBackground();
@@ -134,6 +137,11 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
 
   WmShell::Get()->AddShellObserver(this);
   WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
+  if (WmShell::Get()->palette_delegate()) {
+    WmShell::Get()->palette_delegate()->SetStylusStateChangedCallback(
+        base::Bind(&PaletteTray::OnStylusStateChanged,
+                   weak_factory_.GetWeakPtr()));
+  }
 
   UpdateIconVisibility();
 }
@@ -210,7 +218,7 @@ void PaletteTray::SessionStateChanged(
 }
 
 void PaletteTray::ClickedOutsideBubble() {
-  HidePalette();
+  bubble_.reset();
 }
 
 base::string16 PaletteTray::GetAccessibleNameForTray() {
@@ -313,6 +321,16 @@ void PaletteTray::UpdateTrayIcon() {
   gfx::VectorIconId icon = palette_tool_manager_->GetActiveTrayIcon(
       palette_tool_manager_->GetActiveTool(ash::PaletteGroup::MODE));
   icon_->SetImage(CreateVectorIcon(icon, kShelfIconSize, kShelfIconColor));
+}
+
+void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
+  if (!WmShell::Get()->palette_delegate()->ShouldAutoOpenPalette())
+    return;
+
+  if (stylus_state == ui::StylusState::REMOVED && !bubble_)
+    OpenBubble();
+  else if (stylus_state == ui::StylusState::INSERTED && bubble_)
+    bubble_.reset();
 }
 
 void PaletteTray::UpdateIconVisibility() {

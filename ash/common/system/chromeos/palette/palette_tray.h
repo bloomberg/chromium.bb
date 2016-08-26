@@ -14,6 +14,8 @@
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "ui/events/devices/input_device_manager.h"
 
 namespace views {
 class ImageView;
@@ -85,6 +87,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Sets the icon to visible if the palette can be used.
   void UpdateIconVisibility();
 
+  // Called when a stylus inserted or removed event is received.
+  void OnStylusStateChanged(ui::StylusState stylus_state);
+
   bool OpenBubble();
   void AddToolsToView(views::View* host);
 
@@ -93,6 +98,8 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;
+
+  base::WeakPtrFactory<PaletteTray> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTray);
 };

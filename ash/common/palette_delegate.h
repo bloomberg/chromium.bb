@@ -6,7 +6,9 @@
 #define ASH_COMMON_PALETTE_DELEGATE_H_
 
 #include "ash/ash_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "ui/events/devices/stylus_state.h"
 
 namespace ash {
 
@@ -14,6 +16,8 @@ namespace ash {
 // Chrome-specific actions.
 class PaletteDelegate {
  public:
+  using OnStylusStateChangedCallback = base::Callback<void(ui::StylusState)>;
+
   virtual ~PaletteDelegate() {}
 
   // Create a new note.
@@ -24,6 +28,14 @@ class PaletteDelegate {
 
   // Enables or disables the partial magnifier.
   virtual void SetPartialMagnifierState(bool enabled) = 0;
+
+  // Set callback that is run when a stylus is inserted or removed.
+  virtual void SetStylusStateChangedCallback(
+      const OnStylusStateChangedCallback& on_stylus_state_changed) = 0;
+
+  // Returns true if the palette should be automatically opened on an eject
+  // event.
+  virtual bool ShouldAutoOpenPalette() = 0;
 
   // Take a screenshot of the entire window.
   virtual void TakeScreenshot() = 0;

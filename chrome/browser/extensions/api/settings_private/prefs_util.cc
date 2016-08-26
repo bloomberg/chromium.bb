@@ -259,7 +259,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["settings.language.enabled_extension_imes"] =
       settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["settings.launch_note_app_on_eject_event"] =
+  (*s_whitelist)["settings.launch_palette_on_eject_event"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Device settings.

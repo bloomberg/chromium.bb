@@ -674,10 +674,10 @@ const char kSecondaryDisplays[] = "settings.display.secondary_displays";
 // display orientation, for the internal display.
 const char kDisplayRotationLock[] = "settings.display.rotation_lock";
 
-// A boolean pref that specifies if the default note-taking app should be
-// launched after an eject input event has been received.
-const char kLaunchNoteAppOnEjectEvent[] =
-    "settings.launch_note_app_on_eject_event";
+// A boolean pref that specifies if the ash palette should be launched after an
+// eject input event has been received.
+const char kLaunchPaletteOnEjectEvent[] =
+    "settings.launch_palette_on_eject_event";
 
 // A boolean pref indicating whether user activity has been observed in the
 // current session already. The pref is used to restore information about user

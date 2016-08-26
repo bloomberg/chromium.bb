@@ -282,7 +282,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
-      prefs::kLaunchNoteAppOnEjectEvent, true,
+      prefs::kLaunchPaletteOnEjectEvent, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
