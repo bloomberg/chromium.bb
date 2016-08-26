@@ -4929,6 +4929,7 @@ interface SVGDiscardElement : SVGElement
 interface SVGElement : Element
     attribute @@toStringTag
     getter className
+    getter dataset
     getter onabort
     getter onauxclick
     getter onblur
