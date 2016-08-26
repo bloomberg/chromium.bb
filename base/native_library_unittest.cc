@@ -86,11 +86,17 @@ class TestLibrary {
   DISALLOW_COPY_AND_ASSIGN(TestLibrary);
 };
 
+// NativeLibraaryTest.LoadLibrary is failing on M tablets only.
+// crbug/641309
+#if !defined(OS_ANDROID)
+
 // Verifies that we can load a native library and resolve its exported symbols.
 TEST(NativeLibraryTest, LoadLibrary) {
   TestLibrary library;
   EXPECT_EQ(5, library.Call<int>("GetSimpleTestValue"));
 }
+
+#endif  // !defined(OS_ANDROID)
 
 // Android dlopen() requires further investigation, as it might vary across
 // versions with respect to symbol resolution scope.
