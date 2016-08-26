@@ -27,12 +27,11 @@ namespace ui {
 
 namespace {
 
-const int kEventFlagsMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
                             ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
 
-const int kEventFlagsWithRepeatMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
-                                      ui::EF_IS_REPEAT;
+const int kInterestingFlagsMask =
+    kModifierMask | ui::EF_IS_SYNTHESIZED | ui::EF_IS_REPEAT;
 
 }  // namespace
 
@@ -42,13 +41,13 @@ Accelerator::Accelerator()
 Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
     : key_code_(keycode),
       type_(ui::ET_KEY_PRESSED),
-      modifiers_(modifiers & kEventFlagsWithRepeatMask) {}
+      modifiers_(modifiers & kInterestingFlagsMask) {}
 
 Accelerator::Accelerator(const KeyEvent& key_event)
     : key_code_(key_event.key_code()),
       type_(key_event.type()),
       // |modifiers_| may include the repeat flag.
-      modifiers_(key_event.flags() & kEventFlagsWithRepeatMask) {}
+      modifiers_(key_event.flags() & kInterestingFlagsMask) {}
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
@@ -63,7 +62,7 @@ Accelerator::~Accelerator() {
 
 // static
 int Accelerator::MaskOutKeyEventFlags(int flags) {
-  return flags & kEventFlagsMask;
+  return flags & kModifierMask;
 }
 
 Accelerator& Accelerator::operator=(const Accelerator& accelerator) {

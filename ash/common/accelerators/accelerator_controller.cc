@@ -33,6 +33,7 @@
 #include "base/metrics/user_metrics.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -128,6 +129,15 @@ void HandleNewWindow() {
 
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
   return ime_control_delegate && ime_control_delegate->CanCycleIme();
+}
+
+bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
+  // Don't do anything when Alt+Tab comes from a virtual keyboard. Touchscreen
+  // users have better window switching options. See http://crbug.com/638269
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  return !(keyboard_controller && keyboard_controller->keyboard_visible() &&
+           (accelerator.modifiers() & ui::EF_IS_SYNTHESIZED));
 }
 
 // We must avoid showing the Deprecated NEXT_IME notification erronously.
@@ -647,6 +657,9 @@ bool AcceleratorController::CanPerformAction(
   // false should be returned to give the web contents a chance at handling the
   // accelerator.
   switch (action) {
+    case CYCLE_BACKWARD_MRU:
+    case CYCLE_FORWARD_MRU:
+      return CanHandleCycleMru(accelerator);
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
@@ -682,8 +695,6 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
 #endif
-    case CYCLE_BACKWARD_MRU:
-    case CYCLE_FORWARD_MRU:
     case EXIT:
     case FOCUS_NEXT_PANE:
     case FOCUS_PREVIOUS_PANE:
@@ -924,12 +935,12 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 
 AcceleratorController::AcceleratorProcessingRestriction
 AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
-  if (WmShell::Get()->IsPinned() &&
+  WmShell* wm_shell = WmShell::Get();
+  if (wm_shell->IsPinned() &&
       actions_allowed_in_pinned_mode_.find(action) ==
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  WmShell* wm_shell = WmShell::Get();
   if (!wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
           actions_allowed_at_login_screen_.end()) {

@@ -155,7 +155,7 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
                                           char_value,
                                           key_code,
                                           key_name,
-                                          modifiers,
+                                          modifiers | ui::EF_IS_SYNTHESIZED,
                                           window->GetHost());
 }
 
