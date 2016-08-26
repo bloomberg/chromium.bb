@@ -91,11 +91,6 @@ cr.define('settings', function() {
   r.ADVANCED = new Route('/advanced');
   r.ABOUT = new Route('/help');
 
-  // Navigable dialogs. These are the only non-section children of root pages.
-  // These are disfavored. If we add anymore, we should add explicit support.
-  r.SIGN_OUT = r.BASIC.createChild('/signOut');
-  r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
-
 <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');
   r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
@@ -132,6 +127,11 @@ cr.define('settings', function() {
 
   r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
   r.CERTIFICATES = r.PRIVACY.createChild('/certificates');
+
+  // CLEAR_BROWSER_DATA is the only navigable dialog route. It's the only child
+  // of a root page that's not a section. Don't add any more routes like these.
+  // If more navigable dialogs are needed, add explicit support in Route.
+  r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
 
   r.SITE_SETTINGS = r.PRIVACY.createChild('/siteSettings');
   r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');

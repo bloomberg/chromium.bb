@@ -166,14 +166,10 @@ cr.define('settings_people_page', function() {
           assertFalse(disconnectConfirm.hidden);
           MockInteractions.tap(disconnectConfirm);
 
-          // Wait for exit of dialog route.
-          return new Promise(function(resolve) {
-            window.addEventListener('popstate', function callback() {
-              window.removeEventListener('popstate', callback);
-              resolve(browserProxy.whenCalled('signOut'));
-            });
-          });
+          return browserProxy.whenCalled('signOut');
         }).then(function(deleteProfile) {
+          Polymer.dom.flush();
+
           assertFalse(deleteProfile);
 
           cr.webUIListenerCallback('sync-status-changed', {
