@@ -89,7 +89,7 @@ const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 
 const int kHitRegionPadding = 4;
-const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x3D);
+const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x4D);
 const int kSeparatorWidth = 1;
 
 int GetTrayConstant(TrayConstant constant) {
