@@ -539,7 +539,8 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
       return "benchmark,toplevel";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_DEEP:
       return "*,disabled-by-default-benchmark.detailed,"
-             "disabled-by-default-v8.cpu_profile";
+             "disabled-by-default-v8.cpu_profile,"
+             "disabled-by-default-v8.runtime_stats";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_GPU:
       return "benchmark,toplevel,gpu";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_IPC:
