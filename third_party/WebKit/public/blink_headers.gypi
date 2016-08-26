@@ -482,7 +482,6 @@
       "web/linux/WebFontRendering.h",
       "web/mac/WebScrollbarTheme.h",
       "web/mac/WebSubstringUtil.h",
-      "web/modules/notifications/WebNotificationPermissionCallback.h",
       "web/modules/serviceworker/WebServiceWorkerContextClient.h",
       "web/modules/serviceworker/WebServiceWorkerContextProxy.h",
       "web/modules/serviceworker/WebServiceWorkerNetworkProvider.h",

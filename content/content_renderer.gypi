@@ -385,8 +385,6 @@
       'renderer/navigation_state_impl.h',
       'renderer/net_info_helper.cc',
       'renderer/net_info_helper.h',
-      'renderer/notification_permission_dispatcher.cc',
-      'renderer/notification_permission_dispatcher.h',
       'renderer/origin_trials/web_trial_token_validator_impl.cc',
       'renderer/origin_trials/web_trial_token_validator_impl.h',
       'renderer/peripheral_content_heuristic.cc',

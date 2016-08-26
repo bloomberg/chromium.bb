@@ -58,7 +58,6 @@
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/mediastream/UserMediaController.h"
-#include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/permissions/PermissionController.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
@@ -109,7 +108,6 @@
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
-#include "web/NotificationPermissionClientImpl.h"
 #include "web/PopupMenuImpl.h"
 #include "web/WebFileChooserCompletionImpl.h"
 #include "web/WebFrameWidgetImpl.h"
@@ -1124,7 +1122,6 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame)
         provideUserMediaTo(frame, UserMediaClientImpl::create(client->userMediaClient()));
     }
 
-    provideNotificationPermissionClientTo(frame, NotificationPermissionClientImpl::create());
     provideIndexedDBClientTo(frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(frame, NavigatorContentUtilsClientImpl::create(webFrame));
