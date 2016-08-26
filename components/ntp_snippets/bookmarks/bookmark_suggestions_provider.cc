@@ -34,7 +34,7 @@ namespace {
 const int kMaxBookmarks = 10;
 const int kMinBookmarks = 3;
 const int kMaxBookmarkAgeInDays = 42;
-const int kUseCreationDateFallbackForDays = 42;
+const int kUseCreationDateFallbackForDays = 0;
 
 const char* kMaxBookmarksParamName = "bookmarks_max_count";
 const char* kMinBookmarksParamName = "bookmarks_min_count";
