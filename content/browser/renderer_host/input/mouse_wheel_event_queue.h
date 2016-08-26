@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"

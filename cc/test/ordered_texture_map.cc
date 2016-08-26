@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "cc/test/test_texture.h"
 

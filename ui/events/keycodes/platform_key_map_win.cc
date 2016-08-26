@@ -4,6 +4,7 @@
 
 #include "ui/events/keycodes/platform_key_map_win.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/lazy_instance.h"

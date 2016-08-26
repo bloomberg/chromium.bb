@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
 #include "services/ui/public/interfaces/display.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/display.h"

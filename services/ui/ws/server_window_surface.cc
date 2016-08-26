@@ -5,6 +5,7 @@
 #include "services/ui/ws/server_window_surface.h"
 
 #include "base/callback.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"

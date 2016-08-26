@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
-#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/buffer_types.h"
 
 // TODO(prashant.n): Including third_party/khronos/GLES2/gl2.h causes
 // redefinition errors as macros/functions defined in it conflict with

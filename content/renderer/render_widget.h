@@ -11,6 +11,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <queue>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"

@@ -25,6 +25,7 @@
 #include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_controller.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 

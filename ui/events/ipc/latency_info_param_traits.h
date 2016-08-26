@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
 #define UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
 
+#include "base/pickle.h"
 #include "ui/events/ipc/events_ipc_export.h"
 #include "ui/events/latency_info.h"
 

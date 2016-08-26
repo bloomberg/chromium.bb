@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/c/main.h"

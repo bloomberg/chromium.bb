@@ -6,6 +6,7 @@
 
 #include <X11/Xlib.h>
 
+#include "base/bind.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/x11/x11_event_source.h"

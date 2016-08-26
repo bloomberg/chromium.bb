@@ -4,6 +4,7 @@
 
 #include "ui/platform_window/win/win_window.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/strings/string16.h"

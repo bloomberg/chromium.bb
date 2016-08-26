@@ -4,6 +4,7 @@
 
 #include "ui/android/delegated_frame_host_android.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"

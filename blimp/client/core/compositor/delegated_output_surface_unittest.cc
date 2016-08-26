@@ -4,6 +4,7 @@
 
 #include "blimp/client/core/compositor/delegated_output_surface.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"

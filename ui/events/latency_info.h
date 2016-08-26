@@ -14,7 +14,6 @@
 
 #include "base/containers/small_map.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "ui/events/events_base_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -22,6 +21,12 @@
 #include "ipc/ipc_param_traits.h"  // nogncheck
 #include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
 #endif
+
+namespace base {
+namespace trace_event {
+class ConvertableToTraceFormat;
+}
+}
 
 namespace ui {
 
