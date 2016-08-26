@@ -17,14 +17,26 @@
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
+
+namespace {
+
+// The lookup table for signal strength level image.
+const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
+                                             IDR_SIGNAL_2_BAR, IDR_SIGNAL_3_BAR,
+                                             IDR_SIGNAL_4_BAR};
+
+}  // namespace
 
 class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
  protected:
-  ChooserDialogCocoaControllerTest() {}
+  ChooserDialogCocoaControllerTest()
+      : rb_(ui::ResourceBundle::GetSharedInstance()) {}
   ~ChooserDialogCocoaControllerTest() override {}
 
   void SetUp() override {
@@ -66,6 +78,31 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(help_button_);
   }
 
+  void ExpectSignalStrengthLevelImageIs(int row,
+                                        int expected_signal_strength_level) {
+    NSImageView* image_view =
+        [chooser_content_view_ tableRowViewImage:static_cast<NSInteger>(row)];
+
+    if (expected_signal_strength_level == -1) {
+      ASSERT_FALSE(image_view);
+    } else {
+      ASSERT_TRUE(image_view);
+      EXPECT_NSEQ(
+          rb_.GetNativeImageNamed(
+                 kSignalStrengthLevelImageIds[expected_signal_strength_level])
+              .ToNSImage(),
+          [image_view image]);
+    }
+  }
+
+  void ExpectRowTextIs(int row, NSString* expected_text) {
+    EXPECT_NSEQ(expected_text,
+                [[chooser_content_view_
+                    tableRowViewText:static_cast<NSInteger>(row)] stringValue]);
+  }
+
+  ui::ResourceBundle& rb_;
+
   std::unique_ptr<ChooserDialogCocoa> chooser_dialog_;
 
   MockChooserController* chooser_controller_;
@@ -90,9 +127,10 @@ TEST_F(ChooserDialogCocoaControllerTest, InitialState) {
   // the number of rows is 1.
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  // No signal strength level image shown.
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   // |table_view_| should be disabled since there is no option shown.
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
@@ -106,46 +144,78 @@ TEST_F(ChooserDialogCocoaControllerTest, InitialState) {
 TEST_F(ChooserDialogCocoaControllerTest, AddOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   // |table_view_| should be enabled since there is an option.
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(0, @"a");
   ASSERT_FALSE(connect_button_.enabled);
   ASSERT_TRUE(cancel_button_.enabled);
   ASSERT_TRUE(help_button_.enabled);
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
   EXPECT_EQ(2, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"b", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel0Bar);
+  ExpectRowTextIs(1, @"b");
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_EQ(3, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
+  ExpectSignalStrengthLevelImageIs(
+      2, MockChooserController::kSignalStrengthLevel1Bar);
+  ExpectRowTextIs(2, @"c");
+
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("d"), MockChooserController::kSignalStrengthLevel2Bar);
+  ExpectSignalStrengthLevelImageIs(
+      3, MockChooserController::kSignalStrengthLevel2Bar);
+  ExpectRowTextIs(3, @"d");
+
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("e"), MockChooserController::kSignalStrengthLevel3Bar);
+  ExpectSignalStrengthLevelImageIs(
+      4, MockChooserController::kSignalStrengthLevel3Bar);
+  ExpectRowTextIs(4, @"e");
+
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("f"), MockChooserController::kSignalStrengthLevel4Bar);
+  ExpectSignalStrengthLevelImageIs(
+      5, MockChooserController::kSignalStrengthLevel4Bar);
+  ExpectRowTextIs(5, @"f");
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("b"));
   EXPECT_EQ(2, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(0, @"a");
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel1Bar);
+  ExpectRowTextIs(1, @"c");
 
   // Remove a non-existent option, the number of rows should not change.
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("non-existent"));
@@ -153,15 +223,15 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  ExpectRowTextIs(0, @"a");
+  ExpectRowTextIs(1, @"c");
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("c"));
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectRowTextIs(0, @"a");
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("a"));
   // There is no option shown now. But since "No devices found."
@@ -171,42 +241,55 @@ TEST_F(ChooserDialogCocoaControllerTest, RemoveOption) {
   // |table_view_| should be disabled since all options are removed.
   ASSERT_FALSE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, UpdateOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
-  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
-                                     base::ASCIIToUTF16("d"));
+  chooser_controller_->OptionUpdated(
+      base::ASCIIToUTF16("b"), base::ASCIIToUTF16("d"),
+      MockChooserController::kSignalStrengthLevel2Bar);
 
   EXPECT_EQ(3, table_view_.numberOfRows);
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
-  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(0, @"a");
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel2Bar);
+  ExpectRowTextIs(1, @"d");
+  ExpectSignalStrengthLevelImageIs(
+      2, MockChooserController::kSignalStrengthLevel1Bar);
+  ExpectRowTextIs(2, @"c");
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, AddAndRemoveOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
   EXPECT_EQ(1, table_view_.numberOfRows);
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
   EXPECT_EQ(2, table_view_.numberOfRows);
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("b"));
   EXPECT_EQ(1, table_view_.numberOfRows);
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_EQ(2, table_view_.numberOfRows);
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("d"), MockChooserController::kSignalStrengthLevel2Bar);
   EXPECT_EQ(3, table_view_.numberOfRows);
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
   EXPECT_EQ(2, table_view_.numberOfRows);
@@ -217,12 +300,16 @@ TEST_F(ChooserDialogCocoaControllerTest, AddAndRemoveOption) {
 TEST_F(ChooserDialogCocoaControllerTest, UpdateAndRemoveTheUpdatedOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
-  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
-                                     base::ASCIIToUTF16("d"));
+  chooser_controller_->OptionUpdated(
+      base::ASCIIToUTF16("b"), base::ASCIIToUTF16("d"),
+      MockChooserController::kSignalStrengthLevel2Bar);
 
   chooser_controller_->OptionRemoved(base::ASCIIToUTF16("d"));
 
@@ -230,16 +317,22 @@ TEST_F(ChooserDialogCocoaControllerTest, UpdateAndRemoveTheUpdatedOption) {
   EXPECT_EQ(1, table_view_.numberOfColumns);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(0, @"a");
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel1Bar);
+  ExpectRowTextIs(1, @"c");
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, SelectAndDeselectAnOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 0.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
@@ -268,9 +361,12 @@ TEST_F(ChooserDialogCocoaControllerTest,
        SelectAnOptionAndThenSelectAnotherOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 0.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
@@ -294,9 +390,12 @@ TEST_F(ChooserDialogCocoaControllerTest,
 TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndRemoveAnotherOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 1.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
@@ -323,9 +422,12 @@ TEST_F(ChooserDialogCocoaControllerTest,
        SelectAnOptionAndRemoveTheSelectedOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 1.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
@@ -347,22 +449,31 @@ TEST_F(ChooserDialogCocoaControllerTest,
        SelectAnOptionAndUpdateTheSelectedOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 1.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
            byExtendingSelection:NO];
 
   // Update option 1.
-  chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
-                                     base::ASCIIToUTF16("d"));
+  chooser_controller_->OptionUpdated(
+      base::ASCIIToUTF16("b"), base::ASCIIToUTF16("d"),
+      MockChooserController::kSignalStrengthLevel2Bar);
 
   EXPECT_EQ(1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"a", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
-  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:1] stringValue]);
-  EXPECT_NSEQ(@"c", [[table_view_ preparedCellAtColumn:0 row:2] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(0, @"a");
+  ExpectSignalStrengthLevelImageIs(
+      1, MockChooserController::kSignalStrengthLevel2Bar);
+  ExpectRowTextIs(1, @"d");
+  ExpectSignalStrengthLevelImageIs(
+      2, MockChooserController::kSignalStrengthLevel1Bar);
+  ExpectRowTextIs(2, @"c");
   ASSERT_TRUE(connect_button_.enabled);
 }
 
@@ -370,7 +481,8 @@ TEST_F(ChooserDialogCocoaControllerTest,
        AddAnOptionAndSelectItAndRemoveTheSelectedOption) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
 
   // Select option 0.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
@@ -388,9 +500,9 @@ TEST_F(ChooserDialogCocoaControllerTest,
   EXPECT_EQ(-1, table_view_.selectedRow);
   // |table_view_| should be disabled since there is no option shown.
   ASSERT_FALSE(table_view_.enabled);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   // Since no option selected, the "Connect" button should be disabled.
   ASSERT_FALSE(connect_button_.enabled);
 }
@@ -398,9 +510,12 @@ TEST_F(ChooserDialogCocoaControllerTest,
 TEST_F(ChooserDialogCocoaControllerTest, NoOptionSelectedAndPressCancelButton) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   EXPECT_CALL(*chooser_controller_, Select(testing::_)).Times(0);
   EXPECT_CALL(*chooser_controller_, Cancel()).Times(1);
@@ -410,9 +525,12 @@ TEST_F(ChooserDialogCocoaControllerTest, NoOptionSelectedAndPressCancelButton) {
 TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndPressConnectButton) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 0 and press "Connect" button.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
@@ -432,9 +550,12 @@ TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndPressConnectButton) {
 TEST_F(ChooserDialogCocoaControllerTest, SelectAnOptionAndPressCancelButton) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 0 and press "Cancel" button.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
@@ -457,9 +578,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
@@ -467,9 +588,12 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   ASSERT_TRUE(cancel_button_.enabled);
 
   // Add options
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(3, table_view_.numberOfRows);
   // Select option 1.
@@ -489,8 +613,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   EXPECT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF),
-              [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF));
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
@@ -502,9 +627,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
 
   chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_ON);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   EXPECT_EQ(0u, chooser_controller_->NumOptions());
   ASSERT_FALSE(connect_button_.enabled);
   ASSERT_TRUE(cancel_button_.enabled);
@@ -514,9 +639,12 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
   CreateChooserDialog();
 
   // Add options
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(table_view_.hidden);
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(3, table_view_.numberOfRows);
@@ -550,9 +678,9 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
   ASSERT_FALSE(table_view_.enabled);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT),
-      [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(0, MockChooserController::kNoImage);
+  ExpectRowTextIs(
+      0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
@@ -565,22 +693,28 @@ TEST_F(ChooserDialogCocoaControllerTest,
        DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
            byExtendingSelection:NO];
 
   chooser_controller_->OnDiscoveryStateChanged(
       content::BluetoothChooser::DiscoveryState::DISCOVERING);
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("d"), MockChooserController::kSignalStrengthLevel2Bar);
   EXPECT_FALSE(table_view_.hidden);
   // |table_view_| should be enabled since there is an option.
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(1, table_view_.numberOfRows);
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
-  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectSignalStrengthLevelImageIs(
+      0, MockChooserController::kSignalStrengthLevel2Bar);
+  ExpectRowTextIs(0, @"d");
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_FALSE(status_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
@@ -599,7 +733,7 @@ TEST_F(ChooserDialogCocoaControllerTest,
   ASSERT_TRUE(table_view_.enabled);
   EXPECT_EQ(1, table_view_.numberOfRows);
   EXPECT_EQ(0, table_view_.selectedRow);
-  EXPECT_NSEQ(@"d", [[table_view_ preparedCellAtColumn:0 row:0] stringValue]);
+  ExpectRowTextIs(0, @"d");
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
@@ -617,9 +751,12 @@ TEST_F(ChooserDialogCocoaControllerTest, PressRescanButton) {
 TEST_F(ChooserDialogCocoaControllerTest, PressHelpButton) {
   CreateChooserDialog();
 
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                   MockChooserController::kNoImage);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
 
   // Select option 0 and press "Get help" button.
   [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:0]

@@ -20,6 +20,10 @@ MockChooserController::MockChooserController(content::RenderFrameHost* owner)
 
 MockChooserController::~MockChooserController() {}
 
+bool MockChooserController::ShouldShowIconBeforeText() const {
+  return true;
+}
+
 base::string16 MockChooserController::GetNoOptionsText() const {
   return no_options_text_;
 }
@@ -29,11 +33,15 @@ base::string16 MockChooserController::GetOkButtonLabel() const {
 }
 
 size_t MockChooserController::NumOptions() const {
-  return option_names_.size();
+  return options_.size();
+}
+
+int MockChooserController::GetSignalStrengthLevel(size_t index) const {
+  return options_[index].signal_strength_level;
 }
 
 base::string16 MockChooserController::GetOption(size_t index) const {
-  return option_names_[index];
+  return options_[index].name;
 }
 
 base::string16 MockChooserController::GetStatus() const {
@@ -89,17 +97,22 @@ void MockChooserController::OnDiscoveryStateChanged(
   }
 }
 
-void MockChooserController::OptionAdded(const base::string16& option_name) {
-  option_names_.push_back(option_name);
+void MockChooserController::OptionAdded(const base::string16& option_name,
+                                        int signal_strength_level) {
+  options_.push_back({option_name, signal_strength_level});
   if (view())
-    view()->OnOptionAdded(option_names_.size() - 1);
+    view()->OnOptionAdded(options_.size() - 1);
 }
 
 void MockChooserController::OptionRemoved(const base::string16& option_name) {
-  auto it = std::find(option_names_.begin(), option_names_.end(), option_name);
-  if (it != option_names_.end()) {
-    size_t index = std::distance(option_names_.begin(), it);
-    option_names_.erase(it);
+  auto it = std::find_if(options_.begin(), options_.end(),
+                         [&option_name](const OptionInfo& option) {
+                           return option.name == option_name;
+                         });
+
+  if (it != options_.end()) {
+    size_t index = it - options_.begin();
+    options_.erase(it);
     if (view())
       view()->OnOptionRemoved(index);
   }
@@ -107,16 +120,27 @@ void MockChooserController::OptionRemoved(const base::string16& option_name) {
 
 void MockChooserController::OptionUpdated(
     const base::string16& previous_option_name,
-    const base::string16& new_option_name) {
-  auto it = std::find(option_names_.begin(), option_names_.end(),
-                      previous_option_name);
-  DCHECK(it != option_names_.end());
-  size_t index = std::distance(option_names_.begin(), it);
-  *it = new_option_name;
-  if (view())
-    view()->OnOptionUpdated(index);
+    const base::string16& new_option_name,
+    int new_signal_strength_level) {
+  auto it = std::find_if(options_.begin(), options_.end(),
+                         [&previous_option_name](const OptionInfo& option) {
+                           return option.name == previous_option_name;
+                         });
+
+  if (it != options_.end()) {
+    *it = {new_option_name, new_signal_strength_level};
+    if (view())
+      view()->OnOptionUpdated(it - options_.begin());
+  }
 }
 
+const int MockChooserController::kNoImage = -1;
+const int MockChooserController::kSignalStrengthLevel0Bar = 0;
+const int MockChooserController::kSignalStrengthLevel1Bar = 1;
+const int MockChooserController::kSignalStrengthLevel2Bar = 2;
+const int MockChooserController::kSignalStrengthLevel3Bar = 3;
+const int MockChooserController::kSignalStrengthLevel4Bar = 4;
+
 void MockChooserController::ClearAllOptions() {
-  option_names_.clear();
+  options_.clear();
 }

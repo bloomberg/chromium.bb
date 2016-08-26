@@ -12,9 +12,11 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/cocoa/spinner_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -23,6 +25,12 @@ const CGFloat kChooserWidth = 350.0f;
 
 // Chooser height.
 const CGFloat kChooserHeight = 300.0f;
+
+// Signal strength level image size.
+const CGFloat kSignalStrengthLevelImageSize = 20.0f;
+
+// Table row view height.
+const CGFloat kTableRowViewHeight = 23.0f;
 
 // Spinner size.
 const CGFloat kSpinnerSize = 24.0f;
@@ -42,7 +50,85 @@ const CGFloat kSeparatorAlphaValue = 0.6f;
 // Separator height.
 const CGFloat kSeparatorHeight = 1.0f;
 
+// The lookup table for signal strength level image.
+const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
+                                             IDR_SIGNAL_2_BAR, IDR_SIGNAL_3_BAR,
+                                             IDR_SIGNAL_4_BAR};
+
 }  // namespace
+
+// A table row view that contains one line of text, and optionally contains an
+// image in front of the text.
+@interface ChooserContentTableRowView : NSView {
+ @private
+  base::scoped_nsobject<NSImageView> image_;
+  base::scoped_nsobject<NSTextField> text_;
+}
+
+// Designated initializer.
+- (instancetype)initWithText:(NSString*)text
+         signalStrengthLevel:(NSInteger)level;
+
+// Gets the image in front of the text.
+- (NSImageView*)image;
+
+// Gets the text.
+- (NSTextField*)text;
+
+@end
+
+@implementation ChooserContentTableRowView
+
+- (instancetype)initWithText:(NSString*)text
+         signalStrengthLevel:(NSInteger)level {
+  if ((self = [super initWithFrame:NSZeroRect])) {
+    if (level != -1) {
+      DCHECK_GE(level, 0);
+      DCHECK_LT(level, base::checked_cast<NSInteger>(
+                           arraysize(kSignalStrengthLevelImageIds)));
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      NSImage* signalStrengthLevelImage =
+          rb.GetNativeImageNamed(kSignalStrengthLevelImageIds[level])
+              .ToNSImage();
+
+      image_.reset([[NSImageView alloc]
+          initWithFrame:NSMakeRect(0, (kTableRowViewHeight -
+                                       kSignalStrengthLevelImageSize) /
+                                          2,
+                                   kSignalStrengthLevelImageSize,
+                                   kSignalStrengthLevelImageSize)]);
+      [image_ setImage:signalStrengthLevelImage];
+      [self addSubview:image_];
+    }
+
+    text_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+    [text_ setDrawsBackground:NO];
+    [text_ setBezeled:NO];
+    [text_ setEditable:NO];
+    [text_ setSelectable:NO];
+    [text_ setStringValue:text];
+    [text_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+    [text_ sizeToFit];
+    CGFloat textHeight = NSHeight([text_ frame]);
+    [text_ setFrameOrigin:NSMakePoint(
+                              level == -1 ? 0 : kSignalStrengthLevelImageSize +
+                                                    kHorizontalPadding,
+                              (kTableRowViewHeight - textHeight) / 2)];
+    [self addSubview:text_];
+  }
+
+  return self;
+}
+
+- (NSImageView*)image {
+  return image_.get();
+}
+
+- (NSTextField*)text {
+  return text_.get();
+}
+
+@end
 
 class ChooserContentViewController : public ChooserController::View {
  public:
@@ -175,7 +261,15 @@ void ChooserContentViewController::OnRefreshStateChanged(bool refreshing) {
 
 void ChooserContentViewController::UpdateTableView() {
   [table_view_ setEnabled:chooser_controller_->NumOptions() > 0];
+  // For NSView-based table views, calling reloadData will deselect the
+  // currently selected row, so |selected_row| stores the currently selected
+  // row in order to select it again.
+  NSInteger selected_row = [table_view_ selectedRow];
   [table_view_ reloadData];
+  if (selected_row != -1) {
+    [table_view_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row]
+             byExtendingSelection:NO];
+  }
 }
 
 @implementation ChooserContentViewCocoa
@@ -395,6 +489,27 @@ void ChooserContentViewController::UpdateTableView() {
   return titleView;
 }
 
+- (base::scoped_nsobject<NSView>)createTableRowView:(NSInteger)rowIndex {
+  NSInteger level = -1;
+  size_t numOptions = chooserController_->NumOptions();
+  if (chooserController_->ShouldShowIconBeforeText() && numOptions > 0) {
+    DCHECK_GE(rowIndex, 0);
+    DCHECK_LT(rowIndex, base::checked_cast<NSInteger>(numOptions));
+    level = base::checked_cast<NSInteger>(
+        chooserController_->GetSignalStrengthLevel(
+            base::checked_cast<size_t>(rowIndex)));
+  }
+
+  base::scoped_nsobject<NSView> tableRowView([[ChooserContentTableRowView alloc]
+             initWithText:[self optionAtIndex:rowIndex]
+      signalStrengthLevel:level]);
+  return tableRowView;
+}
+
+- (CGFloat)tableRowViewHeight:(NSInteger)row {
+  return kTableRowViewHeight;
+}
+
 - (base::scoped_nsobject<NSButton>)createButtonWithTitle:(NSString*)title {
   base::scoped_nsobject<NSButton> button(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
@@ -536,6 +651,8 @@ void ChooserContentViewController::UpdateTableView() {
                   static_cast<NSInteger>(1));
 }
 
+// When this function is called with numOptions == 0, it is to show the
+// message saying there are no devices.
 - (NSString*)optionAtIndex:(NSInteger)index {
   NSInteger numOptions =
       static_cast<NSInteger>(chooserController_->NumOptions());
@@ -573,6 +690,18 @@ void ChooserContentViewController::UpdateTableView() {
 
 - (void)onHelpPressed:(id)sender {
   chooserController_->OpenHelpCenterUrl();
+}
+
+- (NSImageView*)tableRowViewImage:(NSInteger)row {
+  ChooserContentTableRowView* tableRowView =
+      [tableView_ viewAtColumn:0 row:row makeIfNecessary:YES];
+  return [tableRowView image];
+}
+
+- (NSTextField*)tableRowViewText:(NSInteger)row {
+  ChooserContentTableRowView* tableRowView =
+      [tableView_ viewAtColumn:0 row:row makeIfNecessary:YES];
+  return [tableRowView text];
 }
 
 @end

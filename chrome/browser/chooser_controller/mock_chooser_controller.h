@@ -18,9 +18,11 @@ class MockChooserController : public ChooserController {
   ~MockChooserController() override;
 
   // ChooserController:
+  bool ShouldShowIconBeforeText() const override;
   base::string16 GetNoOptionsText() const override;
   base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
+  int GetSignalStrengthLevel(size_t index) const override;
   base::string16 GetOption(size_t index) const override;
   base::string16 GetStatus() const override;
   MOCK_METHOD0(RefreshOptions, void());
@@ -33,15 +35,29 @@ class MockChooserController : public ChooserController {
       content::BluetoothChooser::AdapterPresence presence);
   void OnDiscoveryStateChanged(content::BluetoothChooser::DiscoveryState state);
 
-  void OptionAdded(const base::string16& option_name);
+  void OptionAdded(const base::string16& option_name,
+                   int signal_strength_level);
   void OptionRemoved(const base::string16& option_name);
   void OptionUpdated(const base::string16& previous_option_name,
-                     const base::string16& new_option_name);
+                     const base::string16& new_option_name,
+                     int new_signal_strengh_level);
+
+  static const int kNoImage;
+  static const int kSignalStrengthLevel0Bar;
+  static const int kSignalStrengthLevel1Bar;
+  static const int kSignalStrengthLevel2Bar;
+  static const int kSignalStrengthLevel3Bar;
+  static const int kSignalStrengthLevel4Bar;
 
  private:
   void ClearAllOptions();
 
-  std::vector<base::string16> option_names_;
+  struct OptionInfo {
+    base::string16 name;
+    int signal_strength_level;
+  };
+
+  std::vector<OptionInfo> options_;
   base::string16 no_options_text_;
   base::string16 status_text_;
 

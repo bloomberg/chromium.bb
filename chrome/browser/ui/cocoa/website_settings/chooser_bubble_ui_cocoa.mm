@@ -188,16 +188,20 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return [chooserContentView_ numberOfOptions];
 }
 
-- (id)tableView:(NSTableView*)tableView
-    objectValueForTableColumn:(NSTableColumn*)tableColumn
-                          row:(NSInteger)rowIndex {
-  return [chooserContentView_ optionAtIndex:rowIndex];
+- (NSView*)tableView:(NSTableView*)tableView
+    viewForTableColumn:(NSTableColumn*)tableColumn
+                   row:(NSInteger)rowIndex {
+  return [chooserContentView_ createTableRowView:rowIndex].autorelease();
 }
 
 - (BOOL)tableView:(NSTableView*)aTableView
     shouldEditTableColumn:(NSTableColumn*)aTableColumn
                       row:(NSInteger)rowIndex {
   return NO;
+}
+
+- (CGFloat)tableView:(NSTableView*)tableView heightOfRow:(NSInteger)row {
+  return [chooserContentView_ tableRowViewHeight:row];
 }
 
 - (void)updateTableView {

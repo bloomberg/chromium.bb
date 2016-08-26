@@ -11,9 +11,9 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+class ChooserContentViewController;
 class ChooserController;
 @class SpinnerView;
-class ChooserContentViewController;
 
 // A chooser content view class that user can select an option.
 @interface ChooserContentViewCocoa : NSView {
@@ -69,6 +69,12 @@ class ChooserContentViewController;
 
 // Creates the title for the chooser.
 - (base::scoped_nsobject<NSTextField>)createChooserTitle:(NSString*)title;
+
+// Creates a table row view for the chooser.
+- (base::scoped_nsobject<NSView>)createTableRowView:(NSInteger)rowIndex;
+
+// The height of a table row view.
+- (CGFloat)tableRowViewHeight:(NSInteger)row;
 
 // Creates a button with |title|.
 - (base::scoped_nsobject<NSButton>)createButtonWithTitle:(NSString*)title;
@@ -151,6 +157,12 @@ class ChooserContentViewController;
 
 // Called when the "Get help" button is pressed.
 - (void)onHelpPressed:(id)sender;
+
+// Gets the image from table row view. For testing only.
+- (NSImageView*)tableRowViewImage:(NSInteger)row;
+
+// Gets the text from table row view. For testing only.
+- (NSTextField*)tableRowViewText:(NSInteger)row;
 
 @end
 

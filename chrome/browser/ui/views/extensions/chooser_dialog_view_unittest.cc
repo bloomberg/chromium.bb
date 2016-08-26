@@ -75,9 +75,12 @@ TEST_F(ChooserDialogViewTest, InitialState) {
 }
 
 TEST_F(ChooserDialogViewTest, SelectAndDeselectAnOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   // OK button is disabled since no option is selected.
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
@@ -108,9 +111,12 @@ TEST_F(ChooserDialogViewTest, SelectAndDeselectAnOption) {
 }
 
 TEST_F(ChooserDialogViewTest, SelectAnOptionAndThenSelectAnotherOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -131,9 +137,12 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndThenSelectAnotherOption) {
 }
 
 TEST_F(ChooserDialogViewTest, SelectAnOptionAndRemoveAnotherOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -154,9 +163,12 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndRemoveAnotherOption) {
 }
 
 TEST_F(ChooserDialogViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -173,9 +185,12 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndRemoveTheSelectedOption) {
 }
 
 TEST_F(ChooserDialogViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -185,8 +200,9 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
   EXPECT_TRUE(cancel_button_->enabled());
 
   // Update option 1.
-  mock_chooser_controller_->OptionUpdated(base::ASCIIToUTF16("b"),
-                                          base::ASCIIToUTF16("d"));
+  mock_chooser_controller_->OptionUpdated(
+      base::ASCIIToUTF16("b"), base::ASCIIToUTF16("d"),
+      MockChooserController::kSignalStrengthLevel2Bar);
   EXPECT_TRUE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -198,7 +214,8 @@ TEST_F(ChooserDialogViewTest, SelectAnOptionAndUpdateTheSelectedOption) {
 
 TEST_F(ChooserDialogViewTest,
        AddAnOptionAndSelectItAndRemoveTheSelectedOption) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -235,9 +252,12 @@ TEST_F(ChooserDialogViewTest, AdapterOnAndOffAndOn) {
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
 
@@ -259,9 +279,12 @@ TEST_F(ChooserDialogViewTest, AdapterOnAndOffAndOn) {
 }
 
 TEST_F(ChooserDialogViewTest, DiscoveringAndNoOptionAddedAndIdle) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   table_view_->Select(1);
   EXPECT_TRUE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
@@ -280,14 +303,18 @@ TEST_F(ChooserDialogViewTest, DiscoveringAndNoOptionAddedAndIdle) {
 }
 
 TEST_F(ChooserDialogViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("b"));
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("c"));
+  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("a"),
+                                        MockChooserController::kNoImage);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("b"), MockChooserController::kSignalStrengthLevel0Bar);
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("c"), MockChooserController::kSignalStrengthLevel1Bar);
   table_view_->Select(1);
 
   mock_chooser_controller_->OnDiscoveryStateChanged(
       content::BluetoothChooser::DiscoveryState::DISCOVERING);
-  mock_chooser_controller_->OptionAdded(base::ASCIIToUTF16("d"));
+  mock_chooser_controller_->OptionAdded(
+      base::ASCIIToUTF16("d"), MockChooserController::kSignalStrengthLevel2Bar);
   // OK button is disabled since no option is selected.
   EXPECT_FALSE(ok_button_->enabled());
   EXPECT_TRUE(cancel_button_->enabled());
