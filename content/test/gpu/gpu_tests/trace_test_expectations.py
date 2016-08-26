@@ -9,12 +9,12 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 class TraceTestExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('TraceTest.Canvas2DRedBox',
+    # self.Fail('trace_test.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    self.Fail('TraceTest.2DCanvasWebGL', ['win'], bug=638744)
-    self.Fail('TraceTest.SolidColorBackground', ['win'], bug=638744)
-    self.Fail('TraceTest.WebGLGreenTriangle.AA.NoAlpha', ['win'], bug=638744)
-    self.Fail('TraceTest.WebGLGreenTriangle.NoAA.Alpha', ['win'], bug=638744)
+    self.Flaky('trace_test.2DCanvasWebGL', ['win'], bug=638744)
+    self.Flaky('trace_test.SolidColorBackground', ['win'], bug=638744)
+    self.Flaky('trace_test.WebGLGreenTriangle.AA.NoAlpha', ['win'], bug=638744)
+    self.Flaky('trace_test.WebGLGreenTriangle.NoAA.Alpha', ['win'], bug=638744)
 
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
