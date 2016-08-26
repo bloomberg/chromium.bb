@@ -20,9 +20,7 @@
 
 namespace {
 const size_t kLargestDrawQuadSize =
-    sizeof(cc::RenderPassDrawQuad) > sizeof(cc::StreamVideoDrawQuad)
-        ? sizeof(cc::RenderPassDrawQuad)
-        : sizeof(cc::StreamVideoDrawQuad);
+    sizeof(cc::YUVVideoDrawQuad) + sizeof(gfx::ColorSpace);
 }  // namespace
 
 namespace cc {

@@ -500,7 +500,7 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
                                   const ColorSpace& to,
                                   Intent intent)
       : from_(from), to_(to) {
-    if (intent == Intent::PERCEPTUAL) {
+    if (intent == Intent::INTENT_PERCEPTUAL) {
       switch (from_.transfer_) {
         case ColorSpace::TransferID::UNSPECIFIED:
         case ColorSpace::TransferID::BT709:
@@ -523,10 +523,24 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
 
     c_ *= Invert(GetRangeAdjustMatrix(to_.range_, to_.matrix_));
     *to_transfer_matrix *= GetTransferMatrix(to_.matrix_);
-    b_ *= Invert(GetPrimaryMatrix(to_.primaries_));
-    b_ *= GetPrimaryMatrix(from_.primaries_);
+    b_ *= Invert(GetPrimaryTransform(to_));
+    b_ *= GetPrimaryTransform(from_);
     *from_transfer_matrix *= Invert(GetTransferMatrix(from_.matrix_));
     a_ *= GetRangeAdjustMatrix(from_.range_, from_.matrix_);
+  }
+
+  static Transform GetPrimaryTransform(const ColorSpace& c) {
+    if (c.primaries_ == ColorSpace::PrimaryID::CUSTOM) {
+      return Transform(c.custom_primary_matrix_[0], c.custom_primary_matrix_[1],
+                       c.custom_primary_matrix_[2], c.custom_primary_matrix_[3],
+                       c.custom_primary_matrix_[4], c.custom_primary_matrix_[5],
+                       c.custom_primary_matrix_[6], c.custom_primary_matrix_[7],
+                       c.custom_primary_matrix_[8], c.custom_primary_matrix_[9],
+                       c.custom_primary_matrix_[10],
+                       c.custom_primary_matrix_[11], 0.0f, 0.0f, 0.0f, 1.0f);
+    } else {
+      return GetPrimaryMatrix(c.primaries_);
+    }
   }
 
   void transform(TriStim* colors, size_t num) override {
