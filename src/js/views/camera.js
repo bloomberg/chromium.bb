@@ -39,6 +39,20 @@ camera.views.Camera = function(context, router) {
   this.video_ = document.createElement('video');
 
   /**
+   * MediaRecorder object to record motion pictures.
+   * @type {MediaRecorder}
+   * @private
+   */
+  this.mediaRecorder_ = null;
+
+  /**
+   * TODO(yuli): Replace with a toggle button.
+   * @type {boolean}
+   * @private
+   */
+  this.toggleRecChecked_ = false;
+
+  /**
    * Last frame time, used to detect new frames of <video>.
    * @type {number}
    * @private
@@ -70,6 +84,13 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.tickSound_ = document.createElement('audio');
+
+  /**
+   * Recording sound player.
+   * @type {Audio}
+   * @private
+   */
+  this.recordingSound_ = document.createElement('audio');
 
   /**
    * Canvas element with the current frame downsampled to small resolution, to
@@ -498,9 +519,11 @@ camera.views.Camera = function(context, router) {
   document.querySelector('#toggle-mirror').addEventListener(
       'click', this.onToggleMirrorClicked_.bind(this));
 
-  // Load the shutter and the tick sound.
+  // Load the shutter, tick, and recording sound.
+  // TODO(yuli): Replace the recording sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
   this.tickSound_.src = '../sounds/tick.ogg';
+  this.recordingSound_.src = '../sounds/tick.ogg';
 };
 
 /**
@@ -722,7 +745,7 @@ camera.views.Camera.prototype.onInactivate = function() {
  * @override
  */
 camera.views.Camera.prototype.onInactivate = function() {
-  this.resetTakePicture_();
+  this.endTakePicture_();
 };
 
 /**
@@ -1083,6 +1106,29 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
 
+  // TODO(yuli): Replace the recording key with a toggle and change the
+  // take-picture button icon when the recording toggle is checked.
+  if (this.keyBuffer_.indexOf('REC') !== -1 &&
+      !this.mediaRecorderRecording_()) {
+    this.toggleRecChecked_ = this.mediaRecorder_ && !this.toggleRecChecked_;
+
+    // Disable effects as recording with effects is not supported yet.
+    var toggleFilters = document.querySelector('#toolbar #filters-toggle');
+    toggleFilters.disabled = this.toggleRecChecked_;
+    this.mainProcessor_.effectDisabled = this.toggleRecChecked_;
+    this.mainPreviewProcessor_.effectDisabled = this.toggleRecChecked_;
+    this.mainFastProcessor_.effectDisabled = this.toggleRecChecked_;
+    if (toggleFilters.disabled) {
+      this.setExpanded_(false);
+    }
+
+    // TODO(yuli): Replace the toggle-multi with toggle-mutemic for recording.
+    document.querySelector('#toggle-multi').hidden = this.toggleRecChecked_;
+    this.showToastMessage_(chrome.i18n.getMessage(this.toggleRecChecked_ ?
+        'toggleRecActiveMessage' : 'toggleRecInactiveMessage'));
+    this.keyBuffer_ = '';
+  }
+
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Left':
       this.setCurrentEffect_(
@@ -1374,36 +1420,48 @@ camera.views.Camera.prototype.stopPerformanceTest_ = function() {
 };
 
 /**
- * Takes the picture with a timer if enabled, otherwise immediately.
+ * Takes the picture (maybe with a timer if enabled); or ends an ongoing
+ * recording started from the prior takePicture_() call.
  * @private
  */
 camera.views.Camera.prototype.takePicture_ = function() {
   if (!this.running_ || !this.model_)
     return;
 
+  if (this.mediaRecorderRecording_()) {
+    // End the prior ongoing recording. A new reocording won't be started until
+    // the prior recording is stopped.
+    this.endTakePicture_();
+    return;
+  }
+
   var toggleTimer = document.querySelector('#toggle-timer');
   var toggleMulti = document.querySelector('#toggle-multi');
 
-  var timerEnabled = toggleTimer.checked;
-  var multiEnabled = toggleMulti.checked;
-
+  // TODO(yuli): Disable toggle-recording button.
   toggleTimer.disabled = true;
   toggleMulti.disabled = true;
   document.querySelector('#take-picture').disabled = true;
 
-  var tickCounter = timerEnabled ? 6 : 1;
-  var multiShotCounter = multiEnabled ? 3 : 1;
+  var tickCounter = toggleTimer.checked ? 6 : 1;
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
+      var multiEnabled = !this.toggleRecChecked_ && toggleMulti.checked;
+      var multiShotCounter = 3;
       var takePicture = function() {
         this.takePictureImmediately_();
-        multiShotCounter--;
-        if (!multiShotCounter)
-          this.resetTakePicture_();
+        if (multiEnabled) {
+          multiShotCounter--;
+          if (multiShotCounter)
+            return;
+        }
+        // Don't end recording until another take-picture click.
+        if (!this.toggleRecChecked_)
+          this.endTakePicture_();
       }.bind(this);
       takePicture();
-      if (multiShotCounter)
+      if (multiEnabled)
         this.multiShotInterval_ = setInterval(takePicture, 250);
     } else {
       this.takePictureTimer_ = setTimeout(onTimerTick, 1000);
@@ -1422,10 +1480,10 @@ camera.views.Camera.prototype.takePicture_ = function() {
 };
 
 /**
- * Resets scheduled picture takes (if any).
+ * Ends ongoing recording or clears scheduled further picture takes (if any).
  * @private
  */
-camera.views.Camera.prototype.resetTakePicture_ = function() {
+camera.views.Camera.prototype.endTakePicture_ = function() {
   if (this.takePictureTimer_) {
     clearTimeout(this.takePictureTimer_);
     this.takePictureTimer_ = null;
@@ -1433,6 +1491,9 @@ camera.views.Camera.prototype.resetTakePicture_ = function() {
   if (this.multiShotInterval_) {
     clearTimeout(this.multiShotInterval_);
     this.multiShotInterval_ = null;
+  }
+  if (this.mediaRecorderRecording_()) {
+    this.mediaRecorder_.stop();
   }
   var toggleTimer = document.querySelector('#toggle-timer');
   toggleTimer.classList.remove('animate');
@@ -1442,100 +1503,150 @@ camera.views.Camera.prototype.resetTakePicture_ = function() {
 };
 
 /**
- * Takes the picture immediately, and saves and puts to the album with a nice
- * animation.
- *
- * @param {function()=} opt_callback Completion callback.
+ * Takes the still picture or starts to take the motion picture immediately,
+ * and saves and puts to the album with a nice animation when it's done.
  * @private
  */
-camera.views.Camera.prototype.takePictureImmediately_ = function(opt_callback) {
+camera.views.Camera.prototype.takePictureImmediately_ = function() {
   if (!this.running_) {
-    if (opt_callback)
-      opt_callback();
     return;
   }
 
   // Lock refreshing for smoother experience.
   this.taking_ = true;
 
-  var albumButton = document.querySelector('#toolbar #album-enter');
-  camera.util.setAnimationClass(albumButton, albumButton, 'flash');
-
-  // Play a shutter sound.
-  this.shutterSound_.currentTime = 0;
-  this.shutterSound_.play();
-
-  setTimeout(function() {
+  var takePicture = function(motionPicture) {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
-    var dataURL = this.mainCanvas_.toDataURL('image/jpeg');
-
-    // Create a picture preview animation.
-    var picturePreview = document.querySelector('#picture-preview');
-    var img = document.createElement('img');
-    img.src = dataURL;
-    img.style.webkitTransform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
-    img.addEventListener('click', function() {
-      // For simplicity, always navigate to the newest picture.
-      if (this.model_.length) {
-        this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
-      }
-    }.bind(this));
-
-    // Create the fly-away animation after two second.
-    var flyAnimation = function() {
-      var removal = this.flyAnimations_.indexOf(flyAnimation);
-      if (removal == -1)
-        return;
-      this.flyAnimations_.splice(removal, 1);
-
-      img.classList.remove('activated');
-
-      var sourceRect = img.getBoundingClientRect();
-      var targetRect = albumButton.getBoundingClientRect();
-
-      // If the album button is hidden, then we can't get its geometry.
-      if (targetRect.width && targetRect.height) {
-        var translateXValue = (targetRect.left + targetRect.right) / 2 -
-            (sourceRect.left + sourceRect.right) / 2;
-        var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
-            (sourceRect.top + sourceRect.bottom) / 2;
-        var scaleValue = targetRect.width / sourceRect.width;
-
-        img.style.webkitTransform =
-            'rotate(0) translateX(' + translateXValue +'px) ' +
-            'translateY(' + translateYValue + 'px) ' +
-            'scale(' + scaleValue + ')';
-      }
-      img.style.opacity = 0;
-
-      camera.util.waitForTransitionCompletion(img, 1200, function() {
-        img.parentNode.removeChild(img);
-        this.taking_ = false;
+    this.mainCanvas_.toBlob(function(blob) {
+      // Create a picture preview animation.
+      var picturePreview = document.querySelector('#picture-preview');
+      var img = document.createElement('img');
+      img.src = URL.createObjectURL(blob);
+      img.style.webkitTransform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
+      img.addEventListener('click', function() {
+        // For simplicity, always navigate to the newest picture.
+        if (this.model_.length) {
+          this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+        }
       }.bind(this));
+
+      // Create the fly-away animation with the image.
+      var albumButton = document.querySelector('#toolbar #album-enter');
+      var flyAnimation = function() {
+        var removal = this.flyAnimations_.indexOf(flyAnimation);
+        if (removal == -1)
+          return;
+        this.flyAnimations_.splice(removal, 1);
+
+        img.classList.remove('activated');
+
+        var sourceRect = img.getBoundingClientRect();
+        var targetRect = albumButton.getBoundingClientRect();
+
+        // If the album button is hidden, then we can't get its geometry.
+        if (targetRect.width && targetRect.height) {
+          var translateXValue = (targetRect.left + targetRect.right) / 2 -
+              (sourceRect.left + sourceRect.right) / 2;
+          var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
+              (sourceRect.top + sourceRect.bottom) / 2;
+          var scaleValue = targetRect.width / sourceRect.width;
+
+          img.style.webkitTransform =
+              'rotate(0) translateX(' + translateXValue +'px) ' +
+              'translateY(' + translateYValue + 'px) ' +
+              'scale(' + scaleValue + ')';
+        }
+        img.style.opacity = 0;
+
+        camera.util.waitForTransitionCompletion(img, 1200, function() {
+          img.parentNode.removeChild(img);
+          this.taking_ = false;
+        }.bind(this));
+      }.bind(this);
+
+      // Add picture to the gallery with a nice animation.
+      var addPicture = function(blob, type) {
+        // Preview the picture with the fly-away animation after two seconds.
+        this.flyAnimations_.push(flyAnimation);
+        setTimeout(flyAnimation, 2000);
+
+        var onPointerDown = function() {
+          img.classList.add('activated');
+        };
+
+        // When clicking or touching, zoom the preview a little to give feedback.
+        // Do not release the 'activated' flag since in most cases, releasing the
+        // mouse button or touch would redirect to the browser view.
+        img.addEventListener('touchstart', onPointerDown);
+        img.addEventListener('mousedown', onPointerDown);
+
+        // Animate the album button.
+        camera.util.setAnimationClass(albumButton, albumButton, 'flash');
+
+        // Play a shutter sound.
+        this.shutterSound_.currentTime = 0;
+        this.shutterSound_.play();
+
+        // Add to DOM.
+        picturePreview.appendChild(img);
+
+        // Add the picture to the model.
+        this.model_.addPicture(blob, type, function() {
+          this.showToastMessage_(
+              chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
+        }.bind(this));
+      }.bind(this);
+
+      if (motionPicture) {
+        var recordedChunks = [];
+        this.mediaRecorder_.ondataavailable = function(event) {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        }.bind(this);
+
+        var takeButton = document.querySelector('#take-picture');
+        this.mediaRecorder_.onstop = function(event) {
+          takeButton.classList.remove('flash');
+          // Add the motion picture after the recording is ended.
+          // TODO(yuli): Handle insufficient storage.
+          var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
+          recordedChunks = [];
+          if (recordedBlob.size) {
+            // TODO(yuli): Use the preview image's blob to create video's
+            // thumbnail to save time.
+            addPicture(recordedBlob, camera.models.Gallery.PictureType.MOTION);
+          } else {
+            // The recording may have no data available because it's too short
+            // or the media recorder is not stable and Chrome needs to restart.
+            this.showToastMessage_(
+                chrome.i18n.getMessage('errorMsgEmptyRecording'));
+          }
+        }.bind(this);
+
+        // Start recording.
+        this.mediaRecorder_.start();
+
+        // Re-enable the take-picture button to stop recording later and flash
+        // the take-picture button until the recording is stopped.
+        takeButton.disabled = false;
+        takeButton.classList.add('flash');
+      } else {
+        addPicture(blob, camera.models.Gallery.PictureType.STILL);
+      }
+    }.bind(this), 'image/jpeg');
+  }.bind(this);
+
+  if (this.toggleRecChecked_) {
+    // Play a sound before recording started.
+    this.recordingSound_.currentTime = 0;
+    this.recordingSound_.onended = function() {
+      setTimeout(function() { takePicture(true) }, 0);
     }.bind(this);
-    this.flyAnimations_.push(flyAnimation);
-    setTimeout(flyAnimation, 2000);
-
-    var onPointerDown = function() {
-      img.classList.add('activated');
-    };
-
-    // When clicking or touching, zoom the preview a little to give feedback.
-    // Do not release the 'activated' flag since in most cases, releasing the
-    // mouse button or touch would redirect to the browser view.
-    img.addEventListener('touchstart', onPointerDown);
-    img.addEventListener('mousedown', onPointerDown);
-
-    // Add to DOM.
-    picturePreview.appendChild(img);
-
-    // Add the picture to the model.
-    this.model_.addPicture(dataURL);
-
-    // Call the callback asynchronously, so the picture is displayed in DOM.
-    if (opt_callback)
-      setTimeout(opt_callback, 0);
-  }.bind(this), 0);
+    this.recordingSound_.play();
+  } else {
+    setTimeout(function() { takePicture(false) }, 0);
+  }
 };
 
 /**
@@ -1594,6 +1705,50 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
 };
 
 /**
+ * Creates the media recorder for the video stream.
+ *
+ * @param {MediaStream} stream Media stream to be recorded.
+ * @return {MediaRecorder} Media recorder created.
+ * @private
+ */
+camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
+  if (!window.MediaRecorder) {
+    return null;
+  }
+  var options = {mimeType: ''};
+  var mimeTypes = ['video/webm; codecs=vp9', 'video/webm; codecs=vp8',
+      'video/webm'];
+  for (var i = 0; i < mimeTypes.length; i++) {
+    if (MediaRecorder.isTypeSupported(mimeTypes[i])) {
+      options = {mimeType: mimeTypes[i]};
+      break;
+    }
+  }
+  try {
+    // TODO(yuli): Add a mute-microphone toggle.
+    var muteMic = function(mute) {
+      stream.getAudioTracks()[0].enabled = !mute;
+    };
+    return new MediaRecorder(stream, options);
+  } catch (e) {
+    // TODO(yuli): Disable the recording toggle.
+    console.error('Unable to create MediaRecorder: ' + e + '. mimeType: ' +
+        options.mimeType);
+    return null;
+  }
+};
+
+/**
+ * Checks if the media recorder is currently recording.
+ *
+ * @return {boolean} True if the media recorder is recording, false otherwise.
+ * @private
+ */
+camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
+  return this.mediaRecorder_ && this.mediaRecorder_.state == 'recording';
+};
+
+/**
  * Starts capturing with the specified resolution.
  *
  * @param {Array.<number>} resolution Width and height of the capturing mode,
@@ -1611,6 +1766,7 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
     this.stop();
 
   navigator.webkitGetUserMedia({
+    audio: true,
     video: {
       mandatory: {
         minWidth: resolution[0],
@@ -1618,6 +1774,8 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
       }
     }
   }, function(stream) {
+    // Mute to avoid echo from the captured audio.
+    this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
     var onLoadedMetadata = function() {
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
@@ -1625,13 +1783,17 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
       // Use a watchdog since the stream.onended event is unreliable in the
       // recent version of Chrome.
       this.watchdog_ = setInterval(function() {
-        if (!stream.active) {
+        // Check if video stream is ended (audio stream may still be live).
+        if (!stream.getVideoTracks().length ||
+            stream.getVideoTracks()[0].readyState == 'ended') {
           this.capturing_ = false;
+          this.endTakePicture_();
           onDisconnected();
           clearInterval(this.watchdog_);
           this.watchdog_ = null;
         }
       }.bind(this), 1000);
+      this.mediaRecorder_ = this.createMediaRecorder_(stream);
       this.capturing_ = true;
       var onAnimationFrame = function() {
         if (!this.running_)
@@ -1656,6 +1818,7 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
 camera.views.Camera.prototype.stop = function() {
   this.running_ = false;
   this.capturing_ = false;
+  this.endTakePicture_();
   this.video_.pause();
   this.video_.src = '';
   if (this.watchdog_) {
@@ -1678,7 +1841,7 @@ camera.views.Camera.prototype.setDefaultGeometry_ = function() {
   chrome.app.window.current().moveTo(
       bounds.left - (targetWidth - bounds.width) / 2,
       bounds.top - (targetHeight - bounds.height) / 2);
- return bounds.width != targetWidth || bounds.height != targetHeight;
+  return bounds.width != targetWidth || bounds.height != targetHeight;
 };
 
 /**
@@ -1960,7 +2123,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
     if (this.mainProcessor_.effect.isMultiframe()) {
       // Always draw in best quality as taken pictures need multiple frames.
       this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
-    } else if (this.taking_ || this.toolbarEffect_.animating ||
+    } else if (this.toolbarEffect_.animating ||
         this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {

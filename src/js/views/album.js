@@ -445,12 +445,14 @@ camera.views.Album.prototype.onScrollEnded_ = function() {
  * @override
  */
 camera.views.Album.prototype.addPictureToDOM = function(picture) {
+  // TODO(yuli): Add overlay icons for motion pictures (video).
   var album = document.querySelector('#album .padder');
   var img = document.createElement('img');
   img.id = 'album-picture-' + (this.lastPictureIndex_++);
   img.tabIndex = -1;
   img.setAttribute('aria-role', 'option');
   img.setAttribute('aria-selected', 'false');
+  img.src = picture.thumbnailURL;
   album.insertBefore(img, album.firstChild);
 
   // Add to the collection.

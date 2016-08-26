@@ -57,6 +57,12 @@ camera.Processor = function(tracker, input, output, fxCanvas) {
   this.effect_ = null;
 
   /**
+   * @type {boolean}
+   * @private
+   */
+  this.effectDisabled_ = false;
+
+  /**
    * Performance monitors for the processor.
    * @type {camera.util.NamedPerformanceMonitors}
    * @private
@@ -79,6 +85,12 @@ camera.Processor.prototype = {
   },
   get effect() {
     return this.effect_;
+  },
+  set effectDisabled(inEffectDisabled) {
+    this.effectDisabled_ = inEffectDisabled;
+  },
+  get effectDisabled() {
+    return this.effectDisabled_;
   },
   get output() {
     return this.output_;
@@ -111,7 +123,7 @@ camera.Processor.prototype.processFrame = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('filter-frame');
-    if (this.effect_) {
+    if (!this.effectDisabled_ && this.effect_) {
       this.effect_.filterFrame(
           this.fxCanvas_,
           this.effect_.usesHeadTracker() ?
