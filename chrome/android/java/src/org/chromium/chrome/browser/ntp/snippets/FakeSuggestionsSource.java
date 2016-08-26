@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnu
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,7 @@ import java.util.Set;
 public class FakeSuggestionsSource implements SuggestionsSource {
     private SuggestionsSource.Observer mObserver;
     private final Map<Integer, List<SnippetArticle>> mSuggestions = new HashMap<>();
-    private final Map<Integer, Integer> mCategoryStatus = new HashMap<>();
+    private final Map<Integer, Integer> mCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mCategoryInfo = new HashMap<>();
     private final Map<String, Bitmap> mThumbnails = new HashMap<>();
 

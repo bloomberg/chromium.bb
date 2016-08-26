@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
@@ -318,6 +319,7 @@ public class NewTabPageAdapterTest {
         // Same for CATEGORY_EXPLICITLY_DISABLED.
         mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
+        mNtpAdapter = new NewTabPageAdapter(null, null, mSnippetsSource, null);
         assertItemsFor(section(5));
         mSnippetsSource.setStatusForCategory(
                 KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
@@ -349,61 +351,57 @@ public class NewTabPageAdapterTest {
         assertItemsFor();
     }
 
-    // TODO(dgn): Properly make this a test based on handling different CategoryInfo when we
-    // stop hardcoding things in sections.
     @Test
     @Feature({"Ntp"})
-    public void testSectionVisibility() {
-        mSnippetsSource.setStatusForCategory(
-                KnownCategories.BOOKMARKS, CategoryStatus.INITIALIZING);
-        mSnippetsSource.setInfoForCategory(
-                KnownCategories.BOOKMARKS,
-                new SuggestionsCategoryInfo("Recent bookmarks",
-                        ContentSuggestionsCardLayout.MINIMAL_CARD, true, false));
+    public void testSectionVisibleIfEmpty() {
+        final int category = 42;
+        final int sectionIdx = 1; // section 0 is the above-the-fold item, we test the one after.
+        final List<SnippetArticle> articles = Collections.unmodifiableList(createDummySnippets(3));
+        FakeSuggestionsSource suggestionsSource;
+        SuggestionsSection section;
 
-        // Part 1: Test ARTICLES.
+        // Part 1: VisibleIfEmpty = true
+        suggestionsSource = new FakeSuggestionsSource();
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
+        suggestionsSource.setInfoForCategory(
+                category, new SuggestionsCategoryInfo(
+                                  "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, true));
 
-        // The |ARTICLES| section should be shown even if we don't receive any suggestion for it.
-        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
-        mSnippetsSource.setSuggestionsForCategory(
-                KnownCategories.ARTICLES, Collections.<SnippetArticle>emptyList());
+        // 1.1 - Initial state
+        mNtpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
         assertItemsFor(sectionWithStatusCard());
 
-        // Make sure we show the articles when we load them.
-        List<SnippetArticle> articles = createDummySnippets(3);
-        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
+        // 1.2 - With suggestions
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        suggestionsSource.setSuggestionsForCategory(category, articles);
         assertItemsFor(section(3));
 
-        // When we dismiss them, we should have the status card coming back.
-        int indexOfFirstItemOfArticlesGroup = 1;
-        SuggestionsSection section =
-                (SuggestionsSection) mNtpAdapter.getGroup(indexOfFirstItemOfArticlesGroup);
-        assertEquals(section.getItems().size(), section(3));
+        // 1.3 - When all suggestions are dismissed
+        assertEquals(SuggestionsSection.class, mNtpAdapter.getGroups().get(sectionIdx).getClass());
+        section = (SuggestionsSection) mNtpAdapter.getGroups().get(sectionIdx);
+        assertEquals(section(3), section.getItems().size());
         section.removeSuggestion(articles.get(0));
         section.removeSuggestion(articles.get(1));
         section.removeSuggestion(articles.get(2));
         assertItemsFor(sectionWithStatusCard());
 
-        // Part 2: Test BOOKMARKS.
+        // Part 2: VisibleIfEmpty = false
+        suggestionsSource = new FakeSuggestionsSource();
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
+        suggestionsSource.setInfoForCategory(
+                category, new SuggestionsCategoryInfo(
+                                  "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, false));
 
-        // The |BOOKMARKS| section should not be shown if we don't receive any suggestion for it.
-        mSnippetsSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
-        mSnippetsSource.setSuggestionsForCategory(
-                KnownCategories.BOOKMARKS, Collections.<SnippetArticle>emptyList());
-        assertItemsFor(sectionHidden(), sectionWithStatusCard());
+        // 2.1 - Initial state
+        mNtpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        assertItemsFor();
 
-        // When we get some, make sure we show the button.
-        mSnippetsSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, articles);
-        assertItemsFor(sectionWithMoreButton(3), sectionWithStatusCard());
+        // 2.2 - With suggestions
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        suggestionsSource.setSuggestionsForCategory(category, articles);
+        assertItemsFor();
 
-        // When we dismiss snippets, we should still keep the button.
-        int indexOfFirstItemOfBookmarksGroup = 3;
-        section = (SuggestionsSection) mNtpAdapter.getGroup(indexOfFirstItemOfBookmarksGroup);
-        assertEquals(section.getItems().size(), sectionWithMoreButton(3));
-        section.removeSuggestion(articles.get(0));
-        section.removeSuggestion(articles.get(1));
-        section.removeSuggestion(articles.get(2));
-        assertItemsFor(sectionWithStatusCardAndMoreButton(), sectionWithStatusCard());
+        // 2.3 - When all suggestions are dismissed - N/A, suggestions don't get added.
     }
 
     /**
@@ -412,18 +410,61 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testMoreButton() {
-        List<SnippetArticle> articles = createDummySnippets(3);
-        mSnippetsSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
-        mSnippetsSource.setSuggestionsForCategory(KnownCategories.ARTICLES, articles);
+        final int category = 42;
+        final int sectionIdx = 1; // section 0 is the above the fold, we test the one after.
+        final List<SnippetArticle> articles = Collections.unmodifiableList(createDummySnippets(3));
+        FakeSuggestionsSource suggestionsSource;
+        SuggestionsSection section;
+
+        // Part 1: ShowMoreButton = true
+        suggestionsSource = new FakeSuggestionsSource();
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
+        suggestionsSource.setInfoForCategory(
+                category, new SuggestionsCategoryInfo(
+                                  "", ContentSuggestionsCardLayout.MINIMAL_CARD, true, true));
+
+        // 1.1 - Initial state.
+        mNtpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        assertItemsFor(sectionWithStatusCardAndMoreButton());
+
+        // 1.2 - With suggestions.
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        suggestionsSource.setSuggestionsForCategory(category, articles);
+        assertItemsFor(sectionWithMoreButton(3));
+
+        // 1.3 - When all suggestions are dismissed.
+        assertEquals(SuggestionsSection.class, mNtpAdapter.getGroups().get(sectionIdx).getClass());
+        section = (SuggestionsSection) mNtpAdapter.getGroups().get(sectionIdx);
+        assertEquals(sectionWithMoreButton(3), section.getItems().size());
+        section.removeSuggestion(articles.get(0));
+        section.removeSuggestion(articles.get(1));
+        section.removeSuggestion(articles.get(2));
+        assertItemsFor(sectionWithStatusCardAndMoreButton());
+
+        // Part 1: ShowMoreButton = false
+        suggestionsSource = new FakeSuggestionsSource();
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.INITIALIZING);
+        suggestionsSource.setInfoForCategory(
+                category, new SuggestionsCategoryInfo(
+                                  "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, true));
+
+        // 2.1 - Initial state.
+        mNtpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        assertItemsFor(sectionWithStatusCard());
+
+        // 2.2 - With suggestions.
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        suggestionsSource.setSuggestionsForCategory(category, articles);
         assertItemsFor(section(3));
 
-        List<SnippetArticle> bookmarks = createDummySnippets(10);
-        mSnippetsSource.setInfoForCategory(KnownCategories.BOOKMARKS,
-                new SuggestionsCategoryInfo("Bookmarks", ContentSuggestionsCardLayout.MINIMAL_CARD,
-                                                   true, false));
-        mSnippetsSource.setStatusForCategory(KnownCategories.BOOKMARKS, CategoryStatus.AVAILABLE);
-        mSnippetsSource.setSuggestionsForCategory(KnownCategories.BOOKMARKS, bookmarks);
-        assertItemsFor(sectionWithMoreButton(10), section(3));
+        // 2.3 - When all suggestions are dismissed.
+        assertEquals(SuggestionsSection.class, mNtpAdapter.getGroups().get(sectionIdx).getClass());
+        section = (SuggestionsSection) mNtpAdapter.getGroups().get(sectionIdx);
+        assertEquals(section(3), section.getItems().size());
+        section.removeSuggestion(articles.get(0));
+        section.removeSuggestion(articles.get(1));
+        section.removeSuggestion(articles.get(2));
+        assertItemsFor(sectionWithStatusCard());
     }
 
     /**
@@ -443,6 +484,77 @@ public class NewTabPageAdapterTest {
         assertEquals(articles, mNtpAdapter.getItems().subList(2, 4));
     }
 
+    /**
+     * Tests that the order of the categories is kept.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testCategoryOrder() {
+        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
+        registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
+        registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
+        registerCategory(suggestionsSource, KnownCategories.PHYSICAL_WEB_PAGES, 0);
+        registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
+
+        NewTabPageAdapter ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        List<ItemGroup> groups = ntpAdapter.getGroups();
+
+        assertEquals(6, groups.size());
+        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
+        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
+        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
+        assertEquals(KnownCategories.BOOKMARKS, getCategory(groups.get(2)));
+        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(3)));
+        assertEquals(SuggestionsSection.class, groups.get(4).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(4)));
+
+        // With a different order.
+        suggestionsSource = new FakeSuggestionsSource();
+        registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
+        registerCategory(suggestionsSource, KnownCategories.PHYSICAL_WEB_PAGES, 0);
+        registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
+        registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
+
+        ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        groups = ntpAdapter.getGroups();
+
+        assertEquals(6, groups.size());
+        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
+        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
+        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(2)));
+        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(3)));
+        assertEquals(SuggestionsSection.class, groups.get(4).getClass());
+        assertEquals(KnownCategories.BOOKMARKS, getCategory(groups.get(4)));
+
+        // With unknown categories.
+        suggestionsSource = new FakeSuggestionsSource();
+        registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
+        registerCategory(suggestionsSource, KnownCategories.PHYSICAL_WEB_PAGES, 0);
+        registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
+
+        ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+
+        // The adapter is already initialised, it will not accept new categories anymore.
+        registerCategory(suggestionsSource, 42, 1);
+        registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 1);
+
+        groups = ntpAdapter.getGroups();
+
+        assertEquals(5, groups.size());
+        assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
+        assertEquals(SuggestionsSection.class, groups.get(1).getClass());
+        assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
+        assertEquals(SuggestionsSection.class, groups.get(2).getClass());
+        assertEquals(KnownCategories.PHYSICAL_WEB_PAGES, getCategory(groups.get(2)));
+        assertEquals(SuggestionsSection.class, groups.get(3).getClass());
+        assertEquals(KnownCategories.DOWNLOADS, getCategory(groups.get(3)));
+    }
+
     private List<SnippetArticle> createDummySnippets(int count) {
         List<SnippetArticle> snippets = new ArrayList<>();
         for (int index = 0; index < count; index++) {
@@ -452,5 +564,21 @@ public class NewTabPageAdapterTest {
                     ContentSuggestionsCardLayout.FULL_CARD));
         }
         return snippets;
+    }
+
+    /** Registers the category with hasMoreButton=false and showIfEmpty=true*/
+    private void registerCategory(FakeSuggestionsSource suggestionsSource,
+            @CategoryInt int category, int suggestionCount) {
+        // FakeSuggestionSource does not provide snippets if the category's status is not available.
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        // Important: showIfEmpty flag to true.
+        suggestionsSource.setInfoForCategory(
+                category, new SuggestionsCategoryInfo(
+                                  "", ContentSuggestionsCardLayout.FULL_CARD, false, true));
+        suggestionsSource.setSuggestionsForCategory(category, createDummySnippets(suggestionCount));
+    }
+
+    private int getCategory(ItemGroup itemGroup) {
+        return ((SuggestionsSection) itemGroup).getCategory();
     }
 }

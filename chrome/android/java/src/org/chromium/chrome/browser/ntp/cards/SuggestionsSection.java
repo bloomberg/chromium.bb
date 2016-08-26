@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.StatusItem.ActionDelegate;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
-import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -27,25 +25,20 @@ public class SuggestionsSection implements ItemGroup {
     private final ProgressItem mProgressIndicator = new ProgressItem();
     private final ActionDelegate mActionDelegate;
     private final ActionItem mMoreButton;
+    @CategoryInt
+    private final int mCategory;
 
     public SuggestionsSection(@CategoryInt int category, SuggestionsCategoryInfo info,
             final NewTabPageAdapter adapter) {
         mHeader = new SectionHeader(info.getTitle());
-        // TODO(pke): Replace the condition with "info.hasMoreButton()" once all other categories
-        // are supported by the C++ backend, too.
-        // Right now, we hard-code all the sections that are handled in ActionListItem.
-        boolean showMoreButton = false;
-        if (category == KnownCategories.BOOKMARKS) {
-            showMoreButton = true;
-        } else if (category == KnownCategories.DOWNLOADS) {
-            showMoreButton = ChromeFeatureList.isEnabled("DownloadsUi");
-        }
-        mMoreButton = showMoreButton ? new ActionItem(category) : null;
+        mCategory = category;
 
         // TODO(dgn): Properly define strings, actions, etc. for each section and category type.
-        if (showMoreButton) {
+        if (info.hasMoreButton()) {
+            mMoreButton = new ActionItem(category);
             mActionDelegate = null;
         } else {
+            mMoreButton = null;
             mActionDelegate = new ActionDelegate() {
                 @Override
                 public void onButtonTapped() {
@@ -105,6 +98,10 @@ public class SuggestionsSection implements ItemGroup {
         if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestions.clear();
 
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
+    }
+
+    public int getCategory() {
+        return mCategory;
     }
 
     private void copyThumbnails(List<SnippetArticle> suggestions) {

@@ -29,11 +29,6 @@ public class SnippetsBridge implements SuggestionsSource {
         return status == CategoryStatus.AVAILABLE_LOADING || status == CategoryStatus.AVAILABLE;
     }
 
-    public static boolean isCategoryStatusInitOrAvailable(@CategoryStatusEnum int status) {
-        // Note: This code is duplicated in content_suggestions_category_status.cc.
-        return status == CategoryStatus.INITIALIZING || isCategoryStatusAvailable(status);
-    }
-
     /** Returns whether the category is considered "enabled", and can show content suggestions. */
     public static boolean isCategoryEnabled(@CategoryStatusEnum int status) {
         switch (status) {

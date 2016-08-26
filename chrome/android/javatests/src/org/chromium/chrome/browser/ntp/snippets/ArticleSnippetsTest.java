@@ -61,6 +61,8 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                setupTestData();
+
                 mContentView = new FrameLayout(getActivity());
                 mUiConfig = new UiConfig(mContentView);
 
@@ -72,13 +74,10 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
 
                 View aboveTheFold = new View(getActivity());
 
-
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
                 mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mSnippetsSource,
                         mUiConfig);
                 mRecyclerView.setAdapter(mAdapter);
-
-                setupTestData();
             }
         });
 

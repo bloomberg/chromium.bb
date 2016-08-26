@@ -32,9 +32,9 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * A class that handles merging above the fold elements and below the fold cards into an adapter
@@ -62,7 +62,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private final SpacingItem mBottomSpacer = new SpacingItem();
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
-    private final Map<Integer, SuggestionsSection> mSections = new TreeMap<>();
+    private final Map<Integer, SuggestionsSection> mSections = new LinkedHashMap<>();
 
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
@@ -145,6 +145,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             List<SnippetArticle> suggestions =
                     suggestionsSource.getSuggestionsForCategory(category);
             suggestionsPerCategory[i++] = suggestions.size();
+
+            // Create the new section.
+            SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
+            if (suggestions.isEmpty() && !info.showIfEmpty()) continue;
+            mSections.put(category, new SuggestionsSection(category, info, this));
+
+            // Add the new suggestions.
             setSuggestions(category, suggestions, categoryStatus);
         }
         // |mNewTabPageManager| is null in some tests.
@@ -162,8 +169,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void onNewSuggestions(@CategoryInt int category) {
+        // We never want to add suggestions from unknown categories.
+        if (!mSections.containsKey(category)) return;
+
         // We never want to refresh the suggestions if we already have some content.
-        if (mSections.containsKey(category) && mSections.get(category).hasSuggestions()) return;
+        if (mSections.get(category).hasSuggestions()) return;
 
         // The status may have changed while the suggestions were loading, perhaps they should not
         // be displayed any more.
@@ -316,13 +326,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         for (SnippetArticle suggestion : suggestions) {
             suggestion.mGlobalPosition = globalPositionOffset + suggestion.mPosition;
         }
-        // Add the new suggestions.
-        if (!mSections.containsKey(category)) {
-            SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
-            if (suggestions.isEmpty() && !info.showIfEmpty()) return;
-
-            mSections.put(category, new SuggestionsSection(category, info, this));
-        }
 
         mSections.get(category).setSuggestions(suggestions, status);
     }
@@ -406,6 +409,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             if (itemPosition < itemsSkipped) return group;
         }
         return null;
+    }
+
+    @VisibleForTesting
+    List<ItemGroup> getGroups() {
+        return Collections.unmodifiableList(mGroups);
     }
 
     private int getGroupPositionOffset(ItemGroup group) {
