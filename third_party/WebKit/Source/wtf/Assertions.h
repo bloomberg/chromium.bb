@@ -246,10 +246,9 @@ private:
 // failures using the security template:
 //    https://bugs.chromium.org/p/chromium/issues/entry?template=Security%20Bug
 #if ENABLE_SECURITY_ASSERT
-#define SECURITY_DCHECK(condition) LOG_IF(FATAL, !(condition)) << "Security check failed: " #condition ". "
-// TODO(tkent): Should we make SECURITY_CHECK different from SECURITY_DCHECK?
+#define SECURITY_DCHECK(condition) LOG_IF(FATAL, !(condition)) << "Security DCHECK failed: " #condition ". "
 // A SECURITY_CHECK failure is actually not vulnerable.
-#define SECURITY_CHECK(condition) SECURITY_DCHECK(condition)
+#define SECURITY_CHECK(condition) LOG_IF(FATAL, !(condition)) << "Security CHECK failed: " #condition ". "
 #else
 #define SECURITY_DCHECK(condition) ((void)0)
 #define SECURITY_CHECK(condition) CHECK(condition)
@@ -263,6 +262,8 @@ private:
 // RELEASE_ASSERT is deprecated.  We should use CHECK() instead.
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
+#elif defined(ADDRESS_SANITIZER)
+#define RELEASE_ASSERT(condition) SECURITY_CHECK(condition)
 #else
 #define RELEASE_ASSERT(assertion) (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
 #endif
