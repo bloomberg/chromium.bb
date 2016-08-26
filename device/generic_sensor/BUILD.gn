@@ -12,14 +12,11 @@ source_set("generic_sensor") {
     "platform_sensor_provider_base.cc",
     "platform_sensor_provider_base.h",
     "platform_sensor_provider_default.cc",
-    "sensor_export.h",
     "sensor_impl.cc",
     "sensor_impl.h",
     "sensor_provider_impl.cc",
     "sensor_provider_impl.h",
   ]
-
-  defines = [ "DEVICE_GENERIC_SENSOR_IMPLEMENTATION" ]
 
   deps = [
     "//base",

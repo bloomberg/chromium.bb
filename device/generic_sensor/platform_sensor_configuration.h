@@ -6,11 +6,10 @@
 #define DEVICE_GENERIC_SENSOR_PLATFORM_SENSOR_CONFIGURATION_H_
 
 #include "base/logging.h"
-#include "device/generic_sensor/sensor_export.h"
 
 namespace device {
 
-class DEVICE_SENSOR_EXPORT PlatformSensorConfiguration {
+class PlatformSensorConfiguration {
  public:
   PlatformSensorConfiguration();
   explicit PlatformSensorConfiguration(double frequency);

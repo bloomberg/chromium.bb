@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//device/generic_sensor/public/interfaces/sensor.mojom"
-public_headers = [
-  "//device/generic_sensor/platform_sensor_configuration.h",
-  "//device/generic_sensor/sensor_export.h",
-]
+public_headers = [ "//device/generic_sensor/platform_sensor_configuration.h" ]
 traits_headers =
     [ "//device/generic_sensor/public/interfaces/sensor_struct_traits.h" ]
 sources = [
