@@ -18,6 +18,7 @@ class Label;
 }  // namespace views
 
 namespace ash {
+class ImeListView;
 class StatusAreaWidget;
 class WmWindow;
 
@@ -70,6 +71,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Bubble for default and detailed views.
   std::unique_ptr<TrayBubbleWrapper> bubble_;
+  ImeListView* ime_list_view_;
 
   views::Label* label_;
   IMEInfo current_ime_;

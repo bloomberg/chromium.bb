@@ -59,10 +59,10 @@ TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
                                            int accessible_name_id,
                                            int message_id,
                                            int right_border) {
-  TrayPopupHeaderButton* button = new ash::TrayPopupHeaderButton(
-      listener, enabled_resource_id, disabled_resource_id,
-      enabled_resource_id_hover, disabled_resource_id_hover,
-      accessible_name_id);
+  TrayPopupHeaderButton* button =
+      new TrayPopupHeaderButton(listener, enabled_resource_id,
+                                disabled_resource_id, enabled_resource_id_hover,
+                                disabled_resource_id_hover, accessible_name_id);
   button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
   button->SetBorder(views::Border::CreateSolidSidedBorder(0, 0, 0, right_border,
                                                           kBorderDarkColor));
@@ -154,12 +154,14 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
 }
 
 ImeMenuTray::~ImeMenuTray() {
+  if (bubble_)
+    bubble_->bubble_view()->reset_delegate();
   WmShell::Get()->system_tray_notifier()->RemoveIMEObserver(this);
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
-  if (!ash::MaterialDesignController::IsShelfMaterial())
+  if (!MaterialDesignController::IsShelfMaterial())
     tray_container()->SetBorder(views::Border::NullBorder());
 }
 
@@ -186,6 +188,15 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
 
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
+  if (bubble_ && ime_list_view_) {
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    IMEInfoList list;
+    delegate->GetAvailableIMEList(&list);
+    IMEPropertyInfoList property_list;
+    delegate->GetCurrentIMEProperties(&property_list);
+    ime_list_view_->Update(list, property_list, false,
+                           ImeListView::SHOW_SINGLE_IME);
+  }
 }
 
 void ImeMenuTray::OnIMEMenuActivationChanged(bool is_activated) {
@@ -197,7 +208,6 @@ void ImeMenuTray::OnIMEMenuActivationChanged(bool is_activated) {
 }
 
 void ImeMenuTray::BubbleViewDestroyed() {
-  SetDrawBackgroundAsActive(false);
 }
 
 void ImeMenuTray::OnMouseEnteredView() {}
@@ -267,14 +277,14 @@ void ImeMenuTray::ShowImeMenuBubble() {
   bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
   bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
-  ImeListView* ime_list_view =
+  // Adds IME list to the bubble.
+  ime_list_view_ =
       new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
-  if (ime_list_view->scroll_content()->height() > GetImeListViewMaxHeight()) {
-    ime_list_view->scroller()->SetFixedSize(
+  if (ime_list_view_->scroll_content()->height() > GetImeListViewMaxHeight()) {
+    ime_list_view_->scroller()->SetFixedSize(
         gfx::Size(kTrayPopupMaxWidth, GetImeListViewMaxHeight()));
   }
-  // Adds IME list to the bubble.
-  bubble_view->AddChildView(ime_list_view);
+  bubble_view->AddChildView(ime_list_view_);
 
   // Adds IME buttons to the bubble if needed.
   LoginStatus login =
@@ -283,12 +293,13 @@ void ImeMenuTray::ShowImeMenuBubble() {
       !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
     bubble_view->AddChildView(new ImeButtonsView(false, false, false, true));
 
-  bubble_.reset(new ash::TrayBubbleWrapper(this, bubble_view));
+  bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
   SetDrawBackgroundAsActive(true);
 }
 
 void ImeMenuTray::HideImeMenuBubble() {
   bubble_.reset();
+  ime_list_view_ = nullptr;
   SetDrawBackgroundAsActive(false);
 }
 

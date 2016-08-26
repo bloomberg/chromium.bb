@@ -51,6 +51,9 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // Sets the IME info.
   void SetCurrentIME(const IMEInfo& info);
 
+  // Sets the list of available IMEs.
+  void SetAvailableIMEList(const IMEInfoList& list);
+
   // Overridden from SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
   bool IsUserSupervised() const override;
@@ -64,6 +67,7 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   std::unique_ptr<SystemTrayItem> CreateRotationLockTrayItem(
       SystemTray* tray) override;
   void GetCurrentIME(IMEInfo* info) override;
+  void GetAvailableIMEList(IMEInfoList* list) override;
 
  private:
   bool should_show_display_notification_;
@@ -71,6 +75,7 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   base::TimeDelta session_length_limit_;
   bool session_length_limit_set_;
   IMEInfo current_ime_;
+  IMEInfoList ime_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
 };

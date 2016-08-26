@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/ime_info.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -12,6 +13,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
@@ -43,7 +45,37 @@ class ImeMenuTrayTest : public test::AshTestBase {
 
   // Returns true if the IME menu bubble has been shown.
   bool IsBubbleShown() {
-    return (GetTray()->bubble_ && GetTray()->bubble_->bubble_view());
+    return GetTray()->bubble_ && GetTray()->bubble_->bubble_view();
+  }
+
+  // Returns true if the IME menu list has been updated with the right IME list.
+  bool IsTrayImeListValid(const std::vector<IMEInfo>& expected_imes,
+                          const IMEInfo& expected_current_ime) {
+    std::map<views::View*, std::string> ime_map =
+        GetTray()->ime_list_view_->ime_map_;
+    if (ime_map.size() != expected_imes.size())
+      return false;
+
+    std::vector<std::string> expected_ime_ids;
+    for (const auto& ime : expected_imes) {
+      expected_ime_ids.push_back(ime.id);
+    }
+    for (const auto& ime : ime_map) {
+      // Tests that all the IMEs on the view is in the list of selected IMEs.
+      if (std::find(expected_ime_ids.begin(), expected_ime_ids.end(),
+                    ime.second) == expected_ime_ids.end()) {
+        return false;
+      }
+
+      // Tests that the checked IME is the current IME.
+      ui::AXViewState state;
+      ime.first->GetAccessibleState(&state);
+      if (state.HasStateFlag(ui::AX_STATE_CHECKED)) {
+        if (ime.second != expected_current_ime.id)
+          return false;
+      }
+    }
+    return true;
   }
 
  private:
@@ -118,6 +150,78 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
   EXPECT_FALSE(IsVisible());
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(IsTrayBackgroundActive());
+}
+
+// Tests that IME menu list updates when changing the current IME. This should
+// only happen by using shortcuts (Ctrl + Space / Ctrl + Shift + Space) to
+// switch IMEs.
+TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  ASSERT_TRUE(IsVisible());
+  ASSERT_FALSE(IsTrayBackgroundActive());
+
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+
+  EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
+
+  IMEInfo info1, info2, info3;
+  info1.id = "ime1";
+  info1.name = UTF8ToUTF16("English");
+  info1.medium_name = UTF8ToUTF16("English");
+  info1.short_name = UTF8ToUTF16("US");
+  info1.third_party = false;
+  info1.selected = true;
+
+  info2.id = "ime2";
+  info2.name = UTF8ToUTF16("English UK");
+  info2.medium_name = UTF8ToUTF16("English UK");
+  info2.short_name = UTF8ToUTF16("UK");
+  info2.third_party = true;
+  info2.selected = false;
+
+  info3.id = "ime3";
+  info3.name = UTF8ToUTF16("Pinyin");
+  info3.medium_name = UTF8ToUTF16("Chinese Pinyin");
+  info3.short_name = UTF8ToUTF16("拼");
+  info3.third_party = false;
+  info3.selected = false;
+
+  std::vector<IMEInfo> ime_info_list{info1, info2, info3};
+
+  GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
+  GetSystemTrayDelegate()->SetCurrentIME(info1);
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
+  EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info1));
+
+  ime_info_list[0].selected = false;
+  ime_info_list[2].selected = true;
+  GetSystemTrayDelegate()->SetAvailableIMEList(ime_info_list);
+  GetSystemTrayDelegate()->SetCurrentIME(info3);
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  EXPECT_EQ(UTF8ToUTF16("拼"), GetTrayText());
+  EXPECT_TRUE(IsTrayImeListValid(ime_info_list, info3));
+
+  // Closes the menu before quitting.
+  GetTray()->PerformAction(tap);
+  EXPECT_FALSE(IsTrayBackgroundActive());
+  EXPECT_FALSE(IsBubbleShown());
+}
+
+// Tests that quits Chrome with IME menu openned will not crash.
+TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  ASSERT_TRUE(IsVisible());
+  ASSERT_FALSE(IsTrayBackgroundActive());
+
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
 }
 
 }  // namespace ash
