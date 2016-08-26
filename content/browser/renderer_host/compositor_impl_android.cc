@@ -200,7 +200,8 @@ void ExternalBeginFrameSource::RemoveObserver(cc::BeginFrameObserver* obs) {
 
 void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
                                        base::TimeDelta vsync_period) {
-  base::TimeTicks deadline = std::max(base::TimeTicks::Now(), frame_time);
+  // frame time is in the past, so give the next vsync period as the deadline.
+  base::TimeTicks deadline = frame_time + vsync_period;
   last_begin_frame_args_ =
       cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
                                  vsync_period, cc::BeginFrameArgs::NORMAL);
