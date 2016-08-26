@@ -199,7 +199,7 @@ static void invalidatePaintRectangleOnWindow(const LayoutBoxModelObject& paintIn
     if (!frameView || paintInvalidationContainer.document().printing())
         return;
 
-    DCHECK(!frameView->frame().ownerLayoutObject());
+    DCHECK(frameView->frame().ownerLayoutItem().isNull());
 
     IntRect paintRect = dirtyRect;
     paintRect.intersect(frameView->visibleContentRect());
