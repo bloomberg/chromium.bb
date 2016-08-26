@@ -16,7 +16,13 @@ oobe-dialog .header {
 oobe-dialog h1.title {
   color: rgba(0, 0, 0, 0.87);
   font-size: 28px;
+  font-weight: normal;
   margin: 36px 0 0 0; /* = 64 - font height*/
+}
+
+oobe-dialog[welcome-screen] h1.title {
+  font-size: 38px;
+  margin: 22px 0 0 0; /* = 64 - font height*/
 }
 
 oobe-dialog .subtitle {

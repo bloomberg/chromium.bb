@@ -13,5 +13,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Switches styles to "Welcome screen".
+     */
+    welcomeScreen: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 });

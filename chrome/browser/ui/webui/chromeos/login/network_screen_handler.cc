@@ -165,6 +165,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
   // MD-OOBE
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
+  builder->Add("welcomeNextButtonText", IDS_OOBE_WELCOME_NEXT_BUTTON_TEXT);
   builder->Add("languageSectionTitle", IDS_LANGUAGE_SECTION_TITLE);
   builder->Add("accessibilitySectionTitle", IDS_ACCESSIBILITY_SECTION_TITLE);
   builder->Add("accessibilitySectionHint", IDS_ACCESSIBILITY_SECTION_HINT);

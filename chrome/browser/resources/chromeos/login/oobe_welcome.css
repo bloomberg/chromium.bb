@@ -2,41 +2,67 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#oobe-welcome-md .buttonbox {
-  font-size: 32px;
-  padding: 15px 24px 24px;
-  width: 100px;
+/************* Welcome Screen **************/
+#welcomeScreen #welcomeIllustration {
+  height: max-content;
+  width: max-content;
 }
 
-#oobe-welcome-md .welcome-next {
-  padding: 15px 24px 24px;
+#welcomeScreen #welcomeNextButton {
+  padding-top: 32px;
 }
 
-#oobe-welcome-md .bottom-button {
+#welcomeScreen #welcomeButtons {
+  font-size: 16px;
+  padding-top: 24px;
+}
+
+#welcomeScreen .buttonbox-text {
+  align-self: center;
+  color: rgba(0, 0, 0, 0.54);
+  font: 16px Roboto, sans-serif;
+  /* TODO(alemate): max-width should depend on Timezone visibility. */
+  max-width: 220px;
+  padding-top: 32px;
+  position: absolute;
+  text-align: center;
+  top: 32px;
+  width: max-content;
+}
+
+#welcomeScreen .action-icon {
   --iron-icon-height: 32px;
   --iron-icon-width: 32px;
 }
 
-.language-selection-entry {
+#welcomeScreen .action-icon-spacer {
+  margin: 0;
+  padding: 0;
+  width: 218px;
+}
+
+/************* Language Screen **************/
+#languageScreen .language-selection-entry {
   border-top: 1px solid lightgrey;
   height: 44px;
   padding: 0 20px;
 }
 
-.language-selection-entry:last-of-type {
+#languageScreen .language-selection-entry:last-of-type {
   border-bottom: 1px solid lightgrey;
 }
 
-.language-selection-title {
+#languageScreen .language-selection-title {
   color: rgba(0, 0, 0, 0.87);
   font: 13px Roboto, sans-serif;
 }
 
-oobe-a11y-option {
+/************* Accessibility Screen **************/
+#accessibilityScreen oobe-a11y-option {
   border-top: 1px solid lightgrey;
   min-height: 56px;
 }
 
-oobe-a11y-option:last-of-type {
+#accessibilityScreen oobe-a11y-option:last-of-type {
   border-bottom: 1px solid rgba(0, 0, 0, 0.14);
 }

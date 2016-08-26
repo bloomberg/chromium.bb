@@ -6,23 +6,30 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <!--
-  Simple OOBE card which should be used for OOBE UI elements.
-  It has blue header and grey footer.
+  Simple OOBE dialog which should be used for OOBE UI elements.
+  It has correct size and padding. It can display top left icon, and has
+  three parts: header (which should have <h1>title</h1>), footer (content part),
+  and optional buttons container at the bottom.
 
   Example:
-    <oobe-dialog>
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <oobe-dialog has-buttons>
       <iron-icon ... class="oobe-icon">
-      <div class="header flex vertical layout end-justified start">
+      <div class="header">
+        <h1> class="title">Title</h1>
+        <div class="subtitle">Subtitle</div>
+      </div>
+      <div class="footer">
         ...
       </div>
-      <oobe-input-form class="footer" ...>
-      </oobe-input-form>
-      <oobe-text-button class="footer" label="OK" ...>
-      </oobe-text-button>
+      <div class="bottom-buttons">
+        ...
+      </div>
     </oobe-dialog>
 
   Add class |header| to all which you want to go inside the header.  Similar
-  with clases |footer| and |oobe-icon|.
+  with clases |footer|, |bottom-buttons| and |oobe-icon|. |bottom-buttons| block
+  is shown only if |has-buttons| attribute is set.
 -->
 <dom-module name="oobe-dialog">
   <template>

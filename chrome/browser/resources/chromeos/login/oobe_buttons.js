@@ -3,22 +3,6 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'oobe-next-button',
-
-  properties: {
-    disabled: {
-      type: Boolean,
-      value: false,
-    }
-  },
-
-  onClick_: function(e) {
-    if (this.disabled)
-      e.stopPropagation();
-  }
-});
-
-Polymer({
   is: 'oobe-icon-button',
 
   properties: {

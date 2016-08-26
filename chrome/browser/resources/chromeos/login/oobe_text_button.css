@@ -3,8 +3,9 @@
    found in the LICENSE file. */
 
 #textButton {
-  font-size: 18px;
-  height: 24px;
+  font: 13px 'Roboto Medium', sans-serif;
+  height: 32px;
+  padding: 0 16px;
 }
 
 #textButton:not([inverse]):not([disabled]) {

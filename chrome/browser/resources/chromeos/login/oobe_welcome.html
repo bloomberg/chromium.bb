@@ -19,39 +19,40 @@
 </iron-iconset-svg>
 
 <dom-module name="oobe-welcome-md">
-  <link rel="stylesheet" href="oobe_dialog_host.css">
-  <link rel="stylesheet" href="oobe_welcome.css">
-  <link rel="stylesheet" href="oobe_dialog_parameters.css">
   <template>
-    <oobe-card id="welcomeSection" hidden="[[!welcomeScreenShown]]">
-      <div class="header flex vertical layout end-justified start">
-        <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
+    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <link rel="stylesheet" href="oobe_welcome.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <oobe-dialog id="welcomeScreen" hidden="[[!welcomeScreenShown]]"
+        welcome-screen>
+      <div class="header layout vertical end-justified center">
+        <h1 class="title" i18n-content="networkScreenGreeting"></h1>
       </div>
-      <div class="footer flex vertical layout justified">
-        <div class="welcome-next flex layout vertical center">
-          <oobe-next-button id="welcomeNextButton"
-              on-tap="onWelcomeNextButtonClicked_">
-          </oobe-next-button>
-        </div>
-        <div class="flex horizontal layout justified">
-          <div class="buttonbox layout vertical"
+      <div class="footer flex layout vertical center">
+        <img id="welcomeIllustration" src="images/welcome_illustration_1x.png">
+        <oobe-text-button id="welcomeNextButton" inverse
+            on-tap="onWelcomeNextButtonClicked_"
+            i18n-content="welcomeNextButtonText">
+        </oobe-text-button>
+        <div id="welcomeButtons" class="flex horizontal layout justified">
+          <div class="layout vertical relative"
               on-tap="onWelcomeSelectLanguageButtonClicked_">
-            <iron-icon icon="icons:language" class="bottom-button self-center">
+            <iron-icon icon="icons:language" class="action-icon">
             </iron-icon>
-            <div id="currentLanguage">[[currentLanguage]]</div>
+            <div class="buttonbox-text">[[currentLanguage]]</div>
           </div>
-          <div class="buttonbox layout vertical"
+          <div class="action-icon-spacer"></div>
+          <div class="layout vertical relative"
               on-tap="onWelcomeAccessibilityButtonClicked_">
-            <iron-icon icon="icons:accessibility"
-                class="bottom-button self-center">
+            <iron-icon icon="icons:accessibility" class="action-icon">
             </iron-icon>
-            <div id="accessibilityLabel" i18n-content="accessibilityLink"></div>
+            <div class="buttonbox-text" i18n-content="accessibilityLink"></div>
           </div>
         </div>
       </div>
-    </oobe-card>
-    <oobe-dialog hidden="[[!languageSelectionScreenShown]]"
-        has-buttons>
+    </oobe-dialog>
+    <oobe-dialog id="languageScreen" hidden="[[!languageSelectionScreenShown]]"
+       has-buttons>
       <iron-icon icon="icons:language" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="languageSectionTitle"></h1>
@@ -86,8 +87,8 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog hidden="[[!accessibilityOptionsScreenShown]]"
-        has-buttons>
+    <oobe-dialog id="accessibilityScreen"
+        hidden="[[!accessibilityOptionsScreenShown]]" has-buttons>
       <iron-icon icon="icons:accessibility" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="accessibilitySectionTitle"></h1>
@@ -146,8 +147,7 @@
         </oobe-text-button>
       </div>
     </oobe-dialog>
-    <oobe-dialog id="networkSection"
-        hidden="[[!networkSelectionScreenShown]]">
+    <oobe-dialog hidden="[[!networkSelectionScreenShown]]">
       <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
       <div class="header">
         <h1 class="title" i18n-content="networkSectionTitle"></h1>
@@ -165,4 +165,3 @@
     </oobe-dialog>
   </template>
 </dom-module>
-
