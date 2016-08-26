@@ -847,6 +847,10 @@ void installOriginTrials(ScriptState* scriptState)
         originTrialContext->setFeatureBindingsInstalled("WebBluetooth");
     }
 
+    if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
+        originTrialContext->setFeatureBindingsInstalled("WebUSB");
+    }
+
     if (!originTrialContext->featureBindingsInstalled("LinkServiceWorker") && (RuntimeEnabledFeatures::linkServiceWorkerEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
         originTrialContext->setFeatureBindingsInstalled("LinkServiceWorker");
     }

@@ -611,6 +611,16 @@ void installOriginTrialsForModules(ScriptState* scriptState)
         }
     }
 
+    if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
+        if (executionContext->isDocument()) {
+            // For global interfaces e.g. USBInterface.
+            V8WindowPartial::installWebUSB(scriptState, global);
+            // For navigator interfaces e.g. navigator.usb.
+            V8NavigatorPartial::installWebUSB(scriptState);
+        }
+    }
+
+
     if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
         if (executionContext->isServiceWorkerGlobalScope()) {
             V8ServiceWorkerGlobalScope::installForeignFetch(scriptState, global);

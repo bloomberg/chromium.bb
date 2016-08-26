@@ -4,8 +4,6 @@
 
 // http://wicg.github.io/webusb/#device-enumeration
 
-[
-    RuntimeEnabled=WebUSB,
-] partial interface Navigator {
-    readonly attribute USB usb;
+partial interface Navigator {
+    [OriginTrialEnabled=WebUSB] readonly attribute USB usb;
 };

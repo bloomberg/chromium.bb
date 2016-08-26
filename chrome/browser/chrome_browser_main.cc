@@ -1542,14 +1542,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #endif  // defined(ENABLE_WEBRTC)
 
 #if !defined(OS_ANDROID)
-  // WebUSB is an experimental web API. The sites these notifications will link
-  // to will only work if the experiment is enabled and WebUSB feature is
-  // enabled.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures) &&
-      base::FeatureList::IsEnabled(features::kWebUsb)) {
+  if (base::FeatureList::IsEnabled(features::kWebUsb))
     web_usb_detector_.reset(new WebUsbDetector());
-  }
 #endif
 
   // At this point, StartupBrowserCreator::Start has run creating initial
