@@ -19,5 +19,9 @@ bool TapWebViewElementWithId(web::WebState* web_state,
 bool FocusWebViewElementWithId(web::WebState* web_state,
                                const std::string& element_id);
 
+// Returns whether the form with |form_id| in the passed |web_state| has been
+// submitted using a JavaScript submit() event.
+bool SubmitWebViewFormWithId(web::WebState* web_state,
+                             const std::string& form_id);
 }  // namespace test
 }  // namespace web

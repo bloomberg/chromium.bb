@@ -15,7 +15,11 @@ using web::NavigationManager;
 namespace web {
 namespace test {
 
-enum ElementAction { ELEMENT_ACTION_CLICK, ELEMENT_ACTION_FOCUS };
+enum ElementAction {
+  ELEMENT_ACTION_CLICK,
+  ELEMENT_ACTION_FOCUS,
+  ELEMENT_ACTION_SUBMIT
+};
 
 // Returns whether the Javascript action specified by |action| ran on
 // |element_id| in the passed |web_state|.
@@ -31,6 +35,9 @@ bool RunActionOnWebViewElementWithId(web::WebState* web_state,
       break;
     case ELEMENT_ACTION_FOCUS:
       js_action = ".focus();";
+      break;
+    case ELEMENT_ACTION_SUBMIT:
+      js_action = ".submit();";
       break;
   }
   NSString* script = [NSString
@@ -68,6 +75,12 @@ bool FocusWebViewElementWithId(web::WebState* web_state,
                                const std::string& element_id) {
   return RunActionOnWebViewElementWithId(web_state, element_id,
                                          ELEMENT_ACTION_FOCUS);
+}
+
+bool SubmitWebViewFormWithId(web::WebState* web_state,
+                             const std::string& form_id) {
+  return RunActionOnWebViewElementWithId(web_state, form_id,
+                                         ELEMENT_ACTION_SUBMIT);
 }
 
 }  // namespace test
