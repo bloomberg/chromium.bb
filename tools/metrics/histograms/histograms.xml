@@ -32752,6 +32752,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ThreadHopResourceThrottleTime" units="ms">
   <owner>davidben@chromium.org</owner>
+  <obsolete>
+    Experiment complete, code removed.
+  </obsolete>
   <summary>
     The time it took to do an IO to UI round-trip in the
     ThreadHopResourceThrottle. This is part of an experiment to determine the

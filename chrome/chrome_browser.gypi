@@ -541,8 +541,6 @@
       'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
       'browser/renderer_host/predictor_resource_throttle.cc',
       'browser/renderer_host/predictor_resource_throttle.h',
-      'browser/renderer_host/thread_hop_resource_throttle.cc',
-      'browser/renderer_host/thread_hop_resource_throttle.h',
       'browser/renderer_preferences_util.cc',
       'browser/renderer_preferences_util.h',
       'browser/resource_delegate_mac.h',

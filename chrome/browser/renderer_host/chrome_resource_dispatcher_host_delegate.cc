@@ -34,7 +34,6 @@
 #include "chrome/browser/renderer_host/chrome_navigation_data.h"
 #include "chrome/browser/renderer_host/predictor_resource_throttle.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
-#include "chrome/browser/renderer_host/thread_hop_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -637,9 +636,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
     throttles->push_back(new prerender::PrerenderResourceThrottle(request));
   }
-
-  if (ThreadHopResourceThrottle::IsEnabled())
-    throttles->push_back(new ThreadHopResourceThrottle);
 
   std::unique_ptr<PredictorResourceThrottle> predictor_throttle =
       PredictorResourceThrottle::MaybeCreate(request, io_data);
