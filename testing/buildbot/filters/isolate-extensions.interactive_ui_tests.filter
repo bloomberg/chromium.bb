@@ -1,3 +1,0 @@
-# crbug.com/639510: WindowOpenPanelTest.WindowOpenFocus timing out on the
-# Site Isolation Win bot
--WindowOpenPanelTest.WindowOpenFocus

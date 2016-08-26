@@ -10899,8 +10899,7 @@
       },
       {
         "args": [
-          "--isolate-extensions",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/isolate-extensions.interactive_ui_tests.filter"
+          "--isolate-extensions"
         ],
         "test": "interactive_ui_tests"
       },
