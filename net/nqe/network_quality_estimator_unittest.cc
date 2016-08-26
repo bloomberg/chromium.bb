@@ -116,6 +116,19 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     return std::move(http_response);
   }
 
+  // Runs one URL request to completion.
+  void RunOneRequest() {
+    TestDelegate test_delegate;
+    TestURLRequestContext context(true);
+    context.set_network_quality_estimator(this);
+    context.Init();
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+    request->Start();
+    base::RunLoop().Run();
+  }
+
   // Returns a GURL hosted at embedded test server.
   const GURL GetEchoURL() const {
     return embedded_test_server_.GetURL("/echo.html");
@@ -271,6 +284,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   using NetworkQualityEstimator::SetTickClockForTesting;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
+  using NetworkQualityEstimator::NetworkQualityStoreForTesting;
 
  private:
   // NetworkQualityEstimator implementation that returns the overridden
@@ -2215,6 +2229,86 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
     // Get the bits at index 25-31 which contain the resource load size.
     EXPECT_LE(0, (buckets.at(0).min) % 128);
   }
+}
+
+class TestNetworkQualitiesCacheObserver
+    : public nqe::internal::NetworkQualityStore::NetworkQualitiesCacheObserver {
+ public:
+  TestNetworkQualitiesCacheObserver()
+      : network_id_(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+                    std::string()),
+        notification_received_(0) {}
+  ~TestNetworkQualitiesCacheObserver() override {}
+
+  void OnChangeInCachedNetworkQuality(
+      const nqe::internal::NetworkID& network_id,
+      const nqe::internal::CachedNetworkQuality& cached_network_quality)
+      override {
+    network_id_ = network_id;
+    notification_received_++;
+  }
+
+  size_t get_notification_received_and_reset() {
+    size_t notification_received = notification_received_;
+    notification_received_ = 0;
+    return notification_received;
+  }
+
+  nqe::internal::NetworkID network_id() const { return network_id_; }
+
+ private:
+  nqe::internal::NetworkID network_id_;
+  size_t notification_received_;
+  DISALLOW_COPY_AND_ASSIGN(TestNetworkQualitiesCacheObserver);
+};
+
+TEST(NetworkQualityEstimatorTest, CacheObserver) {
+  TestNetworkQualitiesCacheObserver observer;
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  // Add |observer| as a persistent caching observer.
+  estimator.NetworkQualityStoreForTesting()->AddNetworkQualitiesCacheObserver(
+      &observer);
+
+  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test3g");
+  estimator.RunOneRequest();
+  EXPECT_EQ(1u, observer.get_notification_received_and_reset());
+  EXPECT_EQ("test3g", observer.network_id().id);
+
+  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test2g");
+  // One notification should be received for the previous network
+  // ("test3g") right before the connection change event. The second
+  // notification should be received for the second network ("test2g").
+  EXPECT_EQ(2u, observer.get_notification_received_and_reset());
+  estimator.RunOneRequest();
+  EXPECT_EQ("test2g", observer.network_id().id);
+
+  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_4G);
+  // Start multiple requests, but there should be only one notification
+  // received, since the effective connection type does not change.
+  estimator.RunOneRequest();
+  estimator.RunOneRequest();
+  estimator.RunOneRequest();
+  EXPECT_EQ(1u, observer.get_notification_received_and_reset());
+
+  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
+  estimator.RunOneRequest();
+  EXPECT_EQ(1u, observer.get_notification_received_and_reset());
+
+  // Remove |observer|, and it should not receive any notifications.
+  estimator.NetworkQualityStoreForTesting()
+      ->RemoveNetworkQualitiesCacheObserver(&observer);
+  estimator.set_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test2g");
+  EXPECT_EQ(0u, observer.get_notification_received_and_reset());
+  estimator.RunOneRequest();
+  EXPECT_EQ(0u, observer.get_notification_received_and_reset());
 }
 
 }  // namespace net

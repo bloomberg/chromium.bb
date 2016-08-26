@@ -400,6 +400,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   DCHECK_LE(0.0, correlation_uma_logging_probability_);
   DCHECK_GE(1.0, correlation_uma_logging_probability_);
 
+  network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   ObtainOperatingParams(variation_params);
   ObtainEffectiveConnectionTypeModelParams(variation_params);
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -964,7 +965,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   RecordMetricsOnConnectionTypeChanged();
 
   // Write the estimates of the previous network to the cache.
-  network_quality_store_.Add(
+  network_quality_store_->Add(
       current_network_id_,
       nqe::internal::CachedNetworkQuality(
           last_effective_connection_type_computation_,
@@ -1306,6 +1307,12 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
                                               1);
 }
 
+nqe::internal::NetworkQualityStore*
+NetworkQualityEstimator::NetworkQualityStoreForTesting() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return network_quality_store_.get();
+}
+
 void NetworkQualityEstimator::AddEffectiveConnectionTypeObserver(
     EffectiveConnectionTypeObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1459,7 +1466,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
   nqe::internal::CachedNetworkQuality cached_network_quality;
 
-  const bool cached_estimate_available = network_quality_store_.GetById(
+  const bool cached_estimate_available = network_quality_store_->GetById(
       current_network_id_, &cached_network_quality);
   UMA_HISTOGRAM_BOOLEAN("NQE.CachedNetworkQualityAvailable",
                         cached_estimate_available);
@@ -1659,7 +1666,7 @@ void NetworkQualityEstimator::
 
   // Add the estimates of the current network to the cache store.
   if (effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-    network_quality_store_.Add(
+    network_quality_store_->Add(
         current_network_id_,
         nqe::internal::CachedNetworkQuality(
             tick_clock_->NowTicks(), estimated_quality_at_last_main_frame_,
