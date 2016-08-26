@@ -4,6 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 input on Mac
+PASS selectionDirection was "none" after just creating
 PASS selectionDirection was "none" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "none" after focusing on another element
 PASS selectionDirection was "none" after hiding the element
@@ -31,6 +32,7 @@ PASS selectionDirection was "backward" after hiding the element
 PASS selectionDirection was "none" after updating value
 
 textarea on Mac
+PASS selectionDirection was "none" after just creating
 PASS selectionDirection was "none" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "none" after focusing on another element
 PASS selectionDirection was "none" after hiding the element
@@ -58,6 +60,7 @@ PASS selectionDirection was "backward" after hiding the element
 PASS selectionDirection was "none" after updating value
 
 input on Win
+PASS selectionDirection was "forward" after just creating
 PASS selectionDirection was "forward" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "forward" after focusing on another element
 PASS selectionDirection was "forward" after hiding the element
@@ -85,6 +88,7 @@ PASS selectionDirection was "backward" after hiding the element
 PASS selectionDirection was "forward" after updating value
 
 textarea on Win
+PASS selectionDirection was "forward" after just creating
 PASS selectionDirection was "forward" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "forward" after focusing on another element
 PASS selectionDirection was "forward" after hiding the element
@@ -112,6 +116,7 @@ PASS selectionDirection was "backward" after hiding the element
 PASS selectionDirection was "forward" after updating value
 
 input on Unix
+PASS selectionDirection was "forward" after just creating
 PASS selectionDirection was "forward" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "forward" after focusing on another element
 PASS selectionDirection was "forward" after hiding the element
@@ -139,6 +144,7 @@ PASS selectionDirection was "backward" after hiding the element
 PASS selectionDirection was "forward" after updating value
 
 textarea on Unix
+PASS selectionDirection was "forward" after just creating
 PASS selectionDirection was "forward" after focusing and setting selection by setSelectionRange(1, 2)
 PASS selectionDirection was "forward" after focusing on another element
 PASS selectionDirection was "forward" after hiding the element

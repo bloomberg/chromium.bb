@@ -62,8 +62,8 @@ HTMLTextFormControlElement::HTMLTextFormControlElement(const QualifiedName& tagN
     , m_lastChangeWasUserEdit(false)
     , m_cachedSelectionStart(0)
     , m_cachedSelectionEnd(0)
-    , m_cachedSelectionDirection(SelectionHasNoDirection)
 {
+    m_cachedSelectionDirection = doc.frame() && doc.frame()->editor().behavior().shouldConsiderSelectionAsDirectional() ? SelectionHasForwardDirection : SelectionHasNoDirection;
 }
 
 HTMLTextFormControlElement::~HTMLTextFormControlElement()
