@@ -287,7 +287,7 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
             FromWebContents(web_contents);
     DCHECK(driver_factory);
     driver_factory->OnMainResourceMatchedSafeBrowsingBlacklist(
-        resource.url, resource.redirect_urls,
+        resource.url, resource.redirect_urls, resource.threat_type,
         resource.threat_metadata.threat_pattern_type);
 
     if (prerender_contents) {

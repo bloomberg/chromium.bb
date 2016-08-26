@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -23,6 +24,11 @@ const char kActivationScopeParameterName[] = "activation_scope";
 const char kActivationScopeAllSites[] = "all_sites";
 const char kActivationScopeActivationList[] = "activation_list";
 const char kActivationScopeNoSites[] = "no_sites";
+
+const char kActivationListsParameterName[] = "activation_lists";
+const char kActivationListSocialEngineeringAdsInterstitial[] =
+    "social_eng_ads_intertitial";
+const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 
 ActivationState GetMaximumActivationState() {
   std::string activation_state = variations::GetVariationParamValueByFeature(
@@ -43,6 +49,25 @@ ActivationScope GetCurrentActivationScope() {
                                       kActivationScopeActivationList))
     return ActivationScope::ACTIVATION_LIST;
   return ActivationScope::NO_SITES;
+}
+
+ActivationList GetCurrentActivationList() {
+  std::string activation_lists = variations::GetVariationParamValueByFeature(
+      kSafeBrowsingSubresourceFilter, kActivationListsParameterName);
+  ActivationList activation_list_type = ActivationList::NONE;
+  for (const base::StringPiece& activation_list :
+       base::SplitStringPiece(activation_lists, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    if (base::LowerCaseEqualsASCII(activation_list,
+                                   kActivationListPhishingInterstitial)) {
+      return ActivationList::PHISHING_INTERSTITIAL;
+    } else if (base::LowerCaseEqualsASCII(
+                   activation_list,
+                   kActivationListSocialEngineeringAdsInterstitial)) {
+      activation_list_type = ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL;
+    }
+  }
+  return activation_list_type;
 }
 
 }  // namespace subresource_filter

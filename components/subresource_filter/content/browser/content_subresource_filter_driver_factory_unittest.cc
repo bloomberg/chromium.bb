@@ -24,7 +24,59 @@ const char kExampleUrlWithParams[] = "https://example.com/soceng?q=engsoc";
 const char kTestUrl[] = "https://test.com";
 const char kExampleUrl[] = "https://example.com";
 
+struct ActivationListTestData {
+  bool should_add;
+  const char* const activation_list;
+  safe_browsing::SBThreatType threat_type;
+  safe_browsing::ThreatPatternType threat_type_metadata;
+};
+
+const ActivationListTestData kActivationListTestData[] = {
+    {false, "", safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::ThreatPatternType::NONE},
+    {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::ThreatPatternType::MALWARE_LANDING},
+    {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION},
+    {true, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_API_ABUSE,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_BINARY_MALWARE_URL,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {false, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_SAFE,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {true, subresource_filter::kActivationListPhishingInterstitial,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::ThreatPatternType::NONE},
+};
+
 }  // namespace
+
 namespace subresource_filter {
 
 class MockSubresourceFilterDriver : public ContentSubresourceFilterDriver {
@@ -98,7 +150,7 @@ class ContentSubresourceFilterDriverFactoryTest
   void BlacklistURLWithRedirects(const GURL& url,
                                  const std::vector<GURL>& redirects) {
     factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-        url, redirects,
+        url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
         safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   }
 
@@ -158,16 +210,53 @@ class ContentSubresourceFilterDriverFactoryTest
 
 class ContentSubresourceFilterDriverFactoryThreatTypeTest
     : public ContentSubresourceFilterDriverFactoryTest,
-      public ::testing::WithParamInterface<safe_browsing::ThreatPatternType> {
+      public ::testing::WithParamInterface<ActivationListTestData> {
  public:
   ContentSubresourceFilterDriverFactoryThreatTypeTest() {}
   ~ContentSubresourceFilterDriverFactoryThreatTypeTest() override {}
+
+  void VerifyEntitiesNotInTheBlacklist(
+      const GURL& test_url,
+      const std::vector<GURL>& redirects,
+      const ActivationListTestData& test_data) {
+    factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
+        test_url, std::vector<GURL>(), test_data.threat_type,
+        test_data.threat_type_metadata);
+    EXPECT_EQ(test_data.should_add ? 1 : 0U,
+              factory()->activation_set().size());
+    EXPECT_EQ(test_data.should_add,
+              factory()->ShouldActivateForURL(GURL(test_url)));
+    EXPECT_EQ(test_data.should_add, factory()->ShouldActivateForURL(
+                                        GURL(test_url.GetWithEmptyPath())));
+    EXPECT_EQ(test_data.should_add,
+              factory()->ShouldActivateForURL(
+                  GURL("http://" + test_url.host() + "/path?q=q")));
+    factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
+        test_url, redirects, test_data.threat_type,
+        test_data.threat_type_metadata);
+    for (const auto& redirect : redirects) {
+      EXPECT_EQ(test_data.should_add,
+                factory()->ShouldActivateForURL(redirect));
+      EXPECT_EQ(test_data.should_add,
+                factory()->ShouldActivateForURL(redirect.GetWithEmptyPath()));
+      EXPECT_EQ(test_data.should_add, factory()->ShouldActivateForURL(
+                                          GURL("http://" + redirect.host())));
+      EXPECT_EQ(test_data.should_add,
+                factory()->ShouldActivateForURL(
+                    GURL("http://" + redirect.host() + "/path?q=q")));
+    }
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryThreatTypeTest);
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitEmptyRedirects) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeNoSites, kActivationListSocialEngineeringAdsInterstitial);
+
   BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
   EXPECT_EQ(1U, factory()->activation_set().size());
 
@@ -186,6 +275,11 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitEmptyRedirects) {
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, SocEngHitWithRedirects) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeNoSites, kActivationListSocialEngineeringAdsInterstitial);
+
   std::vector<GURL> redirects;
   redirects.push_back(GURL("https://example1.com"));
   redirects.push_back(GURL("https://example2.com"));
@@ -213,7 +307,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_DISABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeNoSites);
+      kActivationScopeNoSites, kActivationListSocialEngineeringAdsInterstitial);
   ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(), GURL(kTestUrl),
                                       false /* should_activate */);
   BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
@@ -226,7 +320,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   BlacklistURLWithRedirects(GURL(kExampleUrlWithParams), std::vector<GURL>());
   ActivateAndExpectForFrameHostForUrl(driver(), main_rfh(), GURL(kTestUrl),
@@ -236,28 +331,19 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, ActivateForFrameHostNeeded) {
 }
 
 TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest, NonSocEngHit) {
+  const ActivationListTestData& test_data = GetParam();
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeNoSites, test_data.activation_list);
+
   std::vector<GURL> redirects;
   redirects.push_back(GURL("https://example1.com"));
   redirects.push_back(GURL("https://example2.com"));
   redirects.push_back(GURL("https://example3.com"));
 
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
-  factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      GURL(test_url), std::vector<GURL>(), GetParam());
-  EXPECT_EQ(0U, factory()->activation_set().size());
-  EXPECT_FALSE(factory()->ShouldActivateForURL(GURL(test_url)));
-  EXPECT_FALSE(
-      factory()->ShouldActivateForURL(GURL(test_url.GetWithEmptyPath())));
-  EXPECT_FALSE(factory()->ShouldActivateForURL(
-      GURL("http://" + test_url.host() + "/path?q=q")));
-  for (const auto& redirect : redirects) {
-    EXPECT_FALSE(factory()->ShouldActivateForURL(redirect));
-    EXPECT_FALSE(factory()->ShouldActivateForURL(redirect.GetWithEmptyPath()));
-    EXPECT_FALSE(
-        factory()->ShouldActivateForURL(GURL("http://" + redirect.host())));
-    EXPECT_FALSE(factory()->ShouldActivateForURL(
-        GURL("http://" + redirect.host() + "/path?q=q")));
-  }
+  VerifyEntitiesNotInTheBlacklist(test_url, redirects, test_data);
 };
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -265,7 +351,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
   NavigateToUrlAndExpectActivationAndPromptSubFrame(GURL(kExampleUrl),
                                                     false /* should_prompt */);
 }
@@ -275,7 +362,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
-      kActivationScopeAllSites);
+      kActivationScopeAllSites,
+      kActivationListSocialEngineeringAdsInterstitial);
   NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
                                             true /* should_activate */,
                                             ActivationState::DRYRUN);
@@ -290,7 +378,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeAllSites);
+      kActivationScopeAllSites,
+      kActivationListSocialEngineeringAdsInterstitial);
   NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
                                             true /* should_activate */,
                                             ActivationState::ENABLED);
@@ -305,7 +394,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDryRun,
-      kActivationScopeNoSites);
+      kActivationScopeNoSites, kActivationListSocialEngineeringAdsInterstitial);
   NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
                                             false /* should_activate */,
                                             ActivationState::DISABLED);
@@ -316,19 +405,15 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateDisabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
   NavigateToUrlAndExpectActivationAndPrompt(GURL(kExampleUrlWithParams),
                                             false /* should_activate */,
                                             ActivationState::DISABLED);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    NoSonEngHit,
-    ContentSubresourceFilterDriverFactoryThreatTypeTest,
-    ::testing::Values(
-        safe_browsing::ThreatPatternType::NONE,
-        safe_browsing::ThreatPatternType::MALWARE_LANDING,
-        safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION,
-        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_LANDING));
+INSTANTIATE_TEST_CASE_P(NoSonEngHit,
+                        ContentSubresourceFilterDriverFactoryThreatTypeTest,
+                        ::testing::ValuesIn(kActivationListTestData));
 
 }  // namespace subresource_filter

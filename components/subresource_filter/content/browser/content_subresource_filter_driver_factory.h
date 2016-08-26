@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "components/safe_browsing_db/util.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -20,10 +21,6 @@ namespace content {
 class WebContents;
 class RenderFrameHost;
 }  // namespace content
-
-namespace safe_browsing {
-enum class ThreatPatternType;
-}
 
 namespace subresource_filter {
 
@@ -78,7 +75,8 @@ class ContentSubresourceFilterDriverFactory
   void OnMainResourceMatchedSafeBrowsingBlacklist(
       const GURL& url,
       const std::vector<GURL>& redirect_urls,
-      safe_browsing::ThreatPatternType threat_type);
+      safe_browsing::SBThreatType threat_type,
+      safe_browsing::ThreatPatternType threat_type_metadata);
 
   // Reloads the page and inserts the url to the whitelist.
   void OnReloadRequested();

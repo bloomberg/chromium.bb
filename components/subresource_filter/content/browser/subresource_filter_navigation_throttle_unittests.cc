@@ -128,13 +128,14 @@ TEST_F(SubresourceFilterNavigationThrottleTest, RequestWithoutRedirects) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL url(kExampleURL);
   SetUpNavigationHandleForURL(url);
   SimulateWillStart();
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      url, std::vector<GURL>(),
+      url, std::vector<GURL>(), safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   EXPECT_CALL(*driver(), ActivateForProvisionalLoad(ActivationState::ENABLED))
       .Times(1);
@@ -150,13 +151,15 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL url_with_activation(kExampleURL);
   const GURL url_without_activation(kTestURL);
 
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       url_with_activation, std::vector<GURL>(),
+      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   SetUpNavigationHandleForURL(url_without_activation);
@@ -176,12 +179,14 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL non_web_url(kNonWebURL);
 
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
       non_web_url, std::vector<GURL>(),
+      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   SetUpNavigationHandleForURL(non_web_url);
@@ -203,7 +208,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL url(kExampleURL);
   const GURL redirect(kRedirectURLFirst);
@@ -211,7 +217,7 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   SetUpNavigationHandleForURL(url);
   SimulateWillStart();
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      url, std::vector<GURL>(),
+      url, std::vector<GURL>(), safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   SimulateRedirects(redirect);
 
@@ -234,7 +240,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL url(kExampleURL);
   const GURL redirect_after_sb_classification(kTestURL);
@@ -248,7 +255,8 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   std::vector<GURL> redirects = {first_redirect, second_redirect,
                                  third_redirect};
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      url, redirects, safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+      url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   SimulateRedirects(redirect_after_sb_classification);
 
@@ -271,14 +279,15 @@ TEST_F(SubresourceFilterNavigationThrottleTest,
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
-      kActivationScopeActivationList);
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial);
 
   const GURL init_url(kExampleURL);
   const GURL redirect_with_match(kRedirectURLFirst);
   const GURL final_url(kRedirectURLSecond);
   std::vector<GURL> redirects = {redirect_with_match};
   factory()->OnMainResourceMatchedSafeBrowsingBlacklist(
-      init_url, redirects,
+      init_url, redirects, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
       safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
 
   SetUpNavigationHandleForURL(init_url);

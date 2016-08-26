@@ -131,4 +131,56 @@ TEST(SubresourceFilterFeaturesTest, ActivationStateAndScope) {
   }
 }
 
+TEST(SubresourceFilterFeaturesTest, ActivationList) {
+  const std::string activation_soc_eng(
+      kActivationListSocialEngineeringAdsInterstitial);
+  const std::string activation_phishing(kActivationListPhishingInterstitial);
+  const std::string socEngPhising = activation_soc_eng + activation_phishing;
+  const std::string socEngCommaPhising =
+      activation_soc_eng + "," + activation_phishing;
+  const std::string phishingCommaSocEng =
+      activation_phishing + "," + activation_soc_eng;
+  const std::string socEngCommaPhisingCommaGarbage =
+      socEngCommaPhising + "," + "Garbage";
+  const struct {
+    bool feature_enabled;
+    const char* activation_list_param;
+    ActivationList expected_activation_list;
+  } kTestCases[] = {
+      {false, "", ActivationList::NONE},
+      {false, "social eng ads intertitial", ActivationList::NONE},
+      {false, "phishing,interstital", ActivationList::NONE},
+      {false, "%$ garbage !%", ActivationList::NONE},
+      {true, "", ActivationList::NONE},
+      {true, "social eng ads intertitial", ActivationList::NONE},
+      {true, "phishing interstital", ActivationList::NONE},
+      {true, "%$ garbage !%", ActivationList::NONE},
+      {true, kActivationListSocialEngineeringAdsInterstitial,
+       ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL},
+      {true, kActivationListPhishingInterstitial,
+       ActivationList::PHISHING_INTERSTITIAL},
+      {true, socEngPhising.c_str(), ActivationList::NONE},
+      {true, socEngCommaPhising.c_str(), ActivationList::PHISHING_INTERSTITIAL},
+      {true, phishingCommaSocEng.c_str(),
+       ActivationList::PHISHING_INTERSTITIAL},
+      {true, socEngCommaPhisingCommaGarbage.c_str(),
+       ActivationList::PHISHING_INTERSTITIAL},
+      {true, "List1, List2", ActivationList::NONE}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("ActivationListParam = \"")
+                 << test_case.activation_list_param << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        kActivationStateDisabled, kActivationScopeNoSites,
+        test_case.activation_list_param);
+
+    EXPECT_EQ(test_case.expected_activation_list, GetCurrentActivationList());
+  }
+}
+
 }  // namespace subresource_filter

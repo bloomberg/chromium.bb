@@ -56,6 +56,8 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -899,6 +901,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
                        SocEngReportingBlacklistNotEmpty) {
+  subresource_filter::testing::ScopedSubresourceFilterFeatureToggle
+      scoped_feature_toggle(
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+          subresource_filter::kActivationStateEnabled,
+          subresource_filter::kActivationScopeNoSites,
+          subresource_filter::kActivationListSocialEngineeringAdsInterstitial);
   // Tests that when Safe Browsing gets hit which is corresponding to the
   // SOCIAL_ENGINEERING_ADS threat type, then URL is added to the Subresource
   // Filter.

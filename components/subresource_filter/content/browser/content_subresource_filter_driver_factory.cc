@@ -5,11 +5,11 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/common/activation_list.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -87,8 +87,19 @@ void ContentSubresourceFilterDriverFactory::
     OnMainResourceMatchedSafeBrowsingBlacklist(
         const GURL& url,
         const std::vector<GURL>& redirect_urls,
-        safe_browsing::ThreatPatternType threat_type) {
-  if (threat_type != safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS)
+        safe_browsing::SBThreatType threat_type,
+        safe_browsing::ThreatPatternType threat_type_metadata) {
+  bool proceed = false;
+  if (GetCurrentActivationList() ==
+      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL) {
+    proceed = (threat_type_metadata ==
+               safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+  } else if (GetCurrentActivationList() ==
+             ActivationList::PHISHING_INTERSTITIAL) {
+    proceed =
+        (threat_type == safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
+  }
+  if (!proceed)
     return;
   AddHostOfURLToActivationSet(url);
   for (const auto& url : redirect_urls)
