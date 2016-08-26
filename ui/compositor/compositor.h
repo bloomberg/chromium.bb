@@ -211,9 +211,6 @@ class COMPOSITOR_EXPORT Compositor
 
   void AddSurfaceClient(uint32_t client_id);
   void RemoveSurfaceClient(uint32_t client_id);
-  const std::unordered_map<uint32_t, uint32_t>& SurfaceClientsForTesting() {
-    return surface_clients_;
-  }
 
   void SetOutputSurface(std::unique_ptr<cc::OutputSurface> surface);
 
@@ -413,6 +410,7 @@ class COMPOSITOR_EXPORT Compositor
 #if defined(USE_AURA)
   ui::Window* window_;
 #endif
+  // A map from child id to parent id.
   std::unordered_map<uint32_t, uint32_t> surface_clients_;
   bool widget_valid_;
   bool output_surface_requested_;

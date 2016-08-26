@@ -142,9 +142,7 @@ void BrowserCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
     // We are always visible if we have a widget.
     DCHECK(host_->visible());
     host_->SetVisible(false);
-    if (!host_->output_surface_lost()) {
-      host_->ReleaseOutputSurface();
-    }
+    host_->ReleaseOutputSurface();
     display_.reset();
   }
 

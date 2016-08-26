@@ -4871,56 +4871,6 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
 
-class LayerTreeHostTestBreakSwapPromiseForContext : public LayerTreeHostTest {
- protected:
-  LayerTreeHostTestBreakSwapPromiseForContext()
-      : output_surface_lost_triggered_(false) {}
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void LoseOutputSurfaceAndQueueSwapPromise() {
-    layer_tree_host()->DidLoseOutputSurface();
-    std::unique_ptr<SwapPromise> swap_promise(
-        new TestSwapPromise(&swap_promise_result_));
-    layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
-  }
-
-  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
-                                  const BeginFrameArgs& args) override {
-    if (output_surface_lost_triggered_)
-      return;
-    output_surface_lost_triggered_ = true;
-
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&LayerTreeHostTestBreakSwapPromiseForContext::
-                                  LoseOutputSurfaceAndQueueSwapPromise,
-                              base::Unretained(this)));
-  }
-
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
-    // This is needed so that the impl-thread state matches main-thread state.
-    host_impl->DidLoseOutputSurface();
-    EndTest();
-  }
-
-  void AfterTest() override {
-    {
-      base::AutoLock lock(swap_promise_result_.lock);
-      EXPECT_FALSE(swap_promise_result_.did_activate_called);
-      EXPECT_FALSE(swap_promise_result_.did_swap_called);
-      EXPECT_TRUE(swap_promise_result_.did_not_swap_called);
-      EXPECT_EQ(SwapPromise::COMMIT_FAILS, swap_promise_result_.reason);
-      EXPECT_TRUE(swap_promise_result_.dtor_called);
-    }
-  }
-
-  bool output_surface_lost_triggered_;
-  TestSwapPromiseResult swap_promise_result_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForContext);
-
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   SimpleSwapPromiseMonitor(LayerTreeHost* layer_tree_host,

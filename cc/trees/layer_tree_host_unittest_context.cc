@@ -1545,13 +1545,12 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     : public LayerTreeHostContextTest {
  protected:
   void BeginTest() override {
-    deferred_ = false;
     PostSetNeedsCommitToMainThread();
   }
 
   void WillBeginMainFrame() override {
     // Don't begin a frame with a lost surface.
-    EXPECT_FALSE(layer_tree_host()->output_surface_lost());
+    EXPECT_FALSE(lost_);
 
     if (deferred_)
       return;
@@ -1565,6 +1564,16 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
         base::Bind(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
                        LoseContextOnImplThread,
                    base::Unretained(this)));
+
+    // After the first frame, we will lose the context and then not start
+    // allowing commits until that happens. The 2nd frame should not happen
+    // before DidInitializeOutputSurface occurs.
+    lost_ = true;
+  }
+
+  void DidInitializeOutputSurface() override {
+    EXPECT_TRUE(lost_);
+    lost_ = false;
   }
 
   void LoseContextOnImplThread() {
@@ -1578,7 +1587,8 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
 
   void AfterTest() override {}
 
-  bool deferred_;
+  bool deferred_ = false;
+  bool lost_ = true;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(

@@ -526,8 +526,7 @@ void CompositorImpl::SetVisible(bool visible) {
       display_->ForceImmediateDrawAndSwapIfPossible();
 
     host_->SetVisible(false);
-    if (!host_->output_surface_lost())
-      host_->ReleaseOutputSurface();
+    host_->ReleaseOutputSurface();
     pending_swapbuffers_ = 0;
     display_.reset();
   } else {

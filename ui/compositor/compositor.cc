@@ -89,10 +89,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
-  if (context_factory->GetSurfaceManager()) {
-    context_factory->GetSurfaceManager()->RegisterSurfaceClientId(
-        surface_id_allocator_->client_id());
-  }
+  context_factory->GetSurfaceManager()->RegisterSurfaceClientId(
+      surface_id_allocator_->client_id());
   root_web_layer_ = cc::Layer::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -242,37 +240,27 @@ Compositor::~Compositor() {
   host_.reset();
 
   context_factory_->RemoveCompositor(this);
-  if (context_factory_->GetSurfaceManager()) {
-    for (auto& client : surface_clients_) {
-      if (client.second) {
-        context_factory_->GetSurfaceManager()
-            ->UnregisterSurfaceNamespaceHierarchy(client.second, client.first);
-      }
-    }
-    context_factory_->GetSurfaceManager()->InvalidateSurfaceClientId(
-        surface_id_allocator_->client_id());
+  auto* manager = context_factory_->GetSurfaceManager();
+  for (auto& client : surface_clients_) {
+    DCHECK(client.second);
+    manager->UnregisterSurfaceNamespaceHierarchy(client.second, client.first);
   }
+  manager->InvalidateSurfaceClientId(surface_id_allocator_->client_id());
 }
 
 void Compositor::AddSurfaceClient(uint32_t client_id) {
-  // We don't give the client a parent until the ui::Compositor has an
-  // OutputSurface.
-  uint32_t parent_client_id = 0;
-  if (host_->has_output_surface()) {
-    parent_client_id = surface_id_allocator_->client_id();
-    context_factory_->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
-        parent_client_id, client_id);
-  }
+  uint32_t parent_client_id = surface_id_allocator_->client_id();
+  context_factory_->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
+      parent_client_id, client_id);
   surface_clients_[client_id] = parent_client_id;
 }
 
 void Compositor::RemoveSurfaceClient(uint32_t client_id) {
   auto it = surface_clients_.find(client_id);
   DCHECK(it != surface_clients_.end());
-  if (host_->has_output_surface()) {
-    context_factory_->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
-        it->second, client_id);
-  }
+  DCHECK(it->second);
+  context_factory_->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
+      it->second, it->first);
   surface_clients_.erase(it);
 }
 
@@ -280,21 +268,6 @@ void Compositor::SetOutputSurface(
     std::unique_ptr<cc::OutputSurface> output_surface) {
   output_surface_requested_ = false;
   host_->SetOutputSurface(std::move(output_surface));
-  // ui::Compositor uses a SingleThreadProxy and so BindToClient will be called
-  // above and SurfaceManager will be made aware of the OutputSurface's client
-  // ID.
-  for (auto& client : surface_clients_) {
-    if (client.second == surface_id_allocator_->client_id())
-      continue;
-    // If a client already has a parent, then we unregister the existing parent.
-    if (client.second) {
-      context_factory_->GetSurfaceManager()
-          ->UnregisterSurfaceNamespaceHierarchy(client.second, client.first);
-    }
-    context_factory_->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
-        surface_id_allocator_->client_id(), client.first);
-    client.second = surface_id_allocator_->client_id();
-  }
   // Visibility is reset when the output surface is lost, so update it to match
   // the Compositor's.
   context_factory_->SetDisplayVisible(this, host_->visible());
@@ -418,14 +391,7 @@ void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
 
 gfx::AcceleratedWidget Compositor::ReleaseAcceleratedWidget() {
   DCHECK(!IsVisible());
-  if (!host_->output_surface_lost()) {
-    host_->ReleaseOutputSurface();
-    for (auto& client : surface_clients_) {
-      context_factory_->GetSurfaceManager()
-          ->UnregisterSurfaceNamespaceHierarchy(client.second, client.first);
-      client.second = 0;
-    }
-  }
+  host_->ReleaseOutputSurface();
   context_factory_->RemoveCompositor(this);
   widget_valid_ = false;
   gfx::AcceleratedWidget widget = widget_;
@@ -506,9 +472,8 @@ void Compositor::UpdateLayerTreeHost() {
 void Compositor::RequestNewOutputSurface() {
   DCHECK(!output_surface_requested_);
   output_surface_requested_ = true;
-  if (widget_valid_) {
+  if (widget_valid_)
     context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
-  }
 }
 
 void Compositor::DidInitializeOutputSurface() {

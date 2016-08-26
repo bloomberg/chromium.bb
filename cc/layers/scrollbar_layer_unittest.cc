@@ -125,9 +125,6 @@ class ScrollbarLayerTest : public testing::Test {
     layer_tree_ = layer_tree_host_->GetLayerTree();
     layer_tree_host_->SetVisible(true);
     fake_client_.SetLayerTreeHost(layer_tree_host_.get());
-    // Force output surface creation for renderer capabilities.
-    layer_tree_host_->Composite(base::TimeTicks());
-    EXPECT_FALSE(layer_tree_host_->output_surface_lost());
   }
 
   LayerImpl* LayerImplForScrollAreaAndScrollbar(

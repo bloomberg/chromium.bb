@@ -145,7 +145,6 @@ class CC_EXPORT LayerTreeHost {
   virtual std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();
-  bool output_surface_lost() const { return output_surface_lost_; }
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   bool UpdateLayers();
@@ -216,8 +215,6 @@ class CC_EXPORT LayerTreeHost {
     return task_runner_provider_.get();
   }
   AnimationHost* animation_host() const;
-
-  bool has_output_surface() const { return !!current_output_surface_; }
 
   // CreateUIResource creates a resource given a bitmap.  The bitmap is
   // generated via an interface function, which is called when initializing the
@@ -327,9 +324,6 @@ class CC_EXPORT LayerTreeHost {
       std::unique_ptr<Proxy> proxy_for_testing,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);
   void InitializePictureCacheForTesting();
-  void SetOutputSurfaceLostForTesting(bool is_lost) {
-    output_surface_lost_ = is_lost;
-  }
   void SetTaskRunnerProviderForTesting(
       std::unique_ptr<TaskRunnerProvider> task_runner_provider);
 
@@ -407,7 +401,6 @@ class CC_EXPORT LayerTreeHost {
   // |current_output_surface_|.
   std::unique_ptr<OutputSurface> new_output_surface_;
   std::unique_ptr<OutputSurface> current_output_surface_;
-  bool output_surface_lost_;
 
   const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;

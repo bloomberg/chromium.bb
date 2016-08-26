@@ -66,7 +66,6 @@ class FakeLayerTreeHost : public LayerTreeHost {
 
   using LayerTreeHost::ScheduleMicroBenchmark;
   using LayerTreeHost::SendMessageToMicroBenchmark;
-  using LayerTreeHost::SetOutputSurfaceLostForTesting;
   using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;
   using LayerTreeHost::InitializePictureCacheForTesting;

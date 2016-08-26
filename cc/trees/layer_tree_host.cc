@@ -213,7 +213,6 @@ LayerTreeHost::LayerTreeHost(InitParams* params,
       client_(params->client),
       source_frame_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      output_surface_lost_(true),
       settings_(*params->settings),
       debug_state_(settings_.initial_debug_state),
       visible_(false),
@@ -267,13 +266,6 @@ void LayerTreeHost::InitializeRemoteServer(
     engine_picture_cache_ =
         image_serialization_processor_->CreateEnginePictureCache();
   }
-
-  // The LayerTreeHost on the server never requests the output surface since
-  // it is only needed on the client. Since ProxyMain aborts commits if
-  // output_surface_lost() is true, always assume we have the output surface
-  // on the server.
-  output_surface_lost_ = false;
-
   InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
                                           task_runner_provider_.get()),
                   nullptr);
@@ -488,7 +480,6 @@ void LayerTreeHost::CommitComplete() {
 
 void LayerTreeHost::SetOutputSurface(std::unique_ptr<OutputSurface> surface) {
   TRACE_EVENT0("cc", "LayerTreeHost::SetOutputSurface");
-  DCHECK(output_surface_lost_);
   DCHECK(surface);
 
   DCHECK(!new_output_surface_);
@@ -498,7 +489,6 @@ void LayerTreeHost::SetOutputSurface(std::unique_ptr<OutputSurface> surface) {
 
 std::unique_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
   DCHECK(!visible_);
-  DCHECK(!output_surface_lost_);
 
   DidLoseOutputSurface();
   proxy_->ReleaseOutputSurface();
@@ -511,13 +501,11 @@ void LayerTreeHost::RequestNewOutputSurface() {
 
 void LayerTreeHost::DidInitializeOutputSurface() {
   DCHECK(new_output_surface_);
-  output_surface_lost_ = false;
   current_output_surface_ = std::move(new_output_surface_);
   client_->DidInitializeOutputSurface();
 }
 
 void LayerTreeHost::DidFailToInitializeOutputSurface() {
-  DCHECK(output_surface_lost_);
   DCHECK(new_output_surface_);
   // Note: It is safe to drop all output surface references here as
   // LayerTreeHostImpl will not keep a pointer to either the old or
@@ -555,11 +543,6 @@ std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
 void LayerTreeHost::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "LayerTreeHost::DidLoseOutputSurface");
   DCHECK(task_runner_provider_->IsMainThread());
-
-  if (output_surface_lost_)
-    return;
-
-  output_surface_lost_ = true;
   SetNeedsCommit();
 }
 
@@ -668,16 +651,6 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
-
-  if (output_surface_lost()) {
-    proxy->RequestNewOutputSurface();
-    // RequestNewOutputSurface could have synchronously created an output
-    // surface, so check again before returning.
-    if (output_surface_lost())
-      return;
-  }
-
   RequestMainFrameUpdate();
   UpdateLayers();
 }
@@ -692,7 +665,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
 }
 
 bool LayerTreeHost::UpdateLayers() {
-  DCHECK(!output_surface_lost_);
   if (!layer_tree_->root_layer())
     return false;
   DCHECK(!layer_tree_->root_layer()->parent());

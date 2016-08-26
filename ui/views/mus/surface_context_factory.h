@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "cc/surfaces/surface_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -55,6 +56,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   void AddObserver(ui::ContextFactoryObserver* observer) override {}
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
+  cc::SurfaceManager surface_manager_;
   uint32_t next_surface_id_namespace_;
   ui::RasterThreadHelper raster_thread_helper_;
   ui::GpuService* gpu_service_;

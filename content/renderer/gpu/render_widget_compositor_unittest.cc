@@ -164,10 +164,12 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
 
   // Force a new output surface to be created.
   void SynchronousComposite() {
-   layer_tree_host()->DidLoseOutputSurface();
+    layer_tree_host()->SetVisible(false);
+    layer_tree_host()->ReleaseOutputSurface();
+    layer_tree_host()->SetVisible(true);
 
-   base::TimeTicks some_time;
-   layer_tree_host()->Composite(some_time);
+    base::TimeTicks some_time;
+    layer_tree_host()->Composite(some_time);
   }
 
   void RequestNewOutputSurface() override {

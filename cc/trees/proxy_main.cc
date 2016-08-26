@@ -159,16 +159,6 @@ void ProxyMain::BeginMainFrame(
     return;
   }
 
-  if (layer_tree_host_->output_surface_lost()) {
-    TRACE_EVENT_INSTANT0("cc", "EarlyOut_OutputSurfaceLost",
-                         TRACE_EVENT_SCOPE_THREAD);
-    std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
-    channel_main_->BeginMainFrameAbortedOnImpl(
-        CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST,
-        begin_main_frame_start_time, std::move(empty_swap_promises));
-    return;
-  }
-
   current_pipeline_stage_ = ANIMATE_PIPELINE_STAGE;
 
   layer_tree_host_->ApplyScrollAndScale(
@@ -406,8 +396,6 @@ bool ProxyMain::MainFrameWillHappenForTesting() {
 
 void ProxyMain::ReleaseOutputSurface() {
   DCHECK(IsMainThread());
-  DCHECK(layer_tree_host_->output_surface_lost());
-
   DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
   CompletionEvent completion;
   channel_main_->ReleaseOutputSurfaceOnImpl(&completion);

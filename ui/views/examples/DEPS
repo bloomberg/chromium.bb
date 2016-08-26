@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/surfaces/surface_manager.h",
   "+content/public",
   "+content/shell",
   "+sandbox",

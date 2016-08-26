@@ -50,6 +50,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       commit_requested_(false),
       inside_synchronous_composite_(false),
       output_surface_creation_requested_(false),
+      output_surface_lost_(true),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(task_runner_provider_);
@@ -131,7 +132,6 @@ void SingleThreadProxy::SetVisible(bool visible) {
 
 void SingleThreadProxy::RequestNewOutputSurface() {
   DCHECK(task_runner_provider_->IsMainThread());
-  DCHECK(layer_tree_host_->output_surface_lost());
   output_surface_creation_callback_.Cancel();
   if (output_surface_creation_requested_)
     return;
@@ -140,9 +140,7 @@ void SingleThreadProxy::RequestNewOutputSurface() {
 }
 
 void SingleThreadProxy::ReleaseOutputSurface() {
-  // |layer_tree_host_| should already be aware of this.
-  DCHECK(layer_tree_host_->output_surface_lost());
-
+  output_surface_lost_ = true;
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidLoseOutputSurface();
   return layer_tree_host_impl_->ReleaseOutputSurface();
@@ -150,7 +148,6 @@ void SingleThreadProxy::ReleaseOutputSurface() {
 
 void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
   DCHECK(task_runner_provider_->IsMainThread());
-  DCHECK(layer_tree_host_->output_surface_lost());
   DCHECK(output_surface_creation_requested_);
 
   bool success;
@@ -167,6 +164,7 @@ void SingleThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
     else if (!inside_synchronous_composite_)
       SetNeedsCommit();
     output_surface_creation_requested_ = false;
+    output_surface_lost_ = false;
   } else {
     // DidFailToInitializeOutputSurface is treated as a RequestNewOutputSurface,
     // and so output_surface_creation_requested remains true.
@@ -461,6 +459,7 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   client_->DidAbortSwapBuffers();
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidLoseOutputSurface();
+  output_surface_lost_ = true;
 }
 
 void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
@@ -505,11 +504,11 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
 #endif
   base::AutoReset<bool> inside_composite(&inside_synchronous_composite_, true);
 
-  if (layer_tree_host_->output_surface_lost()) {
+  if (output_surface_lost_) {
     RequestNewOutputSurface();
     // RequestNewOutputSurface could have synchronously created an output
     // surface, so check again before returning.
-    if (layer_tree_host_->output_surface_lost())
+    if (output_surface_lost_)
       return;
   }
 
@@ -581,7 +580,6 @@ void SingleThreadProxy::ScheduleRequestNewOutputSurface() {
 
 DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
-  DCHECK(!layer_tree_host_->output_surface_lost());
 
   DrawResult draw_result;
   bool draw_frame;
@@ -685,8 +683,6 @@ void SingleThreadProxy::DidCommitAndDrawFrame() {
 }
 
 bool SingleThreadProxy::MainFrameWillHappenForTesting() {
-  if (layer_tree_host_->output_surface_lost())
-    return false;
   if (!scheduler_on_impl_thread_)
     return false;
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
@@ -751,14 +747,6 @@ void SingleThreadProxy::BeginMainFrame(const BeginFrameArgs& begin_frame_args) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(
         CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
-    return;
-  }
-
-  if (layer_tree_host_->output_surface_lost()) {
-    TRACE_EVENT_INSTANT0("cc", "EarlyOut_OutputSurfaceLost",
-                         TRACE_EVENT_SCOPE_THREAD);
-    BeginMainFrameAbortedOnImplThread(
-        CommitEarlyOutReason::ABORTED_OUTPUT_SURFACE_LOST);
     return;
   }
 

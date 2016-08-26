@@ -157,6 +157,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // True if a request to the LayerTreeHostClient to create an output surface
   // is still outstanding.
   bool output_surface_creation_requested_;
+  // When output surface is lost, is set to true until a new output surface is
+  // initialized.
+  bool output_surface_lost_;
 
   // This is the callback for the scheduled RequestNewOutputSurface.
   base::CancelableClosure output_surface_creation_callback_;

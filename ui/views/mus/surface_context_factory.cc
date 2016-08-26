@@ -95,8 +95,7 @@ uint32_t SurfaceContextFactory::AllocateSurfaceClientId() {
 }
 
 cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {
-  // NOTIMPLEMENTED();
-  return nullptr;
+  return &surface_manager_;
 }
 
 void SurfaceContextFactory::SetDisplayVisible(ui::Compositor* compositor,

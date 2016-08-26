@@ -14,6 +14,7 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "cc/surfaces/surface_manager.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -139,8 +140,10 @@ int DemoMain() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool context_factory_for_test = false;
+  cc::SurfaceManager surface_manager;
   std::unique_ptr<ui::InProcessContextFactory> context_factory(
-      new ui::InProcessContextFactory(context_factory_for_test, nullptr));
+      new ui::InProcessContextFactory(context_factory_for_test,
+                                      &surface_manager));
   context_factory->set_use_test_surface(false);
 
   // Create the message-loop here before creating the root window.

@@ -105,6 +105,7 @@ executable("views_examples_exe") {
     "//base/test:test_support",
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
+    "//cc/surfaces",
     "//ui/base",
     "//ui/compositor",
     "//ui/compositor:test_support",

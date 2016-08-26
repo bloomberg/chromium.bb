@@ -391,10 +391,6 @@ class LayerTreeHostForTesting : public LayerTreeHost {
           proxy = ProxyMain::CreateRemote(remote_proto_channel,
                                           layer_tree_host.get(),
                                           task_runner_provider.get());
-
-          // The LayerTreeHost on the server will never have an output surface.
-          // Set output_surface_lost_ to false by default.
-          layer_tree_host->SetOutputSurfaceLostForTesting(false);
         }
         break;
     }

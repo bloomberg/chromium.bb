@@ -2333,6 +2333,9 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
 void LayerTreeHostImpl::ReleaseOutputSurface() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseOutputSurface");
 
+  if (!output_surface_)
+    return;
+
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.
@@ -2346,10 +2349,8 @@ void LayerTreeHostImpl::ReleaseOutputSurface() {
   // Detach from the old output surface and reset |output_surface_| pointer
   // as this surface is going to be destroyed independent of if binding the
   // new output surface succeeds or not.
-  if (output_surface_) {
-    output_surface_->DetachFromClient();
-    output_surface_ = nullptr;
-  }
+  output_surface_->DetachFromClient();
+  output_surface_ = nullptr;
 
   // We don't know if the next OutputSurface will support GPU rasterization.
   // Make sure to clear the flag so that we force a re-computation.

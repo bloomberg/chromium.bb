@@ -80,7 +80,6 @@ TEST_F(MicroBenchmarkControllerTest, BenchmarkRan) {
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_GT(id, 0);
 
-  layer_tree_host_->SetOutputSurfaceLostForTesting(false);
   layer_tree_host_->UpdateLayers();
 
   EXPECT_EQ(1, run_count);
@@ -99,7 +98,6 @@ TEST_F(MicroBenchmarkControllerTest, MultipleBenchmarkRan) {
       base::Bind(&IncrementCallCount, base::Unretained(&run_count)));
   EXPECT_GT(id, 0);
 
-  layer_tree_host_->SetOutputSurfaceLostForTesting(false);
   layer_tree_host_->UpdateLayers();
 
   EXPECT_EQ(2, run_count);
