@@ -2,6 +2,7 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/cookies/resources/testharness-helpers.js"></script>
+<body>
 <script>
 if (window.location.hostname == "127.0.0.1") {
     window.location.hostname = ORIGINAL_HOST;
@@ -25,6 +26,8 @@ if (window.location.hostname == "127.0.0.1") {
         f.method = "POST";
         f.target = "_blank";
         window.onload = t.step_func(f.submit.bind(f));
+        document.body.appendChild(f);
     }, "'" + ORIGINAL_HOST + "' is same-site with itself, so samesite cookies are sent.");
 }
 </script>
+</body>

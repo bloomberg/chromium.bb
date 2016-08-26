@@ -2,6 +2,7 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="/cookies/resources/testharness-helpers.js"></script>
+<body>
 <script>
 // Set cookies on ORIGINAL_HOST, then move ourselves to TEST_ROOT so
 // we can verify cross-origin behavior.
@@ -29,6 +30,8 @@ if (window.location.hostname == "127.0.0.1") {
         f.method = "POST";
         f.target = "_blank"
         window.onload = t.step_func(f.submit.bind(f));
+        document.body.appendChild(f);
     }, "'" + ORIGINAL_HOST + "' is not same-site with '" + TEST_HOST + "', so samesite cookies are not sent via POST.");
 }
 </script>
+</body>

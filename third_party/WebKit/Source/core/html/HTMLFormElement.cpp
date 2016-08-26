@@ -350,9 +350,13 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     LocalFrame* frame = document().frame();
     if (!view || !frame || !frame->page())
         return;
-    // See crbug.com/586749.
+
+    // https://html.spec.whatwg.org/multipage/forms.html#form-submission-algorithm
+    // 2. If form document is not connected, has no associated browsing context,
+    // or its active sandboxing flag set has its sandboxed forms browsing
+    // context flag set, then abort these steps without doing anything.
     if (!isConnected())
-        UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
+        return;
 
     if (m_isSubmitting)
         return;
