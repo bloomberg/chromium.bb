@@ -519,8 +519,7 @@ public class NewTabPageView extends FrameLayout
                     mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
                 }
                 updateSearchBoxOnScroll();
-                mRecyclerView.updatePeekingCard();
-                mRecyclerView.updateSnippetsHeaderDisplay();
+                mRecyclerView.updatePeekingCardAndHeader();
             }
         });
 
@@ -860,8 +859,7 @@ public class NewTabPageView extends FrameLayout
         updateSearchBoxOnScroll();
 
         if (mUseCardsUi) {
-            mRecyclerView.updatePeekingCard();
-            mRecyclerView.updateSnippetsHeaderDisplay();
+            mRecyclerView.updatePeekingCardAndHeader();
             // The positioning of elements may have been changed (since the elements expand to fill
             // the available vertical space), so adjust the scroll.
             mRecyclerView.snapScroll(mSearchBoxView, getVerticalScroll(), getHeight());
@@ -1136,10 +1134,7 @@ public class NewTabPageView extends FrameLayout
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        if (mUseCardsUi) {
-            mRecyclerView.updatePeekingCard();
-            mRecyclerView.updateSnippetsHeaderDisplay();
-        }
+        if (mUseCardsUi) mRecyclerView.updatePeekingCardAndHeader();
     }
 
     @Override

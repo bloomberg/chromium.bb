@@ -33,6 +33,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
     private final LinearLayoutManager mLayoutManager;
     private final int mToolbarHeight;
     private final int mMinBottomSpacing;
+    private final int mMaxHeaderHeight;
 
     /**
      * Total height of the items being dismissed.  Tracked to allow the bottom space to compensate
@@ -45,6 +46,9 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     /** Whether the RecyclerView should react to touch events. */
     private boolean mTouchEnabled = true;
+
+    /** Whether the above-the-fold left space for a peeking card to be displayed. */
+    private boolean mHasSpaceForPeekingCard;
 
     /**
      * Constructor needed to inflate from XML.
@@ -69,6 +73,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         mMinBottomSpacing =
                 res.getDimensionPixelSize(R.dimen.ntp_min_bottom_spacing_recycler_view);
+        mMaxHeaderHeight = res.getDimensionPixelSize(R.dimen.snippets_article_header_height);
     }
 
     public boolean isFirstItemVisible() {
@@ -125,6 +130,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
     public void setAboveTheFoldView(View aboveTheFoldView) {
         mAboveTheFoldView = aboveTheFoldView;
+    }
+
+    public void setHasSpaceForPeekingCard(boolean hasSpaceForPeekingCard) {
+        mHasSpaceForPeekingCard = hasSpaceForPeekingCard;
     }
 
     /** Scroll up from the cards' current position and snap to present the first one. */
@@ -196,35 +205,39 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return Math.max(mMinBottomSpacing, bottomSpacing);
     }
 
-    /**
-     * Refresh the peeking state of the first card.
-     */
-    public void updatePeekingCard() {
-        CardViewHolder firstCard = findFirstCard();
-        if (firstCard == null) return;
+    public void updatePeekingCardAndHeader() {
+        NewTabPageLayout aboveTheFoldView = findAboveTheFoldView();
+        if (aboveTheFoldView == null) return;
 
-        if (firstCard.itemView.isShown()) {
-            if (findAboveTheFoldView() == null) return;
-            firstCard.setCanPeek(findAboveTheFoldView().hasSpaceForPeekingCard());
-            firstCard.updatePeek();
-        }
-    }
-
-    /**
-     * Show the snippets header when the user scrolls down and snippet articles starts reaching the
-     * top of the screen.
-     */
-    public void updateSnippetsHeaderDisplay() {
         SectionHeaderViewHolder header = findFirstHeader();
         if (header == null) return;
 
-        if (findAboveTheFoldView() == null) return;
-        header.setCanTransition(findAboveTheFoldView().hasSpaceForPeekingCard());
-        // Start doing the calculations if the snippet header is currently shown on screen.
-        header.updateDisplay();
+        header.updateDisplay(computeVerticalScrollOffset(), mHasSpaceForPeekingCard);
+
+        CardViewHolder firstCard = findFirstCard();
+        if (firstCard != null) updatePeekingCard(firstCard);
 
         // Update the space at the bottom, which needs to know about the height of the header.
         refreshBottomSpacing();
+    }
+
+    /**
+     * Updates the peeking state of the provided card. Relies on the dimensions of the header to
+     * be correct, prefer {@link #updatePeekingCardAndHeader} that updates both together.
+     */
+    public void updatePeekingCard(CardViewHolder peekingCard) {
+        SectionHeaderViewHolder header = findFirstHeader();
+        if (header == null) {
+            // No header, we must have scrolled quite far. Fallback to a non animated (full bleed)
+            // card.
+            peekingCard.updatePeek(0, /* shouldAnimate */ false);
+            return;
+        }
+
+        // Here we consider that if the header is animating (is not completely expanded), the card
+        // should as well. In that case, the space below the header is what we have available.
+        boolean shouldAnimate = header.itemView.getHeight() < mMaxHeaderHeight;
+        peekingCard.updatePeek(getHeight() - header.itemView.getBottom(), shouldAnimate);
     }
 
     public NewTabPageAdapter getNewTabPageAdapter() {
@@ -347,8 +360,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         // and to allow the peeking card to peek a bit before snapping back.
         CardViewHolder peekingCardViewHolder = findFirstCard();
         if (peekingCardViewHolder != null && isFirstItemVisible()) {
-
-            if (!peekingCardViewHolder.getCanPeek()) return;
+            if (!mHasSpaceForPeekingCard) return;
 
             View peekingCardView = peekingCardViewHolder.itemView;
             View headerView = findFirstHeader().itemView;

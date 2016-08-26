@@ -28,9 +28,6 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
 
     private SectionHeader mHeaderListItem;
 
-    /** Can the header transition. */
-    private boolean mCanTransition = false;
-
     public SectionHeaderViewHolder(final NewTabPageRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
                         .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
@@ -48,43 +45,43 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     @Override
     public void onBindViewHolder(NewTabPageItem header) {
         mHeaderListItem = (SectionHeader) header;
-        updateDisplay();
-    }
-
-    /**
-    * Set whether the header is in a state where the height can vary from show to hidden.
-    */
-    public void setCanTransition(boolean canTransition) {
-        mCanTransition = canTransition;
+        mHeaderTextView.setText(mHeaderListItem.getHeaderText());
+        updateDisplay(0, false);
     }
 
     /**
      * @return The header height we want to set.
      */
-    private int getHeaderHeight() {
+    private int getHeaderHeight(int amountScrolled, boolean canTransition) {
         if (!mHeaderListItem.isVisible()) return 0;
 
         // If the header cannot transition but is visible - set the height to the maximum so
         // it always displays
-        if (!mCanTransition) return mMaxSnippetHeaderHeight;
+        if (!canTransition) return mMaxSnippetHeaderHeight;
 
         // Check if snippet header top is within range to start showing. Set the header height,
         // this is a percentage of how much is scrolled. The balance of the scroll will be used
         // to display the peeking card.
-        int amountScrolled = (mRecyclerView.getHeight() - mMaxPeekPadding) - itemView.getTop();
         return MathUtils.clamp((int) (amountScrolled * SCROLL_HEADER_HEIGHT_PERCENTAGE),
                 0, mMaxSnippetHeaderHeight);
     }
 
     /**
      * Update the view for the fade in/out and heading height.
+     * @param amountScrolled the number of pixels scrolled, or how far away from the bottom of the
+     *                       screen we got.
+     * @param canTransition whether we should animate the header sliding in. When {@code false},
+     *                      the header will always be fully visible.
      */
-    public void updateDisplay() {
-        mHeaderTextView.setText(mHeaderListItem.getHeaderText());
-        int headerHeight = getHeaderHeight();
+    public void updateDisplay(int amountScrolled, boolean canTransition) {
+        int headerHeight = getHeaderHeight(amountScrolled, canTransition);
 
         itemView.setAlpha((float) headerHeight / mMaxSnippetHeaderHeight);
         getParams().height = headerHeight;
+
+        // This request layout is needed to let the rest of the elements know about the modified
+        // dimensions of this one. Otherwise scrolling fast can make the peeking card go completely
+        // below the fold for example.
         itemView.requestLayout();
     }
 }

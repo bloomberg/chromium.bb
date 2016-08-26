@@ -12,7 +12,6 @@ import android.support.annotation.DrawableRes;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -22,7 +21,6 @@ import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -70,8 +68,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
      * full width of its parent. 1 means it is fully peeking and will be shown with a margin.
      */
     private float mPeekingPercentage;
-
-    private boolean mCanPeek = false;
 
     @DrawableRes
     private int mBackground;
@@ -131,11 +127,12 @@ public class CardViewHolder extends NewTabPageViewHolder {
     @Override
     public void onBindViewHolder(NewTabPageItem item) {
         // Reset the peek status to avoid recycled view holders to be peeking at the wrong moment.
-        int firstCardPos = mRecyclerView.getNewTabPageAdapter().getFirstCardPosition();
-        NewTabPageLayout aboveTheFold = mRecyclerView.findAboveTheFoldView();
-        setCanPeek(getAdapterPosition() == firstCardPos
-                && aboveTheFold != null && aboveTheFold.hasSpaceForPeekingCard());
-        updatePeek();
+        if (getAdapterPosition() != mRecyclerView.getNewTabPageAdapter().getFirstCardPosition()) {
+            // Not the first card, we can't peek anyway.
+            setPeekingPercentage(0f);
+        } else {
+            mRecyclerView.updatePeekingCard(this);
+        }
 
         // Reset the transparency and translation in case a dismissed card is being recycled.
         itemView.setAlpha(1f);
@@ -168,28 +165,23 @@ public class CardViewHolder extends NewTabPageViewHolder {
     /**
      * Change the width, padding and child opacity of the card to give a smooth transition as the
      * user scrolls.
+     * @param availableSpace space (pixels) available between the bottom of the screen and the
+     *                       above-the-fold section, where the card can peek.
+     * @param canPeek whether the screen size allows having a peeking card.
      */
-    public void updatePeek() {
+    public void updatePeek(int availableSpace, boolean canPeek) {
         float peekingPercentage;
-        if (getCanPeek()) {
-            // Find the position of the top of the current card. We use the bottom of the previous
-            // view for it because near initialization time, the view has not been placed yet in
-            // the recycler view and we get a wrong value.
-            ViewHolder previousViewHolder =
-                    mRecyclerView.findViewHolderForAdapterPosition(getAdapterPosition() - 1);
-            int top = previousViewHolder == null ? itemView.getTop()
-                                                : previousViewHolder.itemView.getBottom();
 
-            // How much of the (top of the) card is visible?
-            int visible = mRecyclerView.getHeight() - top;
-
+        if (!canPeek) {
+            peekingPercentage = 0f;
+        } else {
             // If 1 padding unit (|mMaxPeekPadding|) is visible, the card is fully peeking. This is
             // reduced as the card is scrolled up, until 2 padding units are visible and the card is
             // not peeking anymore at all. Anything not between 0 and 1 is clamped.
-            peekingPercentage = MathUtils.clamp(2f - (float) visible / mMaxPeekPadding, 0f, 1f);
-        } else {
-            peekingPercentage = 0f;
+            peekingPercentage =
+                    MathUtils.clamp(2f - (float) availableSpace / mMaxPeekPadding, 0f, 1f);
         }
+
         setPeekingPercentage(peekingPercentage);
     }
 
@@ -198,20 +190,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
      */
     public boolean isPeeking() {
         return mPeekingPercentage > 0f;
-    }
-
-    /**
-     * Set whether the card can peek.
-     */
-    public void setCanPeek(boolean canPeek) {
-        mCanPeek = canPeek;
-    }
-
-    /**
-     * @return Whether the card can peek.
-     */
-    public boolean getCanPeek() {
-        return mCanPeek;
     }
 
     @Override
