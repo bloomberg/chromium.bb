@@ -9,18 +9,15 @@
 namespace web {
 namespace test {
 
-enum ElementAction { CLICK, FOCUS };
-
-// Attempts to tap the element with |element_id| in the passed in |web_state|
-// using a JavaScript click() event.
-void TapWebViewElementWithId(web::WebState* web_state,
+// Returns whether the element with |element_id| in the passed |web_state| has
+// been tapped using a JavaScript click() event.
+bool TapWebViewElementWithId(web::WebState* web_state,
                              const std::string& element_id);
 
-// Attempts to run the Javascript action specified by |action| on |element_id|
-// in the passed |web_state|.
-void RunActionOnWebViewElementWithId(web::WebState* web_state,
-                                     const std::string& element_id,
-                                     ElementAction action);
+// Returns whether the element with |element_id| in the passed |web_state| has
+// been focused using a JavaScript focus() event.
+bool FocusWebViewElementWithId(web::WebState* web_state,
+                               const std::string& element_id);
 
 }  // namespace test
 }  // namespace web

@@ -15,37 +15,59 @@ using web::NavigationManager;
 namespace web {
 namespace test {
 
-void TapWebViewElementWithId(web::WebState* web_state,
-                             const std::string& element_id) {
-  RunActionOnWebViewElementWithId(web_state, element_id, CLICK);
-}
+enum ElementAction { ELEMENT_ACTION_CLICK, ELEMENT_ACTION_FOCUS };
 
-void RunActionOnWebViewElementWithId(web::WebState* web_state,
+// Returns whether the Javascript action specified by |action| ran on
+// |element_id| in the passed |web_state|.
+bool RunActionOnWebViewElementWithId(web::WebState* web_state,
                                      const std::string& element_id,
                                      ElementAction action) {
   CRWWebController* web_controller =
       static_cast<WebStateImpl*>(web_state)->GetWebController();
-  const char* jsAction = nullptr;
+  const char* js_action = nullptr;
   switch (action) {
-    case CLICK:
-      jsAction = ".click()";
+    case ELEMENT_ACTION_CLICK:
+      js_action = ".click()";
       break;
-    case FOCUS:
-      jsAction = ".focus();";
+    case ELEMENT_ACTION_FOCUS:
+      js_action = ".focus();";
       break;
   }
-  NSString* script =
-      [NSString stringWithFormat:@"document.getElementById('%s')%s",
-                                 element_id.c_str(), jsAction];
+  NSString* script = [NSString
+      stringWithFormat:@"(function() {"
+                        "  var element = document.getElementById('%s');"
+                        "  if (element) {"
+                        "    element%s;"
+                        "    return true;"
+                        "  }"
+                        "  return false;"
+                        "})();",
+                       element_id.c_str(), js_action];
   __block bool did_complete = false;
+  __block bool element_found = false;
   [web_controller executeUserJavaScript:script
-                      completionHandler:^(id, NSError*) {
+                      completionHandler:^(id result, NSError*) {
                         did_complete = true;
+                        element_found = [result boolValue];
                       }];
 
   testing::WaitUntilCondition(testing::kWaitForJSCompletionTimeout, ^{
     return did_complete;
   });
+
+  return element_found;
+}
+
+bool TapWebViewElementWithId(web::WebState* web_state,
+                             const std::string& element_id) {
+  return RunActionOnWebViewElementWithId(web_state, element_id,
+                                         ELEMENT_ACTION_CLICK);
+}
+
+bool FocusWebViewElementWithId(web::WebState* web_state,
+                               const std::string& element_id) {
+  return RunActionOnWebViewElementWithId(web_state, element_id,
+                                         ELEMENT_ACTION_FOCUS);
 }
 
 }  // namespace test
