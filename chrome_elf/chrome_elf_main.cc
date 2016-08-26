@@ -24,31 +24,6 @@ namespace {
 base::LazyInstance<std::vector<crash_reporter::Report>>::Leaky g_crash_reports =
     LAZY_INSTANCE_INITIALIZER;
 
-// Gets the exe name from the full path of the exe.
-base::string16 GetExeName() {
-  wchar_t file_path[MAX_PATH] = {};
-  if (!::GetModuleFileName(nullptr, file_path, arraysize(file_path))) {
-    assert(false);
-    return base::string16();
-  }
-  base::string16 file_name_string = file_path;
-  size_t last_slash_pos = file_name_string.find_last_of(L'\\');
-  if (last_slash_pos != base::string16::npos) {
-    file_name_string = file_name_string.substr(
-        last_slash_pos + 1, file_name_string.length() - last_slash_pos);
-  }
-  std::transform(file_name_string.begin(), file_name_string.end(),
-                 file_name_string.begin(), ::tolower);
-  return file_name_string;
-}
-
-void InitializeCrashReportingForProcess() {
-  // We want to initialize crash reporting only in chrome.exe
-  if (GetExeName() != L"chrome.exe")
-    return;
-  ChromeCrashReporterClient::InitializeCrashReportingForProcess();
-}
-
 #if !defined(ADDRESS_SANITIZER)
 // chrome_elf loads early in the process and initializes Crashpad. That in turn
 // uses the SetUnhandledExceptionFilter API to set a top level exception
@@ -110,7 +85,7 @@ extern "C" __declspec(dllexport) void SetMetricsClientId(
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
-    InitializeCrashReportingForProcess();
+    ChromeCrashReporterClient::InitializeCrashReportingForProcess();
     // CRT on initialization installs an exception filter which calls
     // TerminateProcess. We need to hook CRT's attempt to set an exception
     // handler and ignore it. Don't do this when ASan is present, or ASan will

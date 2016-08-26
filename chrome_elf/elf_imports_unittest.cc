@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/test/launcher/test_launcher.h"
 #include "base/win/pe_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,6 +65,7 @@ class ELFImportsTest : public testing::Test {
 // If you break this test, you may have changed base or the Windows sandbox
 // such that more system imports are required to link.
 #if defined(NDEBUG) && !defined(COMPONENT_BUILD)
+
 TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   base::FilePath dll;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dll));
@@ -103,7 +106,37 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
     ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll: " << import;
   }
 }
+
 TEST_F(ELFImportsTest, ChromeElfLoadSanityTest) {
+  // chrome_elf will try to launch crashpad_handler by reinvoking the current
+  // binary with --type=crashpad-handler if not already running that way. To
+  // avoid that, we relaunch and run the real test body manually, adding that
+  // command line argument, as we're only trying to confirm that user32.dll
+  // doesn't get loaded by import table when chrome_elf.dll does.
+  base::CommandLine new_test =
+      base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
+  new_test.AppendSwitchASCII(
+      base::kGTestFilterFlag,
+      "ELFImportsTest.DISABLED_ChromeElfLoadSanityTestImpl");
+  new_test.AppendSwitchASCII("type", "crashpad-handler");
+  new_test.AppendSwitch("gtest_also_run_disabled_tests");
+  new_test.AppendSwitch("single-process-tests");
+
+  std::string output;
+  ASSERT_TRUE(base::GetAppOutput(new_test, &output));
+  std::string crash_string =
+      "OK ] ELFImportsTest.DISABLED_ChromeElfLoadSanityTestImpl";
+
+  if (output.find(crash_string) == std::string::npos) {
+    GTEST_FAIL() << "Couldn't find\n" << crash_string << "\n in output\n "
+                 << output;
+  }
+}
+
+// Note: This test is not actually disabled, it's just tagged disabled so that
+// the real run (above, in ChromeElfLoadSanityTest) can run it with an argument
+// added to the command line.
+TEST_F(ELFImportsTest, DISABLED_ChromeElfLoadSanityTestImpl) {
   base::FilePath dll;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_elf.dll");
@@ -119,7 +152,8 @@ TEST_F(ELFImportsTest, ChromeElfLoadSanityTest) {
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
   EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));
 }
-#endif  // NDEBUG
+
+#endif  // NDEBUG && !COMPONENT_BUILD
 
 TEST_F(ELFImportsTest, ChromeExeSanityCheck) {
   std::vector<std::string> exe_imports;
