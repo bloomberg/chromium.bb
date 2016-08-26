@@ -11,7 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -26,7 +26,7 @@ GlobalError::~GlobalError() {}
 GlobalError::Severity GlobalError::GetSeverity() { return SEVERITY_MEDIUM; }
 
 gfx::Image GlobalError::MenuItemIcon() {
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INPUT_ALERT_MENU);
 #else
