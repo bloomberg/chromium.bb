@@ -9,6 +9,7 @@ import android.support.v7.widget.SwitchCompat;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -20,8 +21,9 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
     private final int[] mPermissionIcons;
     private final String[] mPermissionText;
     private final int[] mContentSettings;
-    private final WindowAndroid mWindowAndroid;
     private long mNativeGroupedPermissionInfoBar;
+
+    private WindowAndroid mWindowAndroid;
 
     GroupedPermissionInfoBar(String message, String buttonOk, String buttonCancel,
             int[] permissionIcons, String[] permissionText, WindowAndroid windowAndroid,
@@ -47,6 +49,11 @@ public class GroupedPermissionInfoBar extends PermissionInfoBar {
                         R.color.light_normal_color, mPermissionText[i], i, true);
             }
         }
+    }
+
+    @Override
+    public void onTabReparented(Tab tab) {
+        mWindowAndroid = tab.getWindowAndroid();
     }
 
     @Override

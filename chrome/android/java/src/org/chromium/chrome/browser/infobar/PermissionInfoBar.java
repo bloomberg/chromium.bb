@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
@@ -58,6 +59,11 @@ public class PermissionInfoBar extends ConfirmInfoBar {
             controlLayout.addSwitch(
                     0, 0, description, R.id.permission_infobar_persist_toggle, true);
         }
+    }
+
+    @Override
+    public void onTabReparented(Tab tab) {
+        mWindowAndroid = tab.getWindowAndroid();
     }
 
     /**

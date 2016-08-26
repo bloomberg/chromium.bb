@@ -93,6 +93,13 @@ public class InfoBarContainer extends SwipableOverlayView {
                 int statusCode) {
             setIsObscuredByOtherView(false);
         }
+
+        @Override
+        public void onReparentingFinished(Tab tab) {
+            for (InfoBar infobar : mInfoBars) {
+                infobar.onTabReparented(tab);
+            }
+        }
     };
 
     private final InfoBarContainerLayout mLayout;

@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * The base class for all InfoBar classes.
@@ -97,6 +98,11 @@ public abstract class InfoBar implements InfoBarView {
         mView = newView;
         mContainer.notifyInfoBarViewChanged();
     }
+
+    /**
+     * Called when the given tab has been reparented.
+     */
+    public void onTabReparented(Tab tab) { }
 
     /**
      * Returns the View shown in this infobar. Only valid after createView() has been called.
