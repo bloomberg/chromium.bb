@@ -51,7 +51,10 @@ bool UnindexedRulesetWriter::AddUrlRule(const proto::UrlRule& rule) {
 
 bool UnindexedRulesetWriter::Finish() {
   DCHECK(!had_error());
-  return !pending_chunk_.url_rules_size() || WritePendingChunk();
+  const bool success = !pending_chunk_.url_rules_size() || WritePendingChunk();
+  if (success)
+    coded_stream_.Trim();
+  return success;
 }
 
 bool UnindexedRulesetWriter::WritePendingChunk() {

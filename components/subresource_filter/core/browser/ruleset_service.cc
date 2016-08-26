@@ -300,7 +300,7 @@ bool RulesetService::IndexRuleset(base::File unindexed_ruleset_file,
       "SubresourceFilter.IndexRuleset.NumUnsupportedRules",
       num_unsupported_rules);
 
-  return zero_copy_stream_adaptor.ByteCount() == unindexed_ruleset_size;
+  return reader.num_bytes_read() == unindexed_ruleset_size;
 }
 
 // static

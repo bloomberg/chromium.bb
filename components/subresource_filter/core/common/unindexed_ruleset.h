@@ -42,6 +42,9 @@ class UnindexedRulesetReader {
   // ReadNextChunk is undefined befaviour.
   bool ReadNextChunk(proto::FilteringRules* chunk);
 
+  // Returns how many bytes of the |stream| have been consumed.
+  int num_bytes_read() const { return coded_stream_.CurrentPosition(); }
+
  private:
   google::protobuf::io::CodedInputStream coded_stream_;
 

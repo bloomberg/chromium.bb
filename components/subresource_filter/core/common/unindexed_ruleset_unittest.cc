@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
@@ -121,6 +122,10 @@ bool IsRulesetValid(const std::string& ruleset_contents,
   while (reader.ReadNextChunk(&chunk)) {
     read_rules.insert(read_rules.end(), chunk.url_rules().begin(),
                       chunk.url_rules().end());
+  }
+  if (base::checked_cast<size_t>(reader.num_bytes_read()) !=
+      ruleset_contents.size()) {
+    return false;
   }
 
   if (expected_url_rules.size() != read_rules.size())
