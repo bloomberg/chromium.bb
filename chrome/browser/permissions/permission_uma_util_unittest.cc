@@ -91,10 +91,7 @@ class PermissionUmaUtilTest : public testing::Test {
 // true if Safe Browsing is enabled, Permission Action Reporting flag is
 // enabled, not in incognito mode and signed in with default sync preferences.
 TEST_F(PermissionUmaUtilTest, IsOptedIntoPermissionActionReportingSignInCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
   SetSafeBrowsing(true);
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   EXPECT_FALSE(IsOptedIntoPermissionActionReporting(profile()));
 
   FakeSignIn();
@@ -112,28 +109,26 @@ TEST_F(PermissionUmaUtilTest, IsOptedIntoPermissionActionReportingFlagCheck) {
   SetSafeBrowsing(true);
   FakeSignIn();
   SetMockSyncService();
+  EXPECT_TRUE(IsOptedIntoPermissionActionReporting(profile()));
   {
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-        switches::kEnablePermissionActionReporting);
-    EXPECT_TRUE(IsOptedIntoPermissionActionReporting(profile()));
+        switches::kDisablePermissionActionReporting);
+    EXPECT_FALSE(IsOptedIntoPermissionActionReporting(profile()));
   }  // Reset the command line.
 
-  EXPECT_FALSE(IsOptedIntoPermissionActionReporting(profile()));
+  EXPECT_TRUE(IsOptedIntoPermissionActionReporting(profile()));
 
   base::test::ScopedCommandLine scoped_command_line;
   scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kDisablePermissionActionReporting);
-  EXPECT_FALSE(IsOptedIntoPermissionActionReporting(profile()));
+      switches::kEnablePermissionActionReporting);
+  EXPECT_TRUE(IsOptedIntoPermissionActionReporting(profile()));
 }
 
 // Test that PermissionUmaUtil::IsOptedIntoPermissionActionReporting returns
 // false if Safe Browsing is disabled.
 TEST_F(PermissionUmaUtilTest,
        IsOptedIntoPermissionActionReportingSafeBrowsingCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   FakeSignIn();
   SetMockSyncService();
   SetSafeBrowsing(true);
@@ -147,9 +142,6 @@ TEST_F(PermissionUmaUtilTest,
 // false if Sync is disabled.
 TEST_F(PermissionUmaUtilTest,
        IsOptedIntoPermissionActionReportingProfileSyncServiceCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   SetSafeBrowsing(true);
   FakeSignIn();
   ProfileSyncServiceMock* mock_sync_service = SetMockSyncService();
@@ -164,9 +156,6 @@ TEST_F(PermissionUmaUtilTest,
 // false if Tab Sync and Pref Sync are not both enabled.
 TEST_F(PermissionUmaUtilTest,
        IsOptedIntoPermissionActionReportingSyncPreferenceCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   SetSafeBrowsing(true);
   FakeSignIn();
   ProfileSyncServiceMock* mock_sync_service = SetMockSyncService();
@@ -198,9 +187,6 @@ TEST_F(PermissionUmaUtilTest,
 // false if Sync is not active.
 TEST_F(PermissionUmaUtilTest,
        IsOptedIntoPermissionActionReportingProfileSyncServiceActiveCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   SetSafeBrowsing(true);
   FakeSignIn();
   ProfileSyncServiceMock* mock_sync_service = SetMockSyncService();
@@ -215,9 +201,6 @@ TEST_F(PermissionUmaUtilTest,
 // false if a custom Sync passphrase is set.
 TEST_F(PermissionUmaUtilTest,
        IsOptedIntoPermissionActionReportingSyncPassphraseCheck) {
-  base::test::ScopedCommandLine scoped_command_line;
-  scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-      switches::kEnablePermissionActionReporting);
   SetSafeBrowsing(true);
   FakeSignIn();
   ProfileSyncServiceMock* mock_sync_service = SetMockSyncService();

@@ -555,9 +555,10 @@ void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
 }
 
 bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePermissionActionReporting))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePermissionActionReporting)) {
     return false;
+  }
 
   DCHECK(profile);
   if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE)
@@ -567,7 +568,6 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
 
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-
 
   // Do not report if profile can't get a profile sync service or sync cannot
   // start.

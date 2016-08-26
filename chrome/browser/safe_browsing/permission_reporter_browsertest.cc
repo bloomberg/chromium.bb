@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/permission_report.pb.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -50,11 +49,6 @@ class PermissionReporterBrowserTest : public SyncTest {
             make_scoped_refptr(g_browser_process->safe_browsing_service())),
         run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SyncTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePermissionActionReporting);
   }
 
   void AttachMockReportSenderOnIOThread(
