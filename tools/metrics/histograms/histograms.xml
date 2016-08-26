@@ -6975,6 +6975,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cookie.CookieLineCookieValueValidity" enum="BooleanValid">
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Indicates whether a cookie initialised from a Set-Cookie header value was
+    valid or not. This is only logged after cookies containing control
+    characters have already been rejected, so &quot;Invalid&quot; here means
+    that the cookie contains quotes, commas, backslashes or top-bit-set
+    characters.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.CookiePrefix" enum="CookiePrefix">
   <owner>estark@chromium.org</owner>
   <summary>

@@ -45,6 +45,7 @@
 #include "net/cookies/parsed_cookie.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 
 namespace {
@@ -423,6 +424,11 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
         !IsValidCookieAttributeValue(pair.second)) {
       pairs_.clear();
       break;
+    }
+
+    if (pair_num == 0) {
+      UMA_HISTOGRAM_BOOLEAN("Cookie.CookieLineCookieValueValidity",
+                            IsValidCookieValue(pair.second));
     }
 
     pairs_.push_back(pair);
