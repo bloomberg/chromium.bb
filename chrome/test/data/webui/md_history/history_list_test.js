@@ -301,7 +301,10 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
-      test('scrolling history list causes toolbar shadow to appear', () => {
+      // TODO(calamity): Reenable this test after fixing flakiness.
+      // See http://crbug.com/640862.
+      test.skip('scrolling history list causes toolbar shadow to appear',
+                () => {
         for (var i = 0; i < 10; i++)
           app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         return flush().then(function() {
