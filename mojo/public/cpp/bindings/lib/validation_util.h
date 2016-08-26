@@ -50,12 +50,12 @@ bool ValidateStructHeaderAndClaimMemory(const void* data,
                                         ValidationContext* validation_context);
 
 // Validates that |data| contains a valid union header, in terms of alignment
-// and size. If not inlined, it checks that the memory range
-// [data, data + num_bytes) is not marked as occupied by other objects in
-// |validation_context|. On success, the memory range is marked as occupied.
-bool ValidateUnionHeaderAndClaimMemory(const void* data,
-                                       bool inlined,
-                                       ValidationContext* validation_context);
+// and size. It checks that the memory range [data, data + kUnionDataSize) is
+// not marked as occupied by other objects in |validation_context|. On success,
+// the memory range is marked as occupied.
+bool ValidateNonInlinedUnionHeaderAndClaimMemory(
+    const void* data,
+    ValidationContext* validation_context);
 
 // Validates that the message is a request which doesn't expect a response.
 bool ValidateMessageIsRequestWithoutResponse(

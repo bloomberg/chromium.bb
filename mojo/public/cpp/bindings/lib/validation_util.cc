@@ -46,20 +46,17 @@ bool ValidateStructHeaderAndClaimMemory(const void* data,
   return true;
 }
 
-bool ValidateUnionHeaderAndClaimMemory(const void* data,
-                                       bool inlined,
-                                       ValidationContext* validation_context) {
+bool ValidateNonInlinedUnionHeaderAndClaimMemory(
+    const void* data,
+    ValidationContext* validation_context) {
   if (!IsAligned(data)) {
     ReportValidationError(validation_context,
                           VALIDATION_ERROR_MISALIGNED_OBJECT);
     return false;
   }
 
-  // If the union is inlined in another structure its memory was already
-  // claimed.
-  // This ONLY applies to the union itself, NOT anything which the union points
-  // to.
-  if (!inlined && !validation_context->ClaimMemory(data, kUnionDataSize)) {
+  if (!validation_context->ClaimMemory(data, kUnionDataSize) ||
+      *static_cast<const uint32_t*>(data) != kUnionDataSize) {
     ReportValidationError(validation_context,
                           VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
     return false;

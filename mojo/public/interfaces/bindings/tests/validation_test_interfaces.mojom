@@ -56,6 +56,11 @@ enum EnumB {
   ENUM_B_2
 };
 
+union UnionA {
+  StructA struct_a;
+  bool b;
+};
+
 // This interface is used for testing bounds-checking in the mojom
 // binding code. If you add a method please update the files
 // ./data/validation/boundscheck_*. If you add a response please update
@@ -84,6 +89,7 @@ interface ConformanceTestInterface {
   Method15(array<EnumA>? param0, array<EnumB>? param1);
   Method16(map<EnumA, EnumA>? param0);
   Method17(array<InterfaceA> param0);
+  Method18(UnionA? param0);
 };
 
 struct BasicStruct {
