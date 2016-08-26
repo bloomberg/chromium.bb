@@ -12,7 +12,6 @@ rect.setAttribute("y", "10");
 rect.setAttribute("width", "100%");
 rect.setAttribute("height", "100%");
 rect.setAttribute("fill", "green");
-rect.setAttribute("onclick", "executeTest()");
 symbol.appendChild(rect);
 rootSVGElement.appendChild(symbol);
 
@@ -23,6 +22,7 @@ use.setAttribute("x", "0");
 use.setAttribute("y", "0");
 use.setAttribute("width", "100");
 use.setAttribute("height", "100");
+use.setAttribute("onclick", "executeTest()");
 rootSVGElement.appendChild(use);
 
 var animate = createSVGElement("animate");
