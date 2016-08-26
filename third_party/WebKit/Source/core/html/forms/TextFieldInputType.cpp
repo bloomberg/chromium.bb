@@ -163,7 +163,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
         element().updateView();
 
     unsigned max = visibleValue().length();
-    element().setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
+    element().setSelectionRange(max, max);
 
     if (!valueChanged)
         return;
@@ -535,7 +535,7 @@ void TextFieldInputType::updateView()
 void TextFieldInputType::focusAndSelectSpinButtonOwner()
 {
     element().focus();
-    element().setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, NotDispatchSelectEvent);
+    element().setSelectionRange(0, std::numeric_limits<int>::max());
 }
 
 bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents()

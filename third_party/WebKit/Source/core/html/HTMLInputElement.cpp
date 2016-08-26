@@ -991,7 +991,7 @@ void HTMLInputElement::setEditingValue(const String& value)
     subtreeHasChanged();
 
     unsigned max = value.length();
-    setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
+    setSelectionRange(max, max);
     dispatchInputEvent();
 }
 

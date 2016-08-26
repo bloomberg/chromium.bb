@@ -36,7 +36,6 @@ class Range;
 
 enum TextFieldSelectionDirection { SelectionHasNoDirection, SelectionHasForwardDirection, SelectionHasBackwardDirection };
 enum TextFieldEventBehavior { DispatchNoEvent, DispatchChangeEvent, DispatchInputAndChangeEvent };
-enum NeedToDispatchSelectEvent { DispatchSelectEvent, NotDispatchSelectEvent };
 
 class CORE_EXPORT HTMLTextFormControlElement : public HTMLFormControlElementWithState {
 public:
@@ -75,7 +74,8 @@ public:
     void setSelectionRangeForBinding(int start, int end, const String& direction = "none");
     // Blink-internal version of setSelectionRange(). This translates "none"
     // direction to "forward" on platforms without "none" direction.
-    void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent);
+    // This returns true if it updated cached selection and/or FrameSelection.
+    bool setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection);
     Range* selection() const;
 
     virtual bool supportsAutocapitalize() const = 0;

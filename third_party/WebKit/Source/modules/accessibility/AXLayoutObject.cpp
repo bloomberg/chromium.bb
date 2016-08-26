@@ -2064,11 +2064,11 @@ void AXLayoutObject::setSelection(const AXRange& selection)
         if (selection.anchorOffset <= selection.focusOffset) {
             textControl->setSelectionRange(
                 selection.anchorOffset, selection.focusOffset,
-                SelectionHasForwardDirection, NotDispatchSelectEvent);
+                SelectionHasForwardDirection);
         } else {
             textControl->setSelectionRange(
                 selection.focusOffset, selection.anchorOffset,
-                SelectionHasBackwardDirection, NotDispatchSelectEvent);
+                SelectionHasBackwardDirection);
         }
         return;
     }

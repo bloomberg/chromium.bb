@@ -162,9 +162,9 @@ WebString WebFormControlElement::editingValue() const
 void WebFormControlElement::setSelectionRange(int start, int end)
 {
     if (isHTMLInputElement(*m_private))
-        unwrap<HTMLInputElement>()->setSelectionRange(start, end, SelectionHasNoDirection, NotDispatchSelectEvent);
+        unwrap<HTMLInputElement>()->setSelectionRange(start, end);
     else if (isHTMLTextAreaElement(*m_private))
-        unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end, SelectionHasNoDirection, NotDispatchSelectEvent);
+        unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end);
 }
 
 int WebFormControlElement::selectionStart() const
