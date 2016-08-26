@@ -360,6 +360,11 @@ void WebRuntimeFeatures::enableRenderingPipelineThrottling(bool enable)
     RuntimeEnabledFeatures::setRenderingPipelineThrottlingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableRootLayerScrolling(bool enable)
+{
+    RuntimeEnabledFeatures::setRootLayerScrollingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
 {
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);

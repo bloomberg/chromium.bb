@@ -19,6 +19,7 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleRect.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
@@ -102,16 +103,10 @@ namespace blink {
 namespace {
 
 class VisualViewportTest
-    : public testing::Test
-    , public FrameTestHelpers::SettingOverrider {
+    : public testing::Test {
 public:
     VisualViewportTest()
         : m_baseURL("http://www.test.com/")
-        , m_helper(this)
-    {
-    }
-
-    void overrideSettings(WebSettings *settings) override
     {
     }
 
@@ -188,19 +183,17 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
+typedef bool TestParamRootLayerScrolling;
 class ParameterizedVisualViewportTest
-    : public VisualViewportTest
-    , public testing::WithParamInterface<FrameTestHelpers::SettingOverrideFunction> {
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>
+    , private ScopedRootLayerScrollingForTest
+    , public VisualViewportTest {
 public:
-    void overrideSettings(WebSettings *settings) override
-    {
-        GetParam()(settings);
-    }
+    ParameterizedVisualViewportTest()
+        : ScopedRootLayerScrollingForTest(GetParam()) { }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedVisualViewportTest, ::testing::Values(
-    FrameTestHelpers::DefaultSettingOverride,
-    FrameTestHelpers::RootLayerScrollsSettingOverride));
+INSTANTIATE_TEST_CASE_P(All, ParameterizedVisualViewportTest, ::testing::Bool());
 
 // Test that resizing the VisualViewport works as expected and that resizing the
 // WebView resizes the VisualViewport.

@@ -846,7 +846,7 @@ void FrameView::performPreLayoutTasks()
 bool FrameView::shouldPerformScrollAnchoring() const
 {
     return RuntimeEnabledFeatures::scrollAnchoringEnabled()
-        && m_frame->settings() && !m_frame->settings()->rootLayerScrolls()
+        && !RuntimeEnabledFeatures::rootLayerScrollingEnabled()
         && m_scrollAnchor.hasScroller()
         && layoutBox()->style()->overflowAnchor() != AnchorNone;
 }
@@ -1150,7 +1150,7 @@ void FrameView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
 void FrameView::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     RELEASE_ASSERT(!layoutViewItem().isNull());
-    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
 
     if (m_frame->selection().isCaretBoundsDirty())
@@ -1374,7 +1374,7 @@ void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged)
 {
     DCHECK(widthChanged || heightChanged);
 
-    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         // The background must be repainted when the FrameView is resized, even if the initial
         // containing block does not change (so we can't rely on layout to issue the invalidation).
         // This is because the background fills the main GraphicsLayer, which takes the size of the
@@ -2037,7 +2037,7 @@ void FrameView::scrollToFragmentAnchor()
         LayoutRect rect;
         if (anchorNode != m_frame->document()) {
             rect = anchorNode->boundingBox();
-        } else if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+        } else if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             if (Element* documentElement = m_frame->document()->documentElement())
                 rect = documentElement->boundingBox();
         }
@@ -3419,7 +3419,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     if (scrollDelta.isZero())
         return;
 
-    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         // Don't scroll the FrameView!
         ASSERT_NOT_REACHED();
     }
@@ -3492,7 +3492,7 @@ void FrameView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool&
     newHasHorizontalScrollbar = hasHorizontalScrollbar;
     newHasVerticalScrollbar = hasVerticalScrollbar;
 
-    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return;
 
     ScrollbarMode hScroll = m_horizontalScrollbarMode;
@@ -3655,7 +3655,7 @@ void FrameView::updateScrollbars()
 {
     m_needsScrollbarsUpdate = false;
 
-    if (m_frame->settings() && m_frame->settings()->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return;
 
     // Avoid drawing two sets of scrollbars when visual viewport is enabled.
@@ -3919,7 +3919,7 @@ bool FrameView::userInputScrollable(ScrollbarOrientation orientation) const
     if (fullscreenElement && fullscreenElement != document->documentElement())
         return false;
 
-    if (frame().settings() && frame().settings()->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return false;
 
     ScrollbarMode mode = (orientation == HorizontalScrollbar) ?
@@ -4133,8 +4133,7 @@ ScrollableArea* FrameView::getScrollableArea()
 
 ScrollableArea* FrameView::layoutViewportScrollableArea()
 {
-    Settings* settings = frame().settings();
-    if (!settings || !settings->rootLayerScrolls())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return this;
 
     LayoutViewItem layoutViewItem = this->layoutViewItem();

@@ -829,8 +829,7 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 // handled externally in the RLC.
 static bool canHaveOverflowScrollbars(const LayoutBox& box)
 {
-    bool rootLayerScrolls = box.document().settings() && box.document().settings()->rootLayerScrolls();
-    return (rootLayerScrolls || !box.isLayoutView()) && box.document().viewportDefiningElement() != box.node();
+    return (RuntimeEnabledFeatures::rootLayerScrollingEnabled() || !box.isLayoutView()) && box.document().viewportDefiningElement() != box.node();
 }
 
 void PaintLayerScrollableArea::updateAfterStyleChange(const ComputedStyle* oldStyle)

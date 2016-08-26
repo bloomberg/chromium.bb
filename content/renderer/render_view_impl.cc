@@ -746,8 +746,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
   webview()->settings()->setThreadedScrollingEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
-  webview()->settings()->setRootLayerScrolls(
-      command_line.HasSwitch(switches::kRootLayerScrolls));
   webview()->setShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
   webview()->setDeviceColorProfile(params.image_decode_color_space.GetData());

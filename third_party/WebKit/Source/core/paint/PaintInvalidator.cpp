@@ -178,7 +178,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(FrameView& frameView, PaintInvali
     context.paintInvalidationContainer = context.paintInvalidationContainerForStackedContents = &layoutView->containerForPaintInvalidation();
     context.paintingLayer = layoutView->layer();
 
-    if (!frameView.frame().settings() || !frameView.frame().settings()->rootLayerScrolls())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         frameView.invalidatePaintOfScrollControlsIfNeeded(context);
 
     if (frameView.frame().selection().isCaretBoundsDirty())

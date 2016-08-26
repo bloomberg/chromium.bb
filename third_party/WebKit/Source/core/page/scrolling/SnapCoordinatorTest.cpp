@@ -10,6 +10,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -17,15 +18,16 @@ namespace blink {
 
 using HTMLNames::styleAttr;
 
+typedef bool TestParamRootLayerScrolling;
 class SnapCoordinatorTest
-    : public testing::TestWithParam<FrameSettingOverrideFunction> {
+    : public testing::TestWithParam<TestParamRootLayerScrolling>
+    , private ScopedRootLayerScrollingForTest {
 protected:
-    SnapCoordinatorTest() {}
+    SnapCoordinatorTest() : ScopedRootLayerScrollingForTest(GetParam()) { }
 
     void SetUp() override
     {
-        m_pageHolder = DummyPageHolder::create(
-            IntSize(), nullptr, nullptr, GetParam());
+        m_pageHolder = DummyPageHolder::create();
 
         setHTML(
             "<style>"
@@ -85,9 +87,7 @@ protected:
     std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, ::testing::Values(
-    nullptr,
-    RootLayerScrollsFrameSettingOverride));
+INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, ::testing::Bool());
 
 TEST_P(SnapCoordinatorTest, ValidRepeat)
 {

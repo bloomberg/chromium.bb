@@ -215,7 +215,6 @@ public:
     virtual void setPreferHiddenVolumeControls(bool) = 0;
     virtual void setRenderVSyncNotificationEnabled(bool) = 0;
     virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) = 0;
-    virtual void setRootLayerScrolls(bool) = 0;
     virtual void setRubberBandingOnCompositorThread(bool) = 0;
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setSelectTrailingWhitespaceEnabled(bool) = 0;

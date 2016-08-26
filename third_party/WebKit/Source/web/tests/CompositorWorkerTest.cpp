@@ -10,6 +10,7 @@
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayer.h"
@@ -27,21 +28,21 @@
 
 namespace blink {
 
+typedef bool TestParamRootLayerScrolling;
 class CompositorWorkerTest
-    : public testing::Test
-    , public testing::WithParamInterface<FrameTestHelpers::SettingOverrideFunction>
-    , public FrameTestHelpers::SettingOverrider {
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>
+    , private ScopedRootLayerScrollingForTest
+    , private ScopedCompositorWorkerForTest
+    , public testing::Test {
 
 public:
     CompositorWorkerTest()
-        : m_baseURL("http://www.test.com/")
-        , m_helper(this)
-    {
-    }
+        : ScopedRootLayerScrollingForTest(GetParam())
+        , ScopedCompositorWorkerForTest(true)
+        , m_baseURL("http://www.test.com/") { }
 
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setCompositorWorkerEnabled(true);
         m_helper.initialize(true, nullptr, &m_mockWebViewClient, nullptr, &configureSettings);
         webViewImpl()->resize(IntSize(320, 240));
     }
@@ -50,11 +51,6 @@ public:
     {
         Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
         WebCache::clear();
-    }
-
-    void overrideSettings(WebSettings *settings) override
-    {
-        GetParam()(settings);
     }
 
     void navigateTo(const String& url)
@@ -74,9 +70,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        Settings* settings = frame()->settings();
-        bool rootLayerScrolls = settings && settings->rootLayerScrolls();
-        if (rootLayerScrolls) {
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             DCHECK(frame());
             DCHECK(frame()->view());
             DCHECK(frame()->view()->layoutViewportScrollableArea());
@@ -148,9 +142,7 @@ static WebLayer* webLayerFromElement(Element* element)
     return webLayerFromGraphicsLayer(compositedLayerMapping->mainGraphicsLayer());
 }
 
-INSTANTIATE_TEST_CASE_P(All, CompositorWorkerTest, ::testing::Values(
-    FrameTestHelpers::DefaultSettingOverride,
-    FrameTestHelpers::RootLayerScrollsSettingOverride));
+INSTANTIATE_TEST_CASE_P(All, CompositorWorkerTest, ::testing::Bool());
 
 TEST_P(CompositorWorkerTest, plumbingElementIdAndMutableProperties)
 {

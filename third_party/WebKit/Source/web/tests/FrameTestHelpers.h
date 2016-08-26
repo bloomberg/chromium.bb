@@ -89,8 +89,6 @@ WebRemoteFrameImpl* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClie
 
 // Helpers for unit tests with parameterized WebSettings overrides.
 typedef void (*SettingOverrideFunction)(WebSettings*);
-void DefaultSettingOverride(WebSettings*);
-void RootLayerScrollsSettingOverride(WebSettings*);
 class SettingOverrider {
 public:
     virtual void overrideSettings(WebSettings*) = 0;

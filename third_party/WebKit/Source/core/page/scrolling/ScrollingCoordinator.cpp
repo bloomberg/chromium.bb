@@ -417,7 +417,7 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     }
 
     // Update the viewport layer registration if the outer viewport may have changed.
-    if (m_page->settings().rootLayerScrolls() && isForRootLayer(scrollableArea))
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() && isForRootLayer(scrollableArea))
         m_page->chromeClient().registerViewportLayers();
 
     scrollableArea->layerForScrollingDidChange(m_programmaticScrollAnimatorTimeline.get());

@@ -7,31 +7,34 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 
 namespace blink {
 
 struct PaintLayerPainterTestParam {
-    PaintLayerPainterTestParam(FrameSettingOverrideFunction frameSettingOverride, bool slimmingPaintV2)
-        : frameSettingOverride(frameSettingOverride), slimmingPaintV2(slimmingPaintV2) { }
+    PaintLayerPainterTestParam(bool rootLayerScrolling, bool slimmingPaintV2)
+        : rootLayerScrolling(rootLayerScrolling), slimmingPaintV2(slimmingPaintV2) { }
 
-    FrameSettingOverrideFunction frameSettingOverride;
+    bool rootLayerScrolling;
     bool slimmingPaintV2;
 };
 
 class PaintLayerPainterTest
-    : public PaintControllerPaintTestBase
-    , public testing::WithParamInterface<PaintLayerPainterTestParam> {
+    : public testing::WithParamInterface<PaintLayerPainterTestParam>
+    , private ScopedRootLayerScrollingForTest
+    , public PaintControllerPaintTestBase {
     USING_FAST_MALLOC(PaintLayerPainterTest);
 public:
-    PaintLayerPainterTest() : PaintControllerPaintTestBase(GetParam().slimmingPaintV2) { }
-    FrameSettingOverrideFunction settingOverrider() const override { return GetParam().frameSettingOverride; }
+    PaintLayerPainterTest()
+        : ScopedRootLayerScrollingForTest(GetParam().rootLayerScrolling)
+        , PaintControllerPaintTestBase(GetParam().slimmingPaintV2) { }
 };
 
 INSTANTIATE_TEST_CASE_P(All, PaintLayerPainterTest, ::testing::Values(
-    PaintLayerPainterTestParam(nullptr, false), // non-root-layer-scrolls, slimming-paint-v1
-    PaintLayerPainterTestParam(nullptr, true), // non-root-layer-scrolls, slimming-paint-v2
-    PaintLayerPainterTestParam(RootLayerScrollsFrameSettingOverride, false), // root-layer-scrolls, slimming-paint-v1
-    PaintLayerPainterTestParam(RootLayerScrollsFrameSettingOverride, true))); // root-layer-scrolls, slimming-paint-v2
+    PaintLayerPainterTestParam(false, false), // non-root-layer-scrolls, slimming-paint-v1
+    PaintLayerPainterTestParam(false, true), // non-root-layer-scrolls, slimming-paint-v2
+    PaintLayerPainterTestParam(true, false), // root-layer-scrolls, slimming-paint-v1
+    PaintLayerPainterTestParam(true, true))); // root-layer-scrolls, slimming-paint-v2
 
 TEST_P(PaintLayerPainterTest, CachedSubsequence)
 {

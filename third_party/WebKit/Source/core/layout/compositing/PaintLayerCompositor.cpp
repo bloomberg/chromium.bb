@@ -407,11 +407,9 @@ void PaintLayerCompositor::updateIfNeeded()
 
     if (updateType != CompositingUpdateNone) {
         if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
-            LocalFrame* frame = m_layoutView.document().frame();
-            Settings* settings = frame ? frame->settings() : nullptr;
             // If rootLayerScrolls is enabled, these properties are applied in
             // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
-            if (!settings || !settings->rootLayerScrolls()) {
+            if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
                 if (Element* scrollingElement = m_layoutView.document().scrollingElement()) {
                     uint32_t mutableProperties = CompositorMutableProperty::kNone;
                     if (scrollingElement->hasCompositorProxy())
@@ -1020,7 +1018,6 @@ void PaintLayerCompositor::ensureRootLayer()
     if (expectedAttachment == m_rootLayerAttachment)
         return;
 
-    Settings* settings = m_layoutView.document().settings();
     if (!m_rootContentLayer) {
         m_rootContentLayer = GraphicsLayer::create(this);
         IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
@@ -1029,7 +1026,7 @@ void PaintLayerCompositor::ensureRootLayer()
         m_rootContentLayer->setOwnerNodeId(DOMNodeIds::idForNode(m_layoutView.node()));
 
         // FIXME: with rootLayerScrolls, we probably don't even need m_rootContentLayer?
-        if (!(settings && settings->rootLayerScrolls())) {
+        if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             // Need to clip to prevent transformed content showing outside this frame
             m_rootContentLayer->setMasksToBounds(true);
         }

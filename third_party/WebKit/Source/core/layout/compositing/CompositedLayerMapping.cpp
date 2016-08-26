@@ -1573,13 +1573,10 @@ void CompositedLayerMapping::updateElementIdAndCompositorMutableProperties()
     if (owningNode) {
         Document& document = owningNode->document();
         Element* scrollingElement = document.scrollingElement();
-        LocalFrame* frame = document.frame();
-        Settings* settings = frame ? frame->settings() : nullptr;
-        bool rootLayerScrolls = settings && settings->rootLayerScrolls();
-        if (owningNode->isElementNode() && (!rootLayerScrolls || owningNode != scrollingElement)) {
+        if (owningNode->isElementNode() && (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() || owningNode != scrollingElement)) {
             animatingElement = toElement(owningNode);
             animatingStyle = m_owningLayer.layoutObject()->style();
-        } else if (owningNode->isDocumentNode() && rootLayerScrolls) {
+        } else if (owningNode->isDocumentNode() && RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             owningNode = animatingElement = scrollingElement;
             if (scrollingElement)
                 animatingStyle = scrollingElement->layoutObject()->style();

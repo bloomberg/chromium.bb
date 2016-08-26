@@ -1405,6 +1405,7 @@
       'testing/PictureMatchers.cpp',
       'testing/PictureMatchers.h',
       'testing/PlatformTestPrinters.cpp',
+      'testing/RuntimeEnabledFeaturesTestHelpers.h',
       'testing/TestingPlatformSupport.cpp',
       'testing/TestingPlatformSupport.h',
       'testing/TestPaintArtifact.cpp',

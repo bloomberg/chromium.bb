@@ -8,6 +8,7 @@
 #include "core/paint/ObjectPaintProperties.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/text/TextStream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,13 +17,17 @@
 
 namespace blink {
 
+typedef bool TestParamRootLayerScrolling;
 class PaintPropertyTreeBuilderTest
-    : public RenderingTest
-    , public ::testing::WithParamInterface<FrameSettingOverrideFunction> {
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>
+    , private ScopedSlimmingPaintV2ForTest
+    , private ScopedRootLayerScrollingForTest
+    , public RenderingTest {
 public:
     PaintPropertyTreeBuilderTest()
-        : RenderingTest(SingleChildFrameLoaderClient::create())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
+        : ScopedSlimmingPaintV2ForTest(true)
+        , ScopedRootLayerScrollingForTest(GetParam())
+        , RenderingTest(SingleChildFrameLoaderClient::create()) { }
 
     void loadTestData(const char* fileName)
     {
@@ -33,22 +38,17 @@ public:
         setBodyInnerHTML(String(inputBuffer->data(), inputBuffer->size()));
     }
 
-    bool rootLayerScrolls()
-    {
-        return document().settings() && document().settings()->rootLayerScrolls();
-    }
-
     const TransformPaintPropertyNode* rootTransform()
     {
         FrameView* frameView = document().view();
-        if (rootLayerScrolls())
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return frameView->layoutView()->objectPaintProperties()->paintOffsetTranslation();
         return frameView->rootTransform();
     }
 
     const ClipPaintPropertyNode* rootClip()
     {
-        if (rootLayerScrolls())
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return document().view()->layoutView()->objectPaintProperties()->localBorderBoxProperties()->propertyTreeState.clip.get();
         return document().view()->rootClip();
     }
@@ -56,7 +56,7 @@ public:
     const TransformPaintPropertyNode* framePreTranslation()
     {
         FrameView* frameView = document().view();
-        if (rootLayerScrolls())
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return frameView->layoutView()->objectPaintProperties()->paintOffsetTranslation();
         return frameView->preTranslation();
     }
@@ -64,7 +64,7 @@ public:
     const TransformPaintPropertyNode* frameScrollTranslation()
     {
         FrameView* frameView = document().view();
-        if (rootLayerScrolls())
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return frameView->layoutView()->objectPaintProperties()->scrollTranslation();
         return frameView->scrollTranslation();
     }
@@ -72,17 +72,14 @@ public:
     const ClipPaintPropertyNode* frameContentClip()
     {
         FrameView* frameView = document().view();
-        if (rootLayerScrolls())
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return frameView->layoutView()->objectPaintProperties()->overflowClip();
         return frameView->contentClip();
     }
 
-    FrameSettingOverrideFunction settingOverrider() const override { return GetParam(); }
-
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
         Settings::setMockScrollbarsEnabled(true);
 
         RenderingTest::SetUp();
@@ -94,10 +91,7 @@ private:
         RenderingTest::TearDown();
 
         Settings::setMockScrollbarsEnabled(false);
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
-
-    bool m_originalSlimmingPaintV2Enabled;
 };
 
 #define CHECK_VISUAL_RECT(expected, sourceLayoutObject, ancestorLayoutObject, slopFactor) \
@@ -130,7 +124,7 @@ do { \
 
 #define CHECK_EXACT_VISUAL_RECT(expected, sourceLayoutObject, ancestorLayoutObject) CHECK_VISUAL_RECT(expected, sourceLayoutObject, ancestorLayoutObject, 0)
 
-INSTANTIATE_TEST_CASE_P(All, PaintPropertyTreeBuilderTest, ::testing::Values(nullptr, &RootLayerScrollsFrameSettingOverride));
+INSTANTIATE_TEST_CASE_P(All, PaintPropertyTreeBuilderTest, ::testing::Bool());
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition)
 {
@@ -179,7 +173,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(FloatRoundedRect(120, 340, 400, 300), scrollerProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameContentClip(), scrollerProperties->overflowClip()->parent());
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 400, 300), scroller->layoutObject(), frameView->layoutView());
     }
 
@@ -203,7 +197,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll)
     EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400), absPosProperties->overflowClip()->clipRect());
     EXPECT_EQ(frameContentClip(), absPosProperties->overflowClip()->parent());
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400), absPos->layoutObject(), frameView->layoutView());
     }
 }
@@ -217,7 +211,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     FrameView* frameView = document().view();
     frameView->updateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix(), framePreTranslation()->matrix());
-    if (!rootLayerScrolls())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         EXPECT_EQ(rootTransform(), framePreTranslation()->parent());
     EXPECT_EQ(nullptr, rootTransform()->parent());
     EXPECT_EQ(TransformationMatrix().translate(0, -100), frameScrollTranslation()->matrix());
@@ -225,13 +219,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     EXPECT_EQ(framePreTranslation(), frameContentClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameContentClip()->clipRect());
     EXPECT_EQ(rootClip(), frameContentClip()->parent());
-    if (!rootLayerScrolls())
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         EXPECT_EQ(nullptr, rootClip()->parent());
 
     LayoutViewItem layoutViewItem = document().layoutViewItem();
     const ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         EXPECT_EQ(nullptr, layoutViewProperties->scrollTranslation());
         CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000), document().body()->layoutObject(), frameView->layoutView());
     }
@@ -268,7 +262,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform)
     EXPECT_EQ(TransformationMatrix().translate(50, 100), transformProperties->paintOffsetTranslation()->matrix());
     EXPECT_EQ(frameScrollTranslation(), transformProperties->paintOffsetTranslation()->parent());
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300), transform->layoutObject(), document().view()->layoutView());
     }
 }
@@ -748,7 +742,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
     const ObjectPaintProperties* divWithTransformProperties = divWithTransform->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(1, 2, 3), divWithTransformProperties->transform()->matrix());
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 164), divWithTransform, frameView->layoutView());
     }
 
@@ -815,7 +809,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes)
     LayoutObject* divWithTransform = document().getElementById("divWithTransform")->layoutObject();
     EXPECT_EQ(divWithTransformTransform, divWithTransform->objectPaintProperties()->transform());
     // http://crbug.com/638415
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 248), divWithTransform, frameView->layoutView());
     }
 }
@@ -868,7 +862,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
     EXPECT_EQ(frameContentClip(), childProperties->localBorderBoxProperties()->propertyTreeState.clip);
     EXPECT_EQ(frameScrollTranslation(), childProperties->localBorderBoxProperties()->propertyTreeState.transform);
     EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->propertyTreeState.effect);
-    if (!rootLayerScrolls()) {
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller, document().view()->layoutView());
     }
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), &child, document().view()->layoutView());

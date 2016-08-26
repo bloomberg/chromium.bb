@@ -190,15 +190,6 @@ WebRemoteFrameImpl* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClie
     return toWebRemoteFrameImpl(parent->createRemoteChild(WebTreeScopeType::Document, name, nameToUniqueName(name), WebSandboxFlags::None, client, nullptr));
 }
 
-void DefaultSettingOverride(WebSettings*)
-{
-}
-
-void RootLayerScrollsSettingOverride(WebSettings *settings)
-{
-    settings->setRootLayerScrolls(true);
-}
-
 WebViewHelper::WebViewHelper(SettingOverrider* settingOverrider)
     : m_webView(nullptr)
     , m_settingOverrider(settingOverrider)

@@ -43,11 +43,6 @@
 
 namespace blink {
 
-void RootLayerScrollsFrameSettingOverride(Settings& settings)
-{
-    settings.setRootLayerScrolls(true);
-}
-
 std::unique_ptr<DummyPageHolder> DummyPageHolder::create(
     const IntSize& initialViewSize,
     Page::PageClients* pageClients,

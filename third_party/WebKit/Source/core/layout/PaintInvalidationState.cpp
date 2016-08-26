@@ -296,7 +296,7 @@ void PaintInvalidationState::updateForNormalChildren()
     const LayoutBox& box = toLayoutBox(m_currentObject);
 
     if (box.isLayoutView()) {
-        if (!box.document().settings() || !box.document().settings()->rootLayerScrolls()) {
+        if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             if (box != m_paintInvalidationContainer) {
                 m_paintOffset -= toLayoutView(box).frameView()->scrollOffset();
                 addClipRectRelativeToPaintOffset(toLayoutView(box).viewRect());

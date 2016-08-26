@@ -130,7 +130,7 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason()
         // and clipping is done by compositor()->m_containerLayer. Also the scrollbars
         // are always composited. There are no other box decoration on the LayoutView thus
         // we can safely exit here.
-        if (layoutView.usesCompositing() && (!layoutView.document().settings() || !layoutView.document().settings()->rootLayerScrolls()))
+        if (layoutView.usesCompositing() && !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
             return reason;
     }
 

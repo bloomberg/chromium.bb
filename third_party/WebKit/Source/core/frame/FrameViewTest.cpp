@@ -15,6 +15,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -38,13 +39,15 @@ public:
     bool m_hasScheduledAnimation;
 };
 
+typedef bool TestParamRootLayerScrolling;
 class FrameViewTestBase
-    : public testing::Test
-    , public testing::WithParamInterface<FrameSettingOverrideFunction> {
+    : public testing::WithParamInterface<TestParamRootLayerScrolling>
+    , private ScopedRootLayerScrollingForTest
+    , public testing::Test {
 protected:
     FrameViewTestBase()
-        : m_chromeClient(new MockChromeClient)
-    { }
+        : ScopedRootLayerScrollingForTest(GetParam())
+        , m_chromeClient(new MockChromeClient) { }
 
     ~FrameViewTestBase()
     {
@@ -58,8 +61,6 @@ protected:
         clients.chromeClient = m_chromeClient.get();
         m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &clients);
         m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
-        if (GetParam())
-            (*GetParam())(m_pageHolder->page().settings());
     }
 
     Document& document() { return m_pageHolder->document(); }
@@ -104,13 +105,8 @@ private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
-INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Values(
-    nullptr,
-    &RootLayerScrollsFrameSettingOverride));
-
-INSTANTIATE_TEST_CASE_P(All, FrameViewSlimmingPaintV2Test, ::testing::Values(
-    nullptr,
-    &RootLayerScrollsFrameSettingOverride));
+INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, FrameViewSlimmingPaintV2Test, ::testing::Bool());
 
 // These tests ensure that FrameView informs the ChromeClient of changes to the
 // paint artifact so that they can be shown to the user (e.g. via the

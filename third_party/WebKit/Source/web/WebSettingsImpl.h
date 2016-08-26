@@ -139,7 +139,6 @@ public:
     void setPreferHiddenVolumeControls(bool) override;
     void setRenderVSyncNotificationEnabled(bool) override;
     void setReportScreenSizeInPhysicalPixelsQuirk(bool) override;
-    void setRootLayerScrolls(bool) override;
     void setRubberBandingOnCompositorThread(bool) override;
     void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setSelectTrailingWhitespaceEnabled(bool override);

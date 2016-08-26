@@ -383,7 +383,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintScrollScena
 
 TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll)
 {
-    if (document().frame()->settings()->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return;
 
     setBodyInnerHTML(

@@ -21,8 +21,7 @@ namespace blink {
 
 void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
 {
-    Settings* settings = rootFrame.frame().settings();
-    if (settings && settings->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return;
 
     if (!rootFrame.rootTransform() || rootFrame.rootTransform()->parent()) {
@@ -41,8 +40,7 @@ void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPro
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)
 {
-    Settings* settings = frameView.frame().settings();
-    if (settings && settings->rootLayerScrolls()) {
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         LayoutView* layoutView = frameView.layoutView();
         if (!layoutView)
             return;
@@ -195,7 +193,7 @@ void PaintPropertyTreeBuilder::updateEffect(const LayoutObject& object, PaintPro
 {
     if (object.isLayoutView() && !context.currentEffect) {
         const LayoutView& layoutView = toLayoutView(object);
-        DCHECK(layoutView.frameView()->frame().settings()->rootLayerScrolls());
+        DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
         DCHECK(layoutView.frameView()->frame().isMainFrame());
         context.currentEffect = layoutView.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateEffect(nullptr, 1.0);
         return;
@@ -243,7 +241,7 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
     if (!context.current.clip) {
         DCHECK(object.isLayoutView());
         DCHECK(toLayoutView(object).frameView()->frame().isMainFrame());
-        DCHECK(toLayoutView(object).frameView()->frame().settings()->rootLayerScrolls());
+        DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
         borderBoxContext->propertyTreeState.clip = ClipPaintPropertyNode::create(nullptr, context.current.transform, FloatRoundedRect(LayoutRect::infiniteIntRect()));
         context.current.clip = borderBoxContext->propertyTreeState.clip.get();
     }
@@ -362,11 +360,7 @@ void PaintPropertyTreeBuilder::updateScrollTranslation(const LayoutObject& objec
         PaintLayer* layer = toLayoutBoxModelObject(object).layer();
         DCHECK(layer);
         DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
-        bool forceScrollingForLayoutView = false;
-        if (object.isLayoutView()) {
-            Settings* settings = object.document().settings();
-            forceScrollingForLayoutView = (settings && settings->rootLayerScrolls());
-        }
+        bool forceScrollingForLayoutView = object.isLayoutView() && RuntimeEnabledFeatures::rootLayerScrollingEnabled();
         if (forceScrollingForLayoutView || !scrollOffset.isZero() || layer->scrollsOverflow()) {
             TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
             context.current.transform = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScrollTranslation(
@@ -388,8 +382,7 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(const LayoutObject& object
     }
 
     if (object.isLayoutView()) {
-        Settings* settings = object.document().settings();
-        if (settings && settings->rootLayerScrolls()) {
+        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
             context.fixedPosition = context.current;
             const TransformPaintPropertyNode* transform = object.objectPaintProperties()->paintOffsetTranslation();
             DCHECK(transform);

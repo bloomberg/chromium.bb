@@ -49,8 +49,6 @@ class Settings;
 
 typedef void (*FrameSettingOverrideFunction)(Settings&);
 
-extern void RootLayerScrollsFrameSettingOverride(Settings&);
-
 // Creates a dummy Page, LocalFrame, and FrameView whose clients are all no-op.
 //
 // This class can be used when you write unit tests for components which do not work correctly without layoutObjects.

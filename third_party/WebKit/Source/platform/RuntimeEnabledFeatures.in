@@ -177,6 +177,9 @@ RenderingPipelineThrottling status=stable
 RenderUnicodeControlCharacters status=experimental
 RequestIdleCallback status=stable
 ResizeObserver status=experimental
+// Handles frame scrolling via the root PaintLayer instead of the FrameView.
+// crbug.com/417782 tracks enabling this by default.
+RootLayerScrolling
 RTCPeerConnectionNewGetStats status=test
 SandboxBlocksModals status=stable
 ScriptedSpeech status=stable

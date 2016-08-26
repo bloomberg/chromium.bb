@@ -11,17 +11,16 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
-class PaintControllerPaintTestBase : public RenderingTest {
+class PaintControllerPaintTestBase
+    : private ScopedSlimmingPaintV2ForTest
+    , public RenderingTest {
 public:
-    PaintControllerPaintTestBase(bool enableSlimmingPaintV2)
-        : m_originalSlimmingPaintInvalidationEnabled(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        , m_enableSlimmingPaintV2(enableSlimmingPaintV2)
-    { }
+    PaintControllerPaintTestBase(bool enableSlimmingPaintV2) : ScopedSlimmingPaintV2ForTest(enableSlimmingPaintV2) { }
 
 protected:
     LayoutView& layoutView() { return *document().layoutView(); }
@@ -31,12 +30,6 @@ protected:
     {
         RenderingTest::SetUp();
         enableCompositing();
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_enableSlimmingPaintV2);
-    }
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled(m_originalSlimmingPaintInvalidationEnabled);
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
     bool paintWithoutCommit(const IntRect* interestRect = nullptr)
@@ -74,11 +67,6 @@ protected:
     }
 
     int numCachedNewItems() { return rootPaintController().m_numCachedNewItems; }
-
-private:
-    bool m_originalSlimmingPaintInvalidationEnabled;
-    bool m_originalSlimmingPaintV2Enabled;
-    bool m_enableSlimmingPaintV2;
 };
 
 class PaintControllerPaintTest : public PaintControllerPaintTestBase {

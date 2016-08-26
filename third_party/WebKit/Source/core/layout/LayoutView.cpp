@@ -204,7 +204,7 @@ void LayoutView::setShouldDoFullPaintInvalidationOnResizeIfNeeded()
     // on viewport resize if the background image is not composited and needs full paint
     // invalidation on background positioning area resize.
     if (style()->hasFixedBackgroundImage() && (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer()))) {
-        IncludeScrollbarsInRect includeScrollbars = document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars;
+        IncludeScrollbarsInRect includeScrollbars = RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars : ExcludeScrollbars;
         if ((offsetWidth() != viewWidth(includeScrollbars) && mustInvalidateFillLayersPaintOnWidthChange(style()->backgroundLayers()))
             || (offsetHeight() != viewHeight(includeScrollbars) && mustInvalidateFillLayersPaintOnHeightChange(style()->backgroundLayers())))
             setShouldDoFullPaintInvalidation(PaintInvalidationBoundsChange);
@@ -281,7 +281,7 @@ LayoutRect LayoutView::visualOverflowRect() const
 {
     // In root layer scrolling mode, the LayoutView performs overflow clipping
     // like a regular scrollable div.
-    if (document().settings() && document().settings()->rootLayerScrolls())
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return LayoutBlockFlow::visualOverflowRect();
 
     // Ditto when not in compositing mode.
@@ -857,12 +857,12 @@ int LayoutView::viewLogicalHeight(IncludeScrollbarsInRect scrollbarInclusion) co
 
 int LayoutView::viewLogicalWidthForBoxSizing() const
 {
-    return viewLogicalWidth(document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars);
+    return viewLogicalWidth(RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars : ExcludeScrollbars);
 }
 
 int LayoutView::viewLogicalHeightForBoxSizing() const
 {
-    return viewLogicalHeight(document().settings() && document().settings()->rootLayerScrolls() ? IncludeScrollbars : ExcludeScrollbars);
+    return viewLogicalHeight(RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? IncludeScrollbars : ExcludeScrollbars);
 }
 
 LayoutUnit LayoutView::viewLogicalHeightForPercentages() const
@@ -977,7 +977,7 @@ void LayoutView::updateFromStyle()
 
 bool LayoutView::allowsOverflowClip() const
 {
-    return document().settings() && document().settings()->rootLayerScrolls();
+    return RuntimeEnabledFeatures::rootLayerScrollingEnabled();
 }
 
 ScrollResult LayoutView::scroll(ScrollGranularity granularity, const FloatSize& delta)

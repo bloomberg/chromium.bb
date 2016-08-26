@@ -241,8 +241,7 @@ void PaintLayerClipper::calculateRects(const ClipRectsContext& context, const La
 void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     const LayoutBoxModelObject& layoutObject = *m_layer.layoutObject();
-    bool rootLayerScrolls = layoutObject.document().settings() && layoutObject.document().settings()->rootLayerScrolls();
-    if (!m_layer.parent() && !rootLayerScrolls) {
+    if (!m_layer.parent() && !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
         // The root layer's clip rect is always infinite.
         clipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
         return;

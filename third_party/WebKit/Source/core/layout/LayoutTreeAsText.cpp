@@ -565,8 +565,7 @@ static void write(TextStream& ts, PaintLayer& layer,
     IntRect adjustedBackgroundClipRect = pixelSnappedIntRect(backgroundClipRect);
     IntRect adjustedClipRect = pixelSnappedIntRect(clipRect);
 
-    Settings* settings = layer.layoutObject()->document().settings();
-    bool reportFrameScrollInfo = layer.layoutObject()->isLayoutView() && settings && !settings->rootLayerScrolls();
+    bool reportFrameScrollInfo = layer.layoutObject()->isLayoutView() && !RuntimeEnabledFeatures::rootLayerScrollingEnabled();
 
     if (reportFrameScrollInfo) {
         LayoutView* layoutView = toLayoutView(layer.layoutObject());
