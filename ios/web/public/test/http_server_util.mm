@@ -31,5 +31,11 @@ void SetUpHttpServer(std::unique_ptr<web::ResponseProvider> provider) {
   server.AddResponseProvider(std::move(provider));
 }
 
+void AddResponseProvider(std::unique_ptr<web::ResponseProvider> provider) {
+  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+  DCHECK(server.IsRunning());
+  server.AddResponseProvider(std::move(provider));
+}
+
 }  // namespace test
 }  // namespace web

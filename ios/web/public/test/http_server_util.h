@@ -29,6 +29,9 @@ void SetUpFileBasedHttpServer();
 // Takes ownership of the provider.
 void SetUpHttpServer(std::unique_ptr<web::ResponseProvider> provider);
 
+// Adds a single custom provider.
+// Takes ownership of the provider.
+void AddResponseProvider(std::unique_ptr<web::ResponseProvider> provider);
 }  // namespace test
 }  // namespace web
 
