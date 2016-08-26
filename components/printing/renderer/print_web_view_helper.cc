@@ -328,11 +328,13 @@ bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
 
 // Disable scaling when either:
 // - The PDF specifies disabling scaling.
-// - All the pages in the PDF are the same size, and that size is the same as
-//   the paper size.
+// - All the pages in the PDF are the same size,
+// - |ignore_page_size| is false and the uniform size is the same as the paper
+//   size.
 bool PDFShouldDisableScalingBasedOnPreset(
     const blink::WebPrintPresetOptions& options,
-    const PrintMsg_Print_Params& params) {
+    const PrintMsg_Print_Params& params,
+    bool ignore_page_size) {
   if (options.isScalingDisabled)
     return true;
 
@@ -346,6 +348,9 @@ bool PDFShouldDisableScalingBasedOnPreset(
     return true;
   }
 
+  if (ignore_page_size)
+    return false;
+
   blink::WebSize page_size(
       ConvertUnit(params.page_size.width(), dpi, kPointsPerInch),
       ConvertUnit(params.page_size.height(), dpi, kPointsPerInch));
@@ -354,19 +359,21 @@ bool PDFShouldDisableScalingBasedOnPreset(
 
 bool PDFShouldDisableScaling(blink::WebLocalFrame* frame,
                              const blink::WebNode& node,
-                             const PrintMsg_Print_Params& params) {
+                             const PrintMsg_Print_Params& params,
+                             bool ignore_page_size) {
   const bool kDefaultPDFShouldDisableScalingSetting = true;
   blink::WebPrintPresetOptions preset_options;
   if (!frame->getPrintPresetOptionsForPlugin(node, &preset_options))
     return kDefaultPDFShouldDisableScalingSetting;
-  return PDFShouldDisableScalingBasedOnPreset(preset_options, params);
+  return PDFShouldDisableScalingBasedOnPreset(preset_options, params,
+                                              ignore_page_size);
 }
 
 #if defined(ENABLE_BASIC_PRINTING)
 MarginType GetMarginsForPdf(blink::WebLocalFrame* frame,
                             const blink::WebNode& node,
                             const PrintMsg_Print_Params& params) {
-  return PDFShouldDisableScaling(frame, node, params) ?
+  return PDFShouldDisableScaling(frame, node, params, false) ?
       NO_MARGINS : PRINTABLE_AREA_MARGINS;
 }
 #endif
@@ -407,7 +414,8 @@ blink::WebPrintScalingOption GetPrintScalingOption(
     if (!FitToPageEnabled(job_settings))
       return blink::WebPrintScalingOptionNone;
 
-    bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params);
+    bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params,
+                                                     true);
     if (params.is_first_request && no_plugin_scaling)
       return blink::WebPrintScalingOptionNone;
   }
@@ -1588,7 +1596,7 @@ bool PrintWebViewHelper::SetOptionsFromPdfDocument(
   }
 
   options->is_scaling_disabled = PDFShouldDisableScalingBasedOnPreset(
-      preset_options, print_pages_params_->params);
+      preset_options, print_pages_params_->params, false);
   options->copies = preset_options.copies;
 
   // TODO(thestig) This should be a straight pass-through, but print preview
