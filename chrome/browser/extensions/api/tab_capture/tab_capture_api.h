@@ -45,7 +45,7 @@ class TabCaptureGetCapturedTabsFunction : public ChromeSyncExtensionFunction {
   bool RunSync() final;
 };
 
-class TabCaptureCaptureOffscreenTabFunction : public SyncExtensionFunction {
+class TabCaptureCaptureOffscreenTabFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("tabCapture.captureOffscreenTab",
                              TABCAPTURE_CAPTUREOFFSCREENTAB)
@@ -59,7 +59,7 @@ class TabCaptureCaptureOffscreenTabFunction : public SyncExtensionFunction {
   ~TabCaptureCaptureOffscreenTabFunction() final {}
 
   // ExtensionFunction:
-  bool RunSync() final;
+  ResponseAction Run() final;
 };
 
 }  // namespace extensions

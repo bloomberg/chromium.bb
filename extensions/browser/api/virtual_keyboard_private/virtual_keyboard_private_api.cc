@@ -15,10 +15,6 @@
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "ui/events/event.h"
 
-namespace SetMode = extensions::api::virtual_keyboard_private::SetMode;
-namespace SetRequestedKeyboardState =
-    extensions::api::virtual_keyboard_private::SetKeyboardState;
-
 namespace extensions {
 
 namespace {
@@ -27,151 +23,122 @@ const char kNotYetImplementedError[] =
     "API is not implemented on this platform.";
 const char kVirtualKeyboardNotEnabled[] =
     "The virtual keyboard is not enabled.";
+const char kUnknownError[] = "Unknown error.";
 
-typedef BrowserContextKeyedAPIFactory<VirtualKeyboardAPI> factory;
-
-VirtualKeyboardDelegate* GetDelegate(SyncExtensionFunction* f) {
-  VirtualKeyboardAPI* api = factory::Get(f->browser_context());
-  DCHECK(api);
-  return api ? api->delegate() : nullptr;
-}
+namespace keyboard = api::virtual_keyboard_private;
 
 }  // namespace
 
-bool VirtualKeyboardPrivateInsertTextFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    base::string16 text;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
-    return delegate->InsertText(text);
-  }
-  error_ = kNotYetImplementedError;
-  return false;
-}
+bool VirtualKeyboardPrivateFunction::PreRunValidation(std::string* error) {
+  if (!UIThreadExtensionFunction::PreRunValidation(error))
+    return false;
 
-bool VirtualKeyboardPrivateSendKeyEventFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    base::Value* options_value = nullptr;
-    base::DictionaryValue* params = nullptr;
-    std::string type;
-    int char_value;
-    int key_code;
-    std::string key_name;
-    int modifiers;
-
-    EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &options_value));
-    EXTENSION_FUNCTION_VALIDATE(options_value->GetAsDictionary(&params));
-    EXTENSION_FUNCTION_VALIDATE(params->GetString("type", &type));
-    EXTENSION_FUNCTION_VALIDATE(params->GetInteger("charValue", &char_value));
-    EXTENSION_FUNCTION_VALIDATE(params->GetInteger("keyCode", &key_code));
-    EXTENSION_FUNCTION_VALIDATE(params->GetString("keyName", &key_name));
-    EXTENSION_FUNCTION_VALIDATE(params->GetInteger("modifiers", &modifiers));
-    return delegate->SendKeyEvent(
-        type, char_value, key_code, key_name, modifiers);
-  }
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
-bool VirtualKeyboardPrivateHideKeyboardFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate)
-    return delegate->HideKeyboard();
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
-bool VirtualKeyboardPrivateSetHotrodKeyboardFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    bool enable;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enable));
-    delegate->SetHotrodKeyboard(enable);
-    return true;
-  }
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
-bool VirtualKeyboardPrivateLockKeyboardFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    bool lock;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &lock));
-    return delegate->LockKeyboard(lock);
-  }
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
-bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate)
-    return delegate->OnKeyboardLoaded();
-  error_ = kNotYetImplementedError;
-  return false;
-}
-
-bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-    if (delegate->GetKeyboardConfig(results.get())) {
-      SetResult(std::move(results));
-      return true;
-    }
-  }
-  return false;
-}
-
-bool VirtualKeyboardPrivateOpenSettingsFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    if (delegate->IsLanguageSettingsEnabled())
-      return delegate->ShowLanguageSettings();
+  VirtualKeyboardAPI* api =
+      BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>::Get(browser_context());
+  DCHECK(api);
+  delegate_ = api->delegate();
+  if (!delegate_) {
+    *error = kNotYetImplementedError;
     return false;
   }
-  error_ = kNotYetImplementedError;
-  return false;
+  return true;
 }
 
-bool VirtualKeyboardPrivateSetModeFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    std::unique_ptr<SetMode::Params> params = SetMode::Params::Create(*args_);
-    EXTENSION_FUNCTION_VALIDATE(params);
-    if (!delegate->SetVirtualKeyboardMode(params->mode)) {
-      error_ = kVirtualKeyboardNotEnabled;
-      return false;
-    } else {
-      return true;
-    }
-  }
-  error_ = kNotYetImplementedError;
-  return false;
+VirtualKeyboardPrivateFunction::~VirtualKeyboardPrivateFunction() {}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateInsertTextFunction::Run() {
+  base::string16 text;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
+  if (!delegate()->InsertText(text))
+    return RespondNow(Error(kUnknownError));
+  return RespondNow(NoArguments());
 }
 
-bool VirtualKeyboardPrivateSetKeyboardStateFunction::RunSync() {
-  VirtualKeyboardDelegate* delegate = GetDelegate(this);
-  if (delegate) {
-    std::unique_ptr<SetRequestedKeyboardState::Params> params =
-        SetRequestedKeyboardState::Params::Create(*args_);
-    EXTENSION_FUNCTION_VALIDATE(params);
-    if (!delegate->SetRequestedKeyboardState(params->state)) {
-      error_ = kVirtualKeyboardNotEnabled;
-      return false;
-    } else {
-      return true;
-    }
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSendKeyEventFunction::Run() {
+  std::unique_ptr<keyboard::SendKeyEvent::Params> params(
+      keyboard::SendKeyEvent::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(params->key_event.modifiers);
+  const keyboard::VirtualKeyboardEvent& event = params->key_event;
+  if (!delegate()->SendKeyEvent(keyboard::ToString(event.type),
+                                event.char_value, event.key_code,
+                                event.key_name, *event.modifiers)) {
+    return RespondNow(Error(kUnknownError));
   }
-  error_ = kNotYetImplementedError;
-  return false;
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateHideKeyboardFunction::Run() {
+  if (!delegate()->HideKeyboard())
+    return RespondNow(Error(kUnknownError));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetHotrodKeyboardFunction::Run() {
+  bool enable = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enable));
+  delegate()->SetHotrodKeyboard(enable);
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateLockKeyboardFunction::Run() {
+  bool lock = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &lock));
+  if (!delegate()->LockKeyboard(lock))
+    return RespondNow(Error(kUnknownError));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateKeyboardLoadedFunction::Run() {
+  if (!delegate()->OnKeyboardLoaded())
+    return RespondNow(Error(kUnknownError));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateGetKeyboardConfigFunction::Run() {
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
+  if (!delegate()->GetKeyboardConfig(results.get()))
+    return RespondNow(Error(kUnknownError));
+  return RespondNow(OneArgument(std::move(results)));
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateOpenSettingsFunction::Run() {
+  if (!delegate()->IsLanguageSettingsEnabled() ||
+      !delegate()->ShowLanguageSettings()) {
+    return RespondNow(Error(kUnknownError));
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction VirtualKeyboardPrivateSetModeFunction::Run() {
+  std::unique_ptr<keyboard::SetMode::Params> params =
+      keyboard::SetMode::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!delegate()->SetVirtualKeyboardMode(params->mode))
+    return RespondNow(Error(kVirtualKeyboardNotEnabled));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetKeyboardStateFunction::Run() {
+  std::unique_ptr<keyboard::SetKeyboardState::Params> params =
+      keyboard::SetKeyboardState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!delegate()->SetRequestedKeyboardState(params->state))
+    return RespondNow(Error(kVirtualKeyboardNotEnabled));
+  return RespondNow(NoArguments());
 }
 
 VirtualKeyboardAPI::VirtualKeyboardAPI(content::BrowserContext* context) {
-  delegate_ =
-      extensions::ExtensionsAPIClient::Get()->CreateVirtualKeyboardDelegate();
+  delegate_ = ExtensionsAPIClient::Get()->CreateVirtualKeyboardDelegate();
 }
 
 VirtualKeyboardAPI::~VirtualKeyboardAPI() {
