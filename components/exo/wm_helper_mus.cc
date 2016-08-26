@@ -29,45 +29,16 @@ aura::Window* GetToplevelAuraWindow(ui::Window* window) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelperMus::EventForwarder:
-
-class WMHelperMus::EventForwarder : public ui::EventHandler {
- public:
-  explicit EventForwarder(ui::EventHandlerList* event_handlers)
-      : event_handlers_(event_handlers) {}
-  ~EventForwarder() override {}
-
-  // Overriden from ui::EventHandler:
-  void OnEvent(ui::Event* event) override;
-
- private:
-  const ui::EventHandlerList* event_handlers_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventForwarder);
-};
-
-void WMHelperMus::EventForwarder::OnEvent(ui::Event* event) {
-  for (ui::EventHandler* handler : *event_handlers_) {
-    if (event->stopped_propagation())
-      break;
-    handler->OnEvent(event);
-  }
-}
-////////////////////////////////////////////////////////////////////////////////
 // WMHelperMus, public:
 
 WMHelperMus::WMHelperMus()
-    : pre_target_event_forwarder_(new EventForwarder(&pre_target_list_)),
-      post_target_event_forwarder_(new EventForwarder(&post_target_list_)),
-      active_window_(WMHelperMus::GetActiveWindow()),
+    : active_window_(WMHelperMus::GetActiveWindow()),
       focused_window_(WMHelperMus::GetFocusedWindow()) {
   views::WindowManagerConnection::Get()->client()->AddObserver(this);
-  aura::Env::GetInstance()->AddObserver(this);
 }
 
 WMHelperMus::~WMHelperMus() {
   views::WindowManagerConnection::Get()->client()->RemoveObserver(this);
-  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,40 +75,28 @@ ui::CursorSetType WMHelperMus::GetCursorSet() const {
 }
 
 void WMHelperMus::AddPreTargetHandler(ui::EventHandler* handler) {
-  pre_target_list_.push_back(handler);
+  aura::Env::GetInstance()->AddPreTargetHandler(handler);
 }
 
 void WMHelperMus::PrependPreTargetHandler(ui::EventHandler* handler) {
-  pre_target_list_.insert(pre_target_list_.begin(), handler);
+  aura::Env::GetInstance()->PrependPreTargetHandler(handler);
 }
 
 void WMHelperMus::RemovePreTargetHandler(ui::EventHandler* handler) {
-  auto it =
-      std::find(pre_target_list_.begin(), pre_target_list_.end(), handler);
-  if (it != pre_target_list_.end())
-    pre_target_list_.erase(it);
+  aura::Env::GetInstance()->RemovePreTargetHandler(handler);
 }
 
 void WMHelperMus::AddPostTargetHandler(ui::EventHandler* handler) {
-  post_target_list_.push_back(handler);
+  aura::Env::GetInstance()->AddPostTargetHandler(handler);
 }
 
 void WMHelperMus::RemovePostTargetHandler(ui::EventHandler* handler) {
-  auto it =
-      std::find(post_target_list_.begin(), post_target_list_.end(), handler);
-  if (it != post_target_list_.end())
-    post_target_list_.erase(it);
+  aura::Env::GetInstance()->RemovePostTargetHandler(handler);
 }
 
 bool WMHelperMus::IsMaximizeModeWindowManagerEnabled() const {
   NOTIMPLEMENTED();
   return false;
-}
-
-void WMHelperMus::OnHostInitialized(aura::WindowTreeHost* host) {
-  aura::Window* root_window = host->window();
-  root_window->AddPreTargetHandler(pre_target_event_forwarder_.get());
-  root_window->AddPostTargetHandler(post_target_event_forwarder_.get());
 }
 
 void WMHelperMus::OnWindowTreeFocusChanged(ui::Window* gained_focus,
