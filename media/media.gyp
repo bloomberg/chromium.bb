@@ -379,6 +379,8 @@
         'base/media_permission.h',
         'base/media_resources.cc',
         'base/media_resources.h',
+        'base/media_content_type.cc',
+        'base/media_content_type.h',
         'base/media_switches.cc',
         'base/media_switches.h',
         'base/media_track.cc',

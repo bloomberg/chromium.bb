@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/media_content_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::WebContents;
@@ -35,7 +36,7 @@ namespace {
 
 class MockMediaSessionDelegate : public MediaSessionDelegate {
  public:
-  bool RequestAudioFocus(MediaSession::Type) override {
+  bool RequestAudioFocus(content::AudioFocusManager::AudioFocusType) override {
     return true;
   }
 
@@ -80,17 +81,16 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
   }
 
   void StartNewPlayer(MockMediaSessionObserver* media_session_observer,
-                      MediaSession::Type type) {
-    bool result = AddPlayer(
-        media_session_observer,
-        media_session_observer->StartNewPlayer(),
-        type);
+                      media::MediaContentType media_content_type) {
+    bool result =
+        AddPlayer(media_session_observer,
+                  media_session_observer->StartNewPlayer(), media_content_type);
     EXPECT_TRUE(result);
   }
 
   bool AddPlayer(MockMediaSessionObserver* media_session_observer,
                  int player_id,
-                 MediaSession::Type type) {
+                 media::MediaContentType type) {
     return media_session_->AddPlayer(media_session_observer, player_id, type);
   }
 
@@ -110,7 +110,7 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
 
   bool HasAudioFocus() { return media_session_->IsActiveForTest(); }
 
-  MediaSession::Type GetSessionType() {
+  content::AudioFocusManager::AudioFocusType GetSessionAudioFocusType() {
     return media_session_->audio_focus_type_for_test();
   }
 
@@ -165,9 +165,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(media_session_observer->IsPlaying(0));
   EXPECT_TRUE(media_session_observer->IsPlaying(1));
@@ -183,9 +186,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer_3(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer_1.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_2.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_3.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer_1.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_2.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_3.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(media_session_observer_1->IsPlaying(0));
   EXPECT_TRUE(media_session_observer_2->IsPlaying(0));
@@ -197,9 +203,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
 
@@ -213,9 +222,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
   SystemResume();
@@ -230,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(media_session_observer->IsPlaying(0));
 
@@ -238,12 +251,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 
   EXPECT_FALSE(media_session_observer->IsPlaying(0));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_FALSE(media_session_observer->IsPlaying(0));
   EXPECT_TRUE(media_session_observer->IsPlaying(1));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_FALSE(media_session_observer->IsPlaying(0));
   EXPECT_TRUE(media_session_observer->IsPlaying(1));
@@ -255,8 +270,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   double volume_multiplier = 0.2f;
   SystemSetVolumeMultiplier(volume_multiplier);
@@ -264,7 +281,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(0));
   EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(1));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(2));
 }
@@ -277,7 +295,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, StartPlayerGivesFocus) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(HasAudioFocus());
 }
@@ -286,7 +305,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, SuspendGivesAwayAudioFocus) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
 
@@ -297,7 +317,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, StopGivesAwayAudioFocus) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   media_session_->Stop(MediaSession::SuspendType::UI);
 
@@ -308,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeGivesBackAudioFocus) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
   SystemResume();
@@ -321,9 +343,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayer(media_session_observer.get(), 0);
   EXPECT_TRUE(HasAudioFocus());
@@ -342,9 +367,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer_3(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer_1.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_2.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_3.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer_1.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_2.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_3.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayer(media_session_observer_1.get(), 0);
   EXPECT_TRUE(HasAudioFocus());
@@ -361,10 +389,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer_2(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer_1.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_1.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_2.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer_2.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer_1.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_1.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_2.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer_2.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayers(media_session_observer_1.get());
   EXPECT_TRUE(HasAudioFocus());
@@ -376,13 +408,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumePlayGivesAudioFocus) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayer(media_session_observer.get(), 0);
   EXPECT_FALSE(HasAudioFocus());
 
-  EXPECT_TRUE(
-      AddPlayer(media_session_observer.get(), 0, MediaSession::Type::Content));
+  EXPECT_TRUE(AddPlayer(media_session_observer.get(), 0,
+                        media::MediaContentType::Persistent));
   EXPECT_TRUE(HasAudioFocus());
 }
 
@@ -391,9 +424,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_EQ(0, media_session_observer->received_suspend_calls());
   EXPECT_EQ(0, media_session_observer->received_resume_calls());
@@ -410,17 +446,20 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   // Adding the three players above again.
-  EXPECT_TRUE(
-      AddPlayer(media_session_observer.get(), 0, MediaSession::Type::Content));
-  EXPECT_TRUE(
-      AddPlayer(media_session_observer.get(), 1, MediaSession::Type::Content));
-  EXPECT_TRUE(
-      AddPlayer(media_session_observer.get(), 2, MediaSession::Type::Content));
+  EXPECT_TRUE(AddPlayer(media_session_observer.get(), 0,
+                        media::MediaContentType::Persistent));
+  EXPECT_TRUE(AddPlayer(media_session_observer.get(), 1,
+                        media::MediaContentType::Persistent));
+  EXPECT_TRUE(AddPlayer(media_session_observer.get(), 2,
+                        media::MediaContentType::Persistent));
 
   EXPECT_EQ(0, media_session_observer->received_suspend_calls());
   EXPECT_EQ(0, media_session_observer->received_resume_calls());
@@ -437,31 +476,40 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayer(media_session_observer.get(), 0);
   RemovePlayer(media_session_observer.get(), 0);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionType) {
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, AudioFocusType) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
   // Starting a player with a given type should set the session to that type.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
-  EXPECT_EQ(MediaSession::Type::Transient, GetSessionType());
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::GainTransientMayDuck,
+            GetSessionAudioFocusType());
 
   // Adding a player of the same type should have no effect on the type.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
-  EXPECT_EQ(MediaSession::Type::Transient, GetSessionType());
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::GainTransientMayDuck,
+            GetSessionAudioFocusType());
 
   // Adding a player of Content type should override the current type.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  EXPECT_EQ(MediaSession::Type::Content, GetSessionType());
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::Gain,
+            GetSessionAudioFocusType());
 
   // Adding a player of the Transient type should have no effect on the type.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
-  EXPECT_EQ(MediaSession::Type::Content, GetSessionType());
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::Gain,
+            GetSessionAudioFocusType());
 
   EXPECT_TRUE(media_session_observer->IsPlaying(0));
   EXPECT_TRUE(media_session_observer->IsPlaying(1));
@@ -475,7 +523,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionType) {
   EXPECT_FALSE(media_session_observer->IsPlaying(2));
   EXPECT_FALSE(media_session_observer->IsPlaying(3));
 
-  EXPECT_EQ(MediaSession::Type::Content, GetSessionType());
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::Gain,
+            GetSessionAudioFocusType());
 
   SystemResume();
 
@@ -484,7 +533,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MediaSessionType) {
   EXPECT_TRUE(media_session_observer->IsPlaying(2));
   EXPECT_TRUE(media_session_observer->IsPlaying(3));
 
-  EXPECT_EQ(MediaSession::Type::Content, GetSessionType());
+  EXPECT_EQ(content::AudioFocusManager::AudioFocusType::Gain,
+            GetSessionAudioFocusType());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShowForContent) {
@@ -495,7 +545,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShowForContent) {
       new MockMediaSessionObserver);
 
   // Starting a player with a content type should show the media controls.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -509,7 +560,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsNoShowForTransient) {
       new MockMediaSessionObserver);
 
   // Starting a player with a transient type should not show the media controls.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
 
   EXPECT_FALSE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -525,7 +577,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsHideWhenStopped) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayers(media_session_observer.get());
 
@@ -540,10 +593,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsShownAcceptTransient) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   // Transient player join the session without affecting the controls.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
 
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -560,10 +615,12 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
 
   // The controls are shown when the content player is added.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -577,8 +634,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
 
   // Removing only content player doesn't hide the controls since the session
   // is still active.
@@ -598,8 +657,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayer(media_session_observer.get(), 0);
 
@@ -623,8 +684,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   RemovePlayers(media_session_observer.get());
 
@@ -643,8 +706,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   OnPlayerPaused(media_session_observer.get(), 0);
 
@@ -668,7 +733,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
 
@@ -688,7 +754,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ControlsUpdatedWhenResumed) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(true);
   SystemResume();
 
@@ -707,7 +774,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(false);
 
@@ -728,7 +796,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   media_session_->Stop(MediaSession::SuspendType::UI);
 
@@ -749,12 +818,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(true);
 
   // This should reset the session and change it to a transient, so
   // hide the controls.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Transient);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Transient);
 
   EXPECT_FALSE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -773,11 +844,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(true);
 
   // This should reset the session and update the controls.
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -796,11 +869,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(true);
 
   // This should resume the session and update the controls.
-  AddPlayer(media_session_observer.get(), 0, MediaSession::Type::Content);
+  AddPlayer(media_session_observer.get(), 0,
+            media::MediaContentType::Persistent);
 
   EXPECT_TRUE(IsControllable());
   EXPECT_FALSE(IsSuspended());
@@ -817,7 +892,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   UISuspend();
 
   EXPECT_TRUE(IsControllable());
@@ -837,7 +913,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   UISuspend();
   UIResume();
 
@@ -849,7 +926,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        DontResumeBySystemUISuspendedSessions) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   UISuspend();
   EXPECT_TRUE(IsControllable());
@@ -864,7 +942,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
                        AllowUIResumeForSystemSuspend) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
   EXPECT_TRUE(IsControllable());
@@ -878,7 +957,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeSuspendFromUI) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   UISuspend();
   EXPECT_TRUE(IsControllable());
@@ -892,7 +972,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeSuspendFromUI) {
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, ResumeSuspendFromSystem) {
   std::unique_ptr<MockMediaSessionObserver> media_session_observer(
       new MockMediaSessionObserver);
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   SystemSuspend(true);
   EXPECT_TRUE(IsControllable());
@@ -908,7 +989,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_SystemTransient) {
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(true);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -926,7 +1008,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   SystemSuspend(false);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -942,7 +1025,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_UI) {
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   UISuspend();
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -958,7 +1042,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_Multiple) {
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   UISuspend();
   UIResume();
@@ -984,7 +1069,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_Crossing) {
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   UISuspend();
   SystemSuspend(true);
@@ -1009,7 +1095,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, UMA_Suspended_Stop) {
       new MockMediaSessionObserver);
   base::HistogramTester tester;
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   media_session_->Stop(MediaSession::SuspendType::UI);
 
   std::unique_ptr<base::HistogramSamples> samples(
@@ -1044,7 +1131,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
@@ -1067,7 +1155,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
   UISuspend();
@@ -1096,7 +1185,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
 
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
   SystemSuspend(true);
@@ -1125,7 +1215,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   clock->Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
 
@@ -1158,12 +1249,14 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   clock->Advance(base::TimeDelta::FromMilliseconds(500));
   SystemSuspend(true);
   media_session_->Stop(MediaSession::SuspendType::UI);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   clock->Advance(base::TimeDelta::FromMilliseconds(5000));
   SystemResume();
   media_session_->Stop(MediaSession::SuspendType::UI);
@@ -1187,11 +1280,13 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   media_session_uma_helper->SetClockForTest(
       std::unique_ptr<base::SimpleTestTickClock>(clock));
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   clock->Advance(base::TimeDelta::FromMilliseconds(10000));
   RemovePlayer(media_session_observer.get(), 0);
 
-  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(),
+                 media::MediaContentType::Persistent);
   clock->Advance(base::TimeDelta::FromMilliseconds(1000));
   media_session_->Stop(MediaSession::SuspendType::UI);
 

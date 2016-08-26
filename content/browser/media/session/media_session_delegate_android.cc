@@ -37,11 +37,14 @@ void MediaSessionDelegateAndroid::Initialize() {
       reinterpret_cast<intptr_t>(this)));
 }
 
-bool MediaSessionDelegateAndroid::RequestAudioFocus(MediaSession::Type type) {
+bool MediaSessionDelegateAndroid::RequestAudioFocus(
+    AudioFocusManager::AudioFocusType audio_focus_type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
   return Java_MediaSessionDelegate_requestAudioFocus(
-      env, j_media_session_delegate_, type == MediaSession::Type::Transient);
+      env, j_media_session_delegate_,
+      audio_focus_type ==
+          AudioFocusManager::AudioFocusType::GainTransientMayDuck);
 }
 
 void MediaSessionDelegateAndroid::AbandonAudioFocus() {

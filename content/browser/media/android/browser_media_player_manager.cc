@@ -32,6 +32,7 @@
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
+#include "media/base/media_content_type.h"
 
 #if !defined(USE_AURA)
 #include "content/browser/android/content_view_core_impl.h"
@@ -442,7 +443,8 @@ bool BrowserMediaPlayerManager::RequestPlay(int player_id,
   return MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
       ->RequestPlay(render_frame_host_,
                     player_id_to_delegate_id_map_[player_id], has_audio,
-                    IsPlayingRemotely(player_id), duration);
+                    IsPlayingRemotely(player_id),
+                    media::DurationToMediaContentType(duration));
 }
 
 #if defined(VIDEO_HOLE)

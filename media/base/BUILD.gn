@@ -145,6 +145,8 @@ target(link_target_type, "base") {
     "media.h",
     "media_client.cc",
     "media_client.h",
+    "media_content_type.cc",
+    "media_content_type.h",
     "media_keys.cc",
     "media_keys.h",
     "media_log.cc",

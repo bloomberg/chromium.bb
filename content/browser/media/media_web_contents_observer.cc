@@ -127,7 +127,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     bool has_video,
     bool has_audio,
     bool is_remote,
-    base::TimeDelta duration) {
+    media::MediaContentType media_content_type) {
   // Ignore the videos playing remotely and don't hold the wake lock for the
   // screen. TODO(dalecurtis): Is this correct? It means observers will not
   // receive play and pause messages.
@@ -157,7 +157,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
   }
 
   if (!session_controllers_manager_.RequestPlay(
-      id, has_audio, is_remote, duration)) {
+          id, has_audio, is_remote, media_content_type)) {
     return;
   }
 

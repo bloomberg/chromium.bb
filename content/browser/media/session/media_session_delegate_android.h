@@ -23,7 +23,8 @@ class MediaSessionDelegateAndroid : public MediaSessionDelegate {
 
   void Initialize();
 
-  bool RequestAudioFocus(MediaSession::Type type) override;
+  bool RequestAudioFocus(
+      AudioFocusManager::AudioFocusType audio_focus_type) override;
   void AbandonAudioFocus() override;
 
   // Called when the Android system requests the MediaSession to be suspended.
@@ -56,4 +57,4 @@ class MediaSessionDelegateAndroid : public MediaSessionDelegate {
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_ANDROID_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_ANDROID_H_

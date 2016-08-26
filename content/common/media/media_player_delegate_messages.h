@@ -8,13 +8,16 @@
 
 #include <stdint.h>
 
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/media_content_type.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerDelegateMsgStart
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType,
+                          media::MediaContentType::Uncontrollable)
 
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer requesting playback state changes.
@@ -48,4 +51,4 @@ IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                     bool /* has_video */,
                     bool /* has_audio */,
                     bool /* is_remote */,
-                    base::TimeDelta /* duration */)
+                    media::MediaContentType /* media_content_type */)

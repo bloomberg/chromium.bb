@@ -24,6 +24,10 @@ namespace device {
 class PowerSaveBlocker;
 }  // namespace device
 
+namespace media {
+enum class MediaContentType;
+}  // namespace media
+
 namespace content {
 
 // This class manages all RenderFrame based media related managers at the
@@ -69,7 +73,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                       bool has_video,
                       bool has_audio,
                       bool is_remote,
-                      base::TimeDelta duration);
+                      media::MediaContentType media_content_type);
 
   // Clear |render_frame_host|'s tracking entry for its power save blockers.
   void ClearPowerSaveBlockers(RenderFrameHost* render_frame_host);

@@ -39,6 +39,7 @@
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
+#include "media/base/media_content_type.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -1407,7 +1408,7 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
       // send audio if we know for sure its audio.  The browser side player will
       // fill in the correct value later for media sessions.
       delegate_->DidPlay(delegate_id_, hasVideo(), !hasVideo(), isRemote(),
-                         duration_);
+                         media::DurationToMediaContentType(duration_));
     } else {
       // Even if OnPlaybackComplete() has not been called yet, Blink may have
       // already fired the ended event based on current time relative to

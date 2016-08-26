@@ -52,18 +52,6 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
                                        multiplier);
   }
 
-  // Returns a duration long enough for a media session instance to be created.
-  base::TimeDelta DurationJustRight() {
-    return base::TimeDelta::FromSeconds(
-        MediaSessionController::kMinimumDurationForContentSecs + 1);
-  }
-
-  // Returns a duration too short for a media session instance.
-  base::TimeDelta DurationTooShort() {
-    return base::TimeDelta::FromSeconds(
-        MediaSessionController::kMinimumDurationForContentSecs);
-  }
-
   template <typename T>
   bool ReceivedMessagePlayPause() {
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
@@ -103,25 +91,29 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 };
 
 TEST_F(MediaSessionControllerTest, NoAudioNoSession) {
-  ASSERT_TRUE(controller_->Initialize(false, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(false, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, IsRemoteNoSession) {
-  ASSERT_TRUE(controller_->Initialize(true, true, DurationJustRight()));
+  ASSERT_TRUE(
+      controller_->Initialize(true, true, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
-TEST_F(MediaSessionControllerTest, TooShortNoControllableSession) {
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationTooShort()));
+TEST_F(MediaSessionControllerTest, TransientNoControllableSession) {
+  ASSERT_TRUE(
+      controller_->Initialize(true, false, media::MediaContentType::Transient));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, BasicControls) {
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(true, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
 
@@ -140,7 +132,8 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 }
 
 TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(true, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
 
@@ -156,7 +149,8 @@ TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
 }
 
 TEST_F(MediaSessionControllerTest, ControllerSidePause) {
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(true, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
 
@@ -166,24 +160,28 @@ TEST_F(MediaSessionControllerTest, ControllerSidePause) {
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Verify the next Initialize() call restores the session.
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(true, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, Reinitialize) {
-  ASSERT_TRUE(controller_->Initialize(false, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(false, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
 
   // Create a transient type session.
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationTooShort()));
+  ASSERT_TRUE(
+      controller_->Initialize(true, false, media::MediaContentType::Transient));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
   const int current_player_id = controller_->get_player_id_for_testing();
 
   // Reinitialize the session as a content type.
-  ASSERT_TRUE(controller_->Initialize(true, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(true, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
   // Player id should not change when there's an active session.
@@ -200,13 +198,15 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
   // Attempt to switch to no audio player, which should do nothing.
   // TODO(dalecurtis): Delete this test once we're no longer using WMPA and
   // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-  ASSERT_TRUE(controller_->Initialize(false, false, DurationJustRight()));
+  ASSERT_TRUE(controller_->Initialize(false, false,
+                                      media::MediaContentType::Persistent));
   EXPECT_FALSE(media_session()->IsSuspended());
   EXPECT_TRUE(media_session()->IsControllable());
   EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());
 
   // Switch to a remote player, which should release the session.
-  ASSERT_TRUE(controller_->Initialize(true, true, DurationJustRight()));
+  ASSERT_TRUE(
+      controller_->Initialize(true, true, media::MediaContentType::Persistent));
   EXPECT_TRUE(media_session()->IsSuspended());
   EXPECT_FALSE(media_session()->IsControllable());
   EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());

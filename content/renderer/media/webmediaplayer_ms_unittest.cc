@@ -55,7 +55,7 @@ class FakeWebMediaPlayerDelegate
                bool has_video,
                bool has_audio,
                bool is_remote,
-               base::TimeDelta duration) override {
+               media::MediaContentType type) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_FALSE(playing_);
     playing_ = true;

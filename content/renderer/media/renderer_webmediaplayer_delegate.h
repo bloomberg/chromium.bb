@@ -28,6 +28,8 @@ class WebMediaPlayer;
 
 namespace media {
 
+enum class MediaContentType;
+
 // An interface to allow a WebMediaPlayerImpl to communicate changes of state
 // to objects that need to know.
 class CONTENT_EXPORT RendererWebMediaPlayerDelegate
@@ -49,7 +51,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
                bool has_video,
                bool has_audio,
                bool is_remote,
-               base::TimeDelta duration) override;
+               MediaContentType media_content_type) override;
   void DidPause(int delegate_id, bool reached_end_of_stream) override;
   void PlayerGone(int delegate_id) override;
   bool IsHidden() override;

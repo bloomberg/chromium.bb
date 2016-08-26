@@ -10,6 +10,7 @@
 #include "content/browser/media/session/pepper_player_delegate.h"
 #include "content/common/frame_messages.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 
 namespace content {
@@ -56,7 +57,7 @@ void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
   MediaSession::Get(contents_)->AddPlayer(
       players_map_[pp_instance].get(),
       PepperPlayerDelegate::kPlayerId,
-      MediaSession::Type::Content);
+      media::MediaContentType::Pepper);
 }
 
 void PepperPlaybackObserver::PepperStopsPlayback(int32_t pp_instance) {

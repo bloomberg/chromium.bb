@@ -31,6 +31,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/limits.h"
+#include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/text_renderer.h"
@@ -1548,8 +1549,9 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
       delegate_->PlayerGone(delegate_id_);
       break;
     case DelegateState::PLAYING:
-      delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
-                         pipeline_.GetMediaDuration());
+      delegate_->DidPlay(
+          delegate_id_, hasVideo(), hasAudio(), false,
+          media::DurationToMediaContentType(pipeline_.GetMediaDuration()));
       break;
     case DelegateState::PAUSED:
       delegate_->DidPause(delegate_id_, false);

@@ -10,6 +10,8 @@ class WebMediaPlayer;
 }
 namespace media {
 
+enum class MediaContentType;
+
 // An interface to allow a WebMediaPlayer to communicate changes of state to
 // objects that need to know.
 class WebMediaPlayerDelegate {
@@ -51,7 +53,7 @@ class WebMediaPlayerDelegate {
                        bool has_video,
                        bool has_audio,
                        bool is_remote,
-                       base::TimeDelta duration) = 0;
+                       media::MediaContentType media_content_type) = 0;
 
   // The specified player stopped playing media. This may be called at any time
   // with or without a DidPlay() having previously occurred. Calling this will

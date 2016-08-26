@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
 
+#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session.h"
 
 namespace content {
@@ -17,10 +18,11 @@ class MediaSessionDelegate {
   static std::unique_ptr<MediaSessionDelegate> Create(
       MediaSession* media_session);
 
-  virtual bool RequestAudioFocus(MediaSession::Type type) = 0;
+  virtual bool RequestAudioFocus(
+      AudioFocusManager::AudioFocusType audio_focus_type) = 0;
   virtual void AbandonAudioFocus() = 0;
 };
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_DELEGATE_H_

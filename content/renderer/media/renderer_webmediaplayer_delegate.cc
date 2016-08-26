@@ -46,11 +46,12 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int delegate_id) {
   playing_videos_.erase(delegate_id);
 }
 
-void RendererWebMediaPlayerDelegate::DidPlay(int delegate_id,
-                                             bool has_video,
-                                             bool has_audio,
-                                             bool is_remote,
-                                             base::TimeDelta duration) {
+void RendererWebMediaPlayerDelegate::DidPlay(
+    int delegate_id,
+    bool has_video,
+    bool has_audio,
+    bool is_remote,
+    MediaContentType media_content_type) {
   DCHECK(id_map_.Lookup(delegate_id));
   has_played_media_ = true;
   if (has_video && !is_remote)
@@ -59,7 +60,8 @@ void RendererWebMediaPlayerDelegate::DidPlay(int delegate_id,
     playing_videos_.erase(delegate_id);
   RemoveIdleDelegate(delegate_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      routing_id(), delegate_id, has_video, has_audio, is_remote, duration));
+      routing_id(), delegate_id, has_video, has_audio, is_remote,
+      media_content_type));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int delegate_id,

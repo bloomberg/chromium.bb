@@ -98,10 +98,10 @@ bool MediaWebContentsObserverAndroid::RequestPlay(
     int delegate_id,
     bool has_audio,
     bool is_remote,
-    base::TimeDelta duration) {
+    media::MediaContentType media_content_type) {
   return session_controllers_manager()->RequestPlay(
-      MediaPlayerId(render_frame_host, delegate_id),
-      has_audio, is_remote, duration);
+      MediaPlayerId(render_frame_host, delegate_id), has_audio, is_remote,
+      media_content_type);
 }
 
 void MediaWebContentsObserverAndroid::DisconnectMediaSession(

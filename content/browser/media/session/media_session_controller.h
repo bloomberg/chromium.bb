@@ -11,6 +11,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace media {
+enum class MediaContentType;
+}  // namespace media
+
 namespace content {
 
 class MediaSession;
@@ -37,7 +41,9 @@ class CONTENT_EXPORT MediaSessionController :
   // future calls to Initialize() will retain this flag.
   // TODO(dalecurtis): Delete sticky audio once we're no longer using WMPA and
   // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-  bool Initialize(bool has_audio, bool is_remote, base::TimeDelta duration);
+  bool Initialize(bool has_audio,
+                  bool is_remote,
+                  media::MediaContentType media_content_type);
 
   // Must be called when a pause occurs on the renderer side media player; keeps
   // the MediaSession instance in sync with renderer side behavior.

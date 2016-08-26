@@ -100,7 +100,7 @@ class MockWebMediaPlayerDelegate
   // WebMediaPlayerDelegate implementation.
   MOCK_METHOD1(AddObserver, int(Observer*));
   MOCK_METHOD1(RemoveObserver, void(int));
-  MOCK_METHOD5(DidPlay, void(int, bool, bool, bool, base::TimeDelta));
+  MOCK_METHOD5(DidPlay, void(int, bool, bool, bool, MediaContentType));
   MOCK_METHOD2(DidPause, void(int, bool));
   MOCK_METHOD1(PlayerGone, void(int));
   MOCK_METHOD0(IsHidden, bool());

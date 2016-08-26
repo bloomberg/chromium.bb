@@ -91,21 +91,22 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
   // Verify the playing message.
   {
     const bool kHasVideo = true, kHasAudio = false, kIsRemote = false;
-    const base::TimeDelta kDuration = base::TimeDelta::FromSeconds(5);
+    const media::MediaContentType kMediaContentType =
+        media::MediaContentType::Transient;
     delegate_manager_->DidPlay(delegate_id, kHasVideo, kHasAudio, kIsRemote,
-                               kDuration);
+                               kMediaContentType);
 
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
         MediaPlayerDelegateHostMsg_OnMediaPlaying::ID);
     ASSERT_TRUE(msg);
 
-    std::tuple<int, bool, bool, bool, base::TimeDelta> result;
+    std::tuple<int, bool, bool, bool, media::MediaContentType> result;
     ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPlaying::Read(msg, &result));
     EXPECT_EQ(delegate_id, std::get<0>(result));
     EXPECT_EQ(kHasVideo, std::get<1>(result));
     EXPECT_EQ(kHasAudio, std::get<2>(result));
     EXPECT_EQ(kIsRemote, std::get<3>(result));
-    EXPECT_EQ(kDuration, std::get<4>(result));
+    EXPECT_EQ(kMediaContentType, std::get<4>(result));
   }
 
   // Verify the paused message.
@@ -188,7 +189,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
 
   // Starting playback should not have an idle timer.
   delegate_manager_->DidPlay(delegate_id_1, true, true, false,
-                             base::TimeDelta());
+                             media::MediaContentType::Persistent);
   EXPECT_FALSE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
 
   // Never calling DidPlay() but calling DidPause() should count as idle.
@@ -217,7 +218,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   testing::StrictMock<MockWebMediaPlayerDelegateObserver> observer_3;
   const int delegate_id_3 = delegate_manager_->AddObserver(&observer_3);
   delegate_manager_->DidPlay(delegate_id_3, true, true, false,
-                             base::TimeDelta());
+                             media::MediaContentType::Persistent);
 
   // Adding the observer should instantly queue the timeout task, once run no
   // delegates should have been expired.
@@ -232,7 +233,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IdleDelegatesAreSuspended) {
   }
 
   delegate_manager_->DidPlay(delegate_id_1, true, true, false,
-                             base::TimeDelta());
+                             media::MediaContentType::Persistent);
 
   // Pausing after reaching end of stream should count as idle.
   delegate_manager_->DidPause(delegate_id_1, true /* reached_end_of_stream */);
@@ -294,7 +295,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, PlayingVideosSet) {
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 
   // Playing a local video adds it to the set.
-  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   EXPECT_TRUE(HasPlayingVideo(delegate_id));
 
   // Pause doesn't remove the video from the set.
@@ -306,27 +308,31 @@ TEST_F(RendererWebMediaPlayerDelegateTest, PlayingVideosSet) {
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 
   // Removing the player removes the video from the set.
-  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   delegate_manager_->PlayerGone(delegate_id);
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 
   // Playing a remote video removes it from the set.
-  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
-  delegate_manager_->DidPlay(delegate_id, true, true, true, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
+  delegate_manager_->DidPlay(delegate_id, true, true, true,
+                             MediaContentType::Persistent);
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 
   // Playing a local video without audio adds it to the set (because of WMPA).
-  delegate_manager_->DidPlay(
-      delegate_id, true, false, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, false, false,
+                             MediaContentType::Persistent);
   EXPECT_TRUE(HasPlayingVideo(delegate_id));
 
   // Playing a local audio removes it from the set.
-  delegate_manager_->DidPlay(
-      delegate_id, false, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, false, true, false,
+                             MediaContentType::Persistent);
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 
   // Removing the observer also removes the video from the set.
-  delegate_manager_->DidPlay(delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   delegate_manager_->RemoveObserver(delegate_id);
   EXPECT_FALSE(HasPlayingVideo(delegate_id));
 }
@@ -347,8 +353,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
   EXPECT_TRUE(delegate_manager_->IsPlayingBackgroundVideo());
 
   // Pausing a currently playing video does clears the flag.
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   CallOnMediaDelegatePause(delegate_id);
   EXPECT_FALSE(delegate_manager_->IsPlayingBackgroundVideo());
 
@@ -361,8 +367,8 @@ TEST_F(RendererWebMediaPlayerDelegateTest, IsPlayingBackgroundVideo) {
   CallOnMediaDelegatePlay(delegate_id);
   EXPECT_EQ(old_value, delegate_manager_->IsPlayingBackgroundVideo());
 
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   CallOnMediaDelegatePlay(delegate_id);
   EXPECT_NE(old_value, delegate_manager_->IsPlayingBackgroundVideo());
 }
@@ -377,26 +383,26 @@ TEST_F(RendererWebMediaPlayerDelegateTest, Histograms) {
 
   // Pausing or showing doesn't record anything as background playback
   // hasn't started yet.
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   CallOnMediaDelegatePause(delegate_id);
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
 
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   delegate_manager_->WasShown();
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
 
   // Doing this things after the background playback has started should record
   // the time.
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   SetPlayingBackgroundVideo(true);
   CallOnMediaDelegatePause(delegate_id);
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 1);
 
-  delegate_manager_->DidPlay(
-      delegate_id, true, true, false, base::TimeDelta());
+  delegate_manager_->DidPlay(delegate_id, true, true, false,
+                             MediaContentType::Persistent);
   SetPlayingBackgroundVideo(true);
   delegate_manager_->WasShown();
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 2);

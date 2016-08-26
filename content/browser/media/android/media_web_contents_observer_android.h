@@ -14,6 +14,10 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/common/content_export.h"
 
+namespace media {
+enum class MediaContentType;
+}  // namespace media
+
 namespace content {
 
 class BrowserCdmManager;
@@ -62,7 +66,7 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
                    int delegate_id,
                    bool has_audio,
                    bool is_remote,
-                   base::TimeDelta duration);
+                   media::MediaContentType media_content_type);
 
   void DisconnectMediaSession(RenderFrameHost* render_frame_host,
                               int delegate_id);

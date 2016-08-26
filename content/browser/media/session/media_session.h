@@ -10,6 +10,7 @@
 #include "base/callback_list.h"
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "content/browser/media/session/audio_focus_manager.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -17,6 +18,10 @@
 #include "content/public/common/media_metadata.h"
 
 class MediaSessionBrowserTest;
+
+namespace media {
+enum class MediaContentType;
+}  // namespace media
 
 namespace content {
 
@@ -43,11 +48,6 @@ class MediaSessionVisibilityBrowserTest;
 class MediaSession : public WebContentsObserver,
                      protected WebContentsUserData<MediaSession> {
  public:
-  enum class Type {
-    Content,
-    Transient
-  };
-
   enum class SuspendType {
     // Suspended by the system because a transient sound needs to be played.
     SYSTEM,
@@ -70,7 +70,8 @@ class MediaSession : public WebContentsObserver,
   // player was successfully added. If it returns false, AddPlayer() should be
   // called again later.
   CONTENT_EXPORT bool AddPlayer(MediaSessionObserver* observer,
-                                int player_id, Type type);
+                                int player_id,
+                                media::MediaContentType media_content_type);
 
   // Removes the given player from the current media session. Abandons audio
   // focus if that was the last player in the session.
@@ -92,15 +93,15 @@ class MediaSession : public WebContentsObserver,
 
   // Resume the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Resume(SuspendType type);
+  CONTENT_EXPORT void Resume(SuspendType suspend_type);
 
   // Suspend the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Suspend(SuspendType type);
+  CONTENT_EXPORT void Suspend(SuspendType suspend_type);
 
   // Stop the media session.
   // |type| represents the origin of the request.
-  CONTENT_EXPORT void Stop(SuspendType type);
+  CONTENT_EXPORT void Stop(SuspendType suspend_type);
 
   // Change the volume multiplier of the session to |volume_multiplier|.
   CONTENT_EXPORT void SetVolumeMultiplier(double volume_multiplier);
@@ -132,7 +133,8 @@ class MediaSession : public WebContentsObserver,
   CONTENT_EXPORT void SetDelegateForTests(
       std::unique_ptr<MediaSessionDelegate> delegate);
   CONTENT_EXPORT bool IsActiveForTest() const;
-  CONTENT_EXPORT Type audio_focus_type_for_test() const;
+  CONTENT_EXPORT AudioFocusManager::AudioFocusType audio_focus_type_for_test()
+      const;
   CONTENT_EXPORT void RemoveAllPlayersForTest();
   CONTENT_EXPORT MediaSessionUmaHelper* uma_helper_for_test();
 
@@ -165,12 +167,14 @@ class MediaSession : public WebContentsObserver,
 
   void Initialize();
 
-  CONTENT_EXPORT void OnSuspendInternal(SuspendType type, State new_state);
-  CONTENT_EXPORT void OnResumeInternal(SuspendType type);
+  CONTENT_EXPORT void OnSuspendInternal(SuspendType suspend_type,
+                                        State new_state);
+  CONTENT_EXPORT void OnResumeInternal(SuspendType suspend_type);
 
   // Requests audio focus to the MediaSessionDelegate.
   // Returns whether the request was granted.
-  bool RequestSystemAudioFocus(Type type);
+  bool RequestSystemAudioFocus(
+      AudioFocusManager::AudioFocusType audio_focus_type);
 
   // To be called after a call to AbandonAudioFocus() in order request the
   // delegate to abandon the audio focus.
@@ -193,7 +197,7 @@ class MediaSession : public WebContentsObserver,
 
   State audio_focus_state_;
   SuspendType suspend_type_;
-  Type audio_focus_type_;
+  AudioFocusManager::AudioFocusType audio_focus_type_;
 
   MediaSessionUmaHelper uma_helper_;
 

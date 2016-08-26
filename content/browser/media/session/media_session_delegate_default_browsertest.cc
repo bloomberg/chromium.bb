@@ -7,6 +7,7 @@
 #include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 
 namespace content {
@@ -28,14 +29,14 @@ class MediaSessionDelegateDefaultBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(other_media_session);
 
     media_session_observer->StartNewPlayer();
-    media_session->AddPlayer(
-        media_session_observer.get(), 0, MediaSession::Type::Content);
+    media_session->AddPlayer(media_session_observer.get(), 0,
+                             media::MediaContentType::Persistent);
     EXPECT_TRUE(media_session->IsActive());
     EXPECT_FALSE(other_media_session->IsActive());
 
     media_session_observer->StartNewPlayer();
-    other_media_session->AddPlayer(
-        media_session_observer.get(), 1, MediaSession::Type::Content);
+    other_media_session->AddPlayer(media_session_observer.get(), 1,
+                                   media::MediaContentType::Persistent);
     EXPECT_FALSE(media_session->IsActive());
     EXPECT_TRUE(other_media_session->IsActive());
 

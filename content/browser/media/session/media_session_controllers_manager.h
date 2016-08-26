@@ -13,6 +13,10 @@
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"  // For MediaPlayerId.
 
+namespace media {
+enum class MediaContentType;
+}  // namespace media
+
 namespace content {
 
 class MediaSessionController;
@@ -39,7 +43,7 @@ class MediaSessionControllersManager {
   bool RequestPlay(const MediaPlayerId& id,
                    bool has_audio,
                    bool is_remote,
-                   base::TimeDelta duration);
+                   media::MediaContentType media_content_type);
 
   // Called when the given player |id| has paused.
   void OnPause(const MediaPlayerId& id);
