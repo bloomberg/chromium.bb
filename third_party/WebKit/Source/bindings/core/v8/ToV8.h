@@ -185,17 +185,19 @@ inline v8::Local<v8::Value> toV8(const ToV8UndefinedGenerator&  value, v8::Local
 
 // ScriptValue
 
-inline v8::Local<v8::Value> toV8(const ScriptValue& value, v8::Local<v8::Object> creationContext, v8::Isolate*)
+inline v8::Local<v8::Value> toV8(const ScriptValue& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
+    if (value.isEmpty())
+        return v8::Undefined(isolate);
     return value.v8Value();
 }
 
 // Dictionary
 
-inline v8::Local<v8::Value> toV8(const Dictionary& value, v8::Local<v8::Object> creationContext, v8::Isolate*)
+inline v8::Local<v8::Value> toV8(const Dictionary& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    RELEASE_NOTREACHED();
-    return v8::Local<v8::Value>();
+    NOTREACHED();
+    return v8::Undefined(isolate);
 }
 
 inline v8::Local<v8::Value> toV8(const IDLDictionaryBase& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
