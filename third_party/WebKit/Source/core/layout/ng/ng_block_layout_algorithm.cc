@@ -9,7 +9,6 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 
@@ -35,7 +34,7 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
 
   LayoutUnit content_size;
   for (NGBox box : m_boxIterator) {
-    NGBoxMargins child_margins =
+    NGBoxStrut child_margins =
         computeMargins(constraint_space_for_children, *box.style());
     NGFragment* fragment = box.layout(constraint_space_for_children);
     // TODO(layout-ng): Support auto margins

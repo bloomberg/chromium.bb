@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/CalculationValue.h"
 #include "platform/LayoutUnit.h"
@@ -182,7 +181,7 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGConstraintSpace constraintSpace(constructConstraintSpace(200, 300));
 
-  NGBoxMargins margins = computeMargins(constraintSpace, *style_);
+  NGBoxStrut margins = computeMargins(constraintSpace, *style_);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);

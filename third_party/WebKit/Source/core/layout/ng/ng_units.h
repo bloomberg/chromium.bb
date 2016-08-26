@@ -47,6 +47,18 @@ struct NGPixelSnappedPhysicalRect {
   int height;
 };
 
+// This struct is used for storing margins, borders or padding of a box on all
+// four edges.
+struct NGBoxStrut {
+  LayoutUnit inline_start;
+  LayoutUnit inline_end;
+  LayoutUnit block_start;
+  LayoutUnit block_end;
+
+  LayoutUnit InlineSum() const { return inline_start + inline_end; }
+  LayoutUnit BlockSum() const { return block_start + block_end; }
+};
+
 }  // namespace blink
 
 #endif  // NGUnits_h

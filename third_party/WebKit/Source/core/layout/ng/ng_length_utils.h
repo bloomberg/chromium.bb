@@ -12,7 +12,7 @@ class ComputedStyle;
 class LayoutUnit;
 class Length;
 class NGConstraintSpace;
-struct NGBoxMargins;
+struct NGBoxStrut;
 
 enum class LengthResolveType { MinSize, MaxSize, ContentSize, MarginSize };
 
@@ -44,8 +44,8 @@ CORE_EXPORT LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit contentSize);
 
-CORE_EXPORT NGBoxMargins computeMargins(const NGConstraintSpace&,
-                                        const ComputedStyle&);
+CORE_EXPORT NGBoxStrut computeMargins(const NGConstraintSpace&,
+                                      const ComputedStyle&);
 
 }  // namespace blink
 

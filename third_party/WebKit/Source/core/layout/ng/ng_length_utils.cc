@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_margin_strut.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
 #include "platform/Length.h"
@@ -116,11 +115,11 @@ LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   return extent;
 }
 
-NGBoxMargins computeMargins(const NGConstraintSpace& constraintSpace,
-                            const ComputedStyle& style) {
+NGBoxStrut computeMargins(const NGConstraintSpace& constraintSpace,
+                          const ComputedStyle& style) {
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
-  NGBoxMargins margins;
+  NGBoxStrut margins;
   margins.inline_start = resolveInlineLength(
       constraintSpace, style.marginStart(), LengthResolveType::MarginSize);
   margins.inline_end = resolveInlineLength(constraintSpace, style.marginEnd(),
