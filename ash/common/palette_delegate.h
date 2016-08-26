@@ -47,6 +47,10 @@ class PaletteDelegate {
   // event.
   virtual bool ShouldAutoOpenPalette() = 0;
 
+  // Returns true if the palette should be displayed. This is the one-shot
+  // equivalent to AddPaletteEnableListener.
+  virtual bool ShouldShowPalette() = 0;
+
   // Take a screenshot of the entire window.
   virtual void TakeScreenshot() = 0;
 

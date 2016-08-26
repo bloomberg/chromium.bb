@@ -96,6 +96,7 @@ class PaletteDelegateImpl : public PaletteDelegate {
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override {}
   bool ShouldAutoOpenPalette() override { return false; }
+  bool ShouldShowPalette() override { return false; }
   void TakeScreenshot() override {}
   void TakePartialScreenshot() override {}
 

@@ -167,10 +167,13 @@ bool PaletteTray::PerformAction(const ui::Event& event) {
     return true;
   }
 
-  return OpenBubble();
+  return ShowPalette();
 }
 
-bool PaletteTray::OpenBubble() {
+bool PaletteTray::ShowPalette() {
+  if (bubble_)
+    return false;
+
   views::TrayBubbleView::InitParams init_params(
       views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
       kPaletteWidth, kPaletteWidth);
@@ -196,7 +199,6 @@ bool PaletteTray::OpenBubble() {
   bubble_.reset(new ash::TrayBubbleWrapper(this, bubble_view));
 
   SetDrawBackgroundAsActive(true);
-
   return true;
 }
 
@@ -335,7 +337,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
     return;
 
   if (stylus_state == ui::StylusState::REMOVED && !bubble_)
-    OpenBubble();
+    ShowPalette();
   else if (stylus_state == ui::StylusState::INSERTED && bubble_)
     bubble_.reset();
 }

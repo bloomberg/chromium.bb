@@ -34,6 +34,10 @@ class TestPaletteDelegate : public PaletteDelegate {
     should_auto_open_palette_ = should_auto_open_palette;
   }
 
+  void set_should_show_palette(bool should_show_palette) {
+    should_show_palette_ = should_show_palette;
+  }
+
  private:
   // PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
@@ -44,6 +48,7 @@ class TestPaletteDelegate : public PaletteDelegate {
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override;
   bool ShouldAutoOpenPalette() override;
+  bool ShouldShowPalette() override;
   void TakeScreenshot() override;
   void TakePartialScreenshot() override;
 
@@ -54,6 +59,7 @@ class TestPaletteDelegate : public PaletteDelegate {
   int take_partial_screenshot_count_ = 0;
   bool has_note_app_ = false;
   bool should_auto_open_palette_ = false;
+  bool should_show_palette_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaletteDelegate);
 };

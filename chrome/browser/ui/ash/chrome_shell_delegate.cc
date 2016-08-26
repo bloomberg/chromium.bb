@@ -505,7 +505,7 @@ ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
 
 std::unique_ptr<ash::PaletteDelegate>
 ChromeShellDelegate::CreatePaletteDelegate() {
-  return base::WrapUnique(new chromeos::PaletteDelegateChromeOS());
+  return chromeos::PaletteDelegateChromeOS::Create();
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {

@@ -15,9 +15,11 @@
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/new_window_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/volume_control_delegate.h"
@@ -27,6 +29,7 @@
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/metrics/histogram_macros.h"
@@ -36,6 +39,9 @@
 #include "ui/keyboard/keyboard_controller.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/palette_delegate.h"
+#include "ash/common/system/chromeos/palette/palette_tray.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -335,6 +341,21 @@ bool CanHandleLock() {
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
   WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+}
+
+void HandleShowStylusTools() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Stylus_Tools"));
+
+  WmRootWindowController* root_window_controller =
+      WmShell::Get()->GetRootWindowForNewWindows()->GetRootWindowController();
+  PaletteTray* palette_tray =
+      root_window_controller->GetShelf()->GetStatusAreaWidget()->palette_tray();
+  palette_tray->ShowPalette();
+}
+
+bool CanHandleShowStylusTools() {
+  return WmShell::Get()->palette_delegate() &&
+         WmShell::Get()->palette_delegate()->ShouldShowPalette();
 }
 
 void HandleSuspend() {
@@ -689,6 +710,8 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleDisableCapsLock(previous_accelerator);
     case LOCK_SCREEN:
       return CanHandleLock();
+    case SHOW_STYLUS_TOOLS:
+      return CanHandleShowStylusTools();
     case SWITCH_TO_PREVIOUS_USER:
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
@@ -885,6 +908,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case OPEN_GET_HELP:
       HandleGetHelp();
+      break;
+    case SHOW_STYLUS_TOOLS:
+      HandleShowStylusTools();
       break;
     case SUSPEND:
       HandleSuspend();

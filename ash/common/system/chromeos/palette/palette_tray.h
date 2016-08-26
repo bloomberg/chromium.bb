@@ -58,6 +58,10 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Returns true if the shelf should not autohide.
   bool ShouldBlockShelfAutoHide() const;
 
+  // Opens up the palette if it is not already open. Returns true if the palette
+  // was opened.
+  bool ShowPalette();
+
  private:
   // views::TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
@@ -93,7 +97,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Called when the palette enabled pref has changed.
   void OnPaletteEnabledPrefChanged(bool enabled);
 
-  bool OpenBubble();
   void AddToolsToView(views::View* host);
 
   std::unique_ptr<PaletteToolManager> palette_tool_manager_;

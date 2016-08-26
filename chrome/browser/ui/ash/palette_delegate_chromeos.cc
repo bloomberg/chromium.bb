@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -23,6 +24,13 @@
 #include "ui/events/devices/input_device_manager.h"
 
 namespace chromeos {
+
+// static
+std::unique_ptr<PaletteDelegateChromeOS> PaletteDelegateChromeOS::Create() {
+  if (!ash::IsPaletteFeatureEnabled())
+    return nullptr;
+  return base::WrapUnique(new PaletteDelegateChromeOS());
+}
 
 PaletteDelegateChromeOS::PaletteDelegateChromeOS() {
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
@@ -132,6 +140,13 @@ bool PaletteDelegateChromeOS::ShouldAutoOpenPalette() {
     return false;
 
   return profile_->GetPrefs()->GetBoolean(prefs::kLaunchPaletteOnEjectEvent);
+}
+
+bool PaletteDelegateChromeOS::ShouldShowPalette() {
+  if (!profile_)
+    return false;
+
+  return profile_->GetPrefs()->GetBoolean(prefs::kEnableStylusTools);
 }
 
 void PaletteDelegateChromeOS::TakeScreenshot() {

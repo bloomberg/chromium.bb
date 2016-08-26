@@ -31,10 +31,15 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
                                 public ash::SessionStateObserver,
                                 public content::NotificationObserver {
  public:
-  PaletteDelegateChromeOS();
+  // Attempts to create a palette delegate. This will return null if the palette
+  // feature is not enabled.
+  static std::unique_ptr<PaletteDelegateChromeOS> Create();
+
   ~PaletteDelegateChromeOS() override;
 
  private:
+  PaletteDelegateChromeOS();
+
   // ash::PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) override;
@@ -44,6 +49,7 @@ class PaletteDelegateChromeOS : public ash::PaletteDelegate,
   void SetStylusStateChangedCallback(
       const OnStylusStateChangedCallback& on_stylus_state_changed) override;
   bool ShouldAutoOpenPalette() override;
+  bool ShouldShowPalette() override;
   void TakeScreenshot() override;
   void TakePartialScreenshot() override;
 

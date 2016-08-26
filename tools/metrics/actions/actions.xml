@@ -714,6 +714,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Show_Stylus_Tools">
+  <owner>jdufault@chromium.org</owner>
+  <description>
+    Number of times the user opened the stylus tools using a keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Show_System_Tray_Bubble">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

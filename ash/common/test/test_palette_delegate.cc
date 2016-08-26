@@ -37,6 +37,10 @@ bool TestPaletteDelegate::ShouldAutoOpenPalette() {
   return should_auto_open_palette_;
 }
 
+bool TestPaletteDelegate::ShouldShowPalette() {
+  return should_show_palette_;
+}
+
 void TestPaletteDelegate::TakeScreenshot() {
   ++take_screenshot_count_;
 }
