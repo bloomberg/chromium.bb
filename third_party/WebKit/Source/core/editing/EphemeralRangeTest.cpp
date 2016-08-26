@@ -83,7 +83,7 @@ TEST_F(EphemeralRangeTest, rangeShadowTraversal)
 
     // In this case FlatTree traverse should differs from DOM tree traverse.
     EXPECT_EQ(
-        "[BODY][P id=\"host\"][B id=\"one\"][INPUT][DIV id=\"inner-editor\"][#text \"some\"]",
+        "[BODY][P id=\"host\"][B id=\"one\"][INPUT][DIV id=\"inner-editor\" (editable)][#text \"some\"]",
         traverseRange<FlatTreeTraversal>(getBodyRange()));
     EXPECT_EQ(
         traverseRange<FlatTreeTraversal>(getBodyRange()),
@@ -123,7 +123,7 @@ TEST_F(EphemeralRangeTest, rangeTraversalLimited)
     EXPECT_EQ(traverseRange<>(fromBToSpan), traverseRange(EphemeralRange(fromBToSpan)));
 
     EXPECT_EQ(
-        "[B id=\"one\"][INPUT][DIV id=\"inner-editor\"][#text \"some\"][SPAN id=\"two\"]",
+        "[B id=\"one\"][INPUT][DIV id=\"inner-editor\" (editable)][#text \"some\"][SPAN id=\"two\"]",
         traverseRange<FlatTreeTraversal>(fromBToSpan));
     EXPECT_EQ(
         traverseRange<FlatTreeTraversal>(fromBToSpan),

@@ -1503,6 +1503,16 @@ static void dumpAttributeDesc(const Node& node, const QualifiedName& name, std::
 // |std::ostream| version of |Node::showNode|
 std::ostream& operator<<(std::ostream& ostream, const Node& node)
 {
+    if (node.getNodeType() == Node::kProcessingInstructionNode)
+        return ostream << "?" << node.nodeName().utf8().data();
+    if (node.isShadowRoot()) {
+        // nodeName of ShadowRoot is #document-fragment.  It's confused with
+        // DocumentFragment.
+        return ostream << "#shadow-root";
+    }
+    if (node.isDocumentTypeNode())
+        return ostream << "DOCTYPE " << node.nodeName().utf8().data();
+
     // We avoid to print "" by utf8().data().
     ostream << node.nodeName().utf8().data();
     if (node.isTextNode())
@@ -1510,6 +1520,10 @@ std::ostream& operator<<(std::ostream& ostream, const Node& node)
     dumpAttributeDesc(node, HTMLNames::idAttr, ostream);
     dumpAttributeDesc(node, HTMLNames::classAttr, ostream);
     dumpAttributeDesc(node, HTMLNames::styleAttr, ostream);
+    if (hasEditableStyle(node))
+        ostream << " (editable)";
+    if (node.document().focusedElement() == &node)
+        ostream << " (focused)";
     return ostream;
 }
 
@@ -1522,49 +1536,13 @@ std::ostream& operator<<(std::ostream& ostream, const Node* node)
 
 #ifndef NDEBUG
 
-static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, const QualifiedName& name, const char* attrDesc)
-{
-    if (!node->isElementNode())
-        return;
-
-    String attr = toElement(node)->getAttribute(name);
-    if (attr.isEmpty())
-        return;
-
-    stringBuilder.append(attrDesc);
-    stringBuilder.append("=\"");
-    stringBuilder.append(attr);
-    stringBuilder.append("\"");
-}
-
 void Node::showNode(const char* prefix) const
 {
-    if (!prefix)
-        prefix = "";
-    if (isTextNode()) {
-        String value = nodeValue();
-        value.replace('\\', "\\\\");
-        value.replace('\n', "\\n");
-        WTFLogAlways("%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
-    } else if (isDocumentTypeNode()) {
-        WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);
-    } else if (getNodeType() == kProcessingInstructionNode) {
-        WTFLogAlways("%s?%s\t%p\n", prefix, nodeName().utf8().data(), this);
-    } else if (isShadowRoot()) {
-        // nodeName of ShadowRoot is #document-fragment.  It's confused with
-        // DocumentFragment.
-        WTFLogAlways("%s#shadow-root\t%p\n", prefix, this);
-    } else {
-        StringBuilder attrs;
-        appendAttributeDesc(this, attrs, idAttr, " ID");
-        appendAttributeDesc(this, attrs, classAttr, " CLASS");
-        appendAttributeDesc(this, attrs, styleAttr, " STYLE");
-        if (hasEditableStyle(*this))
-            attrs.append(" (editable)");
-        if (document().focusedElement() == this)
-            attrs.append(" (focused)");
-        WTFLogAlways("%s%s\t%p%s\n", prefix, nodeName().utf8().data(), this, attrs.toString().utf8().data());
-    }
+    std::stringstream stream;
+    if (prefix)
+        stream << prefix;
+    stream << *this << "\n";
+    WTFLogAlways("%s", stream.str().c_str());
 }
 
 void Node::showTreeForThis() const
