@@ -1275,7 +1275,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostAfterCommit);
 // of creation/deletion are considered:
 // 1. Create one resource -> Context Lost => Expect the resource to have been
 // created.
-// 2. Delete an exisiting resource (test_id0_) -> create a second resource
+// 2. Delete an existing resource (test_id0_) -> create a second resource
 // (test_id1_) -> Context Lost => Expect the test_id0_ to be removed and
 // test_id1_ to have been created.
 // 3. Create one resource -> Delete that same resource -> Context Lost => Expect
@@ -1353,10 +1353,10 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(test_id0_));
         // The second resource should have been created.
         EXPECT_NE(0u, impl->ResourceIdForUIResource(test_id1_));
-        // The second resource called the resource callback once and since the
-        // context is lost, a "resource lost" callback was also issued.
-        EXPECT_EQ(2, ui_resource_->resource_create_count);
-        EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        // The second resource was not actually uploaded before the context
+        // was lost, so it only got created once.
+        EXPECT_EQ(1, ui_resource_->resource_create_count);
+        EXPECT_EQ(0, ui_resource_->lost_resource_count);
         break;
       case 5:
         // Sequence 3 (continued):
@@ -1468,16 +1468,22 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
     switch (step) {
       case 0:
         ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+        ui_resource2_ = FakeScopedUIResource::Create(layer_tree_host());
         EXPECT_NE(0, ui_resource_->id());
+        EXPECT_NE(0, ui_resource2_->id());
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
         // Make the tree not visible.
         PostSetVisibleToMainThread(false);
+        ui_resource2_->DeleteResource();
+        ui_resource3_ = FakeScopedUIResource::Create(layer_tree_host());
         break;
       case 3:
-        // Release resource before ending the test.
+        // Release resources before ending the test.
         ui_resource_ = nullptr;
+        ui_resource2_ = nullptr;
+        ui_resource3_ = nullptr;
         EndTest();
         break;
       case 4:
@@ -1490,6 +1496,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       // All resources should have been evicted.
       ASSERT_EQ(0u, context3d_->NumTextures());
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+      EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
+      EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource3_->id()));
       EXPECT_EQ(2, ui_resource_->resource_create_count);
       EXPECT_EQ(1, ui_resource_->lost_resource_count);
       // Drawing is disabled both because of the evicted resources and
@@ -1504,9 +1512,11 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
     LayerTreeHostContextTest::CommitCompleteOnThread(impl);
     switch (time_step_) {
       case 1:
-        // The resource should have been created on LTHI after the commit.
-        ASSERT_EQ(1u, context3d_->NumTextures());
+        // The first two resources should have been created on LTHI after the
+        // commit.
+        ASSERT_EQ(2u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
         EXPECT_EQ(0, ui_resource_->lost_resource_count);
         EXPECT_TRUE(impl->CanDraw());
@@ -1514,29 +1524,47 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         impl->EvictAllUIResources();
         ASSERT_EQ(0u, context3d_->NumTextures());
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
         EXPECT_EQ(0, ui_resource_->lost_resource_count);
         EXPECT_FALSE(impl->CanDraw());
         break;
       case 2:
-        // The resource should have been recreated.
-        ASSERT_EQ(1u, context3d_->NumTextures());
+        // The first two resources should have been recreated.
+        ASSERT_EQ(2u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(2, ui_resource_->resource_create_count);
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
+        EXPECT_EQ(2, ui_resource2_->resource_create_count);
+        EXPECT_EQ(1, ui_resource2_->lost_resource_count);
         EXPECT_TRUE(impl->CanDraw());
         break;
       case 3:
-        // The resource should have been recreated after visibility was
+        // The first resource should have been recreated after visibility was
         // restored.
-        ASSERT_EQ(1u, context3d_->NumTextures());
+        ASSERT_EQ(2u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(3, ui_resource_->resource_create_count);
         EXPECT_EQ(2, ui_resource_->lost_resource_count);
+
+        // This resource was deleted.
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
+        EXPECT_EQ(2, ui_resource2_->resource_create_count);
+        EXPECT_EQ(1, ui_resource2_->lost_resource_count);
+
+        // This resource should have been created now.
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource3_->id()));
+        EXPECT_EQ(1, ui_resource3_->resource_create_count);
+        EXPECT_EQ(0, ui_resource3_->lost_resource_count);
         EXPECT_TRUE(impl->CanDraw());
         break;
     }
   }
+
+ private:
+  std::unique_ptr<FakeScopedUIResource> ui_resource2_;
+  std::unique_ptr<FakeScopedUIResource> ui_resource3_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);

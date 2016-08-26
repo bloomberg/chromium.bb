@@ -17,6 +17,7 @@ class FakeScopedUIResource : public ScopedUIResource {
   static std::unique_ptr<FakeScopedUIResource> Create(LayerTreeHost* host);
 
   UIResourceBitmap GetBitmap(UIResourceId uid, bool resource_lost) override;
+  void DeleteResource();
   void ResetCounters();
 
   int resource_create_count;

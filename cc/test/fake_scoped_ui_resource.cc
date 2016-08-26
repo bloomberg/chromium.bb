@@ -32,6 +32,11 @@ FakeScopedUIResource::FakeScopedUIResource(LayerTreeHost* host)
   id_ = host_->CreateUIResource(this);
 }
 
+void FakeScopedUIResource::DeleteResource() {
+  host_->DeleteUIResource(id_);
+  id_ = 0;
+}
+
 UIResourceBitmap FakeScopedUIResource::GetBitmap(UIResourceId uid,
                                                  bool resource_lost) {
   resource_create_count++;

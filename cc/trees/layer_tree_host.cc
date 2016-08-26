@@ -910,9 +910,16 @@ void LayerTreeHost::RecreateUIResources() {
     UIResourceId uid = iter->first;
     const UIResourceClientData& data = iter->second;
     bool resource_lost = true;
-    UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, uid,
-                              data.client->GetBitmap(uid, resource_lost));
-    ui_resource_request_queue_.push_back(request);
+    auto it = std::find_if(ui_resource_request_queue_.begin(),
+                           ui_resource_request_queue_.end(),
+                           [uid](const UIResourceRequest& request) {
+                             return request.GetId() == uid;
+                           });
+    if (it == ui_resource_request_queue_.end()) {
+      UIResourceRequest request(UIResourceRequest::UI_RESOURCE_CREATE, uid,
+                                data.client->GetBitmap(uid, resource_lost));
+      ui_resource_request_queue_.push_back(request);
+    }
   }
 }
 
