@@ -1,15 +1,30 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module id="settings-subpage-search">
   <template>
     <style>
+      :host {
+        --paper-input-suffix: {
+          /* Required to align the icon in |clearSearch| vertically. */
+          line-height: 0;
+        }
+      }
+
+      paper-icon-button {
+        /* A 16px icon that fits on the input line. */
+        height: 24px;
+        padding: 4px;
+        width: 24px;
+      }
+
       paper-input-container {
         display: inline-block;
-        width: var(--paper-input-max-width);
+        width: 160px;  /* Special width for search input. */
       }
 
       input[type='search']::-webkit-search-cancel-button {
@@ -18,12 +33,11 @@
 
       #prompt,
       #searchInput {
-        font-size: inherit;
-        line-height: 36px;
+        font-size: 92.3076923%;  /* To 12px from 13px. */
       }
 
       #prompt {
-        color: var(--google-grey-500);
+        color: var(--paper-grey-600);
       }
 
       #searchInput {
@@ -31,20 +45,8 @@
       }
 
       #clearSearch {
-        -webkit-margin-end: -8px;
-        -webkit-margin-start: 8px;
-      }
-
-      :root {
-        --paper-icon-button {
-          height: 36px;
-          width: 36px;
-        }
-
-        --paper-input-suffix: {
-          /* Required to align the icon in |clearSearch| vertically. */
-          line-height: 0;
-        }
+        -webkit-margin-end: -4px;
+        -webkit-margin-start: 4px;
       }
     </style>
     <paper-icon-button id="searchIcon" icon="cr:search"></paper-icon-button>
