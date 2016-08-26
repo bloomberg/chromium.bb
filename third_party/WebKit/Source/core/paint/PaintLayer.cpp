@@ -2057,35 +2057,48 @@ PaintLayer* PaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, Paint
     return resultLayer;
 }
 
+LayoutRect PaintLayer::boxForClipPath() const
+{
+    if (!layoutObject()->isBox()) {
+        SECURITY_DCHECK(layoutObject()->isLayoutInline());
+        return toLayoutInline(layoutObject())->linesBoundingBox();
+    }
+    return toLayoutBox(layoutObject())->borderBoxRect();
+}
+
 bool PaintLayer::hitTestClippedOutByClipPath(PaintLayer* rootLayer, const HitTestLocation& hitTestLocation) const
 {
     if (!layoutObject()->hasClipPath())
         return false;
-    ASSERT(isSelfPaintingLayer());
+    DCHECK(isSelfPaintingLayer());
+    DCHECK(rootLayer);
 
     LayoutPoint offsetToRootLayer;
-    if (rootLayer)
-        convertToLayerCoords(rootLayer, offsetToRootLayer);
-    LayoutRect rootRelativeBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetToRootLayer);
+    convertToLayerCoords(rootLayer, offsetToRootLayer);
+    LayoutRect referenceBox(boxForClipPath());
+    referenceBox.moveBy(offsetToRootLayer);
+
+    FloatPoint point(hitTestLocation.point());
 
     ClipPathOperation* clipPathOperation = layoutObject()->style()->clipPath();
-    ASSERT(clipPathOperation);
+    DCHECK(clipPathOperation);
     if (clipPathOperation->type() == ClipPathOperation::SHAPE) {
         ShapeClipPathOperation* clipPath = toShapeClipPathOperation(clipPathOperation);
-        if (!clipPath->path(FloatRect(rootRelativeBounds)).contains(FloatPoint(hitTestLocation.point())))
-            return true;
-    } else {
-        ASSERT(clipPathOperation->type() == ClipPathOperation::REFERENCE);
-        ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(clipPathOperation);
-        Element* element = layoutObject()->document().getElementById(referenceClipPathOperation->fragment());
-        if (isSVGClipPathElement(element) && element->layoutObject()) {
-            LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
-            if (!clipper->hitTestClipContent(FloatRect(rootRelativeBounds), FloatPoint(hitTestLocation.point())))
-                return true;
-        }
+        return !clipPath->path(FloatRect(referenceBox)).contains(point);
     }
-
-    return false;
+    DCHECK_EQ(clipPathOperation->type(), ClipPathOperation::REFERENCE);
+    ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(clipPathOperation);
+    Element* element = layoutObject()->document().getElementById(referenceClipPathOperation->fragment());
+    if (!isSVGClipPathElement(element) || !element->layoutObject())
+        return false;
+    LayoutSVGResourceClipper* clipper =
+        toLayoutSVGResourceClipper(toLayoutSVGResourceContainer(element->layoutObject()));
+    // If the clipPath is using "userspace on use" units, then the origin of
+    // the coordinate system is the top-left of the reference box, so adjust
+    // the point accordingly.
+    if (clipper->clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse)
+        point.moveBy(-offsetToRootLayer);
+    return !clipper->hitTestClipContent(FloatRect(referenceBox), point);
 }
 
 bool PaintLayer::intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const LayoutPoint& offsetFromRoot) const

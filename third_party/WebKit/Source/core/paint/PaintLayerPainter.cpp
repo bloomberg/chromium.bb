@@ -181,14 +181,6 @@ static bool shouldRepaintSubsequence(PaintLayer& paintLayer, const PaintLayerPai
     return needsRepaint;
 }
 
-static LayoutRect computeReferenceBox(const LayoutBoxModelObject& boxModelObject)
-{
-    if (boxModelObject.isLayoutInline())
-        return toLayoutInline(boxModelObject).linesBoundingBox();
-    SECURITY_DCHECK(boxModelObject.isBox());
-    return toLayoutBox(boxModelObject).borderBoxRect();
-}
-
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfoArg, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
@@ -262,7 +254,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
             rootRelativeBoundsComputed = true;
         }
         paintingInfo.ancestorHasClipPathClipping = true;
-        LayoutRect referenceBox(computeReferenceBox(*m_paintLayer.layoutObject()));
+
+        LayoutRect referenceBox(m_paintLayer.boxForClipPath());
         referenceBox.moveBy(offsetFromRoot);
         clipPathClipper.emplace(
             context, *m_paintLayer.layoutObject(), FloatRect(referenceBox), FloatRect(rootRelativeBounds), FloatPoint(offsetFromRoot));

@@ -373,6 +373,8 @@ public:
     LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
     LayoutRect fragmentsBoundingBox(const PaintLayer* ancestorLayer) const;
 
+    LayoutRect boxForClipPath() const;
+
     LayoutRect boundingBoxForCompositingOverlapTest() const;
 
     // If true, this layer's children are included in its bounds for overlap testing.
