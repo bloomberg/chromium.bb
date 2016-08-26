@@ -155,7 +155,7 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
   """Make sure BuilderRun objects can be pickled."""
 
   def setUp(self):
-    self.real_config = chromeos_config.GetConfig()['gcc-toolchain-group']
+    self.real_config = chromeos_config.GetConfig()['test-ap-group']
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
                      return_value=DEFAULT_VERSION)
 

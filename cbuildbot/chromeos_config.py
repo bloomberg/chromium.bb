@@ -670,11 +670,6 @@ _waterfall_config_map = {
         'oak-gcc-toolchain',
         'oak-llvm-toolchain',
         'oak-llvm-next-toolchain',
-
-        # Old Toolchain Builders (to be removed soon).
-        'gcc-toolchain-group',
-        'llvm-toolchain-group',
-        'llvm-next-toolchain-group',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -2205,106 +2200,6 @@ def GetConfig():
       health_threshold=1,
       afdo_use=False,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
-  )
-
-  llvm = site_config.AddTemplate(
-      'llvm',
-      _toolchain,
-      profile='llvm',
-      images=['base', 'test', 'recovery'],
-      description='Full release build with LLVM toolchain',
-  )
-
-  _grouped_toolchain_llvm = config_lib.BuildConfig(
-      build_packages_in_background=False,
-      chrome_sdk=False,
-      chrome_sdk_build_chrome=False,
-      chroot_replace=False,
-  )
-
-  _llvm_grouped = llvm.derive(_grouped_toolchain_llvm)
-
-  site_config.AddGroup(
-      'llvm-toolchain-group',
-      site_config.Add(
-          'peppy-toolchain-llvm', llvm,
-          boards=['peppy'],
-      ),
-      site_config.Add(
-          'daisy-toolchain-llvm', _llvm_grouped,
-          boards=['daisy'],
-      ),
-      site_config.Add(
-          'x86-alex-toolchain-llvm', _llvm_grouped,
-          boards=['x86-alex'],
-      ),
-      site_config.Add(
-          'oak-toolchain-llvm', _llvm_grouped,
-          boards=['oak'],
-      ),
-  )
-
-  site_config.AddGroup(
-      'llvm-next-toolchain-group',
-      site_config.Add(
-          'peppy-next-toolchain-llvm', llvm,
-          boards=['peppy'],
-          useflags=append_useflags(['llvm-next', 'clang']),
-      ),
-      site_config.Add(
-          'daisy-next-toolchain-llvm', _llvm_grouped,
-          boards=['daisy'],
-          useflags=append_useflags(['llvm-next', 'clang']),
-      ),
-      site_config.Add(
-          'x86-alex-next-toolchain-llvm', _llvm_grouped,
-          boards=['x86-alex'],
-          useflags=append_useflags(['llvm-next', 'clang']),
-      ),
-      site_config.Add(
-          'oak-next-toolchain-llvm', _llvm_grouped,
-          boards=['oak'],
-          useflags=append_useflags(['llvm-next', 'clang']),
-      ),
-  )
-
-  gcc = site_config.AddTemplate(
-      'gcc',
-      _toolchain,
-      images=['base', 'test', 'recovery'],
-      description='Full release build with next minor GCC toolchain revision.',
-      latest_toolchain=True,
-      prebuilts=False,
-      gcc_githash='svn-mirror/google/gcc-4_9',
-  )
-
-  _grouped_toolchain_gcc = config_lib.BuildConfig(
-      build_packages_in_background=False,
-      chrome_sdk=False,
-      chrome_sdk_build_chrome=False,
-      chroot_replace=False,
-  )
-
-  _gcc_grouped = gcc.derive(_grouped_toolchain_gcc)
-
-  site_config.AddGroup(
-      'gcc-toolchain-group',
-      site_config.Add(
-          'peppy-toolchain-gcc', gcc,
-          boards=['peppy'],
-      ),
-      site_config.Add(
-          'daisy-toolchain-gcc', _gcc_grouped,
-          boards=['daisy'],
-      ),
-      site_config.Add(
-          'x86-alex-toolchain-gcc', _gcc_grouped,
-          boards=['x86-alex'],
-      ),
-      site_config.Add(
-          'oak-toolchain-gcc', _gcc_grouped,
-          boards=['oak'],
-      ),
   )
 
   # Toolchain-specific mixins.
