@@ -103,16 +103,18 @@ bool ValidateMessageIsResponse(const Message* message,
 bool ValidateControlRequest(const Message* message,
                             ValidationContext* validation_context) {
   switch (message->header()->name) {
-    case kRunMessageId:
+    case interface_control::kRunMessageId:
       return ValidateMessageIsRequestExpectingResponse(message,
                                                        validation_context) &&
-             ValidateMessagePayload<RunMessageParams_Data>(message,
-                                                           validation_context);
-    case kRunOrClosePipeMessageId:
+             ValidateMessagePayload<
+                 interface_control::internal::RunMessageParams_Data>(
+                 message, validation_context);
+    case interface_control::kRunOrClosePipeMessageId:
       return ValidateMessageIsRequestWithoutResponse(message,
                                                      validation_context) &&
-          ValidateMessagePayload<RunOrClosePipeMessageParams_Data>(
-              message, validation_context);
+             ValidateMessagePayload<
+                 interface_control::internal::RunOrClosePipeMessageParams_Data>(
+                 message, validation_context);
   }
   return false;
 }
@@ -122,8 +124,9 @@ bool ValidateControlResponse(const Message* message,
   if (!ValidateMessageIsResponse(message, validation_context))
     return false;
   switch (message->header()->name) {
-    case kRunMessageId:
-      return ValidateMessagePayload<RunResponseMessageParams_Data>(
+    case interface_control::kRunMessageId:
+      return ValidateMessagePayload<
+          interface_control::internal::RunResponseMessageParams_Data>(
           message, validation_context);
   }
   return false;

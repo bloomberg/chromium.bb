@@ -91,11 +91,11 @@ try {
     }
     switch(header.getType()) {
 {%   if with_response %}
-        case org.chromium.mojo.bindings.InterfaceControlMessagesConstants.RUN_MESSAGE_ID:
+        case org.chromium.mojo.bindings.interfacecontrol.InterfaceControlMessagesConstants.RUN_MESSAGE_ID:
             return org.chromium.mojo.bindings.InterfaceControlMessagesHelper.handleRun(
                     getCore(), {{interface|name}}_Internal.MANAGER, messageWithHeader, receiver);
 {%   else %}
-        case org.chromium.mojo.bindings.InterfaceControlMessagesConstants.RUN_OR_CLOSE_PIPE_MESSAGE_ID:
+        case org.chromium.mojo.bindings.interfacecontrol.InterfaceControlMessagesConstants.RUN_OR_CLOSE_PIPE_MESSAGE_ID:
             return org.chromium.mojo.bindings.InterfaceControlMessagesHelper.handleRunOrClosePipe(
                     {{interface|name}}_Internal.MANAGER, messageWithHeader);
 {%   endif %}

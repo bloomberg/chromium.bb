@@ -20,11 +20,12 @@ namespace internal {
 
 namespace {
 
-using RunCallback = base::Callback<void(QueryVersionResultPtr)>;
+using RunCallback =
+    base::Callback<void(interface_control::RunResponseMessageParamsPtr)>;
 
 class RunResponseForwardToCallback : public MessageReceiver {
  public:
-  RunResponseForwardToCallback(const RunCallback& callback)
+  explicit RunResponseForwardToCallback(const RunCallback& callback)
       : callback_(callback) {}
   bool Accept(Message* message) override;
 
@@ -34,60 +35,64 @@ class RunResponseForwardToCallback : public MessageReceiver {
 };
 
 bool RunResponseForwardToCallback::Accept(Message* message) {
-  RunResponseMessageParams_Data* params =
-      reinterpret_cast<RunResponseMessageParams_Data*>(
+  interface_control::internal::RunResponseMessageParams_Data* params =
+      reinterpret_cast<
+          interface_control::internal::RunResponseMessageParams_Data*>(
           message->mutable_payload());
-  RunResponseMessageParamsPtr params_ptr;
+  interface_control::RunResponseMessageParamsPtr params_ptr;
   SerializationContext context;
-  Deserialize<RunResponseMessageParamsDataView>(params, &params_ptr, &context);
+  Deserialize<interface_control::RunResponseMessageParamsDataView>(
+      params, &params_ptr, &context);
 
-  callback_.Run(std::move(params_ptr->query_version_result));
+  callback_.Run(std::move(params_ptr));
   return true;
 }
 
 void SendRunMessage(MessageReceiverWithResponder* receiver,
-                    QueryVersionPtr query_version,
+                    interface_control::RunInputPtr input_ptr,
                     const RunCallback& callback,
                     SerializationContext* context) {
-  RunMessageParamsPtr params_ptr(RunMessageParams::New());
-  params_ptr->reserved0 = 16u;
-  params_ptr->reserved1 = 0u;
-  params_ptr->query_version = std::move(query_version);
+  auto params_ptr = interface_control::RunMessageParams::New();
+  params_ptr->input = std::move(input_ptr);
+  size_t size = PrepareToSerialize<interface_control::RunMessageParamsDataView>(
+      params_ptr, context);
+  RequestMessageBuilder builder(interface_control::kRunMessageId, size);
 
-  size_t size =
-      PrepareToSerialize<RunMessageParamsDataView>(params_ptr, context);
-  RequestMessageBuilder builder(kRunMessageId, size);
-
-  RunMessageParams_Data* params = nullptr;
-  Serialize<RunMessageParamsDataView>(params_ptr, builder.buffer(), &params,
-                                      context);
+  interface_control::internal::RunMessageParams_Data* params = nullptr;
+  Serialize<interface_control::RunMessageParamsDataView>(
+      params_ptr, builder.buffer(), &params, context);
   MessageReceiver* responder = new RunResponseForwardToCallback(callback);
   if (!receiver->AcceptWithResponder(builder.message(), responder))
     delete responder;
 }
 
-void SendRunOrClosePipeMessage(MessageReceiverWithResponder* receiver,
-                               RequireVersionPtr require_version,
-                               SerializationContext* context) {
-  RunOrClosePipeMessageParamsPtr params_ptr(RunOrClosePipeMessageParams::New());
-  params_ptr->reserved0 = 16u;
-  params_ptr->reserved1 = 0u;
-  params_ptr->require_version = std::move(require_version);
+void SendRunOrClosePipeMessage(
+    MessageReceiverWithResponder* receiver,
+    interface_control::RunOrClosePipeInputPtr input_ptr,
+    SerializationContext* context) {
+  auto params_ptr = interface_control::RunOrClosePipeMessageParams::New();
+  params_ptr->input = std::move(input_ptr);
 
-  size_t size = PrepareToSerialize<RunOrClosePipeMessageParamsDataView>(
-      params_ptr, context);
-  MessageBuilder builder(kRunOrClosePipeMessageId, size);
+  size_t size = PrepareToSerialize<
+      interface_control::RunOrClosePipeMessageParamsDataView>(params_ptr,
+                                                              context);
+  MessageBuilder builder(interface_control::kRunOrClosePipeMessageId, size);
 
-  RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize<RunOrClosePipeMessageParamsDataView>(params_ptr, builder.buffer(),
-                                                 &params, context);
+  interface_control::internal::RunOrClosePipeMessageParams_Data* params =
+      nullptr;
+  Serialize<interface_control::RunOrClosePipeMessageParamsDataView>(
+      params_ptr, builder.buffer(), &params, context);
   bool ok = receiver->Accept(builder.message());
   ALLOW_UNUSED_LOCAL(ok);
 }
 
-void RunVersionCallback(const base::Callback<void(uint32_t)>& callback,
-                        QueryVersionResultPtr query_version_result) {
-  callback.Run(query_version_result->version);
+void RunVersionCallback(
+    const base::Callback<void(uint32_t)>& callback,
+    interface_control::RunResponseMessageParamsPtr run_response) {
+  uint32_t version = 0u;
+  if (run_response->output && run_response->output->is_query_version_result())
+    version = run_response->output->get_query_version_result()->version;
+  callback.Run(version);
 }
 
 }  // namespace
@@ -98,14 +103,18 @@ ControlMessageProxy::ControlMessageProxy(MessageReceiverWithResponder* receiver)
 
 void ControlMessageProxy::QueryVersion(
     const base::Callback<void(uint32_t)>& callback) {
-  SendRunMessage(receiver_, QueryVersion::New(),
+  auto input_ptr = interface_control::RunInput::New();
+  input_ptr->set_query_version(interface_control::QueryVersion::New());
+  SendRunMessage(receiver_, std::move(input_ptr),
                  base::Bind(&RunVersionCallback, callback), &context_);
 }
 
 void ControlMessageProxy::RequireVersion(uint32_t version) {
-  RequireVersionPtr require_version(RequireVersion::New());
+  auto require_version = interface_control::RequireVersion::New();
   require_version->version = version;
-  SendRunOrClosePipeMessage(receiver_, std::move(require_version), &context_);
+  auto input_ptr = interface_control::RunOrClosePipeInput::New();
+  input_ptr->set_require_version(std::move(require_version));
+  SendRunOrClosePipeMessage(receiver_, std::move(input_ptr), &context_);
 }
 
 }  // namespace internal
