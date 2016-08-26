@@ -8,6 +8,9 @@
 #define UI_VIEWS_MUS_INPUT_METHOD_MUS_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/shell/public/cpp/connector.h"
+#include "services/ui/public/interfaces/ime.mojom.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace ui {
@@ -16,13 +19,16 @@ class Window;
 
 namespace views {
 
-class VIEWS_MUS_EXPORT InputMethodMUS : public ui::InputMethodBase {
- public:
-  InputMethodMUS(ui::internal::InputMethodDelegate* delegate,
-                 ui::Window* window);
-  ~InputMethodMUS() override;
+class TextInputClientImpl;
 
- private:
+class VIEWS_MUS_EXPORT InputMethodMus : public ui::InputMethodBase {
+ public:
+  InputMethodMus(ui::internal::InputMethodDelegate* delegate,
+                 ui::Window* window);
+  ~InputMethodMus() override;
+
+  void Init(shell::Connector* connector);
+
   // Overridden from ui::InputMethod:
   void OnFocus() override;
   void OnBlur() override;
@@ -36,16 +42,24 @@ class VIEWS_MUS_EXPORT InputMethodMUS : public ui::InputMethodBase {
   std::string GetInputLocale() override;
   bool IsCandidatePopupOpen() const override;
 
+ private:
+  friend TextInputClientImpl;
+
   // Overridden from ui::InputMethodBase:
   void OnDidChangeFocusedClient(ui::TextInputClient* focused_before,
                                 ui::TextInputClient* focused) override;
 
   void UpdateTextInputType();
 
-  // The toplevel window which is not owned by this class.
+  // The toplevel window which is not owned by this class. This may be null
+  // for tests.
   ui::Window* window_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputMethodMUS);
+  ui::mojom::IMEServerPtr ime_server_;
+  ui::mojom::InputMethodPtr input_method_;
+  std::unique_ptr<TextInputClientImpl> text_input_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };
 
 }  // namespace views

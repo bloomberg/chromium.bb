@@ -32,6 +32,7 @@
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
@@ -686,6 +687,13 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
   hosted_window->SetProperty(kMusWindow, window_);
+
+  // TODO(moshayedi): crbug.com/641039. Investigate whether there are any cases
+  // where we need input method but don't have the WindowManagerConnection here.
+  if (WindowManagerConnection::Exists()) {
+    window_tree_host_->InitInputMethod(
+        WindowManagerConnection::Get()->connector());
+  }
 
   focus_client_.reset(
       new FocusControllerMus(new FocusRulesImpl(hosted_window)));

@@ -18,6 +18,10 @@ class TestIME : public shell::Service {
 
  private:
   // shell::Service:
+  bool OnConnect(const shell::Identity& remote_identity,
+                 shell::InterfaceRegistry* registry) override {
+    return true;
+  }
   void OnStart(const shell::Identity& identity) override {
     mojom::IMEDriverPtr ime_driver_ptr;
     new TestIMEDriver(GetProxy(&ime_driver_ptr));

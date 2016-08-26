@@ -188,6 +188,8 @@ void Service::OnStart(const shell::Identity& identity) {
   if (ui::DeviceDataManager::HasInstance())
     touch_controller_.reset(
         new ws::TouchController(window_server_->display_manager()));
+
+  ime_server_.Init(connector());
 }
 
 bool Service::OnConnect(const shell::Identity& remote_identity,
