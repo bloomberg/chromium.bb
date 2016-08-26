@@ -99,10 +99,10 @@ static EphemeralRange expandEndToSentenceBoundary(const EphemeralRange& range)
     const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
     DCHECK(visibleEnd.isNotNull());
     const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
-    // TODO(xiaochengh): |sentenceEnd < range.startPosition()| seems possible,
-    // which would trigger a DCHECK in EphemeralRange's constructor. Need more
-    // investigation, and if that is really the case, fix it.
-    return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() ? sentenceEnd : range.endPosition());
+    // TODO(xiaochengh): |sentenceEnd < range.endPosition()| is possible,
+    // which would trigger a DCHECK in EphemeralRange's constructor if we return
+    // it directly. However, this shouldn't happen and needs to be fixed.
+    return EphemeralRange(range.startPosition(), sentenceEnd.isNotNull() && sentenceEnd > range.endPosition() ? sentenceEnd : range.endPosition());
 }
 
 static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
@@ -111,10 +111,10 @@ static EphemeralRange expandRangeToSentenceBoundary(const EphemeralRange& range)
     const VisiblePosition& visibleStart = createVisiblePosition(range.startPosition());
     DCHECK(visibleStart.isNotNull());
     const Position& sentenceStart = startOfSentence(visibleStart).deepEquivalent();
-    const VisiblePosition& visibleEnd = createVisiblePosition(range.endPosition());
-    DCHECK(visibleStart.isNotNull());
-    const Position& sentenceEnd = endOfSentence(visibleEnd).deepEquivalent();
-    return EphemeralRange(sentenceStart.isNull() ? range.startPosition() : sentenceStart, sentenceEnd.isNull() ? range.endPosition() : sentenceEnd);
+    // TODO(xiaochengh): |sentenceStart > range.startPosition()| is possible,
+    // which would trigger a DCHECK in EphemeralRange's constructor if we return
+    // it directly. However, this shouldn't happen and needs to be fixed.
+    return expandEndToSentenceBoundary(EphemeralRange(sentenceStart.isNotNull() && sentenceStart < range.startPosition() ? sentenceStart : range.startPosition(), range.endPosition()));
 }
 
 } // namespace
