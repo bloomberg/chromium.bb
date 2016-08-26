@@ -8,10 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
-#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
@@ -31,9 +28,7 @@ namespace {
 
 // Keeps track of pending scripted print preview closures.
 // No locking, only access on the UI thread.
-typedef std::map<content::RenderProcessHost*, base::Closure>
-    ScriptedPrintPreviewClosureMap;
-static base::LazyInstance<ScriptedPrintPreviewClosureMap>
+base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>
     g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
 void EnableInternalPDFPluginForContents(int render_process_id,
@@ -59,7 +54,7 @@ namespace printing {
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
     : PrintViewManagerBase(web_contents),
       print_preview_state_(NOT_PREVIEWING),
-      scripted_print_preview_rph_(NULL) {
+      scripted_print_preview_rph_(nullptr) {
   if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents)) {
     EnableInternalPDFPluginForContents(
         web_contents->GetRenderProcessHost()->GetID(),
@@ -85,20 +80,21 @@ bool PrintViewManager::BasicPrint() {
       PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
     return false;
+
   content::WebContents* print_preview_dialog =
       dialog_controller->GetPrintPreviewForContents(web_contents());
-  if (print_preview_dialog) {
-    if (!print_preview_dialog->GetWebUI())
-      return false;
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        print_preview_dialog->GetWebUI()->GetController());
-    print_preview_ui->OnShowSystemDialog();
-    return true;
-  } else {
+  if (!print_preview_dialog)
     return PrintNow();
-  }
+
+  if (!print_preview_dialog->GetWebUI())
+    return false;
+
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
+      print_preview_dialog->GetWebUI()->GetController());
+  print_preview_ui->OnShowSystemDialog();
+  return true;
 }
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 bool PrintViewManager::PrintPreviewNow(bool selection_only) {
   // Users can send print commands all they want and it is beyond
@@ -127,14 +123,12 @@ void PrintViewManager::PrintPreviewDone() {
   DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
 
   if (print_preview_state_ == SCRIPTED_PREVIEW) {
-    ScriptedPrintPreviewClosureMap& map =
-        g_scripted_print_preview_closure_map.Get();
-    ScriptedPrintPreviewClosureMap::iterator it =
-        map.find(scripted_print_preview_rph_);
+    auto& map = g_scripted_print_preview_closure_map.Get();
+    auto it = map.find(scripted_print_preview_rph_);
     CHECK(it != map.end());
     it->second.Run();
-    map.erase(scripted_print_preview_rph_);
-    scripted_print_preview_rph_ = NULL;
+    map.erase(it);
+    scripted_print_preview_rph_ = nullptr;
   }
   print_preview_state_ = NOT_PREVIEWING;
 }
@@ -160,16 +154,15 @@ void PrintViewManager::OnDidShowPrintDialog() {
 
 void PrintViewManager::OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ScriptedPrintPreviewClosureMap& map =
-      g_scripted_print_preview_closure_map.Get();
+  auto& map = g_scripted_print_preview_closure_map.Get();
   content::RenderProcessHost* rph = web_contents()->GetRenderProcessHost();
 
-  // This should always be 0 once we get modal window.print().
-  if (map.count(rph) != 0) {
+  if (base::ContainsKey(map, rph)) {
     // Renderer already handling window.print() in another View.
     Send(reply_msg);
     return;
   }
+
   if (print_preview_state_ != NOT_PREVIEWING) {
     // If a user initiated print dialog is already open, ignore the scripted
     // print message.
@@ -186,11 +179,8 @@ void PrintViewManager::OnSetupScriptedPrintPreview(IPC::Message* reply_msg) {
   }
 
   print_preview_state_ = SCRIPTED_PREVIEW;
-  base::Closure callback =
-      base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
-                 base::Unretained(this),
-                 reply_msg);
-  map[rph] = callback;
+  map[rph] = base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
+                        base::Unretained(this), reply_msg);
   scripted_print_preview_rph_ = rph;
 }
 
@@ -201,6 +191,7 @@ void PrintViewManager::OnShowScriptedPrintPreview(bool source_is_modifiable) {
     PrintPreviewDone();
     return;
   }
+
   dialog_controller->PrintPreview(web_contents());
   PrintHostMsg_RequestPrintPreview_Params params;
   params.is_modifiable = source_is_modifiable;
@@ -224,7 +215,7 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  return handled ? true : PrintViewManagerBase::OnMessageReceived(message);
+  return handled || PrintViewManagerBase::OnMessageReceived(message);
 }
 
 }  // namespace printing
