@@ -43,19 +43,32 @@ namespace {
 
 const void* const kWhitelistKey = &kWhitelistKey;
 
+// A WhitelistUrlSet holds the set of URLs that have been whitelisted for a
+// specific WebContents, along with pending entries that are still undecided.
 class WhitelistUrlSet : public base::SupportsUserData::Data {
  public:
   WhitelistUrlSet() {}
 
   bool Contains(const GURL url) {
-    auto iter = set_.find(url.GetWithEmptyPath());
-    return iter != set_.end();
+    return set_.find(url.GetWithEmptyPath()) != set_.end();
   }
 
-  void Insert(const GURL url) { set_.insert(url.GetWithEmptyPath()); }
+  void Insert(const GURL url) {
+    set_.insert(url.GetWithEmptyPath());
+    pending_.erase(url.GetWithEmptyPath());
+  }
+
+  bool ContainsPending(const GURL url) {
+    return pending_.find(url.GetWithEmptyPath()) != pending_.end();
+  }
+
+  void InsertPending(const GURL url) {
+    pending_.insert(url.GetWithEmptyPath());
+  }
 
  private:
   std::set<GURL> set_;
+  std::set<GURL> pending_;
 
   DISALLOW_COPY_AND_ASSIGN(WhitelistUrlSet);
 };
@@ -148,7 +161,7 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
     }
 
     if (proceed)
-      AddToWhitelist(resource);
+      AddToWhitelistUrlSet(resource, false /* Pending -> permanent */);
   }
 }
 
@@ -239,6 +252,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   if (resource.threat_type != SB_THREAT_TYPE_SAFE) {
     FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingHit(resource));
   }
+  AddToWhitelistUrlSet(resource, true /* A decision is now pending */);
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
@@ -345,9 +359,11 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
   }
 }
 
-// Whitelist this domain in the current WebContents. Either add the
-// domain to an existing WhitelistUrlSet, or create a new WhitelistUrlSet.
-void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
+// Record this domain in the current WebContents as either whitelisted or
+// pending whitelisting (if an interstitial is currently displayed). If an
+// existing WhitelistUrlSet does not yet exist, create a new WhitelistUrlSet.
+void SafeBrowsingUIManager::AddToWhitelistUrlSet(const UnsafeResource& resource,
+                                                 bool pending) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = resource.web_contents_getter.Run();
@@ -368,7 +384,11 @@ void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
     whitelisted_url = resource.url;
   }
 
-  site_list->Insert(whitelisted_url);
+  if (pending) {
+    site_list->InsertPending(whitelisted_url);
+  } else {
+    site_list->Insert(whitelisted_url);
+  }
 }
 
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
@@ -376,34 +396,41 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   if (resource.is_subresource) {
     entry = resource.GetNavigationEntryForResource();
   }
-  return IsUrlWhitelistedForWebContents(resource.url, resource.is_subresource,
-                                        entry,
-                                        resource.web_contents_getter.Run());
+  return IsUrlWhitelistedOrPendingForWebContents(
+      resource.url, resource.is_subresource, entry,
+      resource.web_contents_getter.Run(), true);
 }
 
-// Check if the user has already ignored a SB warning for this WebContents and
-// top-level domain.
-bool SafeBrowsingUIManager::IsUrlWhitelistedForWebContents(
+// Check if the user has already seen and/or ignored a SB warning for this
+// WebContents and top-level domain.
+bool SafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
     const GURL& url,
     bool is_subresource,
     NavigationEntry* entry,
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    bool whitelist_only) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GURL maybe_whitelisted_url;
+  GURL lookup_url;
   if (is_subresource) {
     if (!entry)
       return false;
-    maybe_whitelisted_url = entry->GetURL();
+    lookup_url = entry->GetURL();
   } else {
-    maybe_whitelisted_url = url;
+    lookup_url = url;
   }
 
   WhitelistUrlSet* site_list =
       static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
   if (!site_list)
     return false;
-  return site_list->Contains(maybe_whitelisted_url);
+
+  bool whitelisted = site_list->Contains(lookup_url);
+  if (whitelist_only) {
+    return whitelisted;
+  } else {
+    return whitelisted || site_list->ContainsPending(lookup_url);
+  }
 }
 
 }  // namespace safe_browsing

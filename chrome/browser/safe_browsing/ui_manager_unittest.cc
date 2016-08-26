@@ -79,7 +79,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void AddToWhitelist(SafeBrowsingUIManager::UnsafeResource resource) {
-    ui_manager_->AddToWhitelist(resource);
+    ui_manager_->AddToWhitelistUrlSet(resource, false);
   }
 
   SafeBrowsingUIManager::UnsafeResource MakeUnsafeResource(

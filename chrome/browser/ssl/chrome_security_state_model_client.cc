@@ -154,6 +154,23 @@ void AddConnectionExplanation(
                                          description_replacements, nullptr))));
 }
 
+// Check to see whether the security state should be downgraded to reflect
+// a Safe Browsing verdict.
+void CheckSafeBrowsingStatus(content::NavigationEntry* entry,
+                             content::WebContents* web_contents,
+                             SecurityStateModel::VisibleSecurityState* state) {
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+  if (!sb_service)
+    return;
+  scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
+  if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
+          entry->GetURL(), false, entry, web_contents, false)) {
+    state->fails_malware_check = true;
+    state->initial_security_level = SecurityStateModel::SECURITY_ERROR;
+  }
+}
+
 }  // namespace
 
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
@@ -296,9 +313,16 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
     SecurityStateModel::VisibleSecurityState* state) {
   content::NavigationEntry* entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (!entry ||
-      entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN) {
+  if (!entry) {
     *state = SecurityStateModel::VisibleSecurityState();
+    return;
+  }
+
+  if (entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN) {
+    *state = SecurityStateModel::VisibleSecurityState();
+    // Connection security information is still being initialized, but malware
+    // status might already be known.
+    CheckSafeBrowsingStatus(entry, web_contents_, state);
     return;
   }
 
@@ -326,16 +350,5 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->ran_content_with_cert_errors =
       !!(ssl.content_status & content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS);
 
-  // Check to see whether the security state should be downgraded to reflect
-  // a Safe Browsing verdict.
-  safe_browsing::SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (!sb_service)
-    return;
-  scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
-  if (sb_ui_manager->IsUrlWhitelistedForWebContents(entry->GetURL(), false,
-                                                    entry, web_contents_)) {
-    state->fails_malware_check = true;
-    state->initial_security_level = SecurityStateModel::SECURITY_ERROR;
-  }
+  CheckSafeBrowsingStatus(entry, web_contents_, state);
 }

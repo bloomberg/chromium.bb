@@ -125,15 +125,20 @@ class SafeBrowsingUIManager
   // chain). Otherwise, |original_url| = |url|.
   virtual void DisplayBlockingPage(const UnsafeResource& resource);
 
-  // A wrapper method for IsUrlWhitelistedForWebContents, for convenience.
+  // A convenience wrapper method for IsUrlWhitelistedOrPendingForWebContents.
   bool IsWhitelisted(const UnsafeResource& resource);
 
-  // Returns true if we already displayed an interstitial for that top-level
-  // site in a given WebContents. Called on the UI thread.
-  bool IsUrlWhitelistedForWebContents(const GURL& url,
-                                      bool is_subresource,
-                                      content::NavigationEntry* entry,
-                                      content::WebContents* web_contents);
+  // Checks if we already displayed an interstitial for that top-level
+  // site in a given WebContents. If |whitelist_only|, it returns true only if
+  // the user chose to ignore the interstitial; otherwise it returns true as
+  // long as the user has seen an interstitial (regardless of response).
+  // Called on the UI thread.
+  bool IsUrlWhitelistedOrPendingForWebContents(
+      const GURL& url,
+      bool is_subresource,
+      content::NavigationEntry* entry,
+      content::WebContents* web_contents,
+      bool whitelist_only);
 
   // The blocking page on the UI thread has completed.
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
@@ -189,8 +194,8 @@ class SafeBrowsingUIManager
   void ReportPermissionActionOnIOThread(
       const PermissionReportInfo& report_info);
 
-  // Updates the whitelist state.  Called on the UI thread.
-  void AddToWhitelist(const UnsafeResource& resource);
+  // Updates the whitelist URL set.  Called on the UI thread.
+  void AddToWhitelistUrlSet(const UnsafeResource& resource, bool is_pending);
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;
