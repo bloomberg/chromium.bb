@@ -166,10 +166,13 @@ static_library("browser") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
+  public_deps = [
+    "//components/autofill/core/browser/proto",
+    "//components/autofill/core/common",
+  ]
   deps = [
     "//base",
     "//base:i18n",
-    "//components/autofill/core/common",
     "//components/data_use_measurement/core",
     "//components/infobars/core",
     "//components/keyed_service/core",
@@ -199,10 +202,6 @@ static_library("browser") {
     "//ui/gfx/geometry",
     "//ui/gfx/range",
     "//url",
-  ]
-
-  public_deps = [
-    "//components/autofill/core/browser/proto",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

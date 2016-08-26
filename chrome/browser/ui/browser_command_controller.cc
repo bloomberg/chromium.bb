@@ -66,8 +66,8 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/accelerators/accelerator_commands_aura.h"
-#include "chrome/browser/ui/ash/ash_util.h"
+#include "ash/accelerators/accelerator_commands_aura.h"  // nogncheck
+#include "chrome/browser/ui/ash/ash_util.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)

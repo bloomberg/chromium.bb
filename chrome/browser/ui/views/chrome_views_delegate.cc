@@ -61,12 +61,12 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/wm/window_state_aura.h"
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "ash/common/accelerators/accelerator_controller.h"  // nogncheck
+#include "ash/common/wm/window_state.h"  // nogncheck
+#include "ash/common/wm_shell.h"  // nogncheck
+#include "ash/shell.h"  // nogncheck
+#include "ash/wm/window_state_aura.h"  // nogncheck
+#include "chrome/browser/ui/ash/ash_init.h"  // nogncheck
 #endif
 
 // Helpers --------------------------------------------------------------------

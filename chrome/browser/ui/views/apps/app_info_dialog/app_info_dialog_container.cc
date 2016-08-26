@@ -29,7 +29,7 @@
 
 #if defined(ENABLE_APP_LIST)
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_constants.h"  // nogncheck
 #include "ui/views/background.h"
 #endif
 

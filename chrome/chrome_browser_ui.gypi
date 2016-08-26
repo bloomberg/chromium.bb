@@ -72,7 +72,6 @@
       'browser/ui/browser_navigator_params.h',
       'browser/ui/browser_ui_prefs.cc',
       'browser/ui/browser_ui_prefs.h',
-      'browser/ui/browser_window.h',
       'browser/ui/chrome_select_file_policy.cc',
       'browser/ui/chrome_select_file_policy.h',
       'browser/ui/confirm_bubble.h',
@@ -2224,6 +2223,9 @@
     ],
     # Cross-platform (except Mac) views sources.
     'chrome_browser_ui_views_non_mac_sources': [
+      # This test header is included because it contains forward declarations
+      # needed for 'friend' statements for use in tests.
+      'browser/ui/translate/translate_bubble_test_utils.h',
       'browser/ui/views/accessibility/invert_bubble_view.cc',
       'browser/ui/views/accessibility/invert_bubble_view.h',
       'browser/ui/views/autofill/autofill_popup_base_view.cc',

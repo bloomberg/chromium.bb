@@ -15,8 +15,8 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/common/wallpaper/wallpaper_delegate.h"  // nogncheck
+#include "ash/common/wm_shell.h"  // nogncheck
 #endif
 
 namespace settings {

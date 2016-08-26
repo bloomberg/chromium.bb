@@ -77,7 +77,7 @@
 #include "net/base/port_util.h"
 
 #if defined(USE_ASH)
-#include "ash/shell.h"
+#include "ash/shell.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)

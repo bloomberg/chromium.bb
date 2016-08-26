@@ -114,11 +114,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/accessibility_types.h"
-#include "ash/common/ash_switches.h"
-#include "ash/common/system/chromeos/devicetype_utils.h"
-#include "ash/common/wallpaper/wallpaper_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/accessibility_types.h"  // nogncheck
+#include "ash/common/ash_switches.h"  // nogncheck
+#include "ash/common/system/chromeos/devicetype_utils.h"  // nogncheck
+#include "ash/common/wallpaper/wallpaper_delegate.h"  // nogncheck
+#include "ash/shell.h"  // nogncheck
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
@@ -149,7 +149,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/wm_shell.h"
+#include "ash/common/wm_shell.h"  // nogncheck
 #endif
 
 using base::UserMetricsAction;

@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -31,7 +30,7 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/shell.h"
+#include "ash/shell.h"  // nogncheck
 #endif
 
 namespace {

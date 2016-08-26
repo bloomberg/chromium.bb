@@ -13,7 +13,7 @@
 #include "ui/events/event_constants.h"
 
 #if defined(USE_ASH)
-#include "ash/common/accelerators/accelerator_table.h"
+#include "ash/common/accelerators/accelerator_table.h"  // nogncheck
 #endif
 
 namespace chrome {

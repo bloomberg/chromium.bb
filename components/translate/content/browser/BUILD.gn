@@ -10,11 +10,13 @@ static_library("browser") {
     "content_translate_driver.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//components/translate/content/common",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+  ]
+  deps = [
     "//content/public/browser",
     "//content/public/common",
     "//net",

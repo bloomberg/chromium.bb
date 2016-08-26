@@ -33,9 +33,9 @@
 #include "ui/views/widget/native_widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/wm_shell.h"
-#include "ui/native_theme/native_theme_dark_aura.h"
+#include "ash/common/session/session_state_delegate.h"  // nogncheck
+#include "ash/common/wm_shell.h"  // nogncheck
+#include "ui/native_theme/native_theme_dark_aura.h"  // nogncheck
 #endif
 
 #if defined(OS_LINUX)

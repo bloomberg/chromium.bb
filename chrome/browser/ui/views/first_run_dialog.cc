@@ -17,7 +17,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "components/crash/content/app/breakpad_linux.h"
 #include "grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -29,6 +28,12 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if defined(OS_WIN)
+#include "components/crash/content/app/breakpad_win.h"
+#elif defined(OS_LINUX)
+#include "components/crash/content/app/breakpad_linux.h"
+#endif
 
 using views::GridLayout;
 

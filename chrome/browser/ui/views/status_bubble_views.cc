@@ -39,13 +39,13 @@
 #include "url/gurl.h"
 
 #if defined(USE_ASH)
-#include "ash/common/wm/window_state.h"
-#include "ash/wm/window_state_aura.h"
+#include "ash/common/wm/window_state.h"  // nogncheck
+#include "ash/wm/window_state_aura.h"  // nogncheck
 #endif
 
 #if defined(USE_AURA)
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/public/cpp/property_type_converters.h"  // nogncheck
+#include "services/ui/public/interfaces/window_manager.mojom.h"  // nogncheck
 #endif
 
 // The alpha and color of the bubble's shadow.

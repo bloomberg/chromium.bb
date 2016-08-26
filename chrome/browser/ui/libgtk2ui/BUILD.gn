@@ -97,6 +97,7 @@ component("libgtk2ui") {
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
+    "//chrome/app:command_ids",
     "//chrome/app/theme:theme_resources",
     "//components/resources",
     "//content/public/browser",

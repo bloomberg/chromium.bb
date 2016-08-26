@@ -46,9 +46,9 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/shelf/shelf_util.h"
-#include "ash/wm/window_util.h"
-#include "grit/ash_resources.h"
+#include "ash/shelf/shelf_util.h"  // nogncheck
+#include "ash/wm/window_util.h"  // nogncheck
+#include "grit/ash_resources.h"  // nogncheck
 #endif
 
 namespace {

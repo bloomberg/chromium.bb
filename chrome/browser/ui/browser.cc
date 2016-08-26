@@ -228,8 +228,8 @@
 #endif
 
 #if defined(USE_ASH)
-#include "ash/common/ash_switches.h"
-#include "ash/shell.h"
+#include "ash/common/ash_switches.h"  // nogncheck
+#include "ash/shell.h"  // nogncheck
 #endif
 
 using base::TimeDelta;

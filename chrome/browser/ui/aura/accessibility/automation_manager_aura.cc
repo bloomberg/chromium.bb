@@ -23,7 +23,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_util.h"  // nogncheck
 #endif
 
 using content::BrowserContext;
