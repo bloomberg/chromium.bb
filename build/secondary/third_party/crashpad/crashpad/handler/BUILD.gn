@@ -55,4 +55,9 @@ executable("crashpad_handler") {
       "@loader_path/../../../../../..",
     ]
   }
+
+  if (is_win) {
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+  }
 }
