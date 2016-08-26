@@ -242,11 +242,6 @@ class WebStateImpl;
 // complete it will be handled internally.
 - (void)restoreStateFromHistory;
 
-// Asynchronously checks whether the element at the location of
-// |gestureRecognizer| is a link.
-- (void)checkLinkPresenceUnderGesture:(UIGestureRecognizer*)gestureRecognizer
-                    completionHandler:(void (^)(BOOL))completionHandler;
-
 // Notifies the CRWWebController that it has been shown.
 - (void)wasShown;
 

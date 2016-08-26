@@ -1298,17 +1298,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _webStateImpl = nullptr;
 }
 
-- (void)checkLinkPresenceUnderGesture:(UIGestureRecognizer*)gestureRecognizer
-                    completionHandler:(void (^)(BOOL))completionHandler {
-  CGPoint webViewPoint = [gestureRecognizer locationInView:_webView];
-  base::WeakNSObject<CRWWebController> weakSelf(self);
-  [self fetchDOMElementAtPoint:webViewPoint
-             completionHandler:^(NSDictionary* element) {
-               BOOL hasLink = [element[@"href"] length];
-               completionHandler(hasLink);
-             }];
-}
-
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {
   _DOMElementForLastTouch.reset([element copy]);
 }
