@@ -230,7 +230,7 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
     DCHECK(isStyleElement(*node) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
-    resolverChanged(FullStyleUpdate);
+    resolverChanged(AnalyzedStyleUpdate);
 }
 
 void StyleEngine::watchedSelectorsChanged()
