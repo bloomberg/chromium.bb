@@ -62,6 +62,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -102,6 +103,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     private WebViewChromiumFactoryProvider mFactory;
 
+    private final boolean mShouldDisableThreadChecking;
+
     private static boolean sRecordWholeDocumentEnabledByApi = false;
     static void enableSlowWholeDocumentDraw() {
         sRecordWholeDocumentEnabledByApi = true;
@@ -110,13 +113,14 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // This does not touch any global / non-threadsafe state, but note that
     // init is ofter called right after and is NOT threadsafe.
     public WebViewChromium(WebViewChromiumFactoryProvider factory, WebView webView,
-            WebView.PrivateAccess webViewPrivate) {
+            WebView.PrivateAccess webViewPrivate, boolean shouldDisableThreadChecking) {
         mWebView = webView;
         mWebViewPrivate = webViewPrivate;
         mHitTestResult = new WebView.HitTestResult();
         mContext = ResourcesContextWrapperFactory.get(mWebView.getContext());
         mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
         mFactory = factory;
+        mShouldDisableThreadChecking = shouldDisableThreadChecking;
         factory.getWebViewDelegate().addWebViewAssetPath(mWebView.getContext());
     }
 
@@ -183,6 +187,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             mWebSettings.getAwSettings().setZeroLayoutHeightDisablesViewportQuirk(true);
         }
 
+        if (mShouldDisableThreadChecking) disableThreadChecking();
+
         mFactory.addTask(new Runnable() {
             @Override
             public void run() {
@@ -196,6 +202,22 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                 }
             }
         });
+    }
+
+    // This is a workaround for https://crbug.com/622151.
+    // In HTC's email app, InputConnection.setComposingText() will call WebView.evaluateJavaScript,
+    // and thread assertion will occur. We turn off WebView thread assertion for this app.
+    private void disableThreadChecking() {
+        try {
+            Class<?> webViewClass = Class.forName("android.webkit.WebView");
+            Field field = webViewClass.getDeclaredField("sEnforceThreadChecking");
+            field.setAccessible(true);
+            field.setBoolean(null, false);
+            field.setAccessible(false);
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException
+                | IllegalArgumentException e) {
+            Log.w(TAG, "Failed to disable thread checking.");
+        }
     }
 
     private void initForReal() {
@@ -540,9 +562,21 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mAwContents.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
     }
 
-    public void evaluateJavaScript(String script, ValueCallback<String> resultCallback) {
-        checkThread();
-        mAwContents.evaluateJavaScript(script, resultCallback);
+    @Override
+    public void evaluateJavaScript(
+            final String script, final ValueCallback<String> resultCallback) {
+        if (mShouldDisableThreadChecking && checkNeedsPost()) {
+            // This is a workaround for https://crbug.com/622151.
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mAwContents.evaluateJavaScript(script, resultCallback);
+                }
+            });
+        } else {
+            checkThread();
+            mAwContents.evaluateJavaScript(script, resultCallback);
+        }
     }
 
     @Override
