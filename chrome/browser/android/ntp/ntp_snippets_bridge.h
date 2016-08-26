@@ -115,7 +115,6 @@ class NTPSnippetsBridge
   void ContentSuggestionsServiceShutdown() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                      const std::string& snippet_id,
                       const gfx::Image& image);
 
   ntp_snippets::Category CategoryFromIDValue(jint id);

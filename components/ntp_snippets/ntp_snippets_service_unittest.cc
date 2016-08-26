@@ -948,15 +948,12 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
   gfx::Image image;
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
       .WillOnce(testing::WithArgs<0, 2>(Invoke(ServeOneByOneImage)));
-  testing::MockFunction<void(const std::string&, const gfx::Image&)>
-      image_fetched;
-  EXPECT_CALL(image_fetched, Call(MakeUniqueID(kSnippetUrl), _))
-      .WillOnce(testing::SaveArg<1>(&image));
+  testing::MockFunction<void(const gfx::Image&)> image_fetched;
+  EXPECT_CALL(image_fetched, Call(_)).WillOnce(testing::SaveArg<0>(&image));
 
   service()->FetchSuggestionImage(
       MakeUniqueID(kSnippetUrl),
-      base::Bind(&testing::MockFunction<void(const std::string&,
-                                              const gfx::Image&)>::Call,
+      base::Bind(&testing::MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
   base::RunLoop().RunUntilIdle();
   // Check that the image by ServeOneByOneImage is really served.
@@ -966,16 +963,12 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
 TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
   // Create a non-empty image so that we can test the image gets updated.
   gfx::Image image = gfx::test::CreateImage(1, 1);
-  testing::MockFunction<void(const std::string&, const gfx::Image&)>
-      image_fetched;
-  EXPECT_CALL(image_fetched,
-              Call(MakeUniqueID(kSnippetUrl2), _))
-      .WillOnce(testing::SaveArg<1>(&image));
+  testing::MockFunction<void(const gfx::Image&)> image_fetched;
+  EXPECT_CALL(image_fetched, Call(_)).WillOnce(testing::SaveArg<0>(&image));
 
   service()->FetchSuggestionImage(
       MakeUniqueID(kSnippetUrl2),
-      base::Bind(&testing::MockFunction<void(const std::string&,
-                                              const gfx::Image&)>::Call,
+      base::Bind(&testing::MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
   base::RunLoop().RunUntilIdle();

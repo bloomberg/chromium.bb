@@ -147,7 +147,7 @@ void OfflinePageSuggestionsProvider::FetchSuggestionImage(
   // TODO(pke): Fetch proper thumbnail from OfflinePageModel once it's available
   // there.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
+      FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
 void OfflinePageSuggestionsProvider::ClearCachedSuggestions(Category category) {

@@ -195,8 +195,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
     return result;
   }
 
-  MOCK_METHOD2(OnImageFetched,
-               void(const std::string& suggestion_id, const gfx::Image&));
+  MOCK_METHOD1(OnImageFetched, void(const gfx::Image&));
 
  protected:
   void CreateContentSuggestionsService(
@@ -301,8 +300,7 @@ TEST_F(ContentSuggestionsServiceTest,
 
   base::RunLoop run_loop;
   std::string suggestion_id = "TestID";
-  EXPECT_CALL(*this, OnImageFetched(suggestion_id,
-                                    Property(&gfx::Image::IsEmpty, Eq(true))))
+  EXPECT_CALL(*this, OnImageFetched(Property(&gfx::Image::IsEmpty, Eq(true))))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   service()->FetchSuggestionImage(
       suggestion_id, base::Bind(&ContentSuggestionsServiceTest::OnImageFetched,

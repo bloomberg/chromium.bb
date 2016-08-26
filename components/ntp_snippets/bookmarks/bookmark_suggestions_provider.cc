@@ -181,7 +181,7 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
     const std::string& suggestion_id,
     const ImageFetchedCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
+      FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
 void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {

@@ -324,7 +324,6 @@ void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
 }
 
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
-                                       const std::string& snippet_id,
                                        const gfx::Image& image) {
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!image.IsEmpty())

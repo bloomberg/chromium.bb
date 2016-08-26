@@ -700,7 +700,7 @@ void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
     const std::string& snippet_id,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
-    callback.Run(MakeUniqueID(provided_category_, snippet_id), image);
+    callback.Run(image);
     return;
   }
 
@@ -747,7 +747,7 @@ void NTPSnippetsService::OnSnippetImageDecodedFromNetwork(
     const ImageFetchedCallback& callback,
     const std::string& snippet_id,
     const gfx::Image& image) {
-  callback.Run(MakeUniqueID(provided_category_, snippet_id), image);
+  callback.Run(image);
 }
 
 void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {

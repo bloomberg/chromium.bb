@@ -8,6 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
 
@@ -80,6 +82,8 @@ void PhysicalWebPageSuggestionsProvider::DismissSuggestion(
 void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
     const std::string& suggestion_id, const ImageFetchedCallback& callback) {
   // TODO(vitaliii): Implement.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, gfx::Image()));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearCachedSuggestions(

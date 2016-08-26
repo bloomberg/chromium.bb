@@ -31,8 +31,7 @@ class NTPSnippetsService;
 class ContentSuggestionsService : public KeyedService,
                                   public ContentSuggestionsProvider::Observer {
  public:
-  using ImageFetchedCallback =
-      base::Callback<void(const std::string& suggestion_id, const gfx::Image&)>;
+  using ImageFetchedCallback = base::Callback<void(const gfx::Image&)>;
   using DismissedSuggestionsCallback = base::Callback<void(
       std::vector<ContentSuggestion> dismissed_suggestions)>;
 

@@ -66,7 +66,7 @@ void ContentSuggestionsService::FetchSuggestionImage(
   if (!id_category_map_.count(suggestion_id)) {
     LOG(WARNING) << "Requested image for unknown suggestion " << suggestion_id;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
+        FROM_HERE, base::Bind(callback, gfx::Image()));
     return;
   }
   Category category = id_category_map_.at(suggestion_id);
@@ -74,7 +74,7 @@ void ContentSuggestionsService::FetchSuggestionImage(
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
                  << " for unavailable category " << category;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, suggestion_id, gfx::Image()));
+        FROM_HERE, base::Bind(callback, gfx::Image()));
     return;
   }
   providers_by_category_[category]->FetchSuggestionImage(suggestion_id,
