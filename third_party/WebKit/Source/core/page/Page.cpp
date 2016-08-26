@@ -433,6 +433,8 @@ void Page::updateAcceleratedCompositingSettings()
 void Page::didCommitLoad(LocalFrame* frame)
 {
     if (m_mainFrame == frame) {
+        // TODO(rbyers): Most of this doesn't appear to take into account that each
+        // SVGImage gets it's own Page instance.
         frameHost().consoleMessageStorage().clear();
         useCounter().didCommitLoad();
         deprecation().clearSuppression();

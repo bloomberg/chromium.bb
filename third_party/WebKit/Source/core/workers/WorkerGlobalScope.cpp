@@ -88,10 +88,13 @@ void WorkerGlobalScope::countDeprecation(UseCounter::Feature feature) const
     // (http://crbug.com/376039)
 
     DCHECK(isSharedWorkerGlobalScope() || isServiceWorkerGlobalScope() || isCompositorWorkerGlobalScope());
+    DCHECK(feature != UseCounter::PageDestruction);
+    DCHECK(feature < UseCounter::NumberOfFeatures);
+
     // For each deprecated feature, send console message at most once
     // per worker lifecycle.
-    if (!m_deprecationWarningBits.hasRecordedMeasurement(feature)) {
-        m_deprecationWarningBits.recordMeasurement(feature);
+    if (!m_deprecationWarningBits.quickGet(feature)) {
+        m_deprecationWarningBits.quickSet(feature);
         DCHECK(!Deprecation::deprecationMessage(feature).isEmpty());
         DCHECK(getExecutionContext());
         getExecutionContext()->addConsoleMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, Deprecation::deprecationMessage(feature)));
@@ -296,6 +299,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
+    , m_deprecationWarningBits(UseCounter::NumberOfFeatures)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))
     , m_thread(thread)
     , m_closing(false)

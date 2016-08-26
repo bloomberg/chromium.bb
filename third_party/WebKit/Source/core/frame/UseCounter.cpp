@@ -42,10 +42,8 @@ namespace blink {
 
 static int totalPagesMeasuredCSSSampleId() { return 1; }
 
-int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
+int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPropertyID)
 {
-    CSSPropertyID cssPropertyID = static_cast<CSSPropertyID>(id);
-
     switch (cssPropertyID) {
     // Begin at 2, because 1 is reserved for totalPagesMeasuredCSSSampleId.
     case CSSPropertyColor: return 2;
@@ -605,51 +603,61 @@ void UseCounter::recordMeasurement(Feature feature)
     if (m_muteCount)
         return;
 
-    if (!m_countBits.hasRecordedMeasurement(feature)) {
+    DCHECK(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
+    DCHECK(feature < NumberOfFeatures);
+
+    if (!m_featureBits.quickGet(feature)) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "FeatureFirstUsed", "feature", feature);
+        m_featureBits.quickSet(feature);
     }
-    m_countBits.recordMeasurement(feature);
+}
+
+bool UseCounter::hasRecordedMeasurement(Feature feature) const
+{
+    if (m_muteCount)
+        return false;
+
+    DCHECK(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
+    DCHECK(feature < NumberOfFeatures);
+
+    return m_featureBits.quickGet(feature);
 }
 
 UseCounter::UseCounter()
     : m_muteCount(0)
+    , m_featureBits(NumberOfFeatures)
+    , m_CSSFeatureBits(lastUnresolvedCSSProperty + 1)
 {
-    m_CSSFeatureBits.ensureSize(lastUnresolvedCSSProperty + 1);
-    m_CSSFeatureBits.clearAll();
 }
 
 UseCounter::~UseCounter()
 {
     // We always log PageDestruction so that we have a scale for the rest of the features.
+    // TODO(rbyers): This is flawed due to renderer fast shutdown - crbug.com/597963
     featureObserverHistogram().count(PageDestruction);
 
     updateMeasurements();
 }
 
-void UseCounter::CountBits::updateMeasurements()
+void UseCounter::updateMeasurements()
 {
     EnumerationHistogram& featureHistogram = featureObserverHistogram();
-    for (unsigned i = 0; i < NumberOfFeatures; ++i) {
-        if (m_bits.quickGet(i))
+    featureHistogram.count(PageVisits);
+    for (size_t i = 0; i < NumberOfFeatures; ++i) {
+        if (m_featureBits.quickGet(i))
             featureHistogram.count(i);
     }
     // Clearing count bits is timing sensitive.
-    m_bits.clearAll();
-}
-
-void UseCounter::updateMeasurements()
-{
-    featureObserverHistogram().count(PageVisits);
-    m_countBits.updateMeasurements();
+    m_featureBits.clearAll();
 
     // FIXME: Sometimes this function is called more than once per page. The following
     //        bool guards against incrementing the page count when there are no CSS
     //        bits set. https://crbug.com/236262.
     DEFINE_STATIC_LOCAL(EnumerationHistogram, cssPropertiesHistogram, ("WebCore.FeatureObserver.CSSProperties", maximumCSSSampleId()));
     bool needsPagesMeasuredUpdate = false;
-    for (int i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
+    for (size_t i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
         if (m_CSSFeatureBits.quickGet(i)) {
-            int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(i);
+            int cssSampleId = mapCSSPropertyIdToCSSSampleIdForHistogram(static_cast<CSSPropertyID>(i));
             cssPropertiesHistogram.count(cssSampleId);
             needsPagesMeasuredUpdate = true;
         }
@@ -663,6 +671,9 @@ void UseCounter::updateMeasurements()
 
 void UseCounter::didCommitLoad()
 {
+    // TODO(rbyers): This gets invoked more than expected.  crbug.com/236262
+    // Eg. every SVGImage has it's own Page instance, they should probably all be delegating
+    // their UseCounter to the containing Page.
     updateMeasurements();
 }
 
@@ -697,7 +708,6 @@ bool UseCounter::isCounted(CSSPropertyID unresolvedProperty)
 {
     return m_CSSFeatureBits.quickGet(unresolvedProperty);
 }
-
 
 bool UseCounter::isCounted(Document& document, const String& string)
 {
@@ -756,21 +766,21 @@ void UseCounter::countCrossOriginIframe(const Document& document, Feature featur
 
 void UseCounter::count(CSSParserMode cssParserMode, CSSPropertyID feature)
 {
-    ASSERT(feature >= firstCSSProperty);
-    ASSERT(feature <= lastUnresolvedCSSProperty);
+    DCHECK(feature >= firstCSSProperty);
+    DCHECK(feature <= lastUnresolvedCSSProperty);
 
     if (!isUseCounterEnabledForMode(cssParserMode) || m_muteCount)
         return;
 
     if (!m_CSSFeatureBits.quickGet(feature)) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"), "CSSFeatureFirstUsed", "feature", feature);
+        m_CSSFeatureBits.quickSet(feature);
     }
-    m_CSSFeatureBits.quickSet(feature);
 }
 
 void UseCounter::count(Feature feature)
 {
-    ASSERT(Deprecation::deprecationMessage(feature).isEmpty());
+    DCHECK(Deprecation::deprecationMessage(feature).isEmpty());
     recordMeasurement(feature);
 }
 

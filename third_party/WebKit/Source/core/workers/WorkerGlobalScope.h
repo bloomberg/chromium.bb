@@ -163,7 +163,7 @@ private:
     mutable Member<WorkerLocation> m_location;
     mutable Member<WorkerNavigator> m_navigator;
 
-    mutable UseCounter::CountBits m_deprecationWarningBits;
+    mutable BitVector m_deprecationWarningBits;
 
     Member<WorkerOrWorkletScriptController> m_scriptController;
     WorkerThread* m_thread;

@@ -1349,7 +1349,7 @@ public:
     static UseCounter* getFrom(const CSSStyleSheet*);
     static UseCounter* getFrom(const StyleSheetContents*);
 
-    static int mapCSSPropertyIdToCSSSampleIdForHistogram(int id);
+    static int mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID);
 
     void muteForInspector();
     void unmuteForInspector();
@@ -1357,40 +1357,13 @@ public:
     void recordMeasurement(Feature);
     void updateMeasurements();
 
-    bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
-
-    class CountBits {
-        DISALLOW_NEW();
-    public:
-        CountBits() : m_bits(NumberOfFeatures) { }
-
-        bool hasRecordedMeasurement(Feature feature) const
-        {
-            ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
-            ASSERT(feature < NumberOfFeatures);
-
-            return m_bits.quickGet(feature);
-        }
-
-        void recordMeasurement(Feature feature)
-        {
-            ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
-            ASSERT(feature < NumberOfFeatures);
-
-            m_bits.quickSet(feature);
-        }
-
-        void updateMeasurements();
-
-    private:
-        BitVector m_bits;
-    };
+    bool hasRecordedMeasurement(Feature) const;
 
 protected:
     friend class UseCounterTest;
     unsigned m_muteCount;
 
-    CountBits m_countBits;
+    BitVector m_featureBits;
     BitVector m_CSSFeatureBits;
 };
 
