@@ -32,6 +32,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
+#include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -680,11 +681,9 @@ InstallStatus InstallOrUpdateProduct(
     }
 
     installer_state.SetStage(REMOVING_OLD_VERSIONS);
-
-    installer_state.RemoveOldVersionDirectories(
-        new_version,
-        existing_version.get(),
-        install_temp_path);
+    // TODO(fdoray): Launch a cleanup process when this fails during a not-in-
+    // use update. crbug.com/451546
+    DeleteOldVersions(installer_state.target_path());
   }
 
   return result;
