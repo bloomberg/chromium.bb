@@ -96,8 +96,7 @@ void maybeLogScheduledNavigationClobber(ScheduledNavigationType type, LocalFrame
 
 } // namespace
 
-unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
-unsigned NavigationCounterForUnload::s_inUnloadHandler = 0;
+unsigned NavigationDisablerForUnload::s_navigationDisableCount = 0;
 
 class ScheduledNavigation : public GarbageCollectedFinalized<ScheduledNavigation> {
     WTF_MAKE_NONCOPYABLE(ScheduledNavigation);
@@ -327,10 +326,12 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const
 // TODO(dcheng): There are really two different load blocking concepts at work
 // here and they have been incorrectly tangled together.
 //
-// 1. NavigationDisablerForBeforeUnload is for blocking navigation scheduling
-//    during a beforeunload event. Scheduled navigations during beforeunload
-//    would make it possible to get trapped in an endless loop of beforeunload
-//    dialogs.
+// 1. NavigationDisablerForUnload is for blocking navigation scheduling during
+//    a beforeunload or unload events. Scheduled navigations during
+//    beforeunload would make it possible to get trapped in an endless loop of
+//    beforeunload dialogs. Scheduled navigations during the unload handler
+//    makes is possible to cancel a navigation that was initiated right before
+//    it commits.
 //
 //    Checking Frame::isNavigationAllowed() doesn't make sense in this context:
 //    NavigationScheduler is always cleared when a new load commits, so it's
@@ -343,12 +344,12 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const
 //    to block /synchronous/ navigations during things lke Document::detachLayoutTree().
 inline bool NavigationScheduler::shouldScheduleReload() const
 {
-    return m_frame->page() && m_frame->isNavigationAllowed() && NavigationDisablerForBeforeUnload::isNavigationAllowed();
+    return m_frame->page() && m_frame->isNavigationAllowed() && NavigationDisablerForUnload::isNavigationAllowed();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation(const String& url) const
 {
-    return m_frame->page() && m_frame->isNavigationAllowed() && (protocolIsJavaScript(url) || NavigationDisablerForBeforeUnload::isNavigationAllowed());
+    return m_frame->page() && m_frame->isNavigationAllowed() && (protocolIsJavaScript(url) || NavigationDisablerForUnload::isNavigationAllowed());
 }
 
 void NavigationScheduler::scheduleRedirect(double delay, const String& url)
@@ -393,8 +394,6 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
     if (originDocument->getSecurityOrigin()->canAccess(m_frame->document()->getSecurityOrigin())) {
         KURL parsedURL(ParsedURLString, url);
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
-            if (NavigationCounterForUnload::inUnloadHandler())
-                Deprecation::countDeprecation(m_frame, UseCounter::UnloadHandler_Navigation);
 
             FrameLoadRequest request(originDocument, m_frame->document()->completeURL(url), "_self");
             request.setReplacesCurrentItem(replacesCurrentItem);

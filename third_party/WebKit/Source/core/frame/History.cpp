@@ -176,7 +176,7 @@ void History::go(ExecutionContext* context, int delta)
 
     if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*m_frame))
         return;
-    if (!NavigationDisablerForBeforeUnload::isNavigationAllowed())
+    if (!NavigationDisablerForUnload::isNavigationAllowed())
         return;
 
     // We intentionally call reload() for the current frame if delta is zero.

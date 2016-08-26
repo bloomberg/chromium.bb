@@ -1149,7 +1149,6 @@ public:
         CSSSelectorPseudoReadWrite = 1378,
         // The above items are available in M52 branch
 
-        UnloadHandler_Navigation = 1379,
         TouchStartUserGestureUtilized = 1380,
         TouchMoveUserGestureUtilized = 1381,
         TouchEndDuringScrollUserGestureUtilized = 1382,
