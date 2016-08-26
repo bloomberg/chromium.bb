@@ -25,6 +25,7 @@
 #ifndef HTMLTextFormControlElement_h
 #define HTMLTextFormControlElement_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormControlElementWithState.h"
@@ -134,12 +135,12 @@ private:
     void cacheSelection(int start, int end, TextFieldSelectionDirection direction)
     {
         DCHECK_GE(start, 0);
-        // TODO(tkent): Add DCHECK_LE(start, end). It breaks
-        // editing/selection/select-across-readonly-input-{1,4}.html
+        DCHECK_LE(start, end);
         m_cachedSelectionStart = start;
         m_cachedSelectionEnd = end;
         m_cachedSelectionDirection = direction;
     }
+    static int indexForPosition(HTMLElement* innerEditor, const Position&);
 
     void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) final;
     void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) final;
@@ -162,6 +163,8 @@ private:
     int m_cachedSelectionStart;
     int m_cachedSelectionEnd;
     TextFieldSelectionDirection m_cachedSelectionDirection;
+
+    FRIEND_TEST_ALL_PREFIXES(HTMLTextFormControlElementTest, IndexForPosition);
 };
 
 inline bool isHTMLTextFormControlElement(const Element& element)

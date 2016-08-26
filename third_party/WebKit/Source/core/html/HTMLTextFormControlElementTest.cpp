@@ -215,4 +215,12 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     EXPECT_EQ(startCount, layoutCount());
 }
 
+TEST_F(HTMLTextFormControlElementTest, IndexForPosition)
+{
+    HTMLInputElement* input = toHTMLInputElement(document().getElementById("input"));
+    input->setValue("Hello");
+    HTMLElement* innerEditor = input->innerEditorElement();
+    EXPECT_EQ(5, HTMLTextFormControlElement::indexForPosition(innerEditor, Position(innerEditor, PositionAnchorType::AfterAnchor)));
+}
+
 } // namespace blink

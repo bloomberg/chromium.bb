@@ -309,7 +309,7 @@ static Position positionForIndex(HTMLElement* innerEditor, int index)
     return lastPositionInOrAfterNode(lastBrOrText);
 }
 
-static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosition)
+int HTMLTextFormControlElement::indexForPosition(HTMLElement* innerEditor, const Position& passedPosition)
 {
     if (!innerEditor || !innerEditor->contains(passedPosition.anchorNode()) || passedPosition.isNull())
         return 0;
@@ -321,6 +321,8 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
     Node* startNode = passedPosition.computeNodeBeforePosition();
     if (!startNode)
         startNode = passedPosition.computeContainerNode();
+    if (startNode == innerEditor && passedPosition.isAfterAnchor())
+        startNode = innerEditor->lastChild();
     DCHECK(startNode);
     DCHECK(innerEditor->contains(startNode));
 
