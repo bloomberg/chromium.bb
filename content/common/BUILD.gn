@@ -143,10 +143,7 @@ source_set("common") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   } else {
-    sources -= [
-      "cursors/webcursor_ozone.cc",
-      "font_list_ozone.cc",
-    ]
+    sources -= [ "cursors/webcursor_ozone.cc" ]
   }
 
   if (!use_aura || is_android) {
@@ -157,15 +154,12 @@ source_set("common") {
     sources -= [ "cursors/webcursor_aurax11.cc" ]
   }
 
-  if (use_pango) {
-    configs += [ "//build/config/linux/pangocairo" ]
-    if (use_ozone) {
-      # If we're using pango, never use this ozone file (it was removed in all
-      # non-ozone cases above).
-      sources -= [ "font_list_ozone.cc" ]
-    }
-  } else {
-    sources -= [ "font_list_pango.cc" ]
+  if (is_linux) {
+    deps += [ "//build/linux:fontconfig" ]
+  }
+
+  if (is_mac || is_win || is_android) {
+    sources -= [ "font_list_fontconfig.cc" ]
   }
 
   if (enable_plugins) {

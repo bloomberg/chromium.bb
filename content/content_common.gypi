@@ -324,9 +324,8 @@
       'common/font_list.cc',
       'common/font_list.h',
       'common/font_list_android.cc',
+      'common/font_list_fontconfig.cc',
       'common/font_list_mac.mm',
-      'common/font_list_ozone.cc',
-      'common/font_list_pango.cc',
       'common/font_list_win.cc',
       'common/frame_message_enums.h',
       'common/frame_messages.h',
@@ -578,14 +577,6 @@
         'content.gyp:common_aidl',
       ],
     }],
-    ['use_pango == 1', {
-      'dependencies': [
-        '../build/linux/system.gyp:pangocairo',
-      ],
-      'sources!': [
-        'common/font_list_ozone.cc',
-      ],
-    }],
     ['use_x11 == 1', {
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
@@ -652,7 +643,6 @@
     }, {  # use_ozone!=1
       'sources!': [
         'common/cursors/webcursor_ozone.cc',
-        'common/font_list_ozone.cc',
         'common/gpu/gpu_memory_buffer_factory_ozone.cc',
         'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc',
         'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h',
