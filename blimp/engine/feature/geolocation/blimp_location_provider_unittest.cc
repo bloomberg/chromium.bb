@@ -107,14 +107,14 @@ TEST_F(BlimpLocationProviderTest, LocationProviderDeleted) {
 }
 
 TEST_F(BlimpLocationProviderTest, OnPermissionGranted) {
-  EXPECT_CALL(*delegate_, RequestRefresh()).Times(1);
+  EXPECT_CALL(*delegate_, OnPermissionGranted()).Times(1);
 
   location_provider_->StartProvider(true);
   location_provider_->OnPermissionGranted();
 }
 
 TEST_F(BlimpLocationProviderTest, OnPermissionGrantedHandlesNullDelegate) {
-  EXPECT_CALL(*delegate_, RequestRefresh()).Times(0);
+  EXPECT_CALL(*delegate_, OnPermissionGranted()).Times(0);
 
   location_provider_->StartProvider(true);
   delegate_.reset();

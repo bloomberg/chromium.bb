@@ -137,7 +137,7 @@ void EngineGeolocationFeature::RequestAccuracy(
                                               net::CompletionCallback());
 }
 
-void EngineGeolocationFeature::RequestRefresh() {
+void EngineGeolocationFeature::OnPermissionGranted() {
   GeolocationMessage* geolocation_message = nullptr;
   std::unique_ptr<BlimpMessage> blimp_message =
       CreateBlimpMessage(&geolocation_message);

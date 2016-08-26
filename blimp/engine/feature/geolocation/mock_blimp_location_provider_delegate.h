@@ -23,7 +23,7 @@ class MockBlimpLocationProviderDelegate
 
   MOCK_METHOD1(RequestAccuracy,
                void(GeolocationSetInterestLevelMessage::Level level));
-  MOCK_METHOD0(RequestRefresh, void());
+  MOCK_METHOD0(OnPermissionGranted, void());
   MOCK_METHOD1(
       SetUpdateCallback,
       void(const base::Callback<void(const device::Geoposition&)>& callback));

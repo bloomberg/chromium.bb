@@ -18,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "device/geolocation/access_token_store.h"
-#include "device/geolocation/mock_location_provider.h"
+#include "device/geolocation/fake_location_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,7 +98,7 @@ void DummyFunction(const LocationProvider* provider,
 
 class GeolocationProviderTest : public testing::Test {
  protected:
-  GeolocationProviderTest() : arbitrator_(new MockLocationProvider) {
+  GeolocationProviderTest() : arbitrator_(new FakeLocationProvider) {
     provider()->SetArbitratorForTesting(base::WrapUnique(arbitrator_));
   }
 
@@ -108,7 +108,7 @@ class GeolocationProviderTest : public testing::Test {
     return GeolocationProviderImpl::GetInstance();
   }
 
-  MockLocationProvider* arbitrator() { return arbitrator_; }
+  FakeLocationProvider* arbitrator() { return arbitrator_; }
 
   // Called on test thread.
   bool ProvidersStarted();
@@ -116,7 +116,7 @@ class GeolocationProviderTest : public testing::Test {
 
  private:
   // Called on provider thread.
-  void GetProvidersStarted(bool* started);
+  void GetProvidersStarted();
 
   // |at_exit| must be initialized before all other variables so that it is
   // available to register with Singletons and can handle tear down when the
@@ -126,7 +126,10 @@ class GeolocationProviderTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
 
   // Owned by the GeolocationProviderImpl class.
-  MockLocationProvider* arbitrator_;
+  FakeLocationProvider* arbitrator_;
+
+  // True if |arbitrator_| is started.
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderTest);
 };
@@ -135,18 +138,17 @@ bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(provider()->IsRunning());
   DCHECK(base::MessageLoop::current() == &message_loop_);
 
-  bool started;
   provider()->task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
-                            base::Unretained(this), &started),
+                            base::Unretained(this)),
       base::MessageLoop::QuitWhenIdleClosure());
   base::RunLoop().Run();
-  return started;
+  return is_started_;
 }
 
-void GeolocationProviderTest::GetProvidersStarted(bool* started) {
+void GeolocationProviderTest::GetProvidersStarted() {
   DCHECK(provider()->task_runner()->BelongsToCurrentThread());
-  *started = arbitrator()->is_started();
+  is_started_ = arbitrator()->state() != FakeLocationProvider::STOPPED;
 }
 
 void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
@@ -169,11 +171,9 @@ TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
 
 TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_FALSE(provider()->IsRunning());
-  LocationProvider::LocationProviderUpdateCallback callback =
-      base::Bind(&DummyFunction);
   std::unique_ptr<GeolocationProvider::Subscription> subscription =
-      provider()->AddLocationUpdateCallback(base::Bind(callback, arbitrator()),
-                                            false);
+      provider()->AddLocationUpdateCallback(
+          base::Bind(&DummyFunction, arbitrator()), false);
   EXPECT_TRUE(provider()->IsRunning());
   EXPECT_TRUE(ProvidersStarted());
 

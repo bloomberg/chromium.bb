@@ -26,7 +26,7 @@ class BlimpLocationProvider : public device::LocationProvider {
 
     virtual void RequestAccuracy(
         GeolocationSetInterestLevelMessage::Level level) = 0;
-    virtual void RequestRefresh() = 0;
+    virtual void OnPermissionGranted() = 0;
     virtual void SetUpdateCallback(
         const GeopositionReceivedCallback& callback) = 0;
   };

@@ -51,7 +51,7 @@ const device::Geoposition& BlimpLocationProvider::GetPosition() {
 void BlimpLocationProvider::OnPermissionGranted() {
   DCHECK(is_started_);
   if (delegate_) {
-    delegate_->RequestRefresh();
+    delegate_->OnPermissionGranted();
   }
 }
 

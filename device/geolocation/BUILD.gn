@@ -146,16 +146,32 @@ if (is_android) {
   }
 }
 
-source_set("unittests") {
+source_set("test_support") {
   testonly = true
 
   sources = [
     "fake_access_token_store.cc",
     "fake_access_token_store.h",
-    "geolocation_provider_impl_unittest.cc",
-    "location_arbitrator_impl_unittest.cc",
+    "fake_location_provider.cc",
+    "fake_location_provider.h",
     "mock_location_provider.cc",
     "mock_location_provider.h",
+  ]
+  public_deps = [
+    ":device_geolocation",
+  ]
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "geolocation_provider_impl_unittest.cc",
+    "location_arbitrator_impl_unittest.cc",
     "network_location_provider_unittest.cc",
     "wifi_data_provider_chromeos_unittest.cc",
     "wifi_data_provider_common_unittest.cc",
@@ -166,6 +182,7 @@ source_set("unittests") {
     ":device_geolocation",
   ]
   deps = [
+    ":test_support",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net:test_support",

@@ -42,7 +42,7 @@ class EngineGeolocationFeature : public BlimpMessageProcessor,
   // BlimpLocationProvider::Delegate implementation.
   void RequestAccuracy(
       GeolocationSetInterestLevelMessage::Level level) override;
-  void RequestRefresh() override;
+  void OnPermissionGranted() override;
   void SetUpdateCallback(const GeopositionReceivedCallback& callback) override;
 
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;

@@ -37,6 +37,7 @@ group("core") {
     ":switches",
     "//blimp/client/core/compositor",
     "//blimp/client/core/contents",
+    "//blimp/client/core/geolocation",
     "//blimp/client/core/session",
   ]
 }
@@ -78,6 +79,7 @@ source_set("unit_tests") {
     "//blimp/client:feature",
     "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
+    "//blimp/client/core/geolocation:unit_tests",
     "//blimp/client/core/session:unit_tests",
     "//blimp/client/public:public_headers",
     "//blimp/client/test",

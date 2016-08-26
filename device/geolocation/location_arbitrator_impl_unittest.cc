@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "device/geolocation/fake_access_token_store.h"
+#include "device/geolocation/fake_location_provider.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/geoposition.h"
-#include "device/geolocation/mock_location_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +47,7 @@ void AdvanceTimeNow(const base::TimeDelta& delta) {
   g_fake_time_now_secs += delta.InSecondsF();
 }
 
-void SetPositionFix(MockLocationProvider* provider,
+void SetPositionFix(FakeLocationProvider* provider,
                     double latitude,
                     double longitude,
                     double accuracy) {
@@ -61,7 +61,9 @@ void SetPositionFix(MockLocationProvider* provider,
   provider->HandlePositionChanged(position);
 }
 
-void SetReferencePosition(MockLocationProvider* provider) {
+// TODO(lethalantidote): Populate a Geoposition in the class from kConstants
+// and then just copy that with "=" versus using a helper function.
+void SetReferencePosition(FakeLocationProvider* provider) {
   SetPositionFix(provider, 51.0, -0.1, 400);
 }
 
@@ -76,17 +78,17 @@ class FakeGeolocationDelegate : public GeolocationDelegate {
 
   std::unique_ptr<LocationProvider> OverrideSystemLocationProvider() override {
     DCHECK(!mock_location_provider_);
-    mock_location_provider_ = new MockLocationProvider;
+    mock_location_provider_ = new FakeLocationProvider;
     return base::WrapUnique(mock_location_provider_);
   }
 
-  MockLocationProvider* mock_location_provider() const {
+  FakeLocationProvider* mock_location_provider() const {
     return mock_location_provider_;
   }
 
  private:
   bool use_network_ = true;
-  MockLocationProvider* mock_location_provider_ = nullptr;
+  FakeLocationProvider* mock_location_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGeolocationDelegate);
 };
@@ -117,12 +119,12 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
       const scoped_refptr<net::URLRequestContextGetter>& context,
       const GURL& url,
       const base::string16& access_token) override {
-    cell_ = new MockLocationProvider;
+    cell_ = new FakeLocationProvider;
     return base::WrapUnique(cell_);
   }
 
   std::unique_ptr<LocationProvider> NewSystemLocationProvider() override {
-    gps_ = new MockLocationProvider;
+    gps_ = new FakeLocationProvider;
     return base::WrapUnique(gps_);
   }
 
@@ -132,8 +134,8 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
   // type).
   // TODO(mvanouwerkerk): rename |cell_| to |network_location_provider_| and
   // |gps_| to |gps_location_provider_|
-  MockLocationProvider* cell_;
-  MockLocationProvider* gps_;
+  FakeLocationProvider* cell_;
+  FakeLocationProvider* gps_;
   const scoped_refptr<AccessTokenStore> access_token_store_;
 };
 
@@ -175,9 +177,9 @@ class GeolocationLocationArbitratorTest : public testing::Test {
         LocationArbitratorImpl::kFixStaleTimeoutMilliseconds + 1);
   }
 
-  MockLocationProvider* cell() { return arbitrator_->cell_; }
+  FakeLocationProvider* cell() { return arbitrator_->cell_; }
 
-  MockLocationProvider* gps() { return arbitrator_->gps_; }
+  FakeLocationProvider* gps() { return arbitrator_->gps_; }
 
   const scoped_refptr<FakeAccessTokenStore> access_token_store_;
   const std::unique_ptr<MockLocationObserver> observer_;
@@ -219,8 +221,8 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   EXPECT_TRUE(gps());
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, gps()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
   EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
 
@@ -229,7 +231,7 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(observer_->last_position_.Validate() ||
               observer_->last_position_.error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(cell()->position().latitude, observer_->last_position_.latitude);
+  EXPECT_EQ(cell()->GetPosition().latitude, observer_->last_position_.latitude);
 
   EXPECT_FALSE(cell()->is_permission_granted());
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGrantedForTest());
@@ -253,7 +255,7 @@ TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
   ASSERT_FALSE(cell());
   EXPECT_FALSE(gps());
   ASSERT_TRUE(fake_delegate->mock_location_provider());
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY,
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
   EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
@@ -263,7 +265,7 @@ TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
   EXPECT_TRUE(observer_->last_position_.Validate() ||
               observer_->last_position_.error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(fake_delegate->mock_location_provider()->position().latitude,
+  EXPECT_EQ(fake_delegate->mock_location_provider()->GetPosition().latitude,
             observer_->last_position_.latitude);
 
   EXPECT_FALSE(
@@ -294,9 +296,9 @@ TEST_F(GeolocationLocationArbitratorTest,
   ASSERT_TRUE(cell());
   EXPECT_FALSE(gps());
   ASSERT_TRUE(fake_delegate->mock_location_provider());
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY,
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
   EXPECT_EQ(Geoposition::ERROR_CODE_NONE, observer_->last_position_.error_code);
 
@@ -305,7 +307,7 @@ TEST_F(GeolocationLocationArbitratorTest,
   EXPECT_TRUE(observer_->last_position_.Validate() ||
               observer_->last_position_.error_code !=
                   Geoposition::ERROR_CODE_NONE);
-  EXPECT_EQ(cell()->position().latitude, observer_->last_position_.latitude);
+  EXPECT_EQ(cell()->GetPosition().latitude, observer_->last_position_.latitude);
 
   EXPECT_FALSE(cell()->is_permission_granted());
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGrantedForTest());
@@ -320,14 +322,14 @@ TEST_F(GeolocationLocationArbitratorTest, SetObserverOptions) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, gps()->state_);
   SetReferencePosition(cell());
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
+  EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, gps()->state_);
   arbitrator_->StartProvider(true);
-  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, gps()->state_);
+  EXPECT_EQ(FakeLocationProvider::HIGH_ACCURACY, cell()->state_);
+  EXPECT_EQ(FakeLocationProvider::HIGH_ACCURACY, gps()->state_);
 }
 
 TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
@@ -355,7 +357,7 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
 
   // Advance time, and notify once again
   AdvanceTimeNow(SwitchOnFreshnessCliff());
-  cell()->HandlePositionChanged(cell()->position());
+  cell()->HandlePositionChanged(cell()->GetPosition());
 
   // New fix is available, less accurate but fresher
   CheckLastPositionInfo(5, 6, 150);
@@ -423,8 +425,8 @@ TEST_F(GeolocationLocationArbitratorTest, TwoOneShotsIsNewPositionBetter) {
 
   // To test 240956, perform a throwaway alloc.
   // This convinces the allocator to put the providers in a new memory location.
-  std::unique_ptr<MockLocationProvider> dummy_provider(
-      new MockLocationProvider);
+  std::unique_ptr<FakeLocationProvider> dummy_provider(
+      new FakeLocationProvider);
 
   arbitrator_->StartProvider(false);
   access_token_store_->NotifyDelegateTokensLoaded();
