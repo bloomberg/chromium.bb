@@ -525,13 +525,13 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, keyboard_strings,
                           arraysize(keyboard_strings));
 
-  LocalizedString note_strings[] = {
-    {"noteTitle", IDS_SETTINGS_NOTE_TITLE},
-    {"noteDefaultAppAutoLaunch", IDS_SETTINGS_NOTE_DEFAULT_APP_AUTO_LAUNCH},
-    {"noteFindMoreApps", IDS_SETTINGS_NOTE_FIND_MORE_APPS}
+  LocalizedString stylus_strings[] = {
+    {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
+    {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
+    {"stylusFindMoreApps", IDS_SETTINGS_STYLUS_FIND_MORE_APPS}
   };
-  AddLocalizedStringsBulk(html_source, note_strings,
-                          arraysize(note_strings));
+  AddLocalizedStringsBulk(html_source, stylus_strings,
+                          arraysize(stylus_strings));
 
 
   LocalizedString display_strings[] = {

@@ -7,7 +7,7 @@
 <link rel="import" href="/device_page/device_page_browser_proxy.html">
 <link rel="import" href="/device_page/display.html">
 <link rel="import" href="/device_page/keyboard.html">
-<link rel="import" href="/device_page/note.html">
+<link rel="import" href="/device_page/stylus.html">
 <link rel="import" href="/device_page/pointers.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/prefs/prefs.html">
@@ -34,11 +34,11 @@
           <iron-icon icon="settings:keyboard"></iron-icon>
           <div class="middle">$i18n{keyboardTitle}</div>
         </div>
-        <template is="dom-if" if=[[noteAllowed_]]>
-          <div id="noteRow" class="settings-box" on-tap="onNoteTap_"
+        <template is="dom-if" if=[[stylusAllowed_]]>
+          <div id="stylusRow" class="settings-box" on-tap="onStylusTap_"
               actionable>
             <iron-icon icon="settings:note"></iron-icon>
-            <div class="middle">$i18n{noteTitle}</div>
+            <div class="middle">$i18n{stylusTitle}</div>
           </div>
         </template>
         <div id="displayRow" class="settings-box" on-tap="onDisplayTap_"
@@ -63,12 +63,12 @@
           <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
         </settings-subpage>
       </template>
-      <template is="dom-if" if=[[noteAllowed_]]>
-        <template is="dom-if" route-path="/note">
+      <template is="dom-if" if=[[stylusAllowed_]]>
+        <template is="dom-if" route-path="/stylus">
           <settings-subpage
-              associated-control="[[$$('#noteRow')]]"
-              page-title="$i18n{noteTitle}">
-            <settings-note prefs="{{prefs}}"></settings-note>
+              associated-control="[[$$('#stylusRow')]]"
+              page-title="$i18n{stylusTitle}">
+            <settings-stylus prefs="{{prefs}}"></settings-stylus>
           </settings-subpage>
         </template>
       </template>

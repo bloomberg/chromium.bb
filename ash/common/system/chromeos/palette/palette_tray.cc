@@ -72,7 +72,7 @@ class TitleView : public views::View, public views::ButtonListener {
         0, ash::kTrayPopupPaddingHorizontal, 0, 0));
 
     views::Label* text_label =
-        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_PALETTE_TITLE));
+        new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
     text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     text_label->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
     AddChildView(text_label);
@@ -81,7 +81,7 @@ class TitleView : public views::View, public views::ButtonListener {
     help_button_ = new ash::TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_HELP,
                                                   IDS_ASH_STATUS_TRAY_HELP);
     help_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
     AddChildView(help_button_);
 
     AddChildView(CreateSeparator(views::Separator::VERTICAL));
@@ -222,7 +222,7 @@ void PaletteTray::ClickedOutsideBubble() {
 }
 
 base::string16 PaletteTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(IDS_ASH_PALETTE_TITLE);
+  return l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE);
 }
 
 void PaletteTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {

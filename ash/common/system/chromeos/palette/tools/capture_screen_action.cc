@@ -35,7 +35,7 @@ void CaptureScreenAction::OnEnable() {
 
 views::View* CaptureScreenAction::CreateView() {
   return CreateDefaultView(
-      l10n_util::GetStringUTF16(IDS_ASH_PALETTE_CAPTURE_SCREEN_ACTION));
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CAPTURE_SCREEN_ACTION));
 }
 
 gfx::VectorIconId CaptureScreenAction::GetPaletteIconId() {

@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * 'settings-note' is the settings subpage with note-specific settings.
+ * 'settings-stylus' is the settings subpage with stylus-specific settings.
  */
 
 Polymer({
-  is: 'settings-note',
+  is: 'settings-stylus',
 
   properties: {
     /** Preferences state. */

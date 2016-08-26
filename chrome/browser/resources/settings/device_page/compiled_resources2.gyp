@@ -42,7 +42,7 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'note',
+      'target_name': 'stylus',
       'dependencies': [
         '../prefs/compiled_resources2.gyp:prefs_types',
       ],

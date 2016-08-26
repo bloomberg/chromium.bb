@@ -35,10 +35,10 @@ Polymer({
     },
 
     /** @private */
-    noteAllowed_: {
+    stylusAllowed_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('noteAllowed');
+        return loadTimeData.getBoolean('stylusAllowed');
       },
       readOnly: true,
     },
@@ -101,8 +101,8 @@ Polymer({
    * Handler for tapping the Keyboard settings menu item.
    * @private
    */
-  onNoteTap_: function() {
-    settings.navigateTo(settings.Route.NOTES);
+  onStylusTap_: function() {
+    settings.navigateTo(settings.Route.STYLUS);
   },
 
   /**

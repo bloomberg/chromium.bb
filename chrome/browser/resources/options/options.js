@@ -223,9 +223,9 @@ function load() {
                                 [$('pointer-settings-button')]);
     PageManager.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
-    PageManager.registerOverlay(NoteOverlay.getInstance(),
+    PageManager.registerOverlay(StylusOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
-                                [$('note-settings-link')]);
+                                [$('stylus-settings-link')]);
     PageManager.registerOverlay(PowerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('power-settings-link')]);

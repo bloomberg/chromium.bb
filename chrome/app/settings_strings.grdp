@@ -1844,18 +1844,18 @@
       Change language and input settings
     </message>
 
-    <!-- Note -->
-    <message name="IDS_OPTIONS_NOTE_TITLE" desc="Title of the note-taking options (non material-design) page.">
-      Note settings
+    <!-- Stylus -->
+    <message name="IDS_SETTINGS_STYLUS_TITLE" desc="Title of the stylus settings page.">
+      Stylus settings
     </message>
-    <message name="IDS_SETTINGS_NOTE_TITLE" desc="Title of the note-taking settings page.">
-      Note
+    <message name="IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS" desc="Label that tells the user that the stylus tools will be automatically opened and closed when they insert or eject the stylus.">
+      Open stylus tools when the stylus is removed
     </message>
-    <message name="IDS_SETTINGS_NOTE_DEFAULT_APP_AUTO_LAUNCH" desc="Label that tells the user that the note-taking app will be auto-launched on eject input events.">
-      Auto-launch the note-app
+    <message name="IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS" desc="Toggle that lets the user enable or disable the stylus tools.">
+      Show stylus tools in the shelf
     </message>
-    <message name="IDS_SETTINGS_NOTE_FIND_MORE_APPS" desc="URL label that opens up the Play Store to a curated list of note-taking applications.">
-      Find more note-taking applications
+    <message name="IDS_SETTINGS_STYLUS_FIND_MORE_APPS" desc="URL label that opens up the Play Store to a curated list of stylus applications.">
+      Find more stylus applications
     </message>
 
     <!-- Display -->

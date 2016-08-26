@@ -118,7 +118,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   if (easy_unlock_handler)
     AddSettingsPageUIHandler(easy_unlock_handler);
 
-  html_source->AddBoolean("noteAllowed", ash::IsPaletteEnabled());
+  html_source->AddBoolean("stylusAllowed", ash::IsPaletteEnabled());
   html_source->AddBoolean("quickUnlockEnabled",
                           chromeos::IsQuickUnlockEnabled());
 #endif

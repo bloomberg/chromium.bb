@@ -41,7 +41,7 @@ void MagnifierMode::OnDisable() {
 
 views::View* MagnifierMode::CreateView() {
   return CreateDefaultView(
-      l10n_util::GetStringUTF16(IDS_ASH_PALETTE_MAGNIFIER_MODE));
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_MAGNIFIER_MODE));
 }
 
 gfx::VectorIconId MagnifierMode::GetPaletteIconId() {

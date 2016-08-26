@@ -93,7 +93,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/display_overscan_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/internet_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/options_note_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/options_stylus_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/pointer_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
@@ -417,7 +417,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::KeyboardHandler());
   AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::options::OptionsNoteHandler());
+                          new chromeos::options::OptionsStylusHandler());
 
   chromeos::options::PointerHandler* pointer_handler =
       new chromeos::options::PointerHandler();

@@ -4,21 +4,21 @@
 
 cr.define('options', function() {
   /**
-   * Encapsulated handling of the note overlay.
+   * Encapsulated handling of the stylus overlay.
    * @constructor
    * @extends {options.SettingsDialog}
    */
-  function NoteOverlay() {
-    options.SettingsDialog.call(this, 'note-overlay',
-         loadTimeData.getString('noteOverlayTabTitle'),
-        'note-overlay',
-        assertInstanceof($('note-confirm'), HTMLButtonElement),
-        assertInstanceof($('note-cancel'), HTMLButtonElement));
+  function StylusOverlay() {
+    options.SettingsDialog.call(this, 'stylus-overlay',
+         loadTimeData.getString('stylusOverlayTabTitle'),
+        'stylus-overlay',
+        assertInstanceof($('stylus-confirm'), HTMLButtonElement),
+        assertInstanceof($('stylus-cancel'), HTMLButtonElement));
   }
 
-  cr.addSingletonGetter(NoteOverlay);
+  cr.addSingletonGetter(StylusOverlay);
 
-  NoteOverlay.prototype = {
+  StylusOverlay.prototype = {
     __proto__: options.SettingsDialog.prototype,
 
     /** @override */
@@ -29,6 +29,6 @@ cr.define('options', function() {
 
   // Export
   return {
-    NoteOverlay: NoteOverlay
+    StylusOverlay: StylusOverlay
   };
 });

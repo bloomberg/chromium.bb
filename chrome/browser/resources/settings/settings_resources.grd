@@ -414,11 +414,11 @@
         <structure name="IDR_SETTINGS_DEVICE_KEYBOARD_JS"
                    file="device_page/keyboard.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_NOTE_HTML"
-                   file="device_page/note.html"
+        <structure name="IDR_SETTINGS_DEVICE_STYLUS_HTML"
+                   file="device_page/stylus.html"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_DEVICE_NOTE_JS"
-                   file="device_page/note.js"
+        <structure name="IDR_SETTINGS_DEVICE_STYLUS_JS"
+                   file="device_page/stylus.js"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_PAGE_HTML"
                    file="device_page/device_page.html"

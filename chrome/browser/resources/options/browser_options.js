@@ -333,11 +333,11 @@ cr.define('options', function() {
 
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
-        if (loadTimeData.getBoolean('showNoteSettings')) {
-          $('note-settings-link').onclick = function(event) {
-            PageManager.showPageByName('note-overlay');
+        if (loadTimeData.getBoolean('showStylusSettings')) {
+          $('stylus-settings-link').onclick = function(event) {
+            PageManager.showPageByName('stylus-overlay');
           };
-          $('note-row').hidden = false;
+          $('stylus-row').hidden = false;
         }
         if (loadTimeData.getBoolean('showPowerStatus')) {
           $('power-settings-link').onclick = function(evt) {

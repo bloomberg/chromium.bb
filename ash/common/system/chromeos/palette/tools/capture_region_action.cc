@@ -10,7 +10,6 @@
 #include "ash/common/system/toast/toast_data.h"
 #include "ash/common/system/toast/toast_manager.h"
 #include "ash/common/wm_shell.h"
-#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,9 +19,6 @@ namespace {
 
 const char kToastId[] = "palette_capture_region";
 const int kToastDurationMs = 2500;
-
-// TODO(jdufault): Localize toast message. See crbug.com/634558.
-const char kToastMessage[] = "Select a region";
 
 }  // namespace
 
@@ -42,8 +38,9 @@ PaletteToolId CaptureRegionAction::GetToolId() const {
 void CaptureRegionAction::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  ToastData toast(kToastId, base::ASCIIToUTF16(kToastMessage), kToastDurationMs,
-                  base::string16());
+  ToastData toast(kToastId, l10n_util::GetStringUTF16(
+                                IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST),
+                  kToastDurationMs, base::string16());
   ash::WmShell::Get()->toast_manager()->Show(toast);
 
   WmShell::Get()->palette_delegate()->TakePartialScreenshot();
@@ -53,7 +50,7 @@ void CaptureRegionAction::OnEnable() {
 
 views::View* CaptureRegionAction::CreateView() {
   return CreateDefaultView(
-      l10n_util::GetStringUTF16(IDS_ASH_PALETTE_CAPTURE_REGION_ACTION));
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION));
 }
 
 gfx::VectorIconId CaptureRegionAction::GetPaletteIconId() {

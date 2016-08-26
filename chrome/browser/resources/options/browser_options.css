@@ -437,7 +437,7 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-border-vertical-spacing: 0.65em;
 }
 
-#note-settings-link,
+#stylus-settings-link,
 #power-settings-link {
   /* Match the spacing of the touchpad/mouse slider. */
   line-height: 25px;

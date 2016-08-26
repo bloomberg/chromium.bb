@@ -129,19 +129,6 @@ This file contains the strings for ash.
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
 
-      <message name="IDS_ASH_PALETTE_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the palette (a pop-up panel next to the status tray). This causes a partial screenshot to be taken, where after clicking the palette is dimissed and the user selects an area of the screen to take a screenshot of.">
-        Capture Region
-      </message>
-      <message name="IDS_ASH_PALETTE_CAPTURE_SCREEN_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this button takes a screenshot of the entire screen. Additionally, the palette tray is closed.">
-        Capture Screen
-      </message>
-      <message name="IDS_ASH_PALETTE_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the palette (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in. Additionally, the palette tray is closed.">
-        Create Note
-      </message>
-      <message name="IDS_ASH_PALETTE_MAGNIFIER_MODE" desc="Title of the magnification mode in the palette. Clicking this button opens up a magnifier. The magnifier remains active until the user turns it off by tapping the same button again.">
-        Magnifier
-      </message>
-
       <!-- TODO(zork): Only include these in Aura builds -->
       <message name="IDS_ASH_SHELF_APP_LIST_TITLE" desc="The title used for the Ash App List in the Shelf">
         Apps
@@ -380,8 +367,26 @@ Press Ctrl+Alt+Z to disable.
         Previous menu
       </message>
 
-      <message name="IDS_ASH_PALETTE_TITLE" desc="The title of the palette in the ash shelf.">
-        Palette
+      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_ACTION" desc="Title of the capture region action in the stylus tools (a pop-up panel next to the status tray). This causes a partial screenshot to be taken (the user selects an area of the screen to take a screenshot of).">
+        Capture region
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_REGION_TOAST" desc="Message content on the toast that appears when the user activates the capture region action in the stylus tools.">
+        Use the stylus to select a region
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_CAPTURE_SCREEN_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this button takes a screenshot of the entire screen.">
+        Capture screen
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION" desc="Title of the capture screen action in the stylus tools (a pop-up panel next to the status tray). Clicking this opens up an application that the user can quickly jot a note down in.">
+        New note
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_LASER_POINTER_MODE" desc="Title of the laser pointer in the palette (a pop-up panel next to the status tray). Clicking this turns the mouse into a laser pointer. Additionally, the palette tray is closed.">
+        Laser pointer mode
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_MAGNIFIER_MODE" desc="Title of the magnification mode in the stylus tools. Clicking this button opens up a magnifier. The magnifier remains active until the user turns it off by tapping the same button again.">
+        Magnifying glass mode
+      </message>
+      <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
+        Stylus tools
       </message>
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">

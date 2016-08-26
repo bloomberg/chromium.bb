@@ -39,7 +39,7 @@ views::View* CreateNoteAction::CreateView() {
     return nullptr;
 
   return CreateDefaultView(
-      l10n_util::GetStringUTF16(IDS_ASH_PALETTE_CREATE_NOTE_ACTION));
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
 }
 
 gfx::VectorIconId CreateNoteAction::GetPaletteIconId() {
