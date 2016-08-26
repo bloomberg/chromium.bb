@@ -612,7 +612,16 @@ public class TabPersistentStore extends TabPersister {
         // selected. TODO(twellington): The first tab will always be selected. Instead, the tab that
         // was selected in the other model before the merge should be selected after the merge.
         if (setAsActive || (tabToRestore.fromMerge && restoredIndex == 0)) {
+            boolean wasIncognitoTabModelSelected = mTabModelSelector.isIncognitoSelected();
             TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId));
+            boolean isIncognitoTabModelSelected = mTabModelSelector.isIncognitoSelected();
+
+            // Setting the index will cause the tab's model to be selected. Set it back to the model
+            // that was selected before setting the index if the index is being set during a merge.
+            if (tabToRestore.fromMerge
+                    && wasIncognitoTabModelSelected != isIncognitoTabModelSelected) {
+                mTabModelSelector.selectModel(wasIncognitoTabModelSelected);
+            }
         }
         restoredTabs.put(tabToRestore.originalIndex, tabId);
     }
