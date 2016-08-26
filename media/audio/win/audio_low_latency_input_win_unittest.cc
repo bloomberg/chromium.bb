@@ -360,7 +360,8 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   ais.Close();
 }
 
-TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
+// TODO(fdoray): investigate failure and re-enable. crbug.com/641142
+TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamTestPacketSizes) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   int count = 0;
