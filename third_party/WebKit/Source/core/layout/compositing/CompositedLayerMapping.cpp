@@ -99,7 +99,7 @@ static IntRect backgroundRect(const LayoutObject* layoutObject)
 
     LayoutRect rect;
     const LayoutBox* box = toLayoutBox(layoutObject);
-    return pixelSnappedIntRect(box->backgroundClipRect());
+    return pixelSnappedIntRect(box->backgroundRect(BackgroundClipRect));
 }
 
 static inline bool isAcceleratedCanvas(const LayoutObject* layoutObject)
@@ -2587,14 +2587,9 @@ bool CompositedLayerMapping::invalidateLayerIfNoPrecedingEntry(size_t indexToCle
 
 bool CompositedLayerMapping::shouldPaintBackgroundOntoScrollingContentsLayer() const
 {
-    // TODO(flackr): Add support for painting locally attached background images. https://crbug.com/625882
-    const FillLayer& backgroundLayer = m_owningLayer.layoutObject()->style()->backgroundLayers();
     return !m_owningLayer.isRootLayer()
         && m_owningLayer.scrollsOverflow()
-        && !backgroundLayer.image()
-        && !backgroundLayer.next()
-        && (backgroundLayer.attachment() == LocalBackgroundAttachment
-            || backgroundLayer.clip() == PaddingFillBox)
+        && m_owningLayer.layoutObject()->style()->hasEntirelyLocalBackground()
         && !m_owningLayer.stackingNode()->hasNegativeZOrderList();
 }
 

@@ -316,17 +316,6 @@ void FillLayer::cullEmptyLayers()
     }
 }
 
-static EFillBox clipMax(EFillBox clipA, EFillBox clipB)
-{
-    if (clipA == BorderFillBox || clipB == BorderFillBox)
-        return BorderFillBox;
-    if (clipA == PaddingFillBox || clipB == PaddingFillBox)
-        return PaddingFillBox;
-    if (clipA == ContentFillBox || clipB == ContentFillBox)
-        return ContentFillBox;
-    return TextFillBox;
-}
-
 void FillLayer::computeCachedPropertiesIfNeeded() const
 {
     if (m_cachedPropertiesComputed)
@@ -338,7 +327,7 @@ void FillLayer::computeCachedPropertiesIfNeeded() const
 
     if (m_next) {
         m_next->computeCachedPropertiesIfNeeded();
-        m_thisOrNextLayersClipMax = clipMax(thisOrNextLayersClipMax(), m_next->thisOrNextLayersClipMax());
+        m_thisOrNextLayersClipMax = enclosingFillBox(thisOrNextLayersClipMax(), m_next->thisOrNextLayersClipMax());
         m_thisOrNextLayersUseContentBox |= m_next->m_thisOrNextLayersUseContentBox;
         m_thisOrNextLayersHaveLocalAttachment |= m_next->m_thisOrNextLayersHaveLocalAttachment;
     }

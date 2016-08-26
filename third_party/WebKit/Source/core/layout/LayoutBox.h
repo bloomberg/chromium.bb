@@ -45,6 +45,7 @@ enum AvailableLogicalHeightType { ExcludeMarginBorderPadding, IncludeMarginBorde
 // clipping behavior. During hit testing, overlay scrollbars behave like regular
 // scrollbars and should change how hit testing is clipped.
 enum MarginDirection { BlockDirection, InlineDirection };
+enum BackgroundRectType { BackgroundClipRect, BackgroundKnownOpaqueRect };
 
 enum ShouldComputePreferred { ComputeActual, ComputePreferred };
 
@@ -355,8 +356,8 @@ public:
     IntSize absoluteContentBoxOffset() const;
     // The content box converted to absolute coords (taking transforms into account).
     FloatQuad absoluteContentQuad() const;
-    // The clip rect of the background.
-    LayoutRect backgroundClipRect() const;
+    // The enclosing rectangle of the background with given opacity requirement.
+    LayoutRect backgroundRect(BackgroundRectType) const;
 
     // This returns the content area of the box (excluding padding and border). The only difference with contentBoxRect is that computedCSSContentBoxRect
     // does include the intrinsic padding in the content box as this is what some callers expect (like getComputedStyle).

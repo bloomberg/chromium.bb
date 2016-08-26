@@ -641,12 +641,12 @@ TEST_F(CompositedLayerMappingTest, ShouldPaintBackgroundOntoScrollingContentsLay
         "    <div id='negative-composited-child' style='background-color: red; width: 1px; height: 1px; position: absolute; backface-visibility: hidden; z-index: -1'></div>"
         "    <div class='spacer'></div>"
         "</div>"
-        "<div id='scroller2' class='scroller' style='background: white content-box; padding: 10px;'>"
-        "    <div class='spacer'></div>"
-        "</div>"
-        "<div id='scroller3' class='scroller' style='background: white local content-box; padding: 10px;'>"
-        "    <div class='spacer'></div>"
-        "</div>"
+        "<div id='scroller2' class='scroller' style='background: white content-box; padding: 10px;'><div class='spacer'></div></div>"
+        "<div id='scroller3' class='scroller' style='background: white local content-box; padding: 10px;'><div class='spacer'></div></div>"
+        "<div id='scroller4' class='scroller' style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg), white local;'><div class='spacer'></div></div>"
+        "<div id='scroller5' class='scroller' style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white local;'><div class='spacer'></div></div>"
+        "<div id='scroller6' class='scroller' style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white padding-box; padding: 10px;'><div class='spacer'></div></div>"
+        "<div id='scroller7' class='scroller' style='background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) local, white content-box; padding: 10px;'><div class='spacer'></div></div>"
         );
 
     // First scroller cannot paint background into scrolling contents layer because it has a negative z-index child.
@@ -657,6 +657,20 @@ TEST_F(CompositedLayerMappingTest, ShouldPaintBackgroundOntoScrollingContentsLay
 
     // Third scroller can paint background into scrolling contents layer.
     EXPECT_TRUE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller3"));
+
+    // Fourth scroller cannot paint background into scrolling contents layer because the background image is not locally attached.
+    EXPECT_FALSE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller4"));
+
+    // Fifth scroller can paint background into scrolling contents layer because both the image and color are locally attached.
+    EXPECT_TRUE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller5"));
+
+    // Sixth scroller can paint background into scrolling contents layer because the image is locally attached and even though
+    // the color is not, it is filled to the padding box so it will be drawn the same as a locally attached background.
+    EXPECT_TRUE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller6"));
+
+    // Seventh scroller cannot paint background into scrolling contents layer because the color is filled to the content
+    // box and we have padding so it is not equivalent to a locally attached background.
+    EXPECT_FALSE(shouldPaintBackgroundOntoScrollingContentsLayer("scroller7"));
 }
 
 } // namespace blink

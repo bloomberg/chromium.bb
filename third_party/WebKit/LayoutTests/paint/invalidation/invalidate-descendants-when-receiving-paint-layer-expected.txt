@@ -10,7 +10,8 @@
       "children": [
         {
           "name": "LayoutBlockFlow (positioned) DIV",
-          "position": [8, 8]
+          "position": [8, 8],
+          "contentsOpaque": true
         },
         {
           "name": "Squashing Containment Layer",

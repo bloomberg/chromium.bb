@@ -11,6 +11,7 @@
         {
           "name": "LayoutBlockFlow (positioned) DIV",
           "position": [8, 8],
+          "contentsOpaque": true,
           "children": [
             {
               "name": "Child Transform Layer",

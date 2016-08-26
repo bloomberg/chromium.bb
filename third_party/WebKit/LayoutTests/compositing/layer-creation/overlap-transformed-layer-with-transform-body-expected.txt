@@ -30,7 +30,8 @@
               "children": [
                 {
                   "name": "LayoutBlockFlow (positioned) DIV id='composited'",
-                  "position": [385, 0]
+                  "position": [385, 0],
+                  "contentsOpaque": true
                 }
               ]
             },

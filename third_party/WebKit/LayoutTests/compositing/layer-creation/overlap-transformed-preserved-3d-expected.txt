@@ -12,6 +12,7 @@
         {
           "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
           "position": [108, 108],
+          "contentsOpaque": true,
           "children": [
             {
               "name": "Child Transform Layer",
@@ -27,6 +28,7 @@
                 {
                   "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start'",
                   "transformOrigin": [50, 50],
+                  "contentsOpaque": true,
                   "shouldFlattenTransform": false,
                   "3dRenderingContext": 1,
                   "transform": [
@@ -139,6 +141,7 @@ After:
         {
           "name": "LayoutBlockFlow (positioned) DIV id='green-box' class='center box-container'",
           "position": [108, 108],
+          "contentsOpaque": true,
           "children": [
             {
               "name": "Child Transform Layer",
@@ -154,6 +157,7 @@ After:
                 {
                   "name": "LayoutBlockFlow DIV id='camera' class='rotate-3d-start rotate-3d-end'",
                   "transformOrigin": [50, 50],
+                  "contentsOpaque": true,
                   "shouldFlattenTransform": false,
                   "3dRenderingContext": 1,
                   "transform": [

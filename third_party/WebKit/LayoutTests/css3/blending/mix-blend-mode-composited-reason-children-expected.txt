@@ -31,7 +31,6 @@
                       "name": "LayoutBlockFlow DIV class='blended'",
                       "bounds": [160, 90],
                       "blendMode": "multiply",
-                      "contentsOpaque": true,
                       "drawsContent": true,
                       "backgroundColor": "#0000FF",
                       "children": [

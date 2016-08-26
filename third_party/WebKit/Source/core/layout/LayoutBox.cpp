@@ -703,15 +703,56 @@ FloatQuad LayoutBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-LayoutRect LayoutBox::backgroundClipRect() const
+LayoutRect LayoutBox::backgroundRect(BackgroundRectType rectType) const
 {
-    // TODO(flackr): Check for the maximum background clip rect.
-    switch (style()->backgroundClip()) {
+    EFillBox backgroundBox = TextFillBox;
+    // Find the largest background rect of the given opaqueness.
+    if (const FillLayer* current = &(style()->backgroundLayers())) {
+        do {
+            const FillLayer* cur = current;
+            current = current->next();
+            if (rectType == BackgroundKnownOpaqueRect) {
+                if (cur->blendMode() != WebBlendModeNormal || cur->composite() != CompositeSourceOver)
+                    continue;
+
+                bool layerKnownOpaque = false;
+                // Check if the image is opaque and fills the clip.
+                if (const StyleImage* image = cur->image()) {
+                    if ((cur->repeatX() == RepeatFill || cur->repeatX() == RoundFill)
+                        && (cur->repeatY() == RepeatFill || cur->repeatY() == RoundFill)
+                        && image->knownToBeOpaque(*this)) {
+                        layerKnownOpaque = true;
+                    }
+                }
+
+                // The background color is painted into the last layer.
+                if (!cur->next()) {
+                    Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
+                    if (!backgroundColor.hasAlpha())
+                        layerKnownOpaque = true;
+                }
+
+                // If neither the image nor the color are opaque then skip this layer.
+                if (!layerKnownOpaque)
+                    continue;
+            }
+            EFillBox currentClip = cur->clip();
+            // Restrict clip if attachment is local.
+            if (currentClip == BorderFillBox && cur->attachment() == LocalBackgroundAttachment)
+                currentClip = PaddingFillBox;
+
+            // If we're asking for the clip rect, a content-box clipped fill layer can be scrolled
+            // into the padding box of the overflow container.
+            if (rectType == BackgroundClipRect
+                && currentClip == ContentFillBox && cur->attachment() == LocalBackgroundAttachment) {
+                currentClip = PaddingFillBox;
+            }
+
+            backgroundBox = enclosingFillBox(backgroundBox, currentClip);
+        } while (current);
+    }
+    switch (backgroundBox) {
     case BorderFillBox:
-        // A 'border-box' clip on scrollable elements local attachment is treated as 'padding-box'.
-        // https://www.w3.org/TR/css3-background/#the-background-attachment
-        if (!style()->isOverflowVisible() && style()->backgroundLayers().attachment() == LocalBackgroundAttachment)
-            return paddingBoxRect();
         return borderBoxRect();
         break;
     case PaddingFillBox:
@@ -1394,10 +1435,6 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
     if (isDocumentElement() || backgroundStolenForBeingBody())
         return false;
 
-    Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
-    if (backgroundColor.hasAlpha())
-        return false;
-
     // If the element has appearance, it might be painted by theme.
     // We cannot be sure if theme paints the background opaque.
     // In this case it is safe to not assume opaqueness.
@@ -1411,10 +1448,9 @@ bool LayoutBox::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) c
         return false;
     if (hasClipPath())
         return false;
-    // FIXME: The background color clip is defined by the last layer.
-    if (style()->backgroundLayers().next())
+    if (style()->hasBlendMode())
         return false;
-    return backgroundClipRect().contains(localRect);
+    return backgroundRect(BackgroundKnownOpaqueRect).contains(localRect);
 }
 
 static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
@@ -1782,13 +1818,12 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transfo
 
     bool isFixedPos = style()->position() == FixedPosition;
 
-    if (style()->canContainFixedPositionObjects() && !isFixedPos) {
-        // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
-        // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
+    // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
+    // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
+    if (style()->canContainFixedPositionObjects() && !isFixedPos)
         mode &= ~IsFixed;
-    } else if (isFixedPos) {
+    else if (isFixedPos)
         mode |= IsFixed;
-    }
 
     LayoutBoxModelObject::mapAncestorToLocal(ancestor, transformState, mode);
 }

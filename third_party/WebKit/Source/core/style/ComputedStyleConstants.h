@@ -180,6 +180,17 @@ enum EFillBox {
     BorderFillBox, PaddingFillBox, ContentFillBox, TextFillBox
 };
 
+inline EFillBox enclosingFillBox(EFillBox boxA, EFillBox boxB)
+{
+    if (boxA == BorderFillBox || boxB == BorderFillBox)
+        return BorderFillBox;
+    if (boxA == PaddingFillBox || boxB == PaddingFillBox)
+        return PaddingFillBox;
+    if (boxA == ContentFillBox || boxB == ContentFillBox)
+        return ContentFillBox;
+    return TextFillBox;
+}
+
 enum EFillRepeat {
     RepeatFill, NoRepeatFill, RoundFill, SpaceFill
 };

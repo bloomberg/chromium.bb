@@ -166,6 +166,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated'",
           "position": [8, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -180,6 +181,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated cover'",
           "position": [8, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -194,6 +196,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated contain'",
           "position": [8, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -208,6 +211,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated fixed-height'",
           "position": [158, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -222,6 +226,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated percent-height'",
           "position": [208, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -236,6 +241,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated top'",
           "position": [258, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -250,6 +256,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated bottom'",
           "position": [308, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -264,6 +271,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated center'",
           "position": [358, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [
@@ -306,6 +314,7 @@
           "name": "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
           "position": [508, 108],
           "bounds": [60, 44],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "paintInvalidations": [

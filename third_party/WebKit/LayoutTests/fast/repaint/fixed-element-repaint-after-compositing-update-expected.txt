@@ -10,7 +10,8 @@
       "children": [
         {
           "name": "LayoutBlockFlow (positioned) DIV id='fixedTransformed'",
-          "position": [8, 102]
+          "position": [8, 102],
+          "contentsOpaque": true
         },
         {
           "name": "LayoutBlockFlow (positioned) DIV id='fixedOverlapping'",
