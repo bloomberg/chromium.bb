@@ -1211,8 +1211,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(request_data.resource_type);
-  if (is_navigation_stream_request &&
-      !request_data.resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
+  // The process_type check is to ensure that unittests are not blocked from
+  // issuing http requests.
+  if ((process_type == PROCESS_TYPE_RENDERER) && is_navigation_stream_request
+       && !request_data.resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
     bad_message::ReceivedBadMessage(filter_, bad_message::RDH_INVALID_URL);
     return;
   }
@@ -1327,7 +1329,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(request_data.resource_type);
+      IsResourceTypeFrame(request_data.resource_type) &&
+      process_type == PROCESS_TYPE_RENDERER;
 
   ResourceContext* resource_context = NULL;
   net::URLRequestContext* request_context = NULL;
@@ -1616,8 +1619,10 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // PlzNavigate: do not add ResourceThrottles for main resource requests from
   // the renderer.  Decisions about the navigation should have been done in the
   // initial request.
-  if (IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type) &&
-      child_id != -1) {
+  bool is_renderer =
+      filter_ ? (filter_->process_type() == PROCESS_TYPE_RENDERER) : false;
+  if (is_renderer && IsBrowserSideNavigationEnabled() &&
+      IsResourceTypeFrame(resource_type)) {
     DCHECK(request->url().SchemeIs(url::kBlobScheme));
     return handler;
   }

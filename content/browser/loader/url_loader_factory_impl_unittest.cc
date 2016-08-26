@@ -29,6 +29,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/process_type.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -75,7 +76,12 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
         browser_context_(new TestBrowserContext()),
         resource_message_filter_(new ResourceMessageFilter(
             0,
-            0,
+            // If browser side navigation is enabled then
+            // ResourceDispatcherHostImpl prevents main frame URL requests from
+            // the renderer. Ensure that these checks don't trip us up by
+            // setting the process type in ResourceMessageFilter as
+            // PROCESS_TYPE_UNKNOWN.
+            PROCESS_TYPE_UNKNOWN,
             nullptr,
             nullptr,
             nullptr,

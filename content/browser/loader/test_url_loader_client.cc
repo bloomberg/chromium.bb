@@ -51,6 +51,8 @@ void TestURLLoaderClient::RunUntilResponseReceived() {
 }
 
 void TestURLLoaderClient::RunUntilResponseBodyArrived() {
+  if (response_body_.is_valid())
+    return;
   base::RunLoop run_loop;
   quit_closure_for_on_start_loading_response_body_ = run_loop.QuitClosure();
   run_loop.Run();
@@ -58,6 +60,8 @@ void TestURLLoaderClient::RunUntilResponseBodyArrived() {
 }
 
 void TestURLLoaderClient::RunUntilComplete() {
+  if (has_received_completion_)
+    return;
   base::RunLoop run_loop;
   quit_closure_for_on_complete_ = run_loop.QuitClosure();
   run_loop.Run();
