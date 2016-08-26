@@ -93,21 +93,6 @@ fun:*SkCanvas*drawRect*
 fun:*SkPictureGpuAnalyzer*analyzePicture*
 fun:*SkScalerContext*MakeRec*
 
-# V8
-
-# https://crbug.com/638056
-fun:*VisitorAdapter*VisitEmbedderReference*
-fun:*GlobalHandles*IterateWeakRoots*
-fun:*GlobalHandles*IterateObjectGroups*
-fun:*GlobalHandles*IterateAllRoots*
-fun:*GlobalHandles*IterateAllRootsWithClassIds*
-fun:*GlobalHandles*IterateAllRootsInNewSpaceWithClassIds*
-fun:*GlobalHandles*IterateWeakRootsInNewSpaceWithClassIds*
-fun:*SerializerDeserializer*Iterate*
-
-# Unclear what could be done here
-fun:*BodyDescriptorBase*IteratePointers*
-
 # CC
 
 # https://crbug.com/638045
@@ -274,8 +259,8 @@ fun:*GraphicsLayer*setNeedsDisplayInRect*
 fun:*PaintArtifact*appendToWebDisplayItemList*
 fun:*visualRectForDisplayItem*
 fun:*PaintController*commitNewDisplayItems*
-fun:*AdjustAndMarkTrait**mark*
-fun:*TraceTrait**trace*
+fun:*AdjustAndMarkTrait*mark*
+fun:*TraceTrait*trace*
 fun:*ChromeClientImpl*scheduleAnimation*
 fun:*blink*PODIntervalTree*searchForOverlapsFrom*
 fun:*borderPaddingWidthForBoxSizing*
