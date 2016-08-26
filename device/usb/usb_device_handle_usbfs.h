@@ -139,8 +139,10 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
       const UsbDeviceHandle::IsochronousTransferCallback& callback,
       UsbTransferStatus status);
   void SetUpTimeoutCallback(Transfer* transfer, unsigned int timeout);
-
-  static void CancelTransfer(Transfer* transfer, UsbTransferStatus status);
+  std::unique_ptr<Transfer> RemoveFromTransferList(Transfer* transfer);
+  void CancelTransfer(Transfer* transfer, UsbTransferStatus status);
+  void DiscardUrbBlocking(Transfer* transfer);
+  void UrbDiscarded(Transfer* transfer);
 
   scoped_refptr<UsbDevice> device_;
   base::ScopedFD fd_;

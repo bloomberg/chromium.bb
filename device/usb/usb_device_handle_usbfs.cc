@@ -253,6 +253,12 @@ struct UsbDeviceHandleUsbfs::Transfer {
   base::CancelableClosure timeout_closure;
   bool cancelled = false;
 
+  // When the URB is |cancelled| these two flags track whether the URB has both
+  // been |discarded| and |reaped| since the possiblity of last-minute
+  // completion makes these two conditions race.
+  bool discarded = false;
+  bool reaped = false;
+
   // The |urb| field must be the last in the struct so that the extra space
   // allocated by the overridden new function above extends the length of its
   // |iso_frame_desc| field.
@@ -738,17 +744,16 @@ void UsbDeviceHandleUsbfs::GenericTransferInternal(
 
 void UsbDeviceHandleUsbfs::ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs) {
   for (auto* urb : urbs) {
-    Transfer* this_transfer = static_cast<Transfer*>(urb->usercontext);
-    DCHECK_EQ(urb, &this_transfer->urb);
-    auto it = std::find_if(
-        transfers_.begin(), transfers_.end(),
-        [this_transfer](const std::unique_ptr<Transfer>& transfer) -> bool {
-          return transfer.get() == this_transfer;
-        });
-    DCHECK(it != transfers_.end());
-    std::unique_ptr<Transfer> transfer = std::move(*it);
-    transfers_.erase(it);
-    TransferComplete(std::move(transfer));
+    Transfer* transfer = static_cast<Transfer*>(urb->usercontext);
+    DCHECK_EQ(urb, &transfer->urb);
+
+    if (transfer->cancelled) {
+      transfer->reaped = true;
+      if (transfer->discarded)
+        RemoveFromTransferList(transfer);
+    } else {
+      TransferComplete(RemoveFromTransferList(transfer));
+    }
   }
 }
 
@@ -830,21 +835,35 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
 void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
                                                 unsigned int timeout) {
   if (timeout > 0) {
-    transfer->timeout_closure.Reset(base::Bind(
-        &UsbDeviceHandleUsbfs::CancelTransfer, transfer, USB_TRANSFER_TIMEOUT));
+    transfer->timeout_closure.Reset(
+        base::Bind(&UsbDeviceHandleUsbfs::CancelTransfer, this, transfer,
+                   USB_TRANSFER_TIMEOUT));
     task_runner_->PostDelayedTask(FROM_HERE,
                                   transfer->timeout_closure.callback(),
                                   base::TimeDelta::FromMilliseconds(timeout));
   }
 }
 
-// static
+std::unique_ptr<UsbDeviceHandleUsbfs::Transfer>
+UsbDeviceHandleUsbfs::RemoveFromTransferList(Transfer* transfer_ptr) {
+  auto it = std::find_if(
+      transfers_.begin(), transfers_.end(),
+      [transfer_ptr](const std::unique_ptr<Transfer>& transfer) -> bool {
+        return transfer.get() == transfer_ptr;
+      });
+  DCHECK(it != transfers_.end());
+  std::unique_ptr<Transfer> transfer = std::move(*it);
+  transfers_.erase(it);
+  return transfer;
+}
+
 void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
                                           UsbTransferStatus status) {
   // |transfer| must stay in |transfers_| as it is still being processed by the
-  // kernel and may be reaped later.
+  // kernel and will be reaped later.
   transfer->cancelled = true;
   transfer->timeout_closure.Cancel();
+
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
     std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
@@ -856,6 +875,25 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
   } else {
     transfer->RunCallback(status, 0);
   }
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandleUsbfs::DiscardUrbBlocking, this, transfer));
+}
+
+void UsbDeviceHandleUsbfs::DiscardUrbBlocking(Transfer* transfer) {
+  if (fd_.is_valid())
+    HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_DISCARDURB, &transfer->urb));
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&UsbDeviceHandleUsbfs::UrbDiscarded, this, transfer));
+}
+
+void UsbDeviceHandleUsbfs::UrbDiscarded(Transfer* transfer) {
+  transfer->discarded = true;
+  if (transfer->reaped)
+    RemoveFromTransferList(transfer);
 }
 
 }  // namespace device
