@@ -67,6 +67,11 @@ BEGIN
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_assistance_host.exe"
       VALUE "OriginalFilename", "remote_assistance_host.exe"
+#elif (BINARY == BINARY_HOST_IT2ME_UIACCESS)
+      // Intentionally reuse the description for 'BINARY_REMOTE_ASSISTANCE_HOST'
+      VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION{% endtrans %}"
+      VALUE "InternalName", "remote_assistance_host_uiaccess.exe"
+      VALUE "OriginalFilename", "remote_assistance_host_uiaccess.exe"
 #elif (BINARY == BINARY_REMOTE_SECURITY_KEY)
       VALUE "FileDescription", "{% trans %}REMOTING_REMOTE_SECURITY_KEY_DESCRIPTION{% endtrans %}"
       VALUE "InternalName", "remote_security_key.exe"

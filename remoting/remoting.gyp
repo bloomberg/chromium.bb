@@ -51,6 +51,7 @@
       'BINARY_REMOTE_ASSISTANCE_HOST=5',
       'BINARY_REMOTE_SECURITY_KEY=6',
       'BINARY_REMOTING_START_HOST=7',
+      'BINARY_HOST_IT2ME_UIACCESS=8',
     ],
     'include_dirs': [
       '..',  # Root of Chrome checkout

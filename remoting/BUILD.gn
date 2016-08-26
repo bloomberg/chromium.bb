@@ -67,6 +67,10 @@ group("remoting_all") {
         "//remoting/host:remoting_start_host",
         "//remoting/host/it2me:remote_assistance_host",
       ]
+
+      if (is_win) {
+        deps += [ "//remoting/host/it2me:remote_assistance_host_uiaccess" ]
+      }
     }
 
     # The same target is called differently on Linux.

@@ -434,7 +434,7 @@
       },
     },  # end of target 'remoting_me2me_native_messaging_host'
     {
-      # GN version: //remoting/host/it2me:remoting_assistance_host
+      # GN version: //remoting/host/it2me:remote_assistance_host
       'target_name': 'remoting_it2me_native_messaging_host',
       'type': 'executable',
       'product_name': 'remote_assistance_host',
@@ -468,6 +468,52 @@
       },
     },  # end of target 'remoting_it2me_native_messaging_host'
     {
+        # GN version: //remoting/host/it2me:remote_assistance_host_uiaccess
+        'target_name': 'remoting_it2me_native_messaging_host_uiaccess',
+        'type': 'executable',
+        'product_name': 'remote_assistance_host_uiaccess',
+        'variables': { 'enable_wexit_time_destructors': 1, },
+        'dependencies': [
+          'remoting_core',
+          'remoting_windows_resources',
+        ],
+        'sources': [
+          '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+          'host/it2me/it2me_native_messaging_host_entry_point.cc',
+        ],
+        'defines' : [
+          'BINARY=BINARY_HOST_IT2ME_UIACCESS',
+        ],
+        'msvs_settings': {
+          'VCManifestTool': {
+            'EmbedManifest': 'true',
+            'conditions': [
+              ['buildtype == "Official"', {
+                # Add uiAccess="true" to the manifest only for the official
+                # builds because it requires the binary to be signed to work.
+                'AdditionalManifestFiles': [
+                  'host/win/common-controls.manifest',
+                  'host/win/dpi_aware.manifest',
+                  'host/win/enable_uiaccess.manifest',
+                ],
+              }, {  # else buildtype != "Official"
+                'AdditionalManifestFiles': [
+                  'host/win/common-controls.manifest',
+                  'host/win/dpi_aware.manifest',
+                ],
+              }],
+            ],
+          },
+          'VCLinkerTool': {
+            'IgnoreAllDefaultLibraries': 'true',
+            'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+            'AdditionalDependencies': [
+              'comctl32.lib',
+            ],
+          },
+        },
+     },  # end of target 'remoting_it2me_native_messaging_host_uiaccess'
+     {
       # GN version: //remoting/host:messages
       'target_name': 'remoting_host_messages',
       'type': 'none',
@@ -615,6 +661,7 @@
             'remoting_core',
             'remoting_desktop',
             'remoting_it2me_native_messaging_host',
+            'remoting_it2me_native_messaging_host_uiaccess',
             'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
             'remoting_native_messaging_manifests',
@@ -622,6 +669,7 @@
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remote_assistance_host.exe',
+            '<(PRODUCT_DIR)/remote_assistance_host_uiaccess.exe',
             '<(PRODUCT_DIR)/remote_security_key.exe',
             '<(PRODUCT_DIR)/remoting_core.dll',
             '<(PRODUCT_DIR)/remoting_desktop.exe',
@@ -631,6 +679,7 @@
           ],
           'compiled_inputs_dst': [
             'files/remote_assistance_host.exe',
+            'files/remote_assistance_host_uiaccess.exe',
             'files/remote_security_key.exe',
             'files/remoting_core.dll',
             'files/remoting_desktop.exe',

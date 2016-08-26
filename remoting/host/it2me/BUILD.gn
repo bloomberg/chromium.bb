@@ -59,6 +59,7 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
 
       deps = [
         "//base/allocator",
+        "//remoting/host:dpi_aware_exe_manifest",
         "//remoting/host:remoting_core",
         "//remoting/host:remoting_windows_resources",
       ]
@@ -71,16 +72,43 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
       defines = host_predefines + [ "BINARY=BINARY_REMOTE_ASSISTANCE_HOST" ]
 
       ldflags = [
-        "/MANIFEST:EMBED",
-        "/MANIFESTINPUT:" +
-            rebase_path("../win/common-controls.manifest", root_build_dir),
-        "/MANIFESTINPUT:" +
-            rebase_path("../win/dpi_aware.manifest", root_build_dir),
-
         # "/NODEFAULTLIB", TODO(zijiehe): Why IgnoreAllDefaultLibraries: true in
         # GYP does not take effect?
         "comctl32.lib",
       ]
+    }
+
+    # GYP version:
+    # //remoting/remoting_host_win.gypi:remoting_it2me_native_messaging_host_uiaccess
+    executable("remote_assistance_host_uiaccess") {
+      configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+      deps = [
+        "//base/allocator",
+        "//remoting/host:remoting_core",
+        "//remoting/host:remoting_windows_resources",
+      ]
+
+      sources = [
+        "$root_gen_dir/remoting/version.rc",
+        "it2me_native_messaging_host_entry_point.cc",
+      ]
+
+      defines = host_predefines + [ "BINARY=BINARY_HOST_IT2ME_UIACCESS" ]
+
+      ldflags = [
+        # "/NODEFAULTLIB", TODO(zijiehe): Why IgnoreAllDefaultLibraries: true in
+        # GYP does not take effect?
+        "comctl32.lib",
+      ]
+
+      # uiAccess requires a signed build to work correctly, so only enable the
+      # manifest flag when the binary will be properly signed.
+      if (is_official_build) {
+        deps += [ "//remoting/host:dpi_aware_uiaccess_exe_manifest" ]
+      } else {
+        deps += [ "//remoting/host:dpi_aware_exe_manifest" ]
+      }
     }
   } else {
     if (is_mac) {
