@@ -8,74 +8,14 @@
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
-namespace {
-
-class MockTaskRunner : public WebTaskRunner {
-public:
-    void setTime(double newTime) { m_time = newTime; }
-
-    MockTaskRunner()
-    : WebTaskRunner(), m_time(0.0), m_currentTask(nullptr)
-    { }
-
-    virtual ~MockTaskRunner()
-    {
-        if (m_currentTask)
-            delete m_currentTask;
-    }
-
-private:
-    void postTask(const WebTraceLocation&, Task*) override { }
-    void postDelayedTask(const WebTraceLocation&, Task* task, double) override
-    {
-        if (m_currentTask)
-            delete m_currentTask;
-        m_currentTask = task;
-
-    }
-    bool runsTasksOnCurrentThread() override { return true; }
-    std::unique_ptr<WebTaskRunner> clone() override { return nullptr; }
-    double virtualTimeSeconds() const override { return 0.0; }
-    double monotonicallyIncreasingVirtualTimeSeconds() const override { return m_time; }
-    SingleThreadTaskRunner* taskRunner() override { return nullptr; }
-
-    double m_time;
-    Task* m_currentTask;
-};
-
-class MockTimer : public TaskRunnerTimer<SVGImageChromeClient> {
-public:
-    using TimerFiredFunction = typename TaskRunnerTimer<SVGImageChromeClient>::TimerFiredFunction;
-
-    MockTimer(SVGImageChromeClient* o, TimerFiredFunction f)
-        : TaskRunnerTimer(&m_taskRunner, o, f)
-    {
-    }
-
-    void fire()
-    {
-        fired();
-        stop();
-    }
-
-    void setTime(double newTime)
-    {
-        m_taskRunner.setTime(newTime);
-    }
-
-private:
-    MockTaskRunner m_taskRunner;
-};
-
-} // namespace
-
-class SVGImageTest : public testing::Test {
+class SVGImageTest : public ::testing::Test {
 public:
     SVGImage& image() { return *m_image; }
 
@@ -143,7 +83,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume)
     const bool shouldPause = true;
     load(kAnimatedDocument, shouldPause);
     SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
-    MockTimer* timer = new MockTimer(&chromeClient, &SVGImageChromeClient::animationTimerFired);
+    Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(&chromeClient, &SVGImageChromeClient::animationTimerFired);
     chromeClient.setTimer(wrapUnique(timer));
 
     // Simulate a draw. Cause a frame (timer) to be scheduled.
@@ -154,7 +94,8 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume)
     // Fire the timer/trigger a frame update. Since the observer always returns
     // true for shouldPauseAnimation, this will result in the timeline being
     // suspended.
-    timer->fire();
+    // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so we can avoid computations like this.
+    testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
     EXPECT_TRUE(chromeClient.isSuspended());
     EXPECT_FALSE(timer->isActive());
 
@@ -169,7 +110,7 @@ TEST_F(SVGImageTest, ResetAnimation)
     const bool shouldPause = false;
     load(kAnimatedDocument, shouldPause);
     SVGImageChromeClient& chromeClient = image().chromeClientForTesting();
-    MockTimer* timer = new MockTimer(&chromeClient, &SVGImageChromeClient::animationTimerFired);
+    Timer<SVGImageChromeClient>* timer = new Timer<SVGImageChromeClient>(&chromeClient, &SVGImageChromeClient::animationTimerFired);
     chromeClient.setTimer(wrapUnique(timer));
 
     // Simulate a draw. Cause a frame (timer) to be scheduled.
@@ -185,7 +126,8 @@ TEST_F(SVGImageTest, ResetAnimation)
 
     // Fire the timer/trigger a frame update. The timeline will remain
     // suspended and no frame will be scheduled.
-    timer->fire();
+    // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so we can avoid computations like this.
+    testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
     EXPECT_TRUE(chromeClient.isSuspended());
     EXPECT_FALSE(timer->isActive());
 

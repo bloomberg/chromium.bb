@@ -66,7 +66,7 @@ public:
     virtual double monotonicallyIncreasingVirtualTimeSeconds() const = 0;
 
     // Returns the underlying task runner object.
-    virtual SingleThreadTaskRunner* taskRunner() = 0;
+    virtual SingleThreadTaskRunner* toSingleThreadTaskRunner() = 0;
 
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.

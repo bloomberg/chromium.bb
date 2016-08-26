@@ -62,7 +62,7 @@ std::unique_ptr<blink::WebTaskRunner> WebTaskRunnerImpl::clone() {
   return base::WrapUnique(new WebTaskRunnerImpl(task_queue_));
 }
 
-base::SingleThreadTaskRunner* WebTaskRunnerImpl::taskRunner() {
+base::SingleThreadTaskRunner* WebTaskRunnerImpl::toSingleThreadTaskRunner() {
   return task_queue_.get();
 }
 

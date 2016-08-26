@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -110,39 +111,7 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)
     EXPECT_EQ(InterpolationMedium, controller()->chooseInterpolationQuality(*img, testImage.get(), testImage.get(), LayoutSize(1, 1)));
 }
 
-class MockTaskRunner : public WebTaskRunner {
-public:
-    void setTime(double newTime) { m_time = newTime; }
-
-    MockTaskRunner()
-    : WebTaskRunner(), m_time(0.0), m_currentTask(nullptr)
-    { }
-
-    virtual ~MockTaskRunner()
-    {
-        if (m_currentTask)
-            delete m_currentTask;
-    }
-
-private:
-    void postTask(const WebTraceLocation&, Task*) override { }
-    void postDelayedTask(const WebTraceLocation&, Task* task, double) override
-    {
-        if (m_currentTask)
-            delete m_currentTask;
-        m_currentTask = task;
-
-    }
-    bool runsTasksOnCurrentThread() override { return true; }
-    std::unique_ptr<WebTaskRunner> clone() override { return nullptr; }
-    double virtualTimeSeconds() const override { return 0.0; }
-    double monotonicallyIncreasingVirtualTimeSeconds() const override { return m_time; }
-    SingleThreadTaskRunner* taskRunner() override { return nullptr; }
-
-    double m_time;
-    Task* m_currentTask;
-};
-
+// TODO(alexclarke): Remove this when possible.
 class MockTimer : public TaskRunnerTimer<ImageQualityController> {
 public:
     using TimerFiredFunction = typename TaskRunnerTimer<ImageQualityController>::TimerFiredFunction;
@@ -164,7 +133,7 @@ public:
     }
 
 private:
-    MockTaskRunner m_taskRunner;
+    scheduler::FakeWebTaskRunner m_taskRunner;
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage)

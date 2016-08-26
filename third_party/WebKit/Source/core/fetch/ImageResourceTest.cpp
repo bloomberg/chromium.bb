@@ -38,6 +38,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/graphics/Image.h"
+#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -152,16 +153,6 @@ void receiveResponse(ImageResource* imageResource, const KURL& url, const Atomic
     imageResource->finish();
 }
 
-class MockTaskRunner : public blink::WebTaskRunner {
-    void postTask(const WebTraceLocation&, Task*) override { }
-    void postDelayedTask(const WebTraceLocation&, Task*, double) override { }
-    bool runsTasksOnCurrentThread() override { return true; }
-    std::unique_ptr<WebTaskRunner> clone() override { return nullptr; }
-    double virtualTimeSeconds() const override { return 0.0; }
-    double monotonicallyIncreasingVirtualTimeSeconds() const override { return 0.0; }
-    SingleThreadTaskRunner* taskRunner() override { return nullptr; }
-};
-
 }
 
 class ImageResourceTestMockFetchContext : public FetchContext {
@@ -180,10 +171,10 @@ public:
 
 private:
     ImageResourceTestMockFetchContext()
-        :  m_runner(wrapUnique(new MockTaskRunner))
+        :  m_runner(wrapUnique(new scheduler::FakeWebTaskRunner))
     { }
 
-    std::unique_ptr<MockTaskRunner> m_runner;
+    std::unique_ptr<scheduler::FakeWebTaskRunner> m_runner;
 };
 
 TEST(ImageResourceTest, MultipartImage)

@@ -33,7 +33,7 @@ class BLINK_PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
   double virtualTimeSeconds() const override;
   double monotonicallyIncreasingVirtualTimeSeconds() const override;
   std::unique_ptr<WebTaskRunner> clone() override;
-  base::SingleThreadTaskRunner* taskRunner() override;
+  base::SingleThreadTaskRunner* toSingleThreadTaskRunner() override;
 
   // WebTaskRunner::Task should be wrapped by base::Passed() when
   // used with base::Bind(). See https://crbug.com/551356.

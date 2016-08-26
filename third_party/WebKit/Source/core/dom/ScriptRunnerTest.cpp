@@ -74,7 +74,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
     m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::ASYNC_EXECUTION);
 
     EXPECT_CALL(*scriptLoader, execute());
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
@@ -87,7 +87,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
 
     m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::IN_ORDER_EXECUTION);
 
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
@@ -125,7 +125,7 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
     for (int i = 2; i >= 0; i--) {
         isReady[i] = true;
         m_scriptRunner->notifyScriptReady(scriptLoaders[i], ScriptRunner::IN_ORDER_EXECUTION);
-        m_platform.mockWebScheduler()->runAllTasks();
+        m_platform.runUntilIdle();
     }
 
     // But ensure the scripts were run in the expected order.
@@ -180,7 +180,7 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts)
         m_order.append(5);
     }));
 
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     // Async tasks are expected to run first.
     EXPECT_THAT(m_order, ElementsAre(4, 5, 1, 2, 3));
@@ -215,13 +215,13 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async)
 
     // Make sure that re-entrant calls to notifyScriptReady don't cause ScriptRunner::execute to do
     // more work than expected.
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1));
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
@@ -260,13 +260,13 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder)
 
     // Make sure that re-entrant calls to queueScriptForExecution don't cause ScriptRunner::execute to do
     // more work than expected.
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1));
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
@@ -298,7 +298,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
         m_order.append(0);
     }));
 
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     int expected[] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
@@ -348,10 +348,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
         .WillRepeatedly(Return(true));
     m_scriptRunner->notifyScriptReady(scriptLoader3, ScriptRunner::IN_ORDER_EXECUTION);
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     m_scriptRunner->suspend();
     m_scriptRunner->resume();
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     // Make sure elements are correct and in right order.
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
@@ -384,10 +384,10 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async)
             m_order.append(3);
         }));
 
-    m_platform.mockWebScheduler()->runSingleTask();
+    m_platform.runSingleTask();
     m_scriptRunner->suspend();
     m_scriptRunner->resume();
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     // Make sure elements are correct.
     EXPECT_THAT(m_order, WhenSorted(ElementsAre(1, 2, 3)));
@@ -412,11 +412,11 @@ TEST_F(ScriptRunnerTest, LateNotifications)
     }));
 
     m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::IN_ORDER_EXECUTION);
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     // At this moment all tasks can be already executed. Make sure that we do not crash here.
     m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::IN_ORDER_EXECUTION);
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 
     EXPECT_THAT(m_order, ElementsAre(1, 2));
 }
@@ -443,7 +443,7 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
     EXPECT_CALL(*scriptLoader1, execute()).Times(0);
     EXPECT_CALL(*scriptLoader2, execute()).Times(0);
 
-    m_platform.mockWebScheduler()->runAllTasks();
+    m_platform.runUntilIdle();
 }
 
 } // namespace blink

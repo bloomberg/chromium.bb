@@ -32,13 +32,18 @@
 
 #include "base/command_line.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
+#include "cc/test/ordered_simple_task_runner.h"
 #include "platform/EventTracer.h"
 #include "platform/HTTPNames.h"
 #include "platform/heap/Heap.h"
+#include "platform/scheduler/base/test_time_source.h"
+#include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
+#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -88,7 +93,10 @@ WebString TestingPlatformSupport::defaultLocale()
 
 WebCompositorSupport* TestingPlatformSupport::compositorSupport()
 {
-    return m_config.compositorSupport;
+    if (m_config.compositorSupport)
+        return m_config.compositorSupport;
+
+    return m_oldPlatform ? m_oldPlatform->compositorSupport() : nullptr;
 }
 
 WebThread* TestingPlatformSupport::currentThread()
@@ -96,135 +104,119 @@ WebThread* TestingPlatformSupport::currentThread()
     return m_oldPlatform ? m_oldPlatform->currentThread() : nullptr;
 }
 
-class TestingPlatformMockWebTaskRunner : public WebTaskRunner {
-    WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebTaskRunner);
-public:
-    explicit TestingPlatformMockWebTaskRunner(Deque<std::unique_ptr<WebTaskRunner::Task>>* tasks) : m_tasks(tasks) { }
-    ~TestingPlatformMockWebTaskRunner() override { }
-
-    void postTask(const WebTraceLocation&, Task* task) override
-    {
-        m_tasks->append(wrapUnique(task));
-    }
-
-    void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override
-    {
-        NOTREACHED();
-    }
-
-    bool runsTasksOnCurrentThread() override
-    {
-        NOTREACHED();
-        return true;
-    }
-
-    std::unique_ptr<WebTaskRunner> clone() override
-    {
-        return WTF::wrapUnique(new TestingPlatformMockWebTaskRunner(m_tasks));
-    }
-
-    double virtualTimeSeconds() const override
-    {
-        NOTREACHED();
-        return 0.0;
-    }
-
-    double monotonicallyIncreasingVirtualTimeSeconds() const override
-    {
-        NOTREACHED();
-        return 0.0;
-    }
-
-    base::SingleThreadTaskRunner* taskRunner() override
-    {
-        NOTREACHED();
-        return nullptr;
-    }
-
-private:
-    Deque<std::unique_ptr<WebTaskRunner::Task>>* m_tasks; // NOT OWNED
-};
-
-// TestingPlatformMockScheduler definition:
-
-TestingPlatformMockScheduler::TestingPlatformMockScheduler()
-    : m_mockWebTaskRunner(wrapUnique(new TestingPlatformMockWebTaskRunner(&m_tasks))) { }
-
-TestingPlatformMockScheduler::~TestingPlatformMockScheduler() { }
-
-WebTaskRunner* TestingPlatformMockScheduler::loadingTaskRunner()
+WebBlobRegistry* TestingPlatformSupport::blobRegistry()
 {
-    return m_mockWebTaskRunner.get();
+    return m_oldPlatform ? m_oldPlatform->blobRegistry() : nullptr;
 }
 
-WebTaskRunner* TestingPlatformMockScheduler::timerTaskRunner()
+WebClipboard* TestingPlatformSupport::clipboard()
 {
-    return m_mockWebTaskRunner.get();
+    return m_oldPlatform ? m_oldPlatform->clipboard() : nullptr;
 }
 
-void TestingPlatformMockScheduler::runSingleTask()
+WebFileUtilities* TestingPlatformSupport::fileUtilities()
 {
-    if (m_tasks.isEmpty())
-        return;
-    m_tasks.takeFirst()->run();
+    return m_oldPlatform ? m_oldPlatform->fileUtilities() : nullptr;
 }
 
-void TestingPlatformMockScheduler::runAllTasks()
+WebIDBFactory* TestingPlatformSupport::idbFactory()
 {
-    while (!m_tasks.isEmpty())
-        m_tasks.takeFirst()->run();
+    return m_oldPlatform ? m_oldPlatform->idbFactory() : nullptr;
 }
 
-class TestingPlatformMockWebThread : public WebThread {
-    WTF_MAKE_NONCOPYABLE(TestingPlatformMockWebThread);
-public:
-    TestingPlatformMockWebThread() : m_mockWebScheduler(wrapUnique(new TestingPlatformMockScheduler)) { }
-    ~TestingPlatformMockWebThread() override { }
+WebMimeRegistry* TestingPlatformSupport::mimeRegistry()
+{
+    return m_oldPlatform ? m_oldPlatform->mimeRegistry() : nullptr;
+}
 
-    WebTaskRunner* getWebTaskRunner() override
-    {
-        return m_mockWebScheduler->timerTaskRunner();
-    }
+WebURLLoaderMockFactory* TestingPlatformSupport::getURLLoaderMockFactory()
+{
+    return m_oldPlatform ? m_oldPlatform->getURLLoaderMockFactory() : nullptr;
+}
 
-    bool isCurrentThread() const override
-    {
-        NOTREACHED();
-        return true;
-    }
+WebURLLoader* TestingPlatformSupport::createURLLoader()
+{
+    return m_oldPlatform ? m_oldPlatform->createURLLoader() : nullptr;
+}
 
-    WebScheduler* scheduler() const override
-    {
-        return m_mockWebScheduler.get();
-    }
+WebData TestingPlatformSupport::loadResource(const char* name)
+{
+    return m_oldPlatform ? m_oldPlatform->loadResource(name) : WebData();
+}
 
-    TestingPlatformMockScheduler* mockWebScheduler()
-    {
-        return m_mockWebScheduler.get();
-    }
-
-private:
-    std::unique_ptr<TestingPlatformMockScheduler> m_mockWebScheduler;
-};
+WebURLError TestingPlatformSupport::cancelledError(const WebURL& url) const
+{
+    return m_oldPlatform ? m_oldPlatform->cancelledError(url) : WebURLError();
+}
 
 // TestingPlatformSupportWithMockScheduler definition:
 
 TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler()
-    : m_mockWebThread(wrapUnique(new TestingPlatformMockWebThread())) { }
+    : TestingPlatformSupportWithMockScheduler(TestingPlatformSupport::Config()) { }
 
 TestingPlatformSupportWithMockScheduler::TestingPlatformSupportWithMockScheduler(const Config& config)
     : TestingPlatformSupport(config)
-    , m_mockWebThread(wrapUnique(new TestingPlatformMockWebThread())) { }
+    , m_clock(new base::SimpleTestTickClock())
+    , m_mockTaskRunner(new cc::OrderedSimpleTaskRunner(m_clock.get(), true))
+    , m_scheduler(new scheduler::RendererSchedulerImpl(scheduler::SchedulerTqmDelegateForTest::Create(m_mockTaskRunner, base::WrapUnique(new scheduler::TestTimeSource(m_clock.get())))))
+    , m_thread(m_scheduler->CreateMainThread())
+{
+    // Set the work batch size to one so RunPendingTasks behaves as expected.
+    m_scheduler->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
 
-TestingPlatformSupportWithMockScheduler::~TestingPlatformSupportWithMockScheduler() { }
+    WTF::setTimeFunctionsForTesting(getTestTime);
+}
+
+TestingPlatformSupportWithMockScheduler::~TestingPlatformSupportWithMockScheduler()
+{
+    WTF::setTimeFunctionsForTesting(nullptr);
+    m_scheduler->Shutdown();
+}
 
 WebThread* TestingPlatformSupportWithMockScheduler::currentThread()
 {
-    return m_mockWebThread.get();
+    if (m_thread->isCurrentThread())
+        return m_thread.get();
+    return TestingPlatformSupport::currentThread();
 }
 
-TestingPlatformMockScheduler* TestingPlatformSupportWithMockScheduler::mockWebScheduler()
+void TestingPlatformSupportWithMockScheduler::runSingleTask()
 {
-    return m_mockWebThread->mockWebScheduler();
+    m_mockTaskRunner->SetRunTaskLimit(1);
+    m_mockTaskRunner->RunPendingTasks();
+    m_mockTaskRunner->ClearRunTaskLimit();
+}
+
+void TestingPlatformSupportWithMockScheduler::runUntilIdle()
+{
+    m_mockTaskRunner->RunUntilIdle();
+}
+
+void TestingPlatformSupportWithMockScheduler::runForPeriodSeconds(double seconds)
+{
+    m_mockTaskRunner->RunForPeriod(base::TimeDelta::FromSecondsD(seconds));
+}
+
+void TestingPlatformSupportWithMockScheduler::advanceClockSeconds(double seconds)
+{
+    m_clock->Advance(base::TimeDelta::FromSecondsD(seconds));
+}
+
+void TestingPlatformSupportWithMockScheduler::setAutoAdvanceNowToPendingTasks(bool autoAdvance)
+{
+    m_mockTaskRunner->SetAutoAdvanceNowToPendingTasks(autoAdvance);
+}
+
+scheduler::RendererScheduler* TestingPlatformSupportWithMockScheduler::rendererScheduler() const
+{
+    return m_scheduler.get();
+}
+
+// static
+double TestingPlatformSupportWithMockScheduler::getTestTime()
+{
+    TestingPlatformSupportWithMockScheduler* platform = static_cast<TestingPlatformSupportWithMockScheduler*>(Platform::current());
+    return (platform->m_clock->NowTicks() - base::TimeTicks()).InSecondsF();
 }
 
 class ScopedUnittestsEnvironmentSetup::DummyPlatform final : public blink::Platform {
