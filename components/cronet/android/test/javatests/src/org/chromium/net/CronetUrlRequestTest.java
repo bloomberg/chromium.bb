@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
+import android.os.StrictMode;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
@@ -824,6 +825,36 @@ public class CronetUrlRequestTest extends CronetTestBase {
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", callback.mResponseAsString);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testNoIoInCancel() throws Exception {
+        final TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAutoAdvance(false);
+        final UrlRequest urlRequest =
+                new UrlRequest
+                        .Builder(NativeTestServer.getEchoHeaderURL("blah-header"), callback,
+                                callback.getExecutor(), mTestFramework.mCronetEngine)
+                        .addHeader("blah-header", "blahblahblah")
+                        .build();
+        urlRequest.start();
+        callback.waitForNextStep();
+        callback.startNextRead(urlRequest, ByteBuffer.allocateDirect(4));
+        callback.waitForNextStep();
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                                           .detectAll()
+                                           .penaltyDeath()
+                                           .penaltyLog()
+                                           .build());
+        try {
+            urlRequest.cancel();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+        callback.blockForDone();
+        assertEquals(true, callback.mOnCanceledCalled);
     }
 
     @SmallTest

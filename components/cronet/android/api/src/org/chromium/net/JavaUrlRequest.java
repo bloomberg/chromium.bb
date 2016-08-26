@@ -799,7 +799,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void onCanceled(final UrlResponseInfo info) {
-            closeQuietly(mResponseChannel);
+            closeResponseChannel();
             mUserExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -826,7 +826,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         void onFailed(final UrlResponseInfo urlResponseInfo, final UrlRequestException e) {
-            closeQuietly(mResponseChannel);
+            closeResponseChannel();
             mUserExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -840,14 +840,21 @@ final class JavaUrlRequest implements UrlRequest {
         }
     }
 
-    private static void closeQuietly(Closeable closeable) {
+    private void closeResponseChannel() {
+        final Closeable closeable = mResponseChannel;
         if (closeable == null) {
             return;
         }
-        try {
-            closeable.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mResponseChannel = null;
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    closeable.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }
