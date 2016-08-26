@@ -183,7 +183,6 @@ vs-chromium-project.txt
 /google_apis/internal
 /googleurl
 /gpu/gles2_conform_test
-/gyp-mac-tool
 /infra/.recipe_deps
 /internal_gyp
 /ios/third_party/earl_grey/src
