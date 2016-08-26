@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -48,6 +49,13 @@ void ConsoleLog(std::vector<ClearSiteDataThrottle::ConsoleMessage>* messages,
 bool AreExperimentalFeaturesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+// Represents the parameters as a single number to be recorded in a histogram.
+int ParametersMask(bool clear_cookies, bool clear_storage, bool clear_cache) {
+  return static_cast<int>(clear_cookies) * (1 << 0) +
+         static_cast<int>(clear_storage) * (1 << 1) +
+         static_cast<int>(clear_cache) * (1 << 2);
 }
 
 }  // namespace
@@ -138,6 +146,11 @@ void ClearSiteDataThrottle::HandleHeader() {
     return;
   }
 
+  // Record the call parameters.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Navigation.ClearSiteData.Parameters",
+      ParametersMask(clear_cookies, clear_storage, clear_cache), (1 << 3));
+
   // If the header is valid, clear the data for this browser context and origin.
   BrowserContext* browser_context =
       navigation_handle()->GetWebContents()->GetBrowserContext();
@@ -150,6 +163,7 @@ void ClearSiteDataThrottle::HandleHeader() {
   }
 
   clearing_in_progress_ = true;
+  clearing_started_ = base::TimeTicks::Now();
   GetContentClient()->browser()->ClearSiteData(
       browser_context, origin, clear_cookies, clear_storage, clear_cache,
       base::Bind(&ClearSiteDataThrottle::TaskFinished,
@@ -256,6 +270,12 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
 void ClearSiteDataThrottle::TaskFinished() {
   DCHECK(clearing_in_progress_);
   clearing_in_progress_ = false;
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.ClearSiteData.Duration",
+                             base::TimeTicks::Now() - clearing_started_,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromSeconds(1), 50);
+
   navigation_handle()->Resume();
 }
 

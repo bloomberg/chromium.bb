@@ -26093,6 +26093,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.ClearSiteData.Duration" units="ms">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Recorded when a navigation is deferred while clearing site data. Indicates
+    how much time the clearing took.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.ClearSiteData.Parameters"
+    enum="ClearSiteDataParameters">
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    The parameters of the Clear-Site-Data header. Recorded when the header is
+    successfully parsed.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.EngagementTime.HTTP" units="ms">
   <owner>felt@chromium.org</owner>
   <summary>
@@ -71775,6 +71792,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Notifications and Durable"/>
   <int value="6" label="Notifications, Durable, and Engagement"/>
   <int value="7" label="Unknown"/>
+</enum>
+
+<enum name="ClearSiteDataParameters" type="int">
+  <int value="0" label="No datatypes"/>
+  <int value="1" label="Cookies"/>
+  <int value="2" label="Storage"/>
+  <int value="3" label="Cookies and Storage"/>
+  <int value="4" label="Cache"/>
+  <int value="5" label="Cookies and Cache"/>
+  <int value="6" label="Storage and Cache"/>
+  <int value="7" label="Cookies, Storage, and Cache"/>
 </enum>
 
 <enum name="ClientAppId" type="int">

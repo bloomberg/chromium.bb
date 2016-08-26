@@ -76,6 +76,10 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public NavigationThrottle {
   // been completed;
   bool clearing_in_progress_;
 
+  // The time when the last clearing operation started. Used when clearing
+  // finishes to compute the duration.
+  base::TimeTicks clearing_started_;
+
   // Needed for asynchronous parsing and deletion tasks.
   base::WeakPtrFactory<ClearSiteDataThrottle> weak_ptr_factory_;
 
