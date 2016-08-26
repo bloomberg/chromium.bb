@@ -75,6 +75,9 @@ function QuickViewController(
   listContainer.element.addEventListener(
       'keydown', this.onKeyDownToOpen_.bind(this));
   quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
+  quickView.addEventListener('iron-overlay-closed', function() {
+    this.listContainer_.focus();
+  }.bind(this));
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
   var toolTip = this.quickView_.$$('files-tooltip');
@@ -120,7 +123,6 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
     case 'Escape':
       event.preventDefault();
       this.quickView_.close();
-      this.listContainer_.focus();
       break;
     case 'ArrowRight':
       var index = this.fileListSelectionModel_.selectedIndex + 1;
