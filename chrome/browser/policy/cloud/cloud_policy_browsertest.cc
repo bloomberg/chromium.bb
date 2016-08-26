@@ -149,6 +149,9 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
 }
 
 void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
+  policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
 #if defined(OS_CHROMEOS)
   policy_map->Set(
       key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
@@ -174,6 +177,8 @@ void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
 }
 
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
+  GetExpectedDefaultPolicy(expected);
+
   expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_CLOUD,
                 base::WrapUnique(new base::FundamentalValue(true)), nullptr);
@@ -191,28 +196,6 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                 base::WrapUnique(new base::StringValue(homepage)), nullptr);
-#if defined(OS_CHROMEOS)
-  expected->Set(key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::StringValue("primary-only")),
-                nullptr);
-  expected->Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  expected->Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  expected->Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  expected->Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  expected->Set(key::kPacHttpsUrlStrippingEnabled, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-#endif
 }
 
 }  // namespace

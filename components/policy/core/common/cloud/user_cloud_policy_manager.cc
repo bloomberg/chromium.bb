@@ -16,6 +16,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
@@ -94,6 +95,25 @@ void UserCloudPolicyManager::DisconnectAndRemovePolicy() {
 
 bool UserCloudPolicyManager::IsClientRegistered() const {
   return client() && client()->is_registered();
+}
+
+void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
+  CloudPolicyManager::GetChromePolicy(policy_map);
+
+  // If the store has a verified policy blob received from the server then apply
+  // the defaults for policies that haven't been configured by the administrator
+  // given that this is an enterprise user.
+  // TODO(treib,atwilson): We should just call SetEnterpriseUsersDefaults here,
+  // see crbug.com/640950.
+  if (store()->has_policy() &&
+      !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {
+    policy_map->Set(key::kNTPContentSuggestionsEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                    base::MakeUnique<base::FundamentalValue>(false),
+                    nullptr /* external_data_fetcher */);
+  }
 }
 
 }  // namespace policy

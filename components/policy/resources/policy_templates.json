@@ -8822,6 +8822,7 @@
       },
       'example_value': True,
       'id': 338,
+      'default_for_enterprise_users': False,
       'caption': '''Show content suggestions on the New Tab page''',
       'tags': [],
       'desc':

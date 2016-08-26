@@ -80,6 +80,9 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
       scoped_refptr<net::URLRequestContextGetter> request_context);
 
  private:
+  // CloudPolicyManager:
+  void GetChromePolicy(PolicyMap* policy_map) override;
+
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.
   std::unique_ptr<UserCloudPolicyStore> store_;
