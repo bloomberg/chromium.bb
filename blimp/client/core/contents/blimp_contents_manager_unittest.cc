@@ -37,7 +37,8 @@ TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
   base::MessageLoop loop;
   MockTabControlFeature tab_control_feature;
 
-  BlimpContentsManager blimp_contents_manager(&tab_control_feature);
+  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+                                              &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
@@ -51,7 +52,8 @@ TEST(BlimpContentsManagerUnittest, GetExistingBlimpContents) {
 TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
   MockTabControlFeature tab_control_feature;
 
-  BlimpContentsManager blimp_contents_manager(&tab_control_feature);
+  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+                                              &tab_control_feature);
 
   BlimpContentsImpl* existing_contents =
       blimp_contents_manager.GetBlimpContents(kDummyTabId);
@@ -61,7 +63,8 @@ TEST(BlimpContentsManagerUnittest, GetNonExistingBlimpContents) {
 TEST(BlimpContentsManagerUnittest, GetDestroyedBlimpContents) {
   base::MessageLoop loop;
   MockTabControlFeature tab_control_feature;
-  BlimpContentsManager blimp_contents_manager(&tab_control_feature);
+  BlimpContentsManager blimp_contents_manager(nullptr, nullptr,
+                                              &tab_control_feature);
   int id;
 
   EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);

@@ -27,9 +27,6 @@ class BlimpNavigationControllerImpl
                                 NavigationFeature* feature);
   ~BlimpNavigationControllerImpl() override;
 
-  // For testing only.
-  void SetNavigationFeatureForTesting(NavigationFeature* feature);
-
   // BlimpNavigationController implementation.
   void LoadURL(const GURL& url) override;
   void Reload() override;

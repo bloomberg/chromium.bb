@@ -24,8 +24,10 @@ const char kBlimpContentsImplAndroidKey[] = "blimp_contents_impl_android";
 }
 
 BlimpContentsImpl::BlimpContentsImpl(int id,
+                                     ImeFeature* ime_feature,
+                                     NavigationFeature* navigation_feature,
                                      TabControlFeature* tab_control_feature)
-    : navigation_controller_(this, nullptr),
+    : navigation_controller_(this, navigation_feature),
       id_(id),
       tab_control_feature_(tab_control_feature) {}
 

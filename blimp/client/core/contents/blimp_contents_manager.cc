@@ -45,8 +45,12 @@ void BlimpContentsManager::BlimpContentsDeletionObserver::
 }
 
 BlimpContentsManager::BlimpContentsManager(
+    ImeFeature* ime_feature,
+    NavigationFeature* nav_feature,
     TabControlFeature* tab_control_feature)
-    : tab_control_feature_(tab_control_feature),
+    : ime_feature_(ime_feature),
+      navigation_feature_(nav_feature),
+      tab_control_feature_(tab_control_feature),
       weak_ptr_factory_(this) {}
 
 BlimpContentsManager::~BlimpContentsManager() {}
@@ -55,7 +59,8 @@ std::unique_ptr<BlimpContentsImpl> BlimpContentsManager::CreateBlimpContents() {
   int id = CreateBlimpContentsId();
 
   std::unique_ptr<BlimpContentsImpl> new_contents =
-      base::MakeUnique<BlimpContentsImpl>(id, tab_control_feature_);
+      base::MakeUnique<BlimpContentsImpl>(id, ime_feature_, navigation_feature_,
+                                          tab_control_feature_);
 
   // Create an observer entry for the contents.
   std::unique_ptr<BlimpContentsDeletionObserver> observer =

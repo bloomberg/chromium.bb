@@ -10,6 +10,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/contents/blimp_contents_manager.h"
+#include "blimp/client/core/contents/ime_feature.h"
+#include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
@@ -49,9 +51,13 @@ BlimpClientContextImpl::BlimpClientContextImpl(
     : BlimpClientContext(),
       io_thread_task_runner_(io_thread_task_runner),
       file_thread_task_runner_(file_thread_task_runner),
+      ime_feature_(new ImeFeature),
+      navigation_feature_(new NavigationFeature),
       tab_control_feature_(new TabControlFeature),
-      blimp_contents_manager_(new BlimpContentsManager(
-          tab_control_feature_.get())),
+      blimp_contents_manager_(
+          new BlimpContentsManager(ime_feature_.get(),
+                                   navigation_feature_.get(),
+                                   tab_control_feature_.get())),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
       base::MakeUnique<CrossThreadNetworkEventObserver>(
@@ -148,6 +154,12 @@ void BlimpClientContextImpl::ConnectWithAssignment(
 
 void BlimpClientContextImpl::RegisterFeatures() {
   // Register features' message senders and receivers.
+  ime_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
+                                            ime_feature_.get()));
+  navigation_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kNavigation,
+                                            navigation_feature_.get()));
   tab_control_feature_->set_outgoing_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
                                             tab_control_feature_.get()));

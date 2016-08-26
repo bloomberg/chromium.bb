@@ -44,13 +44,11 @@ class MockTabControlFeature : public TabControlFeature {
 
 TEST(BlimpContentsImplTest, LoadURLAndNotifyObservers) {
   base::MessageLoop loop;
-  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr);
+  FakeNavigationFeature feature;
+  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr, &feature, nullptr);
 
   BlimpNavigationControllerImpl& navigation_controller =
       blimp_contents.GetNavigationController();
-  FakeNavigationFeature feature;
-  feature.SetDelegate(1, &navigation_controller);
-  navigation_controller.SetNavigationFeatureForTesting(&feature);
 
   testing::StrictMock<MockBlimpContentsObserver> observer1(&blimp_contents);
   testing::StrictMock<MockBlimpContentsObserver> observer2(&blimp_contents);
@@ -79,7 +77,8 @@ TEST(BlimpContentsImplTest, SetSizeAndScaleThroughTabControlFeature) {
 
   MockTabControlFeature tab_control_feature;
   base::MessageLoop loop;
-  BlimpContentsImpl blimp_contents(kDummyTabId, &tab_control_feature);
+  BlimpContentsImpl blimp_contents(kDummyTabId, nullptr, nullptr,
+                                   &tab_control_feature);
 
   EXPECT_CALL(tab_control_feature,
               SetSizeAndScale(gfx::Size(width, height), dp_to_px)).Times(1);

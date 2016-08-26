@@ -26,12 +26,18 @@ class BlimpContentsImplAndroid;
 
 class BlimpContentsObserver;
 class BlimpNavigationController;
+class ImeFeature;
+class NavigationFeature;
 class TabControlFeature;
 
 class BlimpContentsImpl : public BlimpContents,
                           public BlimpNavigationControllerDelegate {
  public:
-  explicit BlimpContentsImpl(int id, TabControlFeature* tab_control_feature);
+  // Ownership of the features remains with the caller.
+  explicit BlimpContentsImpl(int id,
+                             ImeFeature* ime_feature,
+                             NavigationFeature* navigation_feature,
+                             TabControlFeature* tab_control_feature);
   ~BlimpContentsImpl() override;
 
 #if defined(OS_ANDROID)

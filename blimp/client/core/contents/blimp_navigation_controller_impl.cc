@@ -25,12 +25,6 @@ BlimpNavigationControllerImpl::BlimpNavigationControllerImpl(
 
 BlimpNavigationControllerImpl::~BlimpNavigationControllerImpl() = default;
 
-void BlimpNavigationControllerImpl::SetNavigationFeatureForTesting(
-    NavigationFeature* feature) {
-  navigation_feature_ = feature;
-  navigation_feature_->SetDelegate(kDummyTabId, this);
-}
-
 void BlimpNavigationControllerImpl::LoadURL(const GURL& url) {
   current_url_ = url;
   navigation_feature_->NavigateToUrlText(kDummyTabId, current_url_.spec());

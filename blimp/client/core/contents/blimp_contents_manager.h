@@ -17,7 +17,9 @@ class TabControlFeature;
 // monitor the life time of the contents it creates.
 class BlimpContentsManager {
  public:
-  explicit BlimpContentsManager(TabControlFeature* tab_control_feature);
+  explicit BlimpContentsManager(ImeFeature* ime_feature,
+                                NavigationFeature* nav_feature,
+                                TabControlFeature* tab_control_feature);
   ~BlimpContentsManager();
 
   // Builds a BlimpContentsImpl and notifies the engine.
@@ -49,7 +51,9 @@ class BlimpContentsManager {
   // lifetime of the observers.
   std::map<int, std::unique_ptr<BlimpContentsDeletionObserver>> observer_map_;
 
-  TabControlFeature* tab_control_feature_ = nullptr;
+  ImeFeature* ime_feature_;
+  NavigationFeature* navigation_feature_;
+  TabControlFeature* tab_control_feature_;
 
   base::WeakPtrFactory<BlimpContentsManager> weak_ptr_factory_;
 

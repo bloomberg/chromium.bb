@@ -25,6 +25,8 @@ namespace blimp {
 namespace client {
 
 class BlimpContentsManager;
+class ImeFeature;
+class NavigationFeature;
 class TabControlFeature;
 
 // BlimpClientContextImpl is the implementation of the main context-class for
@@ -81,6 +83,9 @@ class BlimpClientContextImpl : public BlimpClientContext,
   // Connect() to get a valid assignment and later connect to the engine.
   std::unique_ptr<AssignmentSource> assignment_source_;
 
+  // Features to handle all incoming and outgoing protobuf messages.
+  std::unique_ptr<ImeFeature> ime_feature_;
+  std::unique_ptr<NavigationFeature> navigation_feature_;
   std::unique_ptr<TabControlFeature> tab_control_feature_;
 
   std::unique_ptr<BlimpContentsManager> blimp_contents_manager_;
