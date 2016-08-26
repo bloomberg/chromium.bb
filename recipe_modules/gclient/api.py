@@ -151,40 +151,30 @@ class GclientApi(recipe_api.RecipeApi):
     test_data_paths = set(cfg.got_revision_mapping.keys() +
                           [s.name for s in cfg.solutions])
     step_test_data = lambda: (
-      self.test_api.output_json(test_data_paths, cfg.GIT_MODE))
+      self.test_api.output_json(test_data_paths))
     try:
-      if not cfg.GIT_MODE:  # pragma: no cover
-        args = ['sync', '--nohooks', '--force', '--verbose']
-        if cfg.delete_unversioned_trees:
-          args.append('--delete_unversioned_trees')
-        if with_branch_heads:
-          args.append('--with_branch_heads')
-        self('sync', args + revisions + ['--output-json', self.m.json.output()],
-                   step_test_data=step_test_data,
-                   **kwargs)
-      else:
-        # clean() isn't used because the gclient sync flags passed in checkout()
-        # do much the same thing, and they're more correct than doing a separate
-        # 'gclient revert' because it makes sure the other args are correct when
-        # a repo was deleted and needs to be re-cloned (notably
-        # --with_branch_heads), whereas 'revert' uses default args for clone
-        # operations.
-        #
-        # TODO(mmoss): To be like current official builders, this step could
-        # just delete the whole <slave_name>/build/ directory and start each
-        # build from scratch. That might be the least bad solution, at least
-        # until we have a reliable gclient method to produce a pristine working
-        # dir for git-based builds (e.g. maybe some combination of 'git
-        # reset/clean -fx' and removing the 'out' directory).
-        j = '-j2' if self.m.platform.is_win else '-j8'
-        args = ['sync', '--verbose', '--with_branch_heads', '--nohooks', j,
-                '--reset', '--force', '--upstream', '--no-nag-max']
-        if cfg.delete_unversioned_trees:
-          args.append('--delete_unversioned_trees')
-        self('sync', args + revisions +
-                   ['--output-json', self.m.json.output()],
-                   step_test_data=step_test_data,
-                   **kwargs)
+      # clean() isn't used because the gclient sync flags passed in checkout()
+      # do much the same thing, and they're more correct than doing a separate
+      # 'gclient revert' because it makes sure the other args are correct when
+      # a repo was deleted and needs to be re-cloned (notably
+      # --with_branch_heads), whereas 'revert' uses default args for clone
+      # operations.
+      #
+      # TODO(mmoss): To be like current official builders, this step could
+      # just delete the whole <slave_name>/build/ directory and start each
+      # build from scratch. That might be the least bad solution, at least
+      # until we have a reliable gclient method to produce a pristine working
+      # dir for git-based builds (e.g. maybe some combination of 'git
+      # reset/clean -fx' and removing the 'out' directory).
+      j = '-j2' if self.m.platform.is_win else '-j8'
+      args = ['sync', '--verbose', '--with_branch_heads', '--nohooks', j,
+              '--reset', '--force', '--upstream', '--no-nag-max']
+      if cfg.delete_unversioned_trees:
+        args.append('--delete_unversioned_trees')
+      self('sync', args + revisions +
+                 ['--output-json', self.m.json.output()],
+                 step_test_data=step_test_data,
+                 **kwargs)
     finally:
       result = self.m.step.active_result
       data = result.json.output
@@ -239,25 +229,16 @@ class GclientApi(recipe_api.RecipeApi):
 
     sync_step = None
     try:
-      if not cfg.GIT_MODE:  # pragma: no cover
-        try:
-          if revert:
-            self.revert(**kwargs)
-        finally:
-          sync_step = self.sync(cfg, with_branch_heads=with_branch_heads,
-                                **kwargs)
-      else:
-        sync_step = self.sync(cfg, with_branch_heads=with_branch_heads,
-                              **kwargs)
+      sync_step = self.sync(cfg, with_branch_heads=with_branch_heads,
+                            **kwargs)
 
-        cfg_cmds = [
-          ('user.name', 'local_bot'),
-          ('user.email', 'local_bot@example.com'),
-        ]
-        for var, val in cfg_cmds:
-          name = 'recurse (git config %s)' % var
-          self(name, ['recurse', 'git', 'config', var, val], **kwargs)
-
+      cfg_cmds = [
+        ('user.name', 'local_bot'),
+        ('user.email', 'local_bot@example.com'),
+      ]
+      for var, val in cfg_cmds:
+        name = 'recurse (git config %s)' % var
+        self(name, ['recurse', 'git', 'config', var, val], **kwargs)
     finally:
       cwd = kwargs.get('cwd', self.m.path['slave_build'])
       if 'checkout' not in self.m.path:

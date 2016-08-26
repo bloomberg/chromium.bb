@@ -61,7 +61,7 @@ def RunSteps(api):
   for config_name in TEST_CONFIGS:
     api.gclient.make_config(config_name)
 
-  src_cfg = api.gclient.make_config(GIT_MODE=True, CACHE_DIR='[ROOT]/git_cache')
+  src_cfg = api.gclient.make_config(CACHE_DIR='[ROOT]/git_cache')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'

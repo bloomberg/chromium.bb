@@ -15,7 +15,7 @@ import bot_update
 
 class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
   def output_json(self, master, builder, slave, root, first_sln,
-                  revision_mapping, git_mode, force=False, fail_patch=False,
+                  revision_mapping, force=False, fail_patch=False,
                   output_manifest=False, fixed_revisions=None):
     """Deterministically synthesize json.output test data for gclient's
     --output-json option.
@@ -30,22 +30,14 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
     # Add in extra json output if active.
     if active:
       properties = {
-          property_name: self.gen_revision(project_name, git_mode)
+          property_name: self.gen_revision(project_name)
           for project_name, property_name in revision_mapping.iteritems()
       }
       properties.update({
           '%s_cp' % property_name: ('refs/heads/master@{#%s}' %
-                                    self.gen_revision(project_name, False))
+                                    self.gen_commit_position(project_name))
           for project_name, property_name in revision_mapping.iteritems()
       })
-
-      # We also want to simulate outputting "got_revision_git": ...
-      # when git mode is off to match what bot_update.py does.
-      if not git_mode:
-        properties.update({
-            '%s_git' % property_name: self.gen_revision(project_name, True)
-            for project_name, property_name in revision_mapping.iteritems()
-        })
 
       output.update({
           'patch_root': root or first_sln,
@@ -59,7 +51,7 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
           'manifest': {
             project_name: {
               'repository': 'https://fake.org/%s.git' % project_name,
-              'revision': self.gen_revision(project_name, git_mode),
+              'revision': self.gen_revision(project_name),
             }
             for project_name in revision_mapping
           }
@@ -77,10 +69,13 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
     return self.m.json.output(output)
 
   @staticmethod
-  def gen_revision(project, GIT_MODE):
-    """Hash project to bogus deterministic revision values."""
+  def gen_revision(project):
+    """Hash project to bogus deterministic git hash values."""
     h = hashlib.sha1(project)
-    if GIT_MODE:
-      return h.hexdigest()
-    else:
-      return struct.unpack('!I', h.digest()[:4])[0] % 300000
+    return h.hexdigest()
+
+  @staticmethod
+  def gen_commit_position(project):
+    """Hash project to bogus deterministic Cr-Commit-Position values."""
+    h = hashlib.sha1(project)
+    return struct.unpack('!I', h.digest()[:4])[0] % 300000

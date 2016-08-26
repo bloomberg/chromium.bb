@@ -12,10 +12,10 @@ DEPS = [
 def RunSteps(api):
   api.gclient.use_mirror = True
 
-  src_cfg = api.gclient.make_config(GIT_MODE=True, CACHE_DIR='[GIT_CACHE]')
+  src_cfg = api.gclient.make_config(CACHE_DIR='[GIT_CACHE]')
   soln = src_cfg.solutions.add()
   soln.name = 'src'
-  soln.url = 'svn://svn.chromium.org/chrome/trunk/src'
+  soln.url = 'https://chromium.googlesource.com/chromium/src.git'
   soln.revision = api.properties.get('revision')
   api.gclient.c = src_cfg
   api.gclient.c.revisions.update(api.properties.get('revisions', {}))
@@ -139,12 +139,6 @@ def GenTests(api):
       mastername='experimental',
       buildername='Experimental Builder',
       slavename='somehost',
-  )
-  yield api.test('svn_mode') + api.properties(
-      mastername='experimental.svn',
-      buildername='Experimental SVN Builder',
-      slavename='somehost',
-      force=1
   )
   yield api.test('clobber') + api.properties(
       mastername='experimental',

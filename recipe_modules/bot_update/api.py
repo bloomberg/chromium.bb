@@ -8,13 +8,6 @@
 from recipe_engine import recipe_api
 
 
-# This is just for testing, to indicate if a master is using a Git scheduler
-# or not.
-SVN_MASTERS = (
-    'experimental.svn',
-)
-
-
 class BotUpdateApi(recipe_api.RecipeApi):
 
   def __init__(self, mastername, buildername, slavename, issue, patchset,
@@ -242,10 +235,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_rebase_patch_ref')
 
     # Inject Json output for testing.
-    git_mode = self._mastername not in SVN_MASTERS
     first_sln = cfg.solutions[0].name
     step_test_data = lambda: self.test_api.output_json(
-        master, builder, slave, root, first_sln, rev_map, git_mode, force,
+        master, builder, slave, root, first_sln, rev_map, force,
         self._fail_patch,
         output_manifest=output_manifest, fixed_revisions=fixed_revisions)
 

@@ -10,17 +10,16 @@ from recipe_engine.config import ConfigList, Dict, Single, Static, Set, List
 from . import api as gclient_api
 
 
-def BaseConfig(USE_MIRROR=True, GIT_MODE=True, CACHE_DIR=None,
+def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
                PATCH_PROJECT=None, BUILDSPEC_VERSION=None,
                **_kwargs):
-  deps = '.DEPS.git' if GIT_MODE else 'DEPS'
   cache_dir = str(CACHE_DIR) if CACHE_DIR else None
   return ConfigGroup(
     solutions = ConfigList(
       lambda: ConfigGroup(
         name = Single(basestring),
         url = Single(basestring),
-        deps_file = Single(basestring, empty_val=deps, required=False,
+        deps_file = Single(basestring, empty_val='.DEPS.git', required=False,
                            hidden=False),
         managed = Single(bool, empty_val=True, required=False, hidden=False),
         custom_deps = Dict(value_type=(basestring, types.NoneType)),
@@ -86,7 +85,6 @@ def BaseConfig(USE_MIRROR=True, GIT_MODE=True, CACHE_DIR=None,
         required=False,
         hidden=True),
 
-    GIT_MODE = Static(bool(GIT_MODE)),
     USE_MIRROR = Static(bool(USE_MIRROR)),
     # TODO(tandrii): remove PATCH_PROJECT field.
     # DON'T USE THIS. WILL BE REMOVED.
@@ -105,18 +103,10 @@ def ChromiumGitURL(_c, *pieces):
   return '/'.join(('https://chromium.googlesource.com',) + pieces)
 
 def ChromiumSrcURL(c):
-  # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:
-    return ChromiumGitURL(c, 'chromium', 'src.git')
-  else:  # pragma: no cover
-    return ChromiumSvnSubURL(c, 'chrome', 'trunk', 'src')
+  return ChromiumGitURL(c, 'chromium', 'src.git')
 
 def BlinkURL(c):
-  # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:
-    return ChromiumGitURL(c, 'chromium', 'blink.git')
-  else:  # pragma: no cover
-    return ChromiumSvnSubURL(c, 'blink', 'trunk')
+  return ChromiumGitURL(c, 'chromium', 'blink.git')
 
 def ChromeSvnSubURL(c, *pieces):  # pragma: no cover
   BASES = ('svn://svn.chromium.org',
@@ -128,11 +118,7 @@ def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
   return '/'.join(('https://chrome-internal.googlesource.com',) + pieces)
 
 def ChromeInternalSrcURL(c):
-  # TODO(phajdan.jr): Move to proper repo and add coverage.
-  if c.GIT_MODE:
-    return ChromeInternalGitURL(c, 'chrome', 'src-internal.git')
-  else:  # pragma: no cover
-    return ChromeSvnSubURL(c, 'chrome-internal', 'trunk', 'src-internal')
+  return ChromeInternalGitURL(c, 'chrome', 'src-internal.git')
 
 def mirror_only(c, obj, default=None):
   return obj if c.USE_MIRROR else (default or obj.__class__())
@@ -277,8 +263,6 @@ def v8_canary(c):
 
 @config_ctx(includes=['chromium'])
 def oilpan(c):  # pragma: no cover
-  if c.GIT_MODE:
-    raise BadConf("Oilpan requires SVN for now")
   c.solutions[0].custom_vars = {
     'webkit_trunk': ChromiumSvnSubURL(c, 'blink', 'branches', 'oilpan')
   }
@@ -349,49 +333,39 @@ def gyp(c):
   m = c.got_revision_mapping
   m['gyp'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def build(c):
-  if not c.GIT_MODE:  # pragma: no cover
-    raise BadConf('build only supports git')
   s = c.solutions.add()
   s.name = 'build'
   s.url = ChromiumGitURL(c, 'chromium', 'tools', 'build.git')
   m = c.got_revision_mapping
   m['build'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def depot_tools(c):  # pragma: no cover
-  if not c.GIT_MODE:
-    raise BadConf('depot_tools only supports git')
   s = c.solutions.add()
   s.name = 'depot_tools'
   s.url = ChromiumGitURL(c, 'chromium', 'tools', 'depot_tools.git')
   m = c.got_revision_mapping
   m['depot_tools'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def skia(c):  # pragma: no cover
-  if not c.GIT_MODE:
-    raise BadConf('skia only supports git')
   s = c.solutions.add()
   s.name = 'skia'
   s.url = 'https://skia.googlesource.com/skia.git'
   m = c.got_revision_mapping
   m['skia'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def chrome_golo(c):  # pragma: no cover
-  if not c.GIT_MODE:
-    raise BadConf('chrome_golo only supports git')
   s = c.solutions.add()
   s.name = 'chrome_golo'
   s.url = 'https://chrome-internal.googlesource.com/chrome-golo/chrome-golo.git'
   c.got_revision_mapping['chrome_golo'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def build_internal(c):
-  if not c.GIT_MODE:  # pragma: no cover
-    raise BadConf('build_internal only supports git')
   s = c.solutions.add()
   s.name = 'build_internal'
   s.url = 'https://chrome-internal.googlesource.com/chrome/tools/build.git'
@@ -402,10 +376,8 @@ def build_internal(c):
   build(c)
   c.got_revision_mapping['build'] = 'got_build_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def build_internal_scripts_slave(c):
-  if not c.GIT_MODE:  # pragma: no cover
-    raise BadConf('build_internal_scripts_slave only supports git')
   s = c.solutions.add()
   s.name = 'build_internal/scripts/slave'
   s.url = ('https://chrome-internal.googlesource.com/'
@@ -536,7 +508,7 @@ def dart(c):
   soln.deps_file = 'DEPS'
   soln.managed = False
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def infra(c):
   soln = c.solutions.add()
   soln.name = 'infra'
@@ -549,7 +521,7 @@ def infra(c):
   p['recipes-py'] = ('infra/recipes-py', 'HEAD')
   p['recipe_engine'] = ('infra/recipes-py', 'HEAD')
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def infra_internal(c):  # pragma: no cover
   soln = c.solutions.add()
   soln.name = 'infra_internal'
@@ -600,7 +572,7 @@ def recipes_py(c):
   del m['infra']
   m['infra/recipes-py'] = 'got_revision'
 
-@config_ctx(config_vars={'GIT_MODE': True})
+@config_ctx()
 def recipes_py_bare(c):
   soln = c.solutions.add()
   soln.name = 'recipes-py'
@@ -627,7 +599,7 @@ def catapult(c):
               'catapult-project/catapult.git')
   c.got_revision_mapping['catapult'] = 'got_revision'
 
-@config_ctx(includes=['infra_internal'], config_vars={'GIT_MODE': True})
+@config_ctx(includes=['infra_internal'])
 def infradata_master_manager(c):
   soln = c.solutions.add()
   soln.name = 'infra-data-master-manager'
