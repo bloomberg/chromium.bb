@@ -127,7 +127,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     }
 
     assert(pref != undefined, 'Pref is missing for ' + contentType);
-    return Promise.resolve(pref != 'block');
+    return Promise.resolve(pref);
   },
 
   /** @override */

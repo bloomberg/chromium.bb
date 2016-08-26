@@ -335,16 +335,10 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
           site_settings::ContentSettingsTypeFromGroupName(type)));
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
-  ContentSetting setting = map->GetDefaultContentSetting(content_type, nullptr);
 
-  // FullScreen is Allow vs. Ask.
-  bool enabled;
-  if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
-      enabled = setting != CONTENT_SETTING_ASK;
-  else
-      enabled = setting != CONTENT_SETTING_BLOCK;
-
-  ResolveJavascriptCallback(*callback_id, base::FundamentalValue(enabled));
+  std::string setting = content_settings::ContentSettingToString(
+      map->GetDefaultContentSetting(content_type, nullptr));
+  ResolveJavascriptCallback(*callback_id, base::StringValue(setting));
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {

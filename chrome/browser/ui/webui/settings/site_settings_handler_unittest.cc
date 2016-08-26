@@ -37,7 +37,8 @@ class SiteSettingsHandlerTest : public testing::Test {
   content::TestWebUI* web_ui() { return &web_ui_; }
   SiteSettingsHandler* handler() { return &handler_; }
 
-  void ValidateDefault(bool expected_default, size_t expected_total_calls) {
+  void ValidateDefault(const std::string& expected_default,
+                       size_t expected_total_calls) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -51,9 +52,9 @@ class SiteSettingsHandlerTest : public testing::Test {
     ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
     ASSERT_TRUE(success);
 
-    bool enabled;
-    ASSERT_TRUE(data.arg3()->GetAsBoolean(&enabled));
-    EXPECT_EQ(expected_default, enabled);
+    std::string default_value;
+    ASSERT_TRUE(data.arg3()->GetAsString(&default_value));
+    EXPECT_EQ(expected_default, default_value);
   }
 
   void ValidateOrigin(
@@ -142,7 +143,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
   getArgs.AppendString(kCallbackId);
   getArgs.AppendString("notifications");
   handler()->HandleGetDefaultValueForContentType(&getArgs);
-  ValidateDefault(true, 1U);
+  ValidateDefault("ask", 1U);
 
   // Set the default to 'Blocked'.
   base::ListValue setArgs;
@@ -154,7 +155,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 
   // Verify that the default has been set to 'Blocked'.
   handler()->HandleGetDefaultValueForContentType(&getArgs);
-  ValidateDefault(false, 3U);
+  ValidateDefault("block", 3U);
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {

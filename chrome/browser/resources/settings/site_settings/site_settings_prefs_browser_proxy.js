@@ -79,7 +79,7 @@ cr.define('settings', function() {
     /**
      * Gets the default value for a site settings category.
      * @param {string} contentType The name of the category to query.
-     * @return {Promise<boolean>}
+     * @return {Promise<string>} The string value of the default setting.
      */
     getDefaultValueForContentType: function(contentType) {},
 

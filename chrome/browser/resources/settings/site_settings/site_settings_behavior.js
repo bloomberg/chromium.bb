@@ -448,6 +448,20 @@ var SiteSettingsBehaviorImpl = {
     var url = this.ensureUrlHasScheme(site);
     return 'background-image: ' + cr.icon.getFaviconImageSet(url);
   },
+
+  /**
+   * Returns true if the passed content setting is considered 'enabled'.
+   * @param {string} category
+   * @param {string} setting
+   * @return {boolean}
+   * @private
+   */
+  computeIsSettingEnabled: function(category, setting) {
+    // FullScreen is Allow vs. Ask.
+    return category == settings.ContentSettingsTypes.FULLSCREEN ?
+        setting != settings.PermissionValues.ASK :
+        setting != settings.PermissionValues.BLOCK;
+  },
 };
 
 /** @polymerBehavior */

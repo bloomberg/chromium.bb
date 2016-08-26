@@ -110,8 +110,9 @@ Polymer({
   onCategoryChanged_: function() {
     settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
         .getDefaultValueForContentType(
-            this.category).then(function(enabled) {
-              this.categoryEnabled = enabled;
+            this.category).then(function(setting) {
+              this.categoryEnabled =
+                  this.computeIsSettingEnabled(this.category, setting);
             }.bind(this));
   },
 });
