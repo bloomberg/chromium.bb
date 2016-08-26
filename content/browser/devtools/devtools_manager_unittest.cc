@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -209,6 +210,19 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
 }
 
 class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
+ public:
+  TestExternalAgentDelegate() : id_(base::GenerateGUID()) {
+  }
+  ~TestExternalAgentDelegate() override {
+    expectEvent(1, "Attach");
+    expectEvent(1, "Detach");
+    expectEvent(0, "SendMessageToBackend.message0");
+    expectEvent(1, "SendMessageToBackend.message1");
+    expectEvent(2, "SendMessageToBackend.message2");
+  }
+
+ private:
+  std::string id_;
   std::map<std::string,int> event_counter_;
 
   void recordEvent(const std::string& name) {
@@ -227,18 +241,22 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 
   void Detach() override { recordEvent("Detach"); };
 
+  std::string GetId() override { return id_; }
+  std::string GetType() override { return ""; }
+  std::string GetTitle() override { return ""; }
+  std::string GetDescription() override { return ""; }
+  GURL GetURL() override { return GURL(); }
+  GURL GetFaviconURL() override { return GURL(); }
+
+  bool Activate() override { return false; };
+  bool Inspect() override { return false; };
+  void Reload() override { };
+  bool Close() override { return false; };
+
   void SendMessageToBackend(const std::string& message) override {
     recordEvent(std::string("SendMessageToBackend.") + message);
   };
 
- public :
-  ~TestExternalAgentDelegate() override {
-    expectEvent(1, "Attach");
-    expectEvent(1, "Detach");
-    expectEvent(0, "SendMessageToBackend.message0");
-    expectEvent(1, "SendMessageToBackend.message1");
-    expectEvent(2, "SendMessageToBackend.message2");
-  }
 };
 
 TEST_F(DevToolsManagerTest, TestExternalProxy) {

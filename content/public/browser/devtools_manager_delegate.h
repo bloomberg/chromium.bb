@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_MANAGER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_DEVTOOLS_MANAGER_DELEGATE_H_
 
+#include <string>
+
 namespace base {
 class DictionaryValue;
 }
@@ -13,17 +15,23 @@ namespace content {
 
 class BrowserContext;
 class DevToolsAgentHost;
+class RenderFrameHost;
 
 class DevToolsManagerDelegate {
  public:
   virtual ~DevToolsManagerDelegate() {}
 
   // Opens the inspector for |agent_host|.
-  virtual void Inspect(BrowserContext* browser_context,
-                       DevToolsAgentHost* agent_host) = 0;
+  virtual void Inspect(DevToolsAgentHost* agent_host) = 0;
 
   virtual void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
                                          bool attached) = 0;
+
+  // Returns DevToolsAgentHost type to use for given |host| target.
+  virtual std::string GetTargetType(RenderFrameHost* host) = 0;
+
+  // Returns DevToolsAgentHost title to use for given |host| target.
+  virtual std::string GetTargetTitle(RenderFrameHost* host) = 0;
 
   // Result ownership is passed to the caller.
   virtual base::DictionaryValue* HandleCommand(

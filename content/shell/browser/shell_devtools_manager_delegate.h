@@ -27,12 +27,13 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   ~ShellDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation.
-  void Inspect(BrowserContext* browser_context,
-               DevToolsAgentHost* agent_host) override {}
+  void Inspect(DevToolsAgentHost* agent_host) override {}
   void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
                                  bool attached) override {}
   base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
+  std::string GetTargetType(RenderFrameHost* host) override;
+  std::string GetTargetTitle(RenderFrameHost* host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsManagerDelegate);

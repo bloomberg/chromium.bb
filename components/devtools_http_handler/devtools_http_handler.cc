@@ -324,7 +324,8 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
 
 static bool TimeComparator(const DevToolsTargetDescriptor* desc1,
                            const DevToolsTargetDescriptor* desc2) {
-  return desc1->GetLastActivityTime() > desc2->GetLastActivityTime();
+  return desc1->GetAgentHost()->GetLastActivityTime() >
+         desc2->GetAgentHost()->GetLastActivityTime();
 }
 
 // DevToolsHttpHandler::ServerSocketFactory ----------------------------------
@@ -585,7 +586,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     base::STLDeleteValues(&descriptor_map_);
     base::ListValue list_value;
     for (DevToolsTargetDescriptor* descriptor : descriptors) {
-      descriptor_map_[descriptor->GetId()] = descriptor;
+      descriptor_map_[descriptor->GetAgentHost()->GetId()] = descriptor;
       list_value.Append(SerializeDescriptor(*descriptor, host));
     }
     SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
@@ -612,7 +613,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     std::unique_ptr<base::DictionaryValue> dictionary(
         SerializeDescriptor(*descriptor.get(), host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
-    const std::string target_id = descriptor->GetId();
+    const std::string target_id = descriptor->GetAgentHost()->GetId();
     descriptor_map_[target_id] = descriptor.release();
     return;
   }
@@ -628,7 +629,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "activate") {
-      if (descriptor->Activate()) {
+      if (descriptor->GetAgentHost()->Activate()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
       } else {
         SendJson(connection_id,
@@ -640,7 +641,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "close") {
-      if (descriptor->Close()) {
+      if (descriptor->GetAgentHost()->Close()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
       } else {
         SendJson(connection_id,
@@ -671,7 +672,7 @@ void DevToolsHttpHandler::OnThumbnailRequest(
   DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
   GURL page_url;
   if (descriptor)
-    page_url = descriptor->GetURL();
+    page_url = descriptor->GetAgentHost()->GetURL();
   std::string data = delegate_->GetPageThumbnailData(page_url);
   if (!data.empty())
     Send200(connection_id, data, "image/png");
@@ -899,21 +900,22 @@ base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(
     const DevToolsTargetDescriptor& descriptor,
     const std::string& host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue;
-
-  std::string id = descriptor.GetId();
+  scoped_refptr<content::DevToolsAgentHost> agent_host =
+      descriptor.GetAgentHost();
+  std::string id = agent_host->GetId();
   dictionary->SetString(kTargetIdField, id);
-  std::string parent_id = descriptor.GetParentId();
+  std::string parent_id = agent_host->GetParentId();
   if (!parent_id.empty())
     dictionary->SetString(kTargetParentIdField, parent_id);
-  dictionary->SetString(kTargetTypeField, descriptor.GetType());
+  dictionary->SetString(kTargetTypeField, agent_host->GetType());
   dictionary->SetString(kTargetTitleField,
-                        net::EscapeForHTML(descriptor.GetTitle()));
-  dictionary->SetString(kTargetDescriptionField, descriptor.GetDescription());
+                        net::EscapeForHTML(agent_host->GetTitle()));
+  dictionary->SetString(kTargetDescriptionField, agent_host->GetDescription());
 
-  GURL url = descriptor.GetURL();
+  GURL url = agent_host->GetURL();
   dictionary->SetString(kTargetUrlField, url.spec());
 
-  GURL favicon_url = descriptor.GetFaviconURL();
+  GURL favicon_url = agent_host->GetFaviconURL();
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 
@@ -922,7 +924,7 @@ base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(
                           std::string(kThumbUrlPrefix) + id);
   }
 
-  if (!descriptor.IsAttached()) {
+  if (!agent_host->IsAttached()) {
     dictionary->SetString(kTargetWebSocketDebuggerUrlField,
                           base::StringPrintf("ws://%s%s%s",
                                              host.c_str(),

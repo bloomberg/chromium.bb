@@ -65,8 +65,8 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
   dispatcher->SetNetworkHandler(network_handler_.get());
 }
 
-DevToolsAgentHost::Type ServiceWorkerDevToolsAgentHost::GetType() {
-  return TYPE_SERVICE_WORKER;
+std::string ServiceWorkerDevToolsAgentHost::GetType() {
+  return kTypeServiceWorker;
 }
 
 std::string ServiceWorkerDevToolsAgentHost::GetTitle() {
@@ -83,6 +83,9 @@ GURL ServiceWorkerDevToolsAgentHost::GetURL() {
 
 bool ServiceWorkerDevToolsAgentHost::Activate() {
   return false;
+}
+
+void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {

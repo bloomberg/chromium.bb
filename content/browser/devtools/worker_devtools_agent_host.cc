@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
+#include "base/guid.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/schema_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -120,7 +121,8 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
 }
 
 WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(WorkerId worker_id)
-    : schema_handler_(new devtools::schema::SchemaHandler()),
+    : DevToolsAgentHostImpl(base::GenerateGUID()),
+      schema_handler_(new devtools::schema::SchemaHandler()),
       protocol_handler_(new DevToolsProtocolHandler(this)),
       chunk_processor_(base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
                                   base::Unretained(this))),

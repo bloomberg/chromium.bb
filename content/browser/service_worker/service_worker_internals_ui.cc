@@ -531,7 +531,7 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
-  agent_host->Inspect(web_ui()->GetWebContents()->GetBrowserContext());
+  agent_host->Inspect();
   callback.Run(SERVICE_WORKER_OK);
 }
 

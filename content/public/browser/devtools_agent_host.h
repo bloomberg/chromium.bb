@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "url/gurl.h"
@@ -34,25 +35,13 @@ class WebContents;
 class CONTENT_EXPORT DevToolsAgentHost
     : public base::RefCounted<DevToolsAgentHost> {
  public:
-  enum Type {
-    // Agent host associated with WebContents.
-    TYPE_WEB_CONTENTS,
-
-    // Agent host associated with RenderFrameHost.
-    TYPE_FRAME,
-
-    // Agent host associated with shared worker.
-    TYPE_SHARED_WORKER,
-
-    // Agent host associated with service worker.
-    TYPE_SERVICE_WORKER,
-
-    // Agent host associated with DevToolsExternalAgentProxyDelegate.
-    TYPE_EXTERNAL,
-
-    // Agent host associated with browser.
-    TYPE_BROWSER,
-  };
+  static char kTypePage[];
+  static char kTypeFrame[];
+  static char kTypeSharedWorker[];
+  static char kTypeServiceWorker[];
+  static char kTypeExternal[];
+  static char kTypeBrowser[];
+  static char kTypeOther[];
 
   // Latest DevTools protocol version supported.
   static std::string GetProtocolVersion();
@@ -136,6 +125,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns the unique id of the agent.
   virtual std::string GetId() = 0;
 
+  // Returns the id of the parent host, or empty string if no parent.
+  virtual std::string GetParentId() = 0;
+
   // Returns web contents instance for this host if any.
   virtual WebContents* GetWebContents() = 0;
 
@@ -150,19 +142,37 @@ class CONTENT_EXPORT DevToolsAgentHost
   virtual void ConnectWebContents(WebContents* web_contents) = 0;
 
   // Returns agent host type.
-  virtual Type GetType() = 0;
+  virtual std::string GetType() = 0;
 
   // Returns agent host title.
   virtual std::string GetTitle() = 0;
 
+  // Returns the host description.
+  virtual std::string GetDescription() = 0;
+
+  // Override host description.
+  virtual void SetDescriptionOverride(const std::string& description) = 0;
+
   // Returns url associated with agent host.
   virtual GURL GetURL() = 0;
+
+  // Returns the favicon url for this host.
+  virtual GURL GetFaviconURL() = 0;
 
   // Activates agent host. Returns false if the operation failed.
   virtual bool Activate() = 0;
 
+  // Opens devtools for this agent host. Returns false if the operation failed.
+  virtual bool Inspect() = 0;
+
+  // Reloads the host.
+  virtual void Reload() = 0;
+
   // Closes agent host. Returns false if the operation failed.
   virtual bool Close() = 0;
+
+  // Returns the time when the host was last active.
+  virtual base::TimeTicks GetLastActivityTime() = 0;
 
   // Terminates all debugging sessions and detaches all clients.
   static void DetachAllClients();

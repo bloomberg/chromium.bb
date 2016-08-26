@@ -11,7 +11,8 @@ namespace content {
 
 ForwardingAgentHost::ForwardingAgentHost(
     DevToolsExternalAgentProxyDelegate* delegate)
-      : delegate_(delegate) {
+      : DevToolsAgentHostImpl(delegate->GetId()),
+        delegate_(delegate) {
 }
 
 ForwardingAgentHost::~ForwardingAgentHost() {
@@ -39,24 +40,36 @@ bool ForwardingAgentHost::DispatchProtocolMessage(
   return true;
 }
 
-DevToolsAgentHost::Type ForwardingAgentHost::GetType() {
-  return TYPE_EXTERNAL;
+std::string ForwardingAgentHost::GetType() {
+  return delegate_->GetType();
 }
 
 std::string ForwardingAgentHost::GetTitle() {
-  return "";
+  return delegate_->GetTitle();
 }
 
 GURL ForwardingAgentHost::GetURL() {
-  return GURL();
+  return delegate_->GetURL();
+}
+
+GURL ForwardingAgentHost::GetFaviconURL() {
+  return delegate_->GetFaviconURL();
 }
 
 bool ForwardingAgentHost::Activate() {
-  return false;
+  return delegate_->Activate();
+}
+
+bool ForwardingAgentHost::Inspect() {
+  return delegate_->Inspect();
+}
+
+void ForwardingAgentHost::Reload() {
+  delegate_->Reload();
 }
 
 bool ForwardingAgentHost::Close() {
-  return false;
+  return delegate_->Close();
 }
 
 }  // content

@@ -118,15 +118,15 @@ class AdbClientSocketTest : public InProcessBrowserTest,
         android_bridge_->CreatePageTarget(webview_pages[1]));
 
     // Check that we have non-empty description for webview pages.
-    ASSERT_EQ(0U, chrome_target->GetDescription().size());
-    ASSERT_EQ(0U, chrome_beta_target->GetDescription().size());
-    ASSERT_NE(0U, webview_target_0->GetDescription().size());
-    ASSERT_NE(0U, webview_target_1->GetDescription().size());
+    ASSERT_EQ(0U, chrome_target->GetAgentHost()->GetDescription().size());
+    ASSERT_EQ(0U, chrome_beta_target->GetAgentHost()->GetDescription().size());
+    ASSERT_NE(0U, webview_target_0->GetAgentHost()->GetDescription().size());
+    ASSERT_NE(0U, webview_target_1->GetAgentHost()->GetDescription().size());
 
     ASSERT_EQ(GURL("http://www.chromium.org/"),
-                   chrome_target->GetURL());
+                   chrome_target->GetAgentHost()->GetURL());
     ASSERT_EQ("The Chromium Projects",
-              chrome_target->GetTitle());
+              chrome_target->GetAgentHost()->GetTitle());
   }
 
  private:

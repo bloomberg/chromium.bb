@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -59,6 +60,16 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
   result->SetInteger("id", id);
   result->Set("result", std::move(cmd_result));
   return result.release();
+}
+
+std::string HeadlessDevToolsManagerDelegate::GetTargetType(
+    content::RenderFrameHost* host) {
+  return content::DevToolsAgentHost::kTypePage;
+}
+
+std::string HeadlessDevToolsManagerDelegate::GetTargetTitle(
+    content::RenderFrameHost* host) {
+  return "";
 }
 
 std::unique_ptr<base::Value> HeadlessDevToolsManagerDelegate::CreateTarget(

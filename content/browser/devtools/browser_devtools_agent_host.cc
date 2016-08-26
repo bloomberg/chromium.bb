@@ -5,6 +5,7 @@
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
@@ -25,7 +26,8 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForBrowser(
 BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
     scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
     const CreateServerSocketCallback& socket_callback)
-    : browser_handler_(new devtools::browser::BrowserHandler()),
+    : DevToolsAgentHostImpl(base::GenerateGUID()),
+      browser_handler_(new devtools::browser::BrowserHandler()),
       io_handler_(new devtools::io::IOHandler(GetIOContext())),
       memory_handler_(new devtools::memory::MemoryHandler()),
       system_info_handler_(new devtools::system_info::SystemInfoHandler()),
@@ -55,8 +57,8 @@ void BrowserDevToolsAgentHost::Attach() {
 void BrowserDevToolsAgentHost::Detach() {
 }
 
-DevToolsAgentHost::Type BrowserDevToolsAgentHost::GetType() {
-  return TYPE_BROWSER;
+std::string BrowserDevToolsAgentHost::GetType() {
+  return kTypeBrowser;
 }
 
 std::string BrowserDevToolsAgentHost::GetTitle() {
@@ -71,8 +73,15 @@ bool BrowserDevToolsAgentHost::Activate() {
   return false;
 }
 
+bool BrowserDevToolsAgentHost::Inspect() {
+  return false;
+}
+
 bool BrowserDevToolsAgentHost::Close() {
   return false;
+}
+
+void BrowserDevToolsAgentHost::Reload() {
 }
 
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
