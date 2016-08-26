@@ -3413,9 +3413,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!inMainFrame && !userInteracted)
     return;
 
-  // Reset SSL status to default.
+  // Reset SSL status to default, unless the load was cancelled (manually or by
+  // back-forward navigation).
   web::NavigationManager* navManager = self.webState->GetNavigationManager();
-  if (navManager->GetLastCommittedItem())
+  if (navManager->GetLastCommittedItem() && [error code] != NSURLErrorCancelled)
     navManager->GetLastCommittedItem()->GetSSL() = web::SSLStatus();
 
   NSURL* errorURL = [NSURL
