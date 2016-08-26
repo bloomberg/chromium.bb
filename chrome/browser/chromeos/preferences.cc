@@ -282,6 +282,9 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   registry->RegisterBooleanPref(
+      prefs::kEnableStylusTools, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kLaunchPaletteOnEjectEvent, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 

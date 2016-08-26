@@ -85,6 +85,11 @@ class PaletteDelegateImpl : public PaletteDelegate {
   ~PaletteDelegateImpl() override {}
 
   // PaletteDelegate:
+  std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
+      const EnableListener& on_state_changed) override {
+    on_state_changed.Run(false);
+    return nullptr;
+  }
   void CreateNote() override {}
   bool HasNoteApp() override { return false; }
   void SetPartialMagnifierState(bool enabled) override {}

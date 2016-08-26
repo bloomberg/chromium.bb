@@ -9,7 +9,7 @@
 
 namespace ash {
 
-bool IsPaletteEnabled() {
+bool IsPaletteFeatureEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnablePalette);
 }

@@ -526,13 +526,12 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
                           arraysize(keyboard_strings));
 
   LocalizedString stylus_strings[] = {
-    {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
-    {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
-    {"stylusFindMoreApps", IDS_SETTINGS_STYLUS_FIND_MORE_APPS}
-  };
+      {"stylusTitle", IDS_SETTINGS_STYLUS_TITLE},
+      {"stylusEnableStylusTools", IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS},
+      {"stylusAutoOpenStylusTools", IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS},
+      {"stylusFindMoreApps", IDS_SETTINGS_STYLUS_FIND_MORE_APPS}};
   AddLocalizedStringsBulk(html_source, stylus_strings,
                           arraysize(stylus_strings));
-
 
   LocalizedString display_strings[] = {
       {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},

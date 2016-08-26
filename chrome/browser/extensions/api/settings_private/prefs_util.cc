@@ -254,13 +254,17 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["settings.enable_screen_lock"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Ash settings.
+  (*s_whitelist)["settings.enable_stylus_tools"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.launch_palette_on_eject_event"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Input method settings.
   (*s_whitelist)["settings.language.preload_engines"] =
       settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["settings.language.enabled_extension_imes"] =
       settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["settings.launch_palette_on_eject_event"] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Device settings.
   (*s_whitelist)["settings.touchpad.enable_tap_to_click"] =

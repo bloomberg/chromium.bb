@@ -9,6 +9,13 @@
 
     <div class="settings-box">
       <settings-checkbox
+          pref="{{prefs.settings.enable_stylus_tools}}"
+          label="$i18n{stylusEnableStylusTools}">
+      </settings-checkbox>
+    </div>
+
+    <div class="settings-box continuation">
+      <settings-checkbox
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
           label="$i18n{stylusAutoOpenStylusTools}">
       </settings-checkbox>

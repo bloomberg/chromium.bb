@@ -10,6 +10,12 @@ TestPaletteDelegate::TestPaletteDelegate() {}
 
 TestPaletteDelegate::~TestPaletteDelegate() {}
 
+std::unique_ptr<PaletteDelegate::EnableListenerSubscription>
+TestPaletteDelegate::AddPaletteEnableListener(
+    const EnableListener& on_state_changed) {
+  return nullptr;
+}
+
 void TestPaletteDelegate::CreateNote() {
   ++create_note_count_;
 }

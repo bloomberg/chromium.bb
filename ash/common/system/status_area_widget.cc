@@ -22,6 +22,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 #include "ash/common/system/chromeos/palette/palette_tray.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/chromeos/session/logout_button_tray.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
@@ -200,7 +201,8 @@ void StatusAreaWidget::SchedulePaint() {
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
-  palette_tray_->SchedulePaint();
+  if (palette_tray_)
+    palette_tray_->SchedulePaint();
 #endif
   overview_button_tray_->SchedulePaint();
 }
@@ -224,7 +226,8 @@ void StatusAreaWidget::UpdateShelfItemBackground(int alpha) {
   virtual_keyboard_tray_->UpdateShelfItemBackground(alpha);
   logout_button_tray_->UpdateShelfItemBackground(alpha);
   ime_menu_tray_->UpdateShelfItemBackground(alpha);
-  palette_tray_->UpdateShelfItemBackground(alpha);
+  if (palette_tray_)
+    palette_tray_->UpdateShelfItemBackground(alpha);
 #endif
   overview_button_tray_->UpdateShelfItemBackground(alpha);
 }
@@ -248,8 +251,10 @@ void StatusAreaWidget::AddLogoutButtonTray() {
 }
 
 void StatusAreaWidget::AddPaletteTray() {
-  palette_tray_ = new PaletteTray(wm_shelf_);
-  status_area_widget_delegate_->AddTray(palette_tray_);
+  if (IsPaletteFeatureEnabled()) {
+    palette_tray_ = new PaletteTray(wm_shelf_);
+    status_area_widget_delegate_->AddTray(palette_tray_);
+  }
 }
 
 void StatusAreaWidget::AddVirtualKeyboardTray() {

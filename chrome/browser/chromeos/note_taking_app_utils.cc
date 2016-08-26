@@ -69,7 +69,7 @@ const extensions::Extension* GetApp(Profile* profile) {
 
 bool IsNoteTakingAppAvailable(Profile* profile) {
   DCHECK(profile);
-  return ash::IsPaletteEnabled() && GetApp(profile);
+  return ash::IsPaletteFeatureEnabled() && GetApp(profile);
 }
 
 void LaunchNoteTakingAppForNewNote(Profile* profile,

@@ -36,6 +36,8 @@ class TestPaletteDelegate : public PaletteDelegate {
 
  private:
   // PaletteDelegate:
+  std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
+      const EnableListener& on_state_changed) override;
   void CreateNote() override;
   bool HasNoteApp() override;
   void SetPartialMagnifierState(bool enabled) override;

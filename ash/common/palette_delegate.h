@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "ui/events/devices/stylus_state.h"
 
@@ -16,9 +17,18 @@ namespace ash {
 // Chrome-specific actions.
 class PaletteDelegate {
  public:
+  using EnableListener = base::Callback<void(bool)>;
+  using EnableListenerSubscription =
+      base::CallbackList<void(bool)>::Subscription;
   using OnStylusStateChangedCallback = base::Callback<void(ui::StylusState)>;
 
   virtual ~PaletteDelegate() {}
+
+  // Sets callback function that will receive the current state of the palette
+  // enabled pref. The callback will be invoked once the initial pref value is
+  // available.
+  virtual std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
+      const EnableListener& on_state_changed) = 0;
 
   // Create a new note.
   virtual void CreateNote() = 0;

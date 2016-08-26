@@ -9,8 +9,9 @@
 
 namespace ash {
 
-// Returns true if the palette is enabled.
-ASH_EXPORT bool IsPaletteEnabled();
+// Returns true if the palette feature is enabled. The palette itself may have
+// been disabled by the user.
+ASH_EXPORT bool IsPaletteFeatureEnabled();
 
 }  // namespace ash
 

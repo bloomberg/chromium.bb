@@ -9,13 +9,13 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/events/devices/input_device_manager.h"
 
 namespace views {
 class ImageView;
@@ -90,11 +90,19 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // Called when a stylus inserted or removed event is received.
   void OnStylusStateChanged(ui::StylusState stylus_state);
 
+  // Called when the palette enabled pref has changed.
+  void OnPaletteEnabledPrefChanged(bool enabled);
+
   bool OpenBubble();
   void AddToolsToView(views::View* host);
 
   std::unique_ptr<PaletteToolManager> palette_tool_manager_;
   std::unique_ptr<TrayBubbleWrapper> bubble_;
+
+  // Manages the callback OnPaletteEnabledPrefChanged callback registered to
+  // the PaletteDelegate instance.
+  std::unique_ptr<PaletteDelegate::EnableListenerSubscription>
+      palette_enabled_subscription_;
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

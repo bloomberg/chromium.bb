@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
-#include "ash/common/palette_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -124,6 +123,9 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf),
       palette_tool_manager_(new PaletteToolManager(this)),
       weak_factory_(this) {
+  // PaletteTray should only be instantiated if the palette feature is enabled.
+  DCHECK(IsPaletteFeatureEnabled());
+
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
   SetContentsBackground();
@@ -143,7 +145,12 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
                    weak_factory_.GetWeakPtr()));
   }
 
-  UpdateIconVisibility();
+  // OnPaletteEnabledPrefChanged will get called with the initial pref value,
+  // which will take care of showing the palette.
+  palette_enabled_subscription_ =
+      WmShell::Get()->palette_delegate()->AddPaletteEnableListener(
+          base::Bind(&PaletteTray::OnPaletteEnabledPrefChanged,
+                     weak_factory_.GetWeakPtr()));
 }
 
 PaletteTray::~PaletteTray() {
@@ -333,10 +340,14 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
     bubble_.reset();
 }
 
-void PaletteTray::UpdateIconVisibility() {
-  if (!IsPaletteEnabled())
-    return;
+void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
+  if (!enabled)
+    SetVisible(false);
+  else
+    UpdateIconVisibility();
+}
 
+void PaletteTray::UpdateIconVisibility() {
   SessionStateDelegate* session_state_delegate =
       WmShell::Get()->GetSessionStateDelegate();
 

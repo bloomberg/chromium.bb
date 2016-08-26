@@ -28,10 +28,14 @@ void OptionsStylusHandler::GetLocalizedValues(
       "stylusAutoOpenStylusTools",
       l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_AUTO_OPEN_STYLUS_TOOLS));
   localized_strings->SetString(
+      "stylusEnableStylusTools",
+      l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_ENABLE_STYLUS_TOOLS));
+  localized_strings->SetString(
       "stylusFindMoreApps",
       l10n_util::GetStringUTF16(IDS_SETTINGS_STYLUS_FIND_MORE_APPS));
 
-  localized_strings->SetBoolean("showStylusSettings", ash::IsPaletteEnabled());
+  localized_strings->SetBoolean("showStylusSettings",
+                                ash::IsPaletteFeatureEnabled());
 }
 
 void OptionsStylusHandler::InitializePage() {}

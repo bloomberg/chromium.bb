@@ -16,8 +16,10 @@ ScopedSessionStateObserver::ScopedSessionStateObserver(
 }
 
 ScopedSessionStateObserver::~ScopedSessionStateObserver() {
-  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
-      observer_);
+  if (WmShell::Get()) {
+    WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
+        observer_);
+  }
 }
 
 }  // namespace ash
