@@ -155,14 +155,6 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
         nativeDeleteItemByGuid(mNativeOfflinePageDownloadBridge, guid);
     }
 
-    /**
-     * See {@link #openItem(String, ComponentName)}.
-     */
-    @Override
-    public void openItem(String guid) {
-        openItem(guid, null);
-    }
-
     @Override
     public void destroyServiceDelegate() {
         destroy();
@@ -212,6 +204,23 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
      */
     static void setIsTesting(boolean isTesting) {
         sIsTesting = isTesting;
+    }
+
+    /**
+     * Waits for the download items to get loaded and opens the offline page identified by the GUID.
+     * @param GUID of the item to open.
+     */
+    public static void openDownloadedPage(final String guid) {
+        final OfflinePageDownloadBridge bridge =
+                new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
+        bridge.addObserver(
+                new Observer() {
+                    @Override
+                    public void onItemsLoaded() {
+                        bridge.openItem(guid, null);
+                        bridge.destroyServiceDelegate();
+                    }
+                });
     }
 
     @CalledByNative

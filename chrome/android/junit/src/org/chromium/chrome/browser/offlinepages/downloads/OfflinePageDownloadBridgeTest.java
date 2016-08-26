@@ -142,7 +142,7 @@ public class OfflinePageDownloadBridgeTest {
         OfflinePageDownloadItem item = createDownloadItem1();
         // null as item skips actual intent so no tabs are attempted to be created.
         doReturn(null).when(mBridge).nativeGetItemByGuid(anyLong(), eq(item.getGuid()));
-        mBridge.openItem(item.getGuid());
+        mBridge.openItem(item.getGuid(), null);
         verify(mBridge, times(1)).nativeGetItemByGuid(eq(0L), eq(item.getGuid()));
     }
 

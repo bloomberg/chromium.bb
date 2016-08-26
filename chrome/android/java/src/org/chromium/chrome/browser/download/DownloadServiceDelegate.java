@@ -30,12 +30,6 @@ public interface DownloadServiceDelegate {
      */
     void resumeDownload(DownloadItem item, boolean hasUserGesture);
 
-    /**
-     * Called to open a download item.
-     * @param downloadGuid GUID of the download.
-     */
-    void openItem(String downloadGuid);
-
     /** Called to destroy the delegate, in case it needs to be destroyed. */
     void destroyServiceDelegate();
 }

@@ -10,6 +10,7 @@ import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 
@@ -44,7 +45,11 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             DownloadManagerService.openDownloadsPage(mContext);
             return;
         }
-        ActionDataInfo download = (ActionDataInfo) actionData;
+        final ActionDataInfo download = (ActionDataInfo) actionData;
+        if (download.downloadInfo.isOfflinePage()) {
+            OfflinePageDownloadBridge.openDownloadedPage(download.downloadInfo.getDownloadGuid());
+            return;
+        }
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
         manager.openDownloadedContent(download.systemDownloadId);
         if (download.notificationId != INVALID_NOTIFICATION_ID) {
@@ -76,7 +81,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
         ActionDataInfo info = null;
-        if (canBeResolved) {
+        if (canBeResolved || downloadInfo.isOfflinePage()) {
             info = new ActionDataInfo(downloadInfo, notificationId, downloadId);
         }
         // Show downloads app if the download cannot be resolved to any activity.

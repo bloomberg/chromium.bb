@@ -1169,12 +1169,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @Override
-    public void openItem(String downloadGuid) {
-        // Downloads managed by DownloadManagerService are opened through an intent to the
-        // DownloadManager.
-    }
-
-    @Override
     public void destroyServiceDelegate() {
         // Lifecycle of DownloadManagerService allows for this call to be ignored.
     }
