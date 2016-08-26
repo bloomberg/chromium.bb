@@ -13,11 +13,13 @@
 #include "ash/test/ash_test_base.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
@@ -118,11 +120,6 @@ class MockTabManagerDelegate : public TabManagerDelegate {
   }
 
  protected:
-  // Nullify the operation for unit test.
-  void SetOomScoreAdjForTabs(
-      const std::vector<std::pair<base::ProcessHandle, int>>& entries)
-      override {}
-
   bool KillArcProcess(const int nspid) override {
     killed_arc_processes_.push_back(nspid);
     return true;
@@ -133,7 +130,12 @@ class MockTabManagerDelegate : public TabManagerDelegate {
     return true;
   }
 
+  chromeos::DebugDaemonClient* GetDebugDaemonClient() override {
+    return &debugd_client_;
+  }
+
  private:
+  chromeos::FakeDebugDaemonClient debugd_client_;
   std::vector<int> killed_arc_processes_;
   std::vector<int64_t> killed_tabs_;
 };
@@ -167,6 +169,7 @@ class MockMemoryStat : public TabManagerDelegate::MemoryStat {
 };
 
 TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
+  base::MessageLoop message_loop;
   arc::FakeArcBridgeService fake_arc_bridge_service;
   MockTabManagerDelegate tab_manager_delegate;
 

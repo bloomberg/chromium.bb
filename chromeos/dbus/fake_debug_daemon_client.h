@@ -6,7 +6,10 @@
 #define CHROMEOS_DBUS_FAKE_DEBUG_DAEMON_CLIENT_H_
 
 #include <stdint.h>
+#include <sys/types.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -66,6 +69,8 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const EnableDebuggingCallback& callback) override;
   void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) override;
+  void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
+                      const SetOomScoreAdjCallback& callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int featues_mask);

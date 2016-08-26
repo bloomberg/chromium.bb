@@ -6,8 +6,11 @@
 #define CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file.h"
@@ -193,6 +196,18 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) = 0;
+
+  // A callback for SetOomScoreAdj().
+  typedef base::Callback<void(bool success, const std::string& output)>
+      SetOomScoreAdjCallback;
+
+  // Set OOM score oom_score_adj for some process.
+  // Note that the corresponding DBus configuration of the debugd method
+  // "SetOomScoreAdj" only permits setting OOM score for processes running by
+  // user chronos or Android apps.
+  virtual void SetOomScoreAdj(
+      const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
+      const SetOomScoreAdjCallback& callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

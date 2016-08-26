@@ -20,6 +20,7 @@
 #include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chromeos/dbus/debug_daemon_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
@@ -46,10 +47,6 @@ enum class ProcessType {
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
 // renderers' scores up to date in /proc/<pid>/oom_score_adj.
-//
-// Note that AdjustOomPriorities will be called on the UI thread by
-// TabManager, but the actual work will take place on the file thread
-// (see implementation of AdjustOomPriorities).
 class TabManagerDelegate
     : public arc::InstanceHolder<arc::mojom::ProcessInstance>::Observer,
       public aura::client::ActivationChangeObserver,
@@ -89,12 +86,6 @@ class TabManagerDelegate
   void AdjustOomPriorities(const TabStatsList& tab_list);
 
  protected:
-  // Sets oom_score_adj for a list of tabs.
-  // This is a delegator to to SetOomScoreAdjForTabsOnFileThread(),
-  // also as a seam for unit test.
-  virtual void SetOomScoreAdjForTabs(
-      const std::vector<std::pair<base::ProcessHandle, int>>& entries);
-
   // Kills an Arc process. Returns true if the kill request is successfully sent
   // to Android. Virtual for unit testing.
   virtual bool KillArcProcess(const int nspid);
@@ -102,6 +93,9 @@ class TabManagerDelegate
   // Kills a tab. Returns true if the tab is killed successfully.
   // Virtual for unit testing.
   virtual bool KillTab(int64_t tab_id);
+
+  // Get debugd client instance.
+  virtual chromeos::DebugDaemonClient* GetDebugDaemonClient();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, CandidatesSorted);
@@ -131,7 +125,7 @@ class TabManagerDelegate
       const TabStatsList& tab_list,
       const std::vector<arc::ArcProcess>& arc_processes);
 
-  // Posts AdjustFocusedTabScore task to the file thread.
+  // Sets OOM score for the focused tab.
   void OnFocusTabScoreAdjustmentTimeout();
 
   // Kills a process after getting all info of tabs and apps.
@@ -142,9 +136,6 @@ class TabManagerDelegate
   void AdjustOomPriorities(const TabStatsList& tab_list,
                            const std::vector<arc::ArcProcess>& arc_processes);
 
-  // Sets the score of the focused tab to the least value.
-  void AdjustFocusedTabScoreOnFileThread();
-
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
@@ -152,13 +143,6 @@ class TabManagerDelegate
   void AdjustOomPrioritiesImpl(
       const TabStatsList& tab_list,
       const std::vector<arc::ArcProcess>& arc_processes);
-
-  // Sets oom_score_adj of an ARC app.
-  void SetOomScoreAdjForApp(int nspid, int score);
-
-  // Sets oom_score_adj for a list of tabs on the file thread.
-  void SetOomScoreAdjForTabsOnFileThread(
-      const std::vector<std::pair<base::ProcessHandle, int>>& entries);
 
   // Sets OOM score for processes in the range [|rbegin|, |rend|) to integers
   // distributed evenly in [|range_begin|, |range_end|).
@@ -186,13 +170,10 @@ class TabManagerDelegate
   // adjusted when |focus_process_score_adjust_timer_| is expired.
   std::unique_ptr<FocusedProcess> focused_process_;
 
-  // This lock is for |oom_score_map_|.
-  base::Lock oom_score_lock_;
-  // Map maintaining the process handle - oom_score mapping. Behind
-  // |oom_score_lock_|.
+  // Map maintaining the process handle - oom_score mapping.
   ProcessScoreMap oom_score_map_;
 
-  // Util for getting system memory satatus.
+  // Util for getting system memory status.
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
 
   // Holds a weak pointer to arc::mojom::ProcessInstance.

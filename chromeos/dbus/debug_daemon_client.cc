@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -292,7 +294,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString("all"); // TODO(sleffler) parameterize category list
+    writer.AppendString("all");  // TODO(sleffler) parameterize category list
 
     DVLOG(1) << "Requesting a systrace start";
     debugdaemon_proxy_->CallMethod(
@@ -442,6 +444,30 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->WaitForServiceToBeAvailable(callback);
   }
 
+  void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
+                      const SetOomScoreAdjCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetOomScoreAdj);
+    dbus::MessageWriter writer(&method_call);
+
+    dbus::MessageWriter sub_writer(nullptr);
+    writer.OpenArray("{ii}", &sub_writer);
+
+    dbus::MessageWriter elem_writer(nullptr);
+    for (const auto& entry : pid_to_oom_score_adj) {
+      sub_writer.OpenDictEntry(&elem_writer);
+      elem_writer.AppendInt32(entry.first);
+      elem_writer.AppendInt32(entry.second);
+      sub_writer.CloseContainer(&elem_writer);
+    }
+    writer.CloseContainer(&sub_writer);
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnSetOomScoreAdj,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -527,7 +553,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void OnGetAllLogs(const GetLogsCallback& callback,
                     dbus::Response* response) {
     std::map<std::string, std::string> logs;
-    bool broken = false; // did we see a broken (k,v) pair?
+    bool broken = false;  // did we see a broken (k,v) pair?
     dbus::MessageReader sub_reader(NULL);
     if (!response || !dbus::MessageReader(response).PopArray(&sub_reader)) {
       callback.Run(false, logs);
@@ -623,7 +649,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       // If debugd crashes or completes I/O before this message is processed
       // then pipe_reader_ can be NULL, see OnIOComplete().
       if (pipe_reader_.get())
-        pipe_reader_->OnDataReady(-1); // terminate data stream
+        pipe_reader_->OnDataReady(-1);  // terminate data stream
     }
     // NB: requester is signaled when i/o completes
   }
@@ -643,6 +669,15 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     callback_.Run(GetTracingAgentName(), GetTraceEventLabel(),
                   base::RefCountedString::TakeString(&pipe_data));
     pipe_reader_.reset();
+  }
+
+  void OnSetOomScoreAdj(const SetOomScoreAdjCallback& callback,
+                        dbus::Response* response) {
+    std::string output;
+    if (response && dbus::MessageReader(response).PopString(&output))
+      callback.Run(true, output);
+    else
+      callback.Run(false, "");
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;

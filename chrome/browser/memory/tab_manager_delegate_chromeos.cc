@@ -4,8 +4,10 @@
 
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 
+#include <stdint.h>
+
 #include <algorithm>
-#include <set>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -22,7 +24,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/metrics/oom_kills_histogram.h"
@@ -78,6 +80,12 @@ bool IsArcWindow(aura::Window* window) {
 
 bool IsArcMemoryManagementEnabled() {
   return base::FeatureList::IsEnabled(features::kArcMemoryManagement);
+}
+
+void OnSetOomScoreAdj(bool success, const std::string& output) {
+  VLOG(2) << "OnSetOomScoreAdj " << success << " " << output;
+  if (!success || output != "")
+    LOG(WARNING) << "Set OOM score error: " << output;
 }
 
 }  // namespace
@@ -159,73 +167,50 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
 // set to highest priority (lowest OOM score), but not immediately. To avoid
 // redundant settings the OOM score adjusting only happens after a timeout. If
 // the process loses focus before the timeout, the adjustment is canceled.
-//
-// This information might be set on UI thread and looked up on FILE thread. So a
-// lock is needed to avoid racing.
 class TabManagerDelegate::FocusedProcess {
  public:
   static const int kInvalidArcAppNspid = 0;
-  struct Data {
-    union {
-      // If a chrome tqab.
-      base::ProcessHandle pid;
-      // If an ARC app.
-      int nspid;
-    };
-    bool is_arc_app;
-  };
 
-  void SetTabPid(base::ProcessHandle pid) {
-    Data* data = new Data();
-    data->is_arc_app = false;
-    data->pid = pid;
+  FocusedProcess() { Reset(); }
 
-    base::AutoLock lock(lock_);
-    data_.reset(data);
+  void SetTabPid(const base::ProcessHandle pid) {
+    pid_ = pid;
+    nspid_ = kInvalidArcAppNspid;
   }
 
-  void SetArcAppNspid(int nspid) {
-    Data* data = new Data();
-    data->is_arc_app = true;
-    data->nspid = nspid;
-
-    base::AutoLock lock(lock_);
-    data_.reset(data);
+  void SetArcAppNspid(const int nspid) {
+    pid_ = base::kNullProcessHandle;
+    nspid_ = nspid;
   }
 
-  // Getter. Returns kNullProcessHandle if the process is not a tab.
-  base::ProcessHandle GetTabPid() {
-    base::AutoLock lock(lock_);
-    if (data_ && !data_->is_arc_app)
-      return data_->pid;
-    return base::kNullProcessHandle;
-  }
+  base::ProcessHandle GetTabPid() const { return pid_; }
 
-  // Getter. Returns kInvalidArcAppNspid if the process is not an arc app.
-  int GetArcAppNspid() {
-    base::AutoLock lock(lock_);
-    if (data_ && data_->is_arc_app)
-      return data_->nspid;
-    return kInvalidArcAppNspid;
-  }
+  int GetArcAppNspid() const { return nspid_; }
 
-  // An atomic operation which checks whether the containing instance is an ARC
-  // app. If so it resets the data and returns true. Useful when canceling an
-  // ongoing OOM score setting for a focused ARC app because the focus has been
-  // shifted away shortly.
+  // Checks whether the containing instance is an ARC app. If so it resets the
+  // data and returns true. Useful when canceling an ongoing OOM score setting
+  // for a focused ARC app because the focus has been shifted away shortly.
   bool ResetIfIsArcApp() {
-    base::AutoLock lock(lock_);
-    if (data_ && data_->is_arc_app) {
-      data_.reset();
+    if (nspid_ != kInvalidArcAppNspid) {
+      Reset();
       return true;
     }
     return false;
   }
 
  private:
-  std::unique_ptr<Data> data_;
-  // Protects rw access to data_;
-  base::Lock lock_;
+  void Reset() {
+    pid_ = base::kNullProcessHandle;
+    nspid_ = kInvalidArcAppNspid;
+  }
+
+  // The focused app could be a Chrome tab or an Android app, but not both.
+  // At most one of them contains a valid value at any time.
+
+  // If a chrome tab.
+  base::ProcessHandle pid_;
+  // If an Android app.
+  int nspid_;
 };
 
 // TabManagerDelegate::MemoryStat implementation.
@@ -465,7 +450,7 @@ void TabManagerDelegate::LowMemoryKill(
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
-  base::AutoLock oom_score_autolock(oom_score_lock_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = oom_score_map_.find(process_handle);
   if (it != oom_score_map_.end()) {
     return it->second;
@@ -474,46 +459,40 @@ int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
   return -1001;
 }
 
-void TabManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ProcessHandle pid = focused_process_->GetTabPid();
   // The focused process doesn't render a tab. Could happen when the focus
-  // just switched to an ARC app. We can not avoid the race.
+  // just switched to an ARC app before the timeout. We can not avoid the race.
   if (pid == base::kNullProcessHandle)
     return;
-  {
-    base::AutoLock oom_score_autolock(oom_score_lock_);
-    oom_score_map_[pid] = chrome::kLowestRendererOomScore;
-  }
+
+  // Update the OOM score cache.
+  oom_score_map_[pid] = chrome::kLowestRendererOomScore;
+
+  // Sets OOM score.
   VLOG(3) << "Set OOM score " << chrome::kLowestRendererOomScore
           << " for focused tab " << pid;
-  content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
-      pid, chrome::kLowestRendererOomScore);
-}
-
-void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TabManagerDelegate::AdjustFocusedTabScoreOnFileThread,
-                 base::Unretained(this)));
+  std::map<int, int> dict;
+  dict[pid] = chrome::kLowestRendererOomScore;
+  GetDebugDaemonClient()->SetOomScoreAdj(dict, base::Bind(&OnSetOomScoreAdj));
 }
 
 void TabManagerDelegate::AdjustFocusedTabScore(base::ProcessHandle pid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Clear running timer if one was set for a previous focused tab/app.
   if (focus_process_score_adjust_timer_.IsRunning())
     focus_process_score_adjust_timer_.Stop();
   focused_process_->SetTabPid(pid);
 
-  bool not_lowest_score = false;
-  {
-    base::AutoLock oom_score_autolock(oom_score_lock_);
-    // If the currently focused tab already has a lower score, do not
-    // set it. This can happen in case the newly focused tab is script
-    // connected to the previous tab.
-    ProcessScoreMap::iterator it = oom_score_map_.find(pid);
-    not_lowest_score = (it == oom_score_map_.end() ||
-                        it->second != chrome::kLowestRendererOomScore);
-  }
+  // If the currently focused tab already has a lower score, do not
+  // set it. This can happen in case the newly focused tab is script
+  // connected to the previous tab.
+  ProcessScoreMap::iterator it = oom_score_map_.find(pid);
+  const bool not_lowest_score = (it == oom_score_map_.end() ||
+                                 it->second != chrome::kLowestRendererOomScore);
+
   if (not_lowest_score) {
     // By starting a timer we guarantee that the tab is focused for
     // certain amount of time. Secondly, it also does not add overhead
@@ -535,10 +514,7 @@ void TabManagerDelegate::Observe(int type,
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
-      {
-        base::AutoLock oom_score_autolock(oom_score_lock_);
-        oom_score_map_.erase(host->GetHandle());
-      }
+      oom_score_map_.erase(host->GetHandle());
       // Coming here we know that a renderer was just killed and memory should
       // come back into the pool. However - the memory pressure observer did
       // not yet update its status and therefore we ask it to redo the
@@ -611,9 +587,6 @@ std::vector<TabManagerDelegate::Candidate>
 TabManagerDelegate::GetSortedCandidates(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
-  static constexpr char kAppLauncherProcessName[] =
-      "org.chromium.arc.applauncher";
-
   std::vector<Candidate> candidates;
   candidates.reserve(tab_list.size() + arc_processes.size());
 
@@ -621,16 +594,19 @@ TabManagerDelegate::GetSortedCandidates(
     candidates.emplace_back(&tab);
   }
 
+  // A special process on Android side which serves as a dummy "focused" app
+  // when the focused window is a Chrome side window (i.e., all Android
+  // processes are running in the background). We don't want to kill it anyway.
+  static constexpr char kArcInBackgroundDummyprocess[] =
+      "org.chromium.arc.home";
+
   for (const auto& app : arc_processes) {
     // Skip persistent android processes since they should never be killed here.
     // Neither do we set their OOM scores so their score remains minimum.
-    //
-    // AppLauncher is treated specially in ARC++. For example it is taken
-    // as the dummy foreground app from Android's point of view when the focused
-    // window is not an Android app. We prefer never kill it.
     if (app.process_state() <= arc::mojom::ProcessState::PERSISTENT_UI ||
-        app.process_name() == kAppLauncherProcessName)
+        app.process_name() == kArcInBackgroundDummyprocess) {
       continue;
+    }
     candidates.emplace_back(&app);
   }
 
@@ -652,6 +628,11 @@ bool TabManagerDelegate::KillTab(int64_t tab_id) {
   return tab_manager_ &&
       tab_manager_->CanDiscardTab(tab_id) &&
       tab_manager_->DiscardTabById(tab_id);
+}
+
+
+chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
+  return chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
 }
 
 void TabManagerDelegate::LowMemoryKillImpl(
@@ -688,6 +669,9 @@ void TabManagerDelegate::LowMemoryKillImpl(
       }
     } else {
       int64_t tab_id = it->tab()->tab_contents_id;
+      // The estimation is problematic since multiple tabs may share the same
+      // process, while the calculation counts memory used by the whole process.
+      // So |estimated_memory_freed_kb| is an over-estimation.
       int estimated_memory_freed_kb =
           mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
       if (KillTab(tab_id)) {
@@ -742,36 +726,7 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   // Lower priority part.
   DistributeOomScoreInRange(lower_priority_part, candidates.end(), range_middle,
                             chrome::kHighestRendererOomScore, &new_map);
-  base::AutoLock oom_score_autolock(oom_score_lock_);
   oom_score_map_.swap(new_map);
-}
-
-void TabManagerDelegate::SetOomScoreAdjForApp(int nspid, int score) {
-  if (!arc_process_instance_)
-    return;
-  if (arc_process_instance_version_ < 2) {
-    VLOG(1) << "ProcessInstance version < 2 does not "
-               "support SetOomScoreAdj() yet.";
-    return;
-  }
-  arc_process_instance_->SetOomScoreAdj(nspid, score);
-}
-
-void TabManagerDelegate::SetOomScoreAdjForTabs(
-    const std::vector<std::pair<base::ProcessHandle, int>>& entries) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TabManagerDelegate::SetOomScoreAdjForTabsOnFileThread,
-                 base::Unretained(this), entries));
-}
-
-void TabManagerDelegate::SetOomScoreAdjForTabsOnFileThread(
-    const std::vector<std::pair<base::ProcessHandle, int>>& entries) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  for (const auto& entry : entries) {
-    content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(entry.first,
-                                                               entry.second);
-  }
 }
 
 void TabManagerDelegate::DistributeOomScoreInRange(
@@ -780,9 +735,9 @@ void TabManagerDelegate::DistributeOomScoreInRange(
     int range_begin,
     int range_end,
     ProcessScoreMap* new_map) {
-  // OOM score setting for tabs involves file system operation so should be
-  // done on file thread.
-  std::vector<std::pair<base::ProcessHandle, int>> oom_score_for_tabs;
+  // Processes whose OOM scores should be updated. Ignore duplicated pids but
+  // the last occurrence.
+  std::map<base::ProcessHandle, int32_t> oom_scores_to_change;
 
   // Though there might be duplicate process handles, it doesn't matter to
   // overestimate the number of processes here since the we don't need to
@@ -794,46 +749,41 @@ void TabManagerDelegate::DistributeOomScoreInRange(
   float priority = range_begin;
   for (auto cur = begin; cur != end; ++cur) {
     int score = static_cast<int>(priority + 0.5f);
+
+    base::ProcessHandle pid = base::kNullProcessHandle;
     if (cur->app()) {
-      // Use pid as map keys so it's globally unique.
-      (*new_map)[cur->app()->pid()] = score;
-      int cur_app_pid_score = 0;
-      {
-        base::AutoLock oom_score_autolock(oom_score_lock_);
-        cur_app_pid_score = oom_score_map_[cur->app()->pid()];
-      }
-      if (cur_app_pid_score != score) {
-        VLOG(3) << "Set OOM score " << score << " for " << *cur;
-        SetOomScoreAdjForApp(cur->app()->nspid(), score);
-      }
+      pid = cur->app()->pid();
     } else {
-      base::ProcessHandle process_handle = cur->tab()->renderer_handle;
+      pid = cur->tab()->renderer_handle;
       // 1. tab_list contains entries for already-discarded tabs. If the PID
       // (renderer_handle) is zero, we don't need to adjust the oom_score.
       // 2. Only add unseen process handle so if there's multiple tab maps to
       // the same process, the process is set to an OOM score based on its "most
       // important" tab.
-      if (process_handle != 0 &&
-          new_map->find(process_handle) == new_map->end()) {
-        (*new_map)[process_handle] = score;
-        int process_handle_score = 0;
-        {
-          base::AutoLock oom_score_autolock(oom_score_lock_);
-          process_handle_score = oom_score_map_[process_handle];
-        }
-        if (process_handle_score != score) {
-          oom_score_for_tabs.push_back(std::make_pair(process_handle, score));
-          VLOG(3) << "Set OOM score " << score << " for " << *cur;
-        }
-      } else {
-        continue;  // Skip priority increment.
-      }
+      if (pid == base::kNullProcessHandle ||
+          new_map->find(pid) != new_map->end())
+        continue;
+    }
+
+    if (pid == base::kNullProcessHandle)
+      continue;
+
+    // Update the to-be-cached OOM score map. Use pid as map keys so it's
+    // globally unique.
+    (*new_map)[pid] = score;
+
+    // Need to update OOM score if the calculated score is different from
+    // current cached score.
+    if (oom_score_map_[pid] != score) {
+      VLOG(3) << "Update OOM score " << score << " for " << *cur;
+      oom_scores_to_change[pid] = static_cast<int32_t>(score);
     }
     priority += priority_increment;
   }
 
-  if (oom_score_for_tabs.size())
-    SetOomScoreAdjForTabs(oom_score_for_tabs);
+  if (oom_scores_to_change.size())
+    GetDebugDaemonClient()->SetOomScoreAdj(
+        oom_scores_to_change, base::Bind(&OnSetOomScoreAdj));
 }
 
 }  // namespace memory
