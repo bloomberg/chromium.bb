@@ -1134,8 +1134,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyImageBitmap
         m_writer.writeTransferredImageBitmap(index);
     } else {
         greyObject(object);
-        std::unique_ptr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(imageBitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha, N32ColorType);
-        m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), static_cast<uint32_t>(imageBitmap->originClean()), static_cast<uint32_t>(imageBitmap->isPremultiplied()), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
+        RefPtr<Uint8Array> pixelData = imageBitmap->copyBitmapData(imageBitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha, N32ColorType);
+        m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), static_cast<uint32_t>(imageBitmap->originClean()), static_cast<uint32_t>(imageBitmap->isPremultiplied()), pixelData->data(), imageBitmap->width() * imageBitmap->height() * 4);
     }
     return nullptr;
 }

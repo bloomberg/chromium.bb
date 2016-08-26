@@ -250,7 +250,6 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
 
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(frame);
     image->setOriginClean(true);
-
     ImageBitmap* imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
     if (imageBitmap && imageBitmap->bitmapImage()) {
         m_resolver->resolve(imageBitmap);

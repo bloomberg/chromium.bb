@@ -57,7 +57,7 @@ public:
     static ImageBitmap* take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
-    std::unique_ptr<uint8_t[]> copyBitmapData(AlphaDisposition alphaOp = DontPremultiplyAlpha, DataColorFormat format = RGBAColorType);
+    PassRefPtr<Uint8Array> copyBitmapData(AlphaDisposition = DontPremultiplyAlpha, DataColorFormat = RGBAColorType);
     unsigned long width() const;
     unsigned long height() const;
     IntSize size() const;

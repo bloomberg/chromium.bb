@@ -77,7 +77,7 @@ function videoLoaded() {
         checkCrop(imageBitmaps.negativeCrop);
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
-        createImageBitmap(video, 0, 0, Math.pow(10, 6), Math.pow(10, 6)).then(function() {
+        createImageBitmap(video, 0, 0, 0x8000, 0x8000).then(function() {
             testFailed('Creating a huge ImageBitmap is resolved unexpectedly.');
             finishJSTest();
          }, function() {

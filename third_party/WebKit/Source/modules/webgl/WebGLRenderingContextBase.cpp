@@ -4525,8 +4525,8 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
     }
     RefPtr<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
     SkPixmap pixmap;
-    std::unique_ptr<uint8_t[]> pixelData;
     uint8_t* pixelDataPtr = nullptr;
+    RefPtr<Uint8Array> pixelData;
     // In the case where an ImageBitmap is not texture backed, peekPixels() always succeed.
     // However, when it is texture backed and !canUseTexImageByGPU, we do a GPU read back.
     bool peekSucceed = skImage->peekPixels(&pixmap);
@@ -4534,7 +4534,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
         pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
     } else {
         pixelData = bitmap->copyBitmapData(bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
-        pixelDataPtr = pixelData.get();
+        pixelDataPtr = pixelData->data();
     }
     Vector<uint8_t> data;
     bool needConversion = true;
