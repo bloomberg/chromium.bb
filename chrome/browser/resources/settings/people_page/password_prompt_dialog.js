@@ -90,32 +90,37 @@ Polymer({
       return;
     }
 
+    if (this.$.dialog.open)
+      return;
+
     this.$.dialog.showModal();
   },
 
-  /** Close the dialog. */
-  close: function() {
+  /** @private */
+  onCancelTap_: function() {
     if (this.$.dialog.open)
       this.$.dialog.close();
+  },
 
+  /**
+   * Called whenever the dialog is closed.
+   * @private
+   */
+  onClose_: function() {
     this.password_ = '';
   },
 
-  /** Cancel the password prompt. */
-  cancel: function() {
-    if (this.$.dialog.open)
-      this.$.dialog.cancel();
-
-    // We bind setModes_ in an on-change event, so when the user hits cancel
-    // after they enter their valid password we may have authenticated them.
-    this.setModes_ = undefined;
+  /** @private */
+  onKeydown_: function(e) {
+    if (e.key == 'Enter')
+      this.submitPassword_();
   },
 
   /**
    * Run the account password check.
    * @private
    */
-  checkPassword_: function() {
+  submitPassword_: function() {
     clearTimeout(this.clearAccountPasswordTimeout_);
 
     // The user might have started entering a password and then deleted it all.
@@ -150,7 +155,8 @@ Polymer({
 
         this.clearAccountPasswordTimeout_ = setTimeout(
           clearSetModes.bind(this), PASSWORD_ACTIVE_DURATION_MS);
-        this.close();
+        // Closing the dialog will clear this.password_.
+        this.$.dialog.close();
       }
     }
 

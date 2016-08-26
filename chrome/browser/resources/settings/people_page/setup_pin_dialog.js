@@ -203,6 +203,7 @@ Polymer({
         this.pinKeyboardValue_ = '';
         this.isConfirmStep_ = true;
         this.onPinChange_();
+        this.$.pinKeyboard.focus();
       }
     } else {
       // onPinSubmit_ gets called if the user hits enter on the PIN keyboard.

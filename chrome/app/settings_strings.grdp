@@ -1415,19 +1415,19 @@
       Confirm your PIN
     </message>
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN" desc="Message shown below the title that warns the user they have entered a PIN that is easy to guess.">
-      This PIN is easy to guess:
+      PIN may be easy to guess
     </message>
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT" desc="Message shown below the title that tells the user that the PIN they entered needs to be at least four digits long.">
-      PIN must be at least 4 digits:
+      PIN must be at least 4 digits
     </message>
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED" desc="Message shown below the title that tells the user they have entered two different PIN values.">
-      PIN's don't match:
+      PINs do not match
     </message>
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONTINUE_BUTTON" desc="A button that accepts the users initial PIN. The user will have to enter the PIN again after hitting this button to confirm that they entered it correctly.">
       Continue
     </message>
     <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
-      Require password to wake from sleep
+      Show lock screen when waking from sleep
     </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE" desc="Text on the people page which opens up the quick unlock subpage and the title of the quick unlock subpage.">
       Screen lock
@@ -1445,13 +1445,13 @@
       Change PIN
     </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON" desc="Button that is used to setup a new PIN when the user does not have a PIN yet.">
-      Setup PIN
+      Set up PIN
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_TITLE" desc="Title of the password prompt dialog popup.">
       Confirm your password
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
-      Enter your password to set up screen lock.
+      Enter your password to configure screen lock.
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL" desc="An input box label that tells the user to enter their password in that input box.">
       Password
