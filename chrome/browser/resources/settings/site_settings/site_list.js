@@ -349,14 +349,10 @@ Polymer({
       var originForDisplay = this.sanitizePort(origin.replace('[*.]', ''));
 
       var embeddingOrigin = sites[i].embeddingOrigin;
-      if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
-        if (embeddingOrigin == '')
-          embeddingOrigin = '*';
-      }
       var embeddingOriginForDisplay = '';
-      if (embeddingOrigin != '' && origin != embeddingOrigin) {
-        embeddingOriginForDisplay = loadTimeData.getStringF(
-            'embeddedOnHost', this.sanitizePort(embeddingOrigin));
+      if (origin != embeddingOrigin) {
+        embeddingOriginForDisplay =
+            this.getEmbedderString(embeddingOrigin, this.category);
       }
 
       // The All Sites category can contain duplicates (from other categories).

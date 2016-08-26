@@ -212,7 +212,10 @@ void SiteSettingsHandler::OnContentSettingChanged(
         base::StringValue("contentSettingSitePermissionChanged"),
         base::StringValue(site_settings::ContentSettingsTypeToGroupName(
             content_type)),
-        base::StringValue(primary_pattern.ToString()));
+        base::StringValue(primary_pattern.ToString()),
+        base::StringValue(
+            secondary_pattern == ContentSettingsPattern::Wildcard() ?
+            "" : secondary_pattern.ToString()));
   }
 }
 

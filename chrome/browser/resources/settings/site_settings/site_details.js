@@ -89,7 +89,7 @@ Polymer({
    */
   navigateBackIfNoData_: function() {
     if (this.storedData_ == '' && !this.permissionShowing_())
-      settings.navigateTo(settings.Route.SITE_SETTINGS_ALL);
+      settings.navigateToPreviousRoute();
   },
 
   /**

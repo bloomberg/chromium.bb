@@ -397,7 +397,7 @@ var SiteSettingsBehaviorImpl = {
    * @return {string} The resulting pattern.
    * @private
    */
-  addPatternWildcard_: function(pattern) {
+  addPatternWildcard: function(pattern) {
     if (pattern.startsWith('http://'))
       return pattern.replace('http://', 'http://[*.]');
     else if (pattern.startsWith('https://'))
@@ -412,7 +412,7 @@ var SiteSettingsBehaviorImpl = {
    * @return {string} The resulting pattern.
    * @private
    */
-  removePatternWildcard_: function(pattern) {
+  removePatternWildcard: function(pattern) {
     if (pattern.startsWith('http://[*.]'))
       return pattern.replace('http://[*.]', 'http://');
     else if (pattern.startsWith('https://[*.]'))
@@ -420,6 +420,22 @@ var SiteSettingsBehaviorImpl = {
     else if (pattern.startsWith('[*.]'))
       return pattern.substring(4, pattern.length);
     return pattern;
+  },
+
+  /**
+   * Looks up the human-friendly embedder string to show in the UI.
+   * @param {string} embeddingOrigin The embedding origin to show.
+   * @param {string} category The category requesting it.
+   * @return {string} The string to show.
+   */
+  getEmbedderString: function(embeddingOrigin, category) {
+    if (embeddingOrigin == '') {
+      if (category != settings.ContentSettingsTypes.GEOLOCATION)
+        return '';
+      return loadTimeData.getStringF('embeddedOnHost', '*');
+    }
+    return loadTimeData.getStringF(
+        'embeddedOnHost', this.sanitizePort(embeddingOrigin));
   },
 
   /**

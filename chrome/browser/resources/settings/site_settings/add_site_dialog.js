@@ -40,7 +40,7 @@ Polymer({
    * @private
    */
   validate_: function() {
-    var pattern = this.addPatternWildcard_(this.site_);
+    var pattern = this.addPatternWildcard(this.site_);
     this.browserProxy.isPatternValid(pattern).then(function(isValid) {
       this.$.add.disabled = !isValid;
     }.bind(this));
@@ -59,7 +59,7 @@ Polymer({
   onSubmit_: function() {
     if (this.$.add.disabled)
       return;  // Can happen when Enter is pressed.
-    var pattern = this.addPatternWildcard_(this.site_);
+    var pattern = this.addPatternWildcard(this.site_);
     this.setCategoryPermissionForOrigin(
         pattern, pattern, this.category, this.allowException ?
             settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK);

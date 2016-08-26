@@ -59,7 +59,7 @@ cr.define('site_details_permission', function() {
         return browserProxy.whenCalled('setCategoryPermissionForOrigin').then(
             function(arguments) {
               assertEquals(origin, arguments[0]);
-              assertEquals('', arguments[1]);
+              assertEquals(origin, arguments[1]);
               assertEquals(testElement.category, arguments[2]);
               assertEquals(allow ?
                   settings.PermissionValues.ALLOW :
@@ -86,7 +86,7 @@ cr.define('site_details_permission', function() {
         testElement.category = settings.ContentSettingsTypes.CAMERA;
         testElement.site = {
           origin: origin,
-          embeddingOrigin: '',
+          embeddingOrigin: origin,
         };
 
         return browserProxy.whenCalled('getExceptionList').then(function() {
@@ -114,7 +114,7 @@ cr.define('site_details_permission', function() {
         testElement.category = settings.ContentSettingsTypes.CAMERA;
         testElement.site = {
           origin: origin,
-          embeddingOrigin: '',
+          embeddingOrigin: origin,
         };
 
         return browserProxy.whenCalled('getExceptionList').then(function() {

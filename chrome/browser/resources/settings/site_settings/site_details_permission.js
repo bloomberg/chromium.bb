@@ -37,8 +37,8 @@ Polymer({
    * @private
    */
   sameOrigin_: function(left, right) {
-    return this.removePatternWildcard_(left) ==
-        this.removePatternWildcard_(right);
+    return this.removePatternWildcard(left) ==
+        this.removePatternWildcard(right);
   },
 
   /**
@@ -52,9 +52,11 @@ Polymer({
     this.browserProxy.getExceptionList(this.category).then(
         function(exceptionList) {
       for (var i = 0; i < exceptionList.length; ++i) {
-        if (this.sameOrigin_(exceptionList[i].origin, site.origin)) {
+        if (exceptionList[i].embeddingOrigin == site.embeddingOrigin &&
+            this.sameOrigin_(exceptionList[i].origin, site.origin)) {
           this.$.permission.selected = exceptionList[i].setting;
           this.$.details.hidden = false;
+          break;
         }
       }
     }.bind(this));
@@ -63,19 +65,20 @@ Polymer({
   /**
    * Called when a site within a category has been changed.
    * @param {number} category The category that changed.
-   * @param {string} site The site that changed.
+   * @param {string} origin The origin of the site that changed.
+   * @param {string} embeddingOrigin The embedding origin of the site that
+   *     changed.
    * @private
    */
-  sitePermissionChanged_: function(category, site) {
-    if (category == this.category && (site == '' || site == this.site.origin)) {
-      // TODO(finnur): Send down the full SiteException, not just a string.
-      this.siteChanged_({
-        origin: site,
-        originForDisplay: '',
-        embeddingOrigin: '',
-        setting: '',
-        source: '',
-      });
+  sitePermissionChanged_: function(category, origin, embeddingOrigin) {
+    if (this.site === undefined)
+      return;
+    if (category != this.category)
+      return;
+
+    if (origin == '' || (origin == this.site.origin &&
+                         embeddingOrigin == this.site.embeddingOrigin)) {
+      this.siteChanged_(this.site);
     }
   },
 
@@ -83,7 +86,8 @@ Polymer({
    * Resets the category permission for this origin.
    */
   resetPermission: function() {
-    this.resetCategoryPermissionForOrigin(this.site.origin, '', this.category);
+    this.resetCategoryPermissionForOrigin(
+        this.site.origin, this.site.embeddingOrigin, this.category);
     this.$.details.hidden = true;
   },
 
@@ -94,6 +98,6 @@ Polymer({
   onPermissionMenuIronActivate_: function(event) {
     var value = event.detail.item.dataset.permissionValue;
     this.setCategoryPermissionForOrigin(
-        this.site.origin, '', this.category, value);
+        this.site.origin, this.site.embeddingOrigin, this.category, value);
   },
 });
