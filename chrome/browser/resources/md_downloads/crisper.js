@@ -2250,9 +2250,10 @@ cr.define('downloads', function() {
       for (var i = 0; sameTerms && i < searchTerms.length; ++i) {
         if (searchTerms[i] != this.searchTerms_[i]) sameTerms = false;
       }
-      if (sameTerms) return;
+      if (sameTerms) return false;
       this.searchTerms_ = searchTerms;
       this.loadMore();
+      return true;
     },
     show: chromeSendWithId('show'),
     undo: chrome.send.bind(chrome, 'undo')
@@ -6802,8 +6803,7 @@ cr.define('downloads', function() {
     },
     onSearchChanged_: function(event) {
       var actionService = downloads.ActionService.getInstance();
-      actionService.search(event.detail);
-      this.spinnerActive = actionService.isSearching();
+      if (actionService.search(event.detail)) this.spinnerActive = actionService.isSearching();
       this.updateClearAll_();
     },
     onOpenDownloadsFolderTap_: function() {

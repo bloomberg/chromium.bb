@@ -87,8 +87,8 @@ cr.define('downloads', function() {
      */
     onSearchChanged_: function(event) {
       var actionService = downloads.ActionService.getInstance();
-      actionService.search(/** @type {string} */ (event.detail));
-      this.spinnerActive = actionService.isSearching();
+      if (actionService.search(/** @type {string} */ (event.detail)))
+        this.spinnerActive = actionService.isSearching();
       this.updateClearAll_();
     },
 

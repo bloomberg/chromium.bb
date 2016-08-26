@@ -7,7 +7,21 @@ suite('toolbar tests', function() {
   var toolbar;
 
   setup(function() {
+    /**
+     * @constructor
+     * @extends {downloads.ActionService}
+     */
+    function TestActionService() {
+      downloads.ActionService.call(this);
+    }
+
+    TestActionService.prototype = {
+      __proto__: downloads.ActionService.prototype,
+      loadMore: function() { /* Prevent chrome.send(). */ },
+    };
+
     toolbar = document.createElement('downloads-toolbar');
+    downloads.ActionService.instance_ = new TestActionService;
     document.body.appendChild(toolbar);
   });
 
@@ -17,5 +31,16 @@ suite('toolbar tests', function() {
 
     window.dispatchEvent(new CustomEvent('resize'));
     assertFalse(toolbar.$.more.opened);
+  });
+
+  test('search starts spinner', function() {
+    toolbar.$.toolbar.fire('search-changed', 'a');
+    assertTrue(toolbar.spinnerActive);
+
+    // Pretend the manager got results and set this to false.
+    toolbar.spinnerActive = false;
+
+    toolbar.$.toolbar.fire('search-changed', 'a ');  // Same term plus a space.
+    assertFalse(toolbar.spinnerActive);
   });
 });

@@ -100,7 +100,10 @@ cr.define('downloads', function() {
      */
     saveDangerous: chromeSendWithId('saveDangerous'),
 
-    /** @param {string} searchText What to search for. */
+    /**
+     * @param {string} searchText What to search for.
+     * @return {boolean} Whether |searchText| resulted in new search terms.
+     */
     search: function(searchText) {
       var searchTerms = ActionService.splitTerms(searchText);
       var sameTerms = searchTerms.length == this.searchTerms_.length;
@@ -111,10 +114,11 @@ cr.define('downloads', function() {
       }
 
       if (sameTerms)
-        return;
+        return false;
 
       this.searchTerms_ = searchTerms;
       this.loadMore();
+      return true;
     },
 
     /**
