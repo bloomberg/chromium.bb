@@ -331,7 +331,10 @@ def main():
       else:
         input_paths.append(resource_source)
 
-    input_strings = []
+    input_strings = [
+      args.can_fail_build,
+      args.silent,
+    ]
     if args.android_sdk_version:
       input_strings.append(args.android_sdk_version)
     if args.processed_config_path:
