@@ -73,11 +73,16 @@ struct PaintChunk {
     // The paint properties which apply to this chunk.
     PaintChunkProperties properties;
 
-    // The total bounds of this paint chunk's contents.
+    // The total bounds of this paint chunk's contents, in -the coordinate space of
+    // the containing transform node.
     FloatRect bounds;
 
     // True if the bounds are filled entirely with opaque contents.
     bool knownToBeOpaque;
+
+    // SPv2 only. Rectangles that need to be re-rasterized in this chunk, in the
+    // coordinate space of the containing transform node.
+    Vector<FloatRect> rasterInvalidationRects;
 };
 
 inline bool operator==(const PaintChunk& a, const PaintChunk& b)
@@ -87,7 +92,8 @@ inline bool operator==(const PaintChunk& a, const PaintChunk& b)
         && a.id == b.id
         && a.properties == b.properties
         && a.bounds == b.bounds
-        && a.knownToBeOpaque == b.knownToBeOpaque;
+        && a.knownToBeOpaque == b.knownToBeOpaque
+        && a.rasterInvalidationRects == b.rasterInvalidationRects;
 }
 
 inline bool operator!=(const PaintChunk& a, const PaintChunk& b)

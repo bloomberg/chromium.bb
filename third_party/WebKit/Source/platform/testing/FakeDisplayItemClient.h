@@ -20,6 +20,8 @@ public:
     String debugName() const final { return m_name; }
     LayoutRect visualRect() const override { return m_visualRect; }
 
+    void setVisualRect(const LayoutRect& r) { m_visualRect = r; }
+
     // This simulates a paint without needing a PaintController.
     void updateCacheGeneration()
     {

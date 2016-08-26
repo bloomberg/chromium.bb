@@ -30,10 +30,14 @@ public:
     const PaintChunkProperties& currentPaintChunkProperties() const { return m_currentProperties; }
     void updateCurrentPaintChunkProperties(const PaintChunk::Id*, const PaintChunkProperties&);
 
-    void incrementDisplayItemIndex(const DisplayItem&);
-    void decrementDisplayItemIndex();
+    // Returns true if a new chunk is created.
+    bool incrementDisplayItemIndex(const DisplayItem&);
+    // Returns true if the last chunk is removed.
+    bool decrementDisplayItemIndex();
 
-    const PaintChunk& lastChunk() const { return m_chunks.last(); }
+    PaintChunk& paintChunkAt(size_t i) { return m_chunks[i]; }
+    size_t lastChunkIndex() const { return m_chunks.isEmpty() ? kNotFound : m_chunks.size() - 1; }
+    PaintChunk& lastChunk() { return m_chunks.last(); }
 
     void clear();
 

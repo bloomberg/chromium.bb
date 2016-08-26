@@ -78,7 +78,7 @@ public:
 
         ensureNewDisplayItemListInitialCapacity();
         DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(std::forward<Args>(args)...);
-        processNewItem(displayItem);
+        processNewItem(displayItem, NewPainting);
     }
 
     // Creates and appends an ending display item to pair with a preceding
@@ -164,6 +164,7 @@ protected:
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
+        , m_currentChunkIsFromCachedSubsequence(true)
 #if DCHECK_IS_ON()
         , m_numSequentialMatches(0)
         , m_numOutOfOrderMatches(0)
@@ -186,16 +187,16 @@ private:
     }
 
     // Set new item state (cache skipping, etc) for a new item.
-    void processNewItem(DisplayItem&);
+    enum NewItemSource { FromCachedItem, FromCachedSubsequence, NewPainting };
+    void processNewItem(DisplayItem&, NewItemSource);
 
     String displayItemListAsDebugString(const DisplayItemList&) const;
 
-    // Indices into PaintList of all DrawingDisplayItems and BeginSubsequenceDisplayItems of each client.
-    // Temporarily used during merge to find out-of-order display items.
-    using DisplayItemIndicesByClientMap = HashMap<const DisplayItemClient*, Vector<size_t>>;
+    // Maps clients to indices of display items or chunks of each client.
+    using IndicesByClientMap = HashMap<const DisplayItemClient*, Vector<size_t>>;
 
-    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItemList&);
-    static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
+    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const IndicesByClientMap&, const DisplayItemList&);
+    static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, IndicesByClientMap&);
 
     size_t findCachedItem(const DisplayItem::Id&);
     size_t findOutOfOrderCachedItemForward(const DisplayItem::Id&);
@@ -205,6 +206,9 @@ private:
     // to their initial values. This should be called when the DisplayItemList in m_currentPaintArtifact
     // is newly created, or is changed causing the previous indices to be invalid.
     void resetCurrentListIndices();
+
+    void generateChunkRasterInvalidationRects(PaintChunk& newChunk);
+    void generateChunkRasterInvalidationRectsComparingOldChunk(PaintChunk& newChunk, const PaintChunk& oldChunk);
 
 #if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
@@ -237,19 +241,28 @@ private:
 
     int m_numCachedNewItems;
 
-    // Stores indices to valid DrawingDisplayItems in current display list that have not been
-    // matched by CachedDisplayItems during sequential matching. The indexed items will be
+    // Stores indices to valid cacheable display items in m_currentPaintArtifact.displayItemList()
+    // that have not been matched by requests of cached display items (using useCachedDrawingIfPossible()
+    // and useCachedSubsequenceIfPossible()) during sequential matching . The indexed items will be
     // matched by later out-of-order requests of cached display items. This ensures that when
     // out-of-order cached display items are requested, we only traverse at most once over
     // the current display list looking for potential matches. Thus we can ensure that the
     // algorithm runs in linear time.
-    DisplayItemIndicesByClientMap m_outOfOrderItemIndices;
+    IndicesByClientMap m_outOfOrderItemIndices;
 
     // The next item in the current list for sequential match.
     size_t m_nextItemToMatch;
 
     // The next item in the current list to be indexed for out-of-order cache requests.
     size_t m_nextItemToIndex;
+
+    // Similar to m_outOfOrderItemIndices but
+    // - the indices are chunk indices in m_currentPaintArtifacts.paintChunks();
+    // - chunks are matched not only for requests of cached display items, but also non-cached display items.
+    IndicesByClientMap m_outOfOrderChunkIndices;
+
+    bool m_currentChunkIsFromCachedSubsequence;
+    size_t m_nextChunkToMatch;
 
     DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;
 
@@ -259,7 +272,7 @@ private:
     int m_numIndexedItems;
 
     // This is used to check duplicated ids during createAndAppend().
-    DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
+    IndicesByClientMap m_newDisplayItemIndicesByClient;
 
     // These are set in useCachedDrawingIfPossible() and useCachedSubsequenceIfPossible()
     // when we could use cached drawing or subsequence and under-invalidation checking is on,

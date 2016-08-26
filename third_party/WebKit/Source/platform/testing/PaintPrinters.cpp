@@ -62,6 +62,16 @@ void PrintTo(const PaintChunk& chunk, std::ostream* os)
     *os << ", bounds=";
     PrintTo(chunk.bounds, os);
     *os << ", knownToBeOpaque=" << chunk.knownToBeOpaque << ")";
+
+    *os << ", rerasterizationRects=[";
+    bool first = true;
+    for (auto& r : chunk.rasterInvalidationRects) {
+        if (!first)
+            *os << ", ";
+        first = false;
+        PrintTo(r, os);
+    };
+    *os << "]";
 }
 
 void PrintTo(const PaintChunkProperties& properties, std::ostream* os)
