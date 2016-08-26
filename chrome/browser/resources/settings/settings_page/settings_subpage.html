@@ -11,11 +11,12 @@
   <template>
     <style include="settings-shared">
       :host {
+        --iron-icon-fill-color: var(--settings-nav-grey);
         display: block;
       }
 
       .settings-box.first {
-        padding-bottom: 16px;
+        min-height: 40px;
         padding-top: 8px;
       }
 
@@ -27,9 +28,10 @@
         width: 36px;
       }
 
-      h2 {
+      h1 {
         color: var(--settings-nav-grey);
         font-size: 107.6923%; /* go to 14px from 13px */
+        font-weight: 500;
       }
 
       settings-subpage-search {
@@ -39,7 +41,7 @@
     <div class="settings-box first">
       <paper-icon-button icon="settings:arrow-back" on-tap="onTapBack_">
       </paper-icon-button>
-      <h2>[[pageTitle]]</h2>
+      <h1>[[pageTitle]]</h1>
       <template is="dom-if" if="[[searchLabel]]">
         <settings-subpage-search label="[[searchLabel]]"
             on-search-changed="onSearchChanged_">

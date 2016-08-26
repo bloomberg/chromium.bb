@@ -21,11 +21,15 @@
       }
 
       div#outer {
-        margin: var(--search-engines-list-margin);
+        @apply(--settings-list-frame-padding);
       }
 
-      ::content [is='action-link'] {
-        margin: var(--search-engines-list-item-vertical-space) 0;
+      settings-search-engine-entry {
+        border-top: var(--settings-separator-line);
+      }
+
+      settings-search-engine-entry:first-of-type {
+        border-top: none;
       }
     </style>
     <div id="outer">

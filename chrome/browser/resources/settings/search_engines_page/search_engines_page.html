@@ -14,45 +14,49 @@
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
     <style include="settings-shared">
-      :host {
-        --search-engines-list-item-vertical-space: 8px;
-        --search-engines-list-margin: 0 40px;
-      }
-      .label {
-        margin: 20px;
-      }
       .extension-engines {
-        margin: var(--search-engines-list-margin);
+        @apply(--settings-list-frame-padding);
+      }
+
+      settings-omnibox-extension-entry {
+        border-top: var(--settings-separator-line);
+      }
+
+      settings-omnibox-extension-entry:first-of-type {
+        border-top: none;
       }
     </style>
-    <div>
-      <div class="label">$i18n{searchEnginesDefault}</div>
-      <settings-search-engines-list engines="[[defaultEngines]]">
-      </settings-search-engines-list>
+    <div class="settings-box first">
+      <h2>$i18n{searchEnginesDefault}</h2>
     </div>
+    <settings-search-engines-list engines="[[defaultEngines]]">
+    </settings-search-engines-list>
     <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
       <settings-search-engine-dialog></settings-search-engine-dialog>
     </template>
-    <div>
-      <div class="label">$i18n{searchEnginesOther}</div>
-      <!-- TODO(dbeam): why does on-click work with keyboard but on-tap
-           doesn't? -->
-      <settings-search-engines-list engines="[[otherEngines]]">
-        <a is="action-link" on-tap="onAddSearchEngineTap_" id="addSearchEngine">
-            $i18n{searchEnginesAddSearchEngine}</a>
-      </settings-search-engines-list>
-
-      <template is="dom-if" if="[[showExtensionsList_]]">
-        <div class="label">$i18n{searchEnginesExtension}</div>
-        <iron-list items="[[extensions]]" class="extension-engines" selectable>
-          <template>
-            <settings-omnibox-extension-entry engine="[[item]]"
-                tabindex$="[[tabIndex]]">
-            </settings-omnibox-extension-entry>
-          </template>
-        </iron-list>
-      </template>
+    <div class="settings-box first">
+      <h2>$i18n{searchEnginesOther}</h2>
     </div>
+    <!-- TODO(dbeam): why does on-click work with keyboard but on-tap
+         doesn't? -->
+    <settings-search-engines-list engines="[[otherEngines]]">
+      <a class="list-item list-button" is="action-link"
+          on-tap="onAddSearchEngineTap_" id="addSearchEngine">
+          $i18n{searchEnginesAddSearchEngine}</a>
+    </settings-search-engines-list>
+
+    <template is="dom-if" if="[[showExtensionsList_]]">
+      <div class="settings-box first">
+        <h2>$i18n{searchEnginesExtension}</h2>
+      </div>
+      <iron-list items="[[extensions]]" class="extension-engines" selectable>
+        <template>
+          <settings-omnibox-extension-entry engine="[[item]]"
+              tabindex$="[[tabIndex]]">
+          </settings-omnibox-extension-entry>
+        </template>
+      </iron-list>
+    </template>
   </template>
   <script src="search_engines_page.js"></script>
 </dom-module>

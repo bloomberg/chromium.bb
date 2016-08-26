@@ -5,13 +5,16 @@
 <dom-module id="settings-shared">
   <template>
     <style include="cr-shared-style">
+      /* Use <h2> as the "sub-header" mentioned in the UX design docs. */
       h2 {
         align-items: center;
+        color: var(--paper-grey-600);
         display: flex;
-        font-size: 100%;
+        font-size: inherit;
         font-weight: 500;
         margin: 0;
-        min-height: var(--settings-row-min-height);
+        padding-top: 24px;
+        padding-bottom: 12px;
       }
 
       iron-icon[icon='cr:check'],
