@@ -224,7 +224,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         assertTrue(nextMostRecentHolder instanceof ItemViewHolder);
         final DownloadItemView secondItemView = ((ItemViewHolder) nextMostRecentHolder).mItemView;
 
-        assertNull(mAdapterObserver.mOnSelectionItems);
+        assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
         int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
         assertEquals(View.VISIBLE, getActivity().findViewById(R.id.close_menu_id).getVisibility());
         assertEquals(View.GONE,

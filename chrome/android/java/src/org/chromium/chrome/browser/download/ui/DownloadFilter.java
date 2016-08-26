@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.UrlConstants;
  * A class holding constants and convenience methods about filters and their corresponding
  * resources.
  */
-class DownloadFilter {
+public class DownloadFilter {
     // These statics are used for UMA logging. Please update the AndroidDownloadFilterType enum in
     // histograms.xml if these change.
     static final int FILTER_ALL = 0;
@@ -68,7 +68,7 @@ class DownloadFilter {
     /**
      * @return The URL representing the filter.
      */
-    static String getUrlForFilter(int filter) {
+    public static String getUrlForFilter(int filter) {
         if (filter == FILTER_ALL) {
             return UrlConstants.DOWNLOADS_URL;
         }
@@ -78,7 +78,7 @@ class DownloadFilter {
     /**
      * @return The filter that the given URL represents.
      */
-    static int getFilterFromUrl(String url) {
+    public static int getFilterFromUrl(String url) {
         if (TextUtils.isEmpty(url) || UrlConstants.DOWNLOADS_HOST.equals(url)) return FILTER_ALL;
         int result = FILTER_ALL;
         if (url.startsWith(UrlConstants.DOWNLOADS_FILTER_URL)) {

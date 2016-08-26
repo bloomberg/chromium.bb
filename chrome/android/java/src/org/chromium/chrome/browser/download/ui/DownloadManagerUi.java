@@ -279,6 +279,21 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     }
 
     /**
+     * Adds a {@link DownloadUiObserver} to observe the changes in the download manager.
+     */
+    public void addObserver(DownloadUiObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Removes a {@link DownloadUiObserver} that were added in
+     * {@link #addObserver(DownloadUiObserver)}
+     */
+    public void removeObserver(DownloadUiObserver observer) {
+        mObservers.removeObserver(observer);
+    }
+
+    /**
      * @see DrawerLayout#closeDrawer(int)
      */
     void closeDrawer() {
@@ -315,21 +330,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Filter", filter,
                 DownloadFilter.FILTER_BOUNDARY);
-    }
-
-    /**
-     * Adds a {@link DownloadUiObserver} to observe the changes in the download manager.
-     */
-    void addObserver(DownloadUiObserver observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
-     * Removes a {@link DownloadUiObserver} that were added in
-     * {@link #addObserver(DownloadUiObserver)}
-     */
-    void removeObserver(DownloadUiObserver observer) {
-        mObservers.removeObserver(observer);
     }
 
     private void shareSelectedItems() {
