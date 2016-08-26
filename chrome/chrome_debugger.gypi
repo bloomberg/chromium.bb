@@ -97,8 +97,6 @@
             'browser/devtools/devtools_file_system_indexer.h',
             'browser/devtools/devtools_file_watcher.cc',
             'browser/devtools/devtools_file_watcher.h',
-            'browser/devtools/devtools_target_impl.cc',
-            'browser/devtools/devtools_target_impl.h',
             'browser/devtools/devtools_targets_ui.cc',
             'browser/devtools/devtools_targets_ui.h',
             'browser/devtools/devtools_toggle_action.cc',

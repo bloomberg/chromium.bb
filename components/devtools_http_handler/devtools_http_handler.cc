@@ -26,7 +26,6 @@
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
@@ -46,7 +45,6 @@
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostClient;
-using devtools_discovery::DevToolsTargetDescriptor;
 
 namespace devtools_http_handler {
 
@@ -322,10 +320,9 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   scoped_refptr<DevToolsAgentHost> agent_host_;
 };
 
-static bool TimeComparator(const DevToolsTargetDescriptor* desc1,
-                           const DevToolsTargetDescriptor* desc2) {
-  return desc1->GetAgentHost()->GetLastActivityTime() >
-         desc2->GetAgentHost()->GetLastActivityTime();
+static bool TimeComparator(scoped_refptr<DevToolsAgentHost> host1,
+                           scoped_refptr<DevToolsAgentHost> host2) {
+  return host1->GetLastActivityTime() > host2->GetLastActivityTime();
 }
 
 // DevToolsHttpHandler::ServerSocketFactory ----------------------------------
@@ -345,8 +342,6 @@ DevToolsHttpHandler::ServerSocketFactory::CreateForTethering(
 
 DevToolsHttpHandler::~DevToolsHttpHandler() {
   TerminateOnUI(thread_, server_wrapper_, socket_factory_);
-  base::STLDeleteValues(&descriptor_map_);
-  base::STLDeleteValues(&connection_to_client_);
 }
 
 GURL DevToolsHttpHandler::GetFrontendURL(const std::string& path) {
@@ -579,15 +574,15 @@ void DevToolsHttpHandler::OnJsonRequest(
 
   if (command == "list") {
     std::string host = info.headers["host"];
-    DevToolsTargetDescriptor::List descriptors =
+    DevToolsAgentHost::List agent_hosts =
         devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
             GetDescriptors();
-    std::sort(descriptors.begin(), descriptors.end(), TimeComparator);
-    base::STLDeleteValues(&descriptor_map_);
+    std::sort(agent_hosts.begin(), agent_hosts.end(), TimeComparator);
+    agent_host_map_.clear();
     base::ListValue list_value;
-    for (DevToolsTargetDescriptor* descriptor : descriptors) {
-      descriptor_map_[descriptor->GetAgentHost()->GetId()] = descriptor;
-      list_value.Append(SerializeDescriptor(*descriptor, host));
+    for (auto& agent_host : agent_hosts) {
+      agent_host_map_[agent_host->GetId()] = agent_host;
+      list_value.Append(SerializeDescriptor(agent_host, host));
     }
     SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
     return;
@@ -599,10 +594,10 @@ void DevToolsHttpHandler::OnJsonRequest(
                    net::UnescapeRule::PATH_SEPARATORS));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    std::unique_ptr<DevToolsTargetDescriptor> descriptor =
+    scoped_refptr<DevToolsAgentHost> agent_host =
         devtools_discovery::DevToolsDiscoveryManager::GetInstance()->CreateNew(
             url);
-    if (!descriptor) {
+    if (!agent_host) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
                NULL,
@@ -611,16 +606,16 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
     std::string host = info.headers["host"];
     std::unique_ptr<base::DictionaryValue> dictionary(
-        SerializeDescriptor(*descriptor.get(), host));
+        SerializeDescriptor(agent_host, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
-    const std::string target_id = descriptor->GetAgentHost()->GetId();
-    descriptor_map_[target_id] = descriptor.release();
+    const std::string target_id = agent_host->GetId();
+    agent_host_map_[target_id] = agent_host;
     return;
   }
 
   if (command == "activate" || command == "close") {
-    DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
-    if (!descriptor) {
+    scoped_refptr<DevToolsAgentHost> agent_host = GetAgentHost(target_id);
+    if (!agent_host) {
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
                NULL,
@@ -629,7 +624,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "activate") {
-      if (descriptor->GetAgentHost()->Activate()) {
+      if (agent_host->Activate()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
       } else {
         SendJson(connection_id,
@@ -641,7 +636,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "close") {
-      if (descriptor->GetAgentHost()->Close()) {
+      if (agent_host->Close()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
       } else {
         SendJson(connection_id,
@@ -659,20 +654,18 @@ void DevToolsHttpHandler::OnJsonRequest(
   return;
 }
 
-DevToolsTargetDescriptor* DevToolsHttpHandler::GetDescriptor(
+scoped_refptr<DevToolsAgentHost> DevToolsHttpHandler::GetAgentHost(
     const std::string& target_id) {
-  DescriptorMap::const_iterator it = descriptor_map_.find(target_id);
-  if (it == descriptor_map_.end())
-    return nullptr;
-  return it->second;
+  DescriptorMap::const_iterator it = agent_host_map_.find(target_id);
+  return it != agent_host_map_.end() ? it->second : nullptr;
 }
 
 void DevToolsHttpHandler::OnThumbnailRequest(
     int connection_id, const std::string& target_id) {
-  DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
+  scoped_refptr<DevToolsAgentHost> agent_host = GetAgentHost(target_id);
   GURL page_url;
-  if (descriptor)
-    page_url = descriptor->GetAgentHost()->GetURL();
+  if (agent_host)
+    page_url = agent_host->GetURL();
   std::string data = delegate_->GetPageThumbnailData(page_url);
   if (!data.empty())
     Send200(connection_id, data, "image/png");
@@ -731,10 +724,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
   }
 
   std::string target_id = request.path.substr(strlen(kPageUrlPrefix));
-  DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
-  scoped_refptr<DevToolsAgentHost> agent =
-      descriptor ? descriptor->GetAgentHost() : nullptr;
-  if (!agent.get()) {
+  scoped_refptr<DevToolsAgentHost> agent = GetAgentHost(target_id);
+  if (!agent) {
     Send500(connection_id, "No such target id: " + target_id);
     return;
   }
@@ -897,11 +888,9 @@ void DevToolsHttpHandler::AcceptWebSocket(
 }
 
 base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(
-    const DevToolsTargetDescriptor& descriptor,
+    scoped_refptr<DevToolsAgentHost> agent_host,
     const std::string& host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue;
-  scoped_refptr<content::DevToolsAgentHost> agent_host =
-      descriptor.GetAgentHost();
   std::string id = agent_host->GetId();
   dictionary->SetString(kTargetIdField, id);
   std::string parent_id = agent_host->GetParentId();

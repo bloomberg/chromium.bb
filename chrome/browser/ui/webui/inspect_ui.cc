@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -505,9 +504,8 @@ DevToolsTargetsUIHandler* InspectUI::FindTargetHandler(
 scoped_refptr<content::DevToolsAgentHost> InspectUI::FindTarget(
     const std::string& source_id, const std::string& target_id) {
   TargetHandlerMap::iterator it = target_handlers_.find(source_id);
-  DevToolsTargetImpl* target = it != target_handlers_.end() ?
+  return it != target_handlers_.end() ?
       it->second->GetTarget(target_id) : nullptr;
-  return target ? target->GetAgentHost() : nullptr;
 }
 
 void InspectUI::PopulateTargets(const std::string& source,

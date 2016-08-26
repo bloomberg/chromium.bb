@@ -17,7 +17,7 @@ class ChromeDevToolsDiscoveryProvider :
   ~ChromeDevToolsDiscoveryProvider() override;
 
   // devtools_discovery::DevToolsDiscoveryManager::Provider implementation.
-  devtools_discovery::DevToolsTargetDescriptor::List GetDescriptors() override;
+  content::DevToolsAgentHost::List GetDescriptors() override;
 
  private:
   ChromeDevToolsDiscoveryProvider();

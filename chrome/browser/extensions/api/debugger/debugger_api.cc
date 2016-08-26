@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/global_confirm_info_bar.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -678,9 +677,8 @@ const char kTargetTabIdField[] = "tabId";
 const char kTargetExtensionIdField[] = "extensionId";
 const char kTargetTypeWorker[] = "worker";
 
-base::Value* SerializeTarget(const DevToolsTargetImpl& target) {
+base::Value* SerializeTarget(scoped_refptr<DevToolsAgentHost> host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue();
-  scoped_refptr<DevToolsAgentHost> host = target.GetAgentHost();
   dictionary->SetString(kTargetIdField, host->GetId());
   dictionary->SetString(kTargetTitleField, host->GetTitle());
   dictionary->SetBoolean(kTargetAttachedField, host->IsAttached());
@@ -718,7 +716,7 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 }
 
 bool DebuggerGetTargetsFunction::RunAsync() {
-  std::vector<DevToolsTargetImpl*> list = DevToolsTargetImpl::EnumerateAll();
+  content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
@@ -727,11 +725,10 @@ bool DebuggerGetTargetsFunction::RunAsync() {
 }
 
 void DebuggerGetTargetsFunction::SendTargetList(
-    const std::vector<DevToolsTargetImpl*>& target_list) {
+    const content::DevToolsAgentHost::List& target_list) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (size_t i = 0; i < target_list.size(); ++i)
-    result->Append(SerializeTarget(*target_list[i]));
-  base::STLDeleteContainerPointers(target_list.begin(), target_list.end());
+    result->Append(SerializeTarget(target_list[i]));
   SetResult(std::move(result));
   SendResponse(true);
 }

@@ -28,7 +28,6 @@ class DevToolsAgentHost;
 
 class Browser;
 class DevToolsTargetsUIHandler;
-class DevToolsTargetImpl;
 class PortForwardingStatusSerializer;
 
 class InspectUI : public content::WebUIController,

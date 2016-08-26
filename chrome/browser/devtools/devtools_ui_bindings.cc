@@ -23,7 +23,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/global_confirm_info_bar.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -758,17 +757,18 @@ void DevToolsUIBindings::PerformActionOnRemotePage(const std::string& page_id,
                                                    const std::string& action) {
   if (!remote_targets_handler_)
     return;
-  DevToolsTargetImpl* target = remote_targets_handler_->GetTarget(page_id);
-  if (!target)
+  scoped_refptr<content::DevToolsAgentHost> host =
+      remote_targets_handler_->GetTarget(page_id);
+  if (!host)
     return;
   if (action == kRemotePageActionInspect)
-    target->GetAgentHost()->Inspect();
+    host->Inspect();
   if (action == kRemotePageActionReload)
-    target->GetAgentHost()->Reload();
+    host->Reload();
   if (action == kRemotePageActionActivate)
-    target->GetAgentHost()->Activate();
+    host->Activate();
   if (action == kRemotePageActionClose)
-    target->GetAgentHost()->Close();
+    host->Close();
 }
 
 void DevToolsUIBindings::OpenRemotePage(const std::string& browser_id,

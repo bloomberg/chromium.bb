@@ -17,7 +17,7 @@ class DevToolsDiscoveryProviderAndroid :
   ~DevToolsDiscoveryProviderAndroid() override;
 
   // devtools_discovery::DevToolsDiscoveryManager::Provider implementation.
-  devtools_discovery::DevToolsTargetDescriptor::List GetDescriptors() override;
+  content::DevToolsAgentHost::List GetDescriptors() override;
 
  private:
   DevToolsDiscoveryProviderAndroid();

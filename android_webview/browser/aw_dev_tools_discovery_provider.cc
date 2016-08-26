@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/devtools_discovery/basic_target_descriptor.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
@@ -58,17 +57,14 @@ AwDevToolsDiscoveryProvider::AwDevToolsDiscoveryProvider() {
 AwDevToolsDiscoveryProvider::~AwDevToolsDiscoveryProvider() {
 }
 
-devtools_discovery::DevToolsTargetDescriptor::List
+content::DevToolsAgentHost::List
 AwDevToolsDiscoveryProvider::GetDescriptors() {
   DevToolsAgentHost::List agent_hosts = DevToolsAgentHost::GetOrCreateAll();
-  devtools_discovery::DevToolsTargetDescriptor::List result;
-  result.reserve(agent_hosts.size());
   for (auto& agent_host : agent_hosts) {
     agent_host->SetDescriptionOverride(
         GetViewDescription(agent_host->GetWebContents()));
-    result.push_back(new devtools_discovery::BasicTargetDescriptor(agent_host));
   }
-  return result;
+  return agent_hosts;
 }
 
 }  // namespace android_webview

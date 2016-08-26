@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/devtools_discovery/basic_target_descriptor.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/browser_context.h"
@@ -135,14 +134,13 @@ CreateSocketFactory() {
 #endif
 }
 
-std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
+scoped_refptr<content::DevToolsAgentHost>
 CreateNewShellTarget(BrowserContext* browser_context, const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context,
                                         url,
                                         nullptr,
                                         gfx::Size());
-  return base::WrapUnique(new devtools_discovery::BasicTargetDescriptor(
-      DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
+  return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
 }
 
 // ShellDevToolsDelegate ----------------------------------------------------

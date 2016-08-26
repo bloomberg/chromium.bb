@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
-#include "components/devtools_discovery/devtools_target_descriptor.h"
+#include "content/public/browser/devtools_agent_host.h"
 
 namespace devtools_discovery {
 
@@ -21,13 +21,11 @@ class DevToolsDiscoveryManager {
    public:
     virtual ~Provider() {}
 
-    // Caller takes ownership of created descriptors.
-    virtual DevToolsTargetDescriptor::List GetDescriptors() = 0;
+    virtual content::DevToolsAgentHost::List GetDescriptors() = 0;
   };
 
-  using CreateCallback =
-      base::Callback<std::unique_ptr<DevToolsTargetDescriptor>(
-          const GURL& url)>;
+  using CreateCallback = base::Callback<
+      scoped_refptr<content::DevToolsAgentHost>(const GURL& url)>;
 
   // Returns single instance of this class. The instance is destroyed on the
   // browser main loop exit so this method MUST NOT be called after that point.
@@ -35,10 +33,9 @@ class DevToolsDiscoveryManager {
 
   void AddProvider(std::unique_ptr<Provider> provider);
   void SetCreateCallback(const CreateCallback& callback);
-
   // Caller takes ownership of created descriptors.
-  DevToolsTargetDescriptor::List GetDescriptors();
-  std::unique_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
+  content::DevToolsAgentHost::List GetDescriptors();
+  scoped_refptr<content::DevToolsAgentHost> CreateNew(const GURL& url);
 
   // Handles Browser.createTarget only.
   std::unique_ptr<base::DictionaryValue> HandleCreateTargetCommand(
@@ -49,7 +46,7 @@ class DevToolsDiscoveryManager {
 
   DevToolsDiscoveryManager();
   ~DevToolsDiscoveryManager();
-  DevToolsTargetDescriptor::List GetDescriptorsFromProviders();
+  content::DevToolsAgentHost::List GetDescriptorsFromProviders();
 
   std::vector<Provider*> providers_;
   CreateCallback create_callback_;

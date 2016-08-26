@@ -34,7 +34,6 @@ namespace content {
 class BrowserContext;
 }
 
-class DevToolsTargetImpl;
 class PortForwardingController;
 class Profile;
 class TCPDeviceProvider;
@@ -204,7 +203,8 @@ class DevToolsAndroidBridge : public KeyedService {
   bool HasDevToolsWindow(const std::string& agent_id);
 
   // Creates new target instance owned by caller.
-  DevToolsTargetImpl* CreatePageTarget(scoped_refptr<RemotePage> browser);
+  scoped_refptr<content::DevToolsAgentHost>
+  CreatePageTarget(scoped_refptr<RemotePage> browser);
 
   using RemotePageCallback = base::Callback<void(scoped_refptr<RemotePage>)>;
   void OpenRemotePage(scoped_refptr<RemoteBrowser> browser,

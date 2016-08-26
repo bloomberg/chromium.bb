@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "components/devtools_discovery/basic_target_descriptor.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -26,7 +25,6 @@
 
 using content::DevToolsAgentHost;
 using content::WebContents;
-using devtools_discovery::DevToolsTargetDescriptor;
 
 namespace {
 
@@ -164,26 +162,23 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
   DISALLOW_COPY_AND_ASSIGN(TabProxyDelegate);
 };
 
-std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
-CreateNewAndroidTab(const GURL& url) {
+scoped_refptr<content::DevToolsAgentHost> CreateNewAndroidTab(const GURL& url) {
   if (TabModelList::empty())
-    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return nullptr;
 
   TabModel* tab_model = TabModelList::get(0);
   if (!tab_model)
-    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return nullptr;
 
   WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
   if (!web_contents)
-    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return nullptr;
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   if (!tab)
-    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return nullptr;
 
-  scoped_refptr<content::DevToolsAgentHost> host =
-      DevToolsAgentHost::Create(new TabProxyDelegate(tab));
-  return base::WrapUnique(new devtools_discovery::BasicTargetDescriptor(host));
+  return content::DevToolsAgentHost::Create(new TabProxyDelegate(tab));
 }
 
 }  // namespace
@@ -194,9 +189,9 @@ DevToolsDiscoveryProviderAndroid::DevToolsDiscoveryProviderAndroid() {
 DevToolsDiscoveryProviderAndroid::~DevToolsDiscoveryProviderAndroid() {
 }
 
-devtools_discovery::DevToolsTargetDescriptor::List
+content::DevToolsAgentHost::List
 DevToolsDiscoveryProviderAndroid::GetDescriptors() {
-  devtools_discovery::DevToolsTargetDescriptor::List result;
+  content::DevToolsAgentHost::List result;
 
   // Enumerate existing tabs, including the ones with no WebContents.
   std::set<WebContents*> tab_web_contents;
@@ -221,7 +216,7 @@ DevToolsDiscoveryProviderAndroid::GetDescriptors() {
       if (tab_web_contents.find(web_contents) != tab_web_contents.end())
         continue;
     }
-    result.push_back(new devtools_discovery::BasicTargetDescriptor(*it));
+    result.push_back(*it);
   }
 
   return result;

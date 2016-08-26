@@ -32,7 +32,6 @@
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/profiles/profile.h"
@@ -602,17 +601,14 @@ DevToolsAndroidBridge::RemoteBrowser::GetParsedVersion() {
   return result;
 }
 
-DevToolsTargetImpl*
+scoped_refptr<content::DevToolsAgentHost>
 DevToolsAndroidBridge::CreatePageTarget(scoped_refptr<RemotePage> page) {
   std::string local_id = BuildUniqueTargetId(page->browser_id_,
                                              page->dict_.get());
   std::string target_path = GetTargetPath(page->dict_.get());
   std::string type = GetStringProperty(page->dict_.get(), "type");
-  scoped_refptr<DevToolsAgentHost> host =
-      AgentHostDelegate::GetOrCreateAgentHost(this, page->browser_id_, local_id,
-                                              target_path, type,
-                                              page->dict_.get());
-  return new DevToolsTargetImpl(host);
+  return AgentHostDelegate::GetOrCreateAgentHost(
+      this, page->browser_id_, local_id, target_path, type, page->dict_.get());
 }
 
 void DevToolsAndroidBridge::SendJsonRequest(

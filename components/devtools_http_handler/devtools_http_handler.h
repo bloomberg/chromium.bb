@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/devtools_discovery/devtools_target_descriptor.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "net/http/http_status_code.h"
 
 class GURL;
@@ -103,7 +103,7 @@ class DevToolsHttpHandler {
                      ServerSocketFactory* socket_factory,
                      std::unique_ptr<net::IPEndPoint> ip_address);
 
-  devtools_discovery::DevToolsTargetDescriptor* GetDescriptor(
+  scoped_refptr<content::DevToolsAgentHost> GetAgentHost(
       const std::string& target_id);
 
   void SendJson(int connection_id,
@@ -124,7 +124,7 @@ class DevToolsHttpHandler {
                                      const std::string& host);
 
   base::DictionaryValue* SerializeDescriptor(
-      const devtools_discovery::DevToolsTargetDescriptor& descriptor,
+      scoped_refptr<content::DevToolsAgentHost> agent_host,
       const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
@@ -139,8 +139,8 @@ class DevToolsHttpHandler {
   const std::unique_ptr<DevToolsHttpHandlerDelegate> delegate_;
   ServerSocketFactory* socket_factory_;
   using DescriptorMap =
-      std::map<std::string, devtools_discovery::DevToolsTargetDescriptor*>;
-  DescriptorMap descriptor_map_;
+      std::map<std::string, scoped_refptr<content::DevToolsAgentHost>>;
+  DescriptorMap agent_host_map_;
   base::WeakPtrFactory<DevToolsHttpHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandler);

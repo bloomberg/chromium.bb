@@ -5,7 +5,6 @@
 #include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -13,20 +12,18 @@
 
 namespace {
 
-std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>
+scoped_refptr<content::DevToolsAgentHost>
 CreateNewChromeTab(const GURL& url) {
   chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
       url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
   if (!params.target_contents)
-    return std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor>();
+    return nullptr;
 
   if (!params.target_contents)
     return nullptr;
-  scoped_refptr<content::DevToolsAgentHost> host =
-      content::DevToolsAgentHost::GetOrCreateFor(params.target_contents);
-  return std::unique_ptr<DevToolsTargetImpl>(new DevToolsTargetImpl(host));
+  return content::DevToolsAgentHost::GetOrCreateFor(params.target_contents);
 }
 
 }  // namespace
@@ -37,14 +34,9 @@ ChromeDevToolsDiscoveryProvider::ChromeDevToolsDiscoveryProvider() {
 ChromeDevToolsDiscoveryProvider::~ChromeDevToolsDiscoveryProvider() {
 }
 
-devtools_discovery::DevToolsTargetDescriptor::List
+content::DevToolsAgentHost::List
 ChromeDevToolsDiscoveryProvider::GetDescriptors() {
-  std::vector<DevToolsTargetImpl*> list = DevToolsTargetImpl::EnumerateAll();
-  devtools_discovery::DevToolsTargetDescriptor::List result;
-  result.reserve(list.size());
-  for (auto* descriptor : list)
-    result.push_back(descriptor);
-  return result;
+  return content::DevToolsAgentHost::GetOrCreateAll();
 }
 
 // static
