@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/audio/audio_device_description.h"
@@ -36,9 +37,9 @@ using ::testing::NotNull;
 
 namespace media {
 
-ACTION_P3(CheckCountAndPostQuitTask, count, limit, run_loop) {
+ACTION_P4(CheckCountAndPostQuitTask, count, limit, task_runner, quit_closure) {
   if (++*count >= limit)
-    run_loop->QuitWhenIdle();
+    task_runner->PostTask(FROM_HERE, quit_closure);
 }
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
@@ -360,8 +361,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
   ais.Close();
 }
 
-// TODO(fdoray): investigate failure and re-enable. crbug.com/641142
-TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamTestPacketSizes) {
+TEST_F(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   int count = 0;
@@ -387,7 +387,9 @@ TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamTestPacketSizes) {
     base::RunLoop run_loop;
     EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
         .Times(AtLeast(10))
-        .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &run_loop));
+        .WillRepeatedly(
+            CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),
+                                      run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();
     ais->Stop();
@@ -410,7 +412,9 @@ TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamTestPacketSizes) {
     base::RunLoop run_loop;
     EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
         .Times(AtLeast(10))
-        .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &run_loop));
+        .WillRepeatedly(
+            CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),
+                                      run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();
     ais->Stop();
@@ -429,7 +433,9 @@ TEST_F(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamTestPacketSizes) {
     base::RunLoop run_loop;
     EXPECT_CALL(sink, OnData(ais.get(), NotNull(), _, _))
         .Times(AtLeast(10))
-        .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10, &run_loop));
+        .WillRepeatedly(
+            CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner(),
+                                      run_loop.QuitWhenIdleClosure()));
     ais->Start(&sink);
     run_loop.Run();
     ais->Stop();
