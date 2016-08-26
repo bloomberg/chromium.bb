@@ -12,6 +12,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/surfaces/direct_output_surface.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
 
@@ -25,6 +26,7 @@ namespace ui {
 DisplayCompositor::DisplayCompositor(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gfx::AcceleratedWidget widget,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel,
     const scoped_refptr<SurfacesState>& surfaces_state)
     : task_runner_(task_runner),
       surfaces_state_(surfaces_state),
@@ -34,8 +36,10 @@ DisplayCompositor::DisplayCompositor(
   surfaces_state_->manager()->RegisterSurfaceFactoryClient(
       allocator_.client_id(), this);
 
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+      gpu_channel->gpu_memory_buffer_manager();
   scoped_refptr<SurfacesContextProvider> surfaces_context_provider(
-      new SurfacesContextProvider(widget));
+      new SurfacesContextProvider(widget, std::move(gpu_channel)));
   // TODO(rjkroege): If there is something better to do than CHECK, add it.
   CHECK(surfaces_context_provider->BindToCurrentThread());
 
@@ -48,7 +52,7 @@ DisplayCompositor::DisplayCompositor(
 #if defined(USE_OZONE)
     display_output_surface = base::MakeUnique<DirectOutputSurfaceOzone>(
         surfaces_context_provider, widget, synthetic_begin_frame_source.get(),
-        GL_TEXTURE_2D, GL_RGB);
+        gpu_memory_buffer_manager, GL_TEXTURE_2D, GL_RGB);
 #else
     NOTREACHED();
 #endif
@@ -66,7 +70,7 @@ DisplayCompositor::DisplayCompositor(
                                task_runner_.get(), max_frames_pending));
 
   display_.reset(new cc::Display(
-      nullptr /* bitmap_manager */, nullptr /* gpu_memory_buffer_manager */,
+      nullptr /* bitmap_manager */, gpu_memory_buffer_manager,
       cc::RendererSettings(), std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));

@@ -16,18 +16,18 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 
+namespace cc {
+class CompositorFrame;
+class SyntheticBeginFrameSource;
+}
+
 namespace display_compositor {
 class BufferQueue;
 }
 
-namespace ui {
-class LatencyInfo;
-}  // namespace ui
-
-namespace cc {
-class CompositorFrame;
-class SyntheticBeginFrameSource;
-}  // namespace cc
+namespace gpu {
+class GpuMemoryBufferManager;
+}
 
 namespace ui {
 
@@ -43,6 +43,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
       scoped_refptr<SurfacesContextProvider> context_provider,
       gfx::AcceleratedWidget widget,
       cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       uint32_t target,
       uint32_t internalformat);
 

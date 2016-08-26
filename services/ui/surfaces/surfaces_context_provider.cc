@@ -17,16 +17,18 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/common/switches.h"
-#include "services/ui/gpu/gpu_service_internal.h"
 #include "services/ui/surfaces/surfaces_context_provider_delegate.h"
 #include "ui/gl/gpu_preference.h"
+#include "url/gurl.h"
 
 namespace ui {
 
-SurfacesContextProvider::SurfacesContextProvider(gfx::AcceleratedWidget widget)
+SurfacesContextProvider::SurfacesContextProvider(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel)
     : delegate_(nullptr), widget_(widget) {
-  GpuServiceInternal* service = GpuServiceInternal::GetInstance();
   gpu::CommandBufferProxyImpl* shared_command_buffer = nullptr;
   gpu::GpuStreamId stream_id = gpu::GpuStreamId::GPU_STREAM_DEFAULT;
   gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
@@ -42,8 +44,9 @@ SurfacesContextProvider::SurfacesContextProvider(gfx::AcceleratedWidget widget)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   command_buffer_proxy_impl_ = gpu::CommandBufferProxyImpl::Create(
-      service->gpu_channel_local(), widget, shared_command_buffer, stream_id,
+      std::move(gpu_channel), widget, shared_command_buffer, stream_id,
       stream_priority, attributes, active_url, task_runner);
+  CHECK(command_buffer_proxy_impl_);
   command_buffer_proxy_impl_->SetSwapBuffersCompletionCallback(
       base::Bind(&SurfacesContextProvider::OnGpuSwapBuffersCompleted,
                  base::Unretained(this)));

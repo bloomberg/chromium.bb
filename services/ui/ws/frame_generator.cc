@@ -10,6 +10,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "services/ui/gpu/gpu_service_internal.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -45,7 +46,9 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   if (widget != gfx::kNullAcceleratedWidget) {
     display_compositor_.reset(new DisplayCompositor(
-        base::ThreadTaskRunnerHandle::Get(), widget, surfaces_state_));
+        base::ThreadTaskRunnerHandle::Get(), widget,
+        GpuServiceInternal::GetInstance()->gpu_channel_local(),
+        surfaces_state_));
   }
 }
 

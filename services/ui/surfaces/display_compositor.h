@@ -17,6 +17,10 @@ namespace cc {
 class Display;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace ui {
 
 // TODO(fsamuel): This should become a mojo interface for the mus-gpu split.
@@ -29,6 +33,7 @@ class DisplayCompositor : public cc::SurfaceFactoryClient,
  public:
   DisplayCompositor(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                     gfx::AcceleratedWidget widget,
+                    scoped_refptr<gpu::GpuChannelHost> gpu_channel,
                     const scoped_refptr<SurfacesState>& surfaces_state);
   ~DisplayCompositor() override;
 

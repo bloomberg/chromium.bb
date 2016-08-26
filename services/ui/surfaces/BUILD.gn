@@ -31,7 +31,6 @@ source_set("surfaces") {
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
-    "//services/ui/gpu",
     "//services/ui/public/interfaces",
     "//ui/display/types",
     "//ui/gfx",

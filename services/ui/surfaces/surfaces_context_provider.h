@@ -18,6 +18,7 @@
 namespace gpu {
 
 class CommandBufferProxyImpl;
+class GpuChannelHost;
 struct GpuProcessHostedCALayerTreeParamsMac;
 class TransferBuffer;
 
@@ -41,7 +42,8 @@ class SurfacesContextProviderDelegate;
 class SurfacesContextProvider : public cc::ContextProvider,
                                 public base::NonThreadSafe {
  public:
-  explicit SurfacesContextProvider(gfx::AcceleratedWidget widget);
+  SurfacesContextProvider(gfx::AcceleratedWidget widget,
+                          scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   void SetDelegate(SurfacesContextProviderDelegate* delegate);
 

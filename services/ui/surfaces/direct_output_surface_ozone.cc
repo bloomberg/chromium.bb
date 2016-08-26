@@ -15,7 +15,6 @@
 #include "components/display_compositor/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/gpu/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
 #include "ui/display/types/display_snapshot.h"
 
@@ -27,6 +26,7 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     scoped_refptr<SurfacesContextProvider> context_provider,
     gfx::AcceleratedWidget widget,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     uint32_t target,
     uint32_t internalformat)
     : cc::OutputSurface(context_provider, nullptr, nullptr),
@@ -37,7 +37,7 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
   buffer_queue_.reset(
       new BufferQueue(context_provider->ContextGL(), target, internalformat,
                       ui::DisplaySnapshot::PrimaryFormat(), &gl_helper_,
-                      MusGpuMemoryBufferManager::current(), widget));
+                      gpu_memory_buffer_manager, widget));
 
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
