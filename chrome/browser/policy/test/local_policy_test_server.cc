@@ -197,6 +197,7 @@ bool LocalPolicyTestServer::SetPythonPath() const {
   }
 
   AppendToPythonPath(pyproto_dir
+                     .AppendASCII("components")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 #if defined(OS_CHROMEOS)
