@@ -60,7 +60,7 @@ class GFX_EXPORT RenderTextMac : public RenderText {
   void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Mac_ElidedText);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextMacTest, Mac_ElidedText);
 
   struct TextRun {
     CTRunRef ct_run;

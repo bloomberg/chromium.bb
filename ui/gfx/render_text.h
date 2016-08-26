@@ -654,7 +654,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, AppendTextKeepsStyles);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ObscuredText);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, ObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, RevealObscuredText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ElidedText);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ElidedObscuredText);
@@ -665,18 +665,18 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, EdgeSelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffset);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_MinWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_SufficientWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_Newline);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_WordWrapBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_LineBreakerBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_MinWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_NormalWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_SufficientWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_Newline);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           Multiline_LineBreakerBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
                            Multiline_SurrogatePairsOrCombiningChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_ZeroWidthChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, NewlineWithoutMultilineFlag);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GlyphBounds);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_GlyphBounds);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, NewlineWithoutMultilineFlag);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, GlyphBounds);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
                            MoveCursorLeftRight_MeiryoUILigatures);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Win_LogicalClusters);

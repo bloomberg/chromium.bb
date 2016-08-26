@@ -474,7 +474,7 @@ class HarfBuzzLineBreaker {
     // |max_width_| might be smaller than a single character. In this case we
     // need to put at least one character in the line. Note that, we should
     // not separate surrogate pair or combining characters.
-    // See RenderTextTest.Multiline_MinWidth for an example.
+    // See RenderTextHarfBuzzTest.Multiline_MinWidth for an example.
     if (width == 0 && available_width_ == max_width_) {
       end_pos = std::min(
           segment.char_range.end(),

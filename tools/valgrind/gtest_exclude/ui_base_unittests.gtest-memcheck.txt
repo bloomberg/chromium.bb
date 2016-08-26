@@ -1,5 +1,5 @@
 # http://crbug.com/222606
-RenderTextTest.DisplayRectShowsCursorLTR
+RenderTextHarfBuzzTest.DisplayRectShowsCursorLTR
 
 # http://crbug.com/370168
 TouchExplorationTest.*

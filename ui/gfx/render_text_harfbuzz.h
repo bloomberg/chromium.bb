@@ -179,25 +179,29 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
  private:
   friend class test::RenderTextTestApi;
 
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_HorizontalAlignment);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_WordWrapBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_RunDirection);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_HorizontalPositions);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
-                           HarfBuzz_TextPositionWithFractionalSize);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByEmoji);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_BreakRunsByAscii);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemeCases);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_SubglyphGraphemePartition);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UnicodeFallback);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_LineBreakerBehavior);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           Multiline_HorizontalAlignment);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_NormalWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_RunDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           HarfBuzz_HorizontalPositions);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           HarfBuzz_BreakRunsByUnicodeBlocks);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           HarfBuzz_SubglyphGraphemeCases);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           HarfBuzz_SubglyphGraphemePartition);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, HarfBuzz_UnicodeFallback);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
+                           Multiline_LineBreakerBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest,
                            Multiline_SurrogatePairsOrCombiningChars);
-  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_ZeroWidthChars);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars);
 
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline test
