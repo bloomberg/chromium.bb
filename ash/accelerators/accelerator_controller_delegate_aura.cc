@@ -361,6 +361,8 @@ void AcceleratorControllerDelegateAura::SetScreenshotDelegate(
 
 bool AcceleratorControllerDelegateAura::HandlesAction(
     AcceleratorAction action) {
+  // NOTE: When adding a new accelerator that only depends on //ash/common code,
+  // add it to accelerator_controller.cc instead. See class comment.
   switch (action) {
     case DEBUG_TOGGLE_DESKTOP_BACKGROUND_MODE:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:

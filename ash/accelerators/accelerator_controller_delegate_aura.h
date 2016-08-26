@@ -15,7 +15,8 @@ namespace ash {
 class ScreenshotDelegate;
 
 // Contains all the accelerators that have dependencies on portions of ash
-// not yet converted to ash/common.
+// not yet converted to ash/common. When adding a new accelerator that only
+// depends on ash/common code, add it to accelerator_controller.cc instead.
 class ASH_EXPORT AcceleratorControllerDelegateAura
     : public AcceleratorControllerDelegate {
  public:
