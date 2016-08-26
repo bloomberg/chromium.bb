@@ -25,7 +25,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 
 using content::BrowserThread;
 using printing::PageRanges;
@@ -366,8 +366,8 @@ void PrintDialogGtk2::ShowDialog(
 
   // We need to call gtk_window_present after making the widgets visible to make
   // sure window gets correctly raised and gets focus.
-  int time = views::X11DesktopHandler::get()->wm_user_time_ms();
-  gtk_window_present_with_time(GTK_WINDOW(dialog_), time);
+  gtk_window_present_with_time(
+      GTK_WINDOW(dialog_), ui::X11EventSource::GetInstance()->GetTimestamp());
 }
 
 void PrintDialogGtk2::PrintDocument(const printing::MetafilePlayer& metafile,

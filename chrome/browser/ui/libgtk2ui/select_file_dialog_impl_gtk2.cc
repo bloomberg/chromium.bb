@@ -30,9 +30,9 @@
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 namespace {
 
@@ -169,8 +169,8 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   // We need to call gtk_window_present after making the widgets visible to make
   // sure window gets correctly raised and gets focus.
-  int time = views::X11DesktopHandler::get()->wm_user_time_ms();
-  gtk_window_present_with_time(GTK_WINDOW(dialog), time);
+  gtk_window_present_with_time(
+      GTK_WINDOW(dialog), ui::X11EventSource::GetInstance()->GetTimestamp());
 }
 
 void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {

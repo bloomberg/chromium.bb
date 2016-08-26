@@ -72,10 +72,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // otherwise.
   ::Region GetWindowShape() const;
 
-  // Called by X11DesktopHandler to notify us that the native windowing system
-  // has changed our activation.
-  void HandleNativeWidgetActivationChanged(bool active);
-
   void AddObserver(DesktopWindowTreeHostObserverX11* observer);
   void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
 
@@ -186,6 +182,23 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
 
+  // Record the activation state.
+  void BeforeActivationStateChanged();
+
+  // Handle the state change since BeforeActivationStateChanged().
+  void AfterActivationStateChanged();
+
+  // Called on an XEnterWindowEvent, XLeaveWindowEvent, XIEnterEvent, or an
+  // XILeaveEvent.
+  void OnCrossingEvent(bool enter,
+                       bool focus_in_window_or_ancestor,
+                       int mode,
+                       int detail);
+
+  // Called on an XFocusInEvent, XFocusOutEvent, XIFocusInEvent, or an
+  // XIFocusOutEvent.
+  void OnFocusEvent(bool focus_in, int mode, int detail);
+
   // Makes a round trip to the X server to get the enclosing workspace for this
   // window.  Returns true iff |workspace_| was changed.
   bool UpdateWorkspace();
@@ -266,6 +279,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool window_mapped_;
 
   // Should we wait for an UnmapNotify before trying to remap the window?
+  // If |wait_for_unmap_| is true, we have sent an XUnmapWindow request to the
+  // server and have yet to receive an UnmapNotify.
   bool wait_for_unmap_;
 
   // The bounds of |xwindow_|.
@@ -356,7 +371,40 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // the frame when |xwindow_| gains focus or handles a mouse button event.
   bool urgency_hint_set_;
 
+  // Does |xwindow_| have the pointer grab (XI2 or normal)?
+  bool has_pointer_grab_;
+
   bool activatable_;
+
+  // The focus-tracking state variables are as described in
+  // gtk/docs/focus_tracking.txt
+  //
+  // |xwindow_| is active iff:
+  //     (|has_window_focus_| || |has_pointer_focus_|) &&
+  //     !|ignore_keyboard_input_|
+
+  // Is the pointer in |xwindow_| or one of its children?
+  bool has_pointer_;
+
+  // Is |xwindow_| or one of its children focused?
+  bool has_window_focus_;
+
+  // (An ancestor window or the PointerRoot is focused) && |has_pointer_|.
+  // |has_pointer_focus_| == true is the odd case where we will receive keyboard
+  // input when |has_window_focus_| == false.  |has_window_focus_| and
+  // |has_pointer_focus_| are mutually exclusive.
+  bool has_pointer_focus_;
+
+  // X11 does not support defocusing windows; you can only focus a different
+  // window.  If we would like to be defocused, we just ignore keyboard input we
+  // no longer care about.
+  bool ignore_keyboard_input_;
+
+  // Used for tracking activation state in {Before|After}ActivationStateChanged.
+  bool was_active_;
+  bool had_pointer_;
+  bool had_pointer_grab_;
+  bool had_window_focus_;
 
   base::CancelableCallback<void()> delayed_resize_task_;
 

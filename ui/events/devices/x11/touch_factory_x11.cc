@@ -213,6 +213,11 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   memset(mask, 0, sizeof(mask));
 
+  XISetMask(mask, XI_Enter);
+  XISetMask(mask, XI_Leave);
+  XISetMask(mask, XI_FocusIn);
+  XISetMask(mask, XI_FocusOut);
+
   XISetMask(mask, XI_TouchBegin);
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);

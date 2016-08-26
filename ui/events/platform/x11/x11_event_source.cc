@@ -96,6 +96,7 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
     : delegate_(delegate),
       display_(display),
       last_seen_server_time_(CurrentTime),
+      event_timestamp_(CurrentTime),
       dummy_initialized_(false),
       continue_stream_(true) {
   DCHECK(!instance_);
@@ -184,6 +185,26 @@ Time X11EventSource::UpdateLastSeenServerTime() {
   return last_seen_server_time_;
 }
 
+void X11EventSource::SetLastSeenServerTime(Time time) {
+  if (time != CurrentTime) {
+    int64_t event_time_64 = time;
+    int64_t time_difference = last_seen_server_time_ - event_time_64;
+    // Ignore timestamps that go backwards. However, X server time is a 32-bit
+    // millisecond counter, so if the time goes backwards by more than half the
+    // range of the 32-bit counter, treat it as a rollover.
+    if (time_difference < 0 || time_difference > (UINT32_MAX >> 1))
+      last_seen_server_time_ = time;
+  }
+}
+
+Time X11EventSource::GetTimestamp() {
+  if (event_timestamp_ != CurrentTime) {
+    return event_timestamp_;
+  }
+  DVLOG(1) << "Making a round trip to get a recent server timestamp.";
+  return UpdateLastSeenServerTime();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected
 
@@ -193,18 +214,15 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
   }
-  Time event_time = ExtractTimeFromXEvent(*xevent);
-  if (event_time != CurrentTime) {
-    int64_t event_time_64 = event_time;
-    int64_t time_difference = last_seen_server_time_ - event_time_64;
-    // Ignore timestamps that go backwards. However, X server time is a 32-bit
-    // millisecond counter, so if the time goes backwards by more than half the
-    // range of the 32-bit counter, treat it as a rollover.
-    if (time_difference < 0 || time_difference > (UINT32_MAX >> 1))
-      last_seen_server_time_ = event_time;
-  }
+
+  event_timestamp_ = ExtractTimeFromXEvent(*xevent);
+  SetLastSeenServerTime(event_timestamp_);
+
   delegate_->ProcessXEvent(xevent);
   PostDispatchEvent(xevent);
+
+  event_timestamp_ = CurrentTime;
+
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
 }

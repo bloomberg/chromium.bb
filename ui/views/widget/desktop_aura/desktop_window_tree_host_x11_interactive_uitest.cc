@@ -270,6 +270,9 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   //          widget->GetInputMethod()->GetTextInputType());
 
   widget->Activate();
+  ActivationWaiter waiter(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  waiter.Wait();
 
   EXPECT_TRUE(widget->IsActive());
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,

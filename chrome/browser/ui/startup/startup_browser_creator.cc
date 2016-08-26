@@ -103,7 +103,7 @@
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -711,8 +711,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     uint64_t time;
     std::string switch_value =
         command_line.GetSwitchValueASCII(switches::kWmUserTimeMs);
-    if (base::StringToUint64(switch_value, &time)) {
-      views::X11DesktopHandler::get()->set_wm_user_time_ms(
+    if (base::StringToUint64(switch_value, &time) &&
+        ui::X11EventSource::HasInstance()) {
+      ui::X11EventSource::GetInstance()->SetLastSeenServerTime(
           static_cast<Time>(time));
     }
   }
