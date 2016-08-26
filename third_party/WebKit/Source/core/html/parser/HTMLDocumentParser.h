@@ -26,14 +26,10 @@
 #ifndef HTMLDocumentParser_h
 #define HTMLDocumentParser_h
 
-#include "bindings/core/v8/DocumentWriteEvaluator.h"
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/fetch/ResourceClient.h"
-#include "core/frame/UseCounter.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
-#include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLParserReentryPermit.h"
@@ -47,7 +43,6 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
@@ -64,11 +59,14 @@ class DocumentFragment;
 class Element;
 class HTMLDocument;
 class HTMLParserScheduler;
+class HTMLPreloadScanner;
 class HTMLResourcePreloader;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
 class PumpSession;
+class SegmentedString;
 class TokenizedChunkQueue;
+class DocumentWriteEvaluator;
 
 class CORE_EXPORT HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);

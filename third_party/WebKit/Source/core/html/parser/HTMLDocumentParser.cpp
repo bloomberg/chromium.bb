@@ -25,6 +25,7 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 
+#include "bindings/core/v8/DocumentWriteEvaluator.h"
 #include "core/HTMLNames.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/resolver/StyleResolver.h"
