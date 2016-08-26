@@ -15728,6 +15728,10 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     compatibility_internal_format = format_info->decompressed_internal_format;
   }
 
+  if (feature_info_->workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0)
+    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
+
   // TODO(zmo): We might need to emulate TexStorage using TexImage or
   // CompressedTexImage on Mac OSX where we expose ES3 APIs when the underlying
   // driver is lower than 4.2 and ARB_texture_storage extension doesn't exist.
@@ -15738,6 +15742,9 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     glTexStorage3D(target, levels, compatibility_internal_format, width, height,
                    depth);
   }
+  if (feature_info_->workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0)
+    glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, texture->base_level());
 
   {
     GLsizei level_width = width;

@@ -123,6 +123,8 @@
          regenerate_struct_names)                            \
   GPU_OP(REMOVE_POW_WITH_CONSTANT_EXPONENT,                  \
          remove_pow_with_constant_exponent)                  \
+  GPU_OP(RESET_BASE_MIPMAP_LEVEL_BEFORE_TEXSTORAGE,          \
+         reset_base_mipmap_level_before_texstorage)          \
   GPU_OP(RESTORE_SCISSOR_ON_FBO_CHANGE,                      \
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \

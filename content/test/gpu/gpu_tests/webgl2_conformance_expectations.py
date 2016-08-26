@@ -263,8 +263,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_copyteximage2d.html',
         ['mac', ('nvidia', 0xfe9)], bug=620067)
@@ -374,10 +372,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'amd'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturesize.html',
-        ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlodoffset.html',
         ['mac', 'amd'], bug=483282)
@@ -454,9 +448,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'texelfetchoffset.html',
-        ['mac', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturesize.html',
         ['mac', 'intel'], bug=483282)
 
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
