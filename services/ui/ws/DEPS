@@ -1,0 +1,10 @@
+include_rules = [
+  "+gpu/config/gpu_info.h",
+  "+services/ui/gpu/interfaces",
+]
+
+specific_include_rules = {
+  "gpu_service_proxy.cc": [
+    "+services/ui/gpu/gpu_service_internal.h",
+  ]
+}

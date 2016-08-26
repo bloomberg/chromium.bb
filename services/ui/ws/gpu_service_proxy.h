@@ -5,8 +5,10 @@
 #ifndef SERVICES_UI_WS_GPU_SERVICE_PROXY_H_
 #define SERVICES_UI_WS_GPU_SERVICE_PROXY_H_
 
+#include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "services/ui/public/interfaces/gpu_memory_buffer.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
@@ -24,9 +26,14 @@ class GpuServiceProxy : public mojom::GpuService {
   void Add(mojom::GpuServiceRequest request);
 
  private:
+  void OnInitialized(const gpu::GPUInfo& gpu_info);
+  void OnGpuChannelEstablished(const EstablishGpuChannelCallback& callback,
+                               int32_t client_id,
+                               mojo::ScopedMessagePipeHandle channel_handle);
+
   // mojom::GpuService overrides:
   void EstablishGpuChannel(
-      const mojom::GpuService::EstablishGpuChannelCallback& callback) override;
+      const EstablishGpuChannelCallback& callback) override;
 
   void CreateGpuMemoryBuffer(
       mojom::GpuMemoryBufferIdPtr id,
@@ -40,8 +47,10 @@ class GpuServiceProxy : public mojom::GpuService {
   void DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
                               const gpu::SyncToken& sync_token) override;
 
-  GpuServiceInternal* gpu_service_;
+  int32_t next_client_id_;
+  mojom::GpuServiceInternalPtr gpu_service_;
   mojo::BindingSet<GpuService> bindings_;
+  gpu::GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceProxy);
 };

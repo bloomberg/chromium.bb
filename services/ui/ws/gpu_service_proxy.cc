@@ -12,17 +12,17 @@ namespace ui {
 
 namespace {
 
-void EstablishGpuChannelDone(
-    const mojom::GpuService::EstablishGpuChannelCallback& callback,
-    int32_t client_id,
-    mojo::ScopedMessagePipeHandle handle) {
-  // TODO(penghuang): Send the real GPUInfo to the client.
-  callback.Run(client_id, std::move(handle), gpu::GPUInfo());
-}
-}
+const int32_t kLocalGpuChannelClientId = 1;
 
-GpuServiceProxy::GpuServiceProxy()
-    : gpu_service_(GpuServiceInternal::GetInstance()) {}
+}  // namespace
+
+GpuServiceProxy::GpuServiceProxy() : next_client_id_(kLocalGpuChannelClientId) {
+  // TODO(sad): Once GPU process is split, this would look like:
+  //   connector->ConnectToInterface("mojo:gpu", &gpu_service_);
+  GpuServiceInternal::GetInstance()->Add(GetProxy(&gpu_service_));
+  gpu_service_->Initialize(
+      base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));
+}
 
 GpuServiceProxy::~GpuServiceProxy() {}
 
@@ -30,19 +30,27 @@ void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
+void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
+  gpu_info_ = gpu_info;
+}
+
+void GpuServiceProxy::OnGpuChannelEstablished(
+    const EstablishGpuChannelCallback& callback,
+    int32_t client_id,
+    mojo::ScopedMessagePipeHandle channel_handle) {
+  callback.Run(client_id, std::move(channel_handle), gpu_info_);
+}
+
 void GpuServiceProxy::EstablishGpuChannel(
-    const mojom::GpuService::EstablishGpuChannelCallback& callback) {
-  // TODO(penghuang): crbug.com/617415 figure out how to generate a meaningful
-  // tracing id.
+    const EstablishGpuChannelCallback& callback) {
+  const int client_id = ++next_client_id_;
+  // TODO(sad): crbug.com/617415 figure out how to generate a meaningful tracing
+  // id.
   const uint64_t client_tracing_id = 0;
-  // TODO(penghuang): windows server may want to control those flags.
-  // Add a private interface for windows server.
-  const bool preempts = false;
-  const bool allow_view_command_buffers = false;
-  const bool allow_real_time_streams = false;
   gpu_service_->EstablishGpuChannel(
-      client_tracing_id, preempts, allow_view_command_buffers,
-      allow_real_time_streams, base::Bind(&EstablishGpuChannelDone, callback));
+      client_id, client_tracing_id,
+      base::Bind(&GpuServiceProxy::OnGpuChannelEstablished,
+                 base::Unretained(this), callback, client_id));
 }
 
 void GpuServiceProxy::CreateGpuMemoryBuffer(

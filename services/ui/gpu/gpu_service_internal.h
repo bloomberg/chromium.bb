@@ -19,6 +19,8 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -46,15 +48,38 @@ class MusGpuMemoryBufferManager;
 // be split out.
 class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                            public gpu::GpuChannelHostFactory,
+                           public mojom::GpuServiceInternal,
                            public base::NonThreadSafe {
  public:
-  typedef base::Callback<void(int client_id, mojo::ScopedMessagePipeHandle)>
-      EstablishGpuChannelCallback;
-  void EstablishGpuChannel(uint64_t client_tracing_id,
-                           bool preempts,
-                           bool allow_view_command_buffers,
-                           bool allow_real_time_streams,
-                           const EstablishGpuChannelCallback& callback);
+  void Add(mojom::GpuServiceInternalRequest request);
+
+  // TODO(sad): This should not be a singleton.
+  static GpuServiceInternal* GetInstance();
+
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_local() const {
+    return gpu_channel_local_;
+  }
+
+  gpu::GpuChannelManager* gpu_channel_manager() const {
+    return gpu_channel_manager_.get();
+  }
+
+  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
+    return gpu_memory_buffer_factory_.get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<GpuServiceInternal>;
+
+  GpuServiceInternal();
+  ~GpuServiceInternal() override;
+
+  void EstablishGpuChannelInternal(int32_t client_id,
+                                   uint64_t client_tracing_id,
+                                   bool preempts,
+                                   bool allow_view_command_buffers,
+                                   bool allow_real_time_streams,
+                                   const EstablishGpuChannelCallback& callback);
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
@@ -72,21 +97,7 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                               int client_id,
                               const gpu::SyncToken& sync_token);
 
-  gpu::GpuChannelManager* gpu_channel_manager() const {
-    return gpu_channel_manager_.get();
-  }
-
-  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
-    return gpu_memory_buffer_factory_.get();
-  }
-
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_local() const {
-    return gpu_channel_local_;
-  }
-
-  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
-
-  // GpuChannelManagerDelegate overrides:
+  // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
   void DidDestroyOffscreenContext(const GURL& active_url) override;
@@ -104,22 +115,19 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 #endif
   void SetActiveURL(const GURL& url) override;
 
-  // GpuChannelHostFactory overrides:
+  // gpu::GpuChannelHostFactory:
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
 
-  // TODO(sad): This should not be a singleton.
-  static GpuServiceInternal* GetInstance();
+  // mojom::GpuServiceInternal:
+  void Initialize(const InitializeCallback& callback) override;
+  void EstablishGpuChannel(
+      int32_t client_id,
+      uint64_t client_tracing_id,
+      const EstablishGpuChannelCallback& callback) override;
 
- private:
-  friend struct base::DefaultSingletonTraits<GpuServiceInternal>;
-
-  GpuServiceInternal();
-  ~GpuServiceInternal() override;
-
-  void Initialize();
   void InitializeOnGpuThread(mojo::ScopedMessagePipeHandle* channel_handle,
                              base::WaitableEvent* event);
   void EstablishGpuChannelOnGpuThread(
@@ -129,9 +137,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       bool allow_view_command_buffers,
       bool allow_real_time_streams,
       mojo::ScopedMessagePipeHandle* channel_handle);
-
-  // The next client id.
-  int next_client_id_;
 
   // The main thread task runner.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -163,6 +168,8 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
+
+  mojo::StrongBinding<mojom::GpuServiceInternal> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceInternal);
 };

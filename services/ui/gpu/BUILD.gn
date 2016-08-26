@@ -24,6 +24,7 @@ source_set("gpu") {
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",
     "//services/ui/common:mus_common",
+    "//services/ui/gpu/interfaces",
     "//services/ui/public/interfaces",
     "//ui/gfx:memory_buffer",
     "//ui/gl/init",

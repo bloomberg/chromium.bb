@@ -41,22 +41,20 @@ const int kLocalGpuChannelClientId = 1;
 const uint64_t kLocalGpuChannelClientTracingId = 1;
 
 void EstablishGpuChannelDone(
-    int client_id,
     mojo::ScopedMessagePipeHandle* channel_handle,
     const GpuServiceInternal::EstablishGpuChannelCallback& callback) {
-  callback.Run(client_id, std::move(*channel_handle));
-}
+  callback.Run(std::move(*channel_handle));
 }
 
+}  // namespace
+
 GpuServiceInternal::GpuServiceInternal()
-    : next_client_id_(kLocalGpuChannelClientId),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       gpu_thread_("GpuThread"),
-      io_thread_("GpuIOThread") {
-  Initialize();
-}
+      io_thread_("GpuIOThread"),
+      binding_(this) {}
 
 GpuServiceInternal::~GpuServiceInternal() {
   // Signal this event before destroying the child process.  That way all
@@ -67,7 +65,12 @@ GpuServiceInternal::~GpuServiceInternal() {
   io_thread_.Stop();
 }
 
-void GpuServiceInternal::EstablishGpuChannel(
+void GpuServiceInternal::Add(mojom::GpuServiceInternalRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void GpuServiceInternal::EstablishGpuChannelInternal(
+    int32_t client_id,
     uint64_t client_tracing_id,
     bool preempts,
     bool allow_view_command_buffers,
@@ -76,11 +79,10 @@ void GpuServiceInternal::EstablishGpuChannel(
   DCHECK(CalledOnValidThread());
 
   if (!gpu_channel_manager_) {
-    callback.Run(-1, mojo::ScopedMessagePipeHandle());
+    callback.Run(mojo::ScopedMessagePipeHandle());
     return;
   }
 
-  const int client_id = ++next_client_id_;
   auto* channel_handle = new mojo::ScopedMessagePipeHandle;
   gpu_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
@@ -88,8 +90,8 @@ void GpuServiceInternal::EstablishGpuChannel(
                  base::Unretained(this), client_id, client_tracing_id, preempts,
                  allow_view_command_buffers, allow_real_time_streams,
                  base::Unretained(channel_handle)),
-      base::Bind(&EstablishGpuChannelDone, client_id,
-                 base::Owned(channel_handle), callback));
+      base::Bind(&EstablishGpuChannelDone, base::Owned(channel_handle),
+                 callback));
 }
 
 gfx::GpuMemoryBufferHandle GpuServiceInternal::CreateGpuMemoryBuffer(
@@ -154,37 +156,6 @@ void GpuServiceInternal::SendAcceleratedSurfaceCreatedChildWindow(
 
 void GpuServiceInternal::SetActiveURL(const GURL& url) {
   // TODO(penghuang): implement this function.
-}
-
-void GpuServiceInternal::Initialize() {
-  DCHECK(CalledOnValidThread());
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-  CHECK(gpu_thread_.StartWithOptions(thread_options));
-
-  thread_options = base::Thread::Options(base::MessageLoop::TYPE_IO, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID)
-  // TODO(reveman): Remove this in favor of setting it explicitly for each type
-  // of process.
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-  CHECK(io_thread_.StartWithOptions(thread_options));
-
-  mojo::ScopedMessagePipeHandle channel_handle;
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  gpu_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GpuServiceInternal::InitializeOnGpuThread,
-                            base::Unretained(this), &channel_handle, &event));
-  event.Wait();
-
-  gpu_memory_buffer_manager_local_.reset(
-      new MusGpuMemoryBufferManager(this, kLocalGpuChannelClientId));
-  gpu_channel_local_ = gpu::GpuChannelHost::Create(
-      this, kLocalGpuChannelClientId, gpu_info_,
-      IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
-      gpu_memory_buffer_manager_local_.get());
 }
 
 void GpuServiceInternal::InitializeOnGpuThread(
@@ -269,6 +240,54 @@ std::unique_ptr<base::SharedMemory> GpuServiceInternal::AllocateSharedMemory(
   if (!shm->CreateAnonymous(size))
     return std::unique_ptr<base::SharedMemory>();
   return shm;
+}
+
+void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
+  thread_options.priority = base::ThreadPriority::NORMAL;
+  CHECK(gpu_thread_.StartWithOptions(thread_options));
+
+  thread_options = base::Thread::Options(base::MessageLoop::TYPE_IO, 0);
+  thread_options.priority = base::ThreadPriority::NORMAL;
+#if defined(OS_ANDROID)
+  // TODO(reveman): Remove this in favor of setting it explicitly for each type
+  // of process.
+  thread_options.priority = base::ThreadPriority::DISPLAY;
+#endif
+  CHECK(io_thread_.StartWithOptions(thread_options));
+
+  mojo::ScopedMessagePipeHandle channel_handle;
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  gpu_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&GpuServiceInternal::InitializeOnGpuThread,
+                            base::Unretained(this), &channel_handle, &event));
+  event.Wait();
+
+  gpu_memory_buffer_manager_local_.reset(
+      new MusGpuMemoryBufferManager(this, kLocalGpuChannelClientId));
+  gpu_channel_local_ = gpu::GpuChannelHost::Create(
+      this, kLocalGpuChannelClientId, gpu_info_,
+      IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
+      gpu_memory_buffer_manager_local_.get());
+
+  // TODO(sad): Get the real GPUInfo.
+  callback.Run(gpu_info_);
+}
+
+void GpuServiceInternal::EstablishGpuChannel(
+    int32_t client_id,
+    uint64_t client_tracing_id,
+    const EstablishGpuChannelCallback& callback) {
+  // TODO(penghuang): windows server may want to control those flags.
+  // Add a private interface for windows server.
+  const bool preempts = false;
+  const bool allow_view_command_buffers = false;
+  const bool allow_real_time_streams = false;
+  EstablishGpuChannelInternal(client_id, client_tracing_id, preempts,
+                              allow_view_command_buffers,
+                              allow_real_time_streams, callback);
 }
 
 // static

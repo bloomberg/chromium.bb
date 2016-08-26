@@ -107,6 +107,7 @@ static_library("lib") {
     # TODO(sad): Temporary, until the GPU process is split out of ws.
     "//services/ui/gpu",
     "//services/ui/gpu/display_compositor",
+    "//services/ui/gpu/interfaces",
   ]
 
   public_deps = [

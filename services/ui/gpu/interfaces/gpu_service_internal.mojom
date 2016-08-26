@@ -1,0 +1,16 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ui.mojom;
+
+import "gpu/ipc/common/gpu_info.mojom";
+
+interface GpuServiceInternal {
+  Initialize() => (gpu.mojom.GpuInfo gpu_info);
+
+  // Tells the GPU service to create a new channel for communication with a
+  // client. The GPU service responds with an IPC handle.
+  EstablishGpuChannel(int32 client_id, uint64 client_tracing_id)
+      => (handle<message_pipe> channel_handle);
+};
