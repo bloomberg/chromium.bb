@@ -51,7 +51,7 @@ bool OverlayStrategyFullscreen::Attempt(ResourceProvider* resource_provider,
   candidate.plane_z_order = 1;
   candidate.overlay_handled = true;
   candidate_list->push_back(candidate);
-  quad_list->EraseAndInvalidateAllPointers(quad_list->begin());
+  quad_list->EraseAndInvalidateAllPointers(front);
   return true;
 }
 

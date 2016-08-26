@@ -492,6 +492,34 @@ TEST_F(FullscreenOverlayTest, NotCoveringFullscreenFail) {
   EXPECT_EQ(1U, main_pass->quad_list.size());
 }
 
+TEST_F(FullscreenOverlayTest, RemoveFullscreenQuadFromQuadList) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+  // Add something in front of it that is fully transparent.
+  pass->shared_quad_state_list.back()->opacity = 0.0f;
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(),
+                     kOverlayTopLeftRect);
+
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  shared_state->opacity = 1.f;
+  CreateFullscreenCandidateQuad(resource_provider_.get(),
+                                pass->shared_quad_state_list.back(),
+                                pass.get());
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(resource_provider_.get(), pass.get(),
+                                         &candidate_list, nullptr,
+                                         &damage_rect_);
+  ASSERT_EQ(1U, candidate_list.size());
+
+  // Check that the fullscreen quad is gone.
+  for (const DrawQuad* quad : pass->quad_list) {
+    EXPECT_NE(pass->output_rect, quad->rect);
+  }
+}
+
 TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   TextureDrawQuad* original_quad =
