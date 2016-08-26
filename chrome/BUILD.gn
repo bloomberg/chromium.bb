@@ -14,6 +14,7 @@ import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chrome/version.gni")
+import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
 
@@ -844,18 +845,39 @@ if (is_win) {
     }
   }
 
-  if (is_chrome_branded) {
+  _should_bundle_widevine =
+      (is_chrome_branded || enable_widevine) && enable_pepper_cdms
+  if (_should_bundle_widevine) {
+    # The Widevine CDM and manifest are either the actual Widevine CDM and
+    # manifest or stubs used for testing only. The choice is made within the
+    # corresponding Widevine targets based on branding.
     bundle_data("widevine_cdm_library_binaries") {
       sources = [
-        "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
+        "$root_out_dir/libwidevinecdm.dylib",
         "$root_out_dir/$widevine_cdm_path/widevinecdmadapter.plugin",
       ]
       outputs = [
         "{{bundle_root_dir}}/Libraries/$widevine_cdm_path/{{source_file_part}}",
       ]
       public_deps = [
-        "//third_party/widevine/cdm:widevinecdm",
+        # Need this intermediate dependency because "widevinecdm" is a
+        # shared_library if !is_chrome_branded, and then depending on
+        # "widevinecdm" directly would cause it to be linked into the Chromium
+        # Framework, which we don't want.
+        ":widevine_cdm_library_copy",
         "//third_party/widevine/cdm:widevinecdmadapter",
+      ]
+    }
+
+    copy("widevine_cdm_library_copy") {
+      sources = [
+        "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
+      ]
+      outputs = [
+        "$root_out_dir/{{source_file_part}}",
+      ]
+      deps = [
+        "//third_party/widevine/cdm:widevinecdm",
       ]
     }
 
@@ -873,7 +895,7 @@ if (is_win) {
   }
 
   group("widevine_cdm_library") {
-    if (is_chrome_branded) {
+    if (_should_bundle_widevine) {
       deps = [
         ":widevine_cdm_library_binaries",
         ":widevine_cdm_library_manifest",

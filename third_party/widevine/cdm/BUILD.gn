@@ -45,6 +45,7 @@ if (is_android) {
   }
 } else if (enable_widevine) {
   widevine_cdm_version_h_file = "stub/widevine_cdm_version.h"
+  widevine_cdm_manifest_file = [ "stub/manifest.json" ]
 } else {
   # No branding, use the default one.
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
