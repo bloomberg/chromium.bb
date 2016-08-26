@@ -83,7 +83,7 @@ class {{config.class_export.macro}} UberDispatcher {
 public:
     explicit UberDispatcher(FrontendChannel*);
     void registerBackend(const String16& name, std::unique_ptr<protocol::DispatcherBase>);
-    void dispatch(const String16& message);
+    void dispatch(std::unique_ptr<Value> message);
     FrontendChannel* channel() { return m_frontendChannel; }
     virtual ~UberDispatcher();
 

@@ -3,3 +3,5 @@
 // found in the LICENSE file.
 
 #include "{{config.lib_package}}/InspectorProtocol.h"
+
+#include <cstring>

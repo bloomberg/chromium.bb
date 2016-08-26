@@ -42,6 +42,7 @@ public:
     String16 substring(unsigned pos, unsigned len = UINT_MAX) const { return String16(m_impl.substr(pos, len)); }
     size_t find(const String16& str, unsigned start = 0) const { return m_impl.find(str.m_impl, start); }
     size_t reverseFind(const String16& str, unsigned start = UINT_MAX) const { return m_impl.rfind(str.m_impl, start); }
+    void swap(String16& other) { m_impl.swap(other.m_impl); }
 
     // Convenience methods.
     std::string utf8() const;

@@ -102,7 +102,7 @@ private:
     protocol::DictionaryValue* eventListenerBreakpoints();
     protocol::DictionaryValue* xhrBreakpoints();
 
-    void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, protocol::DictionaryValue* description);
+    void breakProgramOnDOMEvent(Node* target, int breakpointType, bool insertion);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);
     bool hasBreakpoint(Node*, int type);
     void setBreakpoint(ErrorString*, const String& eventName, const String& targetName);
@@ -112,8 +112,7 @@ private:
     void didRemoveBreakpoint();
     void setEnabled(bool);
 
-    void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray);
-    std::unique_ptr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String16& objectGroupId);
+    std::unique_ptr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const v8_inspector::StringView& objectGroupId);
 
     v8::Isolate* m_isolate;
     Member<InspectorDOMAgent> m_domAgent;

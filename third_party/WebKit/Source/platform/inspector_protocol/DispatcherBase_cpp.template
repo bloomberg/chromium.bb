@@ -127,9 +127,8 @@ void UberDispatcher::registerBackend(const String16& name, std::unique_ptr<proto
     m_dispatchers[name] = std::move(dispatcher);
 }
 
-void UberDispatcher::dispatch(const String16& message)
+void UberDispatcher::dispatch(std::unique_ptr<Value> parsedMessage)
 {
-    std::unique_ptr<protocol::Value> parsedMessage = parseJSON(message);
     if (!parsedMessage)
         return;
     std::unique_ptr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(std::move(parsedMessage));

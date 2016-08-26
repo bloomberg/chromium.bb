@@ -185,10 +185,10 @@ V8StackTraceImpl::~V8StackTraceImpl()
 {
 }
 
-String16 V8StackTraceImpl::topSourceURL() const
+StringView V8StackTraceImpl::topSourceURL() const
 {
     DCHECK(m_frames.size());
-    return m_frames[0].m_scriptName;
+    return toStringView(m_frames[0].m_scriptName);
 }
 
 int V8StackTraceImpl::topLineNumber() const
@@ -203,16 +203,16 @@ int V8StackTraceImpl::topColumnNumber() const
     return m_frames[0].m_columnNumber;
 }
 
-String16 V8StackTraceImpl::topFunctionName() const
+StringView V8StackTraceImpl::topFunctionName() const
 {
     DCHECK(m_frames.size());
-    return m_frames[0].m_functionName;
+    return toStringView(m_frames[0].m_functionName);
 }
 
-String16 V8StackTraceImpl::topScriptId() const
+StringView V8StackTraceImpl::topScriptId() const
 {
     DCHECK(m_frames.size());
-    return m_frames[0].m_scriptId;
+    return toStringView(m_frames[0].m_scriptId);
 }
 
 std::unique_ptr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectImpl() const
@@ -245,7 +245,7 @@ std::unique_ptr<protocol::Runtime::API::StackTrace> V8StackTraceImpl::buildInspe
     return buildInspectorObjectImpl();
 }
 
-String16 V8StackTraceImpl::toString() const
+std::unique_ptr<StringBuffer> V8StackTraceImpl::toString() const
 {
     String16Builder stackTrace;
     for (size_t i = 0; i < m_frames.size(); ++i) {
@@ -259,7 +259,8 @@ String16 V8StackTraceImpl::toString() const
         stackTrace.append(String16::fromInteger(frame.columnNumber()));
         stackTrace.append(')');
     }
-    return stackTrace.toString();
+    String16 string = stackTrace.toString();
+    return StringBufferImpl::adopt(string);
 }
 
 } // namespace v8_inspector

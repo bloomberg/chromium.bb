@@ -1936,6 +1936,8 @@
             'inspector/NetworkResourcesData.h',
             'inspector/ThreadDebugger.cpp',
             'inspector/ThreadDebugger.h',
+            'inspector/V8InspectorString.cpp',
+            'inspector/V8InspectorString.h',
             'inspector/WorkerInspectorController.cpp',
             'inspector/WorkerInspectorController.h',
             'inspector/WorkerThreadDebugger.cpp',

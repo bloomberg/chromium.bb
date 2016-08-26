@@ -289,8 +289,7 @@ void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const St
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> value;
     v8::Local<v8::Context> context;
-    String16 objectGroup;
-    if (!m_session->unwrapObject(errorString, objectId, &value, &context, &objectGroup) || value->IsUndefined())
+    if (!m_session->unwrapObject(errorString, toStringView(objectId), &value, &context, nullptr) || value->IsUndefined())
         return;
 
     v8::SnapshotObjectId id = m_isolate->GetHeapProfiler()->GetObjectId(value);

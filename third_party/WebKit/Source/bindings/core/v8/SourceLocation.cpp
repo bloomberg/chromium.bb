@@ -11,6 +11,7 @@
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ThreadDebugger.h"
+#include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
@@ -103,7 +104,7 @@ std::unique_ptr<SourceLocation> SourceLocation::create(const String& url, unsign
 std::unique_ptr<SourceLocation> SourceLocation::createFromNonEmptyV8StackTrace(std::unique_ptr<v8_inspector::V8StackTrace> stackTrace, int scriptId)
 {
     // Retrieve the data before passing the ownership to SourceLocation.
-    const String& url = stackTrace->topSourceURL();
+    String url = toCoreString(stackTrace->topSourceURL());
     unsigned lineNumber = stackTrace->topLineNumber();
     unsigned columnNumber = stackTrace->topColumnNumber();
     return wrapUnique(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
@@ -145,9 +146,9 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
         return;
     value->beginArray(name);
     value->beginDictionary();
-    value->setString("functionName", m_stackTrace->topFunctionName());
-    value->setString("scriptId", m_stackTrace->topScriptId());
-    value->setString("url", m_stackTrace->topSourceURL());
+    value->setString("functionName", toCoreString(m_stackTrace->topFunctionName()));
+    value->setString("scriptId", toCoreString(m_stackTrace->topScriptId()));
+    value->setString("url", toCoreString(m_stackTrace->topSourceURL()));
     value->setInteger("lineNumber", m_stackTrace->topLineNumber());
     value->setInteger("columnNumber", m_stackTrace->topColumnNumber());
     value->endDictionary();
@@ -168,7 +169,7 @@ String SourceLocation::toString() const
 {
     if (!m_stackTrace)
         return String();
-    return m_stackTrace->toString();
+    return toCoreString(m_stackTrace->toString());
 }
 
 } // namespace blink

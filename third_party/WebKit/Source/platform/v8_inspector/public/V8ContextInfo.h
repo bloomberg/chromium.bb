@@ -5,7 +5,7 @@
 #ifndef V8ContextInfo_h
 #define V8ContextInfo_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/public/StringView.h"
 
 #include <v8.h>
 
@@ -13,7 +13,7 @@ namespace v8_inspector {
 
 class V8ContextInfo {
 public:
-    V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId, const String16& humanReadableName)
+    V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId, const StringView& humanReadableName)
         : context(context)
         , contextGroupId(contextGroupId)
         , humanReadableName(humanReadableName)
@@ -26,10 +26,19 @@ public:
     // V8DebuggerAgent to notify about events in the context.
     // |contextGroupId| must be non-0.
     int contextGroupId;
-    String16 humanReadableName;
-    String16 origin;
-    String16 auxData;
+    StringView humanReadableName;
+    StringView origin;
+    StringView auxData;
     bool hasMemoryOnConsole;
+
+private:
+    // Disallow copying and allocating this one.
+    enum NotNullTagEnum { NotNullLiteral };
+    void* operator new(size_t) = delete;
+    void* operator new(size_t, NotNullTagEnum, void*) = delete;
+    void* operator new(size_t, void*) = delete;
+    V8ContextInfo(const V8ContextInfo&) = delete;
+    V8ContextInfo& operator=(const V8ContextInfo&) = delete;
 };
 
 } // namespace v8_inspector

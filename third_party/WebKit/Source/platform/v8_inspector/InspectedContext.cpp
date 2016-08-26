@@ -35,9 +35,9 @@ InspectedContext::InspectedContext(V8InspectorImpl* inspector, const V8ContextIn
     , m_context(info.context->GetIsolate(), info.context)
     , m_contextId(contextId)
     , m_contextGroupId(info.contextGroupId)
-    , m_origin(info.origin)
-    , m_humanReadableName(info.humanReadableName)
-    , m_auxData(info.auxData)
+    , m_origin(toString16(info.origin))
+    , m_humanReadableName(toString16(info.humanReadableName))
+    , m_auxData(toString16(info.auxData))
     , m_reported(false)
 {
     m_context.SetWeak(this, &InspectedContext::weakCallback, v8::WeakCallbackType::kParameter);

@@ -56,6 +56,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/inspector/V8InspectorString.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/xml/XPathEvaluator.h"
@@ -145,13 +146,15 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    std::unique_ptr<protocol::DictionaryValue> auxData = protocol::DictionaryValue::create();
-    auxData->setBoolean("isDefault", world.isMainWorld());
-    auxData->setString("frameId", IdentifiersFactory::frameId(frame));
-    v8_inspector::V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "");
-    if (origin)
-        contextInfo.origin = origin->toRawString();
-    contextInfo.auxData = auxData->toJSONString();
+    std::unique_ptr<protocol::DictionaryValue> auxDataValue = protocol::DictionaryValue::create();
+    auxDataValue->setBoolean("isDefault", world.isMainWorld());
+    auxDataValue->setString("frameId", IdentifiersFactory::frameId(frame));
+    String auxData = auxDataValue->toJSONString();
+    String humanReadableName = world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : String();
+    String originString = origin ? origin->toRawString() : String();
+    v8_inspector::V8ContextInfo contextInfo(scriptState->context(), contextGroupId(frame), toV8InspectorStringView(humanReadableName));
+    contextInfo.origin = toV8InspectorStringView(originString);
+    contextInfo.auxData = toV8InspectorStringView(auxData);
     contextInfo.hasMemoryOnConsole = scriptState->getExecutionContext()->isDocument();
     v8Inspector()->contextCreated(contextInfo);
 }
@@ -182,12 +185,14 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context, ErrorEvent* 
 
     frame->console().reportMessageToClient(JSMessageSource, ErrorMessageLevel, event->messageForConsole(), event->location());
 
-    const String16 defaultMessage = "Uncaught";
+    const String defaultMessage = "Uncaught";
     if (scriptState && scriptState->contextIsValid()) {
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Value> exception = V8ErrorHandler::loadExceptionFromErrorEventWrapper(scriptState, event, scriptState->context()->Global());
         SourceLocation* location = event->location();
-        v8Inspector()->exceptionThrown(scriptState->context(), defaultMessage, exception, event->messageForConsole(), location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
+        String message = event->messageForConsole();
+        String url = location->url();
+        v8Inspector()->exceptionThrown(scriptState->context(), toV8InspectorStringView(defaultMessage), exception, toV8InspectorStringView(message), toV8InspectorStringView(url), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
     }
 }
 
@@ -287,15 +292,16 @@ void MainThreadDebugger::runIfWaitingForDebugger(int contextGroupId)
         m_clientMessageLoop->runIfWaitingForDebugger(frame);
 }
 
-void MainThreadDebugger::consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType type, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace* stackTrace)
+void MainThreadDebugger::consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType type, const v8_inspector::StringView& message, const v8_inspector::StringView& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (!frame)
         return;
     if (type == v8_inspector::V8ConsoleAPIType::kClear && frame->host())
         frame->host()->consoleMessageStorage().clear();
-    std::unique_ptr<SourceLocation> location = SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
-    frame->console().reportMessageToClient(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), message, location.get());
+    // TODO(dgozman): we can save a copy of message and url here by making FrameConsole work with StringView.
+    std::unique_ptr<SourceLocation> location = SourceLocation::create(toCoreString(url), lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0);
+    frame->console().reportMessageToClient(ConsoleAPIMessageSource, consoleAPITypeToMessageLevel(type), toCoreString(message), location.get());
 }
 
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v8::Local<v8::Context> context)

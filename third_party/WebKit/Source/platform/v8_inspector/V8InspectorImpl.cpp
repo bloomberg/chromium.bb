@@ -166,7 +166,7 @@ std::unique_ptr<V8StackTrace> V8InspectorImpl::createStackTrace(v8::Local<v8::St
     return m_debugger->createStackTrace(stackTrace);
 }
 
-std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, const String16* state)
+std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, const StringView& state)
 {
     DCHECK(m_sessions.find(contextGroupId) == m_sessions.cend());
     std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, state);
@@ -265,25 +265,25 @@ void V8InspectorImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-unsigned V8InspectorImpl::exceptionThrown(v8::Local<v8::Context> context, const String16& message, v8::Local<v8::Value> exception, const String16& detailedMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+unsigned V8InspectorImpl::exceptionThrown(v8::Local<v8::Context> context, const StringView& message, v8::Local<v8::Value> exception, const StringView& detailedMessage, const StringView& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     int contextGroupId = V8Debugger::getGroupId(context);
     if (!contextGroupId || m_muteExceptionsMap[contextGroupId])
         return 0;
     std::unique_ptr<V8StackTraceImpl> stackTraceImpl = wrapUnique(static_cast<V8StackTraceImpl*>(stackTrace.release()));
     unsigned exceptionId = nextExceptionId();
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), detailedMessage, url, lineNumber, columnNumber, std::move(stackTraceImpl), scriptId, m_isolate, message, V8Debugger::contextId(context), exception, exceptionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), toString16(detailedMessage), toString16(url), lineNumber, columnNumber, std::move(stackTraceImpl), scriptId, m_isolate, toString16(message), V8Debugger::contextId(context), exception, exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
     return exceptionId;
 }
 
-void V8InspectorImpl::exceptionRevoked(v8::Local<v8::Context> context, unsigned exceptionId, const String16& message)
+void V8InspectorImpl::exceptionRevoked(v8::Local<v8::Context> context, unsigned exceptionId, const StringView& message)
 {
     int contextGroupId = V8Debugger::getGroupId(context);
     if (!contextGroupId)
         return;
 
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForRevokedException(m_client->currentTimeMS(), message, exceptionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForRevokedException(m_client->currentTimeMS(), toString16(message), exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
 }
 
@@ -292,7 +292,7 @@ std::unique_ptr<V8StackTrace> V8InspectorImpl::captureStackTrace(bool fullStack)
     return m_debugger->captureStackTrace(fullStack);
 }
 
-void V8InspectorImpl::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)
+void V8InspectorImpl::asyncTaskScheduled(const StringView& taskName, void* task, bool recurring)
 {
     m_debugger->asyncTaskScheduled(taskName, task, recurring);
 }

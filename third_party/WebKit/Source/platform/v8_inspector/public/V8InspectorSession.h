@@ -5,7 +5,8 @@
 #ifndef V8InspectorSession_h
 #define V8InspectorSession_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/public/StringBuffer.h"
+#include "platform/v8_inspector/public/StringView.h"
 #include "platform/v8_inspector/public/protocol/Debugger.h"
 #include "platform/v8_inspector/public/protocol/Runtime.h"
 #include "platform/v8_inspector/public/protocol/Schema.h"
@@ -27,24 +28,24 @@ public:
     virtual void addInspectedObject(std::unique_ptr<Inspectable>) = 0;
 
     // Dispatching protocol messages.
-    static bool canDispatchMethod(const String16& method);
-    virtual void dispatchProtocolMessage(const String16& message) = 0;
-    virtual String16 stateJSON() = 0;
+    static bool canDispatchMethod(const StringView& method);
+    virtual void dispatchProtocolMessage(const StringView& message) = 0;
+    virtual std::unique_ptr<StringBuffer> stateJSON() = 0;
     virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Schema::API::Domain>> supportedDomains() = 0;
 
     // Debugger actions.
-    virtual void schedulePauseOnNextStatement(const String16& breakReason, const String16& breakDetails) = 0;
+    virtual void schedulePauseOnNextStatement(const StringView& breakReason, const StringView& breakDetails) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
-    virtual void breakProgram(const String16& breakReason, const String16& breakDetails) = 0;
+    virtual void breakProgram(const StringView& breakReason, const StringView& breakDetails) = 0;
     virtual void setSkipAllPauses(bool) = 0;
     virtual void resume() = 0;
     virtual void stepOver() = 0;
-    virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Debugger::API::SearchMatch>> searchInTextByLines(const String16& text, const String16& query, bool caseSensitive, bool isRegex) = 0;
+    virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Debugger::API::SearchMatch>> searchInTextByLines(const StringView& text, const StringView& query, bool caseSensitive, bool isRegex) = 0;
 
     // Remote objects.
-    virtual std::unique_ptr<blink::protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName) = 0;
-    virtual bool unwrapObject(ErrorString*, const String16& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, String16* objectGroup) = 0;
-    virtual void releaseObjectGroup(const String16&) = 0;
+    virtual std::unique_ptr<blink::protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName) = 0;
+    virtual bool unwrapObject(ErrorString*, const StringView& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, std::unique_ptr<StringBuffer>* objectGroup) = 0;
+    virtual void releaseObjectGroup(const StringView&) = 0;
 };
 
 } // namespace v8_inspector

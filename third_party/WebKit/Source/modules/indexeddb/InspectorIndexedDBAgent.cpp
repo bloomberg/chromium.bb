@@ -40,6 +40,7 @@
 #include "core/events/EventListener.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
+#include "core/inspector/V8InspectorString.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/GlobalIndexedDB.h"
 #include "modules/indexeddb/IDBCursor.h"
@@ -468,10 +469,11 @@ public:
         ScriptState* scriptState = m_scriptState.get();
         ScriptState::Scope scope(scriptState);
         v8::Local<v8::Context> context = scriptState->context();
+        v8_inspector::StringView objectGroup = toV8InspectorStringView(indexedDBObjectGroup);
         std::unique_ptr<DataEntry> dataEntry = DataEntry::create()
-            .setKey(m_v8Session->wrapObject(context, idbCursor->key(scriptState).v8Value(), indexedDBObjectGroup))
-            .setPrimaryKey(m_v8Session->wrapObject(context, idbCursor->primaryKey(scriptState).v8Value(), indexedDBObjectGroup))
-            .setValue(m_v8Session->wrapObject(context, idbCursor->value(scriptState).v8Value(), indexedDBObjectGroup))
+            .setKey(m_v8Session->wrapObject(context, idbCursor->key(scriptState).v8Value(), objectGroup))
+            .setPrimaryKey(m_v8Session->wrapObject(context, idbCursor->primaryKey(scriptState).v8Value(), objectGroup))
+            .setValue(m_v8Session->wrapObject(context, idbCursor->value(scriptState).v8Value(), objectGroup))
             .build();
         m_result->addItem(std::move(dataEntry));
     }
@@ -590,7 +592,7 @@ void InspectorIndexedDBAgent::restore()
 void InspectorIndexedDBAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
     if (frame == m_inspectedFrames->root())
-        m_v8Session->releaseObjectGroup(indexedDBObjectGroup);
+        m_v8Session->releaseObjectGroup(toV8InspectorStringView(indexedDBObjectGroup));
 }
 
 void InspectorIndexedDBAgent::enable(ErrorString*)
@@ -601,7 +603,7 @@ void InspectorIndexedDBAgent::enable(ErrorString*)
 void InspectorIndexedDBAgent::disable(ErrorString*)
 {
     m_state->setBoolean(IndexedDBAgentState::indexedDBAgentEnabled, false);
-    m_v8Session->releaseObjectGroup(indexedDBObjectGroup);
+    m_v8Session->releaseObjectGroup(toV8InspectorStringView(indexedDBObjectGroup));
 }
 
 static Document* assertDocument(ErrorString* errorString, LocalFrame* frame)

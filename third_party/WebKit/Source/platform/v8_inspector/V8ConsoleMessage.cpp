@@ -331,7 +331,7 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
 {
     std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kConsole, timestamp, String16()));
     if (stackTrace && !stackTrace->isEmpty()) {
-        message->m_url = stackTrace->topSourceURL();
+        message->m_url = toString16(stackTrace->topSourceURL());
         message->m_lineNumber = stackTrace->topLineNumber();
         message->m_columnNumber = stackTrace->topColumnNumber();
     }
@@ -354,7 +354,7 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
         clientType = V8ConsoleAPIType::kInfo;
     else if (type == ConsoleAPIType::kClear)
         clientType = V8ConsoleAPIType::kClear;
-    context->inspector()->client()->consoleAPIMessage(context->contextGroupId(), clientType, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
+    context->inspector()->client()->consoleAPIMessage(context->contextGroupId(), clientType, toStringView(message->m_message), toStringView(message->m_url), message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
 
     return message;
 }

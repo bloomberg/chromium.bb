@@ -28,7 +28,40 @@ const char* const nullString = "null";
 const char* const trueString = "true";
 const char* const falseString = "false";
 
-bool parseConstToken(const UChar* start, const UChar* end, const UChar** tokenEnd, const char* token)
+bool isASCII(uint16_t c)
+{
+    return !(c & ~0x7F);
+}
+
+double charactersToDouble(const uint16_t* characters, size_t length, bool* ok)
+{
+    std::vector<char> buffer;
+    buffer.reserve(length + 1);
+    for (size_t i = 0; i < length; ++i) {
+        if (!isASCII(characters[i])) {
+            *ok = false;
+            return 0;
+        }
+        buffer.push_back(static_cast<char>(characters[i]));
+    }
+    buffer.push_back('\0');
+    char* endptr;
+    double result = std::strtod(buffer.data(), &endptr);
+    *ok = !(*endptr);
+    return result;
+}
+
+double charactersToDouble(const uint8_t* characters, size_t length, bool* ok)
+{
+    std::string buffer(reinterpret_cast<const char*>(characters), length);
+    char* endptr;
+    double result = std::strtod(buffer.data(), &endptr);
+    *ok = !(*endptr);
+    return result;
+}
+
+template<typename Char>
+bool parseConstToken(const Char* start, const Char* end, const Char** tokenEnd, const char* token)
 {
     while (start < end && *token != '\0' && *start++ == *token++) { }
     if (*token != '\0')
@@ -37,7 +70,8 @@ bool parseConstToken(const UChar* start, const UChar* end, const UChar** tokenEn
     return true;
 }
 
-bool readInt(const UChar* start, const UChar* end, const UChar** tokenEnd, bool canHaveLeadingZeros)
+template<typename Char>
+bool readInt(const Char* start, const Char* end, const Char** tokenEnd, bool canHaveLeadingZeros)
 {
     if (start == end)
         return false;
@@ -55,13 +89,14 @@ bool readInt(const UChar* start, const UChar* end, const UChar** tokenEnd, bool 
     return true;
 }
 
-bool parseNumberToken(const UChar* start, const UChar* end, const UChar** tokenEnd)
+template<typename Char>
+bool parseNumberToken(const Char* start, const Char* end, const Char** tokenEnd)
 {
     // We just grab the number here. We validate the size in DecodeNumber.
     // According to RFC4627, a valid number is: [minus] int [frac] [exp]
     if (start == end)
         return false;
-    UChar c = *start;
+    Char c = *start;
     if ('-' == c)
         ++start;
 
@@ -104,12 +139,13 @@ bool parseNumberToken(const UChar* start, const UChar* end, const UChar** tokenE
     return true;
 }
 
-bool readHexDigits(const UChar* start, const UChar* end, const UChar** tokenEnd, int digits)
+template<typename Char>
+bool readHexDigits(const Char* start, const Char* end, const Char** tokenEnd, int digits)
 {
     if (end - start < digits)
         return false;
     for (int i = 0; i < digits; ++i) {
-        UChar c = *start++;
+        Char c = *start++;
         if (!(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')))
             return false;
     }
@@ -117,10 +153,11 @@ bool readHexDigits(const UChar* start, const UChar* end, const UChar** tokenEnd,
     return true;
 }
 
-bool parseStringToken(const UChar* start, const UChar* end, const UChar** tokenEnd)
+template<typename Char>
+bool parseStringToken(const Char* start, const Char* end, const Char** tokenEnd)
 {
     while (start < end) {
-        UChar c = *start++;
+        Char c = *start++;
         if ('\\' == c) {
             c = *start++;
             // Make sure the escaped char is valid.
@@ -154,7 +191,8 @@ bool parseStringToken(const UChar* start, const UChar* end, const UChar** tokenE
     return false;
 }
 
-bool skipComment(const UChar* start, const UChar* end, const UChar** commentEnd)
+template<typename Char>
+bool skipComment(const Char* start, const Char* end, const Char** commentEnd)
 {
     if (start == end)
         return false;
@@ -177,7 +215,7 @@ bool skipComment(const UChar* start, const UChar* end, const UChar** commentEnd)
     }
 
     if (*start == '*') {
-        UChar previous = '\0';
+        Char previous = '\0';
         // Block comment, read until end marker.
         for (++start; start < end; previous = *start++) {
             if (previous == '*' && *start == '/') {
@@ -192,13 +230,14 @@ bool skipComment(const UChar* start, const UChar* end, const UChar** commentEnd)
     return false;
 }
 
-void skipWhitespaceAndComments(const UChar* start, const UChar* end, const UChar** whitespaceEnd)
+template<typename Char>
+void skipWhitespaceAndComments(const Char* start, const Char* end, const Char** whitespaceEnd)
 {
     while (start < end) {
         if (String16::isSpaceOrNewLine(*start)) {
             ++start;
         } else if (*start == '/') {
-            const UChar* commentEnd;
+            const Char* commentEnd;
             if (!skipComment(start, end, &commentEnd))
                 break;
             start = commentEnd;
@@ -209,7 +248,8 @@ void skipWhitespaceAndComments(const UChar* start, const UChar* end, const UChar
     *whitespaceEnd = start;
 }
 
-Token parseToken(const UChar* start, const UChar* end, const UChar** tokenStart, const UChar** tokenEnd)
+template<typename Char>
+Token parseToken(const Char* start, const Char* end, const Char** tokenStart, const Char** tokenEnd)
 {
     skipWhitespaceAndComments(start, end, tokenStart);
     start = *tokenStart;
@@ -270,7 +310,8 @@ Token parseToken(const UChar* start, const UChar* end, const UChar** tokenStart,
     return InvalidToken;
 }
 
-inline int hexToInt(UChar c)
+template<typename Char>
+int hexToInt(Char c)
 {
     if ('0' <= c && c <= '9')
         return c - '0';
@@ -282,7 +323,8 @@ inline int hexToInt(UChar c)
     return 0;
 }
 
-bool decodeString(const UChar* start, const UChar* end, String16Builder* output)
+template<typename Char>
+bool decodeString(const Char* start, const Char* end, String16Builder* output)
 {
     while (start < end) {
         UChar c = *start++;
@@ -335,7 +377,8 @@ bool decodeString(const UChar* start, const UChar* end, String16Builder* output)
     return true;
 }
 
-bool decodeString(const UChar* start, const UChar* end, String16* output)
+template<typename Char>
+bool decodeString(const Char* start, const Char* end, String16* output)
 {
     if (start == end) {
         *output = "";
@@ -351,14 +394,15 @@ bool decodeString(const UChar* start, const UChar* end, String16* output)
     return true;
 }
 
-std::unique_ptr<Value> buildValue(const UChar* start, const UChar* end, const UChar** valueTokenEnd, int depth)
+template<typename Char>
+std::unique_ptr<Value> buildValue(const Char* start, const Char* end, const Char** valueTokenEnd, int depth)
 {
     if (depth > stackLimit)
         return nullptr;
 
     std::unique_ptr<Value> result;
-    const UChar* tokenStart;
-    const UChar* tokenEnd;
+    const Char* tokenStart;
+    const Char* tokenEnd;
     Token token = parseToken(start, end, &tokenStart, &tokenEnd);
     switch (token) {
     case InvalidToken:
@@ -374,7 +418,7 @@ std::unique_ptr<Value> buildValue(const UChar* start, const UChar* end, const UC
         break;
     case Number: {
         bool ok;
-        double value = String16::charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
+        double value = charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
         if (!ok)
             return nullptr;
         int number = static_cast<int>(value);
@@ -471,10 +515,11 @@ std::unique_ptr<Value> buildValue(const UChar* start, const UChar* end, const UC
     return result;
 }
 
-std::unique_ptr<Value> parseJSONInternal(const UChar* start, unsigned length)
+template<typename Char>
+std::unique_ptr<Value> parseJSONInternal(const Char* start, unsigned length)
 {
-    const UChar* end = start + length;
-    const UChar *tokenEnd;
+    const Char* end = start + length;
+    const Char *tokenEnd;
     std::unique_ptr<Value> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
         return nullptr;
@@ -483,11 +528,21 @@ std::unique_ptr<Value> parseJSONInternal(const UChar* start, unsigned length)
 
 } // anonymous namespace
 
+std::unique_ptr<Value> parseJSON(const uint16_t* characters, unsigned length)
+{
+    return parseJSONInternal<uint16_t>(characters, length);
+}
+
+std::unique_ptr<Value> parseJSON(const uint8_t* characters, unsigned length)
+{
+    return parseJSONInternal<uint8_t>(characters, length);
+}
+
 std::unique_ptr<Value> parseJSON(const String16& json)
 {
     if (json.isEmpty())
         return nullptr;
-    return parseJSONInternal(json.characters16(), json.length());
+    return parseJSONInternal<uint16_t>(reinterpret_cast<const uint16_t*>(json.characters16()), json.length());
 }
 
 } // namespace protocol

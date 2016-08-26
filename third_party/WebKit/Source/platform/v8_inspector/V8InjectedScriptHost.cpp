@@ -134,9 +134,9 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "promise"));
         return;
     }
-    String16 subtype = unwrapInspector(info)->client()->valueSubtype(value);
-    if (!subtype.isEmpty()) {
-        info.GetReturnValue().Set(toV8String(isolate, subtype));
+    std::unique_ptr<StringBuffer> subtype = unwrapInspector(info)->client()->valueSubtype(value);
+    if (subtype) {
+        info.GetReturnValue().Set(toV8String(isolate, subtype->string()));
         return;
     }
 }

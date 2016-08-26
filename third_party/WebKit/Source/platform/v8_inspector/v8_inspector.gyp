@@ -307,11 +307,11 @@
         'V8StringUtil.h',
         'V8ValueCopier.cpp',
         'V8ValueCopier.h',
-        'public/V8EventListenerInfo.h',
+        'public/StringBuffer.h',
+        'public/StringView.h',
         'public/V8ContextInfo.h',
         'public/V8Inspector.h',
         'public/V8InspectorClient.h',
-        'public/V8HeapProfilerAgent.h',
         'public/V8InspectorSession.h',
         'public/V8StackTrace.h',
 

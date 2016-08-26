@@ -25,6 +25,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
+#include "core/inspector/V8InspectorString.h"
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
@@ -373,8 +374,9 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
     }
 
     ScriptState::Scope scope(scriptState);
-    m_v8Session->releaseObjectGroup("animation");
-    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
+    static const char kAnimationObjectGroup[] = "animation";
+    m_v8Session->releaseObjectGroup(toV8InspectorStringView(kAnimationObjectGroup));
+    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), toV8InspectorStringView(kAnimationObjectGroup));
     if (!*result)
         *errorString = "Element not associated with a document.";
 }

@@ -31,15 +31,6 @@ void doubleToStr6(double number, char* buffer, size_t length)
     std::snprintf(buffer, length, "%.6g", number);
 }
 
-double strToDouble(const char* buffer, bool* ok)
-{
-    char* endptr;
-    double result = std::strtod(buffer, &endptr);
-    if (ok)
-        *ok = !(*endptr);
-    return result;
-}
-
 int strToInt(const char* buffer, bool* ok)
 {
     char* endptr;

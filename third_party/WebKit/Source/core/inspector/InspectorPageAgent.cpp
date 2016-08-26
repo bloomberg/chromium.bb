@@ -57,6 +57,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
+#include "core/inspector/V8InspectorString.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/MIMETypeRegistry.h"
@@ -511,7 +512,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    callback->sendSuccess(m_v8Session->searchInTextByLines(content, query, caseSensitive, isRegex));
+    callback->sendSuccess(m_v8Session->searchInTextByLines(toV8InspectorStringView(content), toV8InspectorStringView(query), caseSensitive, isRegex));
 }
 
 void InspectorPageAgent::searchInResource(const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)

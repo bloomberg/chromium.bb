@@ -64,13 +64,13 @@ public:
 
     // V8StackTrace implementation.
     bool isEmpty() const override { return !m_frames.size(); };
-    String16 topSourceURL() const override;
+    StringView topSourceURL() const override;
     int topLineNumber() const override;
     int topColumnNumber() const override;
-    String16 topScriptId() const override;
-    String16 topFunctionName() const override;
+    StringView topScriptId() const override;
+    StringView topFunctionName() const override;
     std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const override;
-    String16 toString() const override;
+    std::unique_ptr<StringBuffer> toString() const override;
 
 private:
     V8StackTraceImpl(int contextGroupId, const String16& description, std::vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);

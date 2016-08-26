@@ -9,6 +9,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/V8InspectorString.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
@@ -37,8 +38,9 @@ InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrume
     }
 
     String16 v8State;
-    m_state->getString(kV8StateKey, &v8State);
-    m_v8Session = inspector->connect(contextGroupId, this, savedState ? &v8State : nullptr);
+    if (savedState)
+        m_state->getString(kV8StateKey, &v8State);
+    m_v8Session = inspector->connect(contextGroupId, this, toV8InspectorStringView(String(v8State)));
 }
 
 InspectorSession::~InspectorSession()
@@ -73,10 +75,10 @@ void InspectorSession::dispose()
 void InspectorSession::dispatchProtocolMessage(const String& method, const String& message)
 {
     DCHECK(!m_disposed);
-    if (v8_inspector::V8InspectorSession::canDispatchMethod(method))
-        m_v8Session->dispatchProtocolMessage(message);
+    if (v8_inspector::V8InspectorSession::canDispatchMethod(toV8InspectorStringView(method)))
+        m_v8Session->dispatchProtocolMessage(toV8InspectorStringView(message));
     else
-        m_inspectorBackendDispatcher->dispatch(message);
+        m_inspectorBackendDispatcher->dispatch(protocol::parseJSON(message));
 }
 
 void InspectorSession::didCommitLoadForLocalFrame(LocalFrame* frame)
@@ -90,7 +92,7 @@ void InspectorSession::sendProtocolResponse(int callId, const protocol::String16
     if (m_disposed)
         return;
     flushProtocolNotifications();
-    m_state->setString(kV8StateKey, m_v8Session->stateJSON());
+    m_state->setString(kV8StateKey, toCoreString(m_v8Session->stateJSON()));
     String stateToSend = m_state->toJSONString();
     if (stateToSend == m_lastSentState)
         stateToSend = String();

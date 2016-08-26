@@ -4,6 +4,7 @@
 
 #include "platform/v8_inspector/V8StringUtil.h"
 
+#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8Regex.h"
@@ -167,6 +168,15 @@ v8::Local<v8::String> toV8StringInternalized(v8::Isolate* isolate, const char* s
     return v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized).ToLocalChecked();
 }
 
+v8::Local<v8::String> toV8String(v8::Isolate* isolate, const StringView& string)
+{
+    if (!string.length())
+        return v8::String::Empty(isolate);
+    if (string.is8Bit())
+        return v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(string.characters8()), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
+    return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kNormal, string.length()).ToLocalChecked();
+}
+
 String16 toProtocolString(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
@@ -181,6 +191,49 @@ String16 toProtocolStringWithTypeCheck(v8::Local<v8::Value> value)
     if (value.IsEmpty() || !value->IsString())
         return String16();
     return toProtocolString(value.As<v8::String>());
+}
+
+String16 toString16(const StringView& string)
+{
+    if (!string.length())
+        return String16();
+    if (string.is8Bit())
+        return String16(reinterpret_cast<const char*>(string.characters8()), string.length());
+    return String16(reinterpret_cast<const UChar*>(string.characters16()), string.length());
+}
+
+StringView toStringView(const String16& string)
+{
+    if (string.isEmpty())
+        return StringView();
+    return StringView(reinterpret_cast<const uint16_t*>(string.characters16()), string.length());
+}
+
+bool stringViewStartsWith(const StringView& string, const char* prefix)
+{
+    if (!string.length())
+        return !(*prefix);
+    if (string.is8Bit()) {
+        for (size_t i = 0, j = 0; prefix[j] && i < string.length(); ++i, ++j) {
+            if (string.characters8()[i] != prefix[j])
+                return false;
+        }
+    } else {
+        for (size_t i = 0, j = 0; prefix[j] && i < string.length(); ++i, ++j) {
+            if (string.characters16()[i] != prefix[j])
+                return false;
+        }
+    }
+    return true;
+}
+
+std::unique_ptr<protocol::Value> parseJSON(const StringView& string)
+{
+    if (!string.length())
+        return nullptr;
+    if (string.is8Bit())
+        return blink::protocol::parseJSON(string.characters8(), string.length());
+    return blink::protocol::parseJSON(string.characters16(), string.length());
 }
 
 std::vector<std::unique_ptr<protocol::Debugger::SearchMatch>> searchInTextByLinesImpl(V8InspectorSession* session, const String16& text, const String16& query, const bool caseSensitive, const bool isRegex)
@@ -275,6 +328,25 @@ std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context,
     }
     NOTREACHED();
     return nullptr;
+}
+
+// static
+std::unique_ptr<StringBuffer> StringBuffer::create(const StringView& string)
+{
+    String16 owner = toString16(string);
+    return StringBufferImpl::adopt(owner);
+}
+
+// static
+std::unique_ptr<StringBufferImpl> StringBufferImpl::adopt(String16& string)
+{
+    return wrapUnique(new StringBufferImpl(string));
+}
+
+StringBufferImpl::StringBufferImpl(String16& string)
+{
+    m_owner.swap(string);
+    m_string = toStringView(m_owner);
 }
 
 } // namespace v8_inspector

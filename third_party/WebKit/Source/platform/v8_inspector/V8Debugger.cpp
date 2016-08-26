@@ -717,7 +717,7 @@ int V8Debugger::markContext(const V8ContextInfo& info)
 {
     DCHECK(info.context->GetIsolate() == m_isolate);
     int contextId = ++m_lastContextId;
-    String16 debugData = String16::fromInteger(info.contextGroupId) + "," + String16::fromInteger(contextId) + "," + info.auxData;
+    String16 debugData = String16::fromInteger(info.contextGroupId) + "," + String16::fromInteger(contextId) + "," + toString16(info.auxData);
     v8::Context::Scope contextScope(info.context);
     info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));
     return contextId;
@@ -741,6 +741,13 @@ void V8Debugger::setAsyncCallStackDepth(V8DebuggerAgentImpl* agent, int depth)
     m_maxAsyncCallStackDepth = maxAsyncCallStackDepth;
     if (!maxAsyncCallStackDepth)
         allAsyncTasksCanceled();
+}
+
+void V8Debugger::asyncTaskScheduled(const StringView& taskName, void* task, bool recurring)
+{
+    if (!m_maxAsyncCallStackDepth)
+        return;
+    asyncTaskScheduled(toString16(taskName), task, recurring);
 }
 
 void V8Debugger::asyncTaskScheduled(const String16& taskName, void* task, bool recurring)

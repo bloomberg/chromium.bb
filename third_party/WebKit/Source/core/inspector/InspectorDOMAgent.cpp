@@ -64,6 +64,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
+#include "core/inspector/V8InspectorString.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
@@ -1165,8 +1166,7 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> value;
     v8::Local<v8::Context> context;
-    String16 objectGroup;
-    if (!m_v8Session->unwrapObject(errorString, objectId, &value, &context, &objectGroup))
+    if (!m_v8Session->unwrapObject(errorString, toV8InspectorStringView(objectId), &value, &context, nullptr))
         return nullptr;
     if (!V8Node::hasInstance(value, m_isolate)) {
         *errorString = "Object id doesn't reference a Node";
@@ -2052,7 +2052,7 @@ std::unique_ptr<protocol::Runtime::API::RemoteObject> InspectorDOMAgent::resolve
         return nullptr;
 
     ScriptState::Scope scope(scriptState);
-    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
+    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), toV8InspectorStringView(objectGroup));
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

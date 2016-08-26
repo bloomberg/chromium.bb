@@ -5,7 +5,8 @@
 #ifndef V8InspectorClient_h
 #define V8InspectorClient_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/public/StringBuffer.h"
+#include "platform/v8_inspector/public/StringView.h"
 
 #include <v8.h>
 
@@ -29,7 +30,7 @@ public:
     virtual void beginUserGesture() { }
     virtual void endUserGesture() { }
 
-    virtual String16 valueSubtype(v8::Local<v8::Value>) { return String16(); }
+    virtual std::unique_ptr<StringBuffer> valueSubtype(v8::Local<v8::Value>) { return nullptr; }
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) { return false; }
     virtual bool isInspectableHeapObject(v8::Local<v8::Object>) { return true; }
 
@@ -38,12 +39,12 @@ public:
     virtual void endEnsureAllContextsInGroup(int contextGroupId) { }
 
     virtual void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) { }
-    virtual void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) { }
+    virtual void consoleAPIMessage(int contextGroupId, V8ConsoleAPIType, const StringView& message, const StringView& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) { }
     virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) { return v8::MaybeLocal<v8::Value>(); }
 
-    virtual void consoleTime(const String16& title) { }
-    virtual void consoleTimeEnd(const String16& title) { }
-    virtual void consoleTimeStamp(const String16& title) { }
+    virtual void consoleTime(const StringView& title) { }
+    virtual void consoleTimeEnd(const StringView& title) { }
+    virtual void consoleTimeStamp(const StringView& title) { }
     virtual double currentTimeMS() { return 0; }
     typedef void (*TimerCallback)(void*);
     virtual void startRepeatingTimer(double, TimerCallback, void* data) { }

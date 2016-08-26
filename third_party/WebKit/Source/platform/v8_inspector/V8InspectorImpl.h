@@ -67,7 +67,7 @@ public:
     v8::Local<v8::Context> regexContext();
 
     // V8Inspector implementation.
-    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, const String16* state) override;
+    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, const StringView& state) override;
     void contextCreated(const V8ContextInfo&) override;
     void contextDestroyed(v8::Local<v8::Context>) override;
     void resetContextGroup(int contextGroupId) override;
@@ -75,11 +75,11 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    unsigned exceptionThrown(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> exception, const String16& detailedMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
-    void exceptionRevoked(v8::Local<v8::Context>, unsigned exceptionId, const String16& message) override;
+    unsigned exceptionThrown(v8::Local<v8::Context>, const StringView& message, v8::Local<v8::Value> exception, const StringView& detailedMessage, const StringView& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
+    void exceptionRevoked(v8::Local<v8::Context>, unsigned exceptionId, const StringView& message) override;
     std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) override;
     std::unique_ptr<V8StackTrace> captureStackTrace(bool fullStack) override;
-    void asyncTaskScheduled(const String16& taskName, void* task, bool recurring) override;
+    void asyncTaskScheduled(const StringView& taskName, void* task, bool recurring) override;
     void asyncTaskCanceled(void* task) override;
     void asyncTaskStarted(void* task) override;
     void asyncTaskFinished(void* task) override;

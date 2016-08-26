@@ -20,6 +20,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
@@ -85,7 +86,7 @@ void ThreadDebugger::idleFinished(v8::Isolate* isolate)
 
 void ThreadDebugger::asyncTaskScheduled(const String& operationName, void* task, bool recurring)
 {
-    m_v8Inspector->asyncTaskScheduled(operationName, task, recurring);
+    m_v8Inspector->asyncTaskScheduled(toV8InspectorStringView(operationName), task, recurring);
 }
 
 void ThreadDebugger::asyncTaskCanceled(void* task)
@@ -118,13 +119,14 @@ unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const S
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
     reportConsoleMessage(toExecutionContext(context), JSMessageSource, ErrorMessageLevel, message, location.get());
-    return v8Inspector()->exceptionThrown(context, defaultMessage, exception, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
+    String url = location->url();
+    return v8Inspector()->exceptionThrown(context, toV8InspectorStringView(defaultMessage), exception, toV8InspectorStringView(message), toV8InspectorStringView(url), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId());
 }
 
 void ThreadDebugger::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
 {
     const String message = "Handler added to rejected promise";
-    v8Inspector()->exceptionRevoked(context, promiseRejectionId, message);
+    v8Inspector()->exceptionRevoked(context, promiseRejectionId, toV8InspectorStringView(message));
 }
 
 void ThreadDebugger::beginUserGesture()
@@ -137,19 +139,22 @@ void ThreadDebugger::endUserGesture()
     m_userGestureIndicator.reset();
 }
 
-String16 ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
+std::unique_ptr<v8_inspector::StringBuffer> ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
 {
+    static const char kNode[] = "node";
+    static const char kArray[] = "array";
+    static const char kError[] = "error";
     if (V8Node::hasInstance(value, m_isolate))
-        return "node";
+        return toV8InspectorStringBuffer(kNode);
     if (V8NodeList::hasInstance(value, m_isolate)
         || V8DOMTokenList::hasInstance(value, m_isolate)
         || V8HTMLCollection::hasInstance(value, m_isolate)
         || V8HTMLAllCollection::hasInstance(value, m_isolate)) {
-        return "array";
+        return toV8InspectorStringBuffer(kArray);
     }
     if (V8DOMException::hasInstance(value, m_isolate))
-        return "error";
-    return String();
+        return toV8InspectorStringBuffer(kError);
+    return nullptr;
 }
 
 bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value)
@@ -341,20 +346,23 @@ void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8
     info.GetReturnValue().Set(result);
 }
 
-void ThreadDebugger::consoleTime(const String16& title)
+void ThreadDebugger::consoleTime(const v8_inspector::StringView& title)
 {
-    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", String(title).utf8().data(), this);
+    // TODO(dgozman): we can save on a copy here if trace macro would take a pointer with length.
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", toCoreString(title).utf8().data(), this);
 }
 
-void ThreadDebugger::consoleTimeEnd(const String16& title)
+void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title)
 {
-    TRACE_EVENT_COPY_ASYNC_END0("blink.console", String(title).utf8().data(), this);
+    // TODO(dgozman): we can save on a copy here if trace macro would take a pointer with length.
+    TRACE_EVENT_COPY_ASYNC_END0("blink.console", toCoreString(title).utf8().data(), this);
 }
 
-void ThreadDebugger::consoleTimeStamp(const String16& title)
+void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title)
 {
     v8::Isolate* isolate = m_isolate;
-    TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), title));
+    // TODO(dgozman): we can save on a copy here if TracedValue would take a StringView.
+    TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), toCoreString(title)));
 }
 
 void ThreadDebugger::startRepeatingTimer(double interval, V8InspectorClient::TimerCallback callback, void* data)

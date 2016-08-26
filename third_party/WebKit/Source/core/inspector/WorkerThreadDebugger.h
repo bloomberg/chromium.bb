@@ -70,7 +70,7 @@ private:
     bool canExecuteScripts(int contextGroupId) override;
     void runIfWaitingForDebugger(int contextGroupId) override;
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
-    void consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace*) override;
+    void consoleAPIMessage(int contextGroupId, v8_inspector::V8ConsoleAPIType, const v8_inspector::StringView& message, const v8_inspector::StringView& url, unsigned lineNumber, unsigned columnNumber, v8_inspector::V8StackTrace*) override;
 
     WorkerThread* m_workerThread;
 };

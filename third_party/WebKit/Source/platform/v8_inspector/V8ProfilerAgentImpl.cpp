@@ -5,6 +5,7 @@
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 
 #include "platform/v8_inspector/Atomics.h"
+#include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
@@ -122,9 +123,9 @@ std::unique_ptr<protocol::Profiler::Profile> createCPUProfile(v8::Isolate* isola
 
 std::unique_ptr<protocol::Debugger::Location> currentDebugLocation(V8InspectorImpl* inspector)
 {
-    std::unique_ptr<V8StackTrace> callStack = inspector->captureStackTrace(1);
+    std::unique_ptr<V8StackTraceImpl> callStack = inspector->debugger()->captureStackTrace(false /* fullStack */);
     auto location = protocol::Debugger::Location::create()
-        .setScriptId(callStack->topScriptId())
+        .setScriptId(toString16(callStack->topScriptId()))
         .setLineNumber(callStack->topLineNumber()).build();
     location->setColumnNumber(callStack->topColumnNumber());
     return location;

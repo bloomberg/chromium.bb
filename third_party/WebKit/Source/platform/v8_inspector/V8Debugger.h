@@ -9,6 +9,7 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
+#include "platform/v8_inspector/public/StringView.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 
 #include <v8-debug.h>
@@ -78,6 +79,7 @@ public:
 
     v8::MaybeLocal<v8::Array> internalProperties(v8::Local<v8::Context>, v8::Local<v8::Value>);
 
+    void asyncTaskScheduled(const StringView& taskName, void* task, bool recurring);
     void asyncTaskScheduled(const String16& taskName, void* task, bool recurring);
     void asyncTaskCanceled(void* task);
     void asyncTaskStarted(void* task);

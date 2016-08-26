@@ -358,7 +358,7 @@ void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (title.isEmpty()) {
         std::unique_ptr<V8StackTraceImpl> stackTrace = V8StackTraceImpl::capture(nullptr, 0, 1);
         if (stackTrace)
-            identifier = stackTrace->topSourceURL() + ":" + String16::fromInteger(stackTrace->topLineNumber());
+            identifier = toString16(stackTrace->topSourceURL()) + ":" + String16::fromInteger(stackTrace->topLineNumber());
     } else {
         identifier = title + "@";
     }
@@ -415,7 +415,7 @@ static void timeFunction(const v8::FunctionCallbackInfo<v8::Value>& info, bool t
         String16 protocolTitle = helper.firstArgToString("default");
         if (timelinePrefix)
             protocolTitle = "Timeline '" + protocolTitle + "'";
-        client->consoleTime(protocolTitle);
+        client->consoleTime(toStringView(protocolTitle));
 
         v8::Local<v8::Map> timeMap;
         if (!helper.privateMap("V8Console#timeMap").ToLocal(&timeMap))
@@ -431,7 +431,7 @@ static void timeEndFunction(const v8::FunctionCallbackInfo<v8::Value>& info, boo
         String16 protocolTitle = helper.firstArgToString("default");
         if (timelinePrefix)
             protocolTitle = "Timeline '" + protocolTitle + "'";
-        client->consoleTimeEnd(protocolTitle);
+        client->consoleTimeEnd(toStringView(protocolTitle));
 
         v8::Local<v8::Map> timeMap;
         if (!helper.privateMap("V8Console#timeMap").ToLocal(&timeMap))
@@ -467,8 +467,10 @@ void V8Console::timeEndCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8Console::timeStampCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ConsoleHelper helper(info);
-    if (V8InspectorClient* client = helper.ensureDebuggerClient())
-        client->consoleTimeStamp(helper.firstArgToString(String16()));
+    if (V8InspectorClient* client = helper.ensureDebuggerClient()) {
+        String16 title = helper.firstArgToString(String16());
+        client->consoleTimeStamp(toStringView(title));
+    }
 }
 
 void V8Console::memoryGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

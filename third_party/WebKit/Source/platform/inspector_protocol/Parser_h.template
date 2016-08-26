@@ -14,6 +14,8 @@ namespace protocol {
 
 class Value;
 
+{{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const uint8_t*, unsigned);
+{{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const uint16_t*, unsigned);
 {{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const String16& json);
 
 } // namespace platform

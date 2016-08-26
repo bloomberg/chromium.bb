@@ -116,7 +116,7 @@ private:
         if (stack)
             exceptionDetails->setStackTrace(stack->buildInspectorObjectImpl());
         if (stack && !stack->isEmpty())
-            exceptionDetails->setScriptId(stack->topScriptId());
+            exceptionDetails->setScriptId(toString16(stack->topScriptId()));
         handler->m_callback->sendSuccess(handler->wrapObject(value), std::move(exceptionDetails));
     }
 

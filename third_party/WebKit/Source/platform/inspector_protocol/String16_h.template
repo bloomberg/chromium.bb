@@ -19,7 +19,6 @@ namespace internal {
 {{config.class_export.macro}} void doubleToStr(double, char*, size_t);
 {{config.class_export.macro}} void doubleToStr3(double, char*, size_t);
 {{config.class_export.macro}} void doubleToStr6(double, char*, size_t);
-{{config.class_export.macro}} double strToDouble(const char*, bool*);
 {{config.class_export.macro}} int strToInt(const char*, bool*);
 } // namespace internal
 
@@ -64,22 +63,6 @@ public:
         return T(buffer);
     }
 
-    static double charactersToDouble(const C* characters, size_t length, bool* ok = nullptr)
-    {
-        std::vector<char> buffer;
-        buffer.reserve(length + 1);
-        for (size_t i = 0; i < length; ++i) {
-            if (!isASCII(characters[i])) {
-                if (ok)
-                    *ok = false;
-                return 0;
-            }
-            buffer.push_back(static_cast<char>(characters[i]));
-        }
-        buffer.push_back('\0');
-        return internal::strToDouble(buffer.data(), ok);
-    }
-
     static int charactersToInteger(const C* characters, size_t length, bool* ok = nullptr)
     {
         std::vector<char> buffer;
@@ -94,13 +77,6 @@ public:
         }
         buffer.push_back('\0');
         return internal::strToInt(buffer.data(), ok);
-    }
-
-    double toDouble(bool* ok = nullptr) const
-    {
-        const C* characters = static_cast<const T&>(*this).characters16();
-        size_t length = static_cast<const T&>(*this).length();
-        return charactersToDouble(characters, length, ok);
     }
 
     int toInteger(bool* ok = nullptr) const
@@ -135,17 +111,6 @@ public:
         if (!start && end == length - 1)
             return T(static_cast<const T&>(*this));
         return T(characters + start, end + 1 - start);
-    }
-
-    bool startsWith(const char* prefix) const
-    {
-        const C* characters = static_cast<const T&>(*this).characters16();
-        size_t length = static_cast<const T&>(*this).length();
-        for (size_t i = 0, j = 0; prefix[j] && i < length; ++i, ++j) {
-            if (characters[i] != prefix[j])
-                return false;
-        }
-        return true;
     }
 };
 

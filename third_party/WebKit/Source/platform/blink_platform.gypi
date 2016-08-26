@@ -1183,6 +1183,8 @@
       'v8_inspector/V8StringUtil.h',
       'v8_inspector/V8ValueCopier.cpp',
       'v8_inspector/V8ValueCopier.h',
+      'v8_inspector/public/StringBuffer.h',
+      'v8_inspector/public/StringView.h',
       'v8_inspector/public/V8ContextInfo.h',
       'v8_inspector/public/V8Inspector.h',
       'v8_inspector/public/V8InspectorClient.h',
