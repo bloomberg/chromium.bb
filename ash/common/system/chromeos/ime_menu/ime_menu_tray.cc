@@ -9,6 +9,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
+#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -23,6 +24,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -34,6 +36,13 @@ namespace {
 int GetImeListViewMaxHeight() {
   const int max_items = 7;
   return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) * max_items;
+}
+
+// Shows language and input settings page.
+void ShowIMESettings() {
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
+  delegate->ShowIMESettings();
 }
 
 class ImeMenuLabel : public views::Label {
@@ -69,6 +78,40 @@ TrayPopupHeaderButton* CreateImeMenuButton(views::ButtonListener* listener,
   return button;
 }
 
+// The IME menu settings view when there's only one button on the menu. It shows
+// the setting gear left-aligned with label.
+class ImeSettingButtonView : public ActionableView {
+ public:
+  ImeSettingButtonView() {
+    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                          kTrayPopupPaddingHorizontal, 0,
+                                          kTrayPopupPaddingBetweenItems));
+
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    views::ImageView* icon =
+        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
+    AddChildView(icon);
+
+    base::string16 text =
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_INPUT_SETTINGS);
+    views::Label* label = new views::Label(text);
+    AddChildView(label);
+    SetAccessibleName(text);
+  }
+
+  ~ImeSettingButtonView() override {}
+
+  // ActionableView.
+  bool PerformAction(const ui::Event& event) override {
+    ShowIMESettings();
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImeSettingButtonView);
+};
+
 class ImeButtonsView : public views::View, public views::ButtonListener {
  public:
   ImeButtonsView(bool show_emoji_button,
@@ -99,11 +142,19 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     }
 
     if (show_settings_button) {
-      settings_button_ = CreateImeMenuButton(
-          this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
-          IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS, 0);
-      AddChildView(settings_button_);
+      // If there's only one button, we show the gear icon with text. Otherwise,
+      // just show the icon.
+      if (!show_emoji_button && !show_voice_button &&
+          !show_handwriting_button) {
+        settings_button_with_text_ = new ImeSettingButtonView();
+        AddChildView(settings_button_with_text_);
+      } else {
+        settings_button_ = CreateImeMenuButton(
+            this, IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+            IDR_AURA_UBER_TRAY_SETTINGS, IDR_AURA_UBER_TRAY_SETTINGS,
+            IDS_ASH_STATUS_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS, 0);
+        AddChildView(settings_button_);
+      }
     }
   }
 
@@ -127,10 +178,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     } else if (handwriting_button_ && sender == handwriting_button_) {
       // TODO(azurewei): Brings virtual keyboard for handwriting input.
     } else if (settings_button_ && sender == settings_button_) {
-      SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-      WmShell::Get()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_IME_SHOW_DETAILED);
-      delegate->ShowIMESettings();
+      ShowIMESettings();
     }
   }
 
@@ -139,6 +187,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   TrayPopupHeaderButton* voice_button_;
   TrayPopupHeaderButton* handwriting_button_;
   TrayPopupHeaderButton* settings_button_;
+  ImeSettingButtonView* settings_button_with_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
 };
