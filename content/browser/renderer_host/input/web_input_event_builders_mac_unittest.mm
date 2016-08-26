@@ -563,9 +563,10 @@ TEST(WebInputEventBuilderMacTest, DomKeyFlagsChanged) {
   }
 }
 
+// Flaky - https://crbug.com/640457
 // Test that a ui::Event and blink::WebInputEvent made from the same NSEvent
 // have the same values for comparable fields.
-TEST(WebInputEventBuilderMacTest, ScrollWheelMatchesUIEvent) {
+TEST(WebInputEventBuilderMacTest, DISABLED_ScrollWheelMatchesUIEvent) {
   CGFloat delta_x = 123;
   CGFloat delta_y = 321;
   NSPoint location = NSMakePoint(11, 22);
