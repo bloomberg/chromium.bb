@@ -50,4 +50,8 @@ public class NewTabPageViewHolder extends RecyclerView.ViewHolder {
      */
     public void updateLayoutParams() {
     }
+
+    protected RecyclerView.LayoutParams getParams() {
+        return (RecyclerView.LayoutParams) itemView.getLayoutParams();
+    }
 }

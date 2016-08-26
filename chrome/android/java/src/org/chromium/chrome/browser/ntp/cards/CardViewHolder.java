@@ -269,10 +269,6 @@ public class CardViewHolder extends NewTabPageViewHolder {
         return LayoutInflater.from(parent.getContext()).inflate(resourceId, parent, false);
     }
 
-    private RecyclerView.LayoutParams getParams() {
-        return (RecyclerView.LayoutParams) itemView.getLayoutParams();
-    }
-
     /**
      * Animates the card being swiped to the right as if the user had dismissed it. You must check
      * {@link #isDismissable()} before calling.

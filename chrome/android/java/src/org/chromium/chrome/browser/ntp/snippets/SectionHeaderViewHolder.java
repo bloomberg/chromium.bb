@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
@@ -82,11 +81,10 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
      */
     public void updateDisplay() {
         mHeaderTextView.setText(mHeaderListItem.getHeaderText());
-        RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
         int headerHeight = getHeaderHeight();
 
         itemView.setAlpha((float) headerHeight / mMaxSnippetHeaderHeight);
-        params.height = headerHeight;
+        getParams().height = headerHeight;
         itemView.requestLayout();
     }
 }
