@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,7 +59,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_tracker.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -654,25 +652,10 @@ bool IsFirstRunSuppressed(const base::CommandLine& command_line) {
 #endif
 
 bool IsMetricsReportingOptIn() {
-#if defined(OS_CHROMEOS)
+  // Metrics reporting is opt-out by default for all platforms and channels.
+  // However, user will have chance to modify metrics reporting state during
+  // first run.
   return false;
-#elif defined(OS_ANDROID)
-#error This file shouldn not be compiled on Android.
-#elif defined(OS_MACOSX)
-  return chrome::GetChannel() != version_info::Channel::CANARY;
-#elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
-  // Treat BSD and SOLARIS like Linux to not break those builds, although these
-  // platforms are not officially supported by Chrome.
-  return true;
-#elif defined(OS_WIN)
-  // TODO(jwd): Get this data directly from the download page.
-  // Metrics reporting for Windows is initially enabled on the download page. If
-  // it's opt-in or out can change without changes to Chrome. We should get this
-  // information directly from the download page for it to be accurate.
-  return chrome::GetChannel() == version_info::Channel::STABLE;
-#else
-#error Unsupported platform.
-#endif
 }
 
 void CreateSentinelIfNeeded() {
