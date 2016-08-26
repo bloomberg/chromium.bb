@@ -99,6 +99,7 @@ typedef struct {
 typedef struct { MV_REFERENCE_FRAME ref_frame[2]; } REF_DEFINITION;
 
 struct rdcost_block_args {
+  const AV1_COMMON *cm;
   MACROBLOCK *x;
   ENTROPY_CONTEXT t_above[16];
   ENTROPY_CONTEXT t_left[16];
@@ -390,9 +391,11 @@ static const int16_t band_counts[TX_SIZES][8] = {
   { 1, 2, 3, 4, 11, 256 - 21, 0 },
   { 1, 2, 3, 4, 11, 1024 - 21, 0 },
 };
-static int cost_coeffs(MACROBLOCK *x, int plane, int block, ENTROPY_CONTEXT *A,
-                       ENTROPY_CONTEXT *L, TX_SIZE tx_size, const int16_t *scan,
-                       const int16_t *nb, int use_fast_coef_costing) {
+
+static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
+                       int block, ENTROPY_CONTEXT *A, ENTROPY_CONTEXT *L,
+                       TX_SIZE tx_size, const int16_t *scan, const int16_t *nb,
+                       int use_fast_coef_costing) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblock_plane *p = &x->plane[plane];
@@ -411,6 +414,7 @@ static int cost_coeffs(MACROBLOCK *x, int plane, int block, ENTROPY_CONTEXT *A,
 #else
   const int *cat6_high_cost = av1_get_high_cost_table(8);
 #endif
+  (void)cm;
 
   // Check for consistency of tx_size with mode info
   assert(type == PLANE_TYPE_Y ? mbmi->tx_size == tx_size
@@ -498,7 +502,7 @@ static void dist_block(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
 
 static int rate_block(int plane, int block, int blk_row, int blk_col,
                       TX_SIZE tx_size, struct rdcost_block_args *args) {
-  return cost_coeffs(args->x, plane, block, args->t_above + blk_col,
+  return cost_coeffs(args->cm, args->x, plane, block, args->t_above + blk_col,
                      args->t_left + blk_row, tx_size, args->scan_order->scan,
                      args->scan_order->neighbors, args->use_fast_coef_costing);
 }
@@ -592,9 +596,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   args->skippable &= !x->plane[plane].eobs[block];
 }
 
-static void txfm_rd_in_plane(MACROBLOCK *x, int *rate, int64_t *distortion,
-                             int *skippable, int64_t *sse, int64_t ref_best_rd,
-                             int plane, BLOCK_SIZE bsize, TX_SIZE tx_size,
+static void txfm_rd_in_plane(const AV1_COMMON *const cm, MACROBLOCK *x,
+                             int *rate, int64_t *distortion, int *skippable,
+                             int64_t *sse, int64_t ref_best_rd, int plane,
+                             BLOCK_SIZE bsize, TX_SIZE tx_size,
                              int use_fast_coef_casting) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -605,6 +610,7 @@ static void txfm_rd_in_plane(MACROBLOCK *x, int *rate, int64_t *distortion,
   args.best_rd = ref_best_rd;
   args.use_fast_coef_costing = use_fast_coef_casting;
   args.skippable = 1;
+  args.cm = cm;
 
   if (plane == 0) xd->mi[0]->mbmi.tx_size = tx_size;
 
@@ -655,8 +661,8 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (mbmi->tx_size < TX_32X32 && !xd->lossless[mbmi->segment_id]) {
     for (tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
       mbmi->tx_type = tx_type;
-      txfm_rd_in_plane(x, &r, &d, &s, &psse, ref_best_rd, 0, bs, mbmi->tx_size,
-                       cpi->sf.use_fast_coef_costing);
+      txfm_rd_in_plane(cm, x, &r, &d, &s, &psse, ref_best_rd, 0, bs,
+                       mbmi->tx_size, cpi->sf.use_fast_coef_costing);
       if (r == INT_MAX) continue;
       if (is_inter)
         r += cpi->inter_tx_type_costs[mbmi->tx_size][mbmi->tx_type];
@@ -681,7 +687,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
     }
   } else {
-    txfm_rd_in_plane(x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
+    txfm_rd_in_plane(cm, x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
                      mbmi->tx_size, cpi->sf.use_fast_coef_costing);
   }
   mbmi->tx_type = best_tx_type;
@@ -693,10 +699,11 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     BLOCK_SIZE bs) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const AV1_COMMON *const cm = &cpi->common;
 
   mbmi->tx_size = TX_4X4;
   mbmi->tx_type = DCT_DCT;
-  txfm_rd_in_plane(x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
+  txfm_rd_in_plane(cm, x, rate, distortion, skip, sse, ref_best_rd, 0, bs,
                    mbmi->tx_size, cpi->sf.use_fast_coef_costing);
 }
 
@@ -760,7 +767,7 @@ static void choose_tx_size_from_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
         continue;
       }
       mbmi->tx_type = tx_type;
-      txfm_rd_in_plane(x, &r, &d, &s, &sse, ref_best_rd, 0, bs, n,
+      txfm_rd_in_plane(cm, x, &r, &d, &s, &sse, ref_best_rd, 0, bs, n,
                        cpi->sf.use_fast_coef_costing);
       if (n < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
           r != INT_MAX) {
@@ -1006,6 +1013,7 @@ static int64_t rd_pick_intra4x4block(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      ENTROPY_CONTEXT *l, int *bestrate,
                                      int *bestratey, int64_t *bestdistortion,
                                      BLOCK_SIZE bsize, int64_t rd_thresh) {
+  const AV1_COMMON *const cm = &cpi->common;
   PREDICTION_MODE mode;
   MACROBLOCKD *const xd = &x->e_mbd;
   int64_t best_rd = rd_thresh;
@@ -1070,9 +1078,10 @@ static int64_t rd_pick_intra4x4block(const AV1_COMP *const cpi, MACROBLOCK *x,
             av1_highbd_fwd_txfm_4x4(src_diff, coeff, 8, DCT_DCT, 1);
             av1_regular_quantize_b_4x4(x, 0, block, scan_order->scan,
                                        scan_order->iscan);
-            ratey += cost_coeffs(x, 0, block, tempa + idx, templ + idy, TX_4X4,
-                                 scan_order->scan, scan_order->neighbors,
-                                 cpi->sf.use_fast_coef_costing);
+            ratey +=
+                cost_coeffs(cm, x, 0, block, tempa + idx, templ + idy, TX_4X4,
+                            scan_order->scan, scan_order->neighbors,
+                            cpi->sf.use_fast_coef_costing);
             if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
               goto next_highbd;
             av1_highbd_inv_txfm_add_4x4(BLOCK_OFFSET(pd->dqcoeff, block), dst,
@@ -1085,9 +1094,10 @@ static int64_t rd_pick_intra4x4block(const AV1_COMP *const cpi, MACROBLOCK *x,
             av1_highbd_fwd_txfm_4x4(src_diff, coeff, 8, tx_type, 0);
             av1_regular_quantize_b_4x4(x, 0, block, scan_order->scan,
                                        scan_order->iscan);
-            ratey += cost_coeffs(x, 0, block, tempa + idx, templ + idy, TX_4X4,
-                                 scan_order->scan, scan_order->neighbors,
-                                 cpi->sf.use_fast_coef_costing);
+            ratey +=
+                cost_coeffs(cm, x, 0, block, tempa + idx, templ + idy, TX_4X4,
+                            scan_order->scan, scan_order->neighbors,
+                            cpi->sf.use_fast_coef_costing);
             distortion +=
                 av1_highbd_block_error(coeff, BLOCK_OFFSET(pd->dqcoeff, block),
                                        16, &unused, xd->bd) >>
@@ -1167,8 +1177,8 @@ static int64_t rd_pick_intra4x4block(const AV1_COMP *const cpi, MACROBLOCK *x,
           av1_fwd_txfm_4x4(src_diff, coeff, 8, DCT_DCT, 1);
           av1_regular_quantize_b_4x4(x, 0, block, scan_order->scan,
                                      scan_order->iscan);
-          ratey += cost_coeffs(x, 0, block, tempa + idx, templ + idy, TX_4X4,
-                               scan_order->scan, scan_order->neighbors,
+          ratey += cost_coeffs(cm, x, 0, block, tempa + idx, templ + idy,
+                               TX_4X4, scan_order->scan, scan_order->neighbors,
                                cpi->sf.use_fast_coef_costing);
           if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
             goto next;
@@ -1181,8 +1191,8 @@ static int64_t rd_pick_intra4x4block(const AV1_COMP *const cpi, MACROBLOCK *x,
           av1_fwd_txfm_4x4(src_diff, coeff, 8, tx_type, 0);
           av1_regular_quantize_b_4x4(x, 0, block, scan_order->scan,
                                      scan_order->iscan);
-          ratey += cost_coeffs(x, 0, block, tempa + idx, templ + idy, TX_4X4,
-                               scan_order->scan, scan_order->neighbors,
+          ratey += cost_coeffs(cm, x, 0, block, tempa + idx, templ + idy,
+                               TX_4X4, scan_order->scan, scan_order->neighbors,
                                cpi->sf.use_fast_coef_costing);
           distortion += av1_block_error(coeff, BLOCK_OFFSET(pd->dqcoeff, block),
                                         16, &unused) >>
@@ -1699,6 +1709,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
                             int64_t *distortion, int *skippable, int64_t *sse,
                             BLOCK_SIZE bsize, int64_t ref_best_rd) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const TX_SIZE uv_tx_size = get_uv_tx_size(mbmi, &xd->plane[1]);
@@ -1721,8 +1732,8 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
 
   if (is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-      txfm_rd_in_plane(x, &pnrate, &pndist, &pnskip, &pnsse, ref_best_rd, plane,
-                       bsize, uv_tx_size, cpi->sf.use_fast_coef_costing);
+      txfm_rd_in_plane(cm, x, &pnrate, &pndist, &pnskip, &pnsse, ref_best_rd,
+                       plane, bsize, uv_tx_size, cpi->sf.use_fast_coef_costing);
       if (pnrate == INT_MAX) {
         is_cost_valid = 0;
         break;
@@ -2216,6 +2227,7 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        int64_t *distortion, int64_t *sse,
                                        ENTROPY_CONTEXT *ta, ENTROPY_CONTEXT *tl,
                                        int ir, int ic, int mi_row, int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
   int k;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[0];
@@ -2289,7 +2301,7 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
           av1_block_error(coeff, BLOCK_OFFSET(pd->dqcoeff, k), 16, &ssz);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       thissse += ssz;
-      thisrate += cost_coeffs(x, 0, k, ta + (k & 1), tl + (k >> 1), TX_4X4,
+      thisrate += cost_coeffs(cm, x, 0, k, ta + (k & 1), tl + (k >> 1), TX_4X4,
                               scan_order->scan, scan_order->neighbors,
                               cpi->sf.use_fast_coef_costing);
       rd1 = RDCOST(x->rdmult, x->rddiv, thisrate, thisdistortion >> 2);
