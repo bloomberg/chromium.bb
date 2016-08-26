@@ -233,6 +233,9 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_MESSAGE_CENTER_BUBBLE));
 
+  // Tab to request the initial focus.
+  SendKeyPress(ui::VKEY_TAB);
+
   // Wait for it to say "Notification Center, window".
   while ("Notification Center, window" != speech_monitor_.GetNextUtterance()) {
   }
