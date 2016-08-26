@@ -916,10 +916,13 @@ void WizardController::SetStatusAreaVisible(bool visible) {
 void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (!oobe_ui_)
     return;
-  if (screen_needed)
+
+  if (screen_needed) {
     ShowHIDDetectionScreen();
-  else
+  } else {
+    oobe_ui_->EnableMdOobe();
     ShowNetworkScreen();
+  }
 }
 
 void WizardController::AdvanceToScreen(const std::string& screen_name) {
@@ -973,6 +976,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
             weak_factory_.GetWeakPtr());
         oobe_ui_->GetHIDDetectionView()->CheckIsScreenRequired(on_check);
       } else {
+        oobe_ui_->EnableMdOobe();
         ShowNetworkScreen();
       }
     } else {

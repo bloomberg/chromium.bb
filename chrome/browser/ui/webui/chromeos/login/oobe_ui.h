@@ -154,6 +154,9 @@ class OobeUI : public content::WebUIController,
     return network_state_informer_.get();
   }
 
+  // This call enables polymer-based UI.
+  void EnableMdOobe();
+
  private:
   void AddScreenHandler(BaseScreenHandler* handler);
 
@@ -237,6 +240,9 @@ class OobeUI : public content::WebUIController,
 
   // Observer of CrosSettings watching the kRebootOnShutdown policy.
   std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
+
+  // This controls displaying of polymer-based OOBE UI.
+  bool md_oobe_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

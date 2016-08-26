@@ -493,7 +493,8 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
-  localized_strings->SetString("newOobeUI", UseMDOobe() ? "on" : "off");
+  localized_strings->SetString(
+      "newOobeUI", (md_oobe_enabled_ && UseMDOobe()) ? "on" : "off");
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
@@ -597,6 +598,10 @@ void OobeUI::OnCurrentScreenChanged(const std::string& screen) {
   FOR_EACH_OBSERVER(Observer,
                     observer_list_,
                     OnCurrentScreenChanged(current_screen_, new_screen));
+}
+
+void OobeUI::EnableMdOobe() {
+  md_oobe_enabled_ = true;
 }
 
 }  // namespace chromeos
