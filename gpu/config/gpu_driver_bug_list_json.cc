@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.87",
+  "version": "8.88",
   "entries": [
     {
       "id": 1,
@@ -1942,6 +1942,19 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "rebind_transform_feedback_before_resume"
+      ]
+    },
+    {
+      "id": 180,
+      "cr_bugs": [632461],
+      "description": "eglCreateImageKHR fails for L8 textures on PowerVR",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX.*",
+      "features": [
+        "avda_no_eglimage_for_luminance_tex"
       ]
     }
   ]
