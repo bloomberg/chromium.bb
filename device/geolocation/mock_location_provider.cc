@@ -46,79 +46,12 @@ void MockLocationProvider::StopProvider() {
   state_ = STOPPED;
 }
 
-void MockLocationProvider::GetPosition(Geoposition* position) {
-  *position = position_;
+const Geoposition& MockLocationProvider::GetPosition() {
+  return position_;
 }
 
 void MockLocationProvider::OnPermissionGranted() {
   is_permission_granted_ = true;
-}
-
-// Mock location provider that automatically calls back its client at most
-// once, when StartProvider or OnPermissionGranted is called. Use
-// |requires_permission_to_start| to select which event triggers the callback.
-class AutoMockLocationProvider : public MockLocationProvider {
- public:
-  AutoMockLocationProvider(bool has_valid_location,
-                           bool requires_permission_to_start)
-      : requires_permission_to_start_(requires_permission_to_start),
-        listeners_updated_(false) {
-    if (has_valid_location) {
-      position_.accuracy = 3;
-      position_.latitude = 4.3;
-      position_.longitude = -7.8;
-      // Webkit compares the timestamp to wall clock time, so we need it to be
-      // contemporary.
-      position_.timestamp = base::Time::Now();
-    } else {
-      position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-    }
-  }
-  bool StartProvider(bool high_accuracy) override {
-    MockLocationProvider::StartProvider(high_accuracy);
-    if (!requires_permission_to_start_) {
-      UpdateListenersIfNeeded();
-    }
-    return true;
-  }
-
-  void OnPermissionGranted() override {
-    MockLocationProvider::OnPermissionGranted();
-    if (requires_permission_to_start_) {
-      UpdateListenersIfNeeded();
-    }
-  }
-
-  void UpdateListenersIfNeeded() {
-    if (!listeners_updated_) {
-      listeners_updated_ = true;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&MockLocationProvider::HandlePositionChanged,
-                                base::Unretained(this), position_));
-    }
-  }
-
- private:
-  const bool requires_permission_to_start_;
-  bool listeners_updated_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoMockLocationProvider);
-};
-
-LocationProvider* NewMockLocationProvider() {
-  return new MockLocationProvider;
-}
-
-LocationProvider* NewAutoSuccessMockLocationProvider() {
-  return new AutoMockLocationProvider(true, false);
-}
-
-LocationProvider* NewAutoFailMockLocationProvider() {
-  return new AutoMockLocationProvider(false, false);
-}
-
-LocationProvider* NewAutoSuccessMockNetworkLocationProvider() {
-  return new AutoMockLocationProvider(true, true);
 }
 
 }  // namespace device

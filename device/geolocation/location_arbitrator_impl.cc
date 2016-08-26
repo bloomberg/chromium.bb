@@ -5,6 +5,8 @@
 #include "device/geolocation/location_arbitrator_impl.h"
 
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -28,13 +30,8 @@ const int64_t LocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
     11 * base::Time::kMillisecondsPerSecond;
 
 LocationArbitratorImpl::LocationArbitratorImpl(
-    const LocationUpdateCallback& callback,
     GeolocationDelegate* delegate)
     : delegate_(delegate),
-      arbitrator_update_callback_(callback),
-      provider_update_callback_(
-          base::Bind(&LocationArbitratorImpl::OnLocationUpdate,
-                     base::Unretained(this))),
       position_provider_(nullptr),
       is_permission_granted_(false),
       is_running_(false) {}
@@ -45,13 +42,17 @@ GURL LocationArbitratorImpl::DefaultNetworkProviderURL() {
   return GURL(kDefaultNetworkProviderUrl);
 }
 
+bool LocationArbitratorImpl::HasPermissionBeenGrantedForTest() const {
+  return is_permission_granted_;
+}
+
 void LocationArbitratorImpl::OnPermissionGranted() {
   is_permission_granted_ = true;
   for (const auto& provider : providers_)
     provider->OnPermissionGranted();
 }
 
-void LocationArbitratorImpl::StartProviders(bool enable_high_accuracy) {
+bool LocationArbitratorImpl::StartProvider(bool enable_high_accuracy) {
   // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   is_running_ = true;
   enable_high_accuracy_ = enable_high_accuracy;
@@ -67,26 +68,29 @@ void LocationArbitratorImpl::StartProviders(bool enable_high_accuracy) {
           base::Bind(&LocationArbitratorImpl::OnAccessTokenStoresLoaded,
                      base::Unretained(this)));
       access_token_store->LoadAccessTokens(token_store_callback_.callback());
-      return;
+      return true;
     }
   }
-  DoStartProviders();
+  return DoStartProviders();
 }
 
-void LocationArbitratorImpl::DoStartProviders() {
+bool LocationArbitratorImpl::DoStartProviders() {
   if (providers_.empty()) {
     // If no providers are available, we report an error to avoid
     // callers waiting indefinitely for a reply.
     Geoposition position;
     position.error_code = Geoposition::ERROR_CODE_PERMISSION_DENIED;
-    arbitrator_update_callback_.Run(position);
-    return;
+    arbitrator_update_callback_.Run(this, position);
+    return false;
   }
-  for (const auto& provider : providers_)
-    provider->StartProvider(enable_high_accuracy_);
+  bool started = false;
+  for (const auto& provider : providers_) {
+    started = provider->StartProvider(enable_high_accuracy_) || started;
+  }
+  return started;
 }
 
-void LocationArbitratorImpl::StopProviders() {
+void LocationArbitratorImpl::StopProvider() {
   // Reset the reference location state (provider+position)
   // so that future starts use fresh locations from
   // the newly constructed providers.
@@ -114,7 +118,8 @@ void LocationArbitratorImpl::RegisterProvider(
     std::unique_ptr<LocationProvider> provider) {
   if (!provider)
     return;
-  provider->SetUpdateCallback(provider_update_callback_);
+  provider->SetUpdateCallback(base::Bind(
+      &LocationArbitratorImpl::OnLocationUpdate, base::Unretained(this)));
   if (is_permission_granted_)
     provider->OnPermissionGranted();
   providers_.push_back(std::move(provider));
@@ -137,7 +142,17 @@ void LocationArbitratorImpl::OnLocationUpdate(const LocationProvider* provider,
     return;
   position_provider_ = provider;
   position_ = new_position;
-  arbitrator_update_callback_.Run(position_);
+  arbitrator_update_callback_.Run(this, position_);
+}
+
+const Geoposition& LocationArbitratorImpl::GetPosition() {
+  return position_;
+}
+
+void LocationArbitratorImpl::SetUpdateCallback(
+    const LocationProviderUpdateCallback& callback) {
+  DCHECK(!callback.is_null());
+  arbitrator_update_callback_ = callback;
 }
 
 scoped_refptr<AccessTokenStore> LocationArbitratorImpl::NewAccessTokenStore() {
@@ -203,10 +218,6 @@ bool LocationArbitratorImpl::IsNewPositionBetter(
     }
   }
   return false;
-}
-
-bool LocationArbitratorImpl::HasPermissionBeenGranted() const {
-  return is_permission_granted_;
 }
 
 }  // namespace device

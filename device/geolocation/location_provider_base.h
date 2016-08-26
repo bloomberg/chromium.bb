@@ -23,7 +23,6 @@ class DEVICE_GEOLOCATION_EXPORT LocationProviderBase
   // Overridden from LocationProvider:
   void SetUpdateCallback(
       const LocationProviderUpdateCallback& callback) override;
-  void RequestRefresh() override;
 
  private:
   LocationProviderUpdateCallback callback_;

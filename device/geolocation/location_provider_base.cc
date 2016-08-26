@@ -20,6 +20,4 @@ void LocationProviderBase::SetUpdateCallback(
   callback_ = callback;
 }
 
-void LocationProviderBase::RequestRefresh() {}
-
 }  // namespace device

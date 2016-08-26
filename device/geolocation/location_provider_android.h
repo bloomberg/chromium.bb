@@ -25,8 +25,7 @@ class LocationProviderAndroid : public LocationProviderBase {
   // LocationProvider.
   bool StartProvider(bool high_accuracy) override;
   void StopProvider() override;
-  void GetPosition(Geoposition* position) override;
-  void RequestRefresh() override;
+  const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
  private:

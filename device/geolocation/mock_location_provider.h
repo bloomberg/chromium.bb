@@ -23,40 +23,26 @@ class MockLocationProvider : public LocationProviderBase {
   MockLocationProvider();
   ~MockLocationProvider() override;
 
+  bool is_started() const { return state_ != STOPPED; }
+  bool is_permission_granted() const { return is_permission_granted_; }
+  const Geoposition& position() const { return position_; }
+
   // Updates listeners with the new position.
   void HandlePositionChanged(const Geoposition& position);
 
   // LocationProvider implementation.
   bool StartProvider(bool high_accuracy) override;
   void StopProvider() override;
-  void GetPosition(Geoposition* position) override;
+  const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
+ private:
   bool is_permission_granted_;
   Geoposition position_;
   scoped_refptr<base::SingleThreadTaskRunner> provider_task_runner_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MockLocationProvider);
 };
-
-// Factory functions for the various sorts of mock location providers,
-// for use with LocationArbitrator::SetProviderFactoryForTest (i.e.
-// not intended for test code to use to get access to the mock, you can use
-// MockLocationProvider::instance_ for this, or make a custom factory method).
-
-// Creates a mock location provider with no default behavior.
-LocationProvider* NewMockLocationProvider();
-// Creates a mock location provider that automatically notifies its
-// listeners with a valid location when StartProvider is called.
-LocationProvider* NewAutoSuccessMockLocationProvider();
-// Creates a mock location provider that automatically notifies its
-// listeners with an error when StartProvider is called.
-LocationProvider* NewAutoFailMockLocationProvider();
-// Similar to NewAutoSuccessMockLocationProvider but mimicks the behavior of
-// the Network Location provider, in deferring making location updates until
-// a permission request has been confirmed.
-LocationProvider* NewAutoSuccessMockNetworkLocationProvider();
 
 }  // namespace device
 

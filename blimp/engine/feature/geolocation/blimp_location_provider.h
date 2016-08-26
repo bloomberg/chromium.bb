@@ -37,8 +37,7 @@ class BlimpLocationProvider : public device::LocationProvider {
   // device::LocationProvider implementation.
   bool StartProvider(bool high_accuracy) override;
   void StopProvider() override;
-  void GetPosition(device::Geoposition* position) override;
-  void RequestRefresh() override;
+  const device::Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
   void SetUpdateCallback(
       const LocationProviderUpdateCallback& callback) override;

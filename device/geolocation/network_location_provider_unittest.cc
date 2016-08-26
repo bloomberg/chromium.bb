@@ -7,7 +7,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -277,9 +279,9 @@ class GeolocationNetworkProviderTest : public testing::Test {
     ASSERT_TRUE(parsed_json->GetAsDictionary(&request_json));
 
     if (!is_default_url) {
-      if (expected_access_token.empty())
+      if (expected_access_token.empty()) {
         ASSERT_FALSE(request_json->HasKey(kAccessTokenString));
-      else {
+      } else {
         std::string access_token;
         EXPECT_TRUE(request_json->GetString(kAccessTokenString, &access_token));
         EXPECT_EQ(expected_access_token, access_token);
@@ -381,8 +383,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher->SetResponseString(kNoFixNetworkResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  Geoposition position;
-  provider->GetPosition(&position);
+  Geoposition position = provider->GetPosition();
   EXPECT_FALSE(position.Validate());
 
   // Now wifi data arrives -- SetData will notify listeners.
@@ -411,7 +412,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher->SetResponseString(kReferenceNetworkResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  provider->GetPosition(&position);
+  position = provider->GetPosition();
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
   EXPECT_EQ(1200.4, position.accuracy);
@@ -430,7 +431,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 
-  provider->GetPosition(&position);
+  position = provider->GetPosition();
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
   EXPECT_TRUE(position.Validate());
@@ -451,7 +452,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Error means we now no longer have a fix.
-  provider->GetPosition(&position);
+  position = provider->GetPosition();
   EXPECT_FALSE(position.Validate());
 
   // Wifi scan returns to original set: should be serviced from cache.
@@ -459,7 +460,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(get_url_fetcher_and_advance_id());  // No new request created.
 
-  provider->GetPosition(&position);
+  position = provider->GetPosition();
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
   EXPECT_TRUE(position.Validate());

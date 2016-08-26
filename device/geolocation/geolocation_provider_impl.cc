@@ -4,6 +4,8 @@
 
 #include "device/geolocation/geolocation_provider_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -72,7 +74,8 @@ void GeolocationProviderImpl::OverrideLocationForTesting(
   NotifyClients(position);
 }
 
-void GeolocationProviderImpl::OnLocationUpdate(const Geoposition& position) {
+void GeolocationProviderImpl::OnLocationUpdate(const LocationProvider* provider,
+                                               const Geoposition& position) {
   DCHECK(OnGeolocationThread());
   // Will be true only in testing.
   if (ignore_location_updates_)
@@ -102,6 +105,11 @@ GeolocationProviderImpl::GeolocationProviderImpl()
 GeolocationProviderImpl::~GeolocationProviderImpl() {
   Stop();
   DCHECK(!arbitrator_);
+}
+
+void GeolocationProviderImpl::SetArbitratorForTesting(
+    std::unique_ptr<LocationProvider> arbitrator) {
+  arbitrator_ = std::move(arbitrator);
 }
 
 bool GeolocationProviderImpl::OnGeolocationThread() const {
@@ -140,13 +148,13 @@ void GeolocationProviderImpl::OnClientsChanged() {
 void GeolocationProviderImpl::StopProviders() {
   DCHECK(OnGeolocationThread());
   DCHECK(arbitrator_);
-  arbitrator_->StopProviders();
+  arbitrator_->StopProvider();
 }
 
 void GeolocationProviderImpl::StartProviders(bool enable_high_accuracy) {
   DCHECK(OnGeolocationThread());
   DCHECK(arbitrator_);
-  arbitrator_->StartProviders(enable_high_accuracy);
+  arbitrator_->StartProvider(enable_high_accuracy);
 }
 
 void GeolocationProviderImpl::InformProvidersPermissionGranted() {
@@ -174,25 +182,23 @@ void GeolocationProviderImpl::NotifyClients(const Geoposition& position) {
 
 void GeolocationProviderImpl::Init() {
   DCHECK(OnGeolocationThread());
-  DCHECK(!arbitrator_);
-  arbitrator_ = CreateArbitrator();
+
+  if (!arbitrator_) {
+    LocationProvider::LocationProviderUpdateCallback callback = base::Bind(
+        &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
+    // Use the embedder's |g_delegate| or fall back to the default one.
+    if (!g_delegate.Get())
+      g_delegate.Get().reset(new GeolocationDelegate);
+
+    arbitrator_ =
+        base::MakeUnique<LocationArbitratorImpl>(g_delegate.Get().get());
+    arbitrator_->SetUpdateCallback(callback);
+  }
 }
 
 void GeolocationProviderImpl::CleanUp() {
   DCHECK(OnGeolocationThread());
   arbitrator_.reset();
-}
-
-std::unique_ptr<LocationArbitrator>
-GeolocationProviderImpl::CreateArbitrator() {
-  LocationArbitratorImpl::LocationUpdateCallback callback = base::Bind(
-      &GeolocationProviderImpl::OnLocationUpdate, base::Unretained(this));
-  // Use the embedder's |g_delegate| or fall back to the default one.
-  if (!g_delegate.Get())
-    g_delegate.Get().reset(new GeolocationDelegate);
-
-  return base::MakeUnique<LocationArbitratorImpl>(callback,
-                                                  g_delegate.Get().get());
 }
 
 }  // namespace device

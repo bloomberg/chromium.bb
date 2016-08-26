@@ -44,19 +44,15 @@ void BlimpLocationProvider::StopProvider() {
   }
 }
 
-void BlimpLocationProvider::GetPosition(device::Geoposition* position) {
-  *position = cached_position_;
+const device::Geoposition& BlimpLocationProvider::GetPosition() {
+  return cached_position_;
 }
 
-void BlimpLocationProvider::RequestRefresh() {
+void BlimpLocationProvider::OnPermissionGranted() {
   DCHECK(is_started_);
   if (delegate_) {
     delegate_->RequestRefresh();
   }
-}
-
-void BlimpLocationProvider::OnPermissionGranted() {
-  RequestRefresh();
 }
 
 void BlimpLocationProvider::SetUpdateCallback(

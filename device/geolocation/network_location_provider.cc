@@ -4,6 +4,8 @@
 
 #include "device/geolocation/network_location_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -128,26 +130,15 @@ NetworkLocationProvider::~NetworkLocationProvider() {
 }
 
 // LocationProvider implementation
-void NetworkLocationProvider::GetPosition(Geoposition* position) {
-  DCHECK(position);
-  *position = position_;
-}
-
-void NetworkLocationProvider::RequestRefresh() {
-  // TODO(joth): When called via the public (base class) interface, this should
-  // poke each data provider to get them to expedite their next scan.
-  // Whilst in the delayed start, only send request if all data is ready.
-  // TODO(mcasas): consider not using HasWeakPtrs() https://crbug.com/629158.
-  if (!weak_factory_.HasWeakPtrs() || is_wifi_data_complete_) {
-    RequestPosition();
-  }
+const Geoposition& NetworkLocationProvider::GetPosition() {
+  return position_;
 }
 
 void NetworkLocationProvider::OnPermissionGranted() {
   const bool was_permission_granted = is_permission_granted_;
   is_permission_granted_ = true;
   if (!was_permission_granted && IsStarted()) {
-    RequestRefresh();
+    RequestPosition();
   }
 }
 
@@ -212,7 +203,7 @@ void NetworkLocationProvider::OnWifiDataUpdated() {
   wifi_timestamp_ = base::Time::Now();
 
   is_new_data_available_ = is_wifi_data_complete_;
-  RequestRefresh();
+  RequestPosition();
 }
 
 void NetworkLocationProvider::StopProvider() {
@@ -227,6 +218,10 @@ void NetworkLocationProvider::StopProvider() {
 // Other methods
 void NetworkLocationProvider::RequestPosition() {
   DCHECK(CalledOnValidThread());
+
+  // TODO(mcasas): consider not using HasWeakPtrs() https://crbug.com/629158.
+  if (weak_factory_.HasWeakPtrs() && !is_wifi_data_complete_)
+    return;
   if (!is_new_data_available_)
     return;
 
@@ -238,11 +233,13 @@ void NetworkLocationProvider::RequestPosition() {
     DCHECK(cached_position->Validate());
     // Record the position and update its timestamp.
     position_ = *cached_position;
+
     // The timestamp of a position fix is determined by the timestamp
     // of the source data update. (The value of position_.timestamp from
     // the cache could be from weeks ago!)
     position_.timestamp = wifi_timestamp_;
     is_new_data_available_ = false;
+
     // Let listeners know that we now have a position available.
     NotifyCallback(position_);
     return;

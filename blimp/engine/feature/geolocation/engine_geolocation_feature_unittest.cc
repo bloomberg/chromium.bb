@@ -180,7 +180,8 @@ TEST_F(EngineGeolocationFeatureTest, UnexpectedMessageReceived) {
   EXPECT_EQ(net::ERR_UNEXPECTED, cb.WaitForResult());
 }
 
-TEST_F(EngineGeolocationFeatureTest, RequestRefresh) {
+TEST_F(EngineGeolocationFeatureTest,
+       OnPermissionGrantedTriggersRefreshRequest) {
   EXPECT_CALL(*out_processor_,
               MockableProcessMessage(
                   EqualsUpdatedRequestLevel(
@@ -199,7 +200,7 @@ TEST_F(EngineGeolocationFeatureTest, RequestRefresh) {
       .Times(1);
 
   location_provider_->StartProvider(true);
-  location_provider_->RequestRefresh();
+  location_provider_->OnPermissionGranted();
 }
 
 }  // namespace engine

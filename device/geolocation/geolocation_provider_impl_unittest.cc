@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -17,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "device/geolocation/access_token_store.h"
-#include "device/geolocation/mock_location_arbitrator.h"
+#include "device/geolocation/mock_location_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,30 +28,7 @@ using testing::MatcherInterface;
 using testing::MatchResultListener;
 
 namespace device {
-
-class LocationProviderForTestArbitrator : public GeolocationProviderImpl {
- public:
-  LocationProviderForTestArbitrator() : mock_arbitrator_(NULL) {}
-  ~LocationProviderForTestArbitrator() override {}
-
-  // Only valid for use on the geolocation thread.
-  MockLocationArbitrator* mock_arbitrator() const { return mock_arbitrator_; }
-
- protected:
-  // GeolocationProviderImpl implementation:
-  std::unique_ptr<LocationArbitrator> CreateArbitrator() override;
-
- private:
-  // An alias to the arbitrator stored in the super class, where it is owned.
-  MockLocationArbitrator* mock_arbitrator_;
-};
-
-std::unique_ptr<LocationArbitrator>
-LocationProviderForTestArbitrator::CreateArbitrator() {
-  DCHECK(mock_arbitrator_ == NULL);
-  mock_arbitrator_ = new MockLocationArbitrator;
-  return base::WrapUnique(mock_arbitrator_);
-}
+namespace {
 
 class GeolocationObserver {
  public:
@@ -113,14 +91,24 @@ Matcher<const Geoposition&> GeopositionEq(const Geoposition& expected) {
   return MakeMatcher(new GeopositionEqMatcher(expected));
 }
 
+void DummyFunction(const LocationProvider* provider,
+                   const Geoposition& position) {}
+
+}  // namespace
+
 class GeolocationProviderTest : public testing::Test {
  protected:
-  GeolocationProviderTest()
-      : message_loop_(), provider_(new LocationProviderForTestArbitrator) {}
+  GeolocationProviderTest() : arbitrator_(new MockLocationProvider) {
+    provider()->SetArbitratorForTesting(base::WrapUnique(arbitrator_));
+  }
 
   ~GeolocationProviderTest() override {}
 
-  LocationProviderForTestArbitrator* provider() { return provider_.get(); }
+  GeolocationProviderImpl* provider() {
+    return GeolocationProviderImpl::GetInstance();
+  }
+
+  MockLocationProvider* arbitrator() { return arbitrator_; }
 
   // Called on test thread.
   bool ProvidersStarted();
@@ -130,15 +118,25 @@ class GeolocationProviderTest : public testing::Test {
   // Called on provider thread.
   void GetProvidersStarted(bool* started);
 
+  // |at_exit| must be initialized before all other variables so that it is
+  // available to register with Singletons and can handle tear down when the
+  // test completes.
+  base::ShadowingAtExitManager at_exit_;
+
   base::MessageLoopForUI message_loop_;
-  std::unique_ptr<LocationProviderForTestArbitrator> provider_;
+
+  // Owned by the GeolocationProviderImpl class.
+  MockLocationProvider* arbitrator_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeolocationProviderTest);
 };
 
 bool GeolocationProviderTest::ProvidersStarted() {
-  DCHECK(provider_->IsRunning());
+  DCHECK(provider()->IsRunning());
   DCHECK(base::MessageLoop::current() == &message_loop_);
+
   bool started;
-  provider_->task_runner()->PostTaskAndReply(
+  provider()->task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
                             base::Unretained(this), &started),
       base::MessageLoop::QuitWhenIdleClosure());
@@ -147,33 +145,35 @@ bool GeolocationProviderTest::ProvidersStarted() {
 }
 
 void GeolocationProviderTest::GetProvidersStarted(bool* started) {
-  DCHECK(provider_->task_runner()->BelongsToCurrentThread());
-  *started = provider_->mock_arbitrator()->providers_started();
+  DCHECK(provider()->task_runner()->BelongsToCurrentThread());
+  *started = arbitrator()->is_started();
 }
 
 void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
-  DCHECK(provider_->IsRunning());
+  DCHECK(provider()->IsRunning());
   DCHECK(base::MessageLoop::current() == &message_loop_);
-  provider_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GeolocationProviderImpl::OnLocationUpdate,
-                            base::Unretained(provider_.get()), position));
+  provider()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&GeolocationProviderImpl::OnLocationUpdate,
+                 base::Unretained(provider()), arbitrator_, position));
 }
 
 // Regression test for http://crbug.com/59377
 TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
+  // Clear |provider|'s arbitrator so the default arbitrator can be used.
+  provider()->SetArbitratorForTesting(nullptr);
   EXPECT_FALSE(provider()->user_did_opt_into_location_services_for_testing());
   provider()->UserDidOptIntoLocationServices();
   EXPECT_TRUE(provider()->user_did_opt_into_location_services_for_testing());
 }
 
-void DummyFunction(const Geoposition& position) {}
-
 TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_FALSE(provider()->IsRunning());
-  GeolocationProviderImpl::LocationUpdateCallback callback =
+  LocationProvider::LocationProviderUpdateCallback callback =
       base::Bind(&DummyFunction);
   std::unique_ptr<GeolocationProvider::Subscription> subscription =
-      provider()->AddLocationUpdateCallback(callback, false);
+      provider()->AddLocationUpdateCallback(base::Bind(callback, arbitrator()),
+                                            false);
   EXPECT_TRUE(provider()->IsRunning());
   EXPECT_TRUE(ProvidersStarted());
 

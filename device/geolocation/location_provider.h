@@ -14,7 +14,7 @@ namespace device {
 class LocationProvider;
 
 // The interface for providing location information.
-class LocationProvider {
+class DEVICE_GEOLOCATION_EXPORT LocationProvider {
  public:
   virtual ~LocationProvider() {}
 
@@ -40,11 +40,7 @@ class LocationProvider {
   virtual void StopProvider() = 0;
 
   // Gets the current best position estimate.
-  virtual void GetPosition(Geoposition* position) = 0;
-
-  // Provides a hint to the provider that new location data is needed as soon
-  // as possible.
-  virtual void RequestRefresh() = 0;
+  virtual const Geoposition& GetPosition() = 0;
 
   // Called everytime permission is granted to a page for using geolocation.
   // This may either be through explicit user action (e.g. responding to the

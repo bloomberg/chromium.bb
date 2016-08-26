@@ -6,6 +6,7 @@
 #define DEVICE_GEOLOCATION_LOCATION_ARBITRATOR_IMPL_H_
 
 #include <stdint.h>
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -18,7 +19,6 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geoposition.h"
-#include "device/geolocation/location_arbitrator.h"
 #include "device/geolocation/location_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -35,26 +35,26 @@ class LocationProvider;
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
 class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
-    : public LocationArbitrator {
+    : public LocationProvider {
  public:
   // Number of milliseconds newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher
   // (regardles of relative accuracy). Public for tests.
   static const int64_t kFixStaleTimeoutMilliseconds;
 
-  typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
-
-  LocationArbitratorImpl(const LocationUpdateCallback& callback,
-                         GeolocationDelegate* delegate);
+  explicit LocationArbitratorImpl(GeolocationDelegate* delegate);
   ~LocationArbitratorImpl() override;
 
   static GURL DefaultNetworkProviderURL();
+  bool HasPermissionBeenGrantedForTest() const;
 
-  // LocationArbitrator
-  void StartProviders(bool enable_high_accuracy) override;
-  void StopProviders() override;
+  // LocationProvider implementation.
+  void SetUpdateCallback(
+      const LocationProviderUpdateCallback& callback) override;
+  bool StartProvider(bool enable_high_accuracy) override;
+  void StopProvider() override;
+  const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
-  bool HasPermissionBeenGranted() const override;
 
  protected:
   // These functions are useful for injection of dependencies in derived
@@ -81,7 +81,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
   void OnAccessTokenStoresLoaded(
       AccessTokenStore::AccessTokenMap access_token_map,
       const scoped_refptr<net::URLRequestContextGetter>& context_getter);
-  void DoStartProviders();
+  bool DoStartProviders();
 
   // Gets called when a provider has a new position.
   void OnLocationUpdate(const LocationProvider* provider,
@@ -97,8 +97,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitratorImpl
   GeolocationDelegate* delegate_;
 
   scoped_refptr<AccessTokenStore> access_token_store_;
-  LocationUpdateCallback arbitrator_update_callback_;
-  LocationProvider::LocationProviderUpdateCallback provider_update_callback_;
+  LocationProvider::LocationProviderUpdateCallback arbitrator_update_callback_;
 
   // The CancelableCallback will prevent OnAccessTokenStoresLoaded from being
   // called multiple times by calling Reset() at the time of binding.

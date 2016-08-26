@@ -4,6 +4,8 @@
 
 #include "device/geolocation/location_provider_android.h"
 
+#include <memory>
+
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "device/geolocation/geoposition.h"
@@ -32,12 +34,8 @@ void LocationProviderAndroid::StopProvider() {
   AndroidLocationApiAdapter::GetInstance()->Stop();
 }
 
-void LocationProviderAndroid::GetPosition(Geoposition* position) {
-  *position = last_position_;
-}
-
-void LocationProviderAndroid::RequestRefresh() {
-  // Nothing to do here, android framework will call us back on new position.
+const Geoposition& LocationProviderAndroid::GetPosition() {
+  return last_position_;
 }
 
 void LocationProviderAndroid::OnPermissionGranted() {

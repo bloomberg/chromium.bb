@@ -16,6 +16,7 @@
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geoposition.h"
+#include "device/geolocation/location_provider.h"
 
 namespace base {
 template <typename Type>
@@ -24,7 +25,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace device {
-class LocationArbitrator;
 
 class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
     : public NON_EXPORTED_BASE(GeolocationProvider),
@@ -38,7 +38,8 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   void OverrideLocationForTesting(const Geoposition& position) override;
 
   // Callback from the LocationArbitrator. Public for testing.
-  void OnLocationUpdate(const Geoposition& position);
+  void OnLocationUpdate(const LocationProvider* provider,
+                        const Geoposition& position);
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. This must only be
@@ -50,16 +51,15 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
     return user_did_opt_into_location_services_;
   }
 
- protected:
+  // Safe to call while there are no GeolocationProviderImpl clients
+  // registered.
+  void SetArbitratorForTesting(std::unique_ptr<LocationProvider> arbitrator);
+
+ private:
   friend struct base::DefaultSingletonTraits<GeolocationProviderImpl>;
   GeolocationProviderImpl();
   ~GeolocationProviderImpl() override;
 
-  // Useful for injecting mock geolocation arbitrator in tests.
-  // TODO(mvanouwerkerk): Use something like SetArbitratorForTesting instead.
-  virtual std::unique_ptr<LocationArbitrator> CreateArbitrator();
-
- private:
   bool OnGeolocationThread() const;
 
   // Start and stop providers as needed when clients are added or removed.
@@ -93,11 +93,11 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   // True only in testing, where we want to use a custom position.
   bool ignore_location_updates_;
 
-  // Only to be used on the geolocation thread.
-  std::unique_ptr<LocationArbitrator> arbitrator_;
-
-  // Used to PostTask()s from the geolocation thread to creation thread.
+  // Used to PostTask()s from the geolocation thread to caller thread.
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // Only to be used on the geolocation thread.
+  std::unique_ptr<LocationProvider> arbitrator_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationProviderImpl);
 };

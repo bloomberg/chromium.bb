@@ -106,22 +106,7 @@ TEST_F(BlimpLocationProviderTest, LocationProviderDeleted) {
   location_provider_.reset();
 }
 
-TEST_F(BlimpLocationProviderTest, RequestRefreshRunsCorrectly) {
-  EXPECT_CALL(*delegate_, RequestRefresh()).Times(1);
-
-  location_provider_->StartProvider(true);
-  location_provider_->RequestRefresh();
-}
-
-TEST_F(BlimpLocationProviderTest, RequestRefreshHandlesNullDelegate) {
-  EXPECT_CALL(*delegate_, RequestRefresh()).Times(0);
-
-  location_provider_->StartProvider(true);
-  delegate_.reset();
-  location_provider_->RequestRefresh();
-}
-
-TEST_F(BlimpLocationProviderTest, OnPermissionGrantedCallsRefresh) {
+TEST_F(BlimpLocationProviderTest, OnPermissionGranted) {
   EXPECT_CALL(*delegate_, RequestRefresh()).Times(1);
 
   location_provider_->StartProvider(true);
