@@ -63,6 +63,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   const ScopedJavaLocalRef<jobject> popup_view = anchor_view_.view();
   if (popup_view.is_null())
     return;
+  view_android_->SetAnchorRect(popup_view, gfx::RectF());
   ScopedJavaLocalRef<jobject> obj(java_power_save_blocker_);
   Java_PowerSaveBlocker_applyBlock(env, obj, popup_view);
 }

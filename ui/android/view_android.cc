@@ -113,9 +113,6 @@ ViewAndroid::ScopedAnchorView ViewAndroid::AcquireAnchorView() {
 
 void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
                                 const gfx::RectF& bounds) {
-  if (bounds.IsEmpty())
-    return;
-
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
