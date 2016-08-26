@@ -83,9 +83,10 @@
 -ErrorPageAutoReloadTest.IgnoresSamePageNavigation
 -ErrorPageAutoReloadTest.ManualReloadNotSuppressed
 -ErrorPageNavigationCorrectionsFailTest.FetchCorrectionsFails
--ErrorPageTest.DNSError*
+-ErrorPageTest.DNSError_GoBack2
+-ErrorPageTest.DNSError_GoBack2AndForward
+-ErrorPageTest.DNSError_GoBack2Forward2
 -ErrorPageTest.IFrameDNSError_JavaScript
--ErrorPageTest.StaleCacheStatus
 -ExecuteScriptApiTest.ExecuteScriptByFrameId
 -ExecuteScriptApiTest.FrameWithHttp204
 -ExecuteScriptApiTest/DestructiveScriptTest*

@@ -297,7 +297,7 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::RequestContextInternal,
-      blink::WebURLRequest::FrameTypeTopLevel,
+      blink::WebURLRequest::FrameTypeNone,
       content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnTrackingRequestComplete,
                  base::Unretained(this)));
