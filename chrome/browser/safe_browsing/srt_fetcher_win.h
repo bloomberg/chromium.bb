@@ -45,6 +45,15 @@ const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 struct SwReporterInvocation {
   base::CommandLine command_line;
 
+  // Experimental versions of the reporter will write metrics to registry keys
+  // ending in |suffix|. Those metrics should be copied to UMA histograms also
+  // ending in |suffix|. For the canonical version, |suffix| will be empty.
+  std::string suffix;
+
+  // The experimental sw_reporter never triggers the prompt, just reports
+  // results through UMA.
+  bool is_experimental = false;
+
   SwReporterInvocation();
 
   static SwReporterInvocation FromFilePath(const base::FilePath& exe_path);

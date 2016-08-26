@@ -56741,6 +56741,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The build version of the software reporter cleaner tool.</summary>
 </histogram>
 
+<histogram name="SoftwareReporter.ExperimentErrors"
+    enum="SoftwareReporterExperimentError">
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Whether a configuration error prevented the experimental Software Reporter
+    from running.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.FoundUwSReadError" enum="BooleanError">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -93880,6 +93889,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Used, relocked"/>
 </enum>
 
+<enum name="SoftwareReporterExperimentError" type="int">
+  <int value="1" label="Bad tag"/>
+  <int value="2" label="Bad parameters"/>
+</enum>
+
 <enum name="SpdyFrameFlowControlState" type="int">
   <int value="0" label="Send not stalled"/>
   <int value="1" label="Send stalled by stream"/>
@@ -104094,6 +104108,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.SocketInitErrorCodes"/>
   <affected-histogram name="Net.SocketRequestTime"/>
   <affected-histogram name="Net.SocketType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SoftwareReporterEngine">
+  <suffix name="Original"/>
+  <suffix name="Experimental"/>
+  <affected-histogram name="SoftwareReporter.FoundUwSReadError"/>
+  <affected-histogram name="SoftwareReporter.MajorVersion"/>
+  <affected-histogram name="SoftwareReporter.MemoryUsed"/>
+  <affected-histogram name="SoftwareReporter.MinorVersion"/>
+  <affected-histogram name="SoftwareReporter.RunningTime"/>
+  <affected-histogram name="SoftwareReporter.RunningTimeAccordingToChrome"/>
+  <affected-histogram name="SoftwareReporter.RunningTimeRegistryError"/>
+  <affected-histogram name="SoftwareReporter.Step"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SpdyCwnd">

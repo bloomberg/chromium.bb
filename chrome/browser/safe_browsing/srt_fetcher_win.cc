@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,7 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -118,6 +119,15 @@ const char kMemoryUsedMetricName[] = "SoftwareReporter.MemoryUsed";
 // Reports metrics about the software reporter via UMA (and sometimes Rappor).
 class UMAHistogramReporter {
  public:
+  explicit UMAHistogramReporter(const std::string& suffix = std::string())
+      : suffix_(suffix),
+        registry_key_(suffix.empty() ? kSoftwareRemovalToolRegistryKey
+                                     : base::StringPrintf(
+                                           L"%ls\\%ls",
+                                           kSoftwareRemovalToolRegistryKey,
+                                           base::UTF8ToUTF16(suffix).c_str())) {
+  }
+
   // Reports the software reporter tool's version via UMA.
   void ReportVersion(const base::Version& version) const {
     DCHECK(!version.components().empty());
@@ -128,7 +138,7 @@ class UMAHistogramReporter {
       minor_version = version.components()[version.components().size() - 2];
     else
       minor_version = version.components()[0];
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MinorVersion", minor_version);
+    RecordSparseHistogram("SoftwareReporter.MinorVersion", minor_version);
 
     // The major version for X.Y.Z is X*256^3+Y*256+Z. If there are additional
     // components, only the first three count, and if there are less than 3, the
@@ -143,31 +153,31 @@ class UMAHistogramReporter {
       DCHECK_LT(version.components()[2], 0x100U);
       major_version += version.components()[2];
     }
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.MajorVersion", major_version);
+    RecordSparseHistogram("SoftwareReporter.MajorVersion", major_version);
   }
 
   void ReportExitCode(int exit_code) const {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.ExitCode", exit_code);
+    RecordSparseHistogram("SoftwareReporter.ExitCode", exit_code);
   }
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
-  void ReportFoundUwS() const {
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER,
-                                   kSoftwareRemovalToolRegistryKey,
+  void ReportFoundUwS(bool use_rappor) const {
+    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
                                    KEY_QUERY_VALUE | KEY_SET_VALUE);
     std::vector<base::string16> found_uws_strings;
     if (reporter_key.Valid() &&
         reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) ==
             ERROR_SUCCESS) {
-      rappor::RapporService* rappor_service =
-          g_browser_process->rappor_service();
+      rappor::RapporService* rappor_service = nullptr;
+      if (use_rappor)
+        rappor_service = g_browser_process->rappor_service();
 
       bool parse_error = false;
       for (const base::string16& uws_string : found_uws_strings) {
         // All UwS ids are expected to be integers.
         uint32_t uws_id = 0;
         if (base::StringToUint(uws_string, &uws_id)) {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kFoundUwsMetricName, uws_id);
+          RecordSparseHistogram(kFoundUwsMetricName, uws_id);
           if (rappor_service) {
             rappor_service->RecordSample(kFoundUwsMetricName,
                                          rappor::COARSE_RAPPOR_TYPE,
@@ -181,35 +191,34 @@ class UMAHistogramReporter {
       // Clean up the old value.
       reporter_key.DeleteValue(kFoundUwsValueName);
 
-      UMA_HISTOGRAM_BOOLEAN(kFoundUwsReadErrorMetricName, parse_error);
+      RecordBooleanHistogram(kFoundUwsReadErrorMetricName, parse_error);
     }
   }
 
   // Reports to UMA the memory usage of the software reporter tool as reported
   // by the tool itself in the Windows registry.
   void ReportMemoryUsage() const {
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER,
-                                   kSoftwareRemovalToolRegistryKey,
+    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
                                    KEY_QUERY_VALUE | KEY_SET_VALUE);
     DWORD memory_used = 0;
     if (reporter_key.Valid() &&
         reporter_key.ReadValueDW(kMemoryUsedValueName, &memory_used) ==
             ERROR_SUCCESS) {
-      UMA_HISTOGRAM_MEMORY_KB(kMemoryUsedMetricName, memory_used);
+      RecordMemoryKBHistogram(kMemoryUsedMetricName, memory_used);
       reporter_key.DeleteValue(kMemoryUsedValueName);
     }
   }
 
-  // Report the SwReporter run time with UMA both as reported by the tool via
+  // Reports the SwReporter run time with UMA both as reported by the tool via
   // the registry and as measured by |ReporterRunner|.
   void ReportRuntime(const base::TimeDelta& reporter_running_time) const {
-    UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.RunningTimeAccordingToChrome",
+    RecordLongTimesHistogram("SoftwareReporter.RunningTimeAccordingToChrome",
                              reporter_running_time);
 
-    base::win::RegKey reporter_key(
-        HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_ALL_ACCESS);
+    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
+                                   KEY_ALL_ACCESS);
     if (!reporter_key.Valid()) {
-      UMA_HISTOGRAM_ENUMERATION(
+      RecordEnumerationHistogram(
           kRunningTimeErrorMetricName,
           REPORTER_RUNNING_TIME_ERROR_REGISTRY_KEY_INVALID,
           REPORTER_RUNNING_TIME_ERROR_MAX);
@@ -238,31 +247,31 @@ class UMAHistogramReporter {
       base::TimeDelta registry_run_time =
           base::Time::FromInternalValue(end_time_value) -
           base::Time::FromInternalValue(start_time_value);
-      UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.RunningTime",
+      RecordLongTimesHistogram("SoftwareReporter.RunningTime",
                                registry_run_time);
-      UMA_HISTOGRAM_ENUMERATION(kRunningTimeErrorMetricName,
-                                REPORTER_RUNNING_TIME_ERROR_NO_ERROR,
-                                REPORTER_RUNNING_TIME_ERROR_MAX);
+      RecordEnumerationHistogram(kRunningTimeErrorMetricName,
+                                 REPORTER_RUNNING_TIME_ERROR_NO_ERROR,
+                                 REPORTER_RUNNING_TIME_ERROR_MAX);
     } else if (!has_start_time && !has_end_time) {
-      UMA_HISTOGRAM_ENUMERATION(kRunningTimeErrorMetricName,
-                                REPORTER_RUNNING_TIME_ERROR_MISSING_BOTH_TIMES,
-                                REPORTER_RUNNING_TIME_ERROR_MAX);
+      RecordEnumerationHistogram(kRunningTimeErrorMetricName,
+                                 REPORTER_RUNNING_TIME_ERROR_MISSING_BOTH_TIMES,
+                                 REPORTER_RUNNING_TIME_ERROR_MAX);
     } else if (!has_start_time) {
-      UMA_HISTOGRAM_ENUMERATION(kRunningTimeErrorMetricName,
-                                REPORTER_RUNNING_TIME_ERROR_MISSING_START_TIME,
-                                REPORTER_RUNNING_TIME_ERROR_MAX);
+      RecordEnumerationHistogram(kRunningTimeErrorMetricName,
+                                 REPORTER_RUNNING_TIME_ERROR_MISSING_START_TIME,
+                                 REPORTER_RUNNING_TIME_ERROR_MAX);
     } else {
       DCHECK(!has_end_time);
-      UMA_HISTOGRAM_ENUMERATION(kRunningTimeErrorMetricName,
-                                REPORTER_RUNNING_TIME_ERROR_MISSING_END_TIME,
-                                REPORTER_RUNNING_TIME_ERROR_MAX);
+      RecordEnumerationHistogram(kRunningTimeErrorMetricName,
+                                 REPORTER_RUNNING_TIME_ERROR_MISSING_END_TIME,
+                                 REPORTER_RUNNING_TIME_ERROR_MAX);
     }
   }
 
-  // Report the UwS scan times of the software reporter tool via UMA.
+  // Reports the UwS scan times of the software reporter tool via UMA.
   void ReportScanTimes() const {
     base::string16 scan_times_key_path = base::StringPrintf(
-        L"%ls\\%ls", kSoftwareRemovalToolRegistryKey, kScanTimesSubKey);
+        L"%ls\\%ls", registry_key_.c_str(), kScanTimesSubKey);
     base::win::RegKey scan_times_key(
         HKEY_CURRENT_USER, scan_times_key_path.c_str(), KEY_ALL_ACCESS);
     if (!scan_times_key.Valid())
@@ -279,30 +288,102 @@ class UMAHistogramReporter {
               ERROR_SUCCESS) {
         base::TimeDelta scan_time =
             base::TimeDelta::FromInternalValue(raw_scan_time);
-        base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
-            kScanTimesMetricName,
-            base::HistogramBase::kUmaTargetedHistogramFlag);
-        if (histogram) {
-          // We report the number of seconds plus one because it can take less
-          // than one second to scan some UwS and the count passed to |AddCount|
-          // must be at least one.
-          histogram->AddCount(uws_id, scan_time.InSeconds() + 1);
-        }
+        // We report the number of seconds plus one because it can take less
+        // than one second to scan some UwS and the count passed to |AddCount|
+        // must be at least one.
+        RecordSparseHistogramCount(kScanTimesMetricName, uws_id,
+                                   scan_time.InSeconds() + 1);
       }
     }
     // Clean up by deleting the scan times key, which is a subkey of the main
     // reporter key.
     scan_times_key.Close();
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER,
-                                   kSoftwareRemovalToolRegistryKey,
+    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
                                    KEY_ENUMERATE_SUB_KEYS);
     if (reporter_key.Valid())
       reporter_key.DeleteKey(kScanTimesSubKey);
   }
+
+  void RecordReporterStep(SwReporterUmaValue value) {
+    RecordEnumerationHistogram("SoftwareReporter.Step", value, SW_REPORTER_MAX);
+  }
+
+ private:
+  using Sample = base::HistogramBase::Sample;
+
+  static constexpr base::HistogramBase::Flags kUmaHistogramFlag =
+      base::HistogramBase::kUmaTargetedHistogramFlag;
+
+  // Helper functions to record histograms with an optional suffix added to the
+  // histogram name. The UMA_HISTOGRAM macros can't be used because they
+  // require a constant string.
+
+  std::string FullName(const std::string& name) const {
+    if (suffix_.empty())
+      return name;
+    return base::StringPrintf("%s_%s", name.c_str(), suffix_.c_str());
+  }
+
+  void RecordBooleanHistogram(const std::string& name, bool sample) const {
+    auto histogram =
+        base::BooleanHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
+    if (histogram)
+      histogram->AddBoolean(sample);
+  }
+
+  void RecordEnumerationHistogram(const std::string& name,
+                                  Sample sample,
+                                  Sample boundary) const {
+    // See HISTOGRAM_ENUMERATION_WITH_FLAG for the parameters to |FactoryGet|.
+    auto histogram = base::LinearHistogram::FactoryGet(
+        FullName(name), 1, boundary, boundary + 1, kUmaHistogramFlag);
+    if (histogram)
+      histogram->Add(sample);
+  }
+
+  void RecordLongTimesHistogram(const std::string& name,
+                                const base::TimeDelta& sample) const {
+    // See UMA_HISTOGRAM_LONG_TIMES for the parameters to |FactoryTimeGet|.
+    auto histogram = base::Histogram::FactoryTimeGet(
+        FullName(name), base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromHours(1), 100, kUmaHistogramFlag);
+    if (histogram)
+      histogram->AddTime(sample);
+  }
+
+  void RecordMemoryKBHistogram(const std::string& name, Sample sample) const {
+    // See UMA_HISTOGRAM_MEMORY_KB for the parameters to |FactoryGet|.
+    auto histogram = base::LinearHistogram::FactoryGet(
+        FullName(name), 1000, 500000, 50, kUmaHistogramFlag);
+    if (histogram)
+      histogram->Add(sample);
+  }
+
+  void RecordSparseHistogram(const std::string& name, Sample sample) const {
+    auto histogram =
+        base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
+    if (histogram)
+      histogram->Add(sample);
+  }
+
+  void RecordSparseHistogramCount(const std::string& name,
+                                  Sample sample,
+                                  int count) const {
+    auto histogram =
+        base::SparseHistogram::FactoryGet(FullName(name), kUmaHistogramFlag);
+    if (histogram)
+      histogram->AddCount(sample, count);
+  }
+
+  const std::string suffix_;
+  const std::wstring registry_key_;
 };
 
+// Records the reporter step without a suffix. (For steps that are never run by
+// the experimental reporter.)
 void RecordReporterStepHistogram(SwReporterUmaValue value) {
-  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Step", value, SW_REPORTER_MAX);
+  UMAHistogramReporter uma;
+  uma.RecordReporterStep(value);
 }
 
 void DisplaySRTPrompt(const base::FilePath& download_path) {
@@ -366,12 +447,13 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
   // This exit code is used to identify that a reporter run didn't happen, so
   // the result should be ignored and a rerun scheduled for the usual delay.
   int exit_code = kReporterFailureExitCode;
+  UMAHistogramReporter uma(invocation.suffix);
   if (reporter_process.IsValid()) {
-    RecordReporterStepHistogram(SW_REPORTER_START_EXECUTION);
+    uma.RecordReporterStep(SW_REPORTER_START_EXECUTION);
     bool success = reporter_process.WaitForExit(&exit_code);
     DCHECK(success);
   } else {
-    RecordReporterStepHistogram(SW_REPORTER_FAILED_TO_START);
+    uma.RecordReporterStep(SW_REPORTER_FAILED_TO_START);
   }
   return exit_code;
 }
@@ -521,8 +603,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
     instance_->invocation_ = invocation;
     instance_->version_ = version;
-    instance_->main_thread_task_runner_ = main_thread_task_runner;
-    instance_->blocking_task_runner_ = blocking_task_runner;
+    instance_->main_thread_task_runner_ = std::move(main_thread_task_runner);
+    instance_->blocking_task_runner_ = std::move(blocking_task_runner);
 
     if (instance_->first_run_) {
       instance_->first_run_ = false;
@@ -549,6 +631,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // be resilient to unexpected shutdown.
   void ReporterDone(const base::Time& reporter_start_time,
                     const base::Version& version,
+                    const SwReporterInvocation& finished_invocation,
                     int exit_code) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -567,12 +650,14 @@ class ReporterRunner : public chrome::BrowserListObserver {
     if (exit_code == kReporterFailureExitCode)
       return;
 
-    UMAHistogramReporter uma;
+    UMAHistogramReporter uma(finished_invocation.suffix);
     uma.ReportVersion(version);
     uma.ReportExitCode(exit_code);
-    uma.ReportFoundUwS();
+    uma.ReportFoundUwS(!finished_invocation.is_experimental /*use_rappor*/);
+
+    //  Only save results from the canonical version of the software.
     PrefService* local_state = g_browser_process->local_state();
-    if (local_state) {
+    if (local_state && !finished_invocation.is_experimental) {
       local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);
       local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
                             base::Time::Now().ToInternalValue());
@@ -580,6 +665,10 @@ class ReporterRunner : public chrome::BrowserListObserver {
     uma.ReportRuntime(reporter_running_time);
     uma.ReportScanTimes();
     uma.ReportMemoryUsage();
+
+    // Only continue to launch the prompt for the canonical version.
+    if (finished_invocation.is_experimental)
+      return;
 
     if (!IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
@@ -647,7 +736,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
           blocking_task_runner_.get(), FROM_HERE,
           base::Bind(&LaunchAndWaitForExit, invocation_),
           base::Bind(&ReporterRunner::ReporterDone, base::Unretained(this),
-                     base::Time::Now(), version_));
+                     base::Time::Now(), version_, invocation_));
     } else {
       main_thread_task_runner_->PostDelayedTask(
           FROM_HERE,
@@ -696,15 +785,16 @@ SwReporterInvocation SwReporterInvocation::FromCommandLine(
 }
 
 bool SwReporterInvocation::operator==(const SwReporterInvocation& other) const {
-  return command_line.argv() == other.command_line.argv();
+  return command_line.argv() == other.command_line.argv() &&
+         suffix == other.suffix && is_experimental == other.is_experimental;
 }
 
 void RunSwReporter(const SwReporterInvocation& invocation,
                    const base::Version& version,
                    scoped_refptr<base::TaskRunner> main_thread_task_runner,
                    scoped_refptr<base::TaskRunner> blocking_task_runner) {
-  ReporterRunner::Run(invocation, version, main_thread_task_runner,
-                      blocking_task_runner);
+  ReporterRunner::Run(invocation, version, std::move(main_thread_task_runner),
+                      std::move(blocking_task_runner));
 }
 
 bool ReporterFoundUws() {

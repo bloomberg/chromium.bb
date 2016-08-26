@@ -35,6 +35,14 @@ namespace component_updater {
 
 class ComponentUpdateService;
 
+// These MUST match the values for SwReporterExperimentError in histograms.xml.
+// Exposed for testing.
+enum SwReporterExperimentError {
+  SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG = 0,
+  SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS = 1,
+  SW_REPORTER_EXPERIMENT_ERROR_MAX,
+};
+
 // Callback for running the software reporter after it is downloaded.
 using SwReporterRunner =
     base::Callback<void(const safe_browsing::SwReporterInvocation& invocation,
@@ -42,11 +50,9 @@ using SwReporterRunner =
 
 class SwReporterInstallerTraits : public ComponentInstallerTraits {
  public:
-  explicit SwReporterInstallerTraits(const SwReporterRunner& reporter_runner);
+  SwReporterInstallerTraits(const SwReporterRunner& reporter_runner,
+                            bool is_experimental_engine_supported);
   ~SwReporterInstallerTraits() override;
-
- private:
-  friend class SwReporterInstallerTest;
 
   // ComponentInstallerTraits implementation.
   bool VerifyInstallation(const base::DictionaryValue& manifest,
@@ -64,7 +70,15 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+ private:
+  friend class SwReporterInstallerTest;
+
+  // Returns true if the experimental engine is supported and the Feature is
+  // enabled.
+  bool IsExperimentalEngineEnabled() const;
+
   SwReporterRunner reporter_runner_;
+  const bool is_experimental_engine_supported_;
 
   DISALLOW_COPY_AND_ASSIGN(SwReporterInstallerTraits);
 };
