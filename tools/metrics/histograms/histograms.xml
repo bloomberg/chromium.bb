@@ -44892,6 +44892,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PreloadScanner.ExternalCSS.ScanTime" units="us">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Microseconds it took to scan the first chunk of external CSS for preloads.
+  </summary>
+</histogram>
+
 <histogram name="PreloadScanner.ReferenceTime" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>

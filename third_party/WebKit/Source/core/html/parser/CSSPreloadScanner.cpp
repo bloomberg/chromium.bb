@@ -273,12 +273,15 @@ void CSSPreloaderResourceClient::scanCSS(const CSSStyleSheetResource* resource)
     // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
     // augmented to take care of this case without performing an additional
     // copy.
+    double startTime = monotonicallyIncreasingTimeMS();
     const String& chunk = resource->decodedText();
     if (chunk.isNull())
         return;
     CSSPreloadScanner cssPreloadScanner;
     PreloadRequestStream preloads;
     cssPreloadScanner.scan(chunk, SegmentedString(), preloads, resource->response().url());
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, cssScanTimeHistogram, ("PreloadScanner.ExternalCSS.ScanTime", 1, 1000000, 50));
+    cssScanTimeHistogram.count((monotonicallyIncreasingTimeMS() - startTime) * 1000);
     fetchPreloads(preloads);
 }
 
