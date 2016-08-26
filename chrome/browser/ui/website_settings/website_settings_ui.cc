@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
 #include "base/macros.h"
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/strings/grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -226,8 +226,7 @@ base::string16 WebsiteSettingsUI::PermissionActionToUIString(
 
 #if defined(ENABLE_PLUGINS)
   effective_setting =
-      content_settings::PluginsFieldTrial::EffectiveContentSetting(
-          type, effective_setting);
+      PluginsFieldTrial::EffectiveContentSetting(type, effective_setting);
 #endif
 
   const int* button_text_ids = NULL;

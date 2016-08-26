@@ -62,14 +62,6 @@
         'content_settings/core/browser/website_settings_registry.cc',
         'content_settings/core/browser/website_settings_registry.h',
       ],
-      'conditions': [
-        ['enable_plugins == 1', {
-          'sources': [
-            'content_settings/core/browser/plugins_field_trial.cc',
-            'content_settings/core/browser/plugins_field_trial.h',
-          ],
-        }],
-      ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },

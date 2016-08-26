@@ -32,6 +32,7 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -48,7 +49,6 @@
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -729,8 +729,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 
 #if defined(ENABLE_PLUGINS)
   default_setting =
-      content_settings::PluginsFieldTrial::EffectiveContentSetting(
-          type, default_setting);
+      PluginsFieldTrial::EffectiveContentSetting(type, default_setting);
 #endif
 
   // Camera and microphone default content settings cannot be set by the policy.

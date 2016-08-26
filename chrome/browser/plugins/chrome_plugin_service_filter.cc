@@ -18,13 +18,13 @@
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -186,9 +186,8 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
         context_info_it->second->host_content_settings_map.get(), *plugin,
         policy_url, url, plugin_metadata->identifier(), &plugin_setting,
         nullptr, nullptr);
-    plugin_setting =
-        content_settings::PluginsFieldTrial::EffectiveContentSetting(
-            CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
+    plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
+        CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
     if (plugin_setting == CONTENT_SETTING_BLOCK ||
         plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
       return false;
