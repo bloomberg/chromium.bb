@@ -63,6 +63,10 @@ public class MediaNotificationManager {
                 "MediaNotificationManager.ListenerService.PAUSE";
         private static final String ACTION_STOP =
                 "MediaNotificationManager.ListenerService.STOP";
+        private static final String ACTION_SWIPE =
+                "MediaNotificationManager.ListenerService.SWIPE";
+        private static final String ACTION_CANCEL =
+                "MediaNotificationManager.ListenerService.CANCEL";
 
         @Override
         public IBinder onBind(Intent intent) {
@@ -134,7 +138,9 @@ public class MediaNotificationManager {
                     default:
                         break;
                 }
-            } else if (ACTION_STOP.equals(action)) {
+            } else if (ACTION_STOP.equals(action)
+                    || ACTION_SWIPE.equals(action)
+                    || ACTION_CANCEL.equals(action)) {
                 manager.onStop(
                         MediaNotificationListener.ACTION_SOURCE_MEDIA_NOTIFICATION);
                 stopSelf();
@@ -517,7 +523,7 @@ public class MediaNotificationManager {
 
         if (mMediaNotificationInfo.supportsSwipeAway()) {
             mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
-            mNotificationBuilder.setDeleteIntent(createPendingIntent(ListenerService.ACTION_STOP));
+            mNotificationBuilder.setDeleteIntent(createPendingIntent(ListenerService.ACTION_SWIPE));
         }
 
         // The intent will currently only be null when using a custom tab.
@@ -642,7 +648,7 @@ public class MediaNotificationManager {
                         createPendingIntent(ListenerService.ACTION_PAUSE));
             }
             style.setShowActionsInCompactView(0);
-            style.setCancelButtonIntent(createPendingIntent(ListenerService.ACTION_STOP));
+            style.setCancelButtonIntent(createPendingIntent(ListenerService.ACTION_CANCEL));
             style.setShowCancelButton(true);
             builder.setStyle(style);
         }
