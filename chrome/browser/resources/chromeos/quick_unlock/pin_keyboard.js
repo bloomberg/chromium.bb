@@ -127,12 +127,12 @@ Polymer({
   },
 
   /**
-   * Changes the color of the submit button if PIN is ready.
+   * Disables the submit and backspace button if nothing is entered.
    * @param {string} value
    * @private
    */
-  getSubmitClass_: function(value) {
-    return value.length > 0 ? 'ready-background' : '';
+  hasInput_: function(value) {
+    return value.length > 0;
   },
 
   /**
@@ -160,7 +160,7 @@ Polymer({
    * @param {string} password
    * @private
    */
-  getInputClass_: function(password) {
+  isInputRtl_: function(password) {
     // +password will convert a string to a number or to NaN if that's not
     // possible. Number.isInteger will verify the value is not a NaN and that it
     // does not contain decimals.
@@ -169,16 +169,6 @@ Polymer({
     // Since we still support users entering their passwords through the PIN
     // keyboard, we swap the input box to rtl when we think it is a password
     // (just numbers), if the document direction is rtl.
-    var enableRtl = (document.dir == 'rtl') && !Number.isInteger(+password);
-    return enableRtl ? 'input-non-pin' : '';
+    return (document.dir == 'rtl') && !Number.isInteger(+password);
   },
-
-  /**
-   * Computes if the submit button is visible.
-   * @param {boolean} submitEnabled
-   * @private
-   */
-  getSubmitHiddenClass_: function(submitEnabled) {
-    return submitEnabled ? '' : 'submit-button-hidden';
-  }
 });

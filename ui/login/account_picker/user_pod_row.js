@@ -59,9 +59,7 @@ cr.define('login', function() {
   var POD_ROW_PADDING = 10;
   var DESKTOP_ROW_PADDING = 32;
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
-  var CROS_PIN_POD_WIDTH = 270;
-  var CROS_PIN_POD_HEIGHT = 594;
-  var PIN_EXTRA_WIDTH = 90;
+  var CROS_PIN_POD_HEIGHT = 417;
 
   /**
    * Minimal padding between user pod and virtual keyboard.
@@ -1091,6 +1089,10 @@ cr.define('login', function() {
       } else if (this.user_.isApp) {
         this.setUserPodIconType('app');
       }
+    },
+
+    isPinReady: function() {
+      return this.pinKeyboard && this.pinKeyboard.offsetHeight > 0;
     },
 
     toggleTransitions: function(enable) {
@@ -3002,28 +3004,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Calculates the row and column of the given |pod|.
-     * @param {UserPod} pod Pod we want the row and column of.
-     * @param {number} columns Columns in the podrow.
-     * @param {number} rows Rows in the podrow.
-     * @return {{columns: number, rows: number}}
-     * @private
-     */
-    findPodLocation_: function(pod, columns, rows) {
-      var column = -1;
-      var row = -1;
-      var index = this.pods.indexOf(pod);
-      if (index >= 0) {
-        row = Math.floor(index / columns);
-        column = index % columns;
-      }
-      else {
-        console.error('Pod not found in pod row.');
-      }
-      return {column: column, row: row};
-    },
-
-    /**
      * Places pods onto their positions onto pod grid.
      * @private
      */
@@ -3058,23 +3038,16 @@ cr.define('login', function() {
           console.error('Pod offsetHeight (' + pod.offsetHeight +
               ') and POD_HEIGHT (' + height + ') are not equal.');
         }
-        if (pod.offsetWidth != width &&
-            pod.offsetWidth != CROS_PIN_POD_WIDTH) {
+        if (pod.offsetWidth != width) {
           console.error('Pod offsetWidth (' + pod.offsetWidth +
               ') and POD_WIDTH (' + width + ') are not equal.');
         }
         var column = index % columns;
         var row = Math.floor(index / columns);
-        var offsetFromPin = 0;
-        if (row == pinPodLocation.row) {
-          offsetFromPin = PIN_EXTRA_WIDTH / 2;
-          if (column <= pinPodLocation.column)
-            offsetFromPin *= -1;
-        }
 
         var rowPadding = isDesktopUserManager ? DESKTOP_ROW_PADDING :
                                                 POD_ROW_PADDING;
-        pod.left = rowPadding + column * (width + margin) + offsetFromPin;
+        pod.left = rowPadding + column * (width + margin);
 
         // On desktop, we want the rows to always be equally spaced.
         pod.top = isDesktopUserManager ? row * (height + rowPadding) :
@@ -3163,7 +3136,9 @@ cr.define('login', function() {
       var hadFocus = !!this.focusedPod_;
       this.focusedPod_ = podToFocus;
       if (podToFocus) {
-        this.setFocusedPodPinVisibility(true);
+        // Only show the keyboard if it is fully loaded.
+        if (podToFocus.isPinReady())
+          podToFocus.setPinVisibility(true);
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         if (!podToFocus.multiProfilesPolicyApplied) {
@@ -3186,7 +3161,6 @@ cr.define('login', function() {
         this.scrollFocusedPodIntoView();
       }
       this.insideFocusPod_ = false;
-      this.placePods_();
     },
 
     /**

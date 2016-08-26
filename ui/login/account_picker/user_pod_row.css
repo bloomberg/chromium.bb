@@ -46,22 +46,18 @@ pin-keyboard {
 
 .pod.flying-pin-pod {
   transition: height 180ms ease-in-out,
-              left 180ms ease-in-out,
-              top 180ms ease-in-out,
-              width 180ms ease-in-out;
+              top 180ms ease-in-out;
 }
 
 .pod.pin-enabled {
-  height: 594px;
-  top: -200px !important;
-  width: 270px;
+  height: 417px;
+  top: -87px !important;
 }
 
 .pod .pin-container {
-  height: 344px;
+  height: 204px;
   position: absolute;
-  top: 250px;
-  width: 270px;
+  top: 170px;
 }
 
 .pod.faded {
@@ -98,21 +94,9 @@ podrow[ncolumns='6'] .pod {
   z-index: 3;
 }
 
-.user-image-pane.pin-enabled {
-  height: 230px;
-  left: 20px;
-  top: 20px;
-  width: 230px;
-}
-
 html[dir=rtl] .user-image-pane {
   left: auto;
   right: 10px;
-}
-
-html[dir=rtl] .user-image-pane.pin-enabled {
-  left: auto;
-  right: 20px;
 }
 
 .user-image-container {
@@ -134,14 +118,6 @@ html:not([screen=login-add-user]) .pod .user-image {
   max-width: 160px;
   opacity: 0.7;
   position: absolute;
-  transition: max-height 180ms ease-in-out,
-              max-width 180ms ease-in-out,
-              top 180ms ease-in-out;
-}
-
-html:not([screen=login-add-user]) .pod .user-image.pin-enabled {
-  max-height: 230px;
-  max-width: 230px;
 }
 
 html:not([screen=login-add-user]) .pod.focused .user-image {
@@ -164,16 +140,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
   position: absolute;
   text-align: center;
   top: 0;
-  transition: left 180ms ease-in-out,
-              top 180ms ease-in-out,
-              width 180ms ease-in-out;
   width: 100%;
-}
-
-.pod.signed-in .signed-in-indicator.pin-enabled {
-  left: 20px;
-  top: 20px;
-  width: 230px;
 }
 
 .main-pane {
