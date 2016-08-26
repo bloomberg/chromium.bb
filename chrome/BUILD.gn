@@ -1196,20 +1196,16 @@ group("browser_dependencies") {
 # GYP version: chromium_child_dependencies variable in chrome.gyp
 group("child_dependencies") {
   public_deps = [
+    "//chrome/browser/devtools",
+    "//chrome/child",
     "//chrome/common",
+    "//chrome/gpu",
+    "//chrome/renderer",
+    "//chrome/utility",
     "//components/sync",
+    "//content/public/child",
+    "//third_party/WebKit/public:blink_devtools_frontend_resources",
   ]
-  if (!is_ios) {
-    public_deps += [
-      "//chrome/browser/devtools",
-      "//chrome/child",
-      "//chrome/gpu",
-      "//chrome/renderer",
-      "//chrome/utility",
-      "//content/public/child",
-      "//third_party/WebKit/public:blink_devtools_frontend_resources",
-    ]
-  }
 
   if (enable_nacl) {
     public_deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
@@ -1305,19 +1301,15 @@ group("resources") {
 # GYP version: chrome/chrome_resources.gyp:chrome_extra_resources
 group("extra_resources") {
   public_deps = [
+    "//chrome/browser/resources:component_extension_resources",
     "//chrome/browser/resources:invalidations_resources",
     "//chrome/browser/resources:net_internals_resources",
+    "//chrome/browser/resources:options_resources",
     "//chrome/browser/resources:password_manager_internals_resources",
     "//chrome/browser/resources:policy_resources",
+    "//chrome/browser/resources:settings_resources",
     "//chrome/browser/resources:translate_internals_resources",
   ]
-  if (!is_ios) {
-    public_deps += [
-      "//chrome/browser/resources:component_extension_resources",
-      "//chrome/browser/resources:options_resources",
-      "//chrome/browser/resources:settings_resources",
-    ]
-  }
 
   if (is_chromeos) {
     public_deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
@@ -1389,6 +1381,7 @@ group("packed_resources") {
 repack("packed_extra_resources") {
   visibility = [ "./*" ]
   sources = [
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/chrome/browser_resources.pak",
     "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
     "$root_gen_dir/chrome/common_resources.pak",
@@ -1398,6 +1391,8 @@ repack("packed_extra_resources") {
     "$root_gen_dir/chrome/policy_resources.pak",
     "$root_gen_dir/chrome/translate_internals_resources.pak",
     "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
+    "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
@@ -1411,15 +1406,17 @@ repack("packed_extra_resources") {
     "//chrome/browser/resources:translate_internals_resources",
     "//chrome/common:resources",
     "//components/resources",
+    "//content:resources",
+    "//content/browser/tracing:resources",
     "//net:net_resources",
+    "//third_party/WebKit/public:resources",
     "//ui/resources",
   ]
 
   if (is_android) {
     sources += [ "$root_gen_dir/android_webview/aw_resources.pak" ]
     deps += [ "//android_webview:generate_aw_resources" ]
-  }
-  if (!is_ios && !is_android) {
+  } else {  # Non-Android.
     # New paks should be added here by default.
     sources += [
       "$root_gen_dir/blink/devtools_resources.pak",
@@ -1438,18 +1435,6 @@ repack("packed_extra_resources") {
       "//content/browser/devtools:devtools_resources",
     ]
   }
-  if (!is_ios) {
-    sources += [
-      "$root_gen_dir/blink/public/resources/blink_resources.pak",
-      "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
-      "$root_gen_dir/content/content_resources.pak",
-    ]
-    deps += [
-      "//content:resources",
-      "//content/browser/tracing:resources",
-      "//third_party/WebKit/public:resources",
-    ]
-  }
   if (is_chromeos) {
     sources += [ "$root_gen_dir/ui/file_manager/file_manager_resources.pak" ]
     deps += [ "//ui/file_manager:resources" ]
@@ -1462,10 +1447,7 @@ repack("packed_extra_resources") {
     deps += [ "//extensions:extensions_resources" ]
   }
 
-  # GYP outputs the file in the gen/repack directory. On non-Mac/iOS platforms
-  # it them copies it. This skipes the copy step and writes it to the final
-  # location.
-  if (is_mac || is_ios) {
+  if (is_mac) {
     output = "$root_gen_dir/repack/resources.pak"
   } else {
     output = "$root_out_dir/resources.pak"
@@ -1541,9 +1523,11 @@ template("chrome_repack_percent") {
 
     # All sources should also have deps for completeness.
     sources = [
+      "$root_gen_dir/blink/public/resources/blink_image_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/theme_resources_${percent}_percent.pak",
       "$root_gen_dir/components/components_resources_${percent}_percent.pak",
+      "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
     ]
 
@@ -1552,20 +1536,12 @@ template("chrome_repack_percent") {
       "//chrome/renderer:resources",
       "//components/resources",
       "//components/strings",
+      "//content/app/resources",
       "//net:net_resources",
+      "//third_party/WebKit/public:image_resources",
       "//ui/resources",
     ]
 
-    if (!is_ios) {
-      sources += [
-        "$root_gen_dir/blink/public/resources/blink_image_resources_${percent}_percent.pak",
-        "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
-      ]
-      deps += [
-        "//content/app/resources",
-        "//third_party/WebKit/public:image_resources",
-      ]
-    }
     if (use_ash) {
       sources +=
           [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]

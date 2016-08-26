@@ -32,7 +32,12 @@ split_static_library("ui") {
     split_count = 1
   }
 
-  sources = []
+  sources = rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
+                        ".",
+                        "//chrome")
+  sources += rebase_path(gypi_values.chrome_browser_ui_toolbar_model_sources,
+                         ".",
+                         "//chrome")
   defines = []
   libs = []
 
@@ -63,17 +68,29 @@ split_static_library("ui") {
     "//chrome/app:command_ids",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
+    "//chrome/browser/devtools",
+    "//chrome/browser/ui/webui/engagement:mojo_bindings",
+    "//chrome/browser/ui/webui/omnibox:mojo_bindings",
+    "//chrome/browser/ui/webui/plugins:mojo_bindings",
+    "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
     "//chrome/common",
+    "//chrome/common/net",
+    "//chrome/installer/util:with_no_strings",
     "//components/app_modal",
+    "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
     "//components/bookmarks/managed",
     "//components/browser_sync/browser",
+    "//components/browsing_data/core",
+    "//components/browsing_data_ui",
+    "//components/bubble:bubble",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",
     "//components/content_settings/content/common",
     "//components/content_settings/core/browser",
     "//components/crash/content/app",
+    "//components/crash/core/browser",
     "//components/crx_file",
     "//components/data_reduction_proxy/core/browser",
     "//components/device_event_log",
@@ -94,6 +111,7 @@ split_static_library("ui") {
     "//components/keyed_service/core",
     "//components/metrics:profiler",
     "//components/mime_util",
+    "//components/net_log",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/offline_pages",
@@ -105,6 +123,7 @@ split_static_library("ui") {
     "//components/password_manager/sync/browser",
     "//components/pdf/browser",
     "//components/policy:generated",
+    "//components/power",
     "//components/pref_registry",
     "//components/proximity_auth",
     "//components/proxy_config",
@@ -125,6 +144,7 @@ split_static_library("ui") {
     "//components/startup_metric_utils/browser:lib",
     "//components/strings",
     "//components/subresource_filter/content/browser",
+    "//components/suggestions/proto",
     "//components/supervised_user_error_page",
     "//components/sync",
     "//components/sync_sessions",
@@ -135,6 +155,7 @@ split_static_library("ui") {
     "//components/undo",
     "//components/update_client",
     "//components/upload_list",
+    "//components/url_formatter",
     "//components/user_manager",
     "//components/user_prefs",
     "//components/variations",
@@ -147,15 +168,30 @@ split_static_library("ui") {
     "//content/public/common",
     "//crypto",
     "//device/core",
+    "//device/nfc",
     "//device/usb",
+    "//media",
+    "//net:net_with_v8",
+    "//net:stale_while_revalidate_experiment_domains",
     "//services/shell/runner/common",
     "//skia",
+    "//storage/browser",
+    "//storage/common",
+    "//third_party/WebKit/public:resources",
+    "//third_party/adobe/flash:flapper_version_h",
+    "//third_party/brotli",
     "//third_party/cacheinvalidation",
     "//third_party/cld:cld_version",
     "//third_party/icu",
+    "//third_party/leveldatabase",
+    "//third_party/libjingle",
+    "//third_party/re2",
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base",
+    "//ui/base/ime",
+    "//ui/compositor",
     "//ui/content_accelerators",
     "//ui/display",
     "//ui/events",
@@ -168,6 +204,9 @@ split_static_library("ui") {
     "//ui/shell_dialogs",
     "//ui/snapshot",
     "//ui/strings",
+    "//ui/surface",
+    "//ui/web_dialogs",
+    "//v8",
   ]
   allow_circular_includes_from = []
 
@@ -182,57 +221,7 @@ split_static_library("ui") {
     defines += [ "USE_CRAS" ]
   }
 
-  if (!is_ios) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
-                           ".",
-                           "//chrome")
-    sources += rebase_path(gypi_values.chrome_browser_ui_toolbar_model_sources,
-                           ".",
-                           "//chrome")
-    deps += [
-      "//chrome/browser/devtools",
-      "//chrome/browser/ui/webui/engagement:mojo_bindings",
-      "//chrome/browser/ui/webui/omnibox:mojo_bindings",
-      "//chrome/browser/ui/webui/plugins:mojo_bindings",
-      "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
-      "//chrome/common/net",
-      "//chrome/installer/util:with_no_strings",
-      "//components/autofill/content/browser:risk_proto",
-      "//components/browsing_data/core",
-      "//components/browsing_data_ui",
-      "//components/bubble:bubble",
-      "//components/crash/core/browser",
-      "//components/net_log",
-      "//components/power",
-      "//components/suggestions/proto",
-      "//components/url_formatter",
-      "//device/nfc",
-      "//media",
-      "//net:net_with_v8",
-      "//net:stale_while_revalidate_experiment_domains",
-      "//storage/browser",
-      "//storage/common",
-      "//third_party/WebKit/public:resources",
-      "//third_party/adobe/flash:flapper_version_h",
-      "//third_party/brotli",
-      "//third_party/leveldatabase",
-      "//third_party/libjingle",
-      "//third_party/re2",
-      "//ui/base",
-      "//ui/base/ime",
-      "//ui/compositor",
-      "//ui/surface",
-      "//ui/web_dialogs",
-      "//v8",
-    ]
-  } else {
-    # iOS.
-    sources +=
-        rebase_path(gypi_values.chrome_browser_ui_ios_sources, ".", "//chrome")
-    deps += [ "//net" ]
-  }
-
-  if (!android_java_ui && !is_ios) {
+  if (!android_java_ui) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
                            ".",
                            "//chrome")
@@ -615,7 +604,7 @@ split_static_library("ui") {
                            ".",
                            "//chrome")
   }
-  if (!android_java_ui && !is_ios) {
+  if (!android_java_ui) {
     deps += [
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
@@ -638,7 +627,7 @@ split_static_library("ui") {
             ".",
             "//chrome")
   }
-  if (enable_media_router && !is_android && !is_ios) {
+  if (enable_media_router && !is_android) {
     sources += rebase_path(gypi_values.chrome_browser_ui_media_router_sources,
                            ".",
                            "//chrome")
