@@ -29,7 +29,7 @@ function testReceivedEvents(expectedEvents, testLabel) {
 
 function init() {
   var targetDiv = document.getElementById("target");
-  targetEvents = ["mousedown", "mouseup", "pointerdown", "pointerup", "mousemove", "pointermove"];
+  var targetEvents = ["mousedown", "mouseup", "pointerdown", "pointerup", "mousemove", "pointermove"];
 
   targetEvents.forEach(function(eventName) {
     targetDiv.addEventListener(eventName, function(event) {

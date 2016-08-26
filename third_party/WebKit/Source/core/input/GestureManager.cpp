@@ -187,7 +187,7 @@ WebInputEventResult GestureManager::handleGestureTap(const GestureEventWithHitTe
         mouseDownEventResult = m_frame->eventHandler().dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown);
         m_selectionController->initializeSelectionState();
         if (mouseDownEventResult == WebInputEventResult::NotHandled)
-            mouseDownEventResult = m_frame->eventHandler().handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest), InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
+            mouseDownEventResult = m_frame->eventHandler().handleMouseFocus(currentHitTest, InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
         if (mouseDownEventResult == WebInputEventResult::NotHandled)
             mouseDownEventResult = m_frame->eventHandler().handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
     }
@@ -303,20 +303,26 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(const Gesture
     PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
     if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
+    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), WebPointerProperties::Button::NoButton,
+        eventType, /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers), PlatformMouseEvent::FromTouch,
+        WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
 
-    // To simulate right-click behavior, we send a right mouse down and then context menu event.
-    // TODO(crbug.com/579564): Maybe we should not send mouse down at all
-    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), WebPointerProperties::Button::Right, eventType, 1,
-        static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::RightButtonDown),
-        PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
-    if (!m_suppressMouseEventsFromGestures) {
-        // FIXME: Send HitTestResults to avoid redundant hit tests.
-        m_frame->eventHandler().handleMousePressEvent(mouseEvent);
+    if (!m_suppressMouseEventsFromGestures && m_frame->view()) {
+        HitTestRequest request(HitTestRequest::Active);
+        LayoutPoint documentPoint = m_frame->view()->rootFrameToContents(targetedEvent.event().position());
+        MouseEventWithHitTestResults mev = m_frame->document()->prepareMouseEvent(request, documentPoint, mouseEvent);
+
+        WebInputEventResult eventResult = m_frame->eventHandler().dispatchMouseEvent(
+            EventTypeNames::mousedown, mev.innerNode(), /* clickCount */ 0, mouseEvent);
+
+        if (eventResult == WebInputEventResult::NotHandled)
+            eventResult = m_frame->eventHandler().handleMouseFocus(mev.hitTestResult(), InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
+
+        if (eventResult == WebInputEventResult::NotHandled)
+            m_frame->eventHandler().handleMousePressEvent(mev);
     }
 
     return m_frame->eventHandler().sendContextMenuEvent(mouseEvent);
-    // We do not need to send a corresponding mouse release because in case of
-    // right-click, the context menu takes capture and consumes all events.
 }
 
 WebInputEventResult GestureManager::handleGestureShowPress()

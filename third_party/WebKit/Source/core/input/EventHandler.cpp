@@ -872,7 +872,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     InputDeviceCapabilities* sourceCapabilities = mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() :
         InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
     if (eventResult == WebInputEventResult::NotHandled)
-        eventResult = handleMouseFocus(MouseEventWithHitTestResults(mev.event(), hitTestResult), sourceCapabilities);
+        eventResult = handleMouseFocus(hitTestResult, sourceCapabilities);
     m_capturesDragging = eventResult == WebInputEventResult::NotHandled || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1523,9 +1523,6 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
 
     Node* lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
 
-    if (mouseEvent.getSyntheticEventType() == PlatformMouseEvent::FromTouch)
-        return dispatchMouseEvent(mouseEventType, m_nodeUnderMouse, clickCount, mouseEvent);
-
     Node* newNodeUnderMouse = nullptr;
     const auto& eventResult = m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent,
@@ -1539,11 +1536,11 @@ void EventHandler::setClickNode(Node* node)
     m_clickNode = node;
 }
 
-WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
+WebInputEventResult EventHandler::handleMouseFocus(const HitTestResult& hitTestResult, InputDeviceCapabilities* sourceCapabilities)
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
-    if (targetedEvent.hitTestResult().scrollbar() && !m_frame->contentLayoutItem().isNull()) {
-        if (targetedEvent.hitTestResult().scrollbar()->getScrollableArea() == m_frame->contentLayoutItem().getScrollableArea())
+    if (hitTestResult.scrollbar() && !m_frame->contentLayoutItem().isNull()) {
+        if (hitTestResult.scrollbar()->getScrollableArea() == m_frame->contentLayoutItem().getScrollableArea())
             return WebInputEventResult::NotHandled;
     }
 
@@ -1577,7 +1574,7 @@ WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestRe
 
     // Only change the focus when clicking scrollbars if it can transfered to a
     // mouse focusable node.
-    if (!element && targetedEvent.hitTestResult().scrollbar())
+    if (!element && hitTestResult.scrollbar())
         return WebInputEventResult::HandledSystem;
 
     if (Page* page = m_frame->page()) {
@@ -2114,7 +2111,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
         eventType = PlatformEvent::MouseReleased;
 
     PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition,
-        WebPointerProperties::Button::Right, eventType, 1,
+        WebPointerProperties::Button::NoButton, eventType, /* clickCount */ 0,
         PlatformEvent::NoModifiers, PlatformMouseEvent::RealOrIndistinguishable,
         WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
 

@@ -243,7 +243,7 @@ private:
 
     WebInputEventResult handleMouseMoveOrLeaveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = nullptr, bool onlyUpdateScrollbars = false, bool forceLeave = false);
     WebInputEventResult handleMousePressEvent(const MouseEventWithHitTestResults&);
-    WebInputEventResult handleMouseFocus(const MouseEventWithHitTestResults&, InputDeviceCapabilities* sourceCapabilities);
+    WebInputEventResult handleMouseFocus(const HitTestResult&, InputDeviceCapabilities* sourceCapabilities);
     WebInputEventResult handleMouseDraggedEvent(const MouseEventWithHitTestResults&);
     WebInputEventResult handleMouseReleaseEvent(const MouseEventWithHitTestResults&);
 

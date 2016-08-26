@@ -40,8 +40,6 @@ MouseEvent* MouseEvent::create(ScriptState* scriptState, const AtomicString& typ
 
 MouseEvent* MouseEvent::create(const AtomicString& eventType, AbstractView* view, const PlatformMouseEvent& event, int detail, Node* relatedTarget)
 {
-    DCHECK(event.type() == PlatformEvent::MouseMoved || event.pointerProperties().button != WebPointerProperties::Button::NoButton);
-
     bool isMouseEnterOrLeave = eventType == EventTypeNames::mouseenter || eventType == EventTypeNames::mouseleave;
     bool isCancelable = !isMouseEnterOrLeave;
     bool isBubbling = !isMouseEnterOrLeave;
