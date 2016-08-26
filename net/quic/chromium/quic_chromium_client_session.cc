@@ -39,10 +39,6 @@ namespace net {
 
 namespace {
 
-// The length of time to wait for a 0-RTT handshake to complete
-// before allowing the requests to possibly proceed over TCP.
-const int k0RttHandshakeTimeoutMs = 300;
-
 // IPv6 packets have an additional 20 bytes of overhead than IPv4 packets.
 const size_t kAdditionalOverheadForIPv6 = 20;
 
@@ -614,15 +610,8 @@ int QuicChromiumClientSession::CryptoConnect(
 
   // Unless we require handshake confirmation, activate the session if
   // we have established initial encryption.
-  if (!require_confirmation_ && IsEncryptionEstablished()) {
-    // To mitigate the effects of hanging 0-RTT connections, set up a timer to
-    // cancel any requests, if the handshake takes too long.
-    task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&QuicChromiumClientSession::OnConnectTimeout,
-                              weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(k0RttHandshakeTimeoutMs));
+  if (!require_confirmation_ && IsEncryptionEstablished())
     return OK;
-  }
 
   callback_ = callback;
   return ERR_IO_PENDING;
@@ -1170,19 +1159,6 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
   // Will delete |this|.
   if (stream_factory_)
     stream_factory_->OnSessionClosed(this);
-}
-
-void QuicChromiumClientSession::OnConnectTimeout() {
-  DCHECK(callback_.is_null());
-
-  if (IsCryptoHandshakeConfirmed())
-    return;
-
-  // TODO(rch): re-enable this code once beta is cut.
-  //  if (stream_factory_)
-  //    stream_factory_->OnSessionConnectTimeout(this);
-  //  CloseAllStreams(ERR_QUIC_HANDSHAKE_FAILED);
-  //  DCHECK_EQ(0u, GetNumOpenOutgoingStreams());
 }
 
 bool QuicChromiumClientSession::MigrateToSocket(

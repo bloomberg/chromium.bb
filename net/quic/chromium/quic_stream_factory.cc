@@ -1368,34 +1368,6 @@ void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   all_sessions_.erase(session);
 }
 
-void QuicStreamFactory::OnSessionConnectTimeout(
-    QuicChromiumClientSession* session) {
-  const AliasSet& aliases = session_aliases_[session];
-
-  if (aliases.empty())
-    return;
-
-  for (const QuicSessionKey& key : aliases) {
-    const QuicServerId& server_id = key.server_id();
-    SessionMap::iterator session_it = active_sessions_.find(server_id);
-    DCHECK(session_it != active_sessions_.end());
-    DCHECK_EQ(session, session_it->second);
-    active_sessions_.erase(session_it);
-  }
-
-  const IPEndPoint peer_address = session->connection()->peer_address();
-  ip_aliases_[peer_address].erase(session);
-  if (ip_aliases_[peer_address].empty())
-    ip_aliases_.erase(peer_address);
-  QuicSessionKey key = *aliases.begin();
-  session_aliases_.erase(session);
-  Job* job = new Job(this, host_resolver_, session, key);
-  active_jobs_[key.server_id()].insert(job);
-  int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
-                               base::Unretained(this), job));
-  DCHECK_EQ(ERR_IO_PENDING, rv);
-}
-
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   RequestMap::iterator request_it = active_requests_.find(request);
   DCHECK(request_it != active_requests_.end());
