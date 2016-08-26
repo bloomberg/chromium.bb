@@ -164,8 +164,8 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
                                   internal::NativeWidgetDelegate* delegate) = 0;
 
-  // Returns the default obscured text reveal duration.
-  virtual base::TimeDelta GetDefaultTextfieldObscuredRevealDuration();
+  // Returns the password reveal duration for Textfield.
+  virtual base::TimeDelta GetTextfieldPasswordRevealDuration();
 
   // Returns true if the operating system's window manager will always provide a
   // title bar with caption buttons (ignoring the setting to

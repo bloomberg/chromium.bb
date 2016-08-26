@@ -93,7 +93,7 @@ content::WebContents* ViewsDelegate::CreateWebContents(
   return nullptr;
 }
 
-base::TimeDelta ViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
+base::TimeDelta ViewsDelegate::GetTextfieldPasswordRevealDuration() {
   return base::TimeDelta();
 }
 

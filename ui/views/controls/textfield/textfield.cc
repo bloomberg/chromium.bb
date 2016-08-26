@@ -212,6 +212,13 @@ ui::TextEditCommand GetTextEditCommandFromMenuCommand(int command_id,
   return ui::TextEditCommand::INVALID_COMMAND;
 }
 
+base::TimeDelta GetPasswordRevealDuration() {
+  return ViewsDelegate::GetInstance()
+             ? ViewsDelegate::GetInstance()
+                   ->GetTextfieldPasswordRevealDuration()
+             : base::TimeDelta();
+}
+
 }  // namespace
 
 // static
@@ -260,12 +267,6 @@ Textfield::Textfield()
   GetRenderText()->SetFontList(GetDefaultFontList());
   SetBorder(std::unique_ptr<Border>(new FocusableBorder()));
   SetFocusBehavior(FocusBehavior::ALWAYS);
-
-  if (ViewsDelegate::GetInstance()) {
-    password_reveal_duration_ =
-        ViewsDelegate::GetInstance()
-            ->GetDefaultTextfieldObscuredRevealDuration();
-  }
 
   // These allow BrowserView to pass edit commands from the Chrome menu to us
   // when we're focused by simply asking the FocusManager to
@@ -1291,7 +1292,7 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
   DoInsertChar(ch);
 
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
-      !password_reveal_duration_.is_zero()) {
+      !GetPasswordRevealDuration().is_zero()) {
     const size_t change_offset = model_->GetCursorPosition();
     DCHECK_GT(change_offset, 0u);
     RevealPasswordChar(change_offset - 1);
@@ -1985,7 +1986,7 @@ void Textfield::RevealPasswordChar(int index) {
   SchedulePaint();
 
   if (index != -1) {
-    password_reveal_timer_.Start(FROM_HERE, password_reveal_duration_,
+    password_reveal_timer_.Start(FROM_HERE, GetPasswordRevealDuration(),
         base::Bind(&Textfield::RevealPasswordChar,
                    weak_ptr_factory_.GetWeakPtr(), -1));
   }

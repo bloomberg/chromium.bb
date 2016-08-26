@@ -434,8 +434,7 @@ class VIEWS_EXPORT Textfield : public View,
   // The input flags of this text field.
   int text_input_flags_;
 
-  // The duration and timer to reveal the last typed password character.
-  base::TimeDelta password_reveal_duration_;
+  // The timer to reveal the last typed password character.
   base::OneShotTimer password_reveal_timer_;
 
   // Tracks whether a user action is being performed; i.e. OnBeforeUserAction()
