@@ -389,6 +389,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicChromiumClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicChromiumClientSession*> SessionSet;
   typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
+  typedef std::map<QuicChromiumClientSession*, IPEndPoint> SessionPeerIPMap;
   typedef std::set<Job*> JobSet;
   typedef std::map<QuicServerId, JobSet> JobMap;
   typedef std::map<QuicStreamRequest*, QuicServerId> RequestMap;
@@ -515,6 +516,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   SessionAliasMap session_aliases_;
   // Map from IP address to sessions which are connected to this address.
   IPAliasMap ip_aliases_;
+  // Map from session to its original peer IP address.
+  SessionPeerIPMap session_peer_ip_;
 
   // Origins which have gone away recently.
   AliasSet gone_away_aliases_;

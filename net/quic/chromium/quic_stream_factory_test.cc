@@ -516,8 +516,6 @@ class QuicStreamFactoryTestBase {
 
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
     crypto_client_stream_factory_.SetConfig(config);
 
     // Set up first socket data provider.
@@ -525,16 +523,21 @@ class QuicStreamFactoryTestBase {
     SequencedSocketData socket_data1(reads1, arraysize(reads1), nullptr, 0);
     socket_factory_.AddSocketDataProvider(&socket_data1);
 
-    // Set up second socket data provider that is used after
-    // migration.
-    std::unique_ptr<QuicEncryptedPacket> ping(
+    // Set up second socket data provider that is used after migration.
+    std::unique_ptr<QuicEncryptedPacket> sendping(
         client_maker_.MakePingPacket(1, /*include_version=*/true));
-    std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-        2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+    std::unique_ptr<QuicEncryptedPacket> client_rst(
+        client_maker_.MakeAckAndRstPacket(2, false, kClientDataStreamId1,
+                                          QUIC_STREAM_CANCELLED, 1, 1, 1,
+                                          true));
     MockWrite writes2[] = {
-        MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 1),
-        MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 2)};
-    MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+        MockWrite(SYNCHRONOUS, sendping->data(), sendping->length(), 0),
+        MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
+    std::unique_ptr<QuicEncryptedPacket> recvping(
+        client_maker_.MakePingPacket(1, /*include_version=*/false));
+    MockRead reads2[] = {
+        MockRead(ASYNC, recvping->data(), recvping->length(), 1),
+        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
     SequencedSocketData socket_data2(reads2, arraysize(reads2), writes2,
                                      arraysize(writes2));
     socket_factory_.AddSocketDataProvider(&socket_data2);
@@ -555,7 +558,6 @@ class QuicStreamFactoryTestBase {
     request_info.url = GURL("https://www.example.org/");
     EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                            net_log_, CompletionCallback()));
-
     // Ensure that session is alive and active.
     QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
     EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -832,6 +834,49 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
+  // Set up session to migrate.
+  host_resolver_.rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                           "192.168.0.1", "");
+  IPEndPoint alt_address = IPEndPoint(IPAddress(1, 2, 3, 4), 443);
+  QuicConfig config;
+  config.SetAlternateServerAddressToSend(alt_address);
+
+  VerifyServerMigration(config, alt_address);
+
+  // Close server-migrated session.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  session->CloseSessionOnError(0u, QUIC_NO_ERROR);
+
+  // Set up server IP, socket, proof, and config for new session.
+  HostPortPair server2(kServer2HostName, kDefaultServerPort);
+  host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  QuicConfig config2;
+  crypto_client_stream_factory_.SetConfig(config2);
+
+  // Create new request to cause new session creation.
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(server2, privacy_mode_,
+                             /*cert_verify_flags=*/0, url2_, "GET", net_log_,
+                             callback.callback()));
+  EXPECT_EQ(OK, callback.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream2 = request2.CreateStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  // EXPECT_EQ(GetActiveSession(host_port_pair_), GetActiveSession(server2));
 }
 
 TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {

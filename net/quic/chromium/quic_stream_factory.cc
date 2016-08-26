@@ -1264,10 +1264,12 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
   }
   ProcessGoingAwaySession(session, all_sessions_[session].server_id(), false);
   if (!aliases.empty()) {
-    const IPEndPoint peer_address = session->connection()->peer_address();
+    DCHECK(base::ContainsKey(session_peer_ip_, session));
+    const IPEndPoint peer_address = session_peer_ip_[session];
     ip_aliases_[peer_address].erase(session);
     if (ip_aliases_[peer_address].empty())
       ip_aliases_.erase(peer_address);
+    session_peer_ip_.erase(session);
   }
   session_aliases_.erase(session);
 }
@@ -1857,6 +1859,8 @@ void QuicStreamFactory::ActivateSession(const QuicSessionKey& key,
   const IPEndPoint peer_address = session->connection()->peer_address();
   DCHECK(!base::ContainsKey(ip_aliases_[peer_address], session));
   ip_aliases_[peer_address].insert(session);
+  DCHECK(!base::ContainsKey(session_peer_ip_, session));
+  session_peer_ip_[session] = peer_address;
 }
 
 int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
