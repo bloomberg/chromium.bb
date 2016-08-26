@@ -131,6 +131,8 @@ class MultiplexedBindingState {
   MultiplexedBindingState();
   ~MultiplexedBindingState();
 
+  void AddFilter(std::unique_ptr<MessageReceiver> filter);
+
   bool HasAssociatedInterfaces() const;
 
   void PauseIncomingMethodCallProcessing();

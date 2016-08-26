@@ -11,6 +11,7 @@ static_library("bindings") {
     "array_traits_standard.h",
     "array_traits_stl.h",
     "associated_binding.h",
+    "associated_binding_set.h",
     "associated_group.h",
     "associated_group_controller.h",
     "associated_interface_ptr.h",

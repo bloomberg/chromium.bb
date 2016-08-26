@@ -11,6 +11,7 @@ source_set("tests") {
     "associated_interface_unittest.cc",
     "bind_task_runner_unittest.cc",
     "binding_callback_unittest.cc",
+    "binding_set_unittest.cc",
     "binding_unittest.cc",
     "buffer_unittest.cc",
     "connector_unittest.cc",

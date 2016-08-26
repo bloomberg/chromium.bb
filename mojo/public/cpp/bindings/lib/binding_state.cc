@@ -79,6 +79,12 @@ MultiplexedBindingState::MultiplexedBindingState() = default;
 
 MultiplexedBindingState::~MultiplexedBindingState() = default;
 
+void MultiplexedBindingState::AddFilter(
+    std::unique_ptr<MessageReceiver> filter) {
+  DCHECK(endpoint_client_);
+  endpoint_client_->AddFilter(std::move(filter));
+}
+
 bool MultiplexedBindingState::HasAssociatedInterfaces() const {
   return router_ ? router_->HasAssociatedEndpoints() : false;
 }
