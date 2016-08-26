@@ -53,6 +53,7 @@ public class TextInputState {
     }
 
     public CharSequence getSelectedText() {
+        if (mSelection.start() == mSelection.end()) return null;
         return TextUtils.substring(mText, mSelection.start(), mSelection.end());
     }
 

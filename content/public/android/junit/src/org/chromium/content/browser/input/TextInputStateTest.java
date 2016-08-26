@@ -27,7 +27,7 @@ public class TextInputStateTest {
         assertEquals("hel", state.getTextBeforeSelection(3));
         assertEquals("el", state.getTextBeforeSelection(2));
         assertEquals("", state.getTextBeforeSelection(0));
-        assertEquals("", state.getSelectedText());
+        assertEquals(null, state.getSelectedText());
     }
 
     @Test
