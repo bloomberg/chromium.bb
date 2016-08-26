@@ -8,13 +8,13 @@
 
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/display_manager_delegate.h"
+#include "services/ui/ws/user_display_manager_delegate.h"
 
 namespace ui {
 namespace ws {
 
 UserDisplayManager::UserDisplayManager(ws::DisplayManager* display_manager,
-                                       DisplayManagerDelegate* delegate,
+                                       UserDisplayManagerDelegate* delegate,
                                        const UserId& user_id)
     : display_manager_(display_manager),
       delegate_(delegate),

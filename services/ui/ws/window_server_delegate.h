@@ -47,6 +47,10 @@ class WindowServerDelegate {
 
   virtual bool IsTestConfig() const = 0;
 
+  // Called when touchscreen coordinate transforms should be updated. For
+  // example when displays or touch input devices are added/removed.
+  virtual void UpdateTouchTransforms() = 0;
+
   // Creates a WindowTreeBinding. Default implementation returns null, which
   // creates DefaultBinding.
   virtual std::unique_ptr<WindowTreeBinding> CreateWindowTreeBinding(

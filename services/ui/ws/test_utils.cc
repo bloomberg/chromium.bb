@@ -426,8 +426,7 @@ WindowEventTargetingHelper::WindowEventTargetingHelper()
       surfaces_state_(new SurfacesState()),
       window_server_(nullptr) {
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-  window_server_.reset(
-      new WindowServer(&window_server_delegate_, surfaces_state_));
+  window_server_.reset(new WindowServer(&window_server_delegate_));
   PlatformDisplayInitParams display_init_params;
   display_init_params.surfaces_state = surfaces_state_;
   display_ = new Display(window_server_.get(), display_init_params);

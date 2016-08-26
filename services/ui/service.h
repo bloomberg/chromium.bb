@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/cpp/service_runner.h"
@@ -110,6 +109,7 @@ class Service
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
   void CreateDefaultDisplays() override;
+  void UpdateTouchTransforms() override;
 
   // shell::InterfaceFactory<mojom::AccessibilityManager> implementation.
   void Create(const shell::Identity& remote_identity,
@@ -160,13 +160,6 @@ class Service
   void Create(const shell::Identity& remote_identity,
               mojom::WindowServerTestRequest request) override;
 
-  // Callback for display configuration. |id| is the identifying token for the
-  // configured display that will identify a specific physical display across
-  // configuration changes. |bounds| is the bounds of the display in screen
-  // coordinates.
-  void OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds);
-
-  ws::PlatformDisplayInitParams platform_display_init_params_;
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
   tracing::Provider tracing_;
@@ -188,8 +181,6 @@ class Service
   std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;
   IMEServerImpl ime_server_;
-
-  base::WeakPtrFactory<Service> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

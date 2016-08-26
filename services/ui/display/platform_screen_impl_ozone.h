@@ -28,10 +28,7 @@ class PlatformScreenImplOzone : public PlatformScreen,
 
  private:
   // PlatformScreen:
-  void Init() override;  // Must not be called until after the ozone platform is
-                         // initialized.
-  void ConfigurePhysicalDisplay(
-      const ConfiguredDisplayCallback& callback) override;
+  void Init(PlatformScreenDelegate* delegate) override;
   int64_t GetPrimaryDisplayId() const override;
 
   // ui::DisplayConfigurator::Observer:
@@ -41,15 +38,13 @@ class PlatformScreenImplOzone : public PlatformScreen,
       const ui::DisplayConfigurator::DisplayStateList& displays,
       ui::MultipleDisplayState failed_new_state) override;
 
+  PlatformScreenDelegate* delegate_ = nullptr;
   ui::DisplayConfigurator display_configurator_;
 
   // TODO(kylechar): These values can/should be replaced by DisplayLayout.
   int64_t primary_display_id_ = display::Display::kInvalidDisplayID;
   std::set<uint64_t> displays_;
   gfx::Point next_display_origin_;
-
-  // Callback for when new displays are configured.
-  ConfiguredDisplayCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenImplOzone);
 };

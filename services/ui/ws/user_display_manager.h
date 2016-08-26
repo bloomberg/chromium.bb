@@ -23,7 +23,7 @@ namespace ws {
 
 class Display;
 class DisplayManager;
-class DisplayManagerDelegate;
+class UserDisplayManagerDelegate;
 
 namespace test {
 class UserDisplayManagerTestApi;
@@ -33,7 +33,7 @@ class UserDisplayManagerTestApi;
 class UserDisplayManager : public mojom::DisplayManager {
  public:
   UserDisplayManager(ws::DisplayManager* display_manager,
-                     DisplayManagerDelegate* delegate,
+                     UserDisplayManagerDelegate* delegate,
                      const UserId& user_id);
   ~UserDisplayManager() override;
 
@@ -79,7 +79,7 @@ class UserDisplayManager : public mojom::DisplayManager {
 
   ws::DisplayManager* display_manager_;
 
-  DisplayManagerDelegate* delegate_;
+  UserDisplayManagerDelegate* delegate_;
 
   const UserId user_id_;
 

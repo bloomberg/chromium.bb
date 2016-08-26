@@ -4,6 +4,8 @@
 
 #include "services/ui/display/platform_screen_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -15,28 +17,27 @@ namespace {
 
 const int64_t kDisplayId = 1;
 
-void FixedSizeScreenConfiguration(
-    const PlatformScreen::ConfiguredDisplayCallback& callback) {
-  callback.Run(kDisplayId, gfx::Rect(1024, 768));
-}
-
 }  // namespace
 
 // static
 std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::WrapUnique(new PlatformScreenImpl);
+  return base::MakeUnique<PlatformScreenImpl>();
 }
 
-PlatformScreenImpl::PlatformScreenImpl() {}
+PlatformScreenImpl::PlatformScreenImpl() : weak_ptr_factory_(this) {}
 
 PlatformScreenImpl::~PlatformScreenImpl() {}
 
-void PlatformScreenImpl::Init() {}
+void PlatformScreenImpl::FixedSizeScreenConfiguration() {
+  delegate_->OnDisplayAdded(this, kDisplayId, gfx::Rect(1024, 768));
+}
 
-void PlatformScreenImpl::ConfigurePhysicalDisplay(
-    const PlatformScreen::ConfiguredDisplayCallback& callback) {
+void PlatformScreenImpl::Init(PlatformScreenDelegate* delegate) {
+  DCHECK(delegate);
+  delegate_ = delegate;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
+      FROM_HERE, base::Bind(&PlatformScreenImpl::FixedSizeScreenConfiguration,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 int64_t PlatformScreenImpl::GetPrimaryDisplayId() const {

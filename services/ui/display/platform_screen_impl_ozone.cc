@@ -36,18 +36,16 @@ PlatformScreenImplOzone::~PlatformScreenImplOzone() {
   display_configurator_.RemoveObserver(this);
 }
 
-void PlatformScreenImplOzone::Init() {
+void PlatformScreenImplOzone::Init(PlatformScreenDelegate* delegate) {
+  DCHECK(delegate);
+  delegate_ = delegate;
+
   // We want display configuration to happen even off device to keep the control
   // flow similar.
   display_configurator_.set_configure_display(true);
   display_configurator_.AddObserver(this);
   display_configurator_.Init(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
-}
-
-void PlatformScreenImplOzone::ConfigurePhysicalDisplay(
-    const PlatformScreen::ConfiguredDisplayCallback& callback) {
-  callback_ = callback;
 
   if (base::SysInfo::IsRunningOnChromeOS()) {
     display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
@@ -96,7 +94,7 @@ void PlatformScreenImplOzone::OnDisplayModeChanged(
     // Keep track of what displays have already been added.
     displays_.insert(display->display_id());
 
-    callback_.Run(id, bounds);
+    delegate_->OnDisplayAdded(this, id, bounds);
   }
 
   DCHECK(displays_ == all_displays) << "Removing displays is not supported.";

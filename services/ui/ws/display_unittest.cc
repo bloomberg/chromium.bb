@@ -62,8 +62,7 @@ class DisplayTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    window_server_.reset(new WindowServer(&window_server_delegate_,
-                                          scoped_refptr<SurfacesState>()));
+    window_server_.reset(new WindowServer(&window_server_delegate_));
     window_server_delegate_.set_window_server(window_server_.get());
     window_server_->user_id_tracker()->AddUserId(kTestId1);
     window_server_->user_id_tracker()->AddUserId(kTestId2);

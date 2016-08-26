@@ -21,11 +21,11 @@
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display.h"
-#include "services/ui/ws/display_manager_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/user_display_manager_delegate.h"
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set.h"
@@ -46,11 +46,10 @@ class WindowTreeBinding;
 // WindowTrees) as well as providing the root of the hierarchy.
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
-                     public DisplayManagerDelegate,
+                     public UserDisplayManagerDelegate,
                      public UserIdTrackerObserver {
  public:
-  WindowServer(WindowServerDelegate* delegate,
-               const scoped_refptr<ui::SurfacesState>& surfaces_state);
+  explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
 
   WindowServerDelegate* delegate() { return delegate_; }
@@ -216,6 +215,18 @@ class WindowServer : public ServerWindowDelegate,
   gfx::Rect GetCurrentMoveLoopRevertBounds();
   bool in_move_loop() const { return !!current_move_loop_; }
 
+  void OnFirstDisplayReady();
+  void OnNoMoreDisplays();
+  WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
+
+  // ServerWindowDelegate:
+  ui::SurfacesState* GetSurfacesState() override;
+
+  // UserDisplayManagerDelegate:
+  bool GetFrameDecorationsForUser(
+      const UserId& user_id,
+      mojom::FrameDecorationValuesPtr* values) override;
+
  private:
   struct CurrentMoveLoopState;
   friend class Operation;
@@ -266,7 +277,6 @@ class WindowServer : public ServerWindowDelegate,
   bool IsUserInHighContrastMode(const UserId& user) const;
 
   // Overridden from ServerWindowDelegate:
-  ui::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
@@ -308,15 +318,6 @@ class WindowServer : public ServerWindowDelegate,
                               ServerWindow* transient_child) override;
   void OnTransientWindowRemoved(ServerWindow* window,
                                 ServerWindow* transient_child) override;
-
-  // DisplayManagerDelegate:
-  void OnFirstDisplayReady() override;
-  void OnNoMoreDisplays() override;
-  bool GetFrameDecorationsForUser(
-      const UserId& user_id,
-      mojom::FrameDecorationValuesPtr* values) override;
-  WindowManagerState* GetWindowManagerStateForUser(
-      const UserId& user_id) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,

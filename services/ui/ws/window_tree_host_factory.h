@@ -19,10 +19,7 @@ class WindowServer;
 
 class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
  public:
-  WindowTreeHostFactory(
-      WindowServer* window_server,
-      const UserId& user_id,
-      const PlatformDisplayInitParams& platform_display_init_params);
+  WindowTreeHostFactory(WindowServer* window_server, const UserId& user_id);
   ~WindowTreeHostFactory() override;
 
   void AddBinding(mojom::WindowTreeHostFactoryRequest request);
@@ -34,7 +31,7 @@ class WindowTreeHostFactory : public mojom::WindowTreeHostFactory {
 
   WindowServer* window_server_;
   const UserId user_id_;
-  const PlatformDisplayInitParams platform_display_init_params_;
+  PlatformDisplayInitParams platform_display_init_params_;
   mojo::BindingSet<mojom::WindowTreeHostFactory> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostFactory);

@@ -5,15 +5,9 @@
 #ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_
 #define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_
 
-#include <stdint.h>
-
 #include <memory>
 
-#include "base/callback.h"
-
-namespace gfx {
-class Rect;
-}
+#include "services/ui/display/platform_screen_delegate.h"
 
 namespace display {
 
@@ -21,21 +15,17 @@ namespace display {
 // attached physical displays.
 class PlatformScreen {
  public:
-  using ConfiguredDisplayCallback =
-      base::Callback<void(int64_t, const gfx::Rect&)>;
-
   virtual ~PlatformScreen() {}
 
   // Creates a PlatformScreen instance.
   static std::unique_ptr<PlatformScreen> Create();
 
-  // Initializes platform specific screen resources.
-  virtual void Init() = 0;
-
-  // ConfigurePhysicalDisplay() configures a single physical display and returns
-  // its id and bounds for it via |callback|.
-  virtual void ConfigurePhysicalDisplay(
-      const ConfiguredDisplayCallback& callback) = 0;
+  // Triggers initial display configuration to start. On device this will
+  // configuration the connected displays. Off device this will create one or
+  // more fake displays and pretend to configure them. A non-null |delegate|
+  // must be provided that will receive notifications when displays are added,
+  // removed or modified.
+  virtual void Init(PlatformScreenDelegate* delegate) = 0;
 
   virtual int64_t GetPrimaryDisplayId() const = 0;
 };

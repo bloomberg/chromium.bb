@@ -81,8 +81,7 @@ struct Service::UserState {
 Service::Service()
     : test_config_(false),
       platform_screen_(display::PlatformScreen::Create()),
-      ime_registrar_(&ime_server_),
-      weak_ptr_factory_(this) {}
+      ime_registrar_(&ime_server_) {}
 
 Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -133,8 +132,6 @@ void Service::AddUserIfNecessary(const shell::Identity& remote_identity) {
 }
 
 void Service::OnStart(const shell::Identity& identity) {
-  platform_display_init_params_.surfaces_state = new SurfacesState;
-
   base::PlatformThread::SetName("mus");
   tracing_.Initialize(connector(), identity.name());
   TRACE_EVENT0("mus", "Service::Initialize started");
@@ -184,9 +181,7 @@ void Service::OnStart(const shell::Identity& identity) {
   gpu_proxy_.reset(new GpuServiceProxy());
 
   // Gpu must be running before the PlatformScreen can be initialized.
-  platform_screen_->Init();
-  window_server_.reset(
-      new ws::WindowServer(this, platform_display_init_params_.surfaces_state));
+  window_server_.reset(new ws::WindowServer(this));
 
   // DeviceDataManager must be initialized before TouchController. On non-Linux
   // platforms there is no DeviceDataManager so don't create touch controller.
@@ -244,11 +239,15 @@ bool Service::IsTestConfig() const {
   return test_config_;
 }
 
+void Service::UpdateTouchTransforms() {
+  if (touch_controller_)
+    touch_controller_->UpdateTouchTransforms();
+}
+
 void Service::CreateDefaultDisplays() {
-  // An asynchronous callback will create the Displays once the physical
-  // displays are ready.
-  platform_screen_->ConfigurePhysicalDisplay(base::Bind(
-      &Service::OnCreatedPhysicalDisplay, weak_ptr_factory_.GetWeakPtr()));
+  // The display manager will create Displays once hardware or virtual displays
+  // are ready.
+  platform_screen_->Init(window_server_->display_manager());
 }
 
 void Service::Create(const shell::Identity& remote_identity,
@@ -340,8 +339,7 @@ void Service::Create(const shell::Identity& remote_identity,
   UserState* user_state = GetUserState(remote_identity);
   if (!user_state->window_tree_host_factory) {
     user_state->window_tree_host_factory.reset(new ws::WindowTreeHostFactory(
-        window_server_.get(), remote_identity.user_id(),
-        platform_display_init_params_));
+        window_server_.get(), remote_identity.user_id()));
   }
   user_state->window_tree_host_factory->AddBinding(std::move(request));
 }
@@ -353,18 +351,5 @@ void Service::Create(const shell::Identity& remote_identity,
   new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
 }
 
-void Service::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
-  platform_display_init_params_.display_bounds = bounds;
-  platform_display_init_params_.display_id = id;
-  platform_display_init_params_.platform_screen = platform_screen_.get();
-
-  // Display manages its own lifetime.
-  ws::Display* host_impl =
-      new ws::Display(window_server_.get(), platform_display_init_params_);
-  host_impl->Init(nullptr);
-
-  if (touch_controller_)
-    touch_controller_->UpdateTouchTransforms();
-}
 
 }  // namespace ui

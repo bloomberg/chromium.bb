@@ -44,9 +44,7 @@ class CursorTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-    window_server_.reset(
-        new WindowServer(&window_server_delegate_,
-                         scoped_refptr<SurfacesState>(new SurfacesState)));
+    window_server_.reset(new WindowServer(&window_server_delegate_));
     window_server_delegate_.set_window_server(window_server_.get());
 
     window_server_delegate_.set_num_displays_to_create(1);

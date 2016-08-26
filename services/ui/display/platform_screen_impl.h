@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "services/ui/display/platform_screen.h"
 
 namespace display {
@@ -20,11 +21,16 @@ class PlatformScreenImpl : public PlatformScreen {
   ~PlatformScreenImpl() override;
 
  private:
+  // Fake creation of a single 1024x768 display.
+  void FixedSizeScreenConfiguration();
+
   // PlatformScreen.
-  void Init() override;
-  void ConfigurePhysicalDisplay(
-      const PlatformScreen::ConfiguredDisplayCallback& callback) override;
+  void Init(PlatformScreenDelegate* delegate) override;
   int64_t GetPrimaryDisplayId() const override;
+
+  PlatformScreenDelegate* delegate_ = nullptr;
+
+  base::WeakPtrFactory<PlatformScreenImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenImpl);
 };

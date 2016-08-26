@@ -37,11 +37,9 @@ struct WindowServer::CurrentMoveLoopState {
   gfx::Rect revert_bounds;
 };
 
-WindowServer::WindowServer(
-    WindowServerDelegate* delegate,
-    const scoped_refptr<ui::SurfacesState>& surfaces_state)
+WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
-      surfaces_state_(surfaces_state),
+      surfaces_state_(new SurfacesState()),
       next_client_id_(1),
       display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
@@ -484,6 +482,37 @@ gfx::Rect WindowServer::GetCurrentMoveLoopRevertBounds() {
   return gfx::Rect();
 }
 
+void WindowServer::OnFirstDisplayReady() {
+  delegate_->OnFirstDisplayReady();
+}
+
+void WindowServer::OnNoMoreDisplays() {
+  delegate_->OnNoMoreDisplays();
+}
+
+WindowManagerState* WindowServer::GetWindowManagerStateForUser(
+    const UserId& user_id) {
+  return window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
+      user_id);
+}
+
+ui::SurfacesState* WindowServer::GetSurfacesState() {
+  return surfaces_state_.get();
+}
+
+bool WindowServer::GetFrameDecorationsForUser(
+    const UserId& user_id,
+    mojom::FrameDecorationValuesPtr* values) {
+  WindowManagerState* window_manager_state =
+      window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
+          user_id);
+  if (!window_manager_state)
+    return false;
+  if (values && window_manager_state->got_frame_decoration_values())
+    *values = window_manager_state->frame_decoration_values().Clone();
+  return window_manager_state->got_frame_decoration_values();
+}
+
 bool WindowServer::GetAndClearInFlightWindowManagerChange(
     uint32_t window_manager_change_id,
     InFlightWindowManagerChange* change) {
@@ -544,10 +573,6 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
 bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {
   const auto iter = high_contrast_mode_.find(user);
   return (iter == high_contrast_mode_.end()) ? false : iter->second;
-}
-
-ui::SurfacesState* WindowServer::GetSurfacesState() {
-  return surfaces_state_.get();
 }
 
 void WindowServer::OnScheduleWindowPaint(ServerWindow* window) {
@@ -737,33 +762,6 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
     pair.second->ProcessTransientWindowRemoved(window, transient_child,
                                                IsOperationSource(pair.first));
   }
-}
-
-void WindowServer::OnFirstDisplayReady() {
-  delegate_->OnFirstDisplayReady();
-}
-
-void WindowServer::OnNoMoreDisplays() {
-  delegate_->OnNoMoreDisplays();
-}
-
-bool WindowServer::GetFrameDecorationsForUser(
-    const UserId& user_id,
-    mojom::FrameDecorationValuesPtr* values) {
-  WindowManagerState* window_manager_state =
-      window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
-          user_id);
-  if (!window_manager_state)
-    return false;
-  if (values && window_manager_state->got_frame_decoration_values())
-    *values = window_manager_state->frame_decoration_values().Clone();
-  return window_manager_state->got_frame_decoration_values();
-}
-
-WindowManagerState* WindowServer::GetWindowManagerStateForUser(
-    const UserId& user_id) {
-  return window_manager_window_tree_factory_set_.GetWindowManagerStateForUser(
-      user_id);
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
