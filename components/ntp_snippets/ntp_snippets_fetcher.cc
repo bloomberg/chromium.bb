@@ -88,11 +88,34 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
       return "Invalid / empty list.";
     case NTPSnippetsFetcher::FetchResult::OAUTH_TOKEN_ERROR:
       return "Error in obtaining an OAuth2 access token.";
+    case NTPSnippetsFetcher::FetchResult::INTERACTIVE_QUOTA_ERROR:
+      return "Out of interactive quota.";
+    case NTPSnippetsFetcher::FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
+      return "Out of non-interactive quota.";
     case NTPSnippetsFetcher::FetchResult::RESULT_MAX:
       break;
   }
   NOTREACHED();
   return "Unknown error";
+}
+
+bool IsFetchPreconditionFailed(NTPSnippetsFetcher::FetchResult result) {
+  switch (result) {
+    case NTPSnippetsFetcher::FetchResult::EMPTY_HOSTS:
+    case NTPSnippetsFetcher::FetchResult::OAUTH_TOKEN_ERROR:
+    case NTPSnippetsFetcher::FetchResult::INTERACTIVE_QUOTA_ERROR:
+    case NTPSnippetsFetcher::FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
+      return true;
+    case NTPSnippetsFetcher::FetchResult::SUCCESS:
+    case NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR:
+    case NTPSnippetsFetcher::FetchResult::HTTP_ERROR:
+    case NTPSnippetsFetcher::FetchResult::JSON_PARSE_ERROR:
+    case NTPSnippetsFetcher::FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
+    case NTPSnippetsFetcher::FetchResult::RESULT_MAX:
+      return false;
+  }
+  NOTREACHED();
+  return true;
 }
 
 std::string GetFetchEndpoint() {
@@ -221,8 +244,14 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     const std::set<std::string>& excluded_ids,
     int count,
     bool interactive_request) {
-  if (!request_throttler_.DemandQuotaForRequest(interactive_request))
+  if (!request_throttler_.DemandQuotaForRequest(interactive_request)) {
+    FetchFinished(OptionalSnippets(),
+                  interactive_request
+                      ? FetchResult::INTERACTIVE_QUOTA_ERROR
+                      : FetchResult::NON_INTERACTIVE_QUOTA_ERROR,
+                  /*extra_message=*/std::string());
     return;
+  }
 
   hosts_ = hosts;
   fetch_start_time_ = tick_clock_->NowTicks();
@@ -604,10 +633,9 @@ void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
   DCHECK(result == FetchResult::SUCCESS || !snippets);
   last_status_ = FetchResultToString(result) + extra_message;
 
-  // If the result is EMPTY_HOSTS or OAUTH_TOKEN_ERROR, we didn't actually send
-  // a network request, so don't record FetchTime in those cases.
-  if (result != FetchResult::EMPTY_HOSTS &&
-      result != FetchResult::OAUTH_TOKEN_ERROR) {
+  // Don't record FetchTimes if the result indicates that a precondition
+  // failed and we never actually sent a network request
+  if (!IsFetchPreconditionFailed(result)) {
     UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
                         tick_clock_->NowTicks() - fetch_start_time_);
   }

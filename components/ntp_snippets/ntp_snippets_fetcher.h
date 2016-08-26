@@ -65,6 +65,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     JSON_PARSE_ERROR,
     INVALID_SNIPPET_CONTENT_ERROR,
     OAUTH_TOKEN_ERROR,
+    INTERACTIVE_QUOTA_ERROR,
+    NON_INTERACTIVE_QUOTA_ERROR,
     RESULT_MAX
   };
 
