@@ -9,9 +9,6 @@ window.onload = function() {
   var content = document.getElementById('content');
 
   window.addEventListener('message', function(event) {
-    // TODO(oka): Fix FOUC problem. When webview is first created and receives
-    // the first message, sometimes the body size is smaller than the outer
-    // window for a moment and it causes flush of unstyled content.
     if (event.origin !== FILES_APP_ORIGIN) {
       console.error('Unknown origin: ' + event.origin);
       return;
@@ -36,4 +33,21 @@ window.onload = function() {
     if (messageSource)
       messageSource.postMessage(data, FILES_APP_ORIGIN);
   });
+
+  // TODO(oka): This is a workaround to fix FOUC problem, where sometimes
+  // immature view with smaller window size than outer window is rendered for a
+  // moment. Remove this after the root cause is fixed. http://crbug.com/640525
+  window.addEventListener('resize', function() {
+    // Remove hidden attribute on event of resize to avoid FOUC. The window's
+    // initial size is 100 x 100 and it's fit into the outer window size after a
+    // moment. Due to Files App's window size constraint, resized window must be
+    // larger than 100 x 100. So this event is always invoked.
+    content.removeAttribute('hidden');
+  });
+  // Fallback for the case of webview bug is fixed and above code is not
+  // executed.
+  setTimeout(function() {
+    content.removeAttribute('hidden');
+  }, 500);
+
 };
