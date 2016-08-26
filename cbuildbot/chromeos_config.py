@@ -2162,6 +2162,8 @@ def GetConfig():
       official_chrome,
       no_vmtest_builder,
       build_type=constants.TOOLCHAIN_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      images=['base', 'test', 'recovery'],
       build_timeout=(15 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
@@ -2205,13 +2207,11 @@ def GetConfig():
   # Toolchain-specific mixins.
 
   _gcc_builder = config_lib.BuildConfig(
-      images=['base', 'test', 'recovery'],
       description='Full release build with next minor GCC toolchain revision',
       gcc_githash='svn-mirror/google/gcc-4_9',
       latest_toolchain=True,
   )
   _llvm_builder = config_lib.BuildConfig(
-      images=['base', 'test', 'recovery'],
       description='Full release build with LLVM toolchain',
       profile='llvm',
   )
@@ -2228,84 +2228,72 @@ def GetConfig():
       'peppy-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['peppy'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'peppy-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['falco'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'peppy-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['peppy'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'daisy-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['daisy'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'daisy-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['daisy'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'daisy-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['daisy'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'x86-alex-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['x86-alex'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'x86-alex-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['x86-alex'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'x86-alex-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['x86-alex'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'oak-gcc-toolchain',
       _toolchain, _gcc_builder,
       boards=['oak'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'oak-llvm-toolchain',
       _toolchain, _llvm_builder,
       boards=['oak'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(
       'oak-llvm-next-toolchain',
       _toolchain, _llvm_next_builder,
       boards=['oak'],
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   ### Master release config.

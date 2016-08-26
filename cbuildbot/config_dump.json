@@ -1267,6 +1267,7 @@
             "archive_build_debug": true,
             "build_timeout": 57000,
             "build_type": "toolchain",
+            "buildslave_type": "gce_beefy",
             "chrome_sdk": true,
             "description": "Toolchain Builds (internal)",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -1290,9 +1291,8 @@
             "image_test": true,
             "images": [
                 "base",
-                "recovery",
                 "test",
-                "factory_install"
+                "recovery"
             ],
             "internal": true,
             "manifest": "official.xml",
@@ -6738,14 +6738,8 @@
         "boards": [
             "daisy"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with next minor GCC toolchain revision",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "latest_toolchain": true
     },
     "daisy-incremental": {
@@ -6765,13 +6759,7 @@
         "boards": [
             "daisy"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM (next) toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm",
         "useflags": [
             "clang",
@@ -6784,13 +6772,7 @@
         "boards": [
             "daisy"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm"
     },
     "daisy-no-vmtest-pre-cq": {
@@ -16829,14 +16811,8 @@
         "boards": [
             "oak"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with next minor GCC toolchain revision",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "latest_toolchain": true
     },
     "oak-llvm-next-toolchain": {
@@ -16845,13 +16821,7 @@
         "boards": [
             "oak"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM (next) toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm",
         "useflags": [
             "clang",
@@ -16864,13 +16834,7 @@
         "boards": [
             "oak"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm"
     },
     "oak-no-vmtest-pre-cq": {
@@ -18596,14 +18560,8 @@
         "boards": [
             "peppy"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with next minor GCC toolchain revision",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "latest_toolchain": true
     },
     "peppy-llvm-next-toolchain": {
@@ -18612,13 +18570,7 @@
         "boards": [
             "peppy"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM (next) toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm",
         "useflags": [
             "clang",
@@ -18631,13 +18583,7 @@
         "boards": [
             "falco"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm"
     },
     "peppy-no-vmtest-pre-cq": {
@@ -27886,14 +27832,8 @@
         "boards": [
             "x86-alex"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with next minor GCC toolchain revision",
         "gcc_githash": "svn-mirror/google/gcc-4_9",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "latest_toolchain": true
     },
     "x86-alex-llvm-next-toolchain": {
@@ -27902,13 +27842,7 @@
         "boards": [
             "x86-alex"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM (next) toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm",
         "useflags": [
             "clang",
@@ -27921,13 +27855,7 @@
         "boards": [
             "x86-alex"
         ],
-        "buildslave_type": "gce_beefy",
         "description": "Full release build with LLVM toolchain",
-        "images": [
-            "base",
-            "test",
-            "recovery"
-        ],
         "profile": "llvm"
     },
     "x86-alex-no-vmtest-pre-cq": {
