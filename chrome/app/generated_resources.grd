@@ -4969,12 +4969,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         ''' If you didn't want these changes, you can restore your previous settings.'''
       </message>
 
-      <message name="IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS" desc="The button in the extension controlled bubbles that reverts the settings changes made by the extension and restores what the user had before.">
-        Restore settings
-      </message>
-      <message name="IDS_EXTENSION_CONTROLLED_KEEP_CHANGES" desc="The button in the extension controlled bubbles that cancels the bubble without action.">
-        Keep changes
-      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS" desc="The button in the extension controlled bubbles that reverts the settings changes made by the extension and restores what the user had before. (title case)">
+          Restore Settings
+        </message>
+        <message name="IDS_EXTENSION_CONTROLLED_KEEP_CHANGES" desc="The button in the extension controlled bubbles that cancels the bubble without action. (title case)">
+          Keep Changes
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS" desc="The button in the extension controlled bubbles that reverts the settings changes made by the extension and restores what the user had before. (sentence case)">
+          Restore settings
+        </message>
+        <message name="IDS_EXTENSION_CONTROLLED_KEEP_CHANGES" desc="The button in the extension controlled bubbles that cancels the bubble without action. (sentence case)">
+          Keep changes
+        </message>
+      </if>
 
       <!-- Material Design version of chrome://policy -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
