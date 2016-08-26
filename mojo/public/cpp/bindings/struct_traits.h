@@ -122,9 +122,9 @@ namespace mojo {
 // reference/value to the Mojo bindings for serialization:
 //    - if T is used in the "type_mappings" section of a typemap config file,
 //      you need to declare it as pass-by-value:
-//        type_mappings = [ "MojomType=T(move_only)" ]
+//        type_mappings = [ "MojomType=T[move_only]" ]
 //      or
-//        type_mappings = [ "MojomType=T(copyable_pass_by_value)" ]
+//        type_mappings = [ "MojomType=T[copyable_pass_by_value]" ]
 //
 //    - if another type U's StructTraits/UnionTraits has a getter for T, it
 //      needs to return non-const reference/value.
