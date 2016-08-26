@@ -599,6 +599,22 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     self.assertEqual(base_test_result.ResultType.FAIL, results[0].GetType())
     self.assertEqual(stacktrace, results[0].GetLog())
 
+  def testGenerateJUnitTestResults_testSkipped_true(self):
+    statuses = [
+      (1, {
+        'class': 'test.package.TestClass',
+        'test': 'testMethod',
+      }),
+      (-3, {
+        'class': 'test.package.TestClass',
+        'test': 'testMethod',
+      }),
+    ]
+    results = instrumentation_test_instance.GenerateTestResults(
+        None, None, statuses, 0, 1000)
+    self.assertEqual(1, len(results))
+    self.assertEqual(base_test_result.ResultType.SKIP, results[0].GetType())
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)
