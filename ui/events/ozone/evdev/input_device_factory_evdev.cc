@@ -239,6 +239,13 @@ void InputDeviceFactoryEvdev::AttachInputDevice(
     if (converters_[path])
       DetachInputDevice(path);
 
+    if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        converter->HasPen()) {
+      converter->SetPalmSuppressionCallback(
+          base::Bind(&InputDeviceFactoryEvdev::EnablePalmSuppression,
+                     base::Unretained(this)));
+    }
+
     // Add initialized device to map.
     converters_[path] = converter.release();
     converters_[path]->Start();
@@ -376,6 +383,11 @@ bool InputDeviceFactoryEvdev::IsDeviceEnabled(
       converter->HasTouchscreen())
     return false;
 
+  if (palm_suppression_enabled_ &&
+      converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
+      converter->HasTouchscreen() && !converter->HasPen())
+    return false;
+
   return input_device_settings_.enable_devices;
 }
 
@@ -489,6 +501,16 @@ void InputDeviceFactoryEvdev::SetBoolPropertyForOneType(
                            value);
   }
 #endif
+}
+
+void InputDeviceFactoryEvdev::EnablePalmSuppression(bool enabled) {
+  if (enabled == palm_suppression_enabled_)
+    return;
+  palm_suppression_enabled_ = enabled;
+
+  for (const auto& it : converters_) {
+    it.second->SetEnabled(IsDeviceEnabled(it.second));
+  }
 }
 
 }  // namespace ui

@@ -609,7 +609,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldReleaseContactsOnStop) {
   EXPECT_EQ(2u, size());
 
   ui::TouchEventParams ev2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev2.type);
+  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2.type);
   EXPECT_EQ(0, ev2.slot);
 }
 
@@ -654,7 +654,7 @@ TEST_F(TouchEventConverterEvdevTest, ShouldRemoveContactsWhenDisabled) {
   EXPECT_EQ(2u, size());
 
   ui::TouchEventParams ev2 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_RELEASED, ev2.type);
+  EXPECT_EQ(ET_TOUCH_CANCELLED, ev2.type);
   EXPECT_EQ(0, ev2.slot);
 
   // Set up the previous contact in slot 0.
@@ -664,16 +664,16 @@ TEST_F(TouchEventConverterEvdevTest, ShouldRemoveContactsWhenDisabled) {
   devinfo.SetAbsMtSlot(ABS_MT_POSITION_Y, 0, 749);
   devinfo.SetAbsMtSlot(ABS_MT_PRESSURE, 0, 50);
 
-  // Re-enable the device (should re-apply the contact).
+  // Re-enable the device (touch is cancelled, should not come back)
   dev->SimulateReinitialize(devinfo);
   dev->SetEnabled(true);
-  EXPECT_EQ(3u, size());
+  EXPECT_EQ(2u, size());
 
-  ui::TouchEventParams ev3 = dispatched_touch_event(2);
-  EXPECT_EQ(ET_TOUCH_PRESSED, ev3.type);
-  EXPECT_EQ(0, ev3.slot);
-  EXPECT_EQ(1003, ev3.location.x());
-  EXPECT_EQ(749, ev3.location.y());
+  // Send updates to touch (touch is cancelled, should not come back)
+  dev->ConfigureReadMock(mock_kernel_queue_press,
+                         arraysize(mock_kernel_queue_press), 0);
+  dev->ReadNow();
+  EXPECT_EQ(2u, size());
 }
 
 // crbug.com/477695

@@ -27,6 +27,9 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
 
   // Whether the touch was cancelled. Touch events should be ignored till a
   // new touch is initiated.
+  bool was_cancelled = false;
+
+  // Whether the touch is going to be canceled.
   bool cancelled = false;
 
   bool was_touching = false;

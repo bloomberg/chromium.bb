@@ -68,6 +68,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 
+  void EnablePalmSuppression(bool enabled);
+
  private:
   // Open device at path & starting processing events (on UI thread).
   void AttachInputDevice(std::unique_ptr<EventConverterEvdev> converter);
@@ -129,6 +131,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // LEDs.
   bool caps_lock_led_enabled_ = false;
+
+  // Whether touch palm suppression is enabled.
+  bool palm_suppression_enabled_ = false;
 
   // Device settings. These primarily affect libgestures behavior.
   InputDeviceSettingsEvdev input_device_settings_;

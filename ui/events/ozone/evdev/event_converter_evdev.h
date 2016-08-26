@@ -77,6 +77,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Returns true if the converter is used for a touchscreen device.
   virtual bool HasTouchscreen() const;
 
+  // Returns true if the converter is used for a pen device.
+  virtual bool HasPen() const;
+
   // Returns true if the converter is used for a device with a caps lock LED.
   virtual bool HasCapsLockLed() const;
 
@@ -98,6 +101,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Update touch event logging state.
   virtual void SetTouchEventLoggingEnabled(bool enabled);
+
+  // Sets callback to enable/disable palm suppression.
+  virtual void SetPalmSuppressionCallback(
+      const base::Callback<void(bool)>& callback);
 
   // Helper to generate a base::TimeTicks from an input_event's time
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);

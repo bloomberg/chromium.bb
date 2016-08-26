@@ -96,6 +96,10 @@ bool EventConverterEvdev::HasTouchscreen() const {
   return false;
 }
 
+bool EventConverterEvdev::HasPen() const {
+  return false;
+}
+
 bool EventConverterEvdev::HasCapsLockLed() const {
   return false;
 }
@@ -144,6 +148,9 @@ void EventConverterEvdev::SetCapsLockLed(bool enabled) {
 
 void EventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 }
+
+void EventConverterEvdev::SetPalmSuppressionCallback(
+    const base::Callback<void(bool)>& callback) {}
 
 base::TimeTicks EventConverterEvdev::TimeTicksFromInputEvent(
     const input_event& event) {
