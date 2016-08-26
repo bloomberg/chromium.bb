@@ -742,7 +742,7 @@ bool HTMLCanvasElement::originClean() const
     return m_originClean;
 }
 
-bool HTMLCanvasElement::shouldAccelerate(const IntSize& size, const WebGraphicsContext3DProvider* sharedMainThreadContextProvider) const
+bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 {
     if (m_context && !m_context->is2d())
         return false;
@@ -785,9 +785,6 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size, const WebGraphicsC
     if (!settings || canvasPixelCount < settings->minimumAccelerated2dCanvasSize())
         return false;
 
-    if (sharedMainThreadContextProvider->isSoftwareRendering())
-        return false;
-
     // When GPU allocated memory runs low (due to having created too many
     // accelerated canvases), the compositor starves and browser becomes laggy.
     // Thus, we should stop allocating more GPU memory to new canvases created
@@ -825,11 +822,8 @@ bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize)
     return true;
 }
 
-std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const IntSize& deviceSize, int* msaaSampleCount, sk_sp<SkColorSpace> colorSpace)
+std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createAcceleratedImageBufferSurface(const IntSize& deviceSize, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace, int* msaaSampleCount)
 {
-    OpacityMode opacityMode = !m_context || m_context->creationAttributes().alpha() ? NonOpaque : Opaque;
-
-    *msaaSampleCount = 0;
     if (is3D()) {
         // If 3d, but the use of the canvas will be for non-accelerated content
         // then make a non-accelerated ImageBuffer. This means copying the internal
@@ -837,37 +831,53 @@ std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(
         return wrapUnique(new AcceleratedImageBufferSurface(deviceSize, opacityMode, colorSpace));
     }
 
-    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider = wrapUnique(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!shouldAccelerate(deviceSize))
+        return nullptr;
+
+    if (document().settings())
+        *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
+
+    // Avoid creating |contextProvider| until we're sure we want to try use it,
+    // since it costs us GPU memory.
+    std::unique_ptr<WebGraphicsContext3DProvider> contextProvider(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider) {
         CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Accelerated2DCanvasGPUContextLost);
-    } else if (shouldAccelerate(deviceSize, contextProvider.get())) {
-        if (document().settings())
-            *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new Canvas2DImageBufferSurface(std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration, colorSpace));
-        if (surface->isValid()) {
-            CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
-            return surface;
-        }
-        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
+        return nullptr;
     }
 
-    std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
+    if (contextProvider->isSoftwareRendering())
+        return nullptr; // Don't use accelerated canvas with swiftshader.
 
+    std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new Canvas2DImageBufferSurface(std::move(contextProvider), deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration, std::move(colorSpace)));
+    if (surface->isValid()) {
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
+        return surface;
+    }
+
+    CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
+    return nullptr;
+}
+
+std::unique_ptr<ImageBufferSurface> HTMLCanvasElement::createUnacceleratedImageBufferSurface(const IntSize& deviceSize, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace)
+{
     if (shouldUseDisplayList(deviceSize)) {
-        std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(deviceSize, std::move(surfaceFactory), opacityMode, colorSpace));
+        auto surface = wrapUnique(new RecordingImageBufferSurface(deviceSize, wrapUnique(new UnacceleratedSurfaceFactory), opacityMode, colorSpace));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
-            return surface;
+            return std::move(surface);
         }
-        surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
+        // We fallback to a non-display-list surface without recording a metric here.
     }
-    auto surface = surfaceFactory->createSurface(deviceSize, opacityMode, colorSpace);
-    if (!surface->isValid()) {
-        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Unaccelerated2DCanvasImageBufferCreationFailed);
-    } else {
+
+    auto surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
+    auto surface = surfaceFactory->createSurface(deviceSize, opacityMode, std::move(colorSpace));
+    if (surface->isValid()) {
         CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Unaccelerated2DCanvasImageBufferCreated);
+        return surface;
     }
-    return surface;
+
+    CanvasMetrics::countCanvasContextUsage(CanvasMetrics::Unaccelerated2DCanvasImageBufferCreationFailed);
+    return nullptr;
 }
 
 void HTMLCanvasElement::createImageBuffer()
@@ -887,16 +897,18 @@ void HTMLCanvasElement::createImageBufferInternal(std::unique_ptr<ImageBufferSur
     if (!ImageBuffer::canCreateImageBuffer(size()))
         return;
 
+    OpacityMode opacityMode = !m_context || m_context->creationAttributes().alpha() ? NonOpaque : Opaque;
     int msaaSampleCount = 0;
-    std::unique_ptr<ImageBufferSurface> surface;
-    if (externalSurface) {
-        surface = std::move(externalSurface);
-    } else {
-        surface = createImageBufferSurface(size(), &msaaSampleCount, m_context->skColorSpace());
-    }
-    m_imageBuffer = ImageBuffer::create(std::move(surface));
-    if (!m_imageBuffer)
+    std::unique_ptr<ImageBufferSurface> surface = std::move(externalSurface);
+    if (!surface)
+        surface = createAcceleratedImageBufferSurface(size(), opacityMode, m_context->skColorSpace(), &msaaSampleCount);
+    if (!surface)
+        surface = createUnacceleratedImageBufferSurface(size(), opacityMode, m_context->skColorSpace());
+    if (!surface)
         return;
+    DCHECK(surface->isValid());
+    m_imageBuffer = ImageBuffer::create(std::move(surface));
+    DCHECK(m_imageBuffer);
     m_imageBuffer->setClient(this);
 
     m_didFailToCreateImageBuffer = false;
