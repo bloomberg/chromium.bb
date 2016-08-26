@@ -208,7 +208,7 @@ public class DesktopCanvas {
 
         mRenderData.transform.postTranslate(xAdjust, yAdjust);
 
-        mViewer.transformationChanged();
+        mViewer.transformationChanged(mRenderData.transform);
     }
 
     /**

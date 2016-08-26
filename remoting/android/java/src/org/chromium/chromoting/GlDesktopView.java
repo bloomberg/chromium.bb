@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting;
 
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.view.SurfaceHolder;
 
@@ -22,6 +23,8 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
 
     private Event.ParameterRunnable<Void> mProcessAnimationRunnable;
 
+    private float mScaleFactor;
+
     public GlDesktopView(GlDisplay display, Desktop desktop, Client client) {
         super(desktop, client);
         Preconditions.notNull(display);
@@ -34,13 +37,14 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
             }
         };
 
+        mScaleFactor = 0;
+
         getHolder().addCallback(this);
     }
 
     @Override
     public void showInputFeedback(InputFeedbackType feedbackToShow, PointF pos) {
-        float scaleFactor = mRenderData.transform.mapRadius(1);
-        float diameter = getFeedbackRadius(feedbackToShow, scaleFactor) * 2.0f;
+        float diameter = getFeedbackRadius(feedbackToShow, mScaleFactor) * 2.0f;
         if (diameter <= 0.0f) {
             return;
         }
@@ -48,25 +52,21 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
     }
 
     @Override
-    public void transformationChanged() {
-        if (mRenderData.imageHeight == 0 || mRenderData.imageWidth == 0
-                || mRenderData.screenHeight == 0 || mRenderData.screenWidth == 0) {
-            return;
-        }
-        float[] matrix = new float[9];
-        mRenderData.transform.getValues(matrix);
-        mDisplay.pixelTransformationChanged(matrix);
+    public void transformationChanged(Matrix matrix) {
+        float[] matrixArray = new float[9];
+        matrix.getValues(matrixArray);
+        mDisplay.pixelTransformationChanged(matrixArray);
+        mScaleFactor = matrix.mapRadius(1);
     }
 
     @Override
-    public void cursorMoved() {
-        PointF cursorPosition = mRenderData.getCursorPosition();
-        mDisplay.cursorPixelPositionChanged(cursorPosition.x, cursorPosition.y);
+    public void cursorMoved(PointF position) {
+        mDisplay.cursorPixelPositionChanged(position.x, position.y);
     }
 
     @Override
-    public void cursorVisibilityChanged() {
-        mDisplay.cursorVisibilityChanged(mRenderData.drawCursor);
+    public void cursorVisibilityChanged(boolean visible) {
+        mDisplay.cursorVisibilityChanged(visible);
     }
 
     @Override
@@ -87,12 +87,6 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
                 .onHostSizeChanged().add(new Event.ParameterRunnable<SizeChangedEventParameter>() {
                     @Override
                     public void run(SizeChangedEventParameter p) {
-                        mRenderData.imageHeight = p.height;
-                        mRenderData.imageWidth = p.width;
-
-                        // Note that imageHeight and imageWidth must be set before
-                        // mOnHostSizeChanged is triggered. mInputHandler expects the image size in
-                        // mRenderData updated before its callback is called.
                         mOnHostSizeChanged.raise(p);
                     }
                 });
@@ -102,9 +96,6 @@ public class GlDesktopView extends DesktopView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mRenderData.screenWidth = width;
-        mRenderData.screenHeight = height;
-
         mDisplay.surfaceChanged(width, height);
         mOnClientSizeChanged.raise(new SizeChangedEventParameter(width, height));
     }

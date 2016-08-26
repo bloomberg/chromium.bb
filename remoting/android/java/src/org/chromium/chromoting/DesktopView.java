@@ -5,6 +5,7 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.text.InputType;
 import android.view.MotionEvent;
@@ -28,7 +29,6 @@ public abstract class DesktopView extends SurfaceView {
         LONG_TRACKPAD_ANIMATION
     }
 
-    protected final RenderData mRenderData;
     protected final TouchInputHandler mInputHandler;
 
     /**
@@ -57,8 +57,7 @@ public abstract class DesktopView extends SurfaceView {
         Preconditions.notNull(desktop);
         Preconditions.notNull(client);
         mDesktop = desktop;
-        mRenderData = new RenderData();
-        mInputHandler = new TouchInputHandler(this, desktop, mRenderData);
+        mInputHandler = new TouchInputHandler(this, desktop);
         mInputHandler.init(desktop, new InputEventSender(client));
 
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
@@ -160,19 +159,19 @@ public abstract class DesktopView extends SurfaceView {
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
      * has been changed by the TouchInputHandler, which requires repainting.
      */
-    public abstract void transformationChanged();
+    public abstract void transformationChanged(Matrix matrix);
 
     /**
      * Informs the view that the cursor has been moved by the TouchInputHandler, which requires
      * repainting.
      */
-    public abstract void cursorMoved();
+    public abstract void cursorMoved(PointF position);
 
     /**
      * Informs the view that the cursor visibility has been changed (for different input mode) by
      * the TouchInputHandler, which requires repainting.
      */
-    public abstract void cursorVisibilityChanged();
+    public abstract void cursorVisibilityChanged(boolean visible);
 
     /**
      * Starts or stops an animation. Whilst the animation is running, the DesktopView will

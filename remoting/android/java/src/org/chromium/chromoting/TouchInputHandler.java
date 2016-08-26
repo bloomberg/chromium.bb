@@ -178,10 +178,10 @@ public class TouchInputHandler {
         }
     }
 
-    public TouchInputHandler(DesktopView viewer, Context context, RenderData renderData) {
+    public TouchInputHandler(DesktopView viewer, Context context) {
         mViewer = viewer;
         mContext = context;
-        mRenderData = renderData;
+        mRenderData = new RenderData();
         mDesktopCanvas = new DesktopCanvas(mViewer, mRenderData);
 
         GestureListener listener = new GestureListener();
@@ -293,7 +293,7 @@ public class TouchInputHandler {
         }
 
         // Ensure the cursor state is updated appropriately.
-        mViewer.cursorVisibilityChanged();
+        mViewer.cursorVisibilityChanged(mRenderData.drawCursor);
     }
 
     private void handleSystemUiVisibilityChanged(
@@ -342,12 +342,18 @@ public class TouchInputHandler {
     }
 
     private void handleClientSizeChanged(int width, int height) {
+        mRenderData.screenWidth = width;
+        mRenderData.screenHeight = height;
+
         mPanGestureBounds = new Rect(
                 mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
         resizeImageToFitScreen();
     }
 
     private void handleHostSizeChanged(int width, int height) {
+        mRenderData.imageWidth = width;
+        mRenderData.imageHeight = height;
+
         resizeImageToFitScreen();
     }
 
@@ -409,7 +415,7 @@ public class TouchInputHandler {
             mInputStrategy.injectCursorMoveEvent((int) newX, (int) newY);
         }
 
-        mViewer.cursorMoved();
+        mViewer.cursorMoved(mRenderData.getCursorPosition());
     }
 
     /** Processes a (multi-finger) swipe gesture. */
