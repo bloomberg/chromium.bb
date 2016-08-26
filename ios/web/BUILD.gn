@@ -373,6 +373,8 @@ source_set("test_support") {
     "public/test/http_server_util.mm",
     "public/test/js_test_util.h",
     "public/test/js_test_util.mm",
+    "public/test/native_controller_test_util.h",
+    "public/test/native_controller_test_util.mm",
     "public/test/navigation_test_util.h",
     "public/test/navigation_test_util.mm",
     "public/test/response_providers/data_response_provider.h",
