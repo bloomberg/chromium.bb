@@ -18,9 +18,9 @@ namespace {
 
 SkBitmap CreateSmallHolderBitmap() {
   SkBitmap small_bitmap;
-  SkCanvas canvas(small_bitmap);
   small_bitmap.allocPixels(
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
+  SkCanvas canvas(small_bitmap);
   canvas.drawColor(SK_ColorWHITE);
   small_bitmap.setImmutable();
   return small_bitmap;
