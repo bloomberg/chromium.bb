@@ -177,34 +177,34 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel'], bug=628395)
 
     # Mac only.
-    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
-        ['mac'], bug=483282)
+
+    # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['mac'], bug=617820)
+
+    self.Fail('conformance2/rendering/' +
+        'framebuffer-completeness-unaffected.html',
+        ['mac'], bug=630800)
     self.Fail('deqp/functional/gles3/fbocompleteness.html',
         ['mac'], bug=630800)
     # self.Fail('deqp/functional/gles3/fbocompleteness.html',
     #     ['mac', ('nvidia', 0xfe9)], bug=616562)
-    self.Fail('deqp/data/gles3/shaders/linkage.html',
-        ['mac'], bug=601821)
 
-    # This one's flaky on AMD, NVIDIA and Intel GPUs, but the
-    # GPU-specific expectations aren't working properly.
-    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
-        ['mac'], bug=619264)
+    self.Fail('deqp/data/gles3/shaders/linkage.html',
+        ['mac'], bug=641129)
+
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
+    # This is due to "centroid out" / "in" mismatch.
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
 
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
-        ['mac'], bug=483282)
-    self.Fail('conformance2/rendering/framebuffer-completeness-unaffected.html',
-        ['mac'], bug=604053)
+        ['mac'], bug=641149)
 
     self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['mac'], bug=483282)
+        ['mac'], bug=641209)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['mac'], bug=483282)
@@ -257,13 +257,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderstruct.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderswitch.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
@@ -355,9 +349,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/draw/draw_range_elements.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
-    self.Fail('conformance2/rendering/draw-buffers.html',
-        ['mac', ('nvidia', 0xfe9)], bug=617410)
-
     self.Fail('deqp/functional/gles3/fboinvalidate/format_02.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
@@ -416,6 +407,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=636648)
 
     # Mac Intel
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['mac', 'intel'], bug=619264)
     self.Fail('deqp/functional/gles3/shadercommonfunction.html',
         ['mac', 'intel'], bug=483282)
 
