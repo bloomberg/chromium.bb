@@ -104,8 +104,13 @@ class ExtensionAPI {
   // Returns true if |name| is available to WebUI contexts on |url|.
   bool IsAvailableToWebUI(const std::string& name, const GURL& url);
 
+  // Gets the StringPiece for the schema specified by |api_name|.
+  base::StringPiece GetSchemaStringPiece(const std::string& api_name);
+
   // Gets the schema for the extension API with namespace |full_name|.
   // Ownership remains with this object.
+  // TODO(devlin): Now that we use GetSchemaStringPiece() in the renderer, we
+  // may not really need this anymore.
   const base::DictionaryValue* GetSchema(const std::string& full_name);
 
   // Splits a full name from the extension API into its API and child name
@@ -143,6 +148,9 @@ class ExtensionAPI {
   using SchemaMap =
       std::map<std::string, std::unique_ptr<const base::DictionaryValue>>;
   SchemaMap schemas_;
+
+  using StringPieceMap = std::map<std::string, base::StringPiece>;
+  StringPieceMap schema_strings_;
 
   // FeatureProviders used for resolving dependencies.
   typedef std::map<std::string, const FeatureProvider*> FeatureProviderMap;

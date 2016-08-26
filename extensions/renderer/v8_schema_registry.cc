@@ -14,6 +14,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/v8_helpers.h"
 
 using content::V8ValueConverter;
@@ -129,19 +130,28 @@ v8::Local<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
   v8::Local<v8::Context> context = GetOrCreateContext(isolate);
   v8::Context::Scope context_scope(context);
 
-  const base::DictionaryValue* schema =
-      ExtensionAPI::GetSharedInstance()->GetSchema(api);
-  CHECK(schema) << api;
-  std::unique_ptr<V8ValueConverter> v8_value_converter(
-      V8ValueConverter::create());
-  v8::Local<v8::Value> value = v8_value_converter->ToV8Value(schema, context);
-  CHECK(!value.IsEmpty());
+  base::StringPiece schema_string =
+      ExtensionAPI::GetSharedInstance()->GetSchemaStringPiece(api);
+  CHECK(!schema_string.empty());
+  v8::MaybeLocal<v8::String> v8_maybe_string =
+      v8::String::NewExternal(
+          isolate, new StaticV8ExternalOneByteStringResource(schema_string));
+  v8::Local<v8::String> v8_schema_string;
+  CHECK(v8_maybe_string.ToLocal(&v8_schema_string));
 
-  v8::Local<v8::Object> v8_schema(v8::Local<v8::Object>::Cast(value));
-  DeepFreeze(v8_schema, context);
-  schema_cache_->Set(api, v8_schema);
+  v8::MaybeLocal<v8::Value> v8_maybe_schema_value =
+      v8::JSON::Parse(context, v8_schema_string);
+  v8::Local<v8::Value> v8_schema_value;
+  CHECK(v8_maybe_schema_value.ToLocal(&v8_schema_value));
+  CHECK(v8_schema_value->IsObject());
 
-  return handle_scope.Escape(v8_schema);
+  v8::Local<v8::Object> v8_schema_object(
+      v8::Local<v8::Object>::Cast(v8_schema_value));
+  DeepFreeze(v8_schema_object, context);
+
+  schema_cache_->Set(api, v8_schema_object);
+
+  return handle_scope.Escape(v8_schema_object);
 }
 
 v8::Local<v8::Context> V8SchemaRegistry::GetOrCreateContext(

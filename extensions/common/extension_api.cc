@@ -212,6 +212,26 @@ bool ExtensionAPI::IsAvailableToWebUI(const std::string& name,
   return IsAvailable(name, NULL, Feature::WEBUI_CONTEXT, url).is_available();
 }
 
+base::StringPiece ExtensionAPI::GetSchemaStringPiece(
+    const std::string& api_name) {
+  DCHECK_EQ(api_name, GetAPINameFromFullName(api_name, nullptr));
+  StringPieceMap::iterator cached = schema_strings_.find(api_name);
+  if (cached != schema_strings_.end())
+    return cached->second;
+
+  ExtensionsClient* client = ExtensionsClient::Get();
+  DCHECK(client);
+  if (default_configuration_initialized_ &&
+      client->IsAPISchemaGenerated(api_name)) {
+    base::StringPiece schema = client->GetAPISchema(api_name);
+    CHECK(!schema.empty());
+    schema_strings_[api_name] = schema;
+    return schema;
+  }
+
+  return base::StringPiece();
+}
+
 const base::DictionaryValue* ExtensionAPI::GetSchema(
     const std::string& full_name) {
   std::string child_name;
@@ -222,16 +242,10 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
   if (maybe_schema != schemas_.end()) {
     result = maybe_schema->second.get();
   } else {
-    // Might not have loaded yet; or might just not exist.
-    extensions::ExtensionsClient* extensions_client =
-        extensions::ExtensionsClient::Get();
-    DCHECK(extensions_client);
-    if (default_configuration_initialized_ &&
-        extensions_client->IsAPISchemaGenerated(api_name)) {
-      LoadSchema(api_name, extensions_client->GetAPISchema(api_name));
-    } else {
+    base::StringPiece schema_string = GetSchemaStringPiece(api_name);
+    if (schema_string.empty())
       return nullptr;
-    }
+    LoadSchema(api_name, schema_string);
 
     maybe_schema = schemas_.find(api_name);
     CHECK(schemas_.end() != maybe_schema);
@@ -287,7 +301,8 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
     api_name_candidate = api_name_candidate.substr(0, last_dot_index);
   }
 
-  *child_name = "";
+  if (child_name)
+    *child_name = "";
   return std::string();
 }
 
