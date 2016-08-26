@@ -3198,6 +3198,39 @@ TEST_F(WebViewTest, WebSubstringUtil)
     result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
     ASSERT_TRUE(!!result);
 }
+
+TEST_F(WebViewTest, WebSubstringUtilIframe)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("single_iframe.html"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("visible_iframe.html"));
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html");
+    webView->settings()->setDefaultFontSize(12);
+    webView->settings()->setJavaScriptEnabled(true);
+    webView->resize(WebSize(400, 400));
+    WebLocalFrameImpl* mainFrame = webView->mainFrameImpl();
+    WebLocalFrameImpl* childFrame = WebLocalFrameImpl::fromFrame(toLocalFrame(mainFrame->frame()->tree().firstChild()));
+
+    WebPoint baselinePoint;
+    NSAttributedString* result = WebSubstringUtil::attributedSubstringInRange(childFrame, 11, 7, &baselinePoint);
+    ASSERT_NE(result, nullptr);
+
+    WebPoint point(baselinePoint.x, mainFrame->frameView()->height() - baselinePoint.y);
+    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    ASSERT_NE(result, nullptr);
+
+    int yBeforeChange = baselinePoint.y;
+
+    // Now move the <iframe> down by 100px.
+    mainFrame->executeScript(WebScriptSource(
+        "document.querySelector('iframe').style.marginTop = '100px';"));
+
+    point = WebPoint(point.x, point.y + 100);
+    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    ASSERT_NE(result, nullptr);
+
+    EXPECT_EQ(yBeforeChange, baselinePoint.y + 100);
+}
+
 #endif
 
 TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture)

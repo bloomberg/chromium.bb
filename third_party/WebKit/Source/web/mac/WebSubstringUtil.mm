@@ -123,7 +123,7 @@ WebPoint getBaselinePoint(FrameView* frameView, const EphemeralRange& range, NSA
     // TODO(shuchen): Support page-zoom for getting the baseline point.
     IntRect stringRect = frameView->contentsToRootFrame(createRange(range)->boundingBox());
     IntPoint stringPoint = stringRect.minXMaxYCorner();
-    stringPoint.setY(frameView->height() - stringPoint.y());
+    stringPoint.setY(frameView->root()->height() - stringPoint.y());
 
     // Adjust for the font's descender. AppKit wants the baseline point.
     if ([string length]) {
