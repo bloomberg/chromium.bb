@@ -8,6 +8,7 @@ per-file crash_*=thestig@chromium.org
 per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=kundaji@chromium.org
 per-file data_reduction_proxy*=megjablon@chromium.org
+per-file data_reduction_proxy*=ryansturm@chromium.org
 per-file data_reduction_proxy*=sclittle@chromium.org
 per-file data_reduction_proxy*=tbansal@chromium.org
 per-file dom_distiller*=mdjones@chromium.org
