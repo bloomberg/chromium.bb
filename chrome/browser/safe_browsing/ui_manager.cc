@@ -371,23 +371,36 @@ void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
   site_list->Insert(whitelisted_url);
 }
 
+bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
+  NavigationEntry* entry = nullptr;
+  if (resource.is_subresource) {
+    entry = resource.GetNavigationEntryForResource();
+  }
+  return IsUrlWhitelistedForWebContents(resource.url, resource.is_subresource,
+                                        entry,
+                                        resource.web_contents_getter.Run());
+}
+
 // Check if the user has already ignored a SB warning for this WebContents and
 // top-level domain.
-bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
+bool SafeBrowsingUIManager::IsUrlWhitelistedForWebContents(
+    const GURL& url,
+    bool is_subresource,
+    NavigationEntry* entry,
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL maybe_whitelisted_url;
-  if (resource.is_subresource) {
-    NavigationEntry* entry = resource.GetNavigationEntryForResource();
+  if (is_subresource) {
     if (!entry)
       return false;
     maybe_whitelisted_url = entry->GetURL();
   } else {
-    maybe_whitelisted_url = resource.url;
+    maybe_whitelisted_url = url;
   }
 
-  WhitelistUrlSet* site_list = static_cast<WhitelistUrlSet*>(
-      resource.web_contents_getter.Run()->GetUserData(kWhitelistKey));
+  WhitelistUrlSet* site_list =
+      static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
   if (!site_list)
     return false;
   return site_list->Contains(maybe_whitelisted_url);

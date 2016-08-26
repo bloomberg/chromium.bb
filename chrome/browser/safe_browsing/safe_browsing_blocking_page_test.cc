@@ -25,6 +25,9 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -47,6 +50,9 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "net/cert/cert_verify_result.h"
+#include "net/cert/mock_cert_verifier.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
@@ -61,6 +67,7 @@ namespace safe_browsing {
 namespace {
 
 const char kEmptyPage[] = "empty.html";
+const char kHTTPSPage[] = "/ssl/google.html";
 const char kMalwarePage[] = "safe_browsing/malware.html";
 const char kCrossSiteMalwarePage[] = "safe_browsing/malware2.html";
 const char kMalwareIframe[] = "safe_browsing/malware_iframe.html";
@@ -270,7 +277,7 @@ class TestSafeBrowsingBlockingPageFactory
 
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingBlockingPageBrowserTest
-    : public InProcessBrowserTest,
+    : public CertVerifierBrowserTest,
       public testing::WithParamInterface<testing::tuple<SBThreatType, bool>> {
  public:
   enum Visibility {
@@ -279,7 +286,8 @@ class SafeBrowsingBlockingPageBrowserTest
     VISIBLE = 1
   };
 
-  SafeBrowsingBlockingPageBrowserTest() {}
+  SafeBrowsingBlockingPageBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUp() override {
     // Test UI manager and test database manager should be set before
@@ -319,15 +327,46 @@ class SafeBrowsingBlockingPageBrowserTest
         ->SetURLThreatType(url, threat_type);
   }
 
-  // Adds a safebrowsing result of the current test threat to the fake
-  // safebrowsing service, navigates to that page, and returns the url.
+  // The basic version of this method, which uses a HTTP test URL.
   GURL SetupWarningAndNavigate() {
-    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kEmptyPage);
-    SetURLThreatType(url, testing::get<0>(GetParam()));
+    return SetupWarningAndNavigateToURL(
+        net::URLRequestMockHTTPJob::GetMockUrl(kEmptyPage));
+  }
 
+  // Navigates to a warning on a valid HTTPS website.
+  GURL SetupWarningAndNavigateToValidHTTPS() {
+    EXPECT_TRUE(https_server_.Start());
+    scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
+    net::CertVerifyResult verify_result;
+    verify_result.is_issued_by_known_root = true;
+    verify_result.verified_cert = cert;
+    verify_result.cert_status = 0;
+    mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
+    GURL url = https_server_.GetURL(kHTTPSPage);
+    return SetupWarningAndNavigateToURL(url);
+  }
+
+  // Navigates through an HTTPS interstitial, then opens up a SB warning on that
+  // same URL.
+  GURL SetupWarningAndNavigateToInvalidHTTPS() {
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+    EXPECT_TRUE(https_server_.Start());
+    GURL url = https_server_.GetURL(kHTTPSPage);
+
+    // Proceed through the HTTPS interstitial.
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(WaitForReady());
-    return url;
+    InterstitialPage* https_warning = browser()
+                                          ->tab_strip_model()
+                                          ->GetActiveWebContents()
+                                          ->GetInterstitialPage();
+    EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
+              https_warning->GetDelegateForTesting()->GetTypeForTesting());
+    https_warning->Proceed();
+    content::WaitForInterstitialDetach(
+        browser()->tab_strip_model()->GetActiveWebContents());
+
+    return SetupWarningAndNavigateToURL(url);
   }
 
   // Adds two safebrowsing threat results to the fake safebrowsing service,
@@ -536,8 +575,19 @@ class SafeBrowsingBlockingPageBrowserTest
   TestThreatDetailsFactory details_factory_;
 
  private:
+  // Adds a safebrowsing result of the current test threat to the fake
+  // safebrowsing service, navigates to that page, and returns the url.
+  // The various wrappers supply different URLs.
+  GURL SetupWarningAndNavigateToURL(GURL url) {
+    SetURLThreatType(url, testing::get<0>(GetParam()));
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WaitForReady());
+    return url;
+  }
+
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory blocking_page_factory_;
+  net::EmbeddedTestServer https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
 };
@@ -993,6 +1043,65 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, WhitelistUnsaved) {
   EXPECT_TRUE(WaitForReady());
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
   AssertNoInterstitial(true);
+}
+
+// Test that the security indicator is downgraded after clicking through a
+// Safe Browsing interstitial.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       SecurityState_HTTP) {
+  SetupWarningAndNavigate();
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(model_client);
+  EXPECT_EQ(security_state::SecurityStateModel::SECURITY_ERROR,
+            model_client->GetSecurityInfo().security_level);
+  EXPECT_TRUE(model_client->GetSecurityInfo().fails_malware_check);
+}
+
+// Test that the security indicator is downgraded even if the website has valid
+// HTTPS (meaning that the SB state overrides the HTTPS state).
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       SecurityState_ValidHTTPS) {
+  SetupWarningAndNavigateToValidHTTPS();
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(model_client);
+  EXPECT_EQ(security_state::SecurityStateModel::SECURITY_ERROR,
+            model_client->GetSecurityInfo().security_level);
+  EXPECT_TRUE(model_client->GetSecurityInfo().fails_malware_check);
+  EXPECT_EQ(0u, model_client->GetSecurityInfo().cert_status);
+}
+
+// Test that the security indicator is still downgraded after two interstitials
+// are shown in a row (one for Safe Browsing, one for invalid HTTPS).
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       SecurityState_InvalidHTTPS) {
+  SetupWarningAndNavigateToInvalidHTTPS();
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(tab);
+  ASSERT_TRUE(model_client);
+  EXPECT_EQ(security_state::SecurityStateModel::SECURITY_ERROR,
+            model_client->GetSecurityInfo().security_level);
+  EXPECT_TRUE(model_client->GetSecurityInfo().fails_malware_check);
+
+  // TODO(felt): In the testing framework, the cert status gets reset to 0
+  // after the malware interstitial and stays that way.
+  //EXPECT_NE(0u, model_client->GetSecurityInfo().cert_status);
 }
 
 INSTANTIATE_TEST_CASE_P(

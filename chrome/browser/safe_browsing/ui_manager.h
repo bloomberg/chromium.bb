@@ -125,9 +125,15 @@ class SafeBrowsingUIManager
   // chain). Otherwise, |original_url| = |url|.
   virtual void DisplayBlockingPage(const UnsafeResource& resource);
 
+  // A wrapper method for IsUrlWhitelistedForWebContents, for convenience.
+  bool IsWhitelisted(const UnsafeResource& resource);
+
   // Returns true if we already displayed an interstitial for that top-level
   // site in a given WebContents. Called on the UI thread.
-  bool IsWhitelisted(const UnsafeResource& resource);
+  bool IsUrlWhitelistedForWebContents(const GURL& url,
+                                      bool is_subresource,
+                                      content::NavigationEntry* entry,
+                                      content::WebContents* web_contents);
 
   // The blocking page on the UI thread has completed.
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,

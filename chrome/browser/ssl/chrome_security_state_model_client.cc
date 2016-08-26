@@ -12,9 +12,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,6 +34,7 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
 
+using safe_browsing::SafeBrowsingUIManager;
 using security_state::SecurityStateModel;
 
 namespace {
@@ -321,4 +325,17 @@ void ChromeSecurityStateModelClient::GetVisibleSecurityState(
          content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS);
   state->ran_content_with_cert_errors =
       !!(ssl.content_status & content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS);
+
+  // Check to see whether the security state should be downgraded to reflect
+  // a Safe Browsing verdict.
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+  if (!sb_service)
+    return;
+  scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
+  if (sb_ui_manager->IsUrlWhitelistedForWebContents(entry->GetURL(), false,
+                                                    entry, web_contents_)) {
+    state->fails_malware_check = true;
+    state->initial_security_level = SecurityStateModel::SECURITY_ERROR;
+  }
 }
