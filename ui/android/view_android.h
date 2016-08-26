@@ -82,16 +82,17 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,
                      const gfx::RectF& bounds);
 
-  // Returns the Java delegate for this view. This is used to delegate work
-  // up to the embedding view (or the embedder that can deal with the
-  // implementation details).
-  const JavaObjectWeakGlobalRef GetViewAndroidDelegate() const;
-
  protected:
   ViewAndroid* parent_;
 
  private:
   void RemoveChild(ViewAndroid* child);
+
+  // Returns the Java delegate for this view. This is used to delegate work
+  // up to the embedding view (or the embedder that can deal with the
+  // implementation details).
+  const base::android::ScopedJavaLocalRef<jobject>
+      GetViewAndroidDelegate() const;
 
   std::list<ViewAndroid*> children_;
   scoped_refptr<cc::Layer> layer_;

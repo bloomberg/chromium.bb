@@ -102,11 +102,11 @@ void ViewAndroid::RemoveFromParent() {
 }
 
 ViewAndroid::ScopedAnchorView ViewAndroid::AcquireAnchorView() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate = GetViewAndroidDelegate().get(env);
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return ViewAndroid::ScopedAnchorView();
 
+  JNIEnv* env = base::android::AttachCurrentThread();
   return ViewAndroid::ScopedAnchorView(
       env, Java_ViewAndroidDelegate_acquireView(env, delegate), delegate);
 }
@@ -116,8 +116,7 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
   if (bounds.IsEmpty())
     return;
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate = GetViewAndroidDelegate().get(env);
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
 
@@ -129,6 +128,7 @@ void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
   //                  specific to a given web contents/render widget.
   int top_margin = std::round(
       (GetWindowAndroid()->content_offset().y() + bounds.y()) * scale);
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_setViewPosition(
       env, delegate, anchor, bounds.x(), bounds.y(), bounds.width(),
       bounds.height(), scale, left_margin, top_margin);
@@ -149,14 +149,14 @@ WindowAndroid* ViewAndroid::GetWindowAndroid() const {
   return parent_ ? parent_->GetWindowAndroid() : nullptr;
 }
 
-const JavaObjectWeakGlobalRef ViewAndroid::GetViewAndroidDelegate()
+const ScopedJavaLocalRef<jobject> ViewAndroid::GetViewAndroidDelegate()
     const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate = delegate_.get(env);
+  const ScopedJavaLocalRef<jobject> delegate = delegate_.get(env);
   if (!delegate.is_null())
-    return delegate_;
+    return delegate;
 
-  return parent_ ? parent_->GetViewAndroidDelegate() : delegate_;
+  return parent_ ? parent_->GetViewAndroidDelegate() : delegate;
 }
 
 cc::Layer* ViewAndroid::GetLayer() const {
@@ -169,10 +169,10 @@ void ViewAndroid::SetLayer(scoped_refptr<cc::Layer> layer) {
 
 void ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
                                    const JavaRef<jobject>& jimage) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate = delegate_.get(env);
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext, jimage);
 }
 
