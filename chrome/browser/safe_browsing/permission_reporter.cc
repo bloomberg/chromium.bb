@@ -22,8 +22,8 @@ namespace safe_browsing {
 namespace {
 // URL to upload permission action reports.
 const char kPermissionActionReportingUploadUrl[] =
-    "http://safebrowsing.googleusercontent.com/safebrowsing/clientreport/"
-    "permission-action";
+    "https://safebrowsing.googleusercontent.com/safebrowsing/clientreport/"
+    "chrome-permissions";
 
 const int kMaximumReportsPerOriginPerPermissionPerMinute = 5;
 
