@@ -4,6 +4,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameHost.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -42,6 +43,9 @@ void RenderingTest::TearDown()
     // RuntimeEnabledFeatures setting during teardown, which happens before our destructor
     // getting invoked, breaking the assumption that REF can't change during Blink lifetime.
     m_pageHolder = nullptr;
+
+    // Clear memory cache, otherwise we can leak pruned resources.
+    memoryCache()->evictResources();
 }
 
 Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId, const String& htmlContentOfIframe)
