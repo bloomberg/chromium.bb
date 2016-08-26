@@ -134,9 +134,10 @@
     ],
     'component_updater_unittest_sources': [
       'component_updater/component_updater_service_unittest.cc',
-      'component_updater/default_component_installer_unittest.cc',
       'component_updater/configurator_impl_unittest.cc',
+      'component_updater/default_component_installer_unittest.cc',
       'component_updater/timer_unittest.cc',
+      'component_updater/updater_state_unittest_win.cc',
     ],
     'content_settings_unittest_sources': [
       'content_settings/core/browser/content_settings_mock_provider.cc',

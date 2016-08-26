@@ -29,6 +29,9 @@
 #include "base/timer/timer.h"
 #include "components/component_updater/component_updater_service_internal.h"
 #include "components/component_updater/timer.h"
+#if defined(OS_WIN)
+#include "components/component_updater/updater_state_win.h"
+#endif
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
@@ -45,6 +48,8 @@ enum UpdateType {
   UPDATE_TYPE_AUTOMATIC,
   UPDATE_TYPE_COUNT,
 };
+
+const char kRecoveryComponentId[] = "npdjjkjlcidkjlamlmmdelcjbcpdjocm";
 
 }  // namespace
 
@@ -352,9 +357,17 @@ void CrxUpdateService::OnUpdate(const std::vector<std::string>& ids,
   DCHECK(components->empty());
 
   for (const auto& id : ids) {
-    const auto* registered_component(GetComponent(id));
+    const update_client::CrxComponent* registered_component(GetComponent(id));
     if (registered_component) {
       components->push_back(*registered_component);
+      if (id == kRecoveryComponentId) {
+        // Override the installer attributes for the recovery component in the
+        // components which will be checked for updates.
+        update_client::CrxComponent& recovery_component(components->back());
+        recovery_component.installer_attributes =
+            GetInstallerAttributesForRecoveryComponentInstaller(
+                recovery_component);
+      }
     }
   }
 }
@@ -413,6 +426,25 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
       component->fingerprint = update_item.next_fp;
     }
   }
+}
+
+update_client::InstallerAttributes
+CrxUpdateService::GetInstallerAttributesForRecoveryComponentInstaller(
+    const CrxComponent& crx_component) const {
+  update_client::InstallerAttributes installer_attributes;
+#if defined(OS_WIN)
+  DCHECK_EQ("recovery", crx_component.name);
+
+  const bool is_machine =
+      crx_component.installer_attributes.count("ismachine") &&
+      crx_component.installer_attributes.at("ismachine") == "1";
+
+  auto updater_state(UpdaterState::Create(is_machine));
+  if (updater_state) {
+    installer_attributes = updater_state->MakeInstallerAttributes();
+  }
+#endif
+  return installer_attributes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

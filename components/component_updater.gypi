@@ -36,6 +36,8 @@
         'component_updater/pref_names.h',
         'component_updater/timer.cc',
         'component_updater/timer.h',
+        'component_updater/updater_state_win.cc',
+        'component_updater/updater_state_win.h',
       ],
     },
     {
