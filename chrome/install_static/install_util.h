@@ -88,10 +88,9 @@ bool GetCollectStatsInSample();
 bool SetCollectStatsInSample(bool in_sample);
 
 // Returns true if if usage stats reporting is controlled by a mandatory
-// policy. |metrics_is_enforced_by_policy| will be set to true accordingly.
-// TODO(ananta)
-// Make this function private to install_util.
-bool ReportingIsEnforcedByPolicy(bool* metrics_is_enforced_by_policy);
+// policy. |crash_reporting_enabled| determines whether it's enabled (true) or
+// disabled (false).
+bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled);
 
 // Initializes |g_process_type| which stores whether or not the current
 // process is the main browser process.

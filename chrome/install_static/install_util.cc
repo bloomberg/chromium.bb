@@ -453,20 +453,20 @@ bool SetCollectStatsInSample(bool in_sample) {
                               in_sample ? 1 : 0);
 }
 
-bool ReportingIsEnforcedByPolicy(bool* metrics_is_enforced_by_policy) {
+bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled) {
   DWORD value = 0;
 
   // First, try HKLM.
   if (nt::QueryRegValueDWORD(nt::HKLM, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
-    *metrics_is_enforced_by_policy = (value != 0);
+    *crash_reporting_enabled = (value != 0);
     return true;
   }
 
   // Second, try HKCU.
   if (nt::QueryRegValueDWORD(nt::HKCU, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
-    *metrics_is_enforced_by_policy = (value != 0);
+    *crash_reporting_enabled = (value != 0);
     return true;
   }
 
