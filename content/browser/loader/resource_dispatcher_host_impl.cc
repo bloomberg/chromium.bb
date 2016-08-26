@@ -39,8 +39,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
@@ -435,7 +433,8 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
   return g_resource_dispatcher_host;
 }
 
-ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
+ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
+    CreateDownloadHandlerIntercept download_handler_intercept)
     : request_id_(-1),
       is_shutdown_(false),
       num_in_flight_requests_(0),
@@ -448,7 +447,8 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
       delegate_(nullptr),
       loader_delegate_(nullptr),
       allow_cross_origin_auth_prompt_(false),
-      cert_store_for_testing_(nullptr) {
+      cert_store_for_testing_(nullptr),
+      create_download_handler_intercept_(download_handler_intercept) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -475,6 +475,9 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
     async_revalidation_manager_.reset(new AsyncRevalidationManager);
   }
 }
+
+ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
+    : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept()) {}
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
   DCHECK(outstanding_requests_stats_map_.empty());
@@ -610,72 +613,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   }
 }
 
-DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
-    std::unique_ptr<net::URLRequest> request,
-    const Referrer& referrer,
-    bool is_content_initiated,
-    ResourceContext* context,
-    int render_process_id,
-    int render_view_route_id,
-    int render_frame_route_id,
-    bool do_not_prompt_for_login) {
-  if (is_shutdown_)
-    return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
-
-  const GURL& url = request->original_url();
-  SetReferrerForRequest(request.get(), referrer);
-
-  // We treat a download as a main frame load, and thus update the policy URL on
-  // redirects.
-  //
-  // TODO(davidben): Is this correct? If this came from a
-  // ViewHostMsg_DownloadUrl in a frame, should it have first-party URL set
-  // appropriately?
-  request->set_first_party_url_policy(
-      net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
-
-  // Check if the renderer is permitted to request the requested URL.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanRequestURL(render_process_id, url)) {
-    DVLOG(1) << "Denied unauthorized download request for "
-             << url.possibly_invalid_spec();
-    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
-  }
-
-  request_id_--;
-
-  const net::URLRequestContext* request_context = request->context();
-  if (!request_context->job_factory()->IsHandledURL(url)) {
-    DVLOG(1) << "Download request for unsupported protocol: "
-             << url.possibly_invalid_spec();
-    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
-  }
-
-  ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(render_process_id, render_view_route_id,
-                        render_frame_route_id, true, context);
-  extra_info->set_do_not_prompt_for_login(do_not_prompt_for_login);
-  extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
-
-  if (request->url().SchemeIs(url::kBlobScheme) &&
-      !storage::BlobProtocolHandler::GetRequestBlobDataHandle(request.get())) {
-    ChromeBlobStorageContext* blob_context =
-        GetChromeBlobStorageContextForResourceContext(context);
-    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
-        request.get(),
-        blob_context->context()->GetBlobDataFromPublicURL(request->url()));
-  }
-
-  // From this point forward, the |DownloadResourceHandler| is responsible for
-  // |started_callback|.
-  std::unique_ptr<ResourceHandler> handler(CreateResourceHandlerForDownload(
-      request.get(), is_content_initiated, true));
-
-  BeginRequestInternal(std::move(request), std::move(handler));
-
-  return DOWNLOAD_INTERRUPT_REASON_NONE;
-}
-
 void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(
     net::URLRequest* request) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
@@ -716,22 +653,14 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
     bool must_download) {
-  std::unique_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(request));
-  if (delegate_) {
-    const ResourceRequestInfoImpl* request_info(
-        ResourceRequestInfoImpl::ForRequest(request));
-
-    ScopedVector<ResourceThrottle> throttles;
-    delegate_->DownloadStarting(
-        request, request_info->GetContext(), request_info->GetChildID(),
-        request_info->GetRouteID(), is_content_initiated, must_download,
-        &throttles);
-    if (!throttles.empty()) {
-      handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
-                                                  std::move(throttles)));
-    }
-  }
+  DCHECK(!create_download_handler_intercept_.is_null());
+  // TODO(ananta)
+  // Find a better way to create the download handler and notifying the
+  // delegate of the download start.
+  std::unique_ptr<ResourceHandler> handler =
+      create_download_handler_intercept_.Run(request);
+  handler = HandleDownloadStarted(request, std::move(handler),
+                                  is_content_initiated, must_download);
   return handler;
 }
 
@@ -1877,65 +1806,6 @@ void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
   scheduler_->OnLoadingStateChanged(child_id, route_id, !is_loading);
 }
 
-// This function is only used for saving feature.
-void ResourceDispatcherHostImpl::BeginSaveFile(const GURL& url,
-                                               const Referrer& referrer,
-                                               SaveItemId save_item_id,
-                                               SavePackageId save_package_id,
-                                               int child_id,
-                                               int render_view_route_id,
-                                               int render_frame_route_id,
-                                               ResourceContext* context) {
-  if (is_shutdown_)
-    return;
-
-  request_id_--;
-
-  const net::URLRequestContext* request_context = context->GetRequestContext();
-  bool known_proto =
-      request_context->job_factory()->IsHandledURL(url);
-  if (!known_proto) {
-    // Since any URLs which have non-standard scheme have been filtered
-    // by save manager(see GURL::SchemeIsStandard). This situation
-    // should not happen.
-    NOTREACHED();
-    return;
-  }
-
-  std::unique_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
-  request->set_method("GET");
-  SetReferrerForRequest(request.get(), referrer);
-
-  // So far, for saving page, we need fetch content from cache, in the
-  // future, maybe we can use a configuration to configure this behavior.
-  request->SetLoadFlags(net::LOAD_PREFERRING_CACHE);
-
-  // Since we're just saving some resources we need, disallow downloading.
-  ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(child_id, render_view_route_id,
-                        render_frame_route_id, false, context);
-  extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
-
-  // Check if the renderer is permitted to request the requested URL.
-  using AuthorizationState = SaveFileResourceHandler::AuthorizationState;
-  AuthorizationState authorization_state = AuthorizationState::AUTHORIZED;
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(child_id,
-                                                                    url)) {
-    DVLOG(1) << "Denying unauthorized save of " << url.possibly_invalid_spec();
-    authorization_state = AuthorizationState::NOT_AUTHORIZED;
-    // No need to return here (i.e. okay to begin processing the request below),
-    // because NOT_AUTHORIZED will cause the request to be cancelled.  See also
-    // doc comments for AuthorizationState enum.
-  }
-
-  std::unique_ptr<SaveFileResourceHandler> handler(new SaveFileResourceHandler(
-      request.get(), save_item_id, save_package_id, child_id,
-      render_frame_route_id, url, authorization_state));
-
-  BeginRequestInternal(std::move(request), std::move(handler));
-}
-
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
     const GlobalRequestID& id,
     const scoped_refptr<ResourceResponse>& response) {
@@ -2367,8 +2237,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
 
   if ((TimeTicks::Now() - last_user_gesture_time_) <
       TimeDelta::FromMilliseconds(kUserGestureWindowMs)) {
-    request->SetLoadFlags(
-        request->load_flags() | net::LOAD_MAYBE_USER_GESTURE);
+    request->SetLoadFlags(request->load_flags() | net::LOAD_MAYBE_USER_GESTURE);
   }
 
   // Add the memory estimate that starting this request will consume.
@@ -2408,6 +2277,65 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   }
 
   StartLoading(info, std::move(loader));
+}
+
+void ResourceDispatcherHostImpl::InitializeURLRequest(
+    net::URLRequest* request,
+    const Referrer& referrer,
+    bool is_download,
+    int render_process_host_id,
+    int render_view_routing_id,
+    int render_frame_routing_id,
+    ResourceContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!request->is_pending());
+
+  SetReferrerForRequest(request, referrer);
+
+  request_id_--;
+
+  ResourceRequestInfoImpl* info =
+      CreateRequestInfo(render_process_host_id, render_view_routing_id,
+                        render_frame_routing_id, is_download, context);
+  // Request takes ownership.
+  info->AssociateWithRequest(request);
+}
+
+void ResourceDispatcherHostImpl::BeginURLRequest(
+    std::unique_ptr<net::URLRequest> request,
+    std::unique_ptr<ResourceHandler> handler,
+    bool is_download,
+    bool is_content_initiated,
+    bool do_not_prompt_for_login,
+    ResourceContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!request->is_pending());
+
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request.get());
+  DCHECK(info);
+  info->set_do_not_prompt_for_login(do_not_prompt_for_login);
+
+  // TODO(ananta)
+  // Find a better place for notifying the delegate about the download start.
+  if (is_download && delegate()) {
+    // TODO(ananta)
+    // Investigate whether the blob logic should apply for the SaveAs case and
+    // if yes then move the code below outside the if block.
+    if (request->original_url().SchemeIs(url::kBlobScheme) &&
+        !storage::BlobProtocolHandler::GetRequestBlobDataHandle(
+            request.get())) {
+      ChromeBlobStorageContext* blob_context =
+          GetChromeBlobStorageContextForResourceContext(context);
+      storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
+          request.get(),
+          blob_context->context()->GetBlobDataFromPublicURL(
+              request->original_url()));
+    }
+    handler = HandleDownloadStarted(request.get(), std::move(handler),
+                                    is_content_initiated, true);
+  }
+  BeginRequestInternal(std::move(request), std::move(handler));
 }
 
 void ResourceDispatcherHostImpl::StartLoading(
@@ -2723,6 +2651,27 @@ bool ResourceDispatcherHostImpl::ShouldServiceRequest(
     }
   }
   return true;
+}
+
+std::unique_ptr<ResourceHandler>
+ResourceDispatcherHostImpl::HandleDownloadStarted(
+    net::URLRequest* request,
+    std::unique_ptr<ResourceHandler> handler,
+    bool is_content_initiated,
+    bool must_download) {
+  if (delegate()) {
+    const ResourceRequestInfoImpl* request_info(
+        ResourceRequestInfoImpl::ForRequest(request));
+    ScopedVector<ResourceThrottle> throttles;
+    delegate()->DownloadStarting(
+        request, request_info->GetContext(), request_info->GetChildID(),
+        request_info->GetRouteID(), is_content_initiated, true, &throttles);
+    if (!throttles.empty()) {
+      handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
+                                                  std::move(throttles)));
+    }
+  }
+  return handler;
 }
 
 }  // namespace content

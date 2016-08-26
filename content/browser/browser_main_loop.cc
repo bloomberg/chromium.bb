@@ -45,6 +45,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -1280,7 +1281,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitResourceDispatcherHost");
-    resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+    // TODO(ananta)
+    // We register an interceptor on the ResourceDispatcherHostImpl instance to
+    // intercept requests to create handlers for download requests. We need to
+    // find a better way to achieve this. Ideally we don't want knowledge of
+    // downloads in ResourceDispatcherHostImpl.
+    resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl(
+        base::Bind(&DownloadResourceHandler::Create)));
     GetContentClient()->browser()->ResourceDispatcherHostCreated();
 
     loader_delegate_.reset(new LoaderDelegateImpl());

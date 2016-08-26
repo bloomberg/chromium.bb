@@ -37,6 +37,7 @@ class DownloadFileFactory;
 class DownloadItemFactory;
 class DownloadItemImpl;
 class DownloadRequestHandleInterface;
+class ResourceContext;
 
 class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
                                            private DownloadItemImplDelegate {
@@ -119,6 +120,21 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual DownloadFileFactory* GetDownloadFileFactoryForTesting();
 
   void RemoveUrlDownloader(UrlDownloader* downloader);
+
+  // Helper function to initiate a download request. This function initiates
+  // the download using functionality provided by the
+  // ResourceDispatcherHostImpl::BeginURLRequest function. The function returns
+  // the result of the downoad operation. Please see the
+  // DownloadInterruptReason enum for information on possible return values.
+  static DownloadInterruptReason BeginDownloadRequest(
+      std::unique_ptr<net::URLRequest> url_request,
+      const Referrer& referrer,
+      ResourceContext* resource_context,
+      bool is_content_initiated,
+      int render_process_id,
+      int render_view_route_id,
+      int render_frame_route_id,
+      bool do_not_prompt_for_login);
 
  private:
   using DownloadSet = std::set<DownloadItem*>;

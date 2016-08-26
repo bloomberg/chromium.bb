@@ -25,6 +25,8 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/download/download_manager_impl.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
@@ -854,6 +856,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        host_(base::Bind(base::Bind(&DownloadResourceHandler::Create))),
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {
@@ -1242,12 +1245,12 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
       browser_context_->GetResourceContext()->GetRequestContext();
   std::unique_ptr<net::URLRequest> request(
       request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
-  host_.BeginDownload(std::move(request), Referrer(),
-                      false,  // is_content_initiated
-                      browser_context_->GetResourceContext(),
-                      web_contents_->GetRenderProcessHost()->GetID(),
-                      web_contents_->GetRoutingID(),
-                      web_contents_->GetMainFrame()->GetRoutingID(), false);
+  DownloadManagerImpl::BeginDownloadRequest(
+      std::move(request), Referrer(), browser_context_->GetResourceContext(),
+      false,  // is_content_initiated
+      web_contents_->GetRenderProcessHost()->GetID(),
+      web_contents_->GetRoutingID(),
+      web_contents_->GetMainFrame()->GetRoutingID(), false);
 }
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {

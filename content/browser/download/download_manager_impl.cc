@@ -22,12 +22,14 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "content/browser/byte_stream.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -73,14 +75,12 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
   // ResourceDispatcherHostImpl which will in turn pass it along to the
   // ResourceLoader.
   if (params->render_process_host_id() >= 0) {
-    DownloadInterruptReason reason =
-        ResourceDispatcherHostImpl::Get()->BeginDownload(
-            std::move(url_request), params->referrer(),
-            params->content_initiated(), resource_context,
-            params->render_process_host_id(),
-            params->render_view_host_routing_id(),
-            params->render_frame_host_routing_id(),
-            params->do_not_prompt_for_login());
+    DownloadInterruptReason reason = DownloadManagerImpl::BeginDownloadRequest(
+        std::move(url_request), params->referrer(), resource_context,
+        params->content_initiated(), params->render_process_host_id(),
+        params->render_view_host_routing_id(),
+        params->render_frame_host_routing_id(),
+        params->do_not_prompt_for_login());
 
     // If the download was accepted, the DownloadResourceHandler is now
     // responsible for driving the request to completion.
@@ -519,6 +519,66 @@ void DownloadManagerImpl::RemoveUrlDownloader(UrlDownloader* downloader) {
       return;
     }
   }
+}
+
+// static
+DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
+    std::unique_ptr<net::URLRequest> url_request,
+    const Referrer& referrer,
+    ResourceContext* resource_context,
+    bool is_content_initiated,
+    int render_process_id,
+    int render_view_route_id,
+    int render_frame_route_id,
+    bool do_not_prompt_for_login) {
+  if (ResourceDispatcherHostImpl::Get()->is_shutdown())
+    return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
+
+  // The URLRequest needs to be initialized with the referrer and other
+  // information prior to issuing it.
+  ResourceDispatcherHostImpl::Get()->InitializeURLRequest(
+      url_request.get(), referrer,
+      true,  // download.
+      render_process_id, render_view_route_id, render_frame_route_id,
+      resource_context);
+
+  // We treat a download as a main frame load, and thus update the policy URL on
+  // redirects.
+  //
+  // TODO(davidben): Is this correct? If this came from a
+  // ViewHostMsg_DownloadUrl in a frame, should it have first-party URL set
+  // appropriately?
+  url_request->set_first_party_url_policy(
+      net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+
+  const GURL& url = url_request->original_url();
+
+  // Check if the renderer is permitted to request the requested URL.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_id, url)) {
+    DVLOG(1) << "Denied unauthorized download request for "
+             << url.possibly_invalid_spec();
+    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+  }
+
+  const net::URLRequestContext* request_context = url_request->context();
+  if (!request_context->job_factory()->IsHandledURL(url)) {
+    DVLOG(1) << "Download request for unsupported protocol: "
+             << url.possibly_invalid_spec();
+    return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
+  }
+
+  // From this point forward, the |DownloadResourceHandler| is responsible for
+  // |started_callback|.
+  // TODO(ananta)
+  // Find a better way to create the DownloadResourceHandler instance.
+  std::unique_ptr<ResourceHandler> handler(
+      DownloadResourceHandler::Create(url_request.get()));
+
+  ResourceDispatcherHostImpl::Get()->BeginURLRequest(
+      std::move(url_request), std::move(handler), true,  // download
+      is_content_initiated, do_not_prompt_for_login, resource_context);
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 namespace {

@@ -12,14 +12,21 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/save_file.h"
+#include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/resource_context.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -289,9 +296,54 @@ void SaveFileManager::OnSaveURL(const GURL& url,
                                 int render_frame_routing_id,
                                 ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ResourceDispatcherHostImpl::Get()->BeginSaveFile(
-      url, referrer, save_item_id, save_package_id, render_process_host_id,
-      render_view_routing_id, render_frame_routing_id, context);
+
+  const net::URLRequestContext* request_context = context->GetRequestContext();
+  if (!request_context->job_factory()->IsHandledURL(url)) {
+    // Since any URLs which have non-standard scheme have been filtered
+    // by save manager(see GURL::SchemeIsStandard). This situation
+    // should not happen.
+    NOTREACHED();
+    return;
+  }
+
+  std::unique_ptr<net::URLRequest> request(
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
+  request->set_method("GET");
+
+  // The URLRequest needs to be initialized with the referrer and other
+  // information prior to issuing it.
+  ResourceDispatcherHostImpl::Get()->InitializeURLRequest(
+      request.get(), referrer,
+      false,  // download.
+      render_process_host_id, render_view_routing_id, render_frame_routing_id,
+      context);
+
+  // So far, for saving page, we need fetch content from cache, in the
+  // future, maybe we can use a configuration to configure this behavior.
+  request->SetLoadFlags(net::LOAD_PREFERRING_CACHE);
+
+  // Check if the renderer is permitted to request the requested URL.
+  using AuthorizationState = SaveFileResourceHandler::AuthorizationState;
+  AuthorizationState authorization_state = AuthorizationState::AUTHORIZED;
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          render_process_host_id, url)) {
+    DVLOG(1) << "Denying unauthorized save of " << url.possibly_invalid_spec();
+    authorization_state = AuthorizationState::NOT_AUTHORIZED;
+    // No need to return here (i.e. okay to begin processing the request below),
+    // because NOT_AUTHORIZED will cause the request to be cancelled.  See also
+    // doc comments for AuthorizationState enum.
+  }
+
+  std::unique_ptr<SaveFileResourceHandler> handler(new SaveFileResourceHandler(
+      request.get(), save_item_id, save_package_id, render_process_host_id,
+      render_frame_routing_id, url, authorization_state));
+
+  ResourceDispatcherHostImpl::Get()->BeginURLRequest(
+      std::move(request), std::move(handler),
+      false,   // download
+      false,   // content_initiated (download specific)
+      false,   // do_not_prompt_for_login (download specific)
+      context);
 }
 
 void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,

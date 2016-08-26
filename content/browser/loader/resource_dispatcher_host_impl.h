@@ -24,7 +24,6 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_types.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_loader.h"
@@ -65,12 +64,12 @@ class NavigationURLLoaderImplCore;
 class RenderFrameHostImpl;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
 class ServiceWorkerNavigationHandleCore;
 struct CommonNavigationParams;
-struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
@@ -79,10 +78,19 @@ namespace mojom {
 class URLLoader;
 }  // namespace mojom
 
+using CreateDownloadHandlerIntercept =
+    base::Callback<std::unique_ptr<ResourceHandler>(net::URLRequest*)>;
+
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public ResourceLoaderDelegate {
  public:
+  // This constructor should be used if we want downloads to work correctly.
+  // TODO(ananta)
+  // Work on moving creation of download handlers out of
+  // ResourceDispatcherHostImpl.
+  ResourceDispatcherHostImpl(
+      CreateDownloadHandlerIntercept download_handler_intercept);
   ResourceDispatcherHostImpl();
   ~ResourceDispatcherHostImpl() override;
 
@@ -128,27 +136,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns true if the message was a resource message that was processed.
   bool OnMessageReceived(const IPC::Message& message,
                          ResourceMessageFilter* filter);
-
-  DownloadInterruptReason BeginDownload(
-      std::unique_ptr<net::URLRequest> request,
-      const Referrer& referrer,
-      bool is_content_initiated,
-      ResourceContext* context,
-      int render_process_id,
-      int render_view_route_id,
-      int render_frame_route_id,
-      bool do_not_prompt_for_login);
-
-  // Initiates a save file from the browser process (as opposed to a resource
-  // request from the renderer or another child process).
-  void BeginSaveFile(const GURL& url,
-                     const Referrer& referrer,
-                     SaveItemId save_item_id,
-                     SavePackageId save_package_id,
-                     int child_id,
-                     int render_view_route_id,
-                     int render_frame_route_id,
-                     ResourceContext* context);
 
   // Cancels the given request if it still exists.
   void CancelRequest(int child_id, int request_id);
@@ -244,6 +231,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.
   // This is marked virtual so it can be overriden in testing.
+  // TODO(ananta)
+  // This method should be removed or moved outside this class.
   virtual std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
@@ -308,6 +297,35 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       mojo::InterfaceRequest<mojom::URLLoader> mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
       ResourceMessageFilter* filter);
+
+  // Helper function for initializing the |request| passed in. By initializing
+  // we mean setting the |referrer| on the |request|, associating the
+  // ResourceRequestInfoImpl structure with the |request|, etc.
+  // This function should be called for invoking the BeginURLRequest() function
+  // to initiate a URL request.
+  void InitializeURLRequest(net::URLRequest* request,
+                            const Referrer& referrer,
+                            bool is_download,
+                            int render_process_host_id,
+                            int render_view_routing_id,
+                            int render_frame_routing_id,
+                            ResourceContext* context);
+
+  // Helper function for initiating a URL request. The |is_download| and
+  // |is_content_initiated and |do_not_prompt_for_login| parameters are
+  // specific to download requests.
+  // TODO(ananta)
+  // Look into a better way of passing these parameters in.
+  // Please note that the InitializeURLRequest() function needs to be called
+  // called to initialize the request before calling this function.
+  void BeginURLRequest(std::unique_ptr<net::URLRequest> request,
+                       std::unique_ptr<ResourceHandler> handler,
+                       bool is_download,
+                       bool is_content_initiated,
+                       bool do_not_prompt_for_login,
+                       ResourceContext* context);
+
+  bool is_shutdown() const { return is_shutdown_; }
 
  private:
   friend class ResourceDispatcherHostTest;
@@ -378,7 +396,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
-  // Helper function for regular and download requests.
+  // Helper function for URL requests.
   void BeginRequestInternal(std::unique_ptr<net::URLRequest> request,
                             std::unique_ptr<ResourceHandler> handler);
 
@@ -615,6 +633,17 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                             ResourceMessageFilter* filter,
                             ResourceContext* resource_context);
 
+  // Notifies the ResourceDispatcherHostDelegate about a download having
+  // started. The function returns the |handler| passed in, if the download
+  // is not throttled. If the download is to be throttled (Decided by the
+  // delegate) the function returns a ThrottlingResourceHandler to handle the
+  // download.
+  std::unique_ptr<ResourceHandler> HandleDownloadStarted(
+      net::URLRequest* request,
+      std::unique_ptr<ResourceHandler> handler,
+      bool is_content_initiated,
+      bool must_download);
+
   LoaderMap pending_loaders_;
 
   // Collection of temp files downloaded for child processes via
@@ -708,6 +737,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Used to invoke an interceptor for the HTTP header.
   HeaderInterceptorMap http_header_interceptor_map_;
+
+  // Points to the registered download handler intercept.
+  CreateDownloadHandlerIntercept create_download_handler_intercept_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
