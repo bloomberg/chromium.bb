@@ -62,6 +62,25 @@ TEST_F(WindowUtilTest, AdjustBoundsToEnsureMinimumVisibility) {
   EXPECT_EQ("75,75 100x100",
             GetAdjustedBounds(visible_bounds, gfx::Rect(100, 100, 150, 150)));
 
+  // For windows that have smaller dimensions than wm::kMinimumOnScreenArea,
+  // we should adjust bounds accordingly, leaving no white space.
+  EXPECT_EQ("50,80 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(50, 80, 20, 20)));
+  EXPECT_EQ("80,50 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(80, 50, 20, 20)));
+  EXPECT_EQ("0,50 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(0, 50, 20, 20)));
+  EXPECT_EQ("50,0 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(50, 0, 20, 20)));
+  EXPECT_EQ("50,80 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(50, 100, 20, 20)));
+  EXPECT_EQ("80,50 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(100, 50, 20, 20)));
+  EXPECT_EQ("0,50 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(-10, 50, 20, 20)));
+  EXPECT_EQ("50,0 20x20",
+            GetAdjustedBounds(visible_bounds, gfx::Rect(50, -10, 20, 20)));
+
   const gfx::Rect visible_bounds_right(200, 50, 100, 100);
 
   EXPECT_EQ("210,60 90x90", GetAdjustedBounds(visible_bounds_right,

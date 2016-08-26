@@ -46,14 +46,17 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& visible_area,
   min_height = std::min(min_height, visible_area.height());
 
   if (bounds->right() < visible_area.x() + min_width) {
-    bounds->set_x(visible_area.x() + min_width - bounds->width());
+    bounds->set_x(visible_area.x() + std::min(bounds->width(), min_width) -
+                  bounds->width());
   } else if (bounds->x() > visible_area.right() - min_width) {
-    bounds->set_x(visible_area.right() - min_width);
+    bounds->set_x(visible_area.right() - std::min(bounds->width(), min_width));
   }
   if (bounds->bottom() < visible_area.y() + min_height) {
-    bounds->set_y(visible_area.y() + min_height - bounds->height());
+    bounds->set_y(visible_area.y() + std::min(bounds->height(), min_height) -
+                  bounds->height());
   } else if (bounds->y() > visible_area.bottom() - min_height) {
-    bounds->set_y(visible_area.bottom() - min_height);
+    bounds->set_y(visible_area.bottom() -
+                  std::min(bounds->height(), min_height));
   }
   if (bounds->y() < visible_area.y())
     bounds->set_y(visible_area.y());
