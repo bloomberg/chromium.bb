@@ -38,12 +38,14 @@ class ScopedPtrExpiringCache {
     return NULL;
   }
 
-  void Remove(const Key& key) {
+  std::unique_ptr<Value> Remove(const Key& key) {
     iterator iter = map_.find(key);
+    std::unique_ptr<Value> value;
     if (iter != map_.end()) {
-      delete iter->second;
+      value.reset(iter->second);
       map_.erase(key);
     }
+    return std::move(value);
   }
 
   void Clear() {

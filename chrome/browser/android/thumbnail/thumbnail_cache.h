@@ -15,6 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -147,6 +148,9 @@ class ThumbnailCache : ThumbnailDelegate {
   static std::pair<SkBitmap, float> CreateApproximation(const SkBitmap& bitmap,
                                                         float scale);
 
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   const size_t compression_queue_max_size_;
   const size_t write_queue_max_size_;
   const bool use_approximation_thumbnail_;
@@ -164,6 +168,7 @@ class ThumbnailCache : ThumbnailDelegate {
 
   ui::UIResourceProvider* ui_resource_provider_;
 
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
   base::WeakPtrFactory<ThumbnailCache> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailCache);
