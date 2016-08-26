@@ -62,11 +62,6 @@ public interface FirstRunPageDelegate {
     boolean didAcceptTermsOfService();
 
     /**
-     * @return Whether the "upload crash dump" setting is set to "NEVER".
-     */
-    boolean isNeverUploadCrashDump();
-
-    /**
      * Notifies all interested parties that the user has accepted Chrome Terms of Service.
      * @param allowCrashUpload True if the user allows to upload crash dumps and collect stats.
      */

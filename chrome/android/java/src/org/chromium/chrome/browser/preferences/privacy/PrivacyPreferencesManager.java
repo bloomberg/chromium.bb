@@ -323,19 +323,10 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Check whether crash dump upload preference is disabled according to corresponding preference.
+     * Check whether crash dump upload preference is set to allow uploads or is set to not allow
+     * uploads for any connection type.
      *
-     * @return boolean {@code true} if the option is set to not send.
-     */
-    public boolean isNeverUploadCrashDump() {
-        if (isCellularExperimentEnabled()) return !isUsageAndCrashReportingEnabled();
-        return !isUploadCrashDumpEnabled();
-    }
-
-    /**
-     * Check whether crash dump upload preference is set to NEVER only.
-     *
-     * @return boolean {@code true} if the option is set to NEVER.
+     * @return boolean {@code true} if the option is set to allow uploads.
      */
     public boolean isUploadCrashDumpEnabled() {
         if (isMobileNetworkCapable()) {
@@ -421,14 +412,11 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     @Override
     public boolean isUploadUserPermitted() {
+        // If user is in cellular experiment read new two-option prefs.
         if (isCellularExperimentEnabled()) return isUsageAndCrashReportingEnabled();
 
-        if (isMobileNetworkCapable()) {
-            String option =
-                    mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload);
-            return option.equals(mCrashDumpAlwaysUpload) || option.equals(mCrashDumpWifiOnlyUpload);
-        }
-        return mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
+        // If user is not in cellular experiment read old three-option prefs.
+        return isUploadCrashDumpEnabled();
     }
 
     /**

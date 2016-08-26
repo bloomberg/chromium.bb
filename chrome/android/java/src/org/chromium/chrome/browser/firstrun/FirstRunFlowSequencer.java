@@ -37,13 +37,6 @@ public abstract class FirstRunFlowSequencer  {
     private final Bundle mLaunchProperties;
 
     /**
-     * Determines if the metrics reporting checkbox is initially checked when shown to the user. If
-     * reporting is opt-in, then it won't be checked.
-     */
-    @VisibleForTesting
-    protected boolean mIsMetricsReportingOptIn;
-
-    /**
      * Callback that is called once the flow is determined.
      * If the properties is null, the First Run experience needs to finish and
      * restart the original intent if necessary.
@@ -51,11 +44,9 @@ public abstract class FirstRunFlowSequencer  {
      */
     public abstract void onFlowIsKnown(Bundle freProperties);
 
-    public FirstRunFlowSequencer(
-            Activity activity, Bundle launcherProvidedProperties, boolean isMetricsReportingOptIn) {
+    public FirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
         mActivity = activity;
         mLaunchProperties = launcherProvidedProperties;
-        mIsMetricsReportingOptIn = isMetricsReportingOptIn;
     }
 
     /**
@@ -124,8 +115,9 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     @VisibleForTesting
-    protected void enableCrashUpload() {
-        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(true);
+    protected void setDefaultMetricsAndCrashReporting() {
+        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(
+                FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
     }
 
     @VisibleForTesting
@@ -157,12 +149,10 @@ public abstract class FirstRunFlowSequencer  {
         boolean showWelcomePage = !forceEduSignIn;
         freProperties.putBoolean(FirstRunActivity.SHOW_WELCOME_PAGE, showWelcomePage);
 
-        // Enable reporting by default on non-Stable releases.
-        // The user can turn it off on the Welcome page.
+        // Initialize usage and crash reporting according to the default value.
+        // The user can explicitly enable or disable the reporting on the Welcome page.
         // This is controlled by the administrator via a policy on EDU devices.
-        if (!mIsMetricsReportingOptIn) {
-            enableCrashUpload();
-        }
+        setDefaultMetricsAndCrashReporting();
 
         // We show the sign-in page if sync is allowed, and not signed in, and this is not an EDU
         // device, and

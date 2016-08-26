@@ -43,7 +43,7 @@ public class FirstRunFlowSequencerTest {
     public static class TestFirstRunFlowSequencer extends FirstRunFlowSequencer {
         public Bundle returnedBundle;
         public boolean calledOnFlowIsKnown;
-        public boolean calledEnableCrashUpload;
+        public boolean calledSetDefaultMetricsAndCrashReporting;
         public boolean calledSetFirstRunFlowSignInComplete;
 
         public boolean isFirstRunFlowComplete;
@@ -56,7 +56,7 @@ public class FirstRunFlowSequencerTest {
         public boolean shouldShowDataReductionPage;
 
         public TestFirstRunFlowSequencer(Activity activity, Bundle launcherProvidedProperties) {
-            super(activity, launcherProvidedProperties, true);
+            super(activity, launcherProvidedProperties);
         }
 
         @Override
@@ -106,8 +106,8 @@ public class FirstRunFlowSequencerTest {
         }
 
         @Override
-        public void enableCrashUpload() {
-            calledEnableCrashUpload = true;
+        public void setDefaultMetricsAndCrashReporting() {
+            calledSetDefaultMetricsAndCrashReporting = true;
         }
 
         @Override
@@ -145,7 +145,7 @@ public class FirstRunFlowSequencerTest {
                 false); // hasChildAccount
         assertTrue(mSequencer.calledOnFlowIsKnown);
         assertNull(mSequencer.returnedBundle);
-        assertFalse(mSequencer.calledEnableCrashUpload);
+        assertFalse(mSequencer.calledSetDefaultMetricsAndCrashReporting);
     }
 
     @Test
@@ -168,7 +168,7 @@ public class FirstRunFlowSequencerTest {
                 FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
         assertEquals(4, mSequencer.returnedBundle.size());
-        assertFalse(mSequencer.calledEnableCrashUpload);
+        assertTrue(mSequencer.calledSetDefaultMetricsAndCrashReporting);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
 
@@ -198,32 +198,7 @@ public class FirstRunFlowSequencerTest {
         assertEquals(DEFAULT_ACCOUNT, mSequencer.returnedBundle.getString(
                 AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
         assertEquals(6, mSequencer.returnedBundle.size());
-        assertFalse(mSequencer.calledEnableCrashUpload);
-        assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
-    }
-
-    @Test
-    @Feature({"FirstRun"})
-    public void testStandardFlowNonStable() {
-        mSequencer.isFirstRunFlowComplete = false;
-        mSequencer.isSignedIn = false;
-        mSequencer.isSyncAllowed = true;
-        mSequencer.googleAccounts = new Account[0];
-        mSequencer.hasAnyUserSeenToS = false;
-        mSequencer.shouldSkipFirstUseHints = false;
-        mSequencer.mIsMetricsReportingOptIn = false;
-        mSequencer.shouldShowDataReductionPage = false;
-        mSequencer.processFreEnvironment(
-                false, // androidEduDevice
-                false); // hasChildAccount
-        assertTrue(mSequencer.calledOnFlowIsKnown);
-        assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_WELCOME_PAGE));
-        assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_SIGNIN_PAGE));
-        assertFalse(mSequencer.returnedBundle.getBoolean(
-                FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
-        assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
-        assertEquals(4, mSequencer.returnedBundle.size());
-        assertTrue(mSequencer.calledEnableCrashUpload);
+        assertTrue(mSequencer.calledSetDefaultMetricsAndCrashReporting);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
 
@@ -253,7 +228,7 @@ public class FirstRunFlowSequencerTest {
         assertEquals(DEFAULT_ACCOUNT, mSequencer.returnedBundle.getString(
                 AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO));
         assertEquals(6, mSequencer.returnedBundle.size());
-        assertFalse(mSequencer.calledEnableCrashUpload);
+        assertTrue(mSequencer.calledSetDefaultMetricsAndCrashReporting);
         assertTrue(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
 
@@ -276,7 +251,7 @@ public class FirstRunFlowSequencerTest {
         assertTrue(mSequencer.returnedBundle.getBoolean(FirstRunActivity.SHOW_DATA_REDUCTION_PAGE));
         assertFalse(mSequencer.returnedBundle.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT));
         assertEquals(4, mSequencer.returnedBundle.size());
-        assertFalse(mSequencer.calledEnableCrashUpload);
+        assertTrue(mSequencer.calledSetDefaultMetricsAndCrashReporting);
         assertFalse(mSequencer.calledSetFirstRunFlowSignInComplete);
     }
 }

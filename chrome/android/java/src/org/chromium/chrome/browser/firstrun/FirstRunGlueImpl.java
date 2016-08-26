@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.signin.AccountAdder;
 import org.chromium.components.sync.signin.AccountManagerHelper;
 
@@ -24,11 +23,6 @@ public class FirstRunGlueImpl implements FirstRunGlue {
     public boolean didAcceptTermsOfService(Context appContext) {
         return ToSAckedReceiver.checkAnyUserHasSeenToS(appContext)
                 || PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
-    }
-
-    @Override
-    public boolean isNeverUploadCrashDump(Context appContext) {
-        return PrivacyPreferencesManager.getInstance().isNeverUploadCrashDump();
     }
 
     @Override

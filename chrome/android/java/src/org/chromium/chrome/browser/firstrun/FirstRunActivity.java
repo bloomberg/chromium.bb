@@ -18,7 +18,6 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -57,6 +56,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public static final String RESULT_CLOSE_APP = "Close App";
     public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
     public static final String RESULT_SHOW_SIGNIN_SETTINGS = "ResultShowSignInSettings";
+    public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
 
     // UMA constants.
     private static final String UMA_SIGNIN_CHOICE = "MobileFre.SignInChoice";
@@ -129,16 +129,6 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         }
     }
 
-    /**
-     * Returns whether metrics reporting is currently opt-in. This is used to determine if the
-     * enable metrics reporting checkbox on first-run should be initially checked. Opt-in means it
-     * is not initially checked, opt-out means it is. This is not guaranteed to be correct outside
-     * of the first-run situation, as the default may change over time.
-     */
-    private static boolean isMetricsReportingOptIn() {
-        return ChromeVersionInfo.isStableBuild();
-    }
-
     // Activity:
 
     @Override
@@ -167,7 +157,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
         mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
         mProfileDataCache.setProfile(Profile.getLastUsedProfile());
-        new FirstRunFlowSequencer(this, mFreProperties, isMetricsReportingOptIn()) {
+        new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
                 if (freProperties == null) {
@@ -353,13 +343,9 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     @Override
-    public boolean isNeverUploadCrashDump() {
-        return sGlue.isNeverUploadCrashDump(getApplicationContext());
-    }
-
-    @Override
     public void acceptTermsOfService(boolean allowCrashUpload) {
-        UmaUtils.recordMetricsReportingDefaultOptIn(isMetricsReportingOptIn());
+        // If default is true then it corresponds to opt-out and false corresponds to opt-in.
+        UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
         sGlue.acceptTermsOfService(getApplicationContext(), allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(FirstRunActivity.this, true);
         flushPersistentData();

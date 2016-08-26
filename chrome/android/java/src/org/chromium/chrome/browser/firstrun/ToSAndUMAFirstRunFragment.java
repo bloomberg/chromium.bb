@@ -62,7 +62,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
                     ApiCompatibilityUtils.getPaddingEnd(mSendReportCheckBox),
                     mSendReportCheckBox.getPaddingBottom());
 
-            mSendReportCheckBox.setChecked(!getPageDelegate().isNeverUploadCrashDump());
+            mSendReportCheckBox.setChecked(FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
         } else {
             mSendReportCheckBox.setVisibility(View.GONE);
         }
