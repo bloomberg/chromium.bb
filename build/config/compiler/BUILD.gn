@@ -372,6 +372,14 @@ config("compiler") {
     cflags += [ "-fcolor-diagnostics" ]
   }
 
+  # Print absolute paths in diagnostics. There is no precedent for doing this
+  # on Linux/Mac (GCC doesn't support it), but MSVC does this with /FC and
+  # Windows developers rely on it (crbug.com/636109) so only do this on Windows.
+  # TODO(hans) Remove llvm_force_head_revision check in next clang roll.
+  if (is_clang && is_win && llvm_force_head_revision) {
+    cflags += [ "-fdiagnostics-absolute-paths" ]
+  }
+
   # Makes builds independent of absolute file path.
   # clang-cl (used if is_win) doesn't expose this flag.
   # Currently disabled for nacl since its toolchain lacks this flag (too old).
