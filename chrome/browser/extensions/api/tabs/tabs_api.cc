@@ -260,14 +260,6 @@ bool IsValidStateForWindowsCreateFunction(
   return true;
 }
 
-bool IsHangoutsExtensionId(const std::string& extension_id) {
-  for (const char* id : extension_misc::kHangoutsExtensionIds) {
-    if (extension_id == id)
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
@@ -516,11 +508,11 @@ bool WindowsCreateFunction::RunSync() {
 
 #if defined(USE_ASH)
   bool create_ash_panel = false;
+  bool saw_focus_key = false;
 #endif  // defined(USE_ASH)
 
   gfx::Rect window_bounds;
   bool focused = true;
-  bool saw_focus_key = false;
   std::string extension_id;
 
   if (create_data) {
@@ -539,9 +531,11 @@ bool WindowsCreateFunction::RunSync() {
       // Only ChromeOS' version of chrome.windows.create would create a panel
       // window. It is whitelisted to Hangouts extension for limited time until
       // it transitioned to other types of windows.
-        if (IsHangoutsExtensionId(extension_id)) {
-          create_ash_panel = true;
-          break;
+        for (const char* id : extension_misc::kHangoutsExtensionIds) {
+          if (extension_id == id) {
+            create_ash_panel = true;
+            break;
+          }
         }
 #endif  // defined(USE_ASH)
         // Everything else gets POPUP instead of PANEL.
@@ -593,7 +587,9 @@ bool WindowsCreateFunction::RunSync() {
 
     if (create_data->focused) {
       focused = *create_data->focused;
+#if defined(USE_ASH)
       saw_focus_key = true;
+#endif
     }
   }
 
