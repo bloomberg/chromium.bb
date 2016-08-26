@@ -147,9 +147,8 @@ GURL GetFetcherUrl(const char* url_format) {
 class NTPSnippetsFetcherTest : public testing::Test {
  public:
   NTPSnippetsFetcherTest()
-      : NTPSnippetsFetcherTest(
-            GetFetcherUrl(kTestChromeReaderUrlFormat),
-            std::map<std::string, std::string>()) {}
+      : NTPSnippetsFetcherTest(GetFetcherUrl(kTestChromeReaderUrlFormat),
+                               std::map<std::string, std::string>()) {}
 
   NTPSnippetsFetcherTest(const GURL& gurl,
                          const std::map<std::string, std::string>& params)
@@ -247,9 +246,8 @@ class NTPSnippetsContentSuggestionsFetcherTest : public NTPSnippetsFetcherTest {
 class NTPSnippetsFetcherHostRestrictedTest : public NTPSnippetsFetcherTest {
  public:
   NTPSnippetsFetcherHostRestrictedTest()
-      : NTPSnippetsFetcherTest(
-            GetFetcherUrl(kTestChromeReaderUrlFormat),
-            {{"fetching_host_restrict", "on"}}) {}
+      : NTPSnippetsFetcherTest(GetFetcherUrl(kTestChromeReaderUrlFormat),
+                               {{"fetching_host_restrict", "on"}}) {}
 };
 
 TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
@@ -260,6 +258,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   params.host_restricts = {"chromium.org"};
   params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
+  params.interactive_request = false;
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -304,6 +303,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestAuthenticated) {
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
                          "  \"uiLanguage\": \"en\","
+                         "  \"priority\": \"BACKGROUND_PREFETCH\","
                          "  \"regularlyVisitedHostNames\": ["
                          "    \"chromium.org\""
                          "  ],"
@@ -319,6 +319,8 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   params.host_restricts = {};
   params.count_to_fetch = 10;
   params.excluded_ids = {};
+  params.interactive_request = true;
+
 
   params.fetch_api = NTPSnippetsFetcher::CHROME_READER_API;
   EXPECT_THAT(params.BuildRequest(),
@@ -356,6 +358,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestUnauthenticated) {
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
                          "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"USER_ACTION\","
                          "  \"excludedSuggestionIds\": []"
                          "}"));
 }
@@ -365,6 +368,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
   params.only_return_personalized_results = false;
   params.host_restricts = {};
   params.count_to_fetch = 10;
+  params.interactive_request = false;
   for (int i = 0; i < 200; ++i) {
     params.excluded_ids.insert(base::StringPrintf("%03d", i));
   }
@@ -373,6 +377,7 @@ TEST_F(NTPSnippetsFetcherTest, BuildRequestExcludedIds) {
   EXPECT_THAT(params.BuildRequest(),
               EqualsJSON("{"
                          "  \"regularlyVisitedHostNames\": [],"
+                         "  \"priority\": \"BACKGROUND_PREFETCH\","
                          "  \"excludedSuggestionIds\": ["
                          "    \"000\", \"001\", \"002\", \"003\", \"004\","
                          "    \"005\", \"006\", \"007\", \"008\", \"009\","

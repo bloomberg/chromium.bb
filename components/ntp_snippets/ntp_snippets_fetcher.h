@@ -156,6 +156,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     std::set<std::string> host_restricts;
     std::set<std::string> excluded_ids;
     int count_to_fetch;
+    bool interactive_request;
 
     RequestParams();
     ~RequestParams();
@@ -237,6 +238,9 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   Personalization personalization_;
   // Should we apply host restriction? It is loaded from variation parameters.
   bool use_host_restriction_;
+
+  // Is the request user initiated?
+  bool interactive_request_;
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;

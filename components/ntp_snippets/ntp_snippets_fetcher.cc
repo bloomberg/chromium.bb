@@ -131,7 +131,7 @@ bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
              endpoint != GURL(kContentSuggestionsDevServer) &&
              endpoint != GURL(kContentSuggestionsAlphaServer)) {
     LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
-      << "assuming chromecontentsuggestions-style API";
+                 << "assuming chromecontentsuggestions-style API";
   }
   return true;
 }
@@ -194,6 +194,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
                      ? CHROME_CONTENT_SUGGESTIONS_API
                      : CHROME_READER_API),
       is_stable_channel_(is_stable_channel),
+      interactive_request_(false),
       tick_clock_(new base::DefaultTickClock()),
       request_throttler_(
           pref_service,
@@ -267,6 +268,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   count_to_fetch_ = count;
 
   bool use_authentication = UsesAuthentication();
+  interactive_request_ = interactive_request;
 
   if (use_authentication && signin_manager_->IsAuthenticated()) {
     // Signed-in: get OAuth token --> fetch snippets.
@@ -292,7 +294,8 @@ NTPSnippetsFetcher::RequestParams::RequestParams()
       only_return_personalized_results(),
       user_locale(),
       host_restricts(),
-      count_to_fetch() {}
+      count_to_fetch(),
+      interactive_request() {}
 
 NTPSnippetsFetcher::RequestParams::~RequestParams() = default;
 
@@ -356,6 +359,9 @@ std::string NTPSnippetsFetcher::RequestParams::BuildRequest() {
         regular_hosts->AppendString(host);
       }
       request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
+      request->SetString("priority", interactive_request
+                                         ? "USER_ACTION"
+                                         : "BACKGROUND_PREFETCH");
 
       auto excluded = base::MakeUnique<base::ListValue>();
       for (const auto& id : excluded_ids) {
@@ -403,7 +409,8 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
   url_fetcher_->SetUploadData("application/json", request);
   // Log the request for debugging network issues.
   VLOG(1) << "Sending a NTP snippets request to " << url << ":" << std::endl
-          << headers.ToString() << std::endl << request;
+          << headers.ToString() << std::endl
+          << request;
   // Fetchers are sometimes cancelled because a network change was detected.
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   // Try to make fetching the files bit more robust even with poor connection.
@@ -436,6 +443,7 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
   params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
+  params.interactive_request = interactive_request_;
   FetchSnippetsImpl(url, std::string(), params.BuildRequest());
 }
 
@@ -452,6 +460,7 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
       UsesHostRestrictions() ? hosts_ : std::set<std::string>();
   params.excluded_ids = excluded_ids_;
   params.count_to_fetch = count_to_fetch_;
+  params.interactive_request = interactive_request_;
   // TODO(jkrcal, treib): Add unit-tests for authenticated fetches.
   FetchSnippetsImpl(fetch_url_,
                     base::StringPrintf(kAuthorizationRequestHeaderFormat,
@@ -541,16 +550,15 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
         OptionalSnippets(), FetchResult::HTTP_ERROR,
         /*extra_message=*/base::StringPrintf(" %d", source->GetResponseCode()));
   } else {
-    bool stores_result_to_string = source->GetResponseAsString(
-        &last_fetch_json_);
+    bool stores_result_to_string =
+        source->GetResponseAsString(&last_fetch_json_);
     DCHECK(stores_result_to_string);
 
-    parse_json_callback_.Run(
-        last_fetch_json_,
-        base::Bind(&NTPSnippetsFetcher::OnJsonParsed,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&NTPSnippetsFetcher::OnJsonError,
-                   weak_ptr_factory_.GetWeakPtr()));
+    parse_json_callback_.Run(last_fetch_json_,
+                             base::Bind(&NTPSnippetsFetcher::OnJsonParsed,
+                                        weak_ptr_factory_.GetWeakPtr()),
+                             base::Bind(&NTPSnippetsFetcher::OnJsonError,
+                                        weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -620,8 +628,8 @@ void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
 }
 
 void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
-  LOG(WARNING) << "Received invalid JSON (" << error << "): "
-               << last_fetch_json_;
+  LOG(WARNING) << "Received invalid JSON (" << error
+               << "): " << last_fetch_json_;
   FetchFinished(
       OptionalSnippets(), FetchResult::JSON_PARSE_ERROR,
       /*extra_message=*/base::StringPrintf(" (error %s)", error.c_str()));
