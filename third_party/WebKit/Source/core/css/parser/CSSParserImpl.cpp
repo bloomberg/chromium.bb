@@ -766,7 +766,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Rul
     }
 
     size_t propertiesCount = m_parsedProperties.size();
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
+    if (unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
         AtomicString variableName = token.value().toAtomicString();
         consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
     }

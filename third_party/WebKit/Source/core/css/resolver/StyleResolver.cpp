@@ -1559,12 +1559,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
 
     // TODO(leviw): We need the proper bit for tracking whether we need to do this work.
-    if (RuntimeEnabledFeatures::cssVariablesEnabled()) {
-        applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
-        applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
-        // TODO(leviw): stop recalculating every time
-        CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
-    }
+    applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), false, applyInheritedOnly);
+    applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(), true, applyInheritedOnly);
+    // TODO(leviw): stop recalculating every time
+    CSSVariableResolver::resolveVariableDefinitions(state.style()->variables());
 
     if (RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
         if (cacheCustomPropertiesForApplyAtRules(state, matchResult.authorRules())) {

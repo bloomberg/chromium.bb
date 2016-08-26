@@ -1004,9 +1004,6 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
             .setValue(computedStyleInfo->getPropertyValue(propertyId)).build());
     }
 
-    if (!RuntimeEnabledFeatures::cssVariablesEnabled())
-        return;
-
     std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> variables = computedStyleInfo->getVariables();
 
     if (variables && !variables->isEmpty()) {

@@ -159,7 +159,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const
     if (i >= propertySet().propertyCount())
         return "";
     StylePropertySet::PropertyReference property = propertySet().propertyAt(i);
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && property.id() == CSSPropertyVariable)
+    if (property.id() == CSSPropertyVariable)
         return toCSSCustomPropertyDeclaration(property.value()).name();
     if (property.id() == CSSPropertyApplyAtRule)
         return "@apply";
@@ -187,7 +187,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(const String& pr
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
-        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+        if (!CSSVariableParser::isValidVariableName(propertyName))
             return String();
         return propertySet().getPropertyValue(AtomicString(propertyName));
     }
@@ -199,7 +199,7 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(const String&
     bool important = false;
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
-        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+        if (!CSSVariableParser::isValidVariableName(propertyName))
             return String();
         important = propertySet().propertyIsImportant(AtomicString(propertyName));
     } else {
@@ -237,7 +237,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyN
 {
     CSSPropertyID propertyID = unresolvedCSSPropertyID(propertyName);
     if (!propertyID) {
-        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+        if (!CSSVariableParser::isValidVariableName(propertyName))
             return;
         propertyID = CSSPropertyVariable;
     }
@@ -253,7 +253,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& prop
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
-        if (!RuntimeEnabledFeatures::cssVariablesEnabled() || !CSSVariableParser::isValidVariableName(propertyName))
+        if (!CSSVariableParser::isValidVariableName(propertyName))
             return String();
         propertyID = CSSPropertyVariable;
     }

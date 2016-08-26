@@ -107,7 +107,7 @@ static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
 
 void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, const CSSValue& value)
 {
-    if (RuntimeEnabledFeatures::cssVariablesEnabled() && id != CSSPropertyVariable
+    if (id != CSSPropertyVariable
         && (value.isVariableReferenceValue() || value.isPendingSubstitutionValue())) {
 
         const CSSValue* resolvedValue = value.isVariableReferenceValue() ?

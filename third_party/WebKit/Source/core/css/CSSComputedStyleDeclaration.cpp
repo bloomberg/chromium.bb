@@ -641,7 +641,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID) {
-        if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName)) {
+        if (CSSVariableParser::isValidVariableName(propertyName)) {
             const CSSValue* value = getPropertyCSSValue(AtomicString(propertyName));
             if (value)
                 return value->cssText();

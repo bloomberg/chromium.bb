@@ -48,7 +48,7 @@ bool CSSPropertyMetadata::isEnabledProperty(CSSPropertyID unresolvedProperty)
         return enabledProperties->test(property - {{first_enum_value}});
 
     if (unresolvedProperty == CSSPropertyVariable)
-        return RuntimeEnabledFeatures::cssVariablesEnabled();
+        return true;
     ASSERT(unresolvedProperty == CSSPropertyApplyAtRule);
     return RuntimeEnabledFeatures::cssApplyAtRulesEnabled();
 }

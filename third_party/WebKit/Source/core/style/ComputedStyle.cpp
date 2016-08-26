@@ -1430,7 +1430,6 @@ const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations() con
 
 StyleVariableData* ComputedStyle::variables() const
 {
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     return m_rareInheritedData->variables.get();
 }
 

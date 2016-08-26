@@ -78,7 +78,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
 
 bool CSSParser::parseValueForCustomProperty(MutableStylePropertySet* declaration, const AtomicString& propertyName, const String& value, bool important, StyleSheetContents* styleSheet)
 {
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(propertyName));
+    DCHECK(CSSVariableParser::isValidVariableName(propertyName));
     if (value.isEmpty())
         return false;
     CSSParserMode parserMode = declaration->cssParserMode();
