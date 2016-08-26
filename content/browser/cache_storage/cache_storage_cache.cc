@@ -735,10 +735,15 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
     QueryCacheProcessNextEntry(std::move(query_cache_results), iter + 1);
     return;
   }
-  DCHECK_EQ(QueryCacheType::REQUESTS_AND_RESPONSES,
-            query_cache_results->query_type);
 
   query_cache_results->out_requests->push_back(request);
+  if (query_cache_results->query_type == QueryCacheType::REQUESTS) {
+    QueryCacheProcessNextEntry(std::move(query_cache_results), iter + 1);
+    return;
+  }
+
+  DCHECK_EQ(QueryCacheType::REQUESTS_AND_RESPONSES,
+            query_cache_results->query_type);
 
   if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
     query_cache_results->out_responses->push_back(response);
@@ -1262,8 +1267,7 @@ void CacheStorageCache::KeysImpl(
     return;
   }
 
-  QueryCache(std::move(request), options,
-             QueryCacheType::REQUESTS_AND_RESPONSES,
+  QueryCache(std::move(request), options, QueryCacheType::REQUESTS,
              base::Bind(&CacheStorageCache::KeysDidQueryCache,
                         weak_ptr_factory_.GetWeakPtr(), callback));
 }

@@ -160,7 +160,7 @@ class CONTENT_EXPORT CacheStorageCache {
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
 
  private:
-  enum class QueryCacheType { REQUESTS_AND_RESPONSES, CACHE_ENTRIES };
+  enum class QueryCacheType { REQUESTS, REQUESTS_AND_RESPONSES, CACHE_ENTRIES };
 
   friend class base::RefCounted<CacheStorageCache>;
   friend class TestCacheStorageCache;
@@ -201,7 +201,8 @@ class CONTENT_EXPORT CacheStorageCache {
 
   // Runs |callback| with matching requests/response data. The data provided
   // in the QueryCacheResults depends on the |query_type|. If |query_type| is
-  // CACHE_ENTRIES then only out_entries is valid. If |query_type| is
+  // CACHE_ENTRIES then only out_entries is valid. If |query_type| is REQUESTS
+  // then only out_requests is valid. If |query_type| is
   // REQUESTS_AND_RESPONSES then only out_requests, out_responses, and
   // out_blob_data_handles are valid.
   void QueryCache(std::unique_ptr<ServiceWorkerFetchRequest> request,
