@@ -269,6 +269,7 @@ EXPERIMENT_LIST="
     cb4x4
     palette
     frame_size
+    filter_7bit
 "
 CONFIG_LIST="
     dependency_tracking
