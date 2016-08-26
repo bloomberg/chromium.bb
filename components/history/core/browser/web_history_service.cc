@@ -16,6 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/history/core/browser/history_service_observer.h"
+#include "components/history/core/browser/web_history_service_observer.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/protocol/history_status.pb.h"
@@ -340,6 +342,14 @@ WebHistoryService::~WebHistoryService() {
   base::STLDeleteElements(&pending_other_forms_of_browsing_history_requests_);
 }
 
+void WebHistoryService::AddObserver(WebHistoryServiceObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void WebHistoryService::RemoveObserver(WebHistoryServiceObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 WebHistoryService::Request* WebHistoryService::CreateRequest(
     const GURL& url,
     const CompletionCallback& callback) {
@@ -419,8 +429,9 @@ void WebHistoryService::ExpireHistory(
 
   std::unique_ptr<Request> request(CreateRequest(url, completion_callback));
   request->SetPostData(post_data);
-  request->Start();
+  Request* request_ptr = request.get();
   pending_expire_requests_.insert(request.release());
+  request_ptr->Start();
 }
 
 void WebHistoryService::ExpireHistoryBetween(
@@ -553,6 +564,12 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
       response_value->GetString("version_info", &server_version_info_);
   }
   callback.Run(response_value.get() && success);
+
+  // Inform the observers about the history deletion.
+  if (response_value.get() && success) {
+    FOR_EACH_OBSERVER(WebHistoryServiceObserver, observer_list_,
+                      OnWebHistoryDeleted());
+  }
 }
 
 void WebHistoryService::AudioHistoryCompletionCallback(

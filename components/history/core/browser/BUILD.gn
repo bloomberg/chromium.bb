@@ -82,6 +82,7 @@ static_library("browser") {
     "visitsegment_database.h",
     "web_history_service.cc",
     "web_history_service.h",
+    "web_history_service_observer.h",
   ]
 
   public_deps = [

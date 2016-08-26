@@ -5,10 +5,32 @@
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 
 #include <stdint.h>
+#include <memory>
+#include <set>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/history/web_history_service_factory.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/browser_sync/browser/test_profile_sync_service.h"
+#include "components/history/core/test/fake_web_history_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/sync/base/model_type.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_web_ui.h"
+#include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -48,7 +70,104 @@ bool ResultEquals(
   return result.time == correct_time && result.url == GURL(correct_result.url);
 }
 
+void IgnoreBoolAndDoNothing(bool ignored_argument) {}
+
+class TestSyncService : public TestProfileSyncService {
+ public:
+  explicit TestSyncService(Profile* profile)
+      : TestProfileSyncService(CreateProfileSyncServiceParamsForTest(profile)),
+        sync_active_(true) {}
+
+  bool IsSyncActive() const override { return sync_active_; }
+
+  syncer::ModelTypeSet GetActiveDataTypes() const override {
+    return syncer::ModelTypeSet::All();
+  }
+
+  void SetSyncActive(bool active) {
+    sync_active_ = active;
+    NotifyObservers();
+  }
+
+ private:
+  bool sync_active_;
+};
+
+class BrowsingHistoryHandlerWithWebUIForTesting
+    : public BrowsingHistoryHandler {
+ public:
+  explicit BrowsingHistoryHandlerWithWebUIForTesting(content::WebUI* web_ui) {
+    set_web_ui(web_ui);
+  }
+};
+
 }  // namespace
+
+class BrowsingHistoryHandlerTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              &BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              &BuildFakeSigninManagerBase);
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                              &BuildFakeSyncService);
+    builder.AddTestingFactory(WebHistoryServiceFactory::GetInstance(),
+                              &BuildFakeWebHistoryService);
+    profile_ = builder.Build();
+
+    sync_service_ = static_cast<TestSyncService*>(
+        ProfileSyncServiceFactory::GetForProfile(profile_.get()));
+    web_history_service_ = static_cast<history::FakeWebHistoryService*>(
+        WebHistoryServiceFactory::GetForProfile(profile_.get()));
+
+    web_contents_.reset(content::WebContents::Create(
+        content::WebContents::CreateParams(profile_.get())));
+    web_ui_.reset(new content::TestWebUI);
+    web_ui_->set_web_contents(web_contents_.get());
+  }
+
+  void TearDown() override {
+    web_contents_.reset();
+    web_ui_.reset();
+    profile_.reset();
+  }
+
+  Profile* profile() { return profile_.get(); }
+  TestSyncService* sync_service() { return sync_service_; }
+  history::WebHistoryService* web_history_service() {
+    return web_history_service_;
+  }
+  content::TestWebUI* web_ui() { return web_ui_.get(); }
+
+ private:
+  static std::unique_ptr<KeyedService> BuildFakeSyncService(
+      content::BrowserContext* context) {
+    return base::MakeUnique<TestSyncService>(
+        static_cast<TestingProfile*>(context));
+  }
+
+  static std::unique_ptr<KeyedService> BuildFakeWebHistoryService(
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<TestingProfile*>(context);
+
+    std::unique_ptr<history::FakeWebHistoryService> service =
+        base::MakeUnique<history::FakeWebHistoryService>(
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+            SigninManagerFactory::GetForProfile(profile),
+            profile->GetRequestContext());
+    service->SetupFakeResponse(true /* success */, net::HTTP_OK);
+    return std::move(service);
+  }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<TestingProfile> profile_;
+  TestSyncService* sync_service_;
+  history::FakeWebHistoryService* web_history_service_;
+  std::unique_ptr<content::TestWebUI> web_ui_;
+  std::unique_ptr<content::WebContents> web_contents_;
+};
 
 // Tests that the MergeDuplicateResults method correctly removes duplicate
 // visits to the same URL on the same day.
@@ -58,7 +177,7 @@ bool ResultEquals(
 #else
 #define MAYBE_MergeDuplicateResults MergeDuplicateResults
 #endif
-TEST(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
+TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
   {
     // Basic test that duplicates on the same day are removed.
     TestResult test_data[] = {
@@ -135,5 +254,53 @@ TEST(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
     EXPECT_TRUE(ResultEquals(results[1], test_data[1]));
     EXPECT_EQ(3u, results[0].all_timestamps.size());
     EXPECT_EQ(1u, results[1].all_timestamps.size());
+  }
+}
+
+// Tests that BrowsingHistoryHandler observes WebHistoryService deletions.
+TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
+  base::Callback<void(bool)> callback = base::Bind(&IgnoreBoolAndDoNothing);
+
+  // BrowsingHistoryHandler listens to WebHistoryService history deletions.
+  {
+    sync_service()->SetSyncActive(true);
+    BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+    handler.RegisterMessages();
+
+    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
+                                                base::Time::Max(), callback);
+
+    EXPECT_EQ(1U, web_ui()->call_data().size());
+    EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
+  }
+
+  // BrowsingHistoryHandler will listen to WebHistoryService deletions even if
+  // history sync is activated later.
+  {
+    sync_service()->SetSyncActive(false);
+    BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+    handler.RegisterMessages();
+    sync_service()->SetSyncActive(true);
+
+    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
+                                                base::Time::Max(), callback);
+
+    EXPECT_EQ(2U, web_ui()->call_data().size());
+    EXPECT_EQ("historyDeleted", web_ui()->call_data().back()->function_name());
+  }
+
+  // When history sync is not active, we don't listen to WebHistoryService
+  // deletions. The WebHistoryService object still exists (because it's a
+  // BrowserContextKeyedService), but is not visible to BrowsingHistoryHandler.
+  {
+    sync_service()->SetSyncActive(false);
+    BrowsingHistoryHandlerWithWebUIForTesting handler(web_ui());
+    handler.RegisterMessages();
+
+    web_history_service()->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
+                                                base::Time::Max(), callback);
+
+    // No additional WebUI calls were made.
+    EXPECT_EQ(2U, web_ui()->call_data().size());
   }
 }
