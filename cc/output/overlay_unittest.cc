@@ -423,10 +423,12 @@ TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   ASSERT_EQ(1U, candidate_list.size());
 
   RenderPass* main_pass = pass.get();
-  // Check that the quad is gone.
-  EXPECT_EQ(1U, main_pass->quad_list.size());
+  // Check that all the quads are gone.
+  EXPECT_EQ(0U, main_pass->quad_list.size());
+  // Check that we have only one overlay.
+  EXPECT_EQ(1U, candidate_list.size());
   // Check that the right resource id got extracted.
-  EXPECT_EQ(original_resource_id, candidate_list.back().resource_id);
+  EXPECT_EQ(original_resource_id, candidate_list.front().resource_id);
 }
 
 TEST_F(FullscreenOverlayTest, ResourceSizeInPixelsFail) {

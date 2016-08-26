@@ -48,10 +48,12 @@ bool OverlayStrategyFullscreen::Attempt(ResourceProvider* resource_provider,
     return false;
   }
 
-  candidate.plane_z_order = 1;
+  candidate.plane_z_order = 0;
   candidate.overlay_handled = true;
-  candidate_list->push_back(candidate);
-  quad_list->EraseAndInvalidateAllPointers(front);
+  OverlayCandidateList new_candidate_list;
+  new_candidate_list.push_back(candidate);
+  candidate_list->swap(new_candidate_list);
+  render_pass->quad_list = QuadList();  // Remove all the quads
   return true;
 }
 
