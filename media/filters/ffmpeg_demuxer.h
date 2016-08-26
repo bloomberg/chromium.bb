@@ -135,6 +135,11 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Returns an empty string if the key is not present.
   std::string GetMetadata(const char* key) const;
 
+  AVStream* av_stream() const { return stream_; }
+
+  base::TimeDelta start_time() const { return start_time_; }
+  void set_start_time(base::TimeDelta time) { start_time_ = time; }
+
  private:
   friend class FFmpegDemuxerTest;
 
@@ -164,6 +169,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   FFmpegDemuxer* demuxer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   AVStream* stream_;
+  base::TimeDelta start_time_;
   std::unique_ptr<AudioDecoderConfig> audio_config_;
   std::unique_ptr<VideoDecoderConfig> video_config_;
   Type type_;
@@ -316,16 +322,11 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // based timeline.
   base::TimeDelta start_time_;
 
-  // The index and start time of the preferred streams for seeking.  Filled upon
-  // completion of OnFindStreamInfoDone().  Each info entry represents an index
-  // into |streams_| and the start time of that stream.
-  //
-  // Seek() will attempt to use |preferred_stream_for_seeking_| if the seek
-  // point occurs after its associated start time.  Otherwise it will use
-  // |fallback_stream_for_seeking_|.
-  typedef std::pair<int, base::TimeDelta> StreamSeekInfo;
-  StreamSeekInfo preferred_stream_for_seeking_;
-  StreamSeekInfo fallback_stream_for_seeking_;
+  // Finds a preferred stream for seeking to |seek_time|. Preference is
+  // typically given to video streams, unless the |seek_time| is earlier than
+  // the start time of the video stream. In that case a stream with the earliest
+  // start time is preferred. Disabled streams are not considered.
+  FFmpegDemuxerStream* FindPreferredStreamForSeeking(base::TimeDelta seek_time);
 
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.

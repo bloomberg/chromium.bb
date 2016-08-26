@@ -240,8 +240,8 @@ class FFmpegDemuxerTest : public testing::Test {
     return demuxer_->glue_->format_context();
   }
 
-  int preferred_seeking_stream_index() const {
-    return demuxer_->preferred_stream_for_seeking_.first;
+  DemuxerStream* preferred_seeking_stream(base::TimeDelta seek_time) const {
+    return demuxer_->FindPreferredStreamForSeeking(seek_time);
   }
 
   void ReadUntilEndOfStream(DemuxerStream* stream) {
@@ -472,7 +472,49 @@ TEST_F(FFmpegDemuxerTest, Read_Text) {
 TEST_F(FFmpegDemuxerTest, SeekInitialized_NoVideoStartTime) {
   CreateDemuxer("audio-start-time-only.webm");
   InitializeDemuxer();
-  EXPECT_EQ(0, preferred_seeking_stream_index());
+  // Video stream should be preferred for seeking even if video start time is
+  // unknown.
+  DemuxerStream* vstream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  EXPECT_EQ(vstream, preferred_seeking_stream(base::TimeDelta()));
+}
+
+TEST_F(FFmpegDemuxerTest, Seeking_PreferredStreamSelection) {
+  const int64_t kTimelineOffsetMs = 1352550896000LL;
+
+  // Test the start time is the first timestamp of the video and audio stream.
+  CreateDemuxer("nonzero-start-time.webm");
+  InitializeDemuxerWithTimelineOffset(
+      base::Time::FromJsTime(kTimelineOffsetMs));
+
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  const base::TimeDelta video_start_time =
+      base::TimeDelta::FromMicroseconds(400000);
+  const base::TimeDelta audio_start_time =
+      base::TimeDelta::FromMicroseconds(396000);
+
+  // Seeking to a position lower than the start time of either stream should
+  // prefer video stream for seeking.
+  EXPECT_EQ(video, preferred_seeking_stream(base::TimeDelta()));
+  // Seeking to a position that has audio data, but not video, should prefer
+  // the audio stream for seeking.
+  EXPECT_EQ(audio, preferred_seeking_stream(audio_start_time));
+  // Seeking to a position where both audio and video streams have data should
+  // prefer the video stream for seeking.
+  EXPECT_EQ(video, preferred_seeking_stream(video_start_time));
+
+  // A disabled stream should not be preferred for seeking.
+  audio->set_enabled(false, base::TimeDelta());
+  EXPECT_EQ(video, preferred_seeking_stream(base::TimeDelta()));
+  EXPECT_EQ(video, preferred_seeking_stream(audio_start_time));
+  EXPECT_EQ(video, preferred_seeking_stream(video_start_time));
+
+  audio->set_enabled(true, base::TimeDelta());
+  video->set_enabled(false, base::TimeDelta());
+  EXPECT_EQ(audio, preferred_seeking_stream(base::TimeDelta()));
+  EXPECT_EQ(audio, preferred_seeking_stream(audio_start_time));
+  EXPECT_EQ(audio, preferred_seeking_stream(video_start_time));
 }
 
 TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
