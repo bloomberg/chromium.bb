@@ -200,6 +200,9 @@ target(link_target_type, "ffmpeg_internal") {
   }
 
   if (is_posix) {
+    # Remove default stack frames config so we can force -fomit-frame-pointer.
+    configs -= [ "//build/config/compiler:default_stack_frames" ]
+
     cflags += [
       "-fPIC",
       "-fomit-frame-pointer",
