@@ -731,6 +731,35 @@ TEST_F(WebViewTest, TextInputType)
     testTextInputType(WebTextInputTypeURL, "input_field_url.html");
 }
 
+TEST_F(WebViewTest, TextInputInfoUpdateStyleAndLayout)
+{
+    FrameTestHelpers::TestWebViewClient client;
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+    WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
+
+    WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
+    // Here, we need to construct a document that has a special property:
+    // Adding id="foo" to the <path> element will trigger creation of an SVG instance tree
+    // for the use <use> element.
+    // This is significant, because SVG instance trees are actually created lazily
+    // during Document::updateStyleAndLayout code, thus incrementing the DOM tree version
+    // and freaking out the EphemeralRange (invalidating it).
+    FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(),
+        "<svg height='100%' version='1.1' viewBox='0 0 14 14' width='100%'>"
+        "<use xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='#foo'></use>"
+        "<path d='M 100 100 L 300 100 L 200 300 z' fill='#000'></path>"
+        "</svg>"
+        "<input>", baseURL);
+    webViewImpl->setInitialFocus(false);
+
+    // Add id="foo" to <path>, thus triggering the condition described above.
+    Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+    document->body()->querySelector("path", ASSERT_NO_EXCEPTION)->setIdAttribute("foo");
+
+    // This should not DCHECK.
+    EXPECT_EQ(WebTextInputTypeText, webViewImpl->textInputInfo().type);
+}
+
 void WebViewTest::testInputMode(const WebString& expectedInputMode, const std::string& htmlFile)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(htmlFile.c_str()));
