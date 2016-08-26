@@ -117,6 +117,7 @@
       'common/csp_validator_unittest.cc',
       'common/event_filter_unittest.cc',
       'common/extension_l10n_util_unittest.cc',
+      'common/extension_messages_unittest.cc',
       'common/extension_resource_unittest.cc',
       'common/extension_set_unittest.cc',
       'common/features/base_feature_provider_unittest.cc',

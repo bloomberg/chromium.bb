@@ -81,8 +81,11 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
 
 scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
     std::string* error) const {
+  // We pass in the |id| to the create call because it will save work in the
+  // normal case, and because in tests, extensions may not have paths or keys,
+  // but it's important to retain the same id.
   scoped_refptr<Extension> extension =
-      Extension::Create(path, location, *manifest, creation_flags, error);
+      Extension::Create(path, location, *manifest, creation_flags, id, error);
   if (extension.get()) {
     const extensions::PermissionsData* permissions_data =
         extension->permissions_data();
@@ -374,8 +377,10 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(base::Pickle* m,
   WriteParam(m, p.path);
   WriteParam(m, *(p.manifest));
   WriteParam(m, p.creation_flags);
+  WriteParam(m, p.id);
   WriteParam(m, p.active_permissions);
   WriteParam(m, p.withheld_permissions);
+  WriteParam(m, p.tab_specific_permissions);
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
@@ -384,9 +389,10 @@ bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
   p->manifest.reset(new base::DictionaryValue());
   return ReadParam(m, iter, &p->location) && ReadParam(m, iter, &p->path) &&
          ReadParam(m, iter, p->manifest.get()) &&
-         ReadParam(m, iter, &p->creation_flags) &&
+         ReadParam(m, iter, &p->creation_flags) && ReadParam(m, iter, &p->id) &&
          ReadParam(m, iter, &p->active_permissions) &&
-         ReadParam(m, iter, &p->withheld_permissions);
+         ReadParam(m, iter, &p->withheld_permissions) &&
+         ReadParam(m, iter, &p->tab_specific_permissions);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Log(const param_type& p,
