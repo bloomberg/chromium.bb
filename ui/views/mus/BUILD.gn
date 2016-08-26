@@ -37,8 +37,6 @@ component("mus") {
     "screen_mus_delegate.h",
     "surface_context_factory.cc",
     "surface_context_factory.h",
-    "text_input_client_impl.cc",
-    "text_input_client_impl.h",
     "window_manager_connection.cc",
     "window_manager_connection.h",
     "window_manager_constants_converters.cc",
@@ -157,7 +155,6 @@ test("views_mus_unittests") {
 
   sources = [
     "display_list_unittest.cc",
-    "input_method_mus_unittest.cc",
     "native_widget_mus_unittest.cc",
     "os_exchange_data_provider_mus_unittest.cc",
     "pointer_watcher_event_router_unittest.cc",
@@ -222,7 +219,6 @@ test("views_mus_unittests") {
 
   data_deps = [
     ":unittests_manifest",
-    "//services/ui/ime/test_ime_driver",
     "//services/ui/test_wm",
   ]
 

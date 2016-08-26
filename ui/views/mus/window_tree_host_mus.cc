@@ -54,17 +54,13 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
   dispatcher()->set_transform_events(false);
   compositor()->SetHostHasTransparentBackground(true);
 
-  input_method_.reset(new InputMethodMus(this, window));
+  input_method_.reset(new InputMethodMUS(this, window));
   SetSharedInputMethod(input_method_.get());
 }
 
 WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyCompositor();
   DestroyDispatcher();
-}
-
-void WindowTreeHostMus::InitInputMethod(shell::Connector* connector) {
-  input_method_->Init(connector);
 }
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
