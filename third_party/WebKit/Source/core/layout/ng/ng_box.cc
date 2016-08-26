@@ -17,7 +17,8 @@
 
 namespace blink {
 
-NGFragment* NGBox::layout(const NGConstraintSpace* constraint_space) {
+bool NGBox::Layout(const NGConstraintSpace* constraint_space,
+                   NGFragment** out) {
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
@@ -29,7 +30,8 @@ NGFragment* NGBox::layout(const NGConstraintSpace* constraint_space) {
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
         FromPlatformWritingMode(style()->getWritingMode()), constraint_space);
 
-    fragment = algorithm.layout(child_constraint_space);
+    if (!algorithm.Layout(child_constraint_space, &fragment))
+      return false;
     m_layoutBox->setLogicalWidth(fragment->InlineSize());
     m_layoutBox->setLogicalHeight(fragment->BlockSize());
     if (m_layoutBox->isLayoutBlock())
@@ -57,7 +59,8 @@ NGFragment* NGBox::layout(const NGConstraintSpace* constraint_space) {
         .SetBlockOverflow(overflow.height());
     fragment = builder.ToFragment();
   }
-  return fragment;
+  *out = fragment;
+  return true;
 }
 
 const ComputedStyle* NGBox::style() const {

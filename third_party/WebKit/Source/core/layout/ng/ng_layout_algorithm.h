@@ -27,7 +27,12 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // resulting layout information.
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
-  virtual NGFragment* layout(const NGConstraintSpace*) = 0;
+  // Returns true when done; when this function returns false, it has to be
+  // called again. The out parameter will only be set when this function
+  // returns true. The same constraint space has to be passed each time.
+  // TODO(layout-ng): Should we have a StartLayout function to avoid passing
+  // the same space for each Layout iteration?
+  virtual bool Layout(const NGConstraintSpace*, NGFragment**) = 0;
 };
 
 }  // namespace blink

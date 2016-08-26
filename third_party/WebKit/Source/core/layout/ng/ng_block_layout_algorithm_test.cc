@@ -29,7 +29,9 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
       HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
   NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));
-  NGFragment* frag = algorithm.layout(space);
+  NGFragment* frag;
+  while (!algorithm.Layout(space, &frag))
+    ;
   EXPECT_EQ(frag->InlineSize(), LayoutUnit(30));
   EXPECT_EQ(frag->BlockSize(), LayoutUnit(40));
 }

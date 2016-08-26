@@ -21,10 +21,12 @@ bool LayoutNGBlockFlow::isOfType(LayoutObjectType type) const {
 void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  const auto* constraintSpace =
+  const auto* constraint_space =
       NGDerivedConstraintSpace::CreateFromLayoutObject(*this);
   NGBox box(this);
-  box.layout(constraintSpace);
+  NGFragment* fragment;
+  while (!box.Layout(constraint_space, &fragment))
+    ;
   clearNeedsLayout();
 }
 

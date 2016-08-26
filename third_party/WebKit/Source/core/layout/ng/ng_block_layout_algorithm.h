@@ -31,11 +31,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // resulting layout information.
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
-  NGFragment* layout(const NGConstraintSpace*) override;
+  // Returns true when done; when this function returns false, it has to be
+  // called again. The out parameter will only be set when this function
+  // returns true. The same constraint space has to be passed each time.
+  bool Layout(const NGConstraintSpace*, NGFragment**) override;
 
  private:
-  RefPtr<const ComputedStyle> m_style;
-  NGBoxIterator m_boxIterator;
+  RefPtr<const ComputedStyle> style_;
+  NGBoxIterator box_iterator_;
 };
 
 }  // namespace blink
