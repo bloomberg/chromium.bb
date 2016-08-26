@@ -68,7 +68,7 @@ void WindowSelectorController::ToggleOverview() {
   }
 }
 
-bool WindowSelectorController::IsSelecting() {
+bool WindowSelectorController::IsSelecting() const {
   return window_selector_.get() != NULL;
 }
 

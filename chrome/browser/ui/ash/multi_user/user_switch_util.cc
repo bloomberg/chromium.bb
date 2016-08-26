@@ -7,6 +7,8 @@
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -172,6 +174,13 @@ void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
     on_switch.Run();
     return;
   }
+
+  // Cancel overview mode when switching user profiles.
+  ash::WindowSelectorController* controller =
+      ash::WmShell::Get()->window_selector_controller();
+  if (controller->IsSelecting())
+    controller->ToggleOverview();
+
   // If neither screen sharing nor capturing is going on we can immediately
   // switch users.
   ash::SystemTray* system_tray =

@@ -4,8 +4,11 @@
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -82,6 +85,20 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
 
   // Called when the user will get actually switched.
   void SwitchCallback() { switch_callback_hit_count_++; }
+
+  // Methods needed to test with overview mode.
+  const WindowSelectorController* window_selector_controller() const {
+    return WmShell::Get()->window_selector_controller();
+  }
+  WindowSelectorController* window_selector_controller() {
+    return const_cast<WindowSelectorController*>(
+        const_cast<const TrySwitchingUserTest*>(this)
+            ->window_selector_controller());
+  }
+  void ToggleOverview() { window_selector_controller()->ToggleOverview(); }
+  bool IsSelecting() const {
+    return window_selector_controller()->IsSelecting();
+  }
 
   // Various counter accessors.
   int stop_capture_callback_hit_count() const {
@@ -209,6 +226,18 @@ TEST_F(TrySwitchingUserTest, BothActiveAccepted) {
   EXPECT_EQ(1, switch_callback_hit_count());
   EXPECT_EQ(1, stop_capture_callback_hit_count());
   EXPECT_EQ(1, stop_share_callback_hit_count());
+}
+
+// Test that overview mode is dismissed before switching user profile.
+TEST_F(TrySwitchingUserTest, OverviewModeDismissed) {
+  EXPECT_EQ(0, switch_callback_hit_count());
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
+  ToggleOverview();
+  ASSERT_TRUE(IsSelecting());
+  SwitchUser(TrySwitchingUserTest::NO_DIALOG);
+  ASSERT_FALSE(IsSelecting());
+  EXPECT_EQ(1, switch_callback_hit_count());
 }
 
 }  // namespace ash
