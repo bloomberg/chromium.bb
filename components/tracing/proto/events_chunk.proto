@@ -11,6 +11,7 @@ package tracing.proto;
 // exclusively by one writer (almost always 1 writer == 1 thread). It contains
 // a variable number of variable-sized events. Events can be fragmented across
 // several chunks.
+
 message EventsChunk {
   // Chunks produced by the same trace writer have the same writer_id. This
   // allows to identify the next chunk for a writer (thread) in the ring buffer.

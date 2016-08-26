@@ -34,6 +34,7 @@ component("tracing") {
 
   deps = [
     "//base",
+    "//components/tracing/proto:protos",
     "//ipc",
   ]
 
@@ -97,10 +98,10 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":golden_protos_for_tests",
     ":proto_zero_testing_messages",
     ":tracing",
     "//base/test:test_support",
+    "//components/tracing/proto:golden_protos_for_tests",
     "//ipc",
     "//testing/gmock:gmock",
     "//testing/gtest",
@@ -110,14 +111,4 @@ source_set("unit_tests") {
     sources += [ "browser/trace_config_file_unittest.cc" ]
     deps += [ ":startup_tracing" ]
   }
-}
-
-# Official protobuf used by tests to verify that the Tracing V2 output is
-# effectively proto-compatible.
-proto_library("golden_protos_for_tests") {
-  visibility = [ ":unit_tests" ]
-  proto_out_dir = "components/tracing/test/golden_protos"
-  sources = [
-    "proto/events_chunk.proto",
-  ]
 }
