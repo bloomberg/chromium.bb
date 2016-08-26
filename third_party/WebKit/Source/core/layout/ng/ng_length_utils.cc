@@ -59,7 +59,7 @@ LayoutUnit resolveBlockLength(const NGConstraintSpace& constraintSpace,
 LayoutUnit computeInlineSizeForFragment(
     const NGConstraintSpace& constraintSpace,
     const ComputedStyle& style) {
-  if (constraintSpace.fixedInlineSize())
+  if (constraintSpace.FixedInlineSize())
     return constraintSpace.ContainerSize().inline_size;
 
   LayoutUnit extent = resolveInlineLength(constraintSpace, style.logicalWidth(),
@@ -86,7 +86,7 @@ LayoutUnit computeInlineSizeForFragment(
 LayoutUnit computeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
                                        const ComputedStyle& style,
                                        LayoutUnit contentSize) {
-  if (constraintSpace.fixedBlockSize())
+  if (constraintSpace.FixedBlockSize())
     return constraintSpace.ContainerSize().block_size;
 
   LayoutUnit extent =

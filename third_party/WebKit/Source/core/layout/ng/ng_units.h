@@ -26,6 +26,10 @@ struct NGLogicalOffset {
 };
 
 struct NGPhysicalSize {
+  NGPhysicalSize() {}
+  NGPhysicalSize(LayoutUnit width, LayoutUnit height)
+      : width(width), height(height) {}
+
   LayoutUnit width;
   LayoutUnit height;
 };

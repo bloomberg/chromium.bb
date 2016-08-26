@@ -15,27 +15,40 @@ namespace blink {
 
 class CORE_EXPORT NGDerivedConstraintSpace final : public NGConstraintSpace {
  public:
-  ~NGDerivedConstraintSpace();
+  // Constructs a NGConstraintSpace from legacy layout object.
+  static NGDerivedConstraintSpace* CreateFromLayoutObject(const LayoutBox&);
+
+  NGDerivedConstraintSpace(NGWritingMode,
+                           NGLogicalSize container_size,
+                           bool inline_triggers,
+                           bool block_triggers,
+                           bool fixed_inline,
+                           bool fixed_block,
+                           NGFragmentationType);
 
   NGLogicalOffset Offset() const { return offset_; }
   NGLogicalSize Size() const override { return size_; }
+  NGDirection Direction() const { return direction_; }
+
+  // TODO(layout-ng): All exclusion operations on a NGDerivedConstraintSpace
+  // should be performed on it's parent if it exists. This is so that if a float
+  // is added by a child an arbitary sibling can avoid/clear that float.
+  // Alternatively the list of exclusions could be shared between constraint
+  // spaces.
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->trace(parent_);
+    NGConstraintSpace::trace(visitor);
+  }
 
  private:
-  NGDerivedConstraintSpace(const NGConstraintSpace* original,
-                           NGLogicalOffset offset,
-                           NGLogicalSize size,
-                           NGWritingMode writingMode,
-                           NGDirection direction)
-      : original_(original),
-        offset_(offset),
-        size_(size),
-        writingMode_(writingMode),
-        direction_(direction) {}
-
-  const NGConstraintSpace* original_;
+  Member<NGConstraintSpace> parent_;
   NGLogicalOffset offset_;
+
+  // TODO(layout-ng) move to NGPhysicalConstraintSpace?
   NGLogicalSize size_;
-  NGWritingMode writingMode_;
+
+  // TODO(layout-ng) move to NGConstraintSpace?
   NGDirection direction_;
 };
 

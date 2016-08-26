@@ -20,14 +20,14 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     : m_style(style), m_boxIterator(box_iterator) {}
 
 NGFragment* NGBlockLayoutAlgorithm::layout(
-    const NGConstraintSpace& constraint_space) {
+    const NGConstraintSpace* constraint_space) {
   LayoutUnit inline_size =
-      computeInlineSizeForFragment(constraint_space, *m_style);
+      computeInlineSizeForFragment(*constraint_space, *m_style);
   // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
   LayoutUnit block_size =
-      computeBlockSizeForFragment(constraint_space, *m_style, LayoutUnit(-1));
-  NGConstraintSpace constraint_space_for_children(
-      constraint_space, NGLogicalSize(inline_size, block_size));
+      computeBlockSizeForFragment(*constraint_space, *m_style, LayoutUnit(-1));
+  NGConstraintSpace* constraint_space_for_children = new NGConstraintSpace(
+      *constraint_space, NGLogicalSize(inline_size, block_size));
 
   NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
   builder.SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -35,7 +35,7 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
   LayoutUnit content_size;
   for (NGBox box : m_boxIterator) {
     NGBoxStrut child_margins =
-        computeMargins(constraint_space_for_children, *box.style());
+        computeMargins(*constraint_space_for_children, *box.style());
     NGFragment* fragment = box.layout(constraint_space_for_children);
     // TODO(layout-ng): Support auto margins
     fragment->SetOffset(child_margins.inline_start,
@@ -47,7 +47,8 @@ NGFragment* NGBlockLayoutAlgorithm::layout(
 
   // Recompute the block-axis size now that we know our content size.
   block_size =
-      computeBlockSizeForFragment(constraint_space, *m_style, content_size);
+      computeBlockSizeForFragment(*constraint_space, *m_style, content_size);
+
   // TODO(layout-ng): Compute correct inline overflow (block overflow should be
   // correct)
   builder.SetBlockSize(block_size)

@@ -29,7 +29,7 @@ class CORE_EXPORT NGBox final {
   NGBoxIterator childIterator();
   operator bool() const { return m_layoutBox; }
 
-  NGFragment* layout(const NGConstraintSpace&);
+  NGFragment* layout(const NGConstraintSpace*);
   const ComputedStyle* style() const;
 
   NGBox nextSibling() const;

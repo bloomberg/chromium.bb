@@ -31,7 +31,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // resulting layout information.
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
-  NGFragment* layout(const NGConstraintSpace&) override;
+  NGFragment* layout(const NGConstraintSpace*) override;
 
  private:
   RefPtr<const ComputedStyle> m_style;

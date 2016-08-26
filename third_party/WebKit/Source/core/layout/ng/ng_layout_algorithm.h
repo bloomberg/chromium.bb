@@ -27,7 +27,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // resulting layout information.
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
-  virtual NGFragment* layout(const NGConstraintSpace&) = 0;
+  virtual NGFragment* layout(const NGConstraintSpace*) = 0;
 };
 
 }  // namespace blink

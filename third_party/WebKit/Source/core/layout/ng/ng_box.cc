@@ -8,21 +8,28 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_iterator.h"
+#include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_writing_mode.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
+NGFragment* NGBox::layout(const NGConstraintSpace* constraint_space) {
   // We can either use the new layout code to do the layout and then copy the
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   NGFragment* fragment = nullptr;
   if (canUseNewLayout()) {
     NGBlockLayoutAlgorithm algorithm(style(), childIterator());
-    fragment = algorithm.layout(constraintSpace);
+
+    // Change the coordinate system of the constraint space.
+    NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
+        FromPlatformWritingMode(style()->getWritingMode()), constraint_space);
+
+    fragment = algorithm.layout(child_constraint_space);
     m_layoutBox->setLogicalWidth(fragment->InlineSize());
     m_layoutBox->setLogicalHeight(fragment->BlockSize());
     if (m_layoutBox->isLayoutBlock())
@@ -30,11 +37,11 @@ NGFragment* NGBox::layout(const NGConstraintSpace& constraintSpace) {
     m_layoutBox->clearNeedsLayout();
   } else {
     // TODO(layout-ng): If fixedSize is true, set the override width/height too
-    NGLogicalSize containerSize = constraintSpace.ContainerSize();
+    NGLogicalSize container_size = constraint_space->ContainerSize();
     m_layoutBox->setOverrideContainingBlockContentLogicalWidth(
-        containerSize.inline_size);
+        container_size.inline_size);
     m_layoutBox->setOverrideContainingBlockContentLogicalHeight(
-        containerSize.block_size);
+        container_size.block_size);
     if (m_layoutBox->isLayoutNGBlockFlow() && m_layoutBox->needsLayout()) {
       toLayoutNGBlockFlow(m_layoutBox)->LayoutBlockFlow::layoutBlock(true);
     } else {
