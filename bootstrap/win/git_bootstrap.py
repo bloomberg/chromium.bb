@@ -43,13 +43,13 @@ def clean_up_old_git_installations(git_directory):
       shutil.rmtree(full_entry, ignore_errors=True)
 
 
-def bootstrap_cipd(cipd_directory):
+def bootstrap_cipd(cipd_directory, cipd_platform):
   """Bootstraps CIPD client into |cipd_directory|."""
   _check_call([
       sys.executable,
       os.path.join(ROOT_DIR, 'recipe_modules', 'cipd', 'resources',
                    'bootstrap.py'),
-      '--platform', 'windows-amd64',
+      '--platform', cipd_platform,
       '--dest-directory', cipd_directory
   ])
 
@@ -103,14 +103,15 @@ def need_to_install_git(args, git_directory):
 
 def install_git(args, git_version, git_directory):
   """Installs |git_version| into |git_directory|."""
+  cipd_platform = 'windows-%s' % ('amd64' if args.bits == 64 else '386')
   if not args.cipd_client:
-    bootstrap_cipd(ROOT_DIR)
+    bootstrap_cipd(ROOT_DIR, cipd_platform)
     args.cipd_client = os.path.join(ROOT_DIR, 'cipd')
   temp_dir = tempfile.mkdtemp()
   try:
     cipd_install(args,
                  temp_dir,
-                 'infra/depot_tools/git_installer/windows-amd64',
+                 'infra/depot_tools/git_installer/%s' % cipd_platform,
                  'v' + git_version.replace('.', '_'))
 
     if not os.path.exists(git_directory):
@@ -169,6 +170,8 @@ def sync_git_help_files(git_directory):
 
 def main(argv):
   parser = argparse.ArgumentParser()
+  parser.add_argument('--bits', type=int, choices=(32,64), default=64,
+                      help='Bitness of the client to install.')
   parser.add_argument('--cipd-client', help='Path to CIPD client binary.')
   parser.add_argument('--cipd-cache-directory',
                       help='Path to CIPD cache directory.')
@@ -183,7 +186,8 @@ def main(argv):
   logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 
   git_version = get_target_git_version()
-  git_directory = os.path.join(ROOT_DIR, 'git-%s-64_bin' % git_version)
+  git_directory = os.path.join(
+      ROOT_DIR, 'git-%s-%s_bin' % (git_version, args.bits))
 
   clean_up_old_git_installations(git_directory)
 
