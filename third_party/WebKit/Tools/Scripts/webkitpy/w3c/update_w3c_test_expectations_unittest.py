@@ -13,7 +13,7 @@ from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
 
-class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder):
+class UpdateW3CTestExpectationsTest(unittest.TestCase):
 
     def setUp(self):
         self.host = MockHost()
@@ -94,39 +94,43 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
         })
 
     def test_merge_same_valued_keys(self):
+        line_adder = W3CExpectationsLineAdder(self.host)
         self.assertEqual(
-            self.merge_same_valued_keys(self.mock_dict_one['fake/test/path.html']),
+            line_adder.merge_same_valued_keys(self.mock_dict_one['fake/test/path.html']),
             {('two', 'one'): {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'}})
         self.assertEqual(
-            self.merge_same_valued_keys(self.mock_dict_two['imported/fake/test/path.html']),
+            line_adder.merge_same_valued_keys(self.mock_dict_two['imported/fake/test/path.html']),
             {
                 ('three', 'one'): {'expected': 'FAIL', 'actual': 'PASS', 'bug': 'crbug.com/626703'},
                 'two': {'expected': 'FAIL', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'}
             })
 
     def test_get_expectations(self):
+        line_adder = W3CExpectationsLineAdder(self.host)
         self.assertEqual(
-            self.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}),
+            line_adder.get_expectations({'expected': 'FAIL', 'actual': 'PASS'}),
             set(['Pass']))
         self.assertEqual(
-            self.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}),
+            line_adder.get_expectations({'expected': 'FAIL', 'actual': 'TIMEOUT'}),
             set(['Timeout']))
         self.assertEqual(
-            self.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}),
+            line_adder.get_expectations({'expected': 'TIMEOUT', 'actual': 'PASS'}),
             set(['Pass']))
         self.assertEqual(
-            self.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
+            line_adder.get_expectations({'expected': 'PASS', 'actual': 'TIMEOUT CRASH FAIL'}),
             set(['Crash', 'Failure', 'Timeout']))
         self.assertEqual(
-            self.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}),
+            line_adder.get_expectations({'expected': 'SLOW CRASH FAIL TIMEOUT', 'actual': 'PASS'}),
             set(['Pass']))
 
     def test_create_line_list_old_tests(self):
-        self.assertEqual(self.create_line_list(self.mock_dict_one), [])
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertEqual(line_adder.create_line_list(self.mock_dict_one), [])
 
     def test_create_line_list_new_tests(self):
+        line_adder = W3CExpectationsLineAdder(self.host)
         self.assertEqual(
-            self.create_line_list(self.mock_dict_two),
+            line_adder.create_line_list(self.mock_dict_two),
             [
                 'crbug.com/626703 [ three ] imported/fake/test/path.html [ Pass ]',
                 'crbug.com/626703 [ two ] imported/fake/test/path.html [ Timeout ]',
@@ -134,12 +138,14 @@ class UpdateW3CTestExpectationsTest(unittest.TestCase, W3CExpectationsLineAdder)
             ])
 
     def test_merge_dicts_with_conflict_raise_exception(self):
-        self.assertRaises(ValueError, self.merge_dicts, self.mock_dict_two, self.mock_dict_four)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        self.assertRaises(ValueError, line_adder.merge_dicts, self.mock_dict_two, self.mock_dict_four)
 
     def test_merge_dicts_merges_second_dict_into_first(self):
-        output = self.merge_dicts(self.mock_dict_one, self.mock_dict_three)
+        line_adder = W3CExpectationsLineAdder(self.host)
+        output = line_adder.merge_dicts(self.mock_dict_one, self.mock_dict_three)
         self.assertEqual(output, self.mock_dict_one)
-        output = self.merge_dicts(self.mock_dict_two, self.mock_dict_three)
+        output = line_adder.merge_dicts(self.mock_dict_two, self.mock_dict_three)
         self.assertEqual(output, self.mock_dict_two)
 
     def test_generate_results_dict(self):
