@@ -55,8 +55,8 @@ const uint8_t kSHA256EmptyTreeHash[32] = {
     0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b,
     0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55};
 
-// Node hashes for a sample tree of size 8 (each element in this array is
-// a node hash, not leaf data; order represents order of the nodes in the tree).
+// Root hashes from building the sample tree of size 8 leaf-by-leaf.
+// The first entry is the root at size 0, the last is the root at size 8.
 const char* const kSHA256Roots[8] = {
     "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
     "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
@@ -369,6 +369,7 @@ TEST_F(CTLogVerifierTest, VerifiesValidConsistencyProofs) {
 
   // Known good proofs.
   for (size_t i = 0; i < arraysize(kSHA256Proofs); ++i) {
+    SCOPED_TRACE(i);
     proof.clear();
     for (size_t j = 0; j < kSHA256Proofs[i].proof_length; ++j) {
       const char* const v = kSHA256Proofs[i].proof[j];
@@ -475,6 +476,9 @@ class CTLogVerifierTestUsingReferenceGenerator
 
 const uint64_t kReferenceTreeSize = 256;
 
+// Tests that every possible valid consistency proof for a tree of a given size
+// verifies correctly. Also checks that invalid variations of each proof fail to
+// verify (see VerifierConsistencyCheck).
 TEST_P(CTLogVerifierTestUsingReferenceGenerator,
        VerifiesValidConsistencyProof) {
   std::vector<std::string> data;
