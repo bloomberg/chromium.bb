@@ -391,7 +391,7 @@ public class OfflinePageBridge {
      */
     @VisibleForTesting
     public void savePageLater(String url, ClientId clientId) {
-        savePageLater(url, clientId, false);
+        savePageLater(url, clientId, true);
     }
 
     /**
