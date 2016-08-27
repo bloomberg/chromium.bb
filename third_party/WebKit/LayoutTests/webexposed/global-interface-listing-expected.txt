@@ -4496,6 +4496,7 @@ interface Permissions
     method revoke
 interface PhotoCapabilities
     attribute @@toStringTag
+    getter exposureCompensation
     getter exposureMode
     getter focusMode
     getter imageHeight

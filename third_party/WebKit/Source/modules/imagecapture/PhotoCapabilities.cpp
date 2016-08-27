@@ -49,6 +49,7 @@ DEFINE_TRACE(PhotoCapabilities)
     visitor->trace(m_imageHeight);
     visitor->trace(m_imageWidth);
     visitor->trace(m_zoom);
+    visitor->trace(m_exposureCompensation);
 }
 
 } // namespace blink

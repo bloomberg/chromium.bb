@@ -474,6 +474,13 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->focus_mode = ToMojomMeteringMode(caps.getFocusMode());
   photo_capabilities->exposure_mode =
       ToMojomMeteringMode(caps.getExposureMode());
+  photo_capabilities->exposure_compensation = mojom::Range::New();
+  photo_capabilities->exposure_compensation->current =
+      caps.getCurrentExposureCompensation();
+  photo_capabilities->exposure_compensation->max =
+      caps.getMaxExposureCompensation();
+  photo_capabilities->exposure_compensation->min =
+      caps.getMinExposureCompensation();
 
   callback.Run(std::move(photo_capabilities));
 }
@@ -513,9 +520,13 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
   ScopedJavaLocalRef<jfloatArray> points_of_interest =
       base::android::ToJavaFloatArray(env, points_of_interest_marshalled);
 
+  const int exposure_compensation =
+      settings->has_exposure_compensation ? settings->exposure_compensation : 0;
+
   Java_VideoCapture_setPhotoOptions(
       env, j_capture_, zoom, static_cast<int>(focus_mode),
-      static_cast<int>(exposure_mode), width, height, points_of_interest);
+      static_cast<int>(exposure_mode), width, height, points_of_interest,
+      settings->has_exposure_compensation, exposure_compensation);
 
   callback.Run(true);
 }

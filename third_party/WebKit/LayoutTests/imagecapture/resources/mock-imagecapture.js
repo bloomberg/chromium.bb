@@ -21,6 +21,7 @@ let mockImageCaptureReady = define(
           width : { min : 320, max : 3264, current : 320 },
           zoom : { min : 0, max : 10, current : 5 },
           focusMode : "unavailable",
+          exposure_compensation : { min : -200, max : 200, current : 33},
       }};
       this.settings_ = null;
     }

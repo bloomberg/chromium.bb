@@ -36,6 +36,7 @@ void RunFailedGetCapabilitiesCallback(
   empty_capabilities->width = media::mojom::Range::New();
   empty_capabilities->height = media::mojom::Range::New();
   empty_capabilities->zoom = media::mojom::Range::New();
+  empty_capabilities->exposure_compensation = media::mojom::Range::New();
   cb.Run(std::move(empty_capabilities));
 }
 

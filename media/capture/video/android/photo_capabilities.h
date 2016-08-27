@@ -43,6 +43,9 @@ class PhotoCapabilities {
   int getCurrentZoom() const;
   AndroidMeteringMode getFocusMode() const;
   AndroidMeteringMode getExposureMode() const;
+  int getMinExposureCompensation() const;
+  int getMaxExposureCompensation() const;
+  int getCurrentExposureCompensation() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;

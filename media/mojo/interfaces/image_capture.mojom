@@ -8,9 +8,9 @@ module media.mojom;
 // allowed variations of a Capability or an Option.
 // https://w3c.github.io/mediacapture-image/#mediasettingsrange
 struct Range {
-  uint32 max;
-  uint32 min;
-  uint32 current;
+  int32 max;
+  int32 min;
+  int32 current;
 };
 
 // https://w3c.github.io/mediacapture-image/#idl-def-MeteringMode
@@ -25,6 +25,7 @@ struct PhotoCapabilities {
   Range zoom;
   MeteringMode focus_mode;
   MeteringMode exposure_mode;
+  Range exposure_compensation;
 };
 
 // Equivalent to idl Point2D.
@@ -48,6 +49,8 @@ struct PhotoSettings {
   MeteringMode focus_mode;
   bool has_exposure_mode;
   MeteringMode exposure_mode;
+  bool has_exposure_compensation;
+  uint32 exposure_compensation;
   array<Point2D> points_of_interest;
 };
 

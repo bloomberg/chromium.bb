@@ -319,26 +319,29 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
 
   auto* capabilities = image_capture_client_->capabilities();
   ASSERT_TRUE(capabilities);
-  EXPECT_EQ(100u, capabilities->iso->min);
-  EXPECT_EQ(100u, capabilities->iso->max);
-  EXPECT_EQ(100u, capabilities->iso->current);
+  EXPECT_EQ(100, capabilities->iso->min);
+  EXPECT_EQ(100, capabilities->iso->max);
+  EXPECT_EQ(100, capabilities->iso->current);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),
-            static_cast<int>(capabilities->height->current));
-  EXPECT_EQ(240u, capabilities->height->min);
-  EXPECT_EQ(1080u, capabilities->height->max);
+            capabilities->height->current);
+  EXPECT_EQ(240, capabilities->height->min);
+  EXPECT_EQ(1080, capabilities->height->max);
   EXPECT_EQ(capture_params.requested_format.frame_size.width(),
-            static_cast<int>(capabilities->width->current));
-  EXPECT_EQ(320u, capabilities->width->min);
-  EXPECT_EQ(1920u, capabilities->width->max);
-  EXPECT_EQ(100u, capabilities->zoom->min);
-  EXPECT_EQ(400u, capabilities->zoom->max);
+            capabilities->width->current);
+  EXPECT_EQ(320, capabilities->width->min);
+  EXPECT_EQ(1920, capabilities->width->max);
+  EXPECT_EQ(100, capabilities->zoom->min);
+  EXPECT_EQ(400, capabilities->zoom->max);
   EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);
   EXPECT_GE(capabilities->zoom->max, capabilities->zoom->current);
   EXPECT_EQ(mojom::MeteringMode::UNAVAILABLE, capabilities->focus_mode);
   EXPECT_EQ(mojom::MeteringMode::UNAVAILABLE, capabilities->exposure_mode);
+  EXPECT_EQ(0, capabilities->exposure_compensation->min);
+  EXPECT_EQ(0, capabilities->exposure_compensation->max);
+  EXPECT_EQ(0, capabilities->exposure_compensation->current);
 
   // Set options: zoom to the maximum value.
-  const unsigned int max_zoom_value = capabilities->zoom->max;
+  const int max_zoom_value = capabilities->zoom->max;
   VideoCaptureDevice::SetPhotoOptionsCallback scoped_set_callback(
       base::Bind(&ImageCaptureClient::OnCorrectSetPhotoOptions,
                  image_capture_client_),

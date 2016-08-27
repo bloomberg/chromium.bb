@@ -141,6 +141,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     settings->has_exposure_mode = photoSettings.hasExposureMode();
     if (settings->has_exposure_mode)
         settings->exposure_mode = parseMeteringMode(photoSettings.exposureMode());
+    settings->has_exposure_compensation = photoSettings.hasExposureCompensation();
+    if (settings->has_exposure_compensation)
+        settings->exposure_compensation = photoSettings.exposureCompensation();
     if (photoSettings.hasPointsOfInterest()) {
         for (const auto& point : photoSettings.pointsOfInterest()) {
             auto mojoPoint = media::mojom::blink::Point2D::New();
@@ -232,6 +235,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         MediaSettingsRange* height = MediaSettingsRange::create(capabilities->height->max, capabilities->height->min, capabilities->height->current);
         MediaSettingsRange* width = MediaSettingsRange::create(capabilities->width->max, capabilities->width->min, capabilities->width->current);
         MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
+        MediaSettingsRange* exposureCompensation = MediaSettingsRange::create(capabilities->exposure_compensation->max, capabilities->exposure_compensation->min, capabilities->exposure_compensation->current);
         PhotoCapabilities* caps = PhotoCapabilities::create();
         caps->setIso(iso);
         caps->setImageHeight(height);
@@ -239,6 +243,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setZoom(zoom);
         caps->setFocusMode(capabilities->focus_mode);
         caps->setExposureMode(capabilities->exposure_mode);
+        caps->setExposureCompensation(exposureCompensation);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

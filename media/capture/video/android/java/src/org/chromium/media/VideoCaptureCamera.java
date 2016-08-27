@@ -367,15 +367,20 @@ public abstract class VideoCaptureCamera
         }
         builder.setExposureMode(jniExposureMode);
 
-        // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
-        // values using getMinExposureCompensation() and getMaxExposureCompensation().
+        final float step = parameters.getExposureCompensationStep();
+        builder.setMinExposureCompensation(
+                Math.round(parameters.getMinExposureCompensation() * step * 100));
+        builder.setMaxExposureCompensation(
+                Math.round(parameters.getMaxExposureCompensation() * step * 100));
+        builder.setCurrentExposureCompensation(
+                Math.round(parameters.getExposureCompensation() * step * 100));
 
         return builder.build();
     }
 
     @Override
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
-            float[] pointsOfInterest2D) {
+            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -422,7 +427,9 @@ public abstract class VideoCaptureCamera
         }
 
         // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
-        if (parameters.getMaxNumMeteringAreas() > 0 && pointsOfInterest2D.length > 0) {
+        final boolean pointsOfInterestSupported =
+                parameters.getMaxNumMeteringAreas() > 0 || parameters.getMaxNumFocusAreas() > 0;
+        if (pointsOfInterestSupported && pointsOfInterest2D.length > 0) {
             assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
             assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
             assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
@@ -440,7 +447,6 @@ public abstract class VideoCaptureCamera
                             Math.min(1000, centerX + regionWidth / 2),
                             Math.min(1000, centerY + regionHeight / 2)),
                     weight);
-
             Log.d(TAG, "Area of interest %s", mAreaOfInterest.rect.toString());
         }
         if (mAreaOfInterest != null) {
@@ -448,7 +454,18 @@ public abstract class VideoCaptureCamera
             parameters.setMeteringAreas(Arrays.asList(mAreaOfInterest));
         }
 
-        mCamera.setParameters(parameters);
+        if (hasExposureCompensation) {
+            final int unnormalizedExposureCompensation = Math.round(
+                    exposureCompensation / 100.0f / parameters.getExposureCompensationStep());
+            parameters.setExposureCompensation(unnormalizedExposureCompensation);
+        }
+
+        try {
+            mCamera.setParameters(parameters);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "setParameters: ", ex);
+            return;
+        }
 
         if (focusMode != AndroidMeteringMode.SINGLE_SHOT) return;
         mCamera.autoFocus(new android.hardware.Camera.AutoFocusCallback() {

@@ -38,6 +38,9 @@ public:
     String exposureMode() const;
     void setExposureMode(media::mojom::blink::MeteringMode exposureMode) { m_exposureMode = exposureMode; }
 
+    MediaSettingsRange* exposureCompensation() const { return m_exposureCompensation; }
+    void setExposureCompensation(MediaSettingsRange* value) { m_exposureCompensation = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -49,6 +52,7 @@ private:
     Member<MediaSettingsRange> m_zoom;
     media::mojom::blink::MeteringMode m_focusMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
     media::mojom::blink::MeteringMode m_exposureMode = media::mojom::blink::MeteringMode::UNAVAILABLE;
+    Member<MediaSettingsRange> m_exposureCompensation;
 };
 
 } // namespace blink

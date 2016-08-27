@@ -200,6 +200,10 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->zoom->min = kMinZoom;
   photo_capabilities->focus_mode = mojom::MeteringMode::UNAVAILABLE;
   photo_capabilities->exposure_mode = mojom::MeteringMode::UNAVAILABLE;
+  photo_capabilities->exposure_compensation = mojom::Range::New();
+  photo_capabilities->exposure_compensation->current = 0;
+  photo_capabilities->exposure_compensation->max = 0;
+  photo_capabilities->exposure_compensation->min = 0;
   callback.Run(std::move(photo_capabilities));
 }
 

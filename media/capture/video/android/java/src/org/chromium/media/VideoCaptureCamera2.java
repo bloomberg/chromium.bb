@@ -251,6 +251,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private int mPhotoWidth = 0;
     private int mPhotoHeight = 0;
     private MeteringRectangle mAreaOfInterest;
+    private int mExposureCompensation = 0;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -327,6 +328,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
         }
+        previewRequestBuilder.set(
+                CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureCompensation);
 
         if (mAreaOfInterest != null) {
             MeteringRectangle[] array = {mAreaOfInterest};
@@ -639,17 +642,26 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
             jniExposureMode = AndroidMeteringMode.FIXED;
         }
-        builder.setFocusMode(jniExposureMode);
+        builder.setExposureMode(jniExposureMode);
 
-        // TODO(mcasas): https://crbug.com/518807 read the exposure compensation min and max
-        // values using CONTROL_AE_COMPENSATION_RANGE.
+        final float step =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
+                        .floatValue();
+        final Range<Integer> exposureCompensationRange =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
+        builder.setMinExposureCompensation(
+                Math.round(exposureCompensationRange.getLower() * step * 100));
+        builder.setMaxExposureCompensation(
+                Math.round(exposureCompensationRange.getUpper() * step * 100));
+        builder.setCurrentExposureCompensation(Math.round(
+                mPreviewRequest.get(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION) * step * 100));
 
         return builder.build();
     }
 
     @Override
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
-            float[] pointsOfInterest2D) {
+            float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -683,8 +695,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
             mAreaOfInterest = null;
         }
         // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
-        if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) > 0
-                && pointsOfInterest2D.length > 0) {
+        final boolean pointsOfInterestSupported =
+                cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) > 0
+                || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE) > 0;
+        if (pointsOfInterestSupported && pointsOfInterest2D.length > 0) {
             assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
             assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
             assert pointsOfInterest2D[1] <= 1.0 && pointsOfInterest2D[1] >= 0.0;
@@ -706,6 +720,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.d(TAG, "Calculating (%.2fx%.2f) wrt to %s (canvas being %s)", pointsOfInterest2D[0],
                     pointsOfInterest2D[1], visibleRect.toString(), canvas.toString());
             Log.d(TAG, "Area of interest %s", mAreaOfInterest.toString());
+        }
+
+        if (hasExposureCompensation) {
+            mExposureCompensation = Math.round(exposureCompensation / 100.0f
+                    / cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
+                              .floatValue());
         }
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());
@@ -779,6 +799,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
             // TODO(mcasas): set to CONTROL_AE_MODE_ON_{AUTO,ALWAYS}_FLASH{,_REDEYE} depending on
             // other options that need to be wired and passed to setPhotoOptions().
         }
+        photoRequestBuilder.set(
+                CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureCompensation);
 
         if (mAreaOfInterest != null) {
             MeteringRectangle[] array = {mAreaOfInterest};

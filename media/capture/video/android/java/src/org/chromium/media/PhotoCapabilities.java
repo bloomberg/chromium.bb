@@ -26,10 +26,15 @@ class PhotoCapabilities {
     public final int currentZoom;
     public final int focusMode;
     public final int exposureMode;
+    public final int maxExposureCompensation;
+    public final int minExposureCompensation;
+    public final int currentExposureCompensation;
 
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
-            int minZoom, int currentZoom, int focusMode, int exposureMode) {
+            int minZoom, int currentZoom, int focusMode, int exposureMode,
+            int maxExposureCompensation, int minExposureCompensation,
+            int currentExposureCompensation) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -44,6 +49,9 @@ class PhotoCapabilities {
         this.currentZoom = currentZoom;
         this.focusMode = focusMode;
         this.exposureMode = exposureMode;
+        this.maxExposureCompensation = maxExposureCompensation;
+        this.minExposureCompensation = minExposureCompensation;
+        this.currentExposureCompensation = currentExposureCompensation;
     }
 
     @CalledByNative
@@ -116,6 +124,21 @@ class PhotoCapabilities {
         return exposureMode;
     }
 
+    @CalledByNative
+    public int getMinExposureCompensation() {
+        return minExposureCompensation;
+    }
+
+    @CalledByNative
+    public int getMaxExposureCompensation() {
+        return maxExposureCompensation;
+    }
+
+    @CalledByNative
+    public int getCurrentExposureCompensation() {
+        return currentExposureCompensation;
+    }
+
     public static class Builder {
         public int maxIso;
         public int minIso;
@@ -131,6 +154,9 @@ class PhotoCapabilities {
         public int currentZoom;
         public int focusMode;
         public int exposureMode;
+        public int maxExposureCompensation;
+        public int minExposureCompensation;
+        public int currentExposureCompensation;
 
         public Builder() {}
 
@@ -204,10 +230,26 @@ class PhotoCapabilities {
             return this;
         }
 
+        public Builder setMaxExposureCompensation(int maxExposureCompensation) {
+            this.maxExposureCompensation = maxExposureCompensation;
+            return this;
+        }
+
+        public Builder setMinExposureCompensation(int minExposureCompensation) {
+            this.minExposureCompensation = minExposureCompensation;
+            return this;
+        }
+
+        public Builder setCurrentExposureCompensation(int currentExposureCompensation) {
+            this.currentExposureCompensation = currentExposureCompensation;
+            return this;
+        }
+
         public PhotoCapabilities build() {
             return new PhotoCapabilities(maxIso, minIso, currentIso, maxHeight, minHeight,
                     currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
-                    focusMode, exposureMode);
+                    focusMode, exposureMode, maxExposureCompensation, minExposureCompensation,
+                    currentExposureCompensation);
         }
     }
 }

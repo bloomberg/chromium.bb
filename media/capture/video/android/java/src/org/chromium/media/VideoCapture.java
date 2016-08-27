@@ -55,12 +55,17 @@ public abstract class VideoCapture {
 
     /**
     * @param zoom Zoom level, should be ignored if 0.
-    * @param pointsOfInterest2D 2D normlized oints of interest, marshalled with
+    * @focusMode Focus mode following AndroidMeteringMode enum.
+    * @exposureMode Focus mode following AndroidMeteringMode enum..
+    * @param pointsOfInterest2D 2D normalized points of interest, marshalled with
     * x coordinate first followed by the y coordinate.
+    * @hasExposureCompensation Indicates if |exposureCompensation| is set.
+    * @exposureCompensation Adjustment to auto exposure, in x100 units. 0 means not adjusted.
     */
     @CalledByNative
     public abstract void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width,
-            int height, float[] pointsOfInterest2D);
+            int height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
+            int exposureCompensation);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);

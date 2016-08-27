@@ -25,7 +25,8 @@ async_test(function(t) {
                         imageHeight : 100,
                         focusMode : "single-shot",
                         pointsOfInterest : [{x : 0.1, y : 0.2},
-                                            {x : 0.3, y : 0.4}]
+                                            {x : 0.3, y : 0.4}],
+                        exposureCompensation : 133,
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -62,6 +63,12 @@ async_test(function(t) {
                                0.001,
                                'pointsOfInterest\' y');
       }
+      assert_equals(true, theMock.options().has_exposure_compensation,
+                    'has_exposure_compensation must be true');
+      assert_equals(optionsDict.exposureCompensation,
+                    theMock.options().exposure_compensation,
+                    'exposure_compensation value');
+
       t.done();
     })
     .catch(error => {
