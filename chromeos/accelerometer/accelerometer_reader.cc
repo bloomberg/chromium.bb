@@ -24,7 +24,7 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
@@ -235,8 +235,7 @@ AccelerometerFileReader::AccelerometerFileReader()
 
 void AccelerometerFileReader::Initialize(
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
-  DCHECK(
-      base::SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid());
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   task_runner_ = sequenced_task_runner;
 
   // Check for accelerometer symlink which will be created by the udev rules
@@ -335,8 +334,7 @@ void AccelerometerFileReader::Initialize(
 }
 
 void AccelerometerFileReader::Read() {
-  DCHECK(
-      base::SequencedWorkerPool::GetSequenceTokenForCurrentThread().IsValid());
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   ReadFileAndNotify();
   task_runner_->PostNonNestableDelayedTask(
       FROM_HERE, base::Bind(&AccelerometerFileReader::Read, this),
