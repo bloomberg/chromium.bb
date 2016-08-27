@@ -38,7 +38,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothServiceAttributeValueBlueZ {
       std::unique_ptr<Sequence> sequence);
   BluetoothServiceAttributeValueBlueZ(
       const BluetoothServiceAttributeValueBlueZ& attribute);
-  BluetoothServiceAttributeValueBlueZ operator=(
+  BluetoothServiceAttributeValueBlueZ& operator=(
       const BluetoothServiceAttributeValueBlueZ& attribute);
   ~BluetoothServiceAttributeValueBlueZ();
 

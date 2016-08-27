@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 
 #include <cstdint>
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -42,7 +43,8 @@ std::unique_ptr<Sequence> MakeSequence(
     const std::initializer_list<BluetoothServiceAttributeValueBlueZ> list) {
   return base::MakeUnique<Sequence>(list);
 }
-}
+
+}  // namespace
 
 TEST(BluetoothServiceAttributeBlueZTest, BasicValue) {
   BluetoothServiceAttributeValueBlueZ value1(
@@ -118,6 +120,31 @@ TEST(BluetoothServiceAttributeBlueZTest, NestedValue) {
   EXPECT_EQ(2u, v31.size());
   CheckUuidValue(v31[0], kServiceUuid);
   CheckIntValue(v31[1], 0x1337);
+}
+
+TEST(BluetoothServiceAttributeBlueZTest, CopyAssignment) {
+  BluetoothServiceAttributeValueBlueZ value1(
+      Type::UUID, 16, base::MakeUnique<base::StringValue>(kServiceUuid));
+  BluetoothServiceAttributeValueBlueZ value2(
+      Type::INT, 4, base::MakeUnique<base::FundamentalValue>(0x1337));
+  BluetoothServiceAttributeValueBlueZ value3(
+      Type::INT, 4, base::MakeUnique<base::FundamentalValue>(0x7331));
+  std::unique_ptr<BluetoothServiceAttributeValueBlueZ> value4(
+      new BluetoothServiceAttributeValueBlueZ(
+          MakeSequence({value1, value2, value3})));
+
+  BluetoothServiceAttributeValueBlueZ value;
+
+  value = *value4;
+  value4 = nullptr;
+
+  EXPECT_EQ(3u, value.size());
+  const Sequence& s = value.sequence();
+  EXPECT_EQ(3u, s.size());
+
+  CheckUuidValue(s[0], kServiceUuid);
+  CheckIntValue(s[2], 0x7331);
+  CheckIntValue(s[1], 0x1337);
 }
 
 }  // namespace bluez
