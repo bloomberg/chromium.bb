@@ -125,14 +125,14 @@ class MP4StreamParserTest : public testing::Test {
       if (track->type() == MediaTrack::Audio) {
         audio_track_id_ = track_id;
         audio_decoder_config_ = tracks->getAudioConfig(track_id);
-        DVLOG(1) << "Audio track " << track_id << " config="
+        DVLOG(1) << "track_id=" << track_id << " audio config="
                  << (audio_decoder_config_.IsValidConfig()
                          ? audio_decoder_config_.AsHumanReadableString()
                          : "INVALID");
       } else if (track->type() == MediaTrack::Video) {
         video_track_id_ = track_id;
         video_decoder_config_ = tracks->getVideoConfig(track_id);
-        DVLOG(1) << "Video track " << track_id << " config="
+        DVLOG(1) << "track_id=" << track_id << " video config="
                  << (video_decoder_config_.IsValidConfig()
                          ? video_decoder_config_.AsHumanReadableString()
                          : "INVALID");
@@ -143,48 +143,33 @@ class MP4StreamParserTest : public testing::Test {
   }
 
   bool NewBuffersF(const StreamParser::BufferQueueMap& buffer_queue_map) {
-    // Ensure that track ids are properly assigned on all emitted buffers.
+    DecodeTimestamp lowest_end_dts = kNoDecodeTimestamp();
     for (const auto& it : buffer_queue_map) {
       DVLOG(3) << "Buffers for track_id=" << it.first;
+      DCHECK(!it.second.empty());
+
+      if (lowest_end_dts == kNoDecodeTimestamp() ||
+          lowest_end_dts > it.second.back()->GetDecodeTimestamp())
+        lowest_end_dts = it.second.back()->GetDecodeTimestamp();
+
       for (const auto& buf : it.second) {
         DVLOG(3) << "  track_id=" << buf->track_id()
                  << ", size=" << buf->data_size()
                  << ", pts=" << buf->timestamp().InSecondsF()
                  << ", dts=" << buf->GetDecodeTimestamp().InSecondsF()
                  << ", dur=" << buf->duration().InSecondsF();
+        // Ensure that track ids are properly assigned on all emitted buffers.
         EXPECT_EQ(it.first, buf->track_id());
       }
     }
 
-    const StreamParser::BufferQueue empty_buffers;
-    const auto& itr_audio = buffer_queue_map.find(audio_track_id_);
-    const StreamParser::BufferQueue& audio_buffers =
-        (itr_audio == buffer_queue_map.end()) ? empty_buffers
-                                              : itr_audio->second;
+    EXPECT_NE(lowest_end_dts, kNoDecodeTimestamp());
 
-    const auto& itr_video = buffer_queue_map.find(video_track_id_);
-    const StreamParser::BufferQueue& video_buffers =
-        (itr_video == buffer_queue_map.end()) ? empty_buffers
-                                              : itr_video->second;
-
-    // Find the second highest timestamp so that we know what the
-    // timestamps on the next set of buffers must be >= than.
-    DecodeTimestamp audio = !audio_buffers.empty() ?
-        audio_buffers.back()->GetDecodeTimestamp() : kNoDecodeTimestamp();
-    DecodeTimestamp video = !video_buffers.empty() ?
-        video_buffers.back()->GetDecodeTimestamp() : kNoDecodeTimestamp();
-    DecodeTimestamp second_highest_timestamp =
-        (audio == kNoDecodeTimestamp() ||
-         (video != kNoDecodeTimestamp() && audio > video)) ? video : audio;
-
-    EXPECT_NE(second_highest_timestamp, kNoDecodeTimestamp());
-
-    if (lower_bound_ != kNoDecodeTimestamp() &&
-        second_highest_timestamp < lower_bound_) {
+    if (lower_bound_ != kNoDecodeTimestamp() && lowest_end_dts < lower_bound_) {
       return false;
     }
 
-    lower_bound_ = second_highest_timestamp;
+    lower_bound_ = lowest_end_dts;
     return true;
   }
 
@@ -542,6 +527,48 @@ TEST_F(MP4StreamParserTest, TextTrackDetection) {
   EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
   EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
   EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, MultiTrackFile) {
+  auto params = GetDefaultInitParametersExpectations();
+  params.duration = base::TimeDelta::FromMilliseconds(4248);
+  params.liveness = DemuxerStream::LIVENESS_RECORDED;
+  params.detected_audio_track_count = 2;
+  params.detected_video_track_count = 2;
+  InitializeParserWithInitParametersExpectations(params);
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64000D")).Times(2);
+  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2")).Times(2);
+  ParseMP4File("bbb-320x240-2video-2audio.mp4", 4096);
+
+  EXPECT_EQ(media_tracks_->tracks().size(), 4u);
+
+  const MediaTrack& video_track1 = *(media_tracks_->tracks()[0]);
+  EXPECT_EQ(video_track1.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track1.bytestream_track_id(), 1);
+  EXPECT_EQ(video_track1.kind(), "main");
+  EXPECT_EQ(video_track1.label(), "VideoHandler");
+  EXPECT_EQ(video_track1.language(), "und");
+
+  const MediaTrack& audio_track1 = *(media_tracks_->tracks()[1]);
+  EXPECT_EQ(audio_track1.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track1.bytestream_track_id(), 2);
+  EXPECT_EQ(audio_track1.kind(), "main");
+  EXPECT_EQ(audio_track1.label(), "SoundHandler");
+  EXPECT_EQ(audio_track1.language(), "und");
+
+  const MediaTrack& video_track2 = *(media_tracks_->tracks()[2]);
+  EXPECT_EQ(video_track2.type(), MediaTrack::Video);
+  EXPECT_EQ(video_track2.bytestream_track_id(), 3);
+  EXPECT_EQ(video_track2.kind(), "");
+  EXPECT_EQ(video_track2.label(), "VideoHandler");
+  EXPECT_EQ(video_track2.language(), "und");
+
+  const MediaTrack& audio_track2 = *(media_tracks_->tracks()[3]);
+  EXPECT_EQ(audio_track2.type(), MediaTrack::Audio);
+  EXPECT_EQ(audio_track2.bytestream_track_id(), 4);
+  EXPECT_EQ(audio_track2.kind(), "");
+  EXPECT_EQ(audio_track2.label(), "SoundHandler");
+  EXPECT_EQ(audio_track2.language(), "und");
 }
 
 }  // namespace mp4

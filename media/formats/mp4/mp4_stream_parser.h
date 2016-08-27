@@ -118,13 +118,12 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
 
   bool has_audio_;
   bool has_video_;
-  uint32_t audio_track_id_;
-  uint32_t video_track_id_;
+  std::set<uint32_t> audio_track_ids_;
+  std::set<uint32_t> video_track_ids_;
   // The object types allowed for audio tracks.
   std::set<int> audio_object_types_;
   bool has_sbr_;
-  bool is_audio_track_encrypted_;
-  bool is_video_track_encrypted_;
+  std::map<uint32_t, bool> is_track_encrypted_;
 
   // Tracks the number of MEDIA_LOGs for skipping top level boxes. Useful to
   // prevent log spam.

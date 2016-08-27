@@ -235,3 +235,16 @@ media/test/data/bear-1280x720-aac_he.ts
 media/test/data/bear-320x240-v_frag-hevc.mp4
   HEVC video stream in fragmented MP4 container, generated with
   ffmpeg -i bear-320x240.webm -c:v libx265 -an -movflags faststart+frag_keyframe bear-320x240-v_frag-hevc.mp4
+
+// Multi-track MP4 file
+// (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
+media/test/data/bbb-320x240-2video-2audio.mp4
+  Generated using following commands
+  // Download the source file with 1 video and 1 audio stream.
+  wget http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4
+  // Generate a scaled down to 320x240 video + 2 channel AAC LC audio from the source file.
+  ffmpeg -i bbb_sunflower_1080p_30fps_normal.mp4 -c:v libx264 -crf 36 -vf  scale=320:240 -c:a libfdk_aac -ac 2 -t 24 bbb1.mp4
+  // Generate a file with the original video scaled down to 320x240 and flipped upside down and sine wave instead of audio.
+  ffmpeg -i bbb_sunflower_1080p_30fps_normal.mp4 -f lavfi -i "sine=frequency=500:sample_rate=48000" -map 0:v -map 1:a -c:v libx264 -crf 36 -vf scale=320:240,vflip -c:a libfdk_aac -ac 2 -t 24 bbb2.mp4
+  // Combine the two files generated above into a single fragmented .mp4 file with 2 video and 2 audio tracks.
+  ffmpeg -i bbb1.mp4 -i bbb2.mp4 -map 0:0 -map 0:1 -map 1:0 -map 1:1 -c:v copy -c:a copy -movflags frag_keyframe+omit_tfhd_offset+separate_moof bbb-320x240-2video-2audio.mp4
