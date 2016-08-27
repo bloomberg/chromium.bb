@@ -46,6 +46,7 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
     HostPortPair destination,
     GURL origin_url,
     AlternativeService alternative_service,
+    const ProxyServer& alternative_proxy_server,
     NetLog* net_log)
     : HttpStreamFactoryImpl::Job(delegate,
                                  job_type,
@@ -57,6 +58,7 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
                                  destination,
                                  origin_url,
                                  alternative_service,
+                                 alternative_proxy_server,
                                  net_log) {}
 
 MockHttpStreamFactoryImplJob::~MockHttpStreamFactoryImplJob() {}
@@ -106,7 +108,29 @@ HttpStreamFactoryImpl::Job* TestJobFactory::CreateJob(
   DCHECK(!alternative_job_);
   alternative_job_ = new MockHttpStreamFactoryImplJob(
       delegate, job_type, session, request_info, priority, SSLConfig(),
-      SSLConfig(), destination, origin_url, alternative_service, nullptr);
+      SSLConfig(), destination, origin_url, alternative_service, ProxyServer(),
+      nullptr);
+
+  return alternative_job_;
+}
+
+HttpStreamFactoryImpl::Job* TestJobFactory::CreateJob(
+    HttpStreamFactoryImpl::Job::Delegate* delegate,
+    HttpStreamFactoryImpl::JobType job_type,
+    HttpNetworkSession* session,
+    const HttpRequestInfo& request_info,
+    RequestPriority priority,
+    const SSLConfig& server_ssl_config,
+    const SSLConfig& proxy_ssl_config,
+    HostPortPair destination,
+    GURL origin_url,
+    const ProxyServer& alternative_proxy_server,
+    NetLog* net_log) {
+  DCHECK(!alternative_job_);
+  alternative_job_ = new MockHttpStreamFactoryImplJob(
+      delegate, job_type, session, request_info, priority, SSLConfig(),
+      SSLConfig(), destination, origin_url, AlternativeService(),
+      alternative_proxy_server, nullptr);
 
   return alternative_job_;
 }

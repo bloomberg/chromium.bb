@@ -95,6 +95,14 @@ void DataReductionProxyDelegate::OnTunnelHeadersReceived(
     const net::HttpResponseHeaders& response_headers) {
 }
 
+void DataReductionProxyDelegate::GetAlternativeProxy(
+    const GURL& url,
+    const net::ProxyServer& resolved_proxy_server,
+    net::ProxyServer* alternative_proxy_server) const {}
+
+void DataReductionProxyDelegate::OnAlternativeProxyBroken(
+    const net::ProxyServer& alternative_proxy_server) {}
+
 void OnResolveProxyHandler(const GURL& url,
                            const std::string& method,
                            const net::ProxyConfig& data_reduction_proxy_config,

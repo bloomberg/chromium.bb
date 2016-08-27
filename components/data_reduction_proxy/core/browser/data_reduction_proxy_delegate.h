@@ -61,6 +61,12 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;
+  void GetAlternativeProxy(
+      const GURL& url,
+      const net::ProxyServer& resolved_proxy_server,
+      net::ProxyServer* alternative_proxy_server) const override;
+  void OnAlternativeProxyBroken(
+      const net::ProxyServer& alternative_proxy_server) override;
 
  private:
   const DataReductionProxyConfig* config_;
