@@ -33,15 +33,20 @@ void WriteAttribute(dbus::MessageWriter* writer,
   if (attribute.type() != BluetoothServiceAttributeValueBlueZ::SEQUENCE) {
     dbus::AppendValueDataAsVariant(&struct_writer, attribute.value());
   } else {
+    dbus::MessageWriter variant_writer(nullptr);
     dbus::MessageWriter array_writer(nullptr);
-    struct_writer.OpenArray("v", &array_writer);
+    struct_writer.OpenVariant("a(yuv)", &variant_writer);
+    variant_writer.OpenArray("(yuv)", &array_writer);
+
     for (const auto& v : attribute.sequence())
       WriteAttribute(&array_writer, v);
-    struct_writer.CloseContainer(&array_writer);
+    variant_writer.CloseContainer(&array_writer);
+    struct_writer.CloseContainer(&variant_writer);
   }
   writer->CloseContainer(&struct_writer);
 }
-}
+
+}  // namespace
 
 BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() {}
 
@@ -304,14 +309,18 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
                                  bluetooth_adapter::kCreateServiceRecord);
 
     dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter array_writer(&method_call);
     dbus::MessageWriter dict_entry_writer(nullptr);
+    writer.OpenArray("{q(yuv)}", &array_writer);
     for (auto attribute_id : record.GetAttributeIds()) {
-      writer.OpenDictEntry(&dict_entry_writer);
+      array_writer.OpenDictEntry(&dict_entry_writer);
       dict_entry_writer.AppendUint16(attribute_id);
       const BluetoothServiceAttributeValueBlueZ& attribute_value =
           record.GetAttributeValue(attribute_id);
       WriteAttribute(&dict_entry_writer, attribute_value);
+      array_writer.CloseContainer(&dict_entry_writer);
     }
+    writer.CloseContainer(&array_writer);
 
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
