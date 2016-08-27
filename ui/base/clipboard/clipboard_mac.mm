@@ -298,7 +298,7 @@ void ClipboardMac::ReadRTF(ClipboardType type, std::string* result) const {
   return ReadData(GetRtfFormatType(), result);
 }
 
-SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardMac::ReadImage(ClipboardType type, NSPasteboard* pb) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
@@ -306,7 +306,6 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
   // may throw, and that exception will leak. Prevent a crash in that case;
   // a blank image is better.
   base::scoped_nsobject<NSImage> image;
-  NSPasteboard* pb = GetPasteboard();
   @try {
     if ([[pb types] containsObject:NSFilenamesPboardType]) {
       // -[NSImage initWithPasteboard:] gets confused with copies of a single
@@ -331,6 +330,10 @@ SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
         image.get(), /*is_opaque=*/ false, base::mac::GetSystemColorSpace());
   }
   return bitmap;
+}
+
+SkBitmap ClipboardMac::ReadImage(ClipboardType type) const {
+  return ReadImage(type, GetPasteboard());
 }
 
 void ClipboardMac::ReadCustomData(ClipboardType clipboard_type,

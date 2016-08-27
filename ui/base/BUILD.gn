@@ -719,6 +719,7 @@ bundle_data("ui_base_unittests_bundle_data") {
 # GYP version: ui/base/ui_base_tests.gyp:ui_base_unittests
 test("ui_base_unittests") {
   sources = [
+    "clipboard/clipboard_mac_unittest.mm",
     "clipboard/clipboard_util_mac_unittest.mm",
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
