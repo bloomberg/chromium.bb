@@ -451,18 +451,6 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
   };
 
-  // Acquire pixel buffer for resource. The pixel buffer can be used to
-  // set resource pixels without performing unnecessary copying.
-  void AcquirePixelBuffer(ResourceId resource);
-  void ReleasePixelBuffer(ResourceId resource);
-  // Map/unmap the acquired pixel buffer.
-  uint8_t* MapPixelBuffer(ResourceId id, int* stride);
-  void UnmapPixelBuffer(ResourceId id);
-  // Asynchronously update pixels from acquired pixel buffer.
-  void BeginSetPixels(ResourceId id);
-  void ForceSetPixelsToComplete(ResourceId id);
-  bool DidSetPixelsComplete(ResourceId id);
-
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
