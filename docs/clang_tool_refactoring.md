@@ -172,7 +172,7 @@ that is to `return 1` from the `main()` function of the clang tool.
 Synposis:
 
 ```shell
-test_tool.py <tool name>
+tools/clang/scripts/test_tool.py <tool name>
 ```
 
 The name of the tool binary and the subdirectory for the tool in

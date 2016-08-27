@@ -140,4 +140,25 @@ struct Class2 {
 
 }  // namespace test_template_arg_is_method_template_in_member_context
 
+namespace test_unnamed_arg {
+
+template <typename T>
+class Class {
+ public:
+  // Test for https://crbug.com/598141 - shouldn't rewrite
+  //    ...int);
+  // into
+  //    ...intdata_size;
+  void f(int);
+};
+
+template <typename T>
+void Class<T>::f(int dataSize){};
+
+void foo() {
+  Class<char>().f(123);
+};
+
+}  // namespace test_unnamed_arg
+
 }  // namespace blink

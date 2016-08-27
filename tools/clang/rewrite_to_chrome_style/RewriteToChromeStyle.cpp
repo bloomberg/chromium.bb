@@ -272,7 +272,7 @@ bool IsProbablyConst(const clang::VarDecl& decl,
 }
 
 bool GetNameForDecl(const clang::FunctionDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
@@ -287,7 +287,7 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
 }
 
 bool GetNameForDecl(const clang::EnumConstantDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
@@ -314,7 +314,7 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
 }
 
 bool GetNameForDecl(const clang::FieldDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   StringRef original_name = decl.getName();
   bool member_prefix = original_name.startswith(kBlinkFieldPrefix);
@@ -333,13 +333,33 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
 }
 
 bool GetNameForDecl(const clang::VarDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
   // Nothing to do for unnamed parameters.
-  if (clang::isa<clang::ParmVarDecl>(decl) && original_name.empty())
-    return false;
+  if (clang::isa<clang::ParmVarDecl>(decl)) {
+    if (original_name.empty())
+      return false;
+
+    // Check if |decl| and |decl.getLocation| are in sync.  We need to skip
+    // out-of-sync ParmVarDecls to avoid renaming buggy ParmVarDecls that
+    // 1) have decl.getLocation() pointing at a parameter declaration without a
+    // name, but 2) have decl.getName() retained from a template specialization
+    // of a method.  See also: https://llvm.org/bugs/show_bug.cgi?id=29145
+    clang::SourceLocation loc =
+        context.getSourceManager().getSpellingLoc(decl.getLocation());
+    auto parents = context.getParents(decl);
+    bool is_child_location_within_parent_source_range = std::all_of(
+        parents.begin(), parents.end(),
+        [&loc](const clang::ast_type_traits::DynTypedNode& parent) {
+          clang::SourceLocation begin = parent.getSourceRange().getBegin();
+          clang::SourceLocation end = parent.getSourceRange().getEnd();
+          return (begin < loc) && (loc < end);
+        });
+    if (!is_child_location_within_parent_source_range)
+      return false;
+  }
 
   // static class members match against VarDecls. Blink style dictates that
   // these should be prefixed with `s_`, so strip that off. Also check for `m_`
@@ -380,14 +400,14 @@ bool GetNameForDecl(const clang::VarDecl& decl,
 }
 
 bool GetNameForDecl(const clang::FunctionTemplateDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   clang::FunctionDecl* templated_function = decl.getTemplatedDecl();
   return GetNameForDecl(*templated_function, context, name);
 }
 
 bool GetNameForDecl(const clang::NamedDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   if (auto* function = clang::dyn_cast<clang::FunctionDecl>(&decl))
     return GetNameForDecl(*function, context, name);
@@ -405,7 +425,7 @@ bool GetNameForDecl(const clang::NamedDecl& decl,
 }
 
 bool GetNameForDecl(const clang::UsingDecl& decl,
-                    const clang::ASTContext& context,
+                    clang::ASTContext& context,
                     std::string& name) {
   assert(decl.shadow_size() > 0);
 
