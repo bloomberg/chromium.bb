@@ -28674,6 +28674,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ExpectCTHeaderResult" enum="ExpectCTHeaderResult">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Sites can send an Expect-CT header to Chrome to indicate that they want a
+    report to be sent when the connection does not comply with Certificate
+    Transparency policy. This histogram is recorded whenever Chrome receives an
+    Expect-CT header, and it records the result of processing the header, such
+    as whether it was ignored due to a bad value.
+  </summary>
+</histogram>
+
 <histogram name="Net.FileError_Flush">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
@@ -76111,6 +76122,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="500" label="MAIN_MESSAGE_LOOP_RUN"/>
   <int value="600" label="SHUTDOWN_TIMEBOMB_ARM"/>
   <int value="700" label="SHUTDOWN_COMPLETE"/>
+</enum>
+
+<enum name="ExpectCTHeaderResult" type="int">
+  <int value="0" label="EXPECT_CT_HEADER_BAD_VALUE"/>
+  <int value="1" label="EXPECT_CT_HEADER_BUILD_NOT_TIMELY"/>
+  <int value="2" label="EXPECT_CT_HEADER_PRIVATE_ROOT"/>
+  <int value="3" label="EXPECT_CT_HEADER_COMPLIANCE_DETAILS_UNAVAILABLE"/>
+  <int value="4" label="EXPECT_CT_HEADER_COMPLIED"/>
+  <int value="5" label="EXPECT_CT_HEADER_NOT_PRELOADED"/>
+  <int value="6" label="EXPECT_CT_HEADER_PROCESSED"/>
 </enum>
 
 <enum name="ExtensionBackgroundPageType" type="int">
