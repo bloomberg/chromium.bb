@@ -13,6 +13,9 @@ namespace ash {
 // been disabled by the user.
 ASH_EXPORT bool IsPaletteFeatureEnabled();
 
+// Are experimental palette features enabled?
+ASH_EXPORT bool ArePaletteExperimentalFeaturesEnabled();
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_CHROMEOS_PALETTE_PALETTE_UTILS_H_

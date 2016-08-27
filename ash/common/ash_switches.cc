@@ -56,6 +56,10 @@ const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 
 // Enables the palette next to the status area.
 const char kAshEnablePalette[] = "ash-enable-palette";
+
+// Enables experimental ash palette tools.
+const char kAshEnableExperimentalPaletteFeatures[] =
+    "ash-enable-experimental-palette-features";
 #endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.

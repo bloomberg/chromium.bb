@@ -14,4 +14,9 @@ bool IsPaletteFeatureEnabled() {
       switches::kAshEnablePalette);
 }
 
+bool ArePaletteExperimentalFeaturesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableExperimentalPaletteFeatures);
+}
+
 }  // namespace ash
