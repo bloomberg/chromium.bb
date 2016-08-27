@@ -9,7 +9,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 
 // static
-const char* CrashUploadList::kReporterLogFilename = "uploads.log";
+const char CrashUploadList::kReporterLogFilename[] = "uploads.log";
 
 CrashUploadList::CrashUploadList(
     Delegate* delegate,

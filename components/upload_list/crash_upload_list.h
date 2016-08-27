@@ -19,7 +19,7 @@ class CrashUploadList : public UploadList {
  public:
   // Should match kReporterLogFilename in
   // breakpad/src/client/apple/Framework/BreakpadDefines.h.
-  static const char* kReporterLogFilename;
+  static const char kReporterLogFilename[];
 
   // Creates a new crash upload list with the given callback delegate.
   CrashUploadList(Delegate* delegate,
