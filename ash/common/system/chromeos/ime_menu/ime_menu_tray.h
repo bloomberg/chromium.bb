@@ -31,6 +31,12 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   explicit ImeMenuTray(WmShelf* wm_shelf);
   ~ImeMenuTray() override;
 
+  // Shows the IME menu bubble and highlights the button.
+  void ShowImeMenuBubble();
+
+  // Returns true if the IME menu bubble has been shown.
+  bool IsImeMenuBubbleShown();
+
   // TrayBackgroundView:
   void SetShelfAlignment(ShelfAlignment alignment) override;
   base::string16 GetAccessibleNameForTray() override;
@@ -62,9 +68,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Updates the text of the label on the tray.
   void UpdateTrayLabel();
-
-  // Shows the IME menu bubble and highlights the button.
-  void ShowImeMenuBubble();
 
   // Hides the IME menu bubble and lowlights the button.
   void HideImeMenuBubble();

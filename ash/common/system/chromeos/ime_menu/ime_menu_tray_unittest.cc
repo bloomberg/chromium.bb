@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -22,8 +23,7 @@ using base::UTF8ToUTF16;
 namespace ash {
 
 ImeMenuTray* GetTray() {
-  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()
-      ->ime_menu_tray_for_testing();
+  return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->ime_menu_tray();
 }
 
 class ImeMenuTrayTest : public test::AshTestBase {
@@ -44,9 +44,7 @@ class ImeMenuTrayTest : public test::AshTestBase {
   }
 
   // Returns true if the IME menu bubble has been shown.
-  bool IsBubbleShown() {
-    return GetTray()->bubble_ && GetTray()->bubble_->bubble_view();
-  }
+  bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }
 
   // Returns true if the IME menu list has been updated with the right IME list.
   bool IsTrayImeListValid(const std::vector<IMEInfo>& expected_imes,
@@ -156,10 +154,6 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
 // only happen by using shortcuts (Ctrl + Space / Ctrl + Shift + Space) to
 // switch IMEs.
 TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
-  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
-  ASSERT_TRUE(IsVisible());
-  ASSERT_FALSE(IsTrayBackgroundActive());
-
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
   GetTray()->PerformAction(tap);
@@ -222,6 +216,24 @@ TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
+}
+
+// Tests using 'Alt+Shift+K' to open the menu.
+TEST_F(ImeMenuTrayTest, TestAccelerator) {
+  WmShell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  ASSERT_TRUE(IsVisible());
+  ASSERT_FALSE(IsTrayBackgroundActive());
+
+  WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      SHOW_IME_MENU_BUBBLE);
+  EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
+
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  EXPECT_FALSE(IsTrayBackgroundActive());
+  EXPECT_FALSE(IsBubbleShown());
 }
 
 }  // namespace ash

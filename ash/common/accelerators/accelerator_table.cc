@@ -141,6 +141,10 @@ const AcceleratorData kAcceleratorData[] = {
 #endif
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_SYSTEM_TRAY_BUBBLE},
+#if defined(OS_CHROMEOS)
+    {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     SHOW_IME_MENU_BUBBLE},
+#endif
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
     {true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1},
     {true, ui::VKEY_3, ui::EF_ALT_DOWN, LAUNCH_APP_2},
@@ -391,6 +395,7 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     LOCK_SCREEN,
     POWER_PRESSED,
     POWER_RELEASED,
+    SHOW_IME_MENU_BUBBLE,
     SUSPEND,
     SWAP_PRIMARY_DISPLAY,
     TOGGLE_CAPS_LOCK,

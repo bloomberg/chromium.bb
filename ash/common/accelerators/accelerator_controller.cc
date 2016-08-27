@@ -40,8 +40,13 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/palette_delegate.h"
+#include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "ash/common/system/status_area_widget.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -294,6 +299,23 @@ void HandlePositionCenter() {
 }
 
 #if defined(OS_CHROMEOS)
+void HandleShowImeMenuBubble() {
+  base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
+
+  StatusAreaWidget* status_area_widget = ash::WmShell::Get()
+                                             ->GetPrimaryRootWindow()
+                                             ->GetRootWindowController()
+                                             ->GetShelf()
+                                             ->GetStatusAreaWidget();
+  if (status_area_widget) {
+    ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
+    if (ime_menu_tray && ime_menu_tray->visible() &&
+        !ime_menu_tray->IsImeMenuBubbleShown()) {
+      ime_menu_tray->ShowImeMenuBubble();
+    }
+  }
+}
+
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
@@ -743,6 +765,7 @@ bool AcceleratorController::CanPerformAction(
     case OPEN_CROSH:
     case OPEN_FILE_MANAGER:
     case OPEN_GET_HELP:
+    case SHOW_IME_MENU_BUBBLE:
     case SUSPEND:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_WIFI:
@@ -899,6 +922,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     }
     case LOCK_SCREEN:
       HandleLock();
+      break;
+    case SHOW_IME_MENU_BUBBLE:
+      HandleShowImeMenuBubble();
       break;
     case OPEN_CROSH:
       HandleCrosh();

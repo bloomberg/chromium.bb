@@ -704,6 +704,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Show_Ime_Menu_Bubble">
+  <owner>azurewei@chromium.org</owner>
+  <description>
+    Number of times the user has shown the status area IME menu using a keyboard
+    accelerator.
+  </description>
+</action>
+
 <action name="Accel_Show_Keyboard_Overlay">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

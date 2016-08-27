@@ -208,6 +208,43 @@ ImeMenuTray::~ImeMenuTray() {
   WmShell::Get()->system_tray_notifier()->RemoveIMEObserver(this);
 }
 
+void ImeMenuTray::ShowImeMenuBubble() {
+  views::TrayBubbleView::InitParams init_params(
+      views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
+      kTrayPopupMinWidth, kTrayPopupMaxWidth);
+  init_params.first_item_has_no_margin = true;
+  init_params.can_activate = true;
+  init_params.close_on_deactivate = true;
+
+  views::TrayBubbleView* bubble_view =
+      views::TrayBubbleView::Create(tray_container(), this, &init_params);
+  bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
+  bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+
+  // Adds IME list to the bubble.
+  ime_list_view_ =
+      new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
+  if (ime_list_view_->scroll_content()->height() > GetImeListViewMaxHeight()) {
+    ime_list_view_->scroller()->SetFixedSize(
+        gfx::Size(kTrayPopupMaxWidth, GetImeListViewMaxHeight()));
+  }
+  bubble_view->AddChildView(ime_list_view_);
+
+  // Adds IME buttons to the bubble if needed.
+  LoginStatus login =
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  if (login != LoginStatus::NOT_LOGGED_IN && login != LoginStatus::LOCKED &&
+      !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
+    bubble_view->AddChildView(new ImeButtonsView(false, false, false, true));
+
+  bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
+  SetDrawBackgroundAsActive(true);
+}
+
+bool ImeMenuTray::IsImeMenuBubbleShown() {
+  return !!bubble_;
+}
+
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {
   TrayBackgroundView::SetShelfAlignment(alignment);
   if (!MaterialDesignController::IsShelfMaterial())
@@ -311,39 +348,6 @@ void ImeMenuTray::UpdateTrayLabel() {
     label_->SetText(current_ime_.short_name + base::UTF8ToUTF16("*"));
   else
     label_->SetText(current_ime_.short_name);
-}
-
-void ImeMenuTray::ShowImeMenuBubble() {
-  views::TrayBubbleView::InitParams init_params(
-      views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
-      kTrayPopupMinWidth, kTrayPopupMaxWidth);
-  init_params.first_item_has_no_margin = true;
-  init_params.can_activate = true;
-  init_params.close_on_deactivate = true;
-
-  views::TrayBubbleView* bubble_view =
-      views::TrayBubbleView::Create(tray_container(), this, &init_params);
-  bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
-  bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
-
-  // Adds IME list to the bubble.
-  ime_list_view_ =
-      new ImeListView(nullptr, false, ImeListView::SHOW_SINGLE_IME);
-  if (ime_list_view_->scroll_content()->height() > GetImeListViewMaxHeight()) {
-    ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(kTrayPopupMaxWidth, GetImeListViewMaxHeight()));
-  }
-  bubble_view->AddChildView(ime_list_view_);
-
-  // Adds IME buttons to the bubble if needed.
-  LoginStatus login =
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
-  if (login != LoginStatus::NOT_LOGGED_IN && login != LoginStatus::LOCKED &&
-      !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen())
-    bubble_view->AddChildView(new ImeButtonsView(false, false, false, true));
-
-  bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
-  SetDrawBackgroundAsActive(true);
 }
 
 void ImeMenuTray::HideImeMenuBubble() {
