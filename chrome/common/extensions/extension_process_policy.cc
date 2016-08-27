@@ -68,16 +68,7 @@ bool CrossesExtensionProcessBoundary(
 }
 
 bool IsIsolateExtensionsEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateExtensions)) {
-    return true;
-  }
-
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("SiteIsolationExtensions");
-  // Use StartsWith() for more flexibility (e.g. multiple Enabled groups).
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return true;
 }
 
 }  // namespace extensions
