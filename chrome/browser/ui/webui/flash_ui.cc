@@ -31,8 +31,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -45,8 +47,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
-#include "grit/browser_resources.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)

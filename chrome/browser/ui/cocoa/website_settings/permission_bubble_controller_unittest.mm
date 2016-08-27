@@ -22,7 +22,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

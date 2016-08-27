@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/gfx/image/image.h"
 
 @interface CrCreateAppShortcutCheckboxObserver : NSObject {

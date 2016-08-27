@@ -8,7 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using InfoBarUtilities::MoveControl;

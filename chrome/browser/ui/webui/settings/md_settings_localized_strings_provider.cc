@@ -22,8 +22,8 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

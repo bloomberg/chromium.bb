@@ -7,9 +7,9 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/infobars/core/infobar.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 

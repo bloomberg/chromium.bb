@@ -8,7 +8,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"

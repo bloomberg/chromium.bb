@@ -3,7 +3,7 @@ include_rules = [
   "+ash",
   "+chrome/app",
   "+chrome/chrome_watcher",
-  "+chrome/grit",  # For generated headers
+  "+chrome/grit",
   "+chrome/install_static",
   "+chrome/installer",
   "+chrome_elf/blacklist",
@@ -38,7 +38,6 @@ include_rules = [
   "+media/mojo",  # For mojo media services.
   "+services/shell/public/cpp",
   "+services/ui/public",
-  "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",

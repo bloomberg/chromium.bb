@@ -17,7 +17,7 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace {
 

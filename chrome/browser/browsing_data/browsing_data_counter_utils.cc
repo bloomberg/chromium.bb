@@ -14,14 +14,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
 #endif
 

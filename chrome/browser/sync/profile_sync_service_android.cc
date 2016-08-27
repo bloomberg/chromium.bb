@@ -29,6 +29,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/core/network_resources.h"
 #include "components/sync/core/read_transaction.h"
 #include "components/sync/driver/about_sync_util.h"
@@ -38,7 +39,6 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "grit/components_strings.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 

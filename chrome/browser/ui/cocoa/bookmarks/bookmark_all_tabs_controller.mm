@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using bookmarks::BookmarkModel;

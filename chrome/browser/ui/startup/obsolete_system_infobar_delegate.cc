@@ -12,8 +12,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static

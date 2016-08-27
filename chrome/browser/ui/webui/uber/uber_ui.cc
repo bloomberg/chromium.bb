@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -28,8 +29,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
-#include "grit/browser_resources.h"
-#include "grit/components_strings.h"
 
 using content::NavigationController;
 using content::NavigationEntry;

@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"

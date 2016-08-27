@@ -11,12 +11,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/policy_resources.h"
+#include "chrome/grit/policy_resources_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/risk_tag.h"
-#include "grit/components_strings.h"
-#include "grit/policy_resources.h"
-#include "grit/policy_resources_map.h"
+#include "components/strings/grit/components_strings.h"
 
 namespace {
 

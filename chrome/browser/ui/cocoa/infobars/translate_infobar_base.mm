@@ -21,8 +21,8 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_utilities.h"
 #include "chrome/browser/ui/cocoa/infobars/translate_message_infobar_controller.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "grit/components_strings.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 

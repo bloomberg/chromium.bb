@@ -9,9 +9,9 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static

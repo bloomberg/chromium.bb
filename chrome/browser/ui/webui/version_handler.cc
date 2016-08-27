@@ -14,6 +14,7 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/variations/active_field_trials.h"
 #include "components/version_ui/version_handler_helper.h"
 #include "components/version_ui/version_ui_constants.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

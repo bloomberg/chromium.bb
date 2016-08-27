@@ -33,8 +33,8 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "crypto/sha2.h"
-#include "grit/components_strings.h"
 #include "url/gurl.h"
 
 namespace policy {

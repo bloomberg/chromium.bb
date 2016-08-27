@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
-#include "grit/components_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "jni/AutofillKeyboardAccessoryBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"

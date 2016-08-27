@@ -15,11 +15,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/url_constants.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

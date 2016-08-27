@@ -48,6 +48,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -56,7 +57,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
