@@ -193,6 +193,16 @@ size_t RegisterChromeCrashKeys() {
     { "initrf_root_process_is_live", kSmallSize},
     { "initrf_root_proxy_is_live", kSmallSize},
 
+    // Temporary for https://crbug.com/626802.
+    { "newframe_routing_id", kSmallSize },
+    { "newframe_proxy_id", kSmallSize },
+    { "newframe_opener_id", kSmallSize },
+    { "newframe_parent_id", kSmallSize },
+    { "newframe_widget_id", kSmallSize },
+    { "newframe_widget_hidden", kSmallSize },
+    { "newframe_replicated_origin", kSmallSize },
+    { "newframe_oopifs_possible", kSmallSize },
+
     // Temporary for https://crbug.com/630103.
     { "origin_mismatch_url", crash_keys::kLargeSize },
     { "origin_mismatch_origin", crash_keys::kMediumSize },

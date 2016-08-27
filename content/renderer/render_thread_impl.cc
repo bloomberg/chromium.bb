@@ -73,6 +73,7 @@
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/common/content_constants.h"
@@ -1688,6 +1689,24 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
 }
 
 void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {
+  // Debug cases of https://crbug.com/626802.
+  base::debug::SetCrashKeyValue("newframe_routing_id",
+                                base::IntToString(params.routing_id));
+  base::debug::SetCrashKeyValue("newframe_proxy_id",
+                                base::IntToString(params.proxy_routing_id));
+  base::debug::SetCrashKeyValue("newframe_opener_id",
+                                base::IntToString(params.opener_routing_id));
+  base::debug::SetCrashKeyValue("newframe_parent_id",
+                                base::IntToString(params.parent_routing_id));
+  base::debug::SetCrashKeyValue("newframe_widget_id",
+                                base::IntToString(
+                                    params.widget_params.routing_id));
+  base::debug::SetCrashKeyValue("newframe_widget_hidden",
+                                params.widget_params.hidden ? "yes" : "no");
+  base::debug::SetCrashKeyValue("newframe_replicated_origin",
+                                params.replication_state.origin.Serialize());
+  base::debug::SetCrashKeyValue("newframe_oopifs_possible",
+      SiteIsolationPolicy::AreCrossProcessFramesPossible() ? "yes" : "no");
   CompositorDependencies* compositor_deps = this;
   RenderFrameImpl::CreateFrame(
       params.routing_id, params.proxy_routing_id, params.opener_routing_id,
