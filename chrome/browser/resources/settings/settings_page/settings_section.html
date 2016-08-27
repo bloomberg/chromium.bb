@@ -36,6 +36,8 @@
       :host(.collapsing) #card,
       :host(.expanded) #card {
         @apply(--shadow-elevation-4dp);
+        /* A stacking context constrains sliding sub-pages to the card. */
+        z-index: 0;
       }
 
       :host(:not(.expanding):not(.expanded)) #card {
