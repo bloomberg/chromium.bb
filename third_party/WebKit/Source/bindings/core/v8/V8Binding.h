@@ -397,14 +397,17 @@ inline String toCoreStringWithUndefinedOrNullCheck(v8::Local<v8::Value> value)
 }
 
 // Convert a string to a V8 string.
-// Return a V8 external string that shares the underlying buffer with the given
-// WebCore string. The reference counting mechanism is used to keep the
-// underlying buffer alive while the string is still live in the V8 engine.
-inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string)
+
+inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const StringView& string)
 {
+    DCHECK(isolate);
     if (string.isNull())
         return v8::String::Empty(isolate);
-    return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string.impl());
+    if (StringImpl* impl = string.sharedImpl())
+        return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, impl);
+    if (string.is8Bit())
+        return v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(string.characters8()), v8::NewStringType::kNormal, static_cast<int>(string.length())).ToLocalChecked();
+    return v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kNormal, static_cast<int>(string.length())).ToLocalChecked();
 }
 
 inline v8::Local<v8::Value> v8StringOrNull(v8::Isolate* isolate, const AtomicString& string)
