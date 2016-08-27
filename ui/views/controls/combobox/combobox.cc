@@ -33,6 +33,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -249,15 +250,15 @@ void PaintArrowButton(
 const char Combobox::kViewClassName[] = "views/Combobox";
 
 // Adapts a ui::ComboboxModel to a ui::MenuModel.
-class Combobox::ComboboxMenuModelAdapter : public ui::MenuModel,
-                                           public ui::ComboboxModelObserver {
+class Combobox::ComboboxMenuModel : public ui::MenuModel,
+                                    public ui::ComboboxModelObserver {
  public:
-  ComboboxMenuModelAdapter(Combobox* owner, ui::ComboboxModel* model)
+  ComboboxMenuModel(Combobox* owner, ui::ComboboxModel* model)
       : owner_(owner), model_(model) {
     model_->AddObserver(this);
   }
 
-  ~ComboboxMenuModelAdapter() override { model_->RemoveObserver(this); }
+  ~ComboboxMenuModel() override { model_->RemoveObserver(this); }
 
  private:
   bool UseCheckmarks() const {
@@ -356,7 +357,7 @@ class Combobox::ComboboxMenuModelAdapter : public ui::MenuModel,
   Combobox* owner_;           // Weak. Owns this.
   ui::ComboboxModel* model_;  // Weak.
 
-  DISALLOW_COPY_AND_ASSIGN(ComboboxMenuModelAdapter);
+  DISALLOW_COPY_AND_ASSIGN(ComboboxMenuModel);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +369,7 @@ Combobox::Combobox(ui::ComboboxModel* model, Style style)
       listener_(NULL),
       selected_index_(style == STYLE_ACTION ? 0 : model_->GetDefaultIndex()),
       invalid_(false),
-      menu_model_adapter_(new ComboboxMenuModelAdapter(this, model)),
+      menu_model_(new ComboboxMenuModel(this, model)),
       text_button_(new TransparentButton(this)),
       arrow_button_(new TransparentButton(this)),
       size_to_largest_label_(style_ == STYLE_NORMAL),
@@ -846,16 +847,22 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Allow |menu_runner_| to be set by the testing API, but if this method is
   // ever invoked recursively, ensure the old menu is closed.
   if (!menu_runner_ || menu_runner_->IsRunning()) {
+    menu_model_adapter_.reset(new MenuModelAdapter(
+        menu_model_.get(), base::Bind(&Combobox::OnMenuClosed,
+                                      base::Unretained(this), original_state)));
     menu_runner_.reset(
-        new MenuRunner(menu_model_adapter_.get(), MenuRunner::COMBOBOX));
+        new MenuRunner(menu_model_adapter_->CreateMenu(),
+                       MenuRunner::COMBOBOX | MenuRunner::ASYNC));
   }
-  if (menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, anchor_position,
-                              source_type) == MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds, anchor_position,
+                          source_type);
+}
+
+void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   menu_runner_.reset();
+  menu_model_adapter_.reset();
   if (arrow_button_)
-    arrow_button_->SetState(original_state);
+    arrow_button_->SetState(original_button_state);
   closed_time_ = base::Time::Now();
 
   // Need to explicitly clear mouse handler so that events get sent
@@ -891,8 +898,7 @@ gfx::Size Combobox::GetContentSize() const {
 
     if (size_to_largest_label_ || i == selected_index_) {
       width = std::max(
-          width,
-          gfx::GetStringWidth(menu_model_adapter_->GetLabelAt(i), font_list));
+          width, gfx::GetStringWidth(menu_model_->GetLabelAt(i), font_list));
     }
   }
   return gfx::Size(width, font_list.GetHeight());

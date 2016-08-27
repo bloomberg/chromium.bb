@@ -59,7 +59,7 @@ gfx::Size ComboboxTestApi::content_size() {
 }
 
 ui::MenuModel* ComboboxTestApi::menu_model() {
-  return combobox_->menu_model_adapter_.get();
+  return combobox_->menu_model_.get();
 }
 
 }  // test

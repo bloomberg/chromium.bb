@@ -13,6 +13,10 @@
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/examples/example_base.h"
 
+namespace ui {
+class SimpleMenuModel;
+}
+
 namespace views {
 
 class LabelButton;
@@ -77,6 +81,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
 
   ui::TreeNodeModel<NodeType> model_;
 
+  std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
   std::unique_ptr<MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeViewExample);

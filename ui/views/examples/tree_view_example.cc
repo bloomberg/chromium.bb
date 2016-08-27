@@ -130,19 +130,15 @@ bool TreeViewExample::CanEdit(TreeView* tree_view,
 void TreeViewExample::ShowContextMenuForView(View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
-  ui::SimpleMenuModel context_menu_model(this);
-  context_menu_model.AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
-  context_menu_model.AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
-  context_menu_model.AddItem(ID_ADD, ASCIIToUTF16("Add"));
-  context_menu_runner_.reset(new MenuRunner(&context_menu_model, 0));
-  if (context_menu_runner_->RunMenuAt(source->GetWidget(),
-                                      NULL,
-                                      gfx::Rect(point, gfx::Size()),
-                                      MENU_ANCHOR_TOPLEFT,
-                                      source_type) ==
-      MenuRunner::MENU_DELETED) {
-    return;
-  }
+  context_menu_model_.reset(new ui::SimpleMenuModel(this));
+  context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
+  context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
+  context_menu_model_->AddItem(ID_ADD, ASCIIToUTF16("Add"));
+  context_menu_runner_.reset(
+      new MenuRunner(context_menu_model_.get(), MenuRunner::ASYNC));
+  context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
+                                  gfx::Rect(point, gfx::Size()),
+                                  MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 bool TreeViewExample::IsCommandIdChecked(int command_id) const {

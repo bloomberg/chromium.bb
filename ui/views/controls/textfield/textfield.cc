@@ -1952,9 +1952,10 @@ void Textfield::UpdateContextMenu() {
     if (controller_)
       controller_->UpdateContextMenu(context_menu_contents_.get());
   }
-  context_menu_runner_.reset(
-      new MenuRunner(context_menu_contents_.get(),
-                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
+  context_menu_runner_.reset(new MenuRunner(context_menu_contents_.get(),
+                                            MenuRunner::HAS_MNEMONICS |
+                                                MenuRunner::CONTEXT_MENU |
+                                                MenuRunner::ASYNC));
 }
 
 void Textfield::TrackMouseClicks(const ui::MouseEvent& event) {

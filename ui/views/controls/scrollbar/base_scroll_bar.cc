@@ -290,8 +290,9 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
 
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
-  menu_runner_.reset(new MenuRunner(
-      menu, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+  menu_runner_.reset(new MenuRunner(menu, MenuRunner::HAS_MNEMONICS |
+                                              views::MenuRunner::CONTEXT_MENU |
+                                              views::MenuRunner::ASYNC));
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollHere);
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollStart);
@@ -302,13 +303,8 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
   menu->AppendSeparator();
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
-  if (menu_runner_->RunMenuAt(GetWidget(),
-                              NULL,
-                              gfx::Rect(p, gfx::Size()),
-                              MENU_ANCHOR_TOPLEFT,
-                              source_type) == MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(p, gfx::Size()),
+                          MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
