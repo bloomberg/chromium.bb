@@ -91,6 +91,7 @@ public class LayoutManagerChrome
             // Open the new tab
             if (type == TabLaunchType.FROM_RESTORE) return;
             if (type == TabLaunchType.FROM_REPARENTING) return;
+            if (type == TabLaunchType.FROM_EXTERNAL_APP) return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }

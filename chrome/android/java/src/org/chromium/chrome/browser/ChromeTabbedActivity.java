@@ -792,8 +792,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
                     if (url == null || url.equals(UrlConstants.NTP_URL)) {
-                        if (fromLauncherShortcut) recordLauncherShortcutAction(true);
-                        if (TextUtils.equals(externalAppId, getPackageName())) {
+                        TabLaunchType launchType;
+                        if (fromLauncherShortcut) {
+                            getTabCreator(true).launchUrl(
+                                    UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
+                            recordLauncherShortcutAction(true);
+                        } else if (TextUtils.equals(externalAppId, getPackageName())) {
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
                             getTabCreator(true).launchUrl(
@@ -1291,7 +1295,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
             return getTabCreator(isIncognito).launchUrl(
                     url,
-                    fromLauncherShortcut ? TabLaunchType.FROM_CHROME_UI : TabLaunchType.FROM_LINK,
+                    fromLauncherShortcut ? TabLaunchType.FROM_EXTERNAL_APP
+                            : TabLaunchType.FROM_LINK,
                     intent,
                     mIntentHandlingTimeMs);
         } else {
