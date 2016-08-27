@@ -1416,6 +1416,8 @@
       'cert/internal/signature_algorithm_unittest.cc',
       'cert/internal/test_helpers.cc',
       'cert/internal/test_helpers.h',
+      'cert/internal/trust_store_test_helpers.cc',
+      'cert/internal/trust_store_test_helpers.h',
       'cert/internal/verify_certificate_chain_pkits_unittest.cc',
       'cert/internal/verify_certificate_chain_typed_unittest.h',
       'cert/internal/verify_certificate_chain_unittest.cc',

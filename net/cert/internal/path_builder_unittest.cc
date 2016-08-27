@@ -17,6 +17,7 @@
 #include "net/cert/internal/signature_policy.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/internal/trust_store_test_helpers.h"
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/der/input.h"
@@ -627,31 +628,141 @@ TEST_F(PathBuilderKeyRolloverTest, TestRolloverBothRootsTrusted) {
   }
 }
 
-class MockTrustStore : public TrustStore {
- public:
-  MOCK_CONST_METHOD2(FindTrustAnchorsByNormalizedName,
-                     void(const der::Input& normalized_name,
-                          TrustAnchors* matches));
-};
+// If trust anchors are provided both synchronously and asynchronously for the
+// same cert, the synchronously provided ones should be tried first, and
+// pathbuilder should finish synchronously.
+TEST_F(PathBuilderKeyRolloverTest, TestSyncAnchorsPreferred) {
+  TrustStoreInMemoryAsync trust_store;
+  // Both oldintermediate and newintermediate are trusted, but oldintermediate
+  // is returned synchronously and newintermediate asynchronously.
+  trust_store.AddSyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(oldintermediate_));
+  trust_store.AddAsyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(newintermediate_));
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(target_, &trust_store, &signature_policy_, time_,
+                               &result);
+
+  EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(OK, result.error());
+
+  ASSERT_EQ(1U, result.paths.size());
+  const auto& path = result.paths[0]->path;
+  EXPECT_EQ(OK, result.paths[0]->error);
+  ASSERT_EQ(1U, path.certs.size());
+  EXPECT_EQ(target_, path.certs[0]);
+  EXPECT_EQ(oldintermediate_, path.trust_anchor->cert());
+}
+
+// Async trust anchor checks should be done before synchronous issuer checks are
+// considered. (Avoiding creating unnecessarily long paths.)
+//
+// Two valid paths could be built:
+// newintermediate <- newrootrollover <- oldroot
+// newintermediate <- newroot
+// One invalid path could be built:
+// newintermediate <- oldroot
+//
+// First: newintermediate <- oldroot will be tried, since oldroot is
+// available synchronously, but this path will not verify.
+// Second: newintermediate <- newroot should be built, even though
+// newrootrollover issuer is available synchronously and newroot is async. This
+// path should verify and pathbuilder will stop.
+TEST_F(PathBuilderKeyRolloverTest, TestAsyncAnchorsBeforeSyncIssuers) {
+  TrustStoreInMemoryAsync trust_store;
+  trust_store.AddSyncTrustAnchor(oldroot_);
+  trust_store.AddAsyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
+
+  CertIssuerSourceStatic sync_certs;
+  sync_certs.AddCert(newrootrollover_);
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(newintermediate_, &trust_store,
+                               &signature_policy_, time_, &result);
+  path_builder.AddCertIssuerSource(&sync_certs);
+
+  EXPECT_EQ(CompletionStatus::ASYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(OK, result.error());
+
+  ASSERT_EQ(2U, result.paths.size());
+  {
+    const auto& path = result.paths[0]->path;
+    EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.paths[0]->error);
+    ASSERT_EQ(1U, path.certs.size());
+    EXPECT_EQ(newintermediate_, path.certs[0]);
+    EXPECT_EQ(oldroot_, path.trust_anchor);
+  }
+  {
+    const auto& path = result.paths[1]->path;
+    EXPECT_EQ(OK, result.paths[1]->error);
+    ASSERT_EQ(1U, path.certs.size());
+    EXPECT_EQ(newintermediate_, path.certs[0]);
+    EXPECT_EQ(newroot_, path.trust_anchor->cert());
+  }
+}
+
+// If async trust anchor query returned no results, and there are no issuer
+// sources, path building should fail at that point.
+TEST_F(PathBuilderKeyRolloverTest, TestAsyncAnchorsNoMatchAndNoIssuerSources) {
+  TrustStoreInMemoryAsync trust_store;
+  trust_store.AddAsyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(target_, &trust_store, &signature_policy_, time_,
+                               &result);
+
+  EXPECT_EQ(CompletionStatus::ASYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, result.error());
+
+  ASSERT_EQ(0U, result.paths.size());
+}
+
+// Both trust store and issuer source are async. Should successfully build a
+// path.
+TEST_F(PathBuilderKeyRolloverTest, TestAsyncAnchorsAndAsyncIssuers) {
+  TrustStoreInMemoryAsync trust_store;
+  trust_store.AddAsyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
+
+  AsyncCertIssuerSourceStatic async_certs;
+  async_certs.AddCert(newintermediate_);
+
+  CertPathBuilder::Result result;
+  CertPathBuilder path_builder(target_, &trust_store, &signature_policy_, time_,
+                               &result);
+  path_builder.AddCertIssuerSource(&async_certs);
+
+  EXPECT_EQ(CompletionStatus::ASYNC, RunPathBuilder(&path_builder));
+
+  EXPECT_EQ(OK, result.error());
+
+  ASSERT_EQ(1U, result.paths.size());
+  const auto& path = result.paths[0]->path;
+  EXPECT_EQ(OK, result.paths[0]->error);
+  ASSERT_EQ(2U, path.certs.size());
+  EXPECT_EQ(target_, path.certs[0]);
+  EXPECT_EQ(newintermediate_, path.certs[1]);
+  EXPECT_EQ(newroot_, path.trust_anchor->cert());
+}
 
 // Tests that multiple trust root matches on a single path will be considered.
 // Both roots have the same subject but different keys. Only one of them will
 // verify.
 TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
-  NiceMock<MockTrustStore> trust_store;
-  // Default handler for any other TrustStore requests.
-  EXPECT_CALL(trust_store, FindTrustAnchorsByNormalizedName(_, _))
-      .WillRepeatedly(Return());
-  // Both newroot and oldroot are trusted, and newroot is returned first in the
-  // matches vector.
-  EXPECT_CALL(trust_store, FindTrustAnchorsByNormalizedName(
-                               newroot_->normalized_subject(), _))
-      .WillRepeatedly(Invoke(
-          [this](const der::Input& normalized_name, TrustAnchors* matches) {
-            matches->push_back(
-                TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
-            matches->push_back(oldroot_);
-          }));
+  TrustStoreInMemoryAsync trust_store;
+  // Since FindTrustAnchorsByNormalizedName returns newroot synchronously, it
+  // should be tried first.
+  trust_store.AddSyncTrustAnchor(
+      TrustAnchor::CreateFromCertificateNoConstraints(newroot_));
+  // oldroot is returned asynchronously, so it should only be tried after the
+  // path built with newroot fails.
+  trust_store.AddAsyncTrustAnchor(oldroot_);
 
   // Only oldintermediate is supplied, so the path with newroot should fail,
   // oldroot should succeed.
@@ -663,12 +774,9 @@ TEST_F(PathBuilderKeyRolloverTest, TestMultipleRootMatchesOnlyOneWorks) {
                                &result);
   path_builder.AddCertIssuerSource(&sync_certs);
 
-  EXPECT_EQ(CompletionStatus::SYNC, RunPathBuilder(&path_builder));
+  EXPECT_EQ(CompletionStatus::ASYNC, RunPathBuilder(&path_builder));
 
   EXPECT_EQ(OK, result.error());
-  // Since FindTrustAnchorsByNormalizedName returns newroot first, it should be
-  // tried first. (Note: this may change if PathBuilder starts prioritizing the
-  // path building order.)
   ASSERT_EQ(2U, result.paths.size());
 
   {

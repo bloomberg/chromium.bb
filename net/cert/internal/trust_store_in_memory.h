@@ -30,9 +30,12 @@ class NET_EXPORT TrustStoreInMemory : public TrustStore {
 
   void AddTrustAnchor(scoped_refptr<TrustAnchor> anchor);
 
-  // Returns the trust anchors that match |name| in |*matches|, if any.
-  void FindTrustAnchorsByNormalizedName(const der::Input& normalized_name,
-                                        TrustAnchors* matches) const override;
+  // TrustStore implementation:
+  void FindTrustAnchorsForCert(
+      const ParsedCertificate* cert,
+      const TrustAnchorsCallback& callback,
+      TrustAnchors* synchronous_matches,
+      std::unique_ptr<Request>* out_req) const override;
 
  private:
   // Multimap from normalized subject -> TrustAnchor.

@@ -19,12 +19,14 @@ void TrustStoreInMemory::AddTrustAnchor(scoped_refptr<TrustAnchor> anchor) {
                                  std::move(anchor)));
 }
 
-void TrustStoreInMemory::FindTrustAnchorsByNormalizedName(
-    const der::Input& normalized_name,
-    TrustAnchors* matches) const {
-  auto range = anchors_.equal_range(normalized_name.AsStringPiece());
+void TrustStoreInMemory::FindTrustAnchorsForCert(
+    const ParsedCertificate* cert,
+    const TrustAnchorsCallback& callback,
+    TrustAnchors* synchronous_matches,
+    std::unique_ptr<Request>* out_req) const {
+  auto range = anchors_.equal_range(cert->normalized_issuer().AsStringPiece());
   for (auto it = range.first; it != range.second; ++it)
-    matches->push_back(it->second);
+    synchronous_matches->push_back(it->second);
 }
 
 }  // namespace net

@@ -36,6 +36,9 @@ TrustAnchor::TrustAnchor(scoped_refptr<ParsedCertificate> cert,
 
 TrustAnchor::~TrustAnchor() = default;
 
+TrustStore::Request::Request() = default;
+TrustStore::Request::~Request() = default;
+
 TrustStore::TrustStore() = default;
 TrustStore::~TrustStore() = default;
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -114,13 +115,35 @@ using TrustAnchors = std::vector<scoped_refptr<TrustAnchor>>;
 // Interface for finding trust anchors.
 class NET_EXPORT TrustStore {
  public:
+  class NET_EXPORT Request {
+   public:
+    Request();
+    // Destruction of the Request cancels it.
+    virtual ~Request();
+  };
+
   TrustStore();
   virtual ~TrustStore();
 
-  // Returns the trust anchors that match |name| in |*matches|, if any.
-  virtual void FindTrustAnchorsByNormalizedName(
-      const der::Input& normalized_name,
-      TrustAnchors* matches) const = 0;
+  using TrustAnchorsCallback = base::Callback<void(TrustAnchors)>;
+
+  // Returns the trust anchors that match |cert|'s issuer name in
+  // |*synchronous_matches| and/or through |callback|. |cert| and
+  // |synchronous_matches| must not be null.
+  //
+  // If results are available synchronously, they will be appended to
+  // |*synchronous_matches|. |*synchronous_matches| will not be modified
+  // asynchronously.
+  //
+  // If |callback| is not null and results may be available asynchronously,
+  // |*out_req| will be filled with a Request, and |callback| will be called
+  // when results are available. The Request may be destroyed to cancel
+  // the callback if it has not occurred yet.
+  virtual void FindTrustAnchorsForCert(
+      const ParsedCertificate* cert,
+      const TrustAnchorsCallback& callback,
+      TrustAnchors* synchronous_matches,
+      std::unique_ptr<Request>* out_req) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrustStore);
