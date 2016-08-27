@@ -47,7 +47,7 @@ class BrowserWindowLayoutTest : public testing::Test {
     [layout setInAnyFullscreen:YES];
     [layout setFullscreenSlidingStyle:fullscreen_mac::OMNIBOX_TABS_PRESENT];
     [layout setFullscreenMenubarOffset:0];
-    [layout setFullscreenToolbarFraction:0];
+    [layout setFullscreenToolbarFraction:1];
     [layout setFullscreenButtonFrame:NSZeroRect];
   }
 

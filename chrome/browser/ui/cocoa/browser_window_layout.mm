@@ -168,17 +168,8 @@ const CGFloat kLocationBarRightOffset = 35;
   CGFloat yOffset = 0;
   if (parameters_.inAnyFullscreen) {
     yOffset += parameters_.menubarOffset;
-    switch (parameters_.slidingStyle) {
-      case fullscreen_mac::OMNIBOX_TABS_PRESENT:
-        break;
-      case fullscreen_mac::OMNIBOX_TABS_NONE:
-      case fullscreen_mac::OMNIBOX_TABS_HIDDEN:
-        // In presentation mode, |yOffset| accounts for the sliding position of
-        // the floating bar and the extra offset needed to dodge the menu bar.
-        yOffset += std::floor((1 - parameters_.toolbarFraction) *
-                              [self fullscreenBackingBarHeight]);
-        break;
-    }
+    yOffset += std::floor((1 - parameters_.toolbarFraction) *
+                          [self fullscreenBackingBarHeight]);
   }
   fullscreenYOffset_ = yOffset;
 }

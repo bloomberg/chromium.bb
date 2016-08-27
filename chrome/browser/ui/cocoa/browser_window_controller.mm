@@ -1979,9 +1979,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (BOOL)isBarVisibilityLockedForOwner:(id)owner {
-  DCHECK(owner);
   DCHECK(barVisibilityLocks_);
-  return [barVisibilityLocks_ containsObject:owner];
+  return owner ? [barVisibilityLocks_ containsObject:owner]
+               : [barVisibilityLocks_ count];
 }
 
 - (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {

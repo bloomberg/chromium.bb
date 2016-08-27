@@ -454,14 +454,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)configureFullscreenToolbarController {
-  BOOL fullscreenForTab = [self isFullscreenForTabContentOrExtension];
-  BOOL kioskMode =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-  BOOL showDropdown =
-      !fullscreenForTab && !kioskMode && ([self floatingBarHasFocus]);
-
+  NSView* contentView = [[self window] contentView];
   [fullscreenToolbarController_
-      setupFullscreenToolbarWithDropdown:showDropdown];
+      setupFullscreenToolbarForContentView:contentView];
 }
 
 - (void)adjustUIForExitingFullscreenAndStopOmniboxSliding {
@@ -474,6 +469,10 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)adjustUIForSlidingFullscreenStyle:(fullscreen_mac::SlidingStyle)style {
+  // The UI should only be adjusted in fullscreen mode.
+  if (![self isInAnyFullscreenMode])
+    return;
+
   if (!fullscreenToolbarController_) {
     fullscreenToolbarController_.reset(
         [self newFullscreenToolbarControllerWithStyle:style]);
@@ -1009,8 +1008,11 @@ willPositionSheet:(NSWindow*)sheet
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
-  if (!NSIsEmptyRect(output.fullscreenBackingBarFrame))
+  if (!NSIsEmptyRect(output.fullscreenBackingBarFrame)) {
     [floatingBarBackingView_ setFrame:output.fullscreenBackingBarFrame];
+    [fullscreenToolbarController_
+        setTrackingAreaFromOverlayFrame:output.fullscreenBackingBarFrame];
+  }
 
   [findBarCocoaController_
       positionFindBarViewAtMaxY:output.findBarMaxY

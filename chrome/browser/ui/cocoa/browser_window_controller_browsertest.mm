@@ -761,7 +761,6 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
 
   // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
   // is hidden and the preference is correctly updated.
-  [[controller() fullscreenToolbarController] setToolbarFraction:0.0];
   [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));

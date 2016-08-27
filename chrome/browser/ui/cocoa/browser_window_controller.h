@@ -565,12 +565,14 @@ class Command;
 
 // Query/lock/release the requirement that the tab strip/toolbar/attached
 // bookmark bar bar cluster is visible (e.g., when one of its elements has
-// focus). This is required for the floating bar in presentation mode, but
-// should also be called when not in presentation mode; see the comments for
+// focus). This is required for the floating bar if it's hidden in fullscreen,
+// but should also be called when not in fullscreen mode; see the comments for
 // |barVisibilityLocks_| for more details. Double locks/releases by the same
 // owner are ignored. If |animate:| is YES, then an animation may be
 // performed. In the case of multiple calls, later calls have precedence with
-// the rule that |animate:NO| has precedence over |animate:YES|.
+// the rule that |animate:NO| has precedence over |animate:YES|. If |owner| is
+// nil in isBarVisibilityLockedForOwner, the method returns YES if there are
+// any locks.
 - (BOOL)isBarVisibilityLockedForOwner:(id)owner;
 - (void)lockBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;
 - (void)releaseBarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate;

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
+@class CrTrackingArea;
 @class DropdownAnimation;
 
 namespace fullscreen_mac {
@@ -25,16 +26,12 @@ enum SlidingStyle {
 
 // Provides a controller to fullscreen toolbar for a single browser
 // window.  This class handles running animations, showing and hiding the
-// floating dropdown bar, and managing the tracking area associated with the
-// dropdown.  This class does not directly manage any views -- the
+// fullscreen toolbar, and managing the tracking area associated with the
+// toolbar.  This class does not directly manage any views -- the
 // BrowserWindowController is responsible for positioning and z-ordering views.
 //
-// Tracking areas are disabled while animations are running.  If
-// |overlayFrameChanged:| is called while an animation is running, the
-// controller saves the new frame and installs the appropriate tracking area
-// when the animation finishes.  This is largely done for ease of
-// implementation; it is easier to check the mouse location at each animation
-// step than it is to manage a constantly-changing tracking area.
+
+// TODO (spqchan): Write tests for this class. See crbug.com/640064.
 @interface FullscreenToolbarController : NSObject<NSAnimationDelegate> {
  @private
   // Our parent controller.
@@ -42,6 +39,18 @@ enum SlidingStyle {
 
   // Whether or not we are in fullscreen mode.
   BOOL inFullscreenMode_;
+
+  // The content view for the window.  This is nil when not in fullscreen mode.
+  NSView* contentView_;  // weak
+
+  // The frame for the tracking area. The value is the toolbar overlay's frame
+  // with additional height added at the bottom.
+  NSRect trackingAreaFrame_;
+
+  // The tracking area associated with the toolbar overlay bar. This tracking
+  // area is used to keep the toolbar active if the menubar had animated out
+  // but the mouse is still on the toolbar.
+  base::scoped_nsobject<CrTrackingArea> trackingArea_;
 
   // Pointer to the currently running animation.  Is nil if no animation is
   // running.
@@ -69,32 +78,36 @@ enum SlidingStyle {
   // Only used in AppKit Fullscreen.
   CGFloat menubarFraction_;
 
-  // The fraction of the omnibox/tabstrip that is showing. Ranges from 0 to 1.
-  // Used in both AppKit and Immersive Fullscreen.
-  CGFloat toolbarFraction_;
+  // The toolbar fraction set by the menu progress.
+  CGFloat toolbarFractionFromMenuProgress_;
 
   // A Carbon event handler that tracks the revealed fraction of the menu bar.
   EventHandlerRef menuBarTrackingHandler_;
 
   // True when the toolbar is dropped to show tabstrip changes.
-  BOOL revealToolbarForTabStripChanges_;
+  BOOL isRevealingToolbarForTabStripChanges_;
+
+  // True when the toolbar should be animated back out via a DropdownAnimation.
+  // This is set and unset in hideTimer:. It's set to YES before it calls
+  // animateToolbarVisibility: and then set to NO after the animation has
+  // started.
+  BOOL shouldAnimateToolbarOut_;
 }
 
 @property(nonatomic, assign) fullscreen_mac::SlidingStyle slidingStyle;
-@property(nonatomic, assign) CGFloat toolbarFraction;
 
 // Designated initializer.
 - (id)initWithBrowserController:(BrowserWindowController*)controller
                           style:(fullscreen_mac::SlidingStyle)style;
 
-// Informs the controller that the browser has entered or exited presentation
+// Informs the controller that the browser has entered or exited fullscreen
 // mode. |-setupFullscreenToolbarForContentView:showDropdown:| should be called
 // after the window is setup, just before it is shown. |-exitFullscreenMode|
 // should be called before any views are moved back to the non-fullscreen
 // window.  If |-setupFullscreenToolbarForContentView:showDropdown:| is called,
 // it must be balanced with a call to |-exitFullscreenMode| before the
 // controller is released.
-- (void)setupFullscreenToolbarWithDropdown:(BOOL)showDropdown;
+- (void)setupFullscreenToolbarForContentView:(NSView*)contentView;
 - (void)exitFullscreenMode;
 
 // Returns the amount by which the floating bar should be offset downwards (to
@@ -119,14 +132,29 @@ enum SlidingStyle {
 // Ranges from 0 to -22.
 - (CGFloat)menubarOffset;
 
+// Returns the fraction of the toolbar exposed at the top.
+// It returns 1.0 if the toolbar is fully shown and 0.0 if the toolbar is
+// hidden. Otherwise, if the toolbar is in progress of animating, it will
+// return a float that ranges from (0, 1).
+- (CGFloat)toolbarFraction;
+
 // Returns YES if the mouse is on the window's screen. This is used to check
 // if the menubar events belong to window's screen since the menubar would
 // only be revealed if the mouse is there.
 - (BOOL)isMouseOnScreen;
 
-// Returns true if the browser is in the process of entering/exiting
+// Sets |trackingAreaFrame_| from the given overlay frame.
+- (void)setTrackingAreaFromOverlayFrame:(NSRect)frame;
+
+// Returns YES if the browser is in the process of entering/exiting
 // fullscreen.
 - (BOOL)isFullscreenTransitionInProgress;
+
+// Returns YES if the browser in in fullscreen.
+- (BOOL)isInFullscreen;
+
+// Updates the toolbar by updating the layout, menubar and dock.
+- (void)updateToolbar;
 
 @end
 
@@ -137,11 +165,6 @@ enum SlidingStyle {
 
 // Callback for menu bar animations.
 - (void)setMenuBarRevealProgress:(CGFloat)progress;
-
-// Updates the local state that reflects the fraction of the toolbar area that
-// is showing. This function has the side effect of changing the AppKit
-// Fullscreen option for whether the menu bar is shown.
-- (void)changeToolbarFraction:(CGFloat)fraction;
 
 @end
 
