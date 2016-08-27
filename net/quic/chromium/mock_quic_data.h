@@ -15,6 +15,10 @@ class MockQuicData {
   MockQuicData();
   ~MockQuicData();
 
+  // Makes the Connect() call return |rv| either
+  // synchronusly or asynchronously based on |mode|.
+  void AddConnect(IoMode mode, int rv);
+
   // Adds a synchronous read at the next sequence number which will read
   // |packet|.
   void AddSynchronousRead(std::unique_ptr<QuicEncryptedPacket> packet);
@@ -24,21 +28,32 @@ class MockQuicData {
   void AddRead(std::unique_ptr<QuicEncryptedPacket> packet);
 
   // Adds a read at the next sequence number which will return |rv| either
-  // synchrously or asynchronously based on |mode|.
+  // synchronously or asynchronously based on |mode|.
   void AddRead(IoMode mode, int rv);
 
   // Adds an asynchronous write at the next sequence number which will write
   // |packet|.
   void AddWrite(std::unique_ptr<QuicEncryptedPacket> packet);
 
+  // Adds a write at the next sequence number which will return |rv| either
+  // synchronously or asynchronously based on |mode|.
+  void AddWrite(IoMode mode, int rv);
+
   // Adds the reads and writes to |factory|.
   void AddSocketDataToFactory(MockClientSocketFactory* factory);
+
+  // Returns true if all reads have been consumed.
+  bool AllReadDataConsumed();
+
+  // Returns true if all writes have been consumed.
+  bool AllWriteDataConsumed();
 
   // Resumes I/O after it is paused.
   void Resume();
 
  private:
   std::vector<std::unique_ptr<QuicEncryptedPacket>> packets_;
+  std::unique_ptr<MockConnect> connect_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   size_t sequence_number_;

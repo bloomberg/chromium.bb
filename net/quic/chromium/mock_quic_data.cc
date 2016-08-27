@@ -11,6 +11,10 @@ MockQuicData::MockQuicData() : sequence_number_(0) {}
 
 MockQuicData::~MockQuicData() {}
 
+void MockQuicData::AddConnect(IoMode mode, int rv) {
+  connect_.reset(new MockConnect(mode, rv));
+}
+
 void MockQuicData::AddSynchronousRead(
     std::unique_ptr<QuicEncryptedPacket> packet) {
   reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
@@ -34,12 +38,26 @@ void MockQuicData::AddWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
   packets_.push_back(std::move(packet));
 }
 
+void MockQuicData::AddWrite(IoMode mode, int rv) {
+  writes_.push_back(MockWrite(mode, rv, sequence_number_++));
+}
+
 void MockQuicData::AddSocketDataToFactory(MockClientSocketFactory* factory) {
   MockRead* reads = reads_.empty() ? nullptr : &reads_[0];
   MockWrite* writes = writes_.empty() ? nullptr : &writes_[0];
   socket_data_.reset(
       new SequencedSocketData(reads, reads_.size(), writes, writes_.size()));
+  if (connect_ != nullptr)
+    socket_data_->set_connect_data(*connect_);
   factory->AddSocketDataProvider(socket_data_.get());
+}
+
+bool MockQuicData::AllReadDataConsumed() {
+  return socket_data_->AllReadDataConsumed();
+}
+
+bool MockQuicData::AllWriteDataConsumed() {
+  return socket_data_->AllWriteDataConsumed();
 }
 
 void MockQuicData::Resume() {

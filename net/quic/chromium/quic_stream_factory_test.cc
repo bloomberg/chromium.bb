@@ -22,6 +22,7 @@
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
+#include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/properties_based_quic_server_info.h"
 #include "net/quic/core/crypto/quic_crypto_client_config.h"
@@ -418,9 +419,9 @@ class QuicStreamFactoryTestBase {
     EXPECT_FALSE(HasActiveSession(destination));
     size_t socket_count = socket_factory_.udp_client_socket_ports().size();
 
-    MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-    SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-    socket_factory_.AddSocketDataProvider(&socket_data);
+    MockQuicData socket_data;
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddSocketDataToFactory(&socket_factory_);
 
     QuicStreamRequest request(factory_.get());
     GURL url("https://" + destination.host() + "/");
@@ -519,28 +520,19 @@ class QuicStreamFactoryTestBase {
     crypto_client_stream_factory_.SetConfig(config);
 
     // Set up first socket data provider.
-    MockRead reads1[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-    SequencedSocketData socket_data1(reads1, arraysize(reads1), nullptr, 0);
-    socket_factory_.AddSocketDataProvider(&socket_data1);
+    MockQuicData socket_data1;
+    socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data1.AddSocketDataToFactory(&socket_factory_);
 
-    // Set up second socket data provider that is used after migration.
-    std::unique_ptr<QuicEncryptedPacket> sendping(
+    // Set up second socket data provider that is used after
+    // migration.
+    MockQuicData socket_data2;
+    socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data2.AddWrite(
         client_maker_.MakePingPacket(1, /*include_version=*/true));
-    std::unique_ptr<QuicEncryptedPacket> client_rst(
-        client_maker_.MakeAckAndRstPacket(2, false, kClientDataStreamId1,
-                                          QUIC_STREAM_CANCELLED, 1, 1, 1,
-                                          true));
-    MockWrite writes2[] = {
-        MockWrite(SYNCHRONOUS, sendping->data(), sendping->length(), 0),
-        MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-    std::unique_ptr<QuicEncryptedPacket> recvping(
-        client_maker_.MakePingPacket(1, /*include_version=*/false));
-    MockRead reads2[] = {
-        MockRead(ASYNC, recvping->data(), recvping->length(), 1),
-        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-    SequencedSocketData socket_data2(reads2, arraysize(reads2), writes2,
-                                     arraysize(writes2));
-    socket_factory_.AddSocketDataProvider(&socket_data2);
+    socket_data2.AddWrite(client_maker_.MakeRstPacket(
+        2, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+    socket_data2.AddSocketDataToFactory(&socket_factory_);
 
     // Create request and QuicHttpStream.
     QuicStreamRequest request(factory_.get());
@@ -650,9 +642,9 @@ TEST_P(QuicStreamFactoryTest, Create) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -686,9 +678,9 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -712,9 +704,9 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -738,9 +730,9 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -767,9 +759,9 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -805,9 +797,9 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
@@ -886,11 +878,12 @@ TEST_P(QuicStreamFactoryTest, NoPoolingIfDisabled) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
@@ -927,11 +920,12 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   host_resolver_.set_synchronous_mode(true);
@@ -977,9 +971,9 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   Initialize();
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
@@ -1016,11 +1010,12 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
   disable_connection_pooling_ = true;
   Initialize();
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
@@ -1058,9 +1053,9 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingIfDisabled) {
 
 TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   Initialize();
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
@@ -1103,11 +1098,12 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
   disable_connection_pooling_ = true;
   Initialize();
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
@@ -1151,11 +1147,13 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithMatchingPinsIfDisabled) {
 
 TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   Initialize();
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads, arraysize(reads), nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server1(kDefaultServerHostName, 443);
   HostPortPair server2(kServer2HostName, 443);
@@ -1208,11 +1206,12 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1263,19 +1262,13 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
   QuicStreamId stream_id = kClientDataStreamId1;
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
+  MockQuicData socket_data;
+  socket_data.AddWrite(
       client_maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 0),
-  };
-  std::unique_ptr<QuicEncryptedPacket> server_rst(
+  socket_data.AddRead(
       server_maker_.MakeRstPacket(1, false, stream_id, QUIC_STREAM_CANCELLED));
-  MockRead reads[] = {
-      MockRead(ASYNC, server_rst->data(), server_rst->length(), 1),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HttpRequestInfo request_info;
   vector<QuicHttpStream*> streams;
@@ -1330,8 +1323,8 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
 
 TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   Initialize();
-  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   host_resolver_.rules()->AddSimulatedFailure(kDefaultServerHostName);
 
@@ -1349,10 +1342,10 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
 
 TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   Initialize();
-  MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
-  SequencedSocketData socket_data(nullptr, 0, nullptr, 0);
-  socket_data.set_connect_data(connect);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  MockQuicData socket_data;
+  socket_data.AddConnect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1368,9 +1361,9 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
 
 TEST_P(QuicStreamFactoryTest, CancelCreate) {
   Initialize();
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
   {
     QuicStreamRequest request(factory_.get());
     EXPECT_EQ(ERR_IO_PENDING,
@@ -1430,18 +1423,14 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
-  SequencedSocketData socket_data(reads, arraysize(reads),
-                                  writes.empty() ? nullptr : &writes[0],
-                                  writes.size());
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructClientRstPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1486,18 +1475,14 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
-  SequencedSocketData socket_data(reads, arraysize(reads),
-                                  writes.empty() ? nullptr : &writes[0],
-                                  writes.size());
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructClientRstPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1543,14 +1528,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeNetworkMadeDefault) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                  request_packet->length(), 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1582,22 +1564,15 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeNetworkMadeDefault) {
 
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
-  std::unique_ptr<QuicEncryptedPacket> ping(
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
       client_maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes1[] = {
-      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+  socket_data1.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads1[] = {MockRead(ASYNC, response_headers_packet->data(),
-                                response_headers_packet->length(), 1),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeAckAndRstPacket(
+      3, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Trigger connection migration. This should cause a PING frame
   // to be emitted.
@@ -1617,9 +1592,9 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeNetworkMadeDefault) {
 
   // Create a new request for the same destination and verify that a
   // new session is created.
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1660,14 +1635,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                  request_packet->length(), 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1697,23 +1669,15 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response_info,
                                     callback_.callback()));
 
-  // Set up second socket data provider that is used after migration.
-  std::unique_ptr<QuicEncryptedPacket> ping(
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
       client_maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes1[] = {
-      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_packet(
+  socket_data1.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads1[] = {
-      MockRead(ASYNC, response_packet->data(), response_packet->length(), 1),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeAckAndRstPacket(
+      3, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Trigger connection migration. This should cause a PING frame
   // to be emitted.
@@ -1728,9 +1692,9 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
 
   // Create a new request for the same destination and verify that a
   // new session is created.
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1762,15 +1726,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNetworks) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1810,15 +1770,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNewNetwork) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1860,15 +1816,11 @@ TEST_P(QuicStreamFactoryTest,
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1913,15 +1865,11 @@ TEST_P(QuicStreamFactoryTest,
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -1968,15 +1916,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNonMigratableStream) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2019,15 +1963,11 @@ TEST_P(QuicStreamFactoryTest,
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
-  MockWrite writes[] = {
-      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2072,9 +2012,9 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeNetworkMadeDefaultNoOpenStreams) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0u);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2109,9 +2049,9 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoOpenStreams) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0u);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2147,14 +2087,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                  request_packet->length(), 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2184,24 +2121,15 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
-  // Set up second socket data provider that is used after migration.
-  // The response to the earlier request is read on this new socket.
-  std::unique_ptr<QuicEncryptedPacket> ping(
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
       client_maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes1[] = {
-      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+  socket_data1.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads1[] = {MockRead(ASYNC, response_headers_packet->data(),
-                                response_headers_packet->length(), 1),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeAckAndRstPacket(
+      3, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Trigger early connection migration. This should cause a PING frame
   // to be emitted.
@@ -2224,9 +2152,9 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
 
   // Create a new request for the same destination and verify that a
   // new session is created.
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -2279,14 +2207,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                  request_packet->length(), 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2318,22 +2243,15 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
 
   // Set up second socket data provider that is used after migration.
   // The response to the earlier request is read on this new socket.
-  std::unique_ptr<QuicEncryptedPacket> ping(
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
       client_maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes1[] = {
-      MockWrite(ASYNC, ping->data(), ping->length(), 0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+  socket_data1.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads1[] = {MockRead(ASYNC, response_headers_packet->data(),
-                                response_headers_packet->length(), 1),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeAckAndRstPacket(
+      3, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Trigger early connection migration. This should cause a PING frame
   // to be emitted.
@@ -2356,9 +2274,9 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
 
   // Create a new request for the same destination and verify that a
   // new session is created.
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -2405,15 +2323,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2460,15 +2374,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2515,15 +2425,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2574,11 +2480,10 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteError) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE, 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2605,23 +2510,15 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteError) {
   // Set up second socket data provider that is used after
   // migration. The request is rewritten to this new socket, and the
   // response to the request is read on this new socket.
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data1;
+  socket_data1.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(2, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes1[] = {
-      MockWrite(SYNCHRONOUS, request_packet->data(), request_packet->length(),
-                0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+  socket_data1.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads1[] = {MockRead(ASYNC, response_headers_packet->data(),
-                                response_headers_packet->length(), 1),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeAckAndRstPacket(
+      2, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Send GET request on stream. This should cause a write error, which triggers
   // a connection migration attempt.
@@ -2658,13 +2555,10 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorNoNewNetwork) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE, 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2709,13 +2603,10 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorNonMigratableStream) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE, 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2761,13 +2652,10 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorMigrationDisabled) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
-      1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE, 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2819,14 +2707,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                  request_packet->length(), 1)};
-  SequencedSocketData socket_data(reads, arraysize(reads), writes,
-                                  arraysize(writes));
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2882,14 +2767,11 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  std::unique_ptr<QuicEncryptedPacket> request_packet(
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(
       ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
-  MockWrite writes1[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
-                                   request_packet->length(), 1)};
-  MockRead reads1[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -2927,22 +2809,15 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   // Set up second socket data provider that is used after
   // migration. The request is rewritten to this new socket, and the
   // response to the request is read on this new socket.
-  std::unique_ptr<QuicEncryptedPacket> ping(
+  MockQuicData socket_data2;
+  socket_data2.AddWrite(
       client_maker_.MakePingPacket(2, /*include_version=*/true));
-  std::unique_ptr<QuicEncryptedPacket> client_rst(
-      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
-                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
-  MockWrite writes2[] = {
-      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0),
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
-  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+  socket_data2.AddRead(
       ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
-  MockRead reads2[] = {MockRead(ASYNC, response_headers_packet->data(),
-                                response_headers_packet->length(), 1),
-                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), writes2,
-                                   arraysize(writes2));
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(client_maker_.MakeAckAndRstPacket(
+      3, false, kClientDataStreamId1, QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   const uint8_t kTestIpAddress[] = {1, 2, 3, 4};
   const uint16_t kTestPort = 123;
@@ -3028,14 +2903,11 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   crypto_client_stream_factory_.SetConfig(config);
 
   // Set up only socket data provider.
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeRstPacket(
       1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes1[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1)};
-  MockRead reads1[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
-                                   arraysize(writes1));
-  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
@@ -3081,18 +2953,14 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
-  SequencedSocketData socket_data(reads, arraysize(reads),
-                                  writes.empty() ? nullptr : &writes[0],
-                                  writes.size());
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructClientRstPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -3136,18 +3004,14 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
-  SequencedSocketData socket_data(reads, arraysize(reads),
-                                  writes.empty() ? nullptr : &writes[0],
-                                  writes.size());
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructClientRstPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -3192,18 +3056,14 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  vector<MockWrite> writes;
-  writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
-  SequencedSocketData socket_data(reads, arraysize(reads),
-                                  writes.empty() ? nullptr : &writes[0],
-                                  writes.size());
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructClientRstPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -3325,13 +3185,13 @@ TEST_P(QuicStreamFactoryTest, RacingConnections) {
 
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   const AlternativeService alternative_service1(QUIC, host_port_pair_.host(),
                                                 host_port_pair_.port());
@@ -3376,9 +3236,9 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -3418,18 +3278,18 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data2(nullptr, 0, nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data3(nullptr, 0, nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data3);
+  MockQuicData socket_data3;
+  socket_data3.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data4(nullptr, 0, nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data4);
+  MockQuicData socket_data4;
+  socket_data4.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   HostPortPair server3(kServer3HostName, kDefaultServerPort);
@@ -3578,12 +3438,13 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfTwo) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
 
@@ -3661,12 +3522,13 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
 
@@ -3758,15 +3620,17 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfThree) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data3);
+  MockQuicData socket_data3;
+  socket_data3.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data3.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   HostPortPair server3(kServer3HostName, kDefaultServerPort);
@@ -3872,16 +3736,17 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  //  SequencedSocketData socket_data2(nullptr, 0, nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data3);
+  MockQuicData socket_data3;
+  socket_data3.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data3.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   HostPortPair server3(kServer3HostName, kDefaultServerPort);
@@ -4000,9 +3865,9 @@ TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::CONFIRM_HANDSHAKE);
@@ -4072,18 +3937,21 @@ TEST_P(QuicStreamFactoryTest, PublicResetPostHandshakeTwoOfFour) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data3);
+  MockQuicData socket_data3;
+  socket_data3.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data3.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data4(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data4);
+  MockQuicData socket_data4;
+  socket_data4.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data4.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   HostPortPair server3(kServer3HostName, kDefaultServerPort);
@@ -4211,19 +4079,21 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    factory_.get(), host_port_pair_.port()));
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
-  //  SequencedSocketData socket_data2(nullptr, 0, nullptr, 0);
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data3(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data3);
+  MockQuicData socket_data3;
+  socket_data3.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data3.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data4(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data4);
+  MockQuicData socket_data4;
+  socket_data4.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data4.AddSocketDataToFactory(&socket_factory_);
 
   HostPortPair server2(kServer2HostName, kDefaultServerPort);
   HostPortPair server3(kServer3HostName, kDefaultServerPort);
@@ -4349,9 +4219,9 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   bool delay_tcp_race = QuicStreamFactoryPeer::GetDelayTcpRace(factory_.get());
   QuicStreamFactoryPeer::SetDelayTcpRace(factory_.get(), false);
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -4559,9 +4429,9 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
   Initialize();
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   // Save current state of |race_cert_verification|.
   bool race_cert_verification =
@@ -4634,14 +4504,10 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
 
-  std::unique_ptr<QuicEncryptedPacket> close_packet(
-      ConstructClientConnectionClosePacket(0));
-  vector<MockRead> reads;
-  reads.push_back(
-      MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
-  reads.push_back(MockRead(ASYNC, OK, 1));
-  SequencedSocketData socket_data(&reads[0], reads.size(), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddSynchronousRead(ConstructClientConnectionClosePacket(0));
+  socket_data.AddRead(ASYNC, OK);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -4683,14 +4549,10 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
   QuicStreamFactoryPeer::SetYieldAfterDuration(
       factory_.get(), QuicTime::Delta::FromMilliseconds(-1));
 
-  std::unique_ptr<QuicEncryptedPacket> close_packet(
-      ConstructClientConnectionClosePacket(0));
-  vector<MockRead> reads;
-  reads.push_back(
-      MockRead(SYNCHRONOUS, close_packet->data(), close_packet->length(), 0));
-  reads.push_back(MockRead(ASYNC, OK, 1));
-  SequencedSocketData socket_data(&reads[0], reads.size(), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddSynchronousRead(ConstructClientConnectionClosePacket(0));
+  socket_data.AddRead(ASYNC, OK);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
@@ -4730,9 +4592,9 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -4768,20 +4630,15 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-
-  std::unique_ptr<QuicEncryptedPacket> client_rst(client_maker_.MakeRstPacket(
+  MockQuicData socket_data1;
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data1.AddWrite(client_maker_.MakeRstPacket(
       1, true, kServerDataStreamId1, QUIC_STREAM_CANCELLED));
-  MockWrite writes[] = {
-      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
-  };
+  socket_data1.AddSocketDataToFactory(&socket_factory_);
 
-  SequencedSocketData socket_data1(reads, arraysize(reads), writes,
-                                   arraysize(writes));
-  SequencedSocketData socket_data2(reads, arraysize(reads), nullptr, 0);
-
-  socket_factory_.AddSocketDataProvider(&socket_data1);
-  socket_factory_.AddSocketDataProvider(&socket_data2);
+  MockQuicData socket_data2;
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -4838,9 +4695,9 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request1(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
@@ -4880,9 +4737,9 @@ TEST_P(QuicStreamFactoryTest, ForceHolBlockingEnabled) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
-  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
