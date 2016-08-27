@@ -25,6 +25,7 @@
 namespace mkvparser {
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;
+const float Projection::kValueNotPresent = FLT_MAX;
 
 #ifdef MSC_COMPAT
 inline bool isnan(double val) { return !!_isnan(val); }
@@ -5188,11 +5189,92 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
   return true;
 }
 
+bool Projection::Parse(IMkvReader* reader, long long start, long long size,
+                       Projection** projection) {
+  if (!reader || *projection)
+    return false;
+
+  std::auto_ptr<Projection> projection_ptr(new Projection());
+  if (!projection_ptr.get())
+    return false;
+
+  const long long end = start + size;
+  long long read_pos = start;
+
+  while (read_pos < end) {
+    long long child_id = 0;
+    long long child_size = 0;
+
+    const long long status =
+        ParseElementHeader(reader, read_pos, end, child_id, child_size);
+    if (status < 0)
+      return false;
+
+    if (child_id == libwebm::kMkvProjectionType) {
+      long long projection_type = kTypeNotPresent;
+      projection_type = UnserializeUInt(reader, read_pos, child_size);
+      if (projection_type < 0)
+        return false;
+
+      projection_ptr->type = static_cast<ProjectionType>(projection_type);
+    } else if (child_id == libwebm::kMkvProjectionPrivate) {
+      unsigned char* data = SafeArrayAlloc<unsigned char>(1, child_size);
+
+      if (data == NULL)
+        return false;
+
+      const int status =
+          reader->Read(read_pos, static_cast<long>(child_size), data);
+
+      if (status) {
+        delete[] data;
+        return status;
+      }
+
+      projection_ptr->private_data = data;
+      projection_ptr->private_data_length = static_cast<size_t>(child_size);
+    } else {
+      double value = 0;
+      const long long value_parse_status =
+          UnserializeFloat(reader, read_pos, child_size, value);
+      if (value_parse_status < 0) {
+        return false;
+      }
+
+      switch (child_id) {
+        case libwebm::kMkvProjectionPoseYaw:
+          projection_ptr->pose_yaw = static_cast<float>(value);
+          break;
+        case libwebm::kMkvProjectionPosePitch:
+          projection_ptr->pose_pitch = static_cast<float>(value);
+          break;
+        case libwebm::kMkvProjectionPoseRoll:
+          projection_ptr->pose_roll = static_cast<float>(value);
+          break;
+        default:
+          return false;
+      }
+    }
+
+    read_pos += child_size;
+    if (read_pos > end)
+      return false;
+  }
+
+  *projection = projection_ptr.release();
+  return true;
+}
+
 VideoTrack::VideoTrack(Segment* pSegment, long long element_start,
                        long long element_size)
-    : Track(pSegment, element_start, element_size), m_colour(NULL) {}
+    : Track(pSegment, element_start, element_size),
+      m_colour(NULL),
+      m_projection(NULL) {}
 
-VideoTrack::~VideoTrack() { delete m_colour; }
+VideoTrack::~VideoTrack() {
+  delete m_colour;
+  delete m_projection;
+}
 
 long VideoTrack::Parse(Segment* pSegment, const Info& info,
                        long long element_start, long long element_size,
@@ -5224,6 +5306,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   const long long stop = pos + s.size;
 
   Colour* colour = NULL;
+  Projection* projection = NULL;
 
   while (pos < stop) {
     long long id, size;
@@ -5274,6 +5357,9 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
     } else if (id == libwebm::kMkvColour) {
       if (!Colour::Parse(pReader, pos, size, &colour))
         return E_FILE_FORMAT_INVALID;
+    } else if (id == libwebm::kMkvProjection) {
+      if (!Projection::Parse(pReader, pos, size, &projection))
+        return E_FILE_FORMAT_INVALID;
     }
 
     pos += size;  // consume payload
@@ -5305,6 +5391,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
   pTrack->m_colour = colour;
+  pTrack->m_projection = projection;
 
   pResult = pTrack;
   return 0;  // success
@@ -5404,6 +5491,8 @@ long VideoTrack::Seek(long long time_ns, const BlockEntry*& pResult) const {
 }
 
 Colour* VideoTrack::GetColour() const { return m_colour; }
+
+Projection* VideoTrack::GetProjection() const { return m_projection; }
 
 long long VideoTrack::GetWidth() const { return m_width; }
 
