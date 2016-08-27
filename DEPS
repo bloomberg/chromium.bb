@@ -437,9 +437,6 @@ deps_os = {
     'src/third_party/apache-portable-runtime/src':
      Var('chromium_git') + '/external/apache-portable-runtime.git' + '@' + 'c76a8c4277e09a82eaa229e35246edea1ee0a6a1',
 
-    'src/third_party/appurify-python/src':
-     Var('chromium_git') + '/external/github.com/appurify/appurify-python.git' + '@' + 'ee7abd5c5ae3106f72b2a0b9d2cb55094688e867',
-
     'src/third_party/errorprone/lib':
       Var('chromium_git') + '/chromium/third_party/errorprone.git' + '@' + '0eea83b66343133b9c76b7d3288c30321818ebcf',
 
