@@ -1922,13 +1922,9 @@
     },
     "amenia-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "amenia"
-        ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        ]
     },
     "amenia-release-afdo": {
         "_template": "release-afdo-generate",

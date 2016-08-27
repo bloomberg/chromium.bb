@@ -1,7 +1,6 @@
 == chromeos ==
 amd64-generic-chromium-pfq (baremetal)
 amd64-generic-goofy-release (baremetal)
-amenia-release (gce_beefy)
 arkham-release (gce_beefy)
 arm-generic-chromium-pfq (baremetal)
 arm-generic_freon-chromium-pfq (baremetal)

@@ -13,17 +13,6 @@
       ]
     },
     {
-      "name": "amenia",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "reef"
-        }
-      ]
-    },
-    {
       "name": "arkham",
       "configs": [
         {
