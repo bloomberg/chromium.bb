@@ -4482,6 +4482,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE_UNPACKED" desc="The text to indicate that an extension is loaded as an unpacked extension, as is done by developers.">
           Unpacked extension
         </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE_WEBSTORE" desc="The text to indicate that an extension is from the Chrome Web Store.">
+          Chrome Web Store
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_VERSION" desc="The label above an extension's version.">
           Version
         </message>

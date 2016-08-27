@@ -85,6 +85,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_ITEM_SOURCE_SIDELOADED);
   source->AddLocalizedString("itemSourceUnpacked",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE_UNPACKED);
+  source->AddLocalizedString("itemSourceWebstore",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE_WEBSTORE);
   source->AddLocalizedString("itemVersion",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
   source->AddLocalizedString("itemAllowOnFileUrls",
@@ -170,6 +172,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item_list.css", IDR_MD_EXTENSIONS_ITEM_LIST_CSS);
   source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
   source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
+  source->AddResourcePath("item_source.html",
+                          IDR_MD_EXTENSIONS_ITEM_SOURCE_HTML);
+  source->AddResourcePath("item_source.js", IDR_MD_EXTENSIONS_ITEM_SOURCE_JS);
   source->AddResourcePath("pack_dialog.html",
                           IDR_MD_EXTENSIONS_PACK_DIALOG_HTML);
   source->AddResourcePath("pack_dialog.js", IDR_MD_EXTENSIONS_PACK_DIALOG_JS);

@@ -90,6 +90,12 @@ cr.define('extensions', function() {
     computeDependentEntry_: function(item) {
       return loadTimeData.getStringF('itemDependentEntry', item.name, item.id);
     },
+
+    /** @private */
+    computeSourceString_: function() {
+      return extensions.getItemSourceString(
+          extensions.getItemSource(this.data));
+    }
   });
 
   return {DetailView: DetailView};
