@@ -52,7 +52,8 @@
       }
 
       iron-dropdown .dropdown-item,
-      paper-dropdown-menu .dropdown-item {
+      paper-dropdown-menu .dropdown-item,
+      cr-shared-menu .dropdown-item {
         align-items: center;
         background: none;
         border: none;
@@ -80,11 +81,13 @@
       }
 
       iron-dropdown .dropdown-content .dropdown-item:not([disabled]),
+      cr-shared-menu .dropdown-item:not([disabled]),
       iron-dropdown .dropdown-content paper-item {
         @apply(--settings-actionable);
       }
 
-      iron-dropdown .dropdown-content .dropdown-item[disabled] {
+      iron-dropdown .dropdown-content .dropdown-item[disabled],
+      cr-shared-menu .dropdown-item[disabled] {
         opacity: var(--settings-disabled-opacity);
       }
 

@@ -68,16 +68,6 @@ Polymer({
   },
 
   /**
-   * Stops tap events on the language options menu, its trigger, or its items
-   * from bubbling up to the language itself. Tap events on the language are
-   * handled in onLanguageTap_.
-   * @param {!Event} e The tap event.
-   */
-  stopPropagationHandler_: function(e) {
-    e.stopPropagation();
-  },
-
-  /**
    * Handler for enabling or disabling spell check.
    * @param {!{target: Element, model: !{item: !LanguageState}}} e
    */
@@ -107,25 +97,23 @@ Polymer({
   },
 
   /**
-   * @param {number} index Index of the language in the list of languages.
-   * @param {!Object} change Polymer change object for languages.enabled.*.
-   * @return {boolean} True if the given language is the first one in the list
-   *     of languages.
+   * @param {!LanguageState} language
+   * @return {boolean} True if |language| is first in the list of enabled
+   *     languages. Used to hide the "Move up" option.
    * @private
    */
-  isFirstLanguage_: function(index, change) {
-    return index == 0;
+  isFirstLanguage_: function(language) {
+    return language == this.languages.enabled[0];
   },
 
   /**
-   * @param {number} index Index of the language in the list of languages.
-   * @param {!Object} change Polymer change object for languages.enabled.*.
-   * @return {boolean} True if the given language is the last one in the list of
-   *     languages.
+   * @param {!LanguageState} language
+   * @return {boolean} True if |language| is last in the list of enabled
+   *     languages. Used to hide the "Move down" option.
    * @private
    */
-  isLastLanguage_: function(index, change) {
-    return index == this.languages.enabled.length - 1;
+  isLastLanguage_: function(language) {
+    return language == this.languages.enabled.slice(-1)[0];
   },
 
   /**
@@ -138,38 +126,37 @@ Polymer({
 
   /**
    * Moves the language up in the list.
-   * @param {!{model: !{item: !LanguageState}}} e
    * @private
    */
-  onMoveUpTap_: function(e) {
-    this.languageHelper.moveLanguage(e.model.item.language.code, -1);
+  onMoveUpTap_: function() {
+    this.menu_.closeMenu();
+    this.languageHelper.moveLanguage(this.detailLanguage_.language.code, -1);
   },
 
   /**
    * Moves the language down in the list.
-   * @param {!{model: !{item: !LanguageState}}} e
    * @private
    */
-  onMoveDownTap_: function(e) {
-    this.languageHelper.moveLanguage(e.model.item.language.code, 1);
+  onMoveDownTap_: function() {
+    this.menu_.closeMenu();
+    this.languageHelper.moveLanguage(this.detailLanguage_.language.code, 1);
   },
 
   /**
    * Disables the language.
-   * @param {!{model: !{item: !LanguageState}}} e
    * @private
    */
-  onRemoveLanguageTap_: function(e) {
-    this.languageHelper.disableLanguage(e.model.item.language.code);
+  onRemoveLanguageTap_: function() {
+    this.menu_.closeMenu();
+    this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
   /**
    * Opens the Language Detail page for the language.
-   * @param {!{model: !{item: !LanguageState}}} e
    * @private
    */
-  onShowLanguageDetailTap_: function(e) {
-    this.detailLanguage_ = e.model.item;
+  onShowLanguageDetailTap_: function() {
+    this.menu_.closeMenu();
     settings.navigateTo(settings.Route.LANGUAGES_DETAIL);
   },
 
@@ -347,6 +334,27 @@ Polymer({
    */
   forceRenderList_: function(tagName) {
     this.$$(tagName).$$('iron-list').fire('iron-resize');
+  },
+
+  /**
+   * Opens or closes the shared menu at the location of the tapped item.
+   * @param {!Event} e
+   * @private
+   */
+  toggleMenu_: function(e) {
+    e.stopPropagation();  // Prevent the tap event from closing the menu.
+
+    this.detailLanguage_ =
+        /** @type {!{model: !{item: !LanguageState}}} */(e).model.item;
+
+    // Ensure the template has been stamped.
+    if (!this.menu_) {
+      this.$.menuTemplate.if = true;
+      this.$.menuTemplate.render();
+      this.menu_ = /** @type {CrSharedMenuElement} */(
+          this.$$('cr-shared-menu'));
+    }
+    this.menu_.toggleMenu(e.target);
   },
 });
 })();

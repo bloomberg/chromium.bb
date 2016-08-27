@@ -51,6 +51,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
     var languagesSection;
     var languagesPage;
+    var languagesCollapse;
     var languageHelper;
 
     /**
@@ -82,10 +83,10 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       advanced.set('pageVisibility.languages', true);
       Polymer.dom.flush();
 
-      languagesSection = this.getSection(advanced, 'languages');
-      assertTrue(!!languagesSection);
-      languagesPage = languagesSection.querySelector('settings-languages-page');
-      assertTrue(!!languagesPage);
+      languagesSection = assert(this.getSection(advanced, 'languages'));
+      languagesPage = assert(
+          languagesSection.querySelector('settings-languages-page'));
+      languagesCollapse = languagesPage.$.languagesCollapse;
 
       languageHelper = languagesPage.languageHelper;
       return languageHelper.whenReady();
@@ -108,8 +109,8 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       var actionButton;
 
       setup(function(done) {
-        var addLanguagesButton = languagesPage.$.languagesCollapse
-            .querySelector('.list-button:last-of-type');
+        var addLanguagesButton =
+            languagesCollapse.querySelector('.list-button:last-of-type');
         MockInteractions.tap(addLanguagesButton);
 
         // The page stamps the dialog and registers listeners asynchronously.
@@ -191,8 +192,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       });
     });
 
-    test('Should not set UI language', function() {
-      var languagesCollapse = languagesPage.$.languagesCollapse;
+    test('should not set UI language', function() {
       var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
           'paper-icon-button');
       assertTrue(!!languageOptionsDropdownTrigger);
@@ -200,7 +200,11 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
       // This shouldn't get called.
       languageHelper.setUILanguage = assertNotReached;
 
+      // Tap the menu trigger twice to open and close the menu.
       MockInteractions.tap(languageOptionsDropdownTrigger);
+      MockInteractions.tap(languageOptionsDropdownTrigger);
+
+      languageHelper.setUILanguage = languageHelper.__proto__.setUILanguage;
     });
 
     test('remove language', function() {
@@ -216,7 +220,6 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
         Polymer.dom.flush();
 
         // Find the new language item.
-        var languagesCollapse = languagesPage.$.languagesCollapse;
         var items = languagesCollapse.querySelectorAll('.list-item');
         var domRepeat = assert(
             languagesCollapse.querySelector('template[is="dom-repeat"]'));
@@ -227,10 +230,14 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
         // Open the menu and select Remove.
         MockInteractions.tap(item.querySelector('paper-icon-button'));
-        var removeMenuItem = assert(item.querySelector(
-            '.dropdown-content .dropdown-item:last-of-type'));
+
+        var languageMenu = assert(languagesPage.$$('cr-shared-menu'));
+        assertTrue(languageMenu.menuOpen);
+        var removeMenuItem = assert(languageMenu.querySelector(
+            '.dropdown-item:last-of-type'));
         assertFalse(removeMenuItem.disabled);
         MockInteractions.tap(removeMenuItem);
+        assertFalse(languageMenu.menuOpen);
 
         // We should go back down to the original number of enabled languages.
         return whenNumEnabledLanguagesBecomes(numEnabled).then(function() {
@@ -240,10 +247,11 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     });
 
     test('language detail', function() {
-      var languagesCollapse = languagesPage.$.languagesCollapse;
-      var languageDetailMenuItem = languagesCollapse.querySelectorAll(
-          '.dropdown-content .dropdown-item')[2];
-      assertTrue(!!languageDetailMenuItem);
+      var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
+          'paper-icon-button');
+      MockInteractions.tap(languageOptionsDropdownTrigger);
+      var languageDetailMenuItem = languagesPage.root.querySelectorAll(
+          'cr-shared-menu .dropdown-item')[2];
       MockInteractions.tap(languageDetailMenuItem);
 
       var languageDetailPage =

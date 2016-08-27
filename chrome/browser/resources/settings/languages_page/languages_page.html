@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
@@ -79,37 +80,8 @@
                 </div>
 </if>
                 <paper-icon-button id="more-[[item.language.code]]"
-                    icon="cr:more-vert" toggles
-                    active="{{item.optionsMenuOpened}}"
-                    on-tap="stopPropagationHandler_">
+                    icon="cr:more-vert" on-tap="toggleMenu_">
                 </paper-icon-button>
-                <iron-dropdown opened="{{item.optionsMenuOpened}}"
-                    horizontal-align="right" vertical-align="auto">
-                  <div class="dropdown-content"
-                      on-tap="stopPropagationHandler_">
-                    <button class="dropdown-item" role="option"
-                        on-tap="onMoveUpTap_"
-                        hidden="[[isFirstLanguage_(index,
-                                                   languages.enabled.*)]]">
-                      $i18n{moveUp}
-                    </button>
-                    <button class="dropdown-item" role="option"
-                        on-tap="onMoveDownTap_"
-                        hidden="[[isLastLanguage_(index,
-                                                  languages.enabled.*)]]">
-                      $i18n{moveDown}
-                    </button>
-                    <button class="dropdown-item" role="option"
-                        on-tap="onShowLanguageDetailTap_">
-                      $i18n{languageDetail}
-                    </button>
-                    <button class="dropdown-item" role="option"
-                        on-tap="onRemoveLanguageTap_"
-                        disabled="[[!item.removable]]">
-                      $i18n{removeLanguage}
-                    </button>
-                  </div>
-                </iron-dropdown>
               </div>
             </template>
             <div class="list-item list-button" on-tap="onAddLanguagesTap_">
@@ -193,6 +165,31 @@
           </div>
         </iron-collapse>
 </if>
+        <template is="dom-if" id="menuTemplate">
+          <cr-shared-menu>
+            <button class="dropdown-item" role="menuitem"
+                on-tap="onMoveUpTap_"
+                hidden="[[isFirstLanguage_(
+                    detailLanguage_, languages.enabled.*)]]">
+              $i18n{moveUp}
+            </button>
+            <button class="dropdown-item" role="menuitem"
+                on-tap="onMoveDownTap_"
+                hidden="[[isLastLanguage_(
+                    detailLanguage_, languages.enabled.*)]]">
+              $i18n{moveDown}
+            </button>
+            <button class="dropdown-item" role="menuitem"
+                on-tap="onShowLanguageDetailTap_">
+              $i18n{languageDetail}
+            </button>
+            <button class="dropdown-item" role="menuitem"
+                on-tap="onRemoveLanguageTap_"
+                disabled="[[!detailLanguage_.removable]]">
+              $i18n{removeLanguage}
+            </button>
+          </cr-shared-menu>
+        </template>
       </neon-animatable>
       <template is="dom-if" route-path="/languages/edit" no-search>
         <settings-subpage page-title="[[detailLanguage_.language.displayName]]">
