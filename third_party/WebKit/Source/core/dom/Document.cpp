@@ -1385,22 +1385,22 @@ void Document::setStateForNewFormElements(const Vector<String>& stateVector)
 
 FrameView* Document::view() const
 {
-    return m_frame ? m_frame->view() : 0;
+    return m_frame ? m_frame->view() : nullptr;
 }
 
 Page* Document::page() const
 {
-    return m_frame ? m_frame->page() : 0;
+    return m_frame ? m_frame->page() : nullptr;
 }
 
 FrameHost* Document::frameHost() const
 {
-    return m_frame ? m_frame->host() : 0;
+    return m_frame ? m_frame->host() : nullptr;
 }
 
 Settings* Document::settings() const
 {
-    return m_frame ? m_frame->settings() : 0;
+    return m_frame ? m_frame->settings() : nullptr;
 }
 
 Range* Document::createRange()
@@ -2359,7 +2359,7 @@ bool Document::isFrameSet() const
 
 ScriptableDocumentParser* Document::scriptableDocumentParser() const
 {
-    return parser() ? parser()->asScriptableDocumentParser() : 0;
+    return parser() ? parser()->asScriptableDocumentParser() : nullptr;
 }
 
 void Document::open(Document* enteredDocument, ExceptionState& exceptionState)
@@ -3513,7 +3513,7 @@ void Document::activeChainNodeDetached(Element& element)
     while (activeNode && activeNode->isElementNode() && !activeNode->layoutObject())
         activeNode = FlatTreeTraversal::parent(*activeNode);
 
-    m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
+    m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : nullptr;
 }
 
 const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const
@@ -5650,12 +5650,12 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     setHoverNode(newHoverNode);
 
     // We have two different objects. Fetch their layoutObjects.
-    LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->layoutObject() : 0;
-    LayoutObject* newHoverObj = newHoverNode ? newHoverNode->layoutObject() : 0;
+    LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->layoutObject() : nullptr;
+    LayoutObject* newHoverObj = newHoverNode ? newHoverNode->layoutObject() : nullptr;
 
     // Locate the common ancestor layout object for the two layoutObjects.
     LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
-    Node* ancestorNode(ancestor ? ancestor->node() : 0);
+    Node* ancestorNode(ancestor ? ancestor->node() : nullptr);
 
     HeapVector<Member<Node>, 32> nodesToRemoveFromChain;
     HeapVector<Member<Node>, 32> nodesToAddToChain;
