@@ -1226,16 +1226,24 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      * @param securityLevel The security level for which the color will be returned.
      * @param provider The {@link ToolbarDataProvider}.
      * @param resources The Resources for the Context.
+     * @param isOmniboxOpaque Whether the omnibox is an opaque color.
      * @return The {@link ColorStateList} to use to tint the security state icon.
      */
-    public static ColorStateList getColorStateList(
-            int securityLevel, ToolbarDataProvider provider, Resources resources) {
+    public static ColorStateList getColorStateList(int securityLevel, ToolbarDataProvider provider,
+            Resources resources, boolean isOmniboxOpaque) {
         ColorStateList list = null;
         int color = provider.getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
         if (provider.isIncognito() || needLightIcon) {
+            // For a dark theme color, use light icons.
             list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
+        } else if (!ColorUtils.isUsingDefaultToolbarColor(resources, color) && !isOmniboxOpaque) {
+            // For theme colors which are not dark and are also not
+            // light enough to warrant an opaque URL bar, use dark
+            // icons.
+            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
         } else {
+            // For the default toolbar color, use a green or red icon.
             if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR) {
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
             } else if (securityLevel == ConnectionSecurityLevel.SECURE
@@ -1261,8 +1269,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(id);
-            mSecurityButton.setTint(
-                    getColorStateList(securityLevel, getToolbarDataProvider(), getResources()));
+            mSecurityButton.setTint(getColorStateList(securityLevel, getToolbarDataProvider(),
+                    getResources(), ColorUtils.shouldUseOpaqueTextboxBackground(
+                            getToolbarDataProvider().getPrimaryColor())));
         }
 
         boolean shouldEmphasizeHttpsScheme = shouldEmphasizeHttpsScheme();
