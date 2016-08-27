@@ -13,7 +13,7 @@ namespace media {
 // Name of the ClearKey CDM library.
 const char kClearKeyCdmLibraryName[] = "clearkeycdm";
 
-// Note: This file must be in sync with cdm_paths.{gypi|gni}
+// Note: This file must be in sync with cdm_paths.gni.
 // TODO(xhwang): Improve how we enable platform specific path. See
 // http://crbug.com/468584
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && \

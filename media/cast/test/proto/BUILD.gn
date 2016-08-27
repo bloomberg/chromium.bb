@@ -4,7 +4,6 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: media/cast/cast.gyp:cast_logging_proto
 source_set("proto") {
   public_deps = [
     ":cast_network_simulation_proto",

@@ -356,7 +356,7 @@ component("media") {
       "//media/base/android:media_jni_headers",
     ]
 
-    # Only 64 bit builds are using android-21 NDK library, check common.gypi
+    # Only 64 bit builds are using the android-21 NDK library.
     if (current_cpu == "arm64" || current_cpu == "x64" ||
         current_cpu == "mips64el") {
       sources += [
@@ -492,7 +492,7 @@ component("media") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//crypto",
-    "//crypto:platform",  # TODO(ajwong): This used to be provided by crypto.gyp via export_dependent_settings
+    "//crypto:platform",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//skia",

@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 # This template defines a CDM adapter target. Just use this as you would a
-# normal target and everything should work correctly. If GYP, you would instead
-# depend on media/media_cdm_adapter.gyp:cdmadapter which would in turn modify
-# your target with direct_dependent_settings.
+# normal target and everything should work correctly.
 template("ppapi_cdm_adapter") {
   if (is_mac || is_linux) {
     _target_type = "loadable_module"

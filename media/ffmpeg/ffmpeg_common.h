@@ -23,8 +23,8 @@
 // Include FFmpeg header files.
 extern "C" {
 // Disable deprecated features which result in spammy compile warnings.  This
-// list of defines must mirror those in the 'defines' section of BUILD.gn file &
-// ffmpeg.gyp file or the headers below will generate different structures!
+// list of defines must mirror those in the 'defines' section of FFmpeg's
+// BUILD.gn file or the headers below will generate different structures!
 #define FF_API_CONVERGENCE_DURATION 0
 // Upstream libavcodec/utils.c still uses the deprecated
 // av_dup_packet(), causing deprecation warnings.

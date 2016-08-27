@@ -8,9 +8,6 @@ import("//media/cdm/ppapi/cdm_paths.gni")
 import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//media/media_options.gni")
 
-# The GYP version supports build flags "use_fake_video_decoder" and
-# "use_vpx". These should be added here if necessary but its not clear if
-# they are required any more.
 shared_library("clearkeycdm") {
   output_dir = "$root_out_dir/$clearkey_cdm_path"
   sources = [
