@@ -131,6 +131,7 @@ std::unique_ptr<BackgroundTracingConfig> CreateReactiveConfig() {
         new base::DictionaryValue());
     rules_dict->SetString("rule", "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
     rules_dict->SetString("trigger_name", "reactive_test");
+    rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", true);
     rules_dict->SetString("category", "BENCHMARK");
     rules_list->Append(std::move(rules_dict));
   }
@@ -1286,6 +1287,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
       rules_dict->SetString("rule",
                             "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
       rules_dict->SetString("trigger_name", "reactive_test1");
+      rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", true);
+      rules_dict->SetInteger("trigger_delay", 10);
       rules_dict->SetString("category", "BENCHMARK");
       rules_list->Append(std::move(rules_dict));
     }
@@ -1295,6 +1298,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
       rules_dict->SetString("rule",
                             "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
       rules_dict->SetString("trigger_name", "reactive_test2");
+      rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", true);
+      rules_dict->SetInteger("trigger_delay", 10);
       rules_dict->SetString("category", "BENCHMARK");
       rules_list->Append(std::move(rules_dict));
     }
@@ -1373,6 +1378,81 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     // third trigger to trigger again, fails as it is still gathering.
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
         handle, base::Bind(&StartedFinalizingCallback, base::Closure(), false));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+// This tests that reactive mode only terminates with a repeated trigger
+// if the config specifies that it should.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReactiveSecondTriggerIgnored) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    base::DictionaryValue dict;
+    dict.SetString("mode", "REACTIVE_TRACING_MODE");
+
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
+      rules_dict->SetString("rule",
+                            "TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL");
+      rules_dict->SetString("trigger_name", "reactive_test");
+      rules_dict->SetBoolean("stop_tracing_on_repeated_reactive", false);
+      rules_dict->SetInteger("trigger_delay", 10);
+      rules_dict->SetString("category", "BENCHMARK");
+      rules_list->Append(std::move(rules_dict));
+    }
+    dict.Set("configs", std::move(rules_list));
+
+    std::unique_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+
+    BackgroundTracingManager::TriggerHandle trigger_handle =
+        BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "reactive_test");
+
+    EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        std::move(config), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING));
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    base::RunLoop wait_for_tracing_enabled;
+    static_cast<BackgroundTracingManagerImpl*>(
+        BackgroundTracingManager::GetInstance())
+        ->SetTracingEnabledCallbackForTesting(
+            wait_for_tracing_enabled.QuitClosure());
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        trigger_handle,
+        base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    wait_for_tracing_enabled.Run();
+
+    // This is expected to fail since we already triggered.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        trigger_handle,
+        base::Bind(&StartedFinalizingCallback, base::Closure(), false));
+
+    // Since we specified a delay in the scenario, we should still be tracing
+    // at this point.
+    EXPECT_TRUE(
+        BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
+
+    BackgroundTracingManager::GetInstance()->FireTimerForTesting();
+
+    EXPECT_FALSE(
+        BackgroundTracingManagerImpl::GetInstance()->IsTracingForTesting());
 
     run_loop.Run();
 

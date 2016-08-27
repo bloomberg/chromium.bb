@@ -23,6 +23,8 @@ const char kConfigCategoryKey[] = "category";
 const char kConfigRuleTriggerNameKey[] = "trigger_name";
 const char kConfigRuleTriggerDelay[] = "trigger_delay";
 const char kConfigRuleTriggerChance[] = "trigger_chance";
+const char kConfigRuleStopTracingOnRepeatedReactive[] =
+    "stop_tracing_on_repeated_reactive";
 
 const char kConfigRuleHistogramNameKey[] = "histogram_name";
 const char kConfigRuleHistogramValueOldKey[] = "histogram_value";
@@ -59,11 +61,13 @@ namespace content {
 BackgroundTracingRule::BackgroundTracingRule()
     : trigger_chance_(1.0),
       trigger_delay_(-1),
+      stop_tracing_on_repeated_reactive_(false),
       category_preset_(BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET) {}
 
 BackgroundTracingRule::BackgroundTracingRule(int trigger_delay)
     : trigger_chance_(1.0),
       trigger_delay_(trigger_delay),
+      stop_tracing_on_repeated_reactive_(false),
       category_preset_(BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET) {}
 
 BackgroundTracingRule::~BackgroundTracingRule() {}
@@ -85,6 +89,11 @@ void BackgroundTracingRule::IntoDict(base::DictionaryValue* dict) const {
   if (trigger_delay_ != -1)
     dict->SetInteger(kConfigRuleTriggerDelay, trigger_delay_);
 
+  if (stop_tracing_on_repeated_reactive_) {
+    dict->SetBoolean(kConfigRuleStopTracingOnRepeatedReactive,
+                     stop_tracing_on_repeated_reactive_);
+  }
+
   if (category_preset_ != BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET) {
     dict->SetString(
         kConfigCategoryKey,
@@ -95,6 +104,8 @@ void BackgroundTracingRule::IntoDict(base::DictionaryValue* dict) const {
 void BackgroundTracingRule::Setup(const base::DictionaryValue* dict) {
   dict->GetDouble(kConfigRuleTriggerChance, &trigger_chance_);
   dict->GetInteger(kConfigRuleTriggerDelay, &trigger_delay_);
+  dict->GetBoolean(kConfigRuleStopTracingOnRepeatedReactive,
+                   &stop_tracing_on_repeated_reactive_);
 }
 
 namespace {

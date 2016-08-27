@@ -329,9 +329,16 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
       StartTracing(triggered_rule->category_preset(),
                    base::trace_event::RECORD_UNTIL_FULL);
     } else {
-      // Reactive configs that trigger again while tracing should just
+      // Some reactive configs that trigger again while tracing should just
       // end right away (to not capture multiple navigations, for example).
-      trace_delay = -1;
+      // For others we just want to ignore the repeated trigger.
+      if (triggered_rule->stop_tracing_on_repeated_reactive()) {
+        trace_delay = -1;
+      } else {
+        if (!callback.is_null())
+          callback.Run(false);
+        return;
+      }
     }
   } else {
     // In preemptive mode, a trigger starts finalizing a trace if one is
