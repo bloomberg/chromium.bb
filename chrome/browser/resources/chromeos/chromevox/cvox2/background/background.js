@@ -381,7 +381,7 @@ Background.prototype = {
       // Iframes, when focused, causes the child webArea to fire focus event.
       // This can result in getting stuck when navigating backward.
       if (actionNode.role != RoleType.iframe && !actionNode.state.focused &&
-          !AutomationPredicate.container(actionNode))
+          !AutomationPredicate.structuralContainer(actionNode))
         actionNode.focus();
     }
     var prevRange = this.currentRange_;

@@ -1155,3 +1155,17 @@ TEST_F('BackgroundTest', 'EditableNavigation', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
+  this.runWithLoadedTree(function(root) {/*!
+    <p>start</p>
+    <input type="text"></input>
+  */}, function(root) {
+    this.listenOnce(root, 'focus', function(e) {
+      var focus = ChromeVoxState.instance.currentRange.start.node;
+      assertEquals(RoleType.textField, focus.role);
+      assertTrue(focus.state.focused);
+    });
+    doCmd('nextEditText')();
+  });
+});
