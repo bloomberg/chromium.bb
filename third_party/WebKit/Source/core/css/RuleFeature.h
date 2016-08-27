@@ -154,8 +154,8 @@ private:
 
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
-        AtomicString id;
-        AtomicString tagName;
+        Vector<AtomicString> ids;
+        Vector<AtomicString> tagNames;
         unsigned maxDirectAdjacentSelectors = UINT_MAX;
         bool customPseudoElement = false;
         bool hasBeforeOrAfter = false;

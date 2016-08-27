@@ -297,11 +297,11 @@ ALWAYS_INLINE InvalidationSet& RuleFeatureSet::ensurePseudoInvalidationSet(CSSSe
 bool RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, InvalidationSetFeatures& features)
 {
     if (selector.match() == CSSSelector::Tag && selector.tagQName().localName() != starAtom) {
-        features.tagName = selector.tagQName().localName();
+        features.tagNames.append(selector.tagQName().localName());
         return true;
     }
     if (selector.match() == CSSSelector::Id) {
-        features.id = selector.value();
+        features.ids.append(selector.value());
         return true;
     }
     if (selector.match() == CSSSelector::Class) {
@@ -526,10 +526,10 @@ void RuleFeatureSet::addFeaturesToInvalidationSet(InvalidationSet& invalidationS
     if (features.contentPseudoCrossing || features.forceSubtree)
         return;
 
-    if (!features.id.isEmpty())
-        invalidationSet.addId(features.id);
-    if (!features.tagName.isEmpty())
-        invalidationSet.addTagName(features.tagName);
+    for (const auto& id : features.ids)
+        invalidationSet.addId(id);
+    for (const auto& tagName : features.tagNames)
+        invalidationSet.addTagName(tagName);
     for (const auto& className : features.classes)
         invalidationSet.addClass(className);
     for (const auto& attribute : features.attributes)

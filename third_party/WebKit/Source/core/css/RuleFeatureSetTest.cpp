@@ -211,12 +211,30 @@ public:
         EXPECT_TRUE(ids.contains(id));
     }
 
+    void expectIdsInvalidation(const AtomicString& firstId, const AtomicString& secondId, InvalidationSetVector& invalidationSets)
+    {
+        EXPECT_EQ(1u, invalidationSets.size());
+        HashSet<AtomicString> ids = idSet(*invalidationSets[0]);
+        EXPECT_EQ(2u, ids.size());
+        EXPECT_TRUE(ids.contains(firstId));
+        EXPECT_TRUE(ids.contains(secondId));
+    }
+
     void expectTagNameInvalidation(const AtomicString& tagName, InvalidationSetVector& invalidationSets)
     {
         EXPECT_EQ(1u, invalidationSets.size());
         HashSet<AtomicString> tagNames = tagNameSet(*invalidationSets[0]);
         EXPECT_EQ(1u, tagNames.size());
         EXPECT_TRUE(tagNames.contains(tagName));
+    }
+
+    void expectTagNamesInvalidation(const AtomicString& firstTagName, const AtomicString& secondTagName, InvalidationSetVector& invalidationSets)
+    {
+        EXPECT_EQ(1u, invalidationSets.size());
+        HashSet<AtomicString> tagNames = tagNameSet(*invalidationSets[0]);
+        EXPECT_EQ(2u, tagNames.size());
+        EXPECT_TRUE(tagNames.contains(firstTagName));
+        EXPECT_TRUE(tagNames.contains(secondTagName));
     }
 
     void expectAttributeInvalidation(const AtomicString& attribute, InvalidationSetVector& invalidationSets)
@@ -322,6 +340,25 @@ TEST_F(RuleFeatureSetTest, any)
     collectInvalidationSetsForClass(invalidationLists, "w");
     expectSelfInvalidation(invalidationLists.descendants);
     expectNoInvalidation(invalidationLists.siblings);
+}
+
+
+TEST_F(RuleFeatureSetTest, anyIdDescendant)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".a :-webkit-any(#b, #c)"));
+
+    InvalidationLists invalidationLists;
+    collectInvalidationSetsForClass(invalidationLists, "a");
+    expectIdsInvalidation("b", "c", invalidationLists.descendants);
+}
+
+TEST_F(RuleFeatureSetTest, anyTagDescendant)
+{
+    EXPECT_EQ(RuleFeatureSet::SelectorMayMatch, collectFeatures(".a :-webkit-any(span, div)"));
+
+    InvalidationLists invalidationLists;
+    collectInvalidationSetsForClass(invalidationLists, "a");
+    expectTagNamesInvalidation("span", "div", invalidationLists.descendants);
 }
 
 TEST_F(RuleFeatureSetTest, siblingAny)
