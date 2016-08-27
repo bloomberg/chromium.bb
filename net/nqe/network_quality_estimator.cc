@@ -177,6 +177,18 @@ double GetDoubleValueForVariationParamWithDefaultValue(
   return variations_value;
 }
 
+// Returns the variation value for |parameter_name|. If the value is
+// unavailable, |default_value| is returned.
+std::string GetStringValueForVariationParamWithDefaultValue(
+    const std::map<std::string, std::string>& variation_params,
+    const std::string& parameter_name,
+    const std::string& default_value) {
+  const auto it = variation_params.find(parameter_name);
+  if (it == variation_params.end())
+    return default_value;
+  return it->second;
+}
+
 // Returns the algorithm that should be used for computing effective connection
 // type based on field trial params. Returns an empty string if a valid
 // algorithm paramter is not present in the field trial params.
@@ -384,6 +396,12 @@ NetworkQualityEstimator::NetworkQualityEstimator(
               variation_params,
               "correlation_logging_probability",
               0.0)),
+      forced_effective_connection_type_set_(
+          !GetStringValueForVariationParamWithDefaultValue(
+               variation_params,
+               "force_effective_connection_type",
+               "")
+               .empty()),
       weak_ptr_factory_(this) {
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
@@ -432,6 +450,20 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(15));
   accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(30));
   accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(60));
+
+  if (forced_effective_connection_type_set_) {
+    std::string forced_value = GetStringValueForVariationParamWithDefaultValue(
+        variation_params, "force_effective_connection_type",
+        GetNameForEffectiveConnectionType(EFFECTIVE_CONNECTION_TYPE_UNKNOWN));
+    DCHECK(!forced_value.empty());
+    bool effective_connection_type_available =
+        GetEffectiveConnectionTypeForName(forced_value,
+                                          &forced_effective_connection_type_);
+    DCHECK(effective_connection_type_available);
+
+    // Silence unused variable warning in release builds.
+    (void)effective_connection_type_available;
+  }
 }
 
 void NetworkQualityEstimator::ObtainOperatingParams(
@@ -1221,6 +1253,9 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     NetworkQualityEstimator::MetricUsage downstream_throughput_kbps_metric)
     const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (forced_effective_connection_type_set_)
+    return forced_effective_connection_type_;
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.

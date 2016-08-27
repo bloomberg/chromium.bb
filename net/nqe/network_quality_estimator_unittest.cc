@@ -2311,4 +2311,46 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   EXPECT_EQ(0u, observer.get_notification_received_and_reset());
 }
 
+// Tests that the value of the effective connection type can be forced through
+// field trial parameters.
+TEST(NetworkQualityEstimatorTest,
+     ForceEffectiveConnectionTypeThroughFieldTrial) {
+  for (int i = 0; i < EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    std::map<std::string, std::string> variation_params;
+    variation_params["force_effective_connection_type"] =
+        GetNameForEffectiveConnectionType(
+            static_cast<EffectiveConnectionType>(i));
+    TestNetworkQualityEstimator estimator(variation_params);
+    EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
+
+    TestEffectiveConnectionTypeObserver observer;
+    estimator.AddEffectiveConnectionTypeObserver(&observer);
+
+    TestDelegate test_delegate;
+    TestURLRequestContext context(true);
+    context.set_network_quality_estimator(&estimator);
+    context.Init();
+
+    EXPECT_EQ(0U, observer.effective_connection_types().size());
+
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+    request->Start();
+    base::RunLoop().Run();
+
+    size_t expected_count = static_cast<EffectiveConnectionType>(i) ==
+                                    EFFECTIVE_CONNECTION_TYPE_UNKNOWN
+                                ? 0
+                                : 1;
+    ASSERT_EQ(expected_count, observer.effective_connection_types().size());
+    if (expected_count == 1) {
+      EffectiveConnectionType last_notified_type =
+          observer.effective_connection_types().at(
+              observer.effective_connection_types().size() - 1);
+      EXPECT_EQ(i, last_notified_type);
+    }
+  }
+}
+
 }  // namespace net

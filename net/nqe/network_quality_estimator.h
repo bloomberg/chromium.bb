@@ -616,6 +616,12 @@ class NET_EXPORT NetworkQualityEstimator
   // Stores the qualities of different networks.
   std::unique_ptr<nqe::internal::NetworkQualityStore> network_quality_store_;
 
+  // True if effective connection type value has been forced via variation
+  // parameters. If set to true, GetEffectiveConnectionType() will always return
+  // |forced_effective_connection_type_|.
+  const bool forced_effective_connection_type_set_;
+  EffectiveConnectionType forced_effective_connection_type_;
+
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
