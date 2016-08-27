@@ -108,8 +108,10 @@ class SecurityStateModel {
     int cert_id;
     // The security strength, in bits, of the SSL cipher suite. In late
     // 2015, 128 is considered the minimum.
-    // 0 means the connection is not encrypted.
-    // -1 means the security strength is unknown.
+    //
+    // 0 means the connection uses HTTPS but is not encrypted.  -1 means
+    // the security strength is unknown or the connection does not use
+    // HTTPS.
     int security_bits;
     // Information about the SSL connection, such as protocol and
     // ciphersuite. See ssl_connection_flags.h in net.
