@@ -978,6 +978,7 @@
       'common/system/tray/tray_details_view_unittest.cc',
       'common/system/update/tray_update_unittest.cc',
       'common/system/user/tray_user_unittest.cc',
+      'common/wm/container_finder_unittest.cc',
       'common/wm/overview/cleanup_animation_observer_unittest.cc',
       'content/display/screen_orientation_controller_chromeos_unittest.cc',
       'content/keyboard_overlay/keyboard_overlay_delegate_unittest.cc',

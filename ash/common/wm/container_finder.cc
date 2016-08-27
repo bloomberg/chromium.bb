@@ -60,10 +60,11 @@ WmWindow* GetContainerFromAlwaysOnTopController(WmWindow* root,
 }  // namespace
 
 WmWindow* GetContainerForWindow(WmWindow* window) {
-  WmWindow* container = window->GetParent();
-  while (container && container->GetType() != ui::wm::WINDOW_TYPE_UNKNOWN)
-    container = container->GetParent();
-  return container;
+  WmWindow* parent = window->GetParent();
+  // The first parent with an explicit shell window ID is the container.
+  while (parent && parent->GetShellWindowId() == kShellWindowId_Invalid)
+    parent = parent->GetParent();
+  return parent;
 }
 
 WmWindow* GetDefaultParent(WmWindow* context,

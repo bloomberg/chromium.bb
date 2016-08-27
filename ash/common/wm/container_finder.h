@@ -17,7 +17,7 @@ class WmWindow;
 
 namespace wm {
 
-// Returns the first ancestor of |window| that has a known type.
+// Returns the first ancestor of |window| that has a known container ID.
 ASH_EXPORT WmWindow* GetContainerForWindow(WmWindow* window);
 
 // Returns the parent to add |window| to in |context|. This is generally
