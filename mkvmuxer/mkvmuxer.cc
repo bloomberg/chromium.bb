@@ -1379,6 +1379,7 @@ bool VideoTrack::SetColour(const Colour& colour) {
   colour_ptr->primaries = colour.primaries;
   colour_ptr->max_cll = colour.max_cll;
   colour_ptr->max_fall = colour.max_fall;
+  delete colour_;
   colour_ = colour_ptr.release();
   return true;
 }
