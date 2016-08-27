@@ -28,13 +28,13 @@ cr.define('cr.ui', function() {
 
   /**
    * Bubble attachment side.
-   * @enum {string}
+   * @enum {number}
    */
   Bubble.Attachment = {
-    RIGHT: 'bubble-right',
-    LEFT: 'bubble-left',
-    TOP: 'bubble-top',
-    BOTTOM: 'bubble-bottom'
+    RIGHT: 0,
+    LEFT: 1,
+    TOP: 2,
+    BOTTOM: 3
   };
 
   Bubble.prototype = {
@@ -134,26 +134,13 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Sets the attachment of the bubble.
-     * @param {!Attachment} attachment Bubble attachment.
-     */
-    setAttachment_: function(attachment) {
-      for (var k in Bubble.Attachment) {
-        var v = Bubble.Attachment[k];
-        this.classList.toggle(v, v == attachment);
-      }
-    },
-
-    /**
      * Shows the bubble for given anchor element.
      * @param {!Object} pos Bubble position (left, top, right, bottom in px).
-     * @param {!Attachment} attachment Bubble attachment (on which side of the
-     *     specified position it should be displayed).
      * @param {HTMLElement} opt_content Content to show in bubble.
      *     If not specified, bubble element content is shown.
      * @private
      */
-    showContentAt_: function(pos, attachment, opt_content) {
+    showContentAt_: function(pos, opt_content) {
       this.style.top = this.style.left = this.style.right = this.style.bottom =
           'auto';
       for (var k in pos) {
@@ -164,7 +151,6 @@ cr.define('cr.ui', function() {
         this.innerHTML = '';
         this.appendChild(opt_content);
       }
-      this.setAttachment_(attachment);
       this.hidden = false;
       this.classList.remove('faded');
     },
@@ -203,6 +189,7 @@ cr.define('cr.ui', function() {
 
       if (opt_padding == undefined)
         opt_padding = DEFAULT_PADDING;
+      opt_padding += 10;
 
       var origin = cr.ui.login.DisplayManager.getPosition(el);
       var offset = opt_offset == undefined ?
@@ -252,7 +239,7 @@ cr.define('cr.ui', function() {
       }
 
       this.anchor_ = el;
-      this.showContentAt_(pos, attachment, opt_content);
+      this.showContentAt_(pos, opt_content);
     },
 
     /**
