@@ -373,6 +373,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
+        'texturesize.html',
+        ['mac', ('amd', 0x679e)], bug=640506)
+    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
         'textureprojlodoffset.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
