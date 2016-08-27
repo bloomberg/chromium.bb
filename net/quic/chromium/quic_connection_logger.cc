@@ -119,8 +119,12 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
   base::ListValue* missing = new base::ListValue();
   dict->Set("missing_packets", missing);
   if (frame->missing) {
-    for (QuicPacketNumber packet : frame->packets)
-      missing->AppendString(base::Uint64ToString(packet));
+    for (const Interval<QuicPacketNumber>& interval : frame->packets) {
+      for (QuicPacketNumber packet = interval.min(); packet < interval.max();
+           ++packet) {
+        missing->AppendString(base::Uint64ToString(packet));
+      }
+    }
   } else if (!frame->packets.Empty()) {
     // V34 and above express acked packets, but only print
     // missing packets, because it's typically a shorter list.
@@ -527,32 +531,35 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   const PacketNumberQueue& missing_packets = frame.packets;
   PacketNumberQueue::const_iterator it =
       missing_packets.lower_bound(largest_received_missing_packet_number_);
-  if (it == missing_packets.end())
+  if (it == missing_packets.end() ||
+      largest_received_missing_packet_number_ == missing_packets.Max()) {
     return;
+  }
 
-  if (*it == largest_received_missing_packet_number_) {
-    ++it;
-    if (it == missing_packets.end())
-      return;
-  }
   // Scan through the list and log consecutive ranges of missing packets.
-  size_t num_consecutive_missing_packets = 0;
-  QuicPacketNumber previous_missing_packet = *it - 1;
-  while (it != missing_packets.end()) {
-    if (previous_missing_packet == *it - 1) {
-      ++num_consecutive_missing_packets;
-    } else {
-      DCHECK_NE(0u, num_consecutive_missing_packets);
-      UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
-      // Make sure this packet it included in the count.
-      num_consecutive_missing_packets = 1;
+  size_t num_consecutive_missing_packets = 1;
+  QuicPacketNumber previous_missing_packet =
+      largest_received_missing_packet_number_;
+  for (; it != missing_packets.end(); ++it) {
+    // Account for case where first interval starts below
+    // largest_received_missing_packet_number_.
+    QuicPacketNumber interval_min =
+        std::max(previous_missing_packet + 1, it->min());
+    DCHECK_LE(interval_min, it->max());
+
+    size_t interval_len = it->max() - interval_min;
+    if (interval_len == 0) {
+      continue;
     }
-    previous_missing_packet = *it;
-    ++it;
+    if (interval_min == previous_missing_packet + 1) {
+      num_consecutive_missing_packets += interval_len;
+    } else {
+      UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
+      num_consecutive_missing_packets = interval_len;
+    }
+    previous_missing_packet = it->max() - 1;
   }
-  if (num_consecutive_missing_packets != 0) {
-    UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
-  }
+  UpdatePacketGapSentHistogram(num_consecutive_missing_packets);
   largest_received_missing_packet_number_ = missing_packets.Max();
 }
 
