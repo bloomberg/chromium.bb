@@ -237,7 +237,6 @@ weston_config_section_get_color(struct weston_config_section *section,
 		*color = 0;
 		return 0;
 	} else if (len != 8 && len != 10) {
-		fprintf(stderr, "string '%s' is length %d\n", entry->value, len);
 		*color = default_color;
 		errno = EINVAL;
 		return -1;
