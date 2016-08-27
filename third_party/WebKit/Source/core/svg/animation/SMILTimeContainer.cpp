@@ -460,7 +460,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
         copyToVector(*entry.value, scheduledAnimationsInSameGroup);
         std::sort(scheduledAnimationsInSameGroup.begin(), scheduledAnimationsInSameGroup.end(), PriorityCompare(elapsed));
 
-        SVGSMILElement* resultElement = nullptr;
+        AnimationsVector sandwich;
         for (const auto& itAnimation : scheduledAnimationsInSameGroup) {
             SVGSMILElement* animation = itAnimation.get();
             ASSERT(animation->timeContainer() == this);
@@ -468,17 +468,11 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
             ASSERT(animation->hasValidAttributeName());
             ASSERT(animation->hasValidAttributeType());
 
-            // Results are accumulated to the first animation that animates and contributes to a particular element/attribute pair.
-            if (!resultElement) {
-                resultElement = animation;
-                resultElement->lockAnimatedType();
-            }
-
-            // This will calculate the contribution from the animation and add it to the resultElement.
-            if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation) {
-                resultElement->unlockAnimatedType();
-                resultElement->clearAnimatedType();
-                resultElement = nullptr;
+            // This will calculate the contribution from the animation and update timing.
+            if (animation->progress(elapsed, seekToTime)) {
+                sandwich.append(animation);
+            } else {
+                animation->clearAnimatedType();
             }
 
             SMILTime nextFireTime = animation->nextProgressTime();
@@ -486,9 +480,21 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime)
                 earliestFireTime = std::min(nextFireTime, earliestFireTime);
         }
 
-        if (resultElement) {
+        if (!sandwich.isEmpty()) {
+            // Results are accumulated to the first animation that animates and
+            // contributes to a particular element/attribute pair.
+            // Only reset the animated type to the base value once for
+            // the lowest priority animation that animates and
+            // contributes to a particular element/attribute pair.
+            SVGSMILElement* resultElement = sandwich.first();
+            resultElement->resetAnimatedType();
+
+            // Go through the sandwich from lowest prio to highest and generate
+            // the animated value (if any.)
+            for (const auto& animation : sandwich)
+                animation->updateAnimatedValue(resultElement);
+
             animationsToApply.append(resultElement);
-            resultElement->unlockAnimatedType();
         }
     }
     m_scheduledAnimations.removeAll(invalidKeys);

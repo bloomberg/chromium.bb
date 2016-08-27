@@ -1123,9 +1123,8 @@ bool SVGSMILElement::isContributing(SMILTime elapsed) const
     return (m_activeState == Active && (fill() == FillFreeze || elapsed <= m_interval.begin + repeatingDuration())) || m_activeState == Frozen;
 }
 
-bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, bool seekToTime)
+bool SVGSMILElement::progress(SMILTime elapsed, bool seekToTime)
 {
-    ASSERT(resultElement);
     ASSERT(m_timeContainer);
     ASSERT(m_isWaitingForFirstInterval || m_interval.begin.isFinite());
 
@@ -1140,15 +1139,9 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
 
     if (elapsed < m_interval.begin) {
         ASSERT(m_activeState != Active);
-        bool isFrozen = (m_activeState == Frozen);
-        if (isFrozen) {
-            if (this == resultElement)
-                resetAnimatedType();
-            updateAnimation(m_lastPercent, m_lastRepeat, resultElement);
-        }
         m_nextProgressTime = m_interval.begin;
         // If the animation is frozen, it's still contributing.
-        return isFrozen;
+        return m_activeState == Frozen;
     }
 
     m_previousIntervalBegin = m_interval.begin;
@@ -1176,10 +1169,6 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     m_activeState = determineActiveState(elapsed);
     bool animationIsContributing = isContributing(elapsed);
 
-    // Only reset the animated type to the base value once for the lowest priority animation that animates and contributes to a particular element/attribute pair.
-    if (this == resultElement && animationIsContributing)
-        resetAnimatedType();
-
     if (animationIsContributing) {
         if (oldActiveState == Inactive || restartedInterval == DidRestartInterval) {
             smilBeginEventSender().dispatchEventSoon(this);
@@ -1189,7 +1178,6 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
         if (repeat && repeat != m_lastRepeat)
             dispatchRepeatEvents(repeat);
 
-        updateAnimation(percent, repeat, resultElement);
         m_lastPercent = percent;
         m_lastRepeat = repeat;
     }

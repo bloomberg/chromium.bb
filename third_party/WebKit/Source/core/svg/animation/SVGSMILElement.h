@@ -94,8 +94,9 @@ public:
     SMILTime simpleDuration() const;
 
     void seekToIntervalCorrespondingToTime(SMILTime elapsed);
-    bool progress(SMILTime elapsed, SVGSMILElement* resultsElement, bool seekToTime);
+    bool progress(SMILTime elapsed, bool seekToTime);
     SMILTime nextProgressTime() const;
+    void updateAnimatedValue(SVGSMILElement* resultElement) { updateAnimation(m_lastPercent, m_lastRepeat, resultElement); }
 
     void reset();
 
