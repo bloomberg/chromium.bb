@@ -193,8 +193,7 @@ HostDiscardableSharedMemoryManager::current() {
 std::unique_ptr<base::DiscardableMemory>
 HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
-  // TODO(reveman): Temporary diagnostics for http://crbug.com/577786.
-  CHECK_NE(size, 0u);
+  DCHECK_NE(size, 0u);
 
   DiscardableSharedMemoryId new_id =
       g_next_discardable_shared_memory_id.GetNext();
