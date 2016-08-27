@@ -206,6 +206,12 @@ int main(int argc, char* argv[]) {
     else
       printf("\t\tCodec Id\t\t: %s\n", pCodecId);
 
+    size_t codec_private_size = 0;
+    if (pTrack->GetCodecPrivate(codec_private_size)) {
+      printf("\t\tCodec private length: %u bytes\n",
+             static_cast<unsigned int>(codec_private_size));
+    }
+
     const char* const pCodecName_ = pTrack->GetCodecNameAsUTF8();
     const wchar_t* const pCodecName = utf8towcs(pCodecName_);
 
