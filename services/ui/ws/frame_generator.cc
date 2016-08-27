@@ -10,7 +10,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "services/ui/gpu/gpu_service_internal.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -37,6 +37,17 @@ FrameGenerator::~FrameGenerator() {
   display_compositor_.reset();
 }
 
+void FrameGenerator::OnGpuChannelEstablished(
+    scoped_refptr<gpu::GpuChannelHost> channel) {
+  if (widget_ != gfx::kNullAcceleratedWidget) {
+    display_compositor_.reset(
+        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget_,
+                              std::move(channel), surfaces_state_));
+  } else {
+    gpu_channel_ = std::move(channel);
+  }
+}
+
 void FrameGenerator::RequestRedraw(const gfx::Rect& redraw_region) {
   dirty_rect_.Union(redraw_region);
   WantToDraw();
@@ -44,11 +55,11 @@ void FrameGenerator::RequestRedraw(const gfx::Rect& redraw_region) {
 
 void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
-  if (widget != gfx::kNullAcceleratedWidget) {
-    display_compositor_.reset(new DisplayCompositor(
-        base::ThreadTaskRunnerHandle::Get(), widget,
-        GpuServiceInternal::GetInstance()->gpu_channel_local(),
-        surfaces_state_));
+  widget_ = widget;
+  if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
+    display_compositor_.reset(
+        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget_,
+                              std::move(gpu_channel_), surfaces_state_));
   }
 }
 
@@ -85,8 +96,8 @@ void FrameGenerator::Draw() {
       // is submitted 'soon'.
     }
   }
-  frame_pending_ = true;
   if (display_compositor_) {
+    frame_pending_ = true;
     display_compositor_->SubmitCompositorFrame(
         std::move(frame),
         base::Bind(&FrameGenerator::DidDraw, weak_factory_.GetWeakPtr()));

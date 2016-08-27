@@ -23,7 +23,6 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_service.h"
-#include "services/ui/gpu/mus_gpu_memory_buffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -36,9 +35,6 @@
 
 namespace ui {
 namespace {
-
-const int kLocalGpuChannelClientId = 1;
-const uint64_t kLocalGpuChannelClientTracingId = 1;
 
 void EstablishGpuChannelDone(
     mojo::ScopedMessagePipeHandle* channel_handle,
@@ -158,9 +154,7 @@ void GpuServiceInternal::SetActiveURL(const GURL& url) {
   // TODO(penghuang): implement this function.
 }
 
-void GpuServiceInternal::InitializeOnGpuThread(
-    mojo::ScopedMessagePipeHandle* channel_handle,
-    base::WaitableEvent* event) {
+void GpuServiceInternal::InitializeOnGpuThread(base::WaitableEvent* event) {
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
   gpu_info_.video_encode_accelerator_supported_profiles =
@@ -199,13 +193,6 @@ void GpuServiceInternal::InitializeOnGpuThread(
       gpu_memory_buffer_factory_.get()));
 
   media_service_.reset(new media::MediaService(gpu_channel_manager_.get()));
-
-  const bool preempts = true;
-  const bool allow_view_command_buffers = true;
-  const bool allow_real_time_streams = true;
-  EstablishGpuChannelOnGpuThread(
-      kLocalGpuChannelClientId, kLocalGpuChannelClientTracingId, preempts,
-      allow_view_command_buffers, allow_real_time_streams, channel_handle);
   event->Signal();
 }
 
@@ -225,23 +212,6 @@ void GpuServiceInternal::EstablishGpuChannelOnGpuThread(
   }
 }
 
-bool GpuServiceInternal::IsMainThread() {
-  return main_task_runner_->BelongsToCurrentThread();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-GpuServiceInternal::GetIOThreadTaskRunner() {
-  return io_thread_.task_runner();
-}
-
-std::unique_ptr<base::SharedMemory> GpuServiceInternal::AllocateSharedMemory(
-    size_t size) {
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAnonymous(size))
-    return std::unique_ptr<base::SharedMemory>();
-  return shm;
-}
-
 void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
   DCHECK(CalledOnValidThread());
   base::Thread::Options thread_options(base::MessageLoop::TYPE_DEFAULT, 0);
@@ -257,20 +227,12 @@ void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
 
-  mojo::ScopedMessagePipeHandle channel_handle;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&GpuServiceInternal::InitializeOnGpuThread,
-                            base::Unretained(this), &channel_handle, &event));
+                            base::Unretained(this), &event));
   event.Wait();
-
-  gpu_memory_buffer_manager_local_.reset(
-      new MusGpuMemoryBufferManager(this, kLocalGpuChannelClientId));
-  gpu_channel_local_ = gpu::GpuChannelHost::Create(
-      this, kLocalGpuChannelClientId, gpu_info_,
-      IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
-      gpu_memory_buffer_manager_local_.get());
 
   // TODO(sad): Get the real GPUInfo.
   callback.Run(gpu_info_);
@@ -279,12 +241,11 @@ void GpuServiceInternal::Initialize(const InitializeCallback& callback) {
 void GpuServiceInternal::EstablishGpuChannel(
     int32_t client_id,
     uint64_t client_tracing_id,
+    bool is_gpu_host,
     const EstablishGpuChannelCallback& callback) {
-  // TODO(penghuang): windows server may want to control those flags.
-  // Add a private interface for windows server.
-  const bool preempts = false;
-  const bool allow_view_command_buffers = false;
-  const bool allow_real_time_streams = false;
+  const bool preempts = is_gpu_host;
+  const bool allow_view_command_buffers = is_gpu_host;
+  const bool allow_real_time_streams = is_gpu_host;
   EstablishGpuChannelInternal(client_id, client_tracing_id, preempts,
                               allow_view_command_buffers,
                               allow_real_time_streams, callback);

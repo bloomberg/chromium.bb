@@ -114,11 +114,9 @@ void GpuService::OnEstablishedGpuChannel(
   DCHECK(!gpu_channel_);
 
   if (client_id) {
-    // TODO(penghuang): Get the real gpu info from mus.
     gpu_channel_ = gpu::GpuChannelHost::Create(
-        this, client_id, gpu::GPUInfo(),
-        IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
-        gpu_memory_buffer_manager_.get());
+        this, client_id, gpu_info, IPC::ChannelHandle(channel_handle.release()),
+        &shutdown_event_, gpu_memory_buffer_manager_.get());
   }
 
   gpu_service_.reset();

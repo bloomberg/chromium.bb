@@ -54,7 +54,6 @@ class Connector;
 
 namespace ui {
 
-class GpuServiceProxy;
 class PlatformEventSource;
 
 namespace ws {
@@ -176,7 +175,6 @@ class Service
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
-  std::unique_ptr<GpuServiceProxy> gpu_proxy_;
   std::unique_ptr<display::PlatformScreen> platform_screen_;
   std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;

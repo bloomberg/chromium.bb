@@ -14,6 +14,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/gpu_service_proxy.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -45,6 +46,7 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       current_operation_(nullptr),
       in_destructor_(false),
       next_wm_change_id_(0),
+      gpu_proxy_(new GpuServiceProxy(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
@@ -762,6 +764,13 @@ void WindowServer::OnTransientWindowRemoved(ServerWindow* window,
     pair.second->ProcessTransientWindowRemoved(window, transient_child,
                                                IsOperationSource(pair.first));
   }
+}
+
+void WindowServer::OnGpuChannelEstablished(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
+  const std::set<Display*>& displays = display_manager()->displays();
+  for (auto* display : displays)
+    display->platform_display()->OnGpuChannelEstablished(gpu_channel);
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,

@@ -179,8 +179,6 @@ void Service::OnStart(const shell::Identity& identity) {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  gpu_proxy_.reset(new GpuServiceProxy());
-
   // Gpu must be running before the PlatformScreen can be initialized.
   window_server_.reset(new ws::WindowServer(this));
 
@@ -286,7 +284,7 @@ void Service::Create(const shell::Identity& remote_identity,
 
 void Service::Create(const shell::Identity& remote_identity,
                      mojom::GpuServiceRequest request) {
-  gpu_proxy_->Add(std::move(request));
+  window_server_->gpu_proxy()->Add(std::move(request));
 }
 
 void Service::Create(const shell::Identity& remote_identity,

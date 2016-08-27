@@ -11,6 +11,8 @@ interface GpuServiceInternal {
 
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds with an IPC handle.
-  EstablishGpuChannel(int32 client_id, uint64 client_tracing_id)
+  EstablishGpuChannel(int32 client_id,
+                      uint64 client_tracing_id,
+                      bool is_gpu_host)
       => (handle<message_pipe> channel_handle);
 };

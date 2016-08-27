@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/output/copy_output_request.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display_binding.h"
@@ -66,6 +67,8 @@ class TestPlatformDisplay : public PlatformDisplay {
       std::unique_ptr<cc::CopyOutputRequest> output_request) override {}
   gfx::Rect GetBounds() const override { return display_metrics_.bounds; }
   bool IsPrimaryDisplay() const override { return is_primary_; }
+  void OnGpuChannelEstablished(
+      scoped_refptr<gpu::GpuChannelHost> host) override {}
 
  private:
   ViewportMetrics display_metrics_;

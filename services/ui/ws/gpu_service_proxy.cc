@@ -4,19 +4,33 @@
 
 #include "services/ui/ws/gpu_service_proxy.h"
 
+#include "base/memory/shared_memory.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/ui/common/gpu_type_converters.h"
 #include "services/ui/gpu/gpu_service_internal.h"
+#include "services/ui/ws/gpu_service_proxy_delegate.h"
+#include "services/ui/ws/mus_gpu_memory_buffer_manager.h"
 
 namespace ui {
+namespace ws {
 
 namespace {
 
-const int32_t kLocalGpuChannelClientId = 1;
+const int32_t kInternalGpuChannelClientId = 1;
+const uint64_t kInternalGpuChannelClientTracingId = 1;
 
 }  // namespace
 
-GpuServiceProxy::GpuServiceProxy() : next_client_id_(kLocalGpuChannelClientId) {
+GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
+    : delegate_(delegate),
+      next_client_id_(kInternalGpuChannelClientId),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
   // TODO(sad): Once GPU process is split, this would look like:
   //   connector->ConnectToInterface("mojo:gpu", &gpu_service_);
   GpuServiceInternal::GetInstance()->Add(GetProxy(&gpu_service_));
@@ -32,6 +46,30 @@ void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
 
 void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
+
+  constexpr bool is_gpu_host = true;
+  gpu_service_->EstablishGpuChannel(
+      kInternalGpuChannelClientId, kInternalGpuChannelClientTracingId,
+      is_gpu_host, base::Bind(&GpuServiceProxy::OnInternalGpuChannelEstablished,
+                             base::Unretained(this)));
+  next_client_id_ = kInternalGpuChannelClientId + 1;
+}
+
+void GpuServiceProxy::OnInternalGpuChannelEstablished(
+    mojo::ScopedMessagePipeHandle channel_handle) {
+  io_thread_.reset(new base::Thread("GPUIOThread"));
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  thread_options.priority = base::ThreadPriority::NORMAL;
+  CHECK(io_thread_->StartWithOptions(thread_options));
+
+  gpu_memory_buffer_manager_.reset(new MusGpuMemoryBufferManager(
+      GpuServiceInternal::GetInstance(), kInternalGpuChannelClientId));
+  gpu_channel_ = gpu::GpuChannelHost::Create(
+      this, kInternalGpuChannelClientId, gpu_info_,
+      IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
+      gpu_memory_buffer_manager_.get());
+  if (delegate_)
+    delegate_->OnGpuChannelEstablished(gpu_channel_);
 }
 
 void GpuServiceProxy::OnGpuChannelEstablished(
@@ -47,8 +85,9 @@ void GpuServiceProxy::EstablishGpuChannel(
   // TODO(sad): crbug.com/617415 figure out how to generate a meaningful tracing
   // id.
   const uint64_t client_tracing_id = 0;
+  constexpr bool is_gpu_host = false;
   gpu_service_->EstablishGpuChannel(
-      client_id, client_tracing_id,
+      client_id, client_tracing_id, is_gpu_host,
       base::Bind(&GpuServiceProxy::OnGpuChannelEstablished,
                  base::Unretained(this), callback, client_id));
 }
@@ -68,4 +107,22 @@ void GpuServiceProxy::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
   NOTIMPLEMENTED();
 }
 
+bool GpuServiceProxy::IsMainThread() {
+  return main_thread_task_runner_->BelongsToCurrentThread();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+GpuServiceProxy::GetIOThreadTaskRunner() {
+  return io_thread_->task_runner();
+}
+
+std::unique_ptr<base::SharedMemory> GpuServiceProxy::AllocateSharedMemory(
+    size_t size) {
+  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
+  if (!shm->CreateAnonymous(size))
+    shm.reset();
+  return shm;
+}
+
+}  // namespace ws
 }  // namespace ui

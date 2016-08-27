@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/ws/mus_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "services/ui/common/generic_shared_memory_id_generator.h"
 #include "services/ui/gpu/gpu_service_internal.h"
 
 namespace ui {
 
 namespace {
-
-MusGpuMemoryBufferManager* g_gpu_memory_buffer_manager = nullptr;
 
 bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
     gfx::BufferFormat format,
@@ -33,23 +30,17 @@ bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
       return false;
   }
 }
-}
 
-MusGpuMemoryBufferManager* MusGpuMemoryBufferManager::current() {
-  return g_gpu_memory_buffer_manager;
-}
+}  // namespace
+
+namespace ws {
 
 MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
     GpuServiceInternal* gpu_service,
     int client_id)
-    : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {
-  DCHECK(!g_gpu_memory_buffer_manager);
-  g_gpu_memory_buffer_manager = this;
-}
+    : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {}
 
-MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {
-  g_gpu_memory_buffer_manager = nullptr;
-}
+MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
 MusGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
@@ -61,9 +52,8 @@ MusGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
   const bool is_native =
       IsNativeGpuMemoryBufferFactoryConfigurationSupported(format, usage);
   if (is_native) {
-    gfx::GpuMemoryBufferHandle handle =
-        gpu_service_->gpu_memory_buffer_factory()->CreateGpuMemoryBuffer(
-            id, size, format, usage, client_id_, surface_handle);
+    gfx::GpuMemoryBufferHandle handle = gpu_service_->CreateGpuMemoryBuffer(
+        id, size, format, usage, client_id_, surface_handle);
     if (handle.is_null())
       return nullptr;
     return gpu::GpuMemoryBufferImpl::CreateFromHandle(
@@ -108,9 +98,9 @@ void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     bool is_native,
     const gpu::SyncToken& sync_token) {
   if (is_native) {
-    gpu_service_->gpu_channel_manager()->DestroyGpuMemoryBuffer(id, client_id,
-                                                                sync_token);
+    gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
   }
 }
 
+}  // namespace ws
 }  // namespace ui

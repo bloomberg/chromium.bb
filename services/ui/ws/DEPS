@@ -1,13 +1,17 @@
 include_rules = [
-  "+gpu/config/gpu_info.h",
+  "+gpu/command_buffer/client",
+  "+gpu/config",
+  "+gpu/ipc/client",
+  "+gpu/ipc/common",
   "+services/ui/gpu/interfaces",
 ]
 
 specific_include_rules = {
-  "frame_generator.cc": [
+  "gpu_service_proxy.cc": [
     "+services/ui/gpu/gpu_service_internal.h",
   ],
-  "gpu_service_proxy.cc": [
+  # This should be removed. crbug.com/637923
+  "mus_gpu_memory_buffer_manager.cc": [
     "+services/ui/gpu/gpu_service_internal.h",
   ]
 }

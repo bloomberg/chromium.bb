@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -40,14 +39,10 @@ class MediaService;
 
 namespace ui {
 
-class MusGpuMemoryBufferManager;
-
-// TODO(sad): GpuChannelManagerDelegate implementation should be in the gpu
-// process, and the GpuChannelHostFactory should be in the host process (i.e.
-// the window-server process). So the GpuChannelHostFactory parts of this should
-// be split out.
+// This runs in the GPU process, and communicates with the gpu host (which is
+// the window server) over the mojom APIs. This is responsible for setting up
+// the connection to clients, allocating/free'ing gpu memory etc.
 class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
-                           public gpu::GpuChannelHostFactory,
                            public mojom::GpuServiceInternal,
                            public base::NonThreadSafe {
  public:
@@ -56,10 +51,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // TODO(sad): This should not be a singleton.
   static GpuServiceInternal* GetInstance();
 
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_local() const {
-    return gpu_channel_local_;
-  }
-
   gpu::GpuChannelManager* gpu_channel_manager() const {
     return gpu_channel_manager_.get();
   }
@@ -67,6 +58,18 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory() const {
     return gpu_memory_buffer_factory_.get();
   }
+
+  // TODO(sad): These should be mojom API.
+  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      int client_id,
+      gpu::SurfaceHandle surface_handle);
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              int client_id,
+                              const gpu::SyncToken& sync_token);
 
  private:
   friend struct base::DefaultSingletonTraits<GpuServiceInternal>;
@@ -80,22 +83,12 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                                    bool allow_view_command_buffers,
                                    bool allow_real_time_streams,
                                    const EstablishGpuChannelCallback& callback);
-  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      int client_id,
-      gpu::SurfaceHandle surface_handle);
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       int client_id);
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token);
 
   // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -115,21 +108,15 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 #endif
   void SetActiveURL(const GURL& url) override;
 
-  // gpu::GpuChannelHostFactory:
-  bool IsMainThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
-  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
-
   // mojom::GpuServiceInternal:
   void Initialize(const InitializeCallback& callback) override;
   void EstablishGpuChannel(
       int32_t client_id,
       uint64_t client_tracing_id,
+      bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
 
-  void InitializeOnGpuThread(mojo::ScopedMessagePipeHandle* channel_handle,
-                             base::WaitableEvent* event);
+  void InitializeOnGpuThread(base::WaitableEvent* event);
   void EstablishGpuChannelOnGpuThread(
       int client_id,
       uint64_t client_tracing_id,
@@ -157,12 +144,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<media::MediaService> media_service_;
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
-
-  // A GPU memory buffer manager used locally.
-  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_local_;
-
-  // A GPU channel used locally.
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_local_;
 
   gpu::GpuPreferences gpu_preferences_;
 

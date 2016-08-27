@@ -9,6 +9,7 @@
 #include "cc/ipc/quads.mojom.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/delegated_frame_data.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/surfaces/display_compositor.h"
@@ -169,6 +170,11 @@ gfx::Rect DefaultPlatformDisplay::GetBounds() const {
 
 bool DefaultPlatformDisplay::IsPrimaryDisplay() const {
   return platform_screen_->GetPrimaryDisplayId() == id_;
+}
+
+void DefaultPlatformDisplay::OnGpuChannelEstablished(
+    scoped_refptr<gpu::GpuChannelHost> channel) {
+  frame_generator_->OnGpuChannelEstablished(channel);
 }
 
 void DefaultPlatformDisplay::UpdateMetrics(const gfx::Rect& bounds,

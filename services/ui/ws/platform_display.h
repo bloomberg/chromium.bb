@@ -33,6 +33,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace ui {
 class CursorLoader;
 class PlatformWindow;
@@ -92,6 +96,11 @@ class PlatformDisplay {
 
   virtual bool IsPrimaryDisplay() const = 0;
 
+  // Notifies the PlatformDisplay that a connection to the gpu has been
+  // established.
+  virtual void OnGpuChannelEstablished(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel) = 0;
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {
@@ -131,6 +140,8 @@ class DefaultPlatformDisplay : public PlatformDisplay,
       std::unique_ptr<cc::CopyOutputRequest> output_request) override;
   gfx::Rect GetBounds() const override;
   bool IsPrimaryDisplay() const override;
+  void OnGpuChannelEstablished(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
 
  private:
   void UpdateMetrics(const gfx::Rect& bounds, float device_scale_factor);

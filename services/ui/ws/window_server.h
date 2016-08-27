@@ -21,6 +21,7 @@
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display.h"
+#include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -35,6 +36,7 @@ namespace ws {
 
 class AccessPolicy;
 class DisplayManager;
+class GpuServiceProxy;
 class ServerWindow;
 class UserActivityMonitor;
 class WindowManagerState;
@@ -46,6 +48,7 @@ class WindowTreeBinding;
 // WindowTrees) as well as providing the root of the hierarchy.
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
+                     public GpuServiceProxyDelegate,
                      public UserDisplayManagerDelegate,
                      public UserIdTrackerObserver {
  public:
@@ -61,6 +64,8 @@ class WindowServer : public ServerWindowDelegate,
   const DisplayManager* display_manager() const {
     return display_manager_.get();
   }
+
+  GpuServiceProxy* gpu_proxy() { return gpu_proxy_.get(); }
 
   // Creates a new ServerWindow. The return value is owned by the caller, but
   // must be destroyed before WindowServer.
@@ -319,6 +324,10 @@ class WindowServer : public ServerWindowDelegate,
   void OnTransientWindowRemoved(ServerWindow* window,
                                 ServerWindow* transient_child) override;
 
+  // GpuServiceProxyDelegate:
+  void OnGpuChannelEstablished(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
+
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
                              const UserId& active_id) override;
@@ -356,6 +365,7 @@ class WindowServer : public ServerWindowDelegate,
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
 
+  std::unique_ptr<GpuServiceProxy> gpu_proxy_;
   base::Callback<void(ServerWindow*)> window_paint_callback_;
 
   UserActivityMonitorMap activity_monitor_map_;

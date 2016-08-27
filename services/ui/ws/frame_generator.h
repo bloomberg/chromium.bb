@@ -18,6 +18,10 @@ class CopyOutputRequest;
 class RenderPass;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace ui {
 
 class DisplayCompositor;
@@ -39,6 +43,8 @@ class FrameGenerator {
   FrameGenerator(FrameGeneratorDelegate* delegate,
                  scoped_refptr<SurfacesState> surfaces_state);
   virtual ~FrameGenerator();
+
+  void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   // Schedules a redraw for the provided region.
   void RequestRedraw(const gfx::Rect& redraw_region);
@@ -77,8 +83,10 @@ class FrameGenerator {
 
   FrameGeneratorDelegate* delegate_;
   scoped_refptr<SurfacesState> surfaces_state_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   std::unique_ptr<DisplayCompositor> display_compositor_;
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
 
   // The region that needs to be redrawn next time the compositor frame is
   // generated.

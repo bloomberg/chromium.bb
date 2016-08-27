@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_GPU_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_UI_GPU_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef SERVICES_UI_WS_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#define SERVICES_UI_WS_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -15,14 +15,14 @@ namespace ui {
 
 class GpuServiceInternal;
 
+namespace ws {
+
 // This GpuMemoryBufferManager is for establishing a GpuChannelHost used by
 // mus locally.
 class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
   MusGpuMemoryBufferManager(GpuServiceInternal* gpu_service, int client_id);
   ~MusGpuMemoryBufferManager() override;
-
-  static MusGpuMemoryBufferManager* current();
 
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
@@ -52,6 +52,7 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 };
 
+}  // namespace ws
 }  // namespace ui
 
-#endif  // SERVICES_UI_GPU_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // SERVICES_UI_WS_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
