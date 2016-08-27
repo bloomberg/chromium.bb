@@ -178,4 +178,60 @@ void DelayBasedBeginFrameSource::OnTimerTick() {
   }
 }
 
+ExternalBeginFrameSource::ExternalBeginFrameSource(
+    ExternalBeginFrameSourceClient* client)
+    : client_(client) {
+  DCHECK(client_);
+}
+
+ExternalBeginFrameSource::~ExternalBeginFrameSource() = default;
+
+void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) == observers_.end());
+
+  bool observers_was_empty = observers_.empty();
+  observers_.insert(obs);
+  obs->OnBeginFrameSourcePausedChanged(paused_);
+  if (observers_was_empty)
+    client_->OnNeedsBeginFrames(true);
+
+  // Send a MISSED begin frame if necessary.
+  if (missed_begin_frame_args_.IsValid()) {
+    BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        (missed_begin_frame_args_.frame_time > last_args.frame_time)) {
+      obs->OnBeginFrame(missed_begin_frame_args_);
+    }
+  }
+}
+
+void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) != observers_.end());
+
+  observers_.erase(obs);
+  if (observers_.empty()) {
+    missed_begin_frame_args_ = BeginFrameArgs();
+    client_->OnNeedsBeginFrames(false);
+  }
+}
+
+void ExternalBeginFrameSource::OnSetBeginFrameSourcePaused(bool paused) {
+  if (paused_ == paused)
+    return;
+  paused_ = paused;
+  std::unordered_set<BeginFrameObserver*> observers(observers_);
+  for (auto* obs : observers)
+    obs->OnBeginFrameSourcePausedChanged(paused_);
+}
+
+void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
+  missed_begin_frame_args_ = args;
+  missed_begin_frame_args_.type = BeginFrameArgs::MISSED;
+  std::unordered_set<BeginFrameObserver*> observers(observers_);
+  for (auto* obs : observers)
+    obs->OnBeginFrame(args);
+}
+
 }  // namespace cc
