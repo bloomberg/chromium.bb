@@ -743,33 +743,18 @@ base::string16 GenerateAlternatePEFileVersion(
     return base::string16();
   }
 
-  base::Version new_version(base::UTF16ToASCII(ctx.new_version_str));
-  GenerateSpecificPEFileVersion(original_file, target_file, new_version);
+  DCHECK_EQ(ctx.current_version_str.size(), ctx.new_version_str.size());
 
-  return ctx.new_version_str;
-}
-
-bool GenerateSpecificPEFileVersion(const base::FilePath& original_file,
-                                   const base::FilePath& target_file,
-                                   const base::Version& version) {
-  // First copy original_file to target_file.
   if (!base::CopyFile(original_file, target_file)) {
     LOG(DFATAL) << "Failed copying \"" << original_file.value()
                 << "\" to \"" << target_file.value() << "\"";
-    return false;
+    return base::string16();
   }
 
-  VisitResourceContext ctx;
-  if (!GetFileVersion(target_file, &ctx.current_version)) {
-    LOG(DFATAL) << "Failed reading version from \"" << target_file.value()
-                << "\"";
-    return false;
-  }
-  ctx.current_version_str = ctx.current_version.ToString();
-  ctx.new_version = ChromeVersion::FromString(version.GetString());
-  ctx.new_version_str = ctx.new_version.ToString();
+  if (!UpdateVersionIfMatch(target_file, &ctx))
+    return base::string16();
 
-  return UpdateVersionIfMatch(target_file, &ctx);
+  return ctx.new_version_str;
 }
 
 }  // namespace upgrade_test
