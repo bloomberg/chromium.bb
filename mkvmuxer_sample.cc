@@ -404,6 +404,36 @@ int main(int argc, char* argv[]) {
           return EXIT_FAILURE;
       }
 
+      if (pVideoTrack->GetProjection()) {
+        mkvmuxer::Projection muxer_projection;
+        const mkvparser::Projection* const parser_projection =
+            pVideoTrack->GetProjection();
+        typedef mkvmuxer::Projection::ProjectionType MuxerProjType;
+        const int kTypeNotPresent = mkvparser::Projection::kTypeNotPresent;
+        if (parser_projection->type != kTypeNotPresent) {
+          muxer_projection.set_type(
+              static_cast<MuxerProjType>(parser_projection->type));
+        }
+        if (parser_projection->private_data &&
+            parser_projection->private_data_length > 0) {
+          if (!muxer_projection.SetProjectionPrivate(
+                  parser_projection->private_data,
+                  parser_projection->private_data_length)) {
+            return EXIT_FAILURE;
+          }
+        }
+
+        const float kValueNotPresent = mkvparser::Projection::kValueNotPresent;
+        if (parser_projection->pose_yaw != kValueNotPresent)
+          muxer_projection.set_pose_yaw(parser_projection->pose_yaw);
+        if (parser_projection->pose_pitch != kValueNotPresent)
+          muxer_projection.set_pose_pitch(parser_projection->pose_pitch);
+        if (parser_projection->pose_roll != kValueNotPresent)
+          muxer_projection.set_pose_roll(parser_projection->pose_roll);
+        if (!video->SetProjection(muxer_projection))
+          return EXIT_FAILURE;
+      }
+
       if (track_name)
         video->set_name(track_name);
 
