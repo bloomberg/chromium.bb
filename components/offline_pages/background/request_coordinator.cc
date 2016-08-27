@@ -207,21 +207,8 @@ void RequestCoordinator::AddRequestResultCallback(
   // Inform the scheduler that we have an outstanding task..
   scheduler_->Schedule(GetTriggerConditionsForUserRequest());
 
-  // If it makes sense, start processing now.
-  if (is_busy_) return;
-
-  // Check for network
-  net::NetworkChangeNotifier::ConnectionType connection = GetConnectionType();
-
-  if ((connection !=
-       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) &&
-      request.user_requested()) {
-    // Create device conditions.
-    DeviceConditions device_conditions(false, 0, connection);
-
-    // Start processing if it makes sense. (net, user requested)
-    StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
-  }
+  if (request.user_requested())
+    StartProcessingIfConnected();
 }
 
 // Called in response to updating a request in the request queue.
@@ -241,8 +228,27 @@ void RequestCoordinator::UpdateRequestCallback(
 void RequestCoordinator::UpdateMultipleRequestsCallback(
     const RequestQueue::UpdateMultipleRequestResults& results,
     const std::vector<SavePageRequest>& requests) {
-  for (SavePageRequest request : requests)
+  bool available_user_request = false;
+  for (SavePageRequest request : requests) {
     NotifyChanged(request);
+    if (!available_user_request && request.user_requested() &&
+        request.request_state() == SavePageRequest::RequestState::AVAILABLE) {
+      // TODO(dougarnett): Consider avoiding prospect of N^2 in case
+      // size of bulk requests can get large (perhaps with easier to consume
+      // callback interface).
+      for (std::pair<int64_t, RequestQueue::UpdateRequestResult> pair :
+           results) {
+        if (pair.first == request.request_id() &&
+            pair.second == RequestQueue::UpdateRequestResult::SUCCESS) {
+          // We have a successfully updated, available, user request.
+          available_user_request = true;
+        }
+      }
+    }
+  }
+
+  if (available_user_request)
+    StartProcessingIfConnected();
 }
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
@@ -288,6 +294,22 @@ bool RequestCoordinator::StartProcessing(
   TryNextRequest();
 
   return true;
+}
+
+void RequestCoordinator::StartProcessingIfConnected() {
+  // Makes sure not already busy processing.
+  if (is_busy_) return;
+
+  // Check for network connectivity.
+  net::NetworkChangeNotifier::ConnectionType connection = GetConnectionType();
+
+  if ((connection !=
+       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)) {
+    // Create conservative device conditions for the connectivity
+    // (assume no battery).
+    DeviceConditions device_conditions(false, 0, connection);
+    StartProcessing(device_conditions, base::Bind(&EmptySchedulerCallback));
+  }
 }
 
 void RequestCoordinator::TryNextRequest() {

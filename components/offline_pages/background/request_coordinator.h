@@ -186,6 +186,10 @@ class RequestCoordinator : public KeyedService,
       const RequestQueue::UpdateMultipleRequestResults& results,
       const std::vector<SavePageRequest>& requests);
 
+  // Start processing now if connected (but with conservative assumption
+  // as to other device conditions).
+  void StartProcessingIfConnected();
+
   // Callback from the request picker when it has chosen our next request.
   void RequestPicked(const SavePageRequest& request);
 

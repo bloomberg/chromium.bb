@@ -851,4 +851,43 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
   EXPECT_FALSE(is_busy());
 }
 
+TEST_F(RequestCoordinatorTest, ResumeStartsProcessingWhenConnected) {
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+
+  // Add a request to the queue.
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request1, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+  EXPECT_FALSE(is_busy());
+
+  // Pause the request.
+  std::vector<int64_t> request_ids;
+  request_ids.push_back(kRequestId1);
+  coordinator()->PauseRequests(request_ids);
+  PumpLoop();
+
+  // Resume the request while disconnected.
+  coordinator()->ResumeRequests(request_ids);
+  PumpLoop();
+  EXPECT_FALSE(is_busy());
+
+  // Pause the request again.
+  coordinator()->PauseRequests(request_ids);
+  PumpLoop();
+
+  // Now simulate being connected.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+
+  // Resume the request while connected.
+  coordinator()->ResumeRequests(request_ids);
+  EXPECT_FALSE(is_busy());
+  PumpLoop();
+  EXPECT_TRUE(is_busy());
+}
+
 }  // namespace offline_pages
