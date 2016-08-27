@@ -96,8 +96,7 @@ void ContentSubresourceFilterDriverFactory::
                safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
   } else if (GetCurrentActivationList() ==
              ActivationList::PHISHING_INTERSTITIAL) {
-    proceed =
-        (threat_type == safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL);
+    proceed = (threat_type == safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
   }
   if (!proceed)
     return;

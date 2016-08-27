@@ -27,7 +27,7 @@ const char kActivationScopeNoSites[] = "no_sites";
 
 const char kActivationListsParameterName[] = "activation_lists";
 const char kActivationListSocialEngineeringAdsInterstitial[] =
-    "social_eng_ads_intertitial";
+    "social_engineering_ads_interstitial";
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 
 ActivationState GetMaximumActivationState() {

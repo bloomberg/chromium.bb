@@ -32,16 +32,16 @@ struct ActivationListTestData {
 };
 
 const ActivationListTestData kActivationListTestData[] = {
-    {false, "", safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+    {false, "", safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
-     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::NONE},
     {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
-     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::MALWARE_LANDING},
     {false, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
-     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::MALWARE_DISTRIBUTION},
     {true, subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
      safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
@@ -65,13 +65,13 @@ const ActivationListTestData kActivationListTestData[] = {
      safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {false, subresource_filter::kActivationListPhishingInterstitial,
-     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {false, subresource_filter::kActivationListPhishingInterstitial,
      safe_browsing::SB_THREAT_TYPE_SAFE,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
     {true, subresource_filter::kActivationListPhishingInterstitial,
-     safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::NONE},
 };
 
