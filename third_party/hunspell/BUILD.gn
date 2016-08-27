@@ -119,6 +119,7 @@ fuzzer_test("hunspell_fuzzer") {
   ]
   deps = [
     ":hunspell",
+    "//base:base",
   ]
 
   # This is a dictionary for the fuzzer, not a spellcheck dictionary.
