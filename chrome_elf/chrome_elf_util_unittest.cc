@@ -112,12 +112,12 @@ TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
 
   // First, ensure that the emergency-off finch signal works.
   EXPECT_TRUE(SetSecurityFinchFlag(true));
-  EarlyBrowserSecurity();
+  elf_security::EarlyBrowserSecurity();
   EXPECT_FALSE(IsSecuritySet());
   EXPECT_TRUE(SetSecurityFinchFlag(false));
 
   // Second, test that the process mitigation is set when no finch signal.
-  EarlyBrowserSecurity();
+  elf_security::EarlyBrowserSecurity();
   EXPECT_TRUE(IsSecuritySet());
 }
 
