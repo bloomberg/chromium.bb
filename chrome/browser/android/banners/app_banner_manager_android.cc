@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/webapk/chrome_webapk_host.h"
+#include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
@@ -152,6 +154,14 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
         return;
     }
     Stop();
+  }
+
+  if (ChromeWebApkHost::AreWebApkEnabled()) {
+    if (!AreWebManifestUrlsWebApkCompatible(manifest_)) {
+      ReportStatus(web_contents(), URL_NOT_SUPPORTED_FOR_WEBAPK);
+      Stop();
+      return;
+    }
   }
 
   // No native app banner was requested. Continue checking for a web app banner.

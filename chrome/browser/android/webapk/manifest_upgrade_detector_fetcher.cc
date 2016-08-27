@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
+#include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -135,8 +136,10 @@ void ManifestUpgradeDetectorFetcher::OnDidGetInstallableData(
 
   // TODO(pkotwicz): Tell Java side that the Web Manifest was fetched but the
   // Web Manifest is not WebAPK-compatible. (http://crbug.com/639536)
-  if (!data.is_installable)
+  if (!data.is_installable ||
+      !AreWebManifestUrlsWebApkCompatible(data.manifest)) {
     return;
+  }
 
   ShortcutInfo info(GURL::EmptyGURL());
   info.UpdateFromManifest(data.manifest);

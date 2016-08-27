@@ -35,6 +35,7 @@
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
       'browser/android/webapk/webapk_icon_hasher_unittest.cc',
       'browser/android/webapk/webapk_installer_unittest.cc',
+      'browser/android/webapk/webapk_web_manifest_checker_unittest.cc',
       'browser/app_controller_mac_unittest.mm',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_provider_extension_unittest.cc',

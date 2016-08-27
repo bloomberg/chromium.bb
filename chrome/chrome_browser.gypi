@@ -1028,6 +1028,8 @@
       'browser/android/webapk/webapk_icon_hasher.h',
       'browser/android/webapk/webapk_installer.cc',
       'browser/android/webapk/webapk_installer.h',
+      'browser/android/webapk/webapk_web_manifest_checker.cc',
+      'browser/android/webapk/webapk_web_manifest_checker.h',
       'browser/autofill/android/personal_data_manager_android.cc',
       'browser/autofill/android/personal_data_manager_android.h',
       'browser/dom_distiller/dom_distiller_service_factory_android.cc',
