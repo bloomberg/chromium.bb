@@ -419,10 +419,10 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(PaintInvalid
 
     LayoutRect oldSelectionRect = selectionPaintInvalidationMap().get(&m_object);
     LayoutRect newSelectionRect = m_object.localSelectionRect();
-    if (!newSelectionRect.isEmpty())
+    if (!newSelectionRect.isEmpty()) {
         m_context.mapLocalRectToPaintInvalidationBacking(m_object, newSelectionRect);
-
-    newSelectionRect.move(m_object.scrollAdjustmentForPaintInvalidation(*m_context.paintInvalidationContainer));
+        newSelectionRect.move(m_object.scrollAdjustmentForPaintInvalidation(*m_context.paintInvalidationContainer));
+    }
 
     setPreviousSelectionPaintInvalidationRect(m_object, newSelectionRect);
 
