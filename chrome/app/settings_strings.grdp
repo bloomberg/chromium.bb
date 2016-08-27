@@ -184,7 +184,7 @@
     Always show the bookmarks bar
   </message>
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
-    New Tab Page
+    Use the New Tab Page
   </message>
   <message name="IDS_SETTINGS_OTHER" desc="Label of the input box for the home page.">
     Other
