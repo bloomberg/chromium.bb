@@ -57060,6 +57060,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Errors truncating database for Raze().</summary>
 </histogram>
 
+<histogram name="Sqlite.RecoveryAttachError" enum="SqliteErrorCode">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    SQLite error code from failed ATTACH in sql::Recovery::Init().
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.RecoveryEvents" enum="SqliteRecoveryEventEnum">
   <owner>shess@chromium.org</owner>
   <summary>
