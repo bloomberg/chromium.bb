@@ -7,12 +7,12 @@ Running: testChangeCharacterData
 Replacing 'Getting involved' with 'Getting not involved'
 
 Wrapper identity: identity
-Event AttrModified: div
-Event AttrModified: div
-Event AttrModified: div
-Event AttrRemoved: div
-Event AttrRemoved: div
-Event CharacterDataModified: #text
+Event Symbol(AttrModified): div
+Event Symbol(AttrModified): div
+Event Symbol(AttrModified): div
+Event Symbol(AttrRemoved): div
+Event Symbol(AttrRemoved): div
+Event Symbol(CharacterDataModified): #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -24,7 +24,7 @@ Event CharacterDataModified: #text
 Bringing things back
 
 Wrapper identity: identity
-Event CharacterDataModified: #text
+Event Symbol(CharacterDataModified): #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -41,9 +41,9 @@ Running: testChangeAttributes
 Replacing '<a href' with '<a foo="bar" href'
 
 Wrapper identity: identity
-Event AttrModified: a
-Event AttrModified: a
-Event AttrRemoved: a
+Event Symbol(AttrModified): a
+Event Symbol(AttrModified): a
+Event Symbol(AttrRemoved): a
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a foo="bar" href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -55,9 +55,9 @@ Event AttrRemoved: a
 Bringing things back
 
 Wrapper identity: identity
-Event AttrModified: a
-Event AttrRemoved: a
-Event AttrRemoved: a
+Event Symbol(AttrModified): a
+Event Symbol(AttrRemoved): a
+Event Symbol(AttrRemoved): a
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -74,7 +74,7 @@ Running: testRemoveLastChild
 Replacing 'Getting involved' with ''
 
 Wrapper identity: identity
-Event NodeRemoved: #text
+Event Symbol(NodeRemoved): #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -86,7 +86,7 @@ Event NodeRemoved: #text
 Bringing things back
 
 Wrapper identity: identity
-Event NodeInserted: #text
+Event Symbol(NodeInserted): #text
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -103,9 +103,9 @@ Running: testSplitNode
 Replacing 'Getting involved' with 'Getting</h2><h2>involved'
 
 Wrapper identity: identity
-Event NodeInserted: h2
-Event NodeInserted: h2
-Event NodeRemoved: h2
+Event Symbol(NodeInserted): h2
+Event Symbol(NodeInserted): h2
+Event Symbol(NodeRemoved): h2
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -117,9 +117,9 @@ Event NodeRemoved: h2
 Bringing things back
 
 Wrapper identity: identity
-Event NodeInserted: h2
-Event NodeRemoved: h2
-Event NodeRemoved: h2
+Event Symbol(NodeInserted): h2
+Event Symbol(NodeRemoved): h2
+Event Symbol(NodeRemoved): h2
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -136,8 +136,8 @@ Running: testChangeNodeName
 Replacing '<h2>Getting involved</h2>' with '<h3>Getting involved</h3>'
 
 Wrapper identity: identity
-Event NodeInserted: h3
-Event NodeRemoved: h2
+Event Symbol(NodeInserted): h3
+Event Symbol(NodeRemoved): h2
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
@@ -149,8 +149,8 @@ Event NodeRemoved: h2
 Bringing things back
 
 Wrapper identity: identity
-Event NodeInserted: h2
-Event NodeRemoved: h3
+Event Symbol(NodeInserted): h2
+Event Symbol(NodeRemoved): h3
 ==========8<==========
 <div xmlns="http://www.w3.org/1999/xhtml" id="container" style="display:none">
 <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</p>
