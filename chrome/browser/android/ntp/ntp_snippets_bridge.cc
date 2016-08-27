@@ -284,6 +284,22 @@ void NTPSnippetsBridge::OnSuggestionMenuOpened(JNIEnv* env,
       TimeFromJavaTime(publish_timestamp_ms), score);
 }
 
+void NTPSnippetsBridge::OnMoreButtonShown(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj,
+                                          jint category,
+                                          jint position) {
+  ntp_snippets::metrics::OnMoreButtonShown(CategoryFromIDValue(category),
+                                           position);
+}
+
+void NTPSnippetsBridge::OnMoreButtonClicked(JNIEnv* env,
+                                            const JavaParamRef<jobject>& obj,
+                                            jint category,
+                                            jint position) {
+  ntp_snippets::metrics::OnMoreButtonClicked(CategoryFromIDValue(category),
+                                             position);
+}
+
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {

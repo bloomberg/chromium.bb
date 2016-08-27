@@ -303,6 +303,16 @@ public class NewTabPage
         }
 
         @Override
+        public void trackSnippetCategoryActionImpression(int category, int position) {
+            mSnippetsBridge.onMoreButtonShown(category, position);
+        }
+
+        @Override
+        public void trackSnippetCategoryActionClick(int category, int position) {
+            mSnippetsBridge.onMoreButtonClicked(category, position);
+        }
+
+        @Override
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             mSnippetsBridge.onSuggestionOpened(article.mGlobalPosition, article.mCategory,
                     article.mPosition, article.mPublishTimestampMilliseconds, article.mScore,

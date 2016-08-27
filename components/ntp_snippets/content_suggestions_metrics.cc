@@ -36,10 +36,16 @@ const char kHistogramMenuOpenedScore[] =
     "NewTabPage.ContentSuggestions.MenuOpenedScore";
 const char kHistogramVisitDuration[] =
     "NewTabPage.ContentSuggestions.VisitDuration";
+const char kHistogramMoreButtonShown[] =
+    "NewTabPage.ContentSuggestions.MoreButtonShown";
+const char kHistogramMoreButtonClicked[] =
+    "NewTabPage.ContentSuggestions.MoreButtonClicked";
 
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
 std::string GetCategorySuffix(Category category) {
+  // TODO(treib): Find a way to produce a compile error if a known category
+  // isn't listed here.
   if (category.IsKnownCategory(KnownCategories::RECENT_TABS))
     return "RecentTabs";
   if (category.IsKnownCategory(KnownCategories::DOWNLOADS))
@@ -201,6 +207,20 @@ void OnSuggestionMenuOpened(int global_position,
 
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time) {
   LogCategoryHistogramLongTimes(kHistogramVisitDuration, category, visit_time);
+}
+
+void OnMoreButtonShown(Category category, int position) {
+  // The "more" card can appear in addition to the actual suggestions, so add
+  // one extra bucket to this histogram.
+  LogCategoryHistogramEnumeration(kHistogramMoreButtonShown, category, position,
+                                  kMaxSuggestionsPerCategory + 1);
+}
+
+void OnMoreButtonClicked(Category category, int position) {
+  // The "more" card can appear in addition to the actual suggestions, so add
+  // one extra bucket to this histogram.
+  LogCategoryHistogramEnumeration(kHistogramMoreButtonClicked, category,
+                                  position, kMaxSuggestionsPerCategory + 1);
 }
 
 }  // namespace metrics

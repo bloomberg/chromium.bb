@@ -173,6 +173,20 @@ public class NewTabPageView extends FrameLayout
         void trackSnippetMenuOpened(SnippetArticle article);
 
         /**
+         * Tracks impression metrics for a category's action button ("More").
+         * @param category The category for which the action button was shown.
+         * @param position The position of the action button within the category.
+         */
+        void trackSnippetCategoryActionImpression(int category, int position);
+
+        /**
+         * Tracks click metrics for a category's action button ("More").
+         * @param category The category for which the action button was clicked.
+         * @param position The position of the action button within the category.
+         */
+        void trackSnippetCategoryActionClick(int category, int position);
+
+        /**
          * Opens a content suggestion and records related metrics.
          * @param windowOpenDisposition How to open (current tab, new tab, new window etc).
          * @param article The content suggestion to open.

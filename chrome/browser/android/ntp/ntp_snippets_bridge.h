@@ -100,6 +100,16 @@ class NTPSnippetsBridge
                               jlong publish_timestamp_ms,
                               jfloat score);
 
+  void OnMoreButtonShown(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jint category,
+                         jint position);
+
+  void OnMoreButtonClicked(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jint category,
+                           jint position);
+
   static bool Register(JNIEnv* env);
 
  private:

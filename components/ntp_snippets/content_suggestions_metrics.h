@@ -40,6 +40,11 @@ void OnSuggestionMenuOpened(int global_position,
 
 void OnSuggestionTargetVisited(Category category, base::TimeDelta visit_time);
 
+// Should only be called once per NTP for each "more" button.
+void OnMoreButtonShown(Category category, int position);
+
+void OnMoreButtonClicked(Category category, int position);
+
 }  // namespace metrics
 }  // namespace ntp_snippets
 

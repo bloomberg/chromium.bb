@@ -263,6 +263,12 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public void trackSnippetMenuOpened(SnippetArticle article) {}
 
         @Override
+        public void trackSnippetCategoryActionImpression(int category, int position) {}
+
+        @Override
+        public void trackSnippetCategoryActionClick(int category, int position) {}
+
+        @Override
         public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
             throw new UnsupportedOperationException();
         }

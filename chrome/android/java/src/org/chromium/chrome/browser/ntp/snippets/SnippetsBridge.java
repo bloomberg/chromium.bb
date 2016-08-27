@@ -150,6 +150,16 @@ public class SnippetsBridge implements SuggestionsSource {
                 categoryPosition, publishTimestampMs, score);
     }
 
+    public void onMoreButtonShown(int category, int position) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnMoreButtonShown(mNativeSnippetsBridge, category, position);
+    }
+
+    public void onMoreButtonClicked(int category, int position) {
+        assert mNativeSnippetsBridge != 0;
+        nativeOnMoreButtonClicked(mNativeSnippetsBridge, category, position);
+    }
+
     public static void onSuggestionTargetVisited(int category, long visitTimeMs) {
         nativeOnSuggestionTargetVisited(category, visitTimeMs);
     }
@@ -234,6 +244,10 @@ public class SnippetsBridge implements SuggestionsSource {
     private native void nativeOnSuggestionMenuOpened(long nativeNTPSnippetsBridge,
             int globalPosition, int category, int categoryPosition, long publishTimestampMs,
             float score);
+    private native void nativeOnMoreButtonShown(
+            long nativeNTPSnippetsBridge, int category, int position);
+    private native void nativeOnMoreButtonClicked(
+            long nativeNTPSnippetsBridge, int category, int position);
     private static native void nativeOnSuggestionTargetVisited(int category, long visitTimeMs);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
 }

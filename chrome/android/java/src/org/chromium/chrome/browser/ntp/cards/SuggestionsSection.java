@@ -89,6 +89,10 @@ public class SuggestionsSection implements ItemGroup {
 
         mSuggestions.clear();
         mSuggestions.addAll(suggestions);
+
+        if (mMoreButton != null) {
+            mMoreButton.setPosition(mSuggestions.size());
+        }
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */

@@ -35643,7 +35643,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.ContentSuggestions.MenuOpenedAge" units="minutes">
+<histogram name="NewTabPage.ContentSuggestions.MenuOpenedAge" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
     Android: The age of a suggestion card on the NTP whose long-press menu was
@@ -35657,6 +35657,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The relevance score of a suggestion card on the NTP whose
     long-press menu was opened, analogous to
     NewTabPage.ContentSuggestions.OpenedScore.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.MoreButtonClicked" units="index">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The position of a &quot;More&quot; suggestion card that was clicked
+    on the NTP. A card is considered shown when at least 1/3 of its height is
+    visible on the screen. We track the position the card had in the list when
+    the NTP was loaded. This tracked position can be different from the position
+    observed by the user, e.g. when the user discarded some suggestions from the
+    list.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.ContentSuggestions.MoreButtonShown" units="index">
+  <owner>treib@chromium.org</owner>
+  <summary>
+    Android: The position of a &quot;More&quot; suggestion card that was shown
+    on the NTP. A card is considered shown when at least 1/3 of its height is
+    visible on the screen. For each card, at most one impression is recorded per
+    NTP instance. We track the position the card had in the list when the NTP
+    was loaded. This tracked position can be different from the position
+    observed by the user, e.g. when the user discarded some suggestions from the
+    list.
   </summary>
 </histogram>
 
@@ -35680,7 +35705,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.ContentSuggestions.OpenedAge" units="minutes">
+<histogram name="NewTabPage.ContentSuggestions.OpenedAge" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
     Android: The age of a suggestion card on the NTP that is clicked through to
@@ -35710,7 +35735,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.ContentSuggestions.ShownAge" units="minutes">
+<histogram name="NewTabPage.ContentSuggestions.ShownAge" units="ms">
   <owner>treib@chromium.org</owner>
   <summary>
     Android: The age of a suggestion card that was shown on the NTP. A card is
@@ -36221,7 +36246,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Snippets.CardClickedAge" units="minutes">
+<histogram name="NewTabPage.Snippets.CardClickedAge" units="ms">
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Android: The age of the snippets card on the NTP, that is clicked through to
@@ -36297,7 +36322,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Snippets.CardLongPressedAge" units="minutes">
+<histogram name="NewTabPage.Snippets.CardLongPressedAge" units="ms">
   <owner>peconn@chromium.org</owner>
   <summary>
     Android: The time difference between when a snippet card is long pressed and
@@ -36331,7 +36356,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Snippets.CardShownAge" units="minutes">
+<histogram name="NewTabPage.Snippets.CardShownAge" units="ms">
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Android: The age of the snippets card that is shown on the NTP. Each snippet

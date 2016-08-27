@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -20,7 +19,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -38,6 +36,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
+import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -52,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  * A class that represents the view for a single card snippet.
  */
 public class SnippetArticleViewHolder extends CardViewHolder
-        implements MenuItem.OnMenuItemClickListener {
+        implements MenuItem.OnMenuItemClickListener, ImpressionTracker.Listener {
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
@@ -79,11 +78,12 @@ public class SnippetArticleViewHolder extends CardViewHolder
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
-    private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
     private int mPublisherFaviconSizePx;
 
     private final boolean mUseFaviconService;
     private final UiConfig mUiConfig;
+
+    private ImpressionTracker mImpressionTracker;
 
     /**
      * Listener for when the context menu is created.
@@ -112,36 +112,7 @@ public class SnippetArticleViewHolder extends CardViewHolder
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
 
-        mPreDrawObserver = new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                if (mArticle != null && !mArticle.impressionTracked()) {
-                    Rect r = new Rect(0, 0, itemView.getWidth(), itemView.getHeight());
-                    itemView.getParent().getChildVisibleRect(itemView, r, null);
-                    // Track impression if at least one third of the snippet is shown.
-                    if (r.height() >= itemView.getHeight() / 3) {
-                        if (mArticle.trackImpression()) {
-                            mNewTabPageManager.trackSnippetImpression(mArticle);
-                        }
-                    }
-                }
-                // Proceed with the current drawing pass.
-                return true;
-            }
-        };
-
-        // Listen to onPreDraw only if this view is potentially visible (attached to the window).
-        itemView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(View v) {
-                itemView.getViewTreeObserver().addOnPreDrawListener(mPreDrawObserver);
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                itemView.getViewTreeObserver().removeOnPreDrawListener(mPreDrawObserver);
-            }
-        });
+        mImpressionTracker = new ImpressionTracker(itemView, this);
 
         mUiConfig = uiConfig;
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
@@ -154,6 +125,13 @@ public class SnippetArticleViewHolder extends CardViewHolder
         mUseFaviconService =
                 !PARAMETER_DISABLED_VALUE.equals(VariationsAssociatedData.getVariationParamValue(
                         NewTabPage.FIELD_TRIAL_NAME, PARAMETER_FAVICON_SERVICE_NAME));
+    }
+
+    @Override
+    public void onImpression() {
+        if (mArticle != null && mArticle.trackImpression()) {
+            mNewTabPageManager.trackSnippetImpression(mArticle);
+        }
     }
 
     @Override
