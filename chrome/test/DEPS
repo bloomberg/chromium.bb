@@ -3,7 +3,7 @@ include_rules = [
   # rely on components.
   "+ash",
   "+chrome",
-  "+chrome/grit",  # For generated headers
+  "+chrome/grit",
   "+chromeos",
   "+components",
   "+device/bluetooth/dbus",
@@ -20,7 +20,6 @@ include_rules = [
   "+content/public",
 
   "+gin/public",
-  "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media/base",
   "+mojo/edk/embedder",
   "+sandbox/win/tests",

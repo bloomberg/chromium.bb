@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/grit",  # For generated headers.
+  "+chrome/grit",
   "+components/prefs",
   "+components/version_info",
   "+mojo/edk/embedder",

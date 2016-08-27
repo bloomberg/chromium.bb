@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/grit",  # For generated headers
+  "+chrome/grit",
   "+chromeos",  # For chromeos_switches.h
   "+components/autofill/content/common",
   "+components/autofill/core/common",
@@ -30,7 +30,6 @@ include_rules = [
   "+extensions/common",
   "+gin/public",  # For profiling.cc
   "+google_apis/gaia",  # For gaia_switches.h
-  "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media",
   "+ppapi/c",
   "+ppapi/shared_impl",

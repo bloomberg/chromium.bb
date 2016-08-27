@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/grit",  # For generated headers
+  "+chrome/grit",
   "+components/autofill/content/common",
   "+components/autofill/content/public/interfaces",
   "+components/autofill/content/renderer",
@@ -14,6 +14,7 @@ include_rules = [
   "+components/dom_distiller/content/common",
   "+components/dom_distiller/content/renderer",
   "+components/dom_distiller/core",
+  "+components/grit",
   "+components/guest_view/renderer",
   "+components/metrics/leak_detector",
   "+components/metrics/proto",
@@ -30,7 +31,7 @@ include_rules = [
   "+components/spellcheck/common",
   "+components/spellcheck/renderer",
   "+components/startup_metric_utils/common",
-  "+components/strings/grit",  # For generated headers
+  "+components/strings/grit",
   "+components/subresource_filter/content/renderer",
   "+components/translate/content/common",
   "+components/translate/content/renderer",
@@ -39,15 +40,14 @@ include_rules = [
   "+components/version_info",
   "+components/visitedlink/renderer",
   "+components/web_cache/renderer",
-  "+content/app/resources/grit",  # For generated headers
-  "+content/app/strings/grit",  # For generated headers
+  "+content/app/resources/grit",
+  "+content/app/strings/grit",
   "+content/public/child",
   "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/renderer",
   "+gin",
-  "+grit",  # For generated headers. TODO(thestig): Remove.
   "+media/base",
   "+ppapi/c",
   "+ppapi/shared_impl",
