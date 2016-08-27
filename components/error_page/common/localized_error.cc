@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -504,13 +505,14 @@ void AddSingleEntryDictionaryToList(base::ListValue* list,
                                     const char* path,
                                     int message_id,
                                     bool insert_as_first_item) {
-  base::DictionaryValue* suggestion_list_item = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> suggestion_list_item(
+      new base::DictionaryValue);
   suggestion_list_item->SetString(path, l10n_util::GetStringUTF16(message_id));
 
   if (insert_as_first_item) {
-    list->Insert(0, suggestion_list_item);
+    list->Insert(0, suggestion_list_item.release());
   } else {
-    list->Append(suggestion_list_item);
+    list->Append(std::move(suggestion_list_item));
   }
 }
 
@@ -728,7 +730,7 @@ base::DictionaryValue* AddSuggestionDetailDictionaryToList(
     suggestion_list_item->SetString("body",
         l10n_util::GetStringUTF16(body_message_id));
   }
-  list->Append(suggestion_list_item);
+  list->Append(base::WrapUnique(suggestion_list_item));
   return suggestion_list_item;
 }
 

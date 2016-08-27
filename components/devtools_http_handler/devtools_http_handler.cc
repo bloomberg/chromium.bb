@@ -887,10 +887,10 @@ void DevToolsHttpHandler::AcceptWebSocket(
                  base::Unretained(server_wrapper_), connection_id, request));
 }
 
-base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(
+std::unique_ptr<base::DictionaryValue> DevToolsHttpHandler::SerializeDescriptor(
     scoped_refptr<DevToolsAgentHost> agent_host,
     const std::string& host) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   std::string id = agent_host->GetId();
   dictionary->SetString(kTargetIdField, id);
   std::string parent_id = agent_host->GetParentId();

@@ -56,8 +56,8 @@ struct NavigationCorrection {
   bool is_porn;
   bool is_soft_porn;
 
-  base::Value* ToValue() const {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> ToValue() const {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("correctionType", correction_type);
     dict->SetString("urlCorrection", url_correction);
     dict->SetString("clickType", click_type);

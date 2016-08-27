@@ -213,9 +213,9 @@ base::DictionaryValue* EntryKernel::ToValue(
   return kernel_info;
 }
 
-base::ListValue* EntryKernelMutationMapToValue(
+std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations) {
-  base::ListValue* list = new base::ListValue();
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (EntryKernelMutationMap::const_iterator it = mutations.begin();
        it != mutations.end(); ++it) {
     list->Append(EntryKernelMutationToValue(it->second));
@@ -223,9 +223,9 @@ base::ListValue* EntryKernelMutationMapToValue(
   return list;
 }
 
-base::DictionaryValue* EntryKernelMutationToValue(
+std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("original", mutation.original.ToValue(NULL));
   dict->Set("mutated", mutation.mutated.ToValue(NULL));
   return dict;

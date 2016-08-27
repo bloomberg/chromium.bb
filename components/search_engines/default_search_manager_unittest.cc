@@ -67,19 +67,19 @@ void SetOverrides(user_prefs::TestingPrefServiceSyncable* prefs, bool update) {
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", alternate_urls);
   entry->SetString("search_terms_replacement_key", "espv");
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
 
   entry.reset(new base::DictionaryValue);
   entry->SetInteger("id", 1002);
   entry->SetString("name", update ? "new_bar" : "bar");
   entry->SetString("keyword", update ? "new_bark" : "bark");
   entry->SetString("encoding", std::string());
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   entry->SetInteger("id", 1003);
   entry->SetString("name", "baz");
   entry->SetString("keyword", "bazk");
   entry->SetString("encoding", "UTF-8");
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 }
 

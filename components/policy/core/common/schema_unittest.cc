@@ -656,8 +656,8 @@ TEST(SchemaTest, Validate) {
     dict.SetString("one", "string");
     dict.SetInteger("two", 2);
     base::ListValue list;
-    list.Append(dict.DeepCopy());
-    list.Append(dict.DeepCopy());
+    list.Append(dict.CreateDeepCopy());
+    list.Append(dict.CreateDeepCopy());
     bundle.Set("ArrayOfObjects", list.DeepCopy());
   }
 
@@ -666,8 +666,8 @@ TEST(SchemaTest, Validate) {
     list.AppendString("a string");
     list.AppendString("another string");
     base::ListValue listlist;
-    listlist.Append(list.DeepCopy());
-    listlist.Append(list.DeepCopy());
+    listlist.Append(list.CreateDeepCopy());
+    listlist.Append(list.CreateDeepCopy());
     bundle.Set("ArrayOfArray", listlist.DeepCopy());
   }
 

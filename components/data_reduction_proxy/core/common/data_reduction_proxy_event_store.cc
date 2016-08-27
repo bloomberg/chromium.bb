@@ -138,7 +138,7 @@ DataReductionProxyEventStore::GetSummaryValue() const {
 
   auto events_list = base::MakeUnique<base::ListValue>();
   for (const auto& event : stored_events_)
-    events_list->Append(event->DeepCopy());
+    events_list->Append(event->CreateDeepCopy());
   data_reduction_proxy_values->Set("events", std::move(events_list));
   return data_reduction_proxy_values;
 }

@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
@@ -65,9 +67,10 @@ void ListCapability<Option, Traits>::SaveTo(
   base::ListValue* options_list =
       description->CreateListItem(Traits::GetCapabilityPath());
   for (size_t i = 0; i < options_.size(); ++i) {
-    base::DictionaryValue* option_value = new base::DictionaryValue;
-    options_list->Append(option_value);
-    Traits::Save(options_[i], option_value);
+    std::unique_ptr<base::DictionaryValue> option_value(
+        new base::DictionaryValue);
+    Traits::Save(options_[i], option_value.get());
+    options_list->Append(std::move(option_value));
   }
 }
 
@@ -127,11 +130,12 @@ void SelectionCapability<Option, Traits>::SaveTo(
   description->CreateItem(Traits::GetCapabilityPath())
       ->Set(json::kKeyOption, options_list);
   for (size_t i = 0; i < options_.size(); ++i) {
-    base::DictionaryValue* option_value = new base::DictionaryValue;
-    options_list->Append(option_value);
+    std::unique_ptr<base::DictionaryValue> option_value(
+        new base::DictionaryValue);
     if (base::checked_cast<int>(i) == default_idx_)
       option_value->SetBoolean(json::kKeyIsDefault, true);
-    Traits::Save(options_[i], option_value);
+    Traits::Save(options_[i], option_value.get());
+    options_list->Append(std::move(option_value));
   }
 }
 

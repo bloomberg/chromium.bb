@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace syncer {
@@ -35,15 +36,15 @@ base::DictionaryValue* WriteTransactionInfo::ToValue(
   dict->SetString("id", base::Int64ToString(id));
   dict->SetString("location", location_string);
   dict->SetString("writer", WriterTagToString(writer));
-  base::Value* mutations_value = NULL;
+  std::unique_ptr<base::Value> mutations_value;
   const size_t mutations_size = mutations.Get().size();
   if (mutations_size <= max_mutations_size) {
     mutations_value = EntryKernelMutationMapToValue(mutations.Get());
   } else {
-    mutations_value = new base::StringValue(
+    mutations_value = base::MakeUnique<base::StringValue>(
         base::SizeTToString(mutations_size) + " mutations");
   }
-  dict->Set("mutations", mutations_value);
+  dict->Set("mutations", std::move(mutations_value));
   return dict;
 }
 

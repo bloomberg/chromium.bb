@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_number_conversions.h"
@@ -114,8 +115,9 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
   return success;
 }
 
-base::Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
-  base::DictionaryValue* value = new base::DictionaryValue();
+std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
+    const BookmarkNode* node) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   std::string id = base::Int64ToString(node->id());
   value->SetString(kIdKey, id);
   const base::string16& title = node->GetTitle();
@@ -147,7 +149,7 @@ base::Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
     value->SetString(kSyncTransactionVersion,
                      base::Int64ToString(node->sync_transaction_version()));
   }
-  return value;
+  return std::move(value);
 }
 
 base::Value* BookmarkCodec::EncodeMetaInfo(

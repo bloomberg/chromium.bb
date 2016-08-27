@@ -98,18 +98,20 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     return node && node->HasAncestor(managed_node_);
   }
 
-  static base::DictionaryValue* CreateBookmark(const std::string& title,
-                                               const std::string& url) {
+  static std::unique_ptr<base::DictionaryValue> CreateBookmark(
+      const std::string& title,
+      const std::string& url) {
     EXPECT_TRUE(GURL(url).is_valid());
-    base::DictionaryValue* dict = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("name", title);
     dict->SetString("url", GURL(url).spec());
     return dict;
   }
 
-  static base::DictionaryValue* CreateFolder(const std::string& title,
-                                             base::ListValue* children) {
-    base::DictionaryValue* dict = new base::DictionaryValue();
+  static std::unique_ptr<base::DictionaryValue> CreateFolder(
+      const std::string& title,
+      base::ListValue* children) {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("name", title);
     dict->Set("children", children);
     return dict;
@@ -137,7 +139,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME);
   }
 
-  static base::DictionaryValue* CreateExpectedTree() {
+  static std::unique_ptr<base::DictionaryValue> CreateExpectedTree() {
     return CreateFolder(GetManagedFolderTitle(), CreateTestTree());
   }
 

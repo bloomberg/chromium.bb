@@ -429,7 +429,8 @@ bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
 
 void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
 
-base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
+std::unique_ptr<base::DictionaryValue>
+AboutSigninInternals::TokenInfo::ToValue() const {
   std::unique_ptr<base::DictionaryValue> token_info(
       new base::DictionaryValue());
   token_info->SetString("service", consumer_id);
@@ -471,7 +472,7 @@ base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
     token_info->SetString("status", "Waiting for response");
   }
 
-  return token_info.release();
+  return token_info;
 }
 
 AboutSigninInternals::SigninStatus::SigninStatus()
@@ -653,8 +654,7 @@ AboutSigninInternals::SigninStatus::ToValue(
             "422460 AboutSigninInternals::SigninStatus::ToValue43"));
 
     for (size_t i = 0; i < tokens.size(); ++i) {
-      base::DictionaryValue* token_info = tokens[i]->ToValue();
-      token_details->Append(token_info);
+      token_details->Append(tokens[i]->ToValue());
     }
   }
 

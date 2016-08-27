@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SPELLCHECK_BROWSER_SPELLCHECK_ACTION_H_
 #define COMPONENTS_SPELLCHECK_BROWSER_SPELLCHECK_ACTION_H_
 
+#include <memory>
+
 #include "base/strings/string16.h"
 
 namespace base {
@@ -58,9 +60,8 @@ class SpellcheckAction {
   // nothing.
   void Finalize();
 
-  // Serializes the data in this object into a dictionary value. The caller owns
-  // the result.
-  base::DictionaryValue* Serialize() const;
+  // Serializes the data in this object into a dictionary value.
+  std::unique_ptr<base::DictionaryValue> Serialize() const;
 
   void set_type(SpellcheckActionType type) { type_ = type; }
   void set_index(int index) { index_ = index; }

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -117,7 +118,7 @@ StringSyncStat::StringSyncStat(base::ListValue* section,
   stat_->SetString("stat_name", key);
   stat_->SetString("stat_value", "Uninitialized");
   stat_->SetBoolean("is_valid", false);
-  section->Append(stat_);
+  section->Append(base::WrapUnique(stat_));
 }
 
 void StringSyncStat::SetValue(const std::string& value) {
@@ -145,7 +146,7 @@ BoolSyncStat::BoolSyncStat(base::ListValue* section, const std::string& key) {
   stat_->SetString("stat_name", key);
   stat_->SetBoolean("stat_value", false);
   stat_->SetBoolean("is_valid", false);
-  section->Append(stat_);
+  section->Append(base::WrapUnique(stat_));
 }
 
 void BoolSyncStat::SetValue(bool value) {
@@ -168,7 +169,7 @@ IntSyncStat::IntSyncStat(base::ListValue* section, const std::string& key) {
   stat_->SetString("stat_name", key);
   stat_->SetInteger("stat_value", 0);
   stat_->SetBoolean("is_valid", false);
-  section->Append(stat_);
+  section->Append(base::WrapUnique(stat_));
 }
 
 void IntSyncStat::SetValue(int value) {

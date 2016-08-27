@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -905,17 +907,17 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
 
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
     dict->SetString("email", base::UTF8ToUTF16(email_alpha));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    update->Append(std::move(dict));
 
-    dict = new base::DictionaryValue();
-    update->Append(dict);
+    dict.reset(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
     dict->SetString("email", base::UTF8ToUTF16(email_beta));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+    update->Append(std::move(dict));
 
     std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));
@@ -957,17 +959,17 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
 
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
     dict->SetString("email", base::UTF8ToUTF16(email_alpha));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    update->Append(std::move(dict));
 
-    dict = new base::DictionaryValue();
-    update->Append(dict);
+    dict.reset(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
     dict->SetString("email", base::UTF8ToUTF16(email_beta));
     dict->SetString("gaia", base::UTF8ToUTF16(std::string()));
+    update->Append(std::move(dict));
 
     std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));
@@ -1009,24 +1011,24 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
 
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    base::DictionaryValue* dict = new base::DictionaryValue();
-    update->Append(dict);
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
     dict->SetString("email", base::UTF8ToUTF16(email_alpha));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    update->Append(std::move(dict));
 
-    dict = new base::DictionaryValue();
-    update->Append(dict);
+    dict.reset(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
     dict->SetString("email", base::UTF8ToUTF16(email_beta));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+    update->Append(std::move(dict));
 
     // Succeed miggrated account.
-    dict = new base::DictionaryValue();
-    update->Append(dict);
+    dict.reset(new base::DictionaryValue());
     dict->SetString("account_id", base::UTF8ToUTF16(gaia_alpha));
     dict->SetString("email", base::UTF8ToUTF16(email_alpha));
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+    update->Append(std::move(dict));
 
     std::unique_ptr<TestSigninClient> client;
     client.reset(new TestSigninClient(&pref));

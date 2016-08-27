@@ -39,8 +39,8 @@ void SpellcheckAction::Finalize() {
   }
 }
 
-base::DictionaryValue* SpellcheckAction::Serialize() const {
-  base::DictionaryValue* result = new base::DictionaryValue;
+std::unique_ptr<base::DictionaryValue> SpellcheckAction::Serialize() const {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   switch (type_) {
     case TYPE_SELECT:
       result->SetString("actionType", "SELECT");

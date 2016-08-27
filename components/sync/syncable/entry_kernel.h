@@ -400,12 +400,10 @@ typedef std::map<int64_t, EntryKernelMutation> EntryKernelMutationMap;
 
 typedef Immutable<EntryKernelMutationMap> ImmutableEntryKernelMutationMap;
 
-// Caller owns the return value.
-base::DictionaryValue* EntryKernelMutationToValue(
+std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation);
 
-// Caller owns the return value.
-base::ListValue* EntryKernelMutationMapToValue(
+std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(
     const EntryKernelMutationMap& mutations);
 
 std::ostream& operator<<(std::ostream& os, const EntryKernel& entry_kernel);

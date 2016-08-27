@@ -123,7 +123,7 @@ class DevToolsHttpHandler {
   std::string GetFrontendURLInternal(const std::string& target_id,
                                      const std::string& host);
 
-  base::DictionaryValue* SerializeDescriptor(
+  std::unique_ptr<base::DictionaryValue> SerializeDescriptor(
       scoped_refptr<content::DevToolsAgentHost> agent_host,
       const std::string& host);
 

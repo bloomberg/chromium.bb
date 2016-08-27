@@ -4,7 +4,6 @@
 
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"

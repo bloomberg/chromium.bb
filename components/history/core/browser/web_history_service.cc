@@ -304,11 +304,11 @@ GURL GetQueryUrl(const base::string16& text_query,
 // Creates a DictionaryValue to hold the parameters for a deletion.
 // Ownership is passed to the caller.
 // |url| may be empty, indicating a time-range deletion.
-base::DictionaryValue* CreateDeletion(
+std::unique_ptr<base::DictionaryValue> CreateDeletion(
     const std::string& min_time,
     const std::string& max_time,
     const GURL& url) {
-  base::DictionaryValue* deletion = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> deletion(new base::DictionaryValue);
   deletion->SetString("type", "CHROME_HISTORY");
   if (url.is_valid())
     deletion->SetString("url", url.spec());

@@ -132,7 +132,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetString("favicon_url", "http://foi.com/favicon.ico");
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
   int version = TemplateURLPrepopulateData::GetDataVersion(&prefs_);
@@ -163,7 +163,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->Set("alternate_urls", alternate_urls);
   entry->SetString("search_terms_replacement_key", "espv");
   overrides = new base::ListValue;
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
   t_urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(
@@ -187,17 +187,17 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
   overrides = new base::ListValue;
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   entry->SetInteger("id", 1002);
   entry->SetString("name", "bar");
   entry->SetString("keyword", "bark");
   entry->SetString("encoding", std::string());
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   entry->SetInteger("id", 1003);
   entry->SetString("name", "baz");
   entry->SetString("keyword", "bazk");
   entry->SetString("encoding", "UTF-8");
-  overrides->Append(entry->DeepCopy());
+  overrides->Append(entry->CreateDeepCopy());
   prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
   t_urls =

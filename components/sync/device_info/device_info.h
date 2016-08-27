@@ -72,7 +72,7 @@ class DeviceInfo {
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
-  base::DictionaryValue* ToValue();
+  std::unique_ptr<base::DictionaryValue> ToValue();
 
  private:
   const std::string guid_;

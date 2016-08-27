@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,9 +92,9 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   nested_empty_dict->Set("a", new base::DictionaryValue);
   nested_empty_dict->Set("b", new base::ListValue);
   std::unique_ptr<base::ListValue> nested_empty_list(new base::ListValue);
-  nested_empty_list->Append(new base::DictionaryValue);
-  nested_empty_list->Append(new base::ListValue);
-  nested_empty_list->Append(nested_empty_dict->DeepCopy());
+  nested_empty_list->Append(base::MakeUnique<base::DictionaryValue>());
+  nested_empty_list->Append(base::MakeUnique<base::ListValue>());
+  nested_empty_list->Append(nested_empty_dict->CreateDeepCopy());
 
   // A dictionary with an empty dictionary, an empty list, and nested empty
   // dictionaries/lists in it.

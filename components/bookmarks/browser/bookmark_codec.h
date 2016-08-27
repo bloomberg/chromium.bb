@@ -6,6 +6,8 @@
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CODEC_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <set>
 #include <string>
 
@@ -108,8 +110,7 @@ class BookmarkCodec {
 
  private:
   // Encodes node and all its children into a Value object and returns it.
-  // The caller takes ownership of the returned object.
-  base::Value* EncodeNode(const BookmarkNode* node);
+  std::unique_ptr<base::Value> EncodeNode(const BookmarkNode* node);
 
   // Encodes the given meta info into a Value object and returns it. The caller
   // takes ownership of the returned object.

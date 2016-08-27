@@ -108,7 +108,7 @@ class AboutSigninInternals
     TokenInfo(const std::string& consumer_id,
               const OAuth2TokenService::ScopeSet& scopes);
     ~TokenInfo();
-    base::DictionaryValue* ToValue() const;
+    std::unique_ptr<base::DictionaryValue> ToValue() const;
 
     static bool LessThan(const TokenInfo* a, const TokenInfo* b);
 
