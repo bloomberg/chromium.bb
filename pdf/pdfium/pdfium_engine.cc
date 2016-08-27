@@ -2283,6 +2283,9 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
 }
 
 int PDFiumEngine::GetMostVisiblePage() {
+  if (in_flight_visible_page_)
+    return *in_flight_visible_page_;
+
   CalculateVisiblePages();
   return most_visible_page_;
 }
@@ -2675,6 +2678,11 @@ void PDFiumEngine::CalculateVisiblePages() {
 
 bool PDFiumEngine::IsPageVisible(int index) const {
   return base::ContainsValue(visible_pages_, index);
+}
+
+void PDFiumEngine::ScrollToPage(int page) {
+  in_flight_visible_page_ = page;
+  client_->ScrollToPage(page);
 }
 
 bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
@@ -3183,6 +3191,8 @@ int PDFiumEngine::GetVisiblePageIndex(FPDF_PAGE page) {
 }
 
 void PDFiumEngine::SetCurrentPage(int index) {
+  in_flight_visible_page_.reset();
+
   if (index == most_visible_page_ || !form_)
     return;
 
@@ -3526,13 +3536,13 @@ void PDFiumEngine::Form_ExecuteNamedAction(FPDF_FORMFILLINFO* param,
   // Reader supports more, like FitWidth, but since they're not part of the spec
   // and we haven't got bugs about them, no need to now.
   if (action == "NextPage") {
-    engine->client_->ScrollToPage(index + 1);
+    engine->ScrollToPage(index + 1);
   } else if (action == "PrevPage") {
-    engine->client_->ScrollToPage(index - 1);
+    engine->ScrollToPage(index - 1);
   } else if (action == "FirstPage") {
-    engine->client_->ScrollToPage(0);
+    engine->ScrollToPage(0);
   } else if (action == "LastPage") {
-    engine->client_->ScrollToPage(engine->pages_.size() - 1);
+    engine->ScrollToPage(engine->pages_.size() - 1);
   }
 }
 
@@ -3556,7 +3566,7 @@ void PDFiumEngine::Form_DoGoToAction(FPDF_FORMFILLINFO* param,
                                      float* position_array,
                                      int size_of_array) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->client_->ScrollToPage(page_index);
+  engine->ScrollToPage(page_index);
 }
 
 int PDFiumEngine::Form_Alert(IPDF_JSPLATFORM* param,
@@ -3685,7 +3695,7 @@ void PDFiumEngine::Form_SubmitForm(IPDF_JSPLATFORM* param,
 void PDFiumEngine::Form_GotoPage(IPDF_JSPLATFORM* param,
                                  int page_number) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->client_->ScrollToPage(page_number);
+  engine->ScrollToPage(page_number);
 }
 
 int PDFiumEngine::Form_Browse(IPDF_JSPLATFORM* param,

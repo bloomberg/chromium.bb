@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "pdf/document_loader.h"
 #include "pdf/pdf_engine.h"
@@ -248,6 +249,11 @@ class PDFiumEngine : public PDFEngine,
   // Returns true iff the given page index is visible.  CalculateVisiblePages
   // must have been called first.
   bool IsPageVisible(int index) const;
+
+  // Internal interface that caches the page index requested by PDFium to get
+  // scrolled to. The cache is to be be used during the interval the PDF
+  // plugin has not finished handling the scroll request.
+  void ScrollToPage(int page);
 
   // Checks if a page is now available, and if so marks it as such and returns
   // true.  Otherwise, it will return false and will add the index to the given
@@ -677,6 +683,10 @@ class PDFiumEngine : public PDFEngine,
   // Holds the zero-based page index of the most visible page; refreshed by
   // calling CalculateVisiblePages()
   int most_visible_page_;
+
+  // Holds the page index requested by PDFium while the scroll operation
+  // is being handled (asynchronously).
+  base::Optional<int> in_flight_visible_page_;
 
   // Set to true after FORM_DoDocumentJSAction/FORM_DoDocumentOpenAction have
   // been called. Only after that can we call FORM_DoPageAAction.
