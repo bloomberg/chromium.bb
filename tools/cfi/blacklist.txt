@@ -95,21 +95,8 @@ fun:*SkScalerContext*MakeRec*
 
 # CC
 
-# https://crbug.com/638045
-fun:*WebLayerImpl*invalidateRect*
-
 # https://crbug.com/638056
-fun:*DisplayItemList*Raster*
-fun:*DisplayItemList*ApproximateMemoryUsage*
-fun:*LayerTreeHost*SetNeedsAnimate*
 fun:*LayerTreeHost*NotifySwapPromiseMonitorsOfSetNeedsCommit*
-fun:*LayerTreeHost*SetNeedsUpdateLayers*
-
-# https://crbug.com/638060
-fun:*DrawingDisplayItem*Raster*
-
-# https://crbug.com/638064
-fun:*DrawingDisplayItem*ApproximateOpCount*
 
 # WebKit
 # The entries below have not been categorized
