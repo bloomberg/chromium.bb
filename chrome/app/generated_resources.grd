@@ -3424,8 +3424,8 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT" desc="The value displayed in the cache size cells.">
           <ph name="NUM_KILOBYTES">$1<ex>5,000</ex></ph>K (<ph name="NUM_KILOBYTES_LIVE">$2<ex>5,000</ex></ph>K live)
         </message>
-        <message name="IDS_TASK_MANAGER_NA_CELL_TEXT" desc="The value displayed for network / webcache usage when the information is not available (Not Applicable).">
-          N/A
+        <message name="IDS_TASK_MANAGER_NA_CELL_TEXT" desc="The value displayed for resource usage when the information is not available, or not applicable to the process.">
+          &#8211;
         </message>
         <message name="IDS_TASK_MANAGER_BACKGROUNDED_TEXT" desc="The value displayed for a process with backgrounded priority">
           Low
