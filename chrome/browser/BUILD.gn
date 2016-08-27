@@ -741,6 +741,12 @@ split_static_library("browser") {
     ]
   }
 
+  if (enable_vr_shell && android_java_ui) {
+    defines += [ "ENABLE_VR_SHELL" ]
+    deps += [ "android/vr_shell:vr_shell" ]
+    configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
+  }
+
   if (is_android) {
     deps += [
       "//components/cdm/browser",

@@ -169,6 +169,10 @@
 #include "printing/printing_context_android.h"
 #endif
 
+#if defined(ENABLE_VR_SHELL)
+#include "chrome/browser/android/vr_shell/vr_shell.h"
+#endif
+
 namespace chrome {
 namespace android {
 
@@ -358,6 +362,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UsbChooserDialogAndroid", UsbChooserDialogAndroid::Register},
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
+#if defined(ENABLE_VR_SHELL)
+    {"VrShell", vr_shell::RegisterVrShell},
+#endif
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkUpdateManager", WebApkUpdateManager::Register},
     {"WebappRegistry", WebappRegistry::RegisterWebappRegistry},

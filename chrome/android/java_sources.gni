@@ -1062,6 +1062,11 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
 ]
 
+chrome_vr_java_sources = [
+  "java/src/org/chromium/chrome/browser/VrActivity.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
+]
+
 chrome_test_java_sources = [
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestAnnotationTest.java",
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestClassAnnotationInheritanceTest.java",
