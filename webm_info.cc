@@ -608,6 +608,35 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
         }
         indent->Adjust(libwebm::kDecreaseIndent);
       }
+
+      const mkvparser::Projection* const projection =
+          video_track->GetProjection();
+      if (projection) {
+        fprintf(o, "%sProjection:\n", indent->indent_str().c_str());
+        indent->Adjust(libwebm::kIncreaseIndent);
+
+        const int projection_type = static_cast<int>(projection->type);
+        const int kTypeNotPresent =
+            static_cast<int>(mkvparser::Projection::kTypeNotPresent);
+        const float kValueNotPresent = mkvparser::Projection::kValueNotPresent;
+        if (projection_type != kTypeNotPresent)
+          fprintf(o, "%sProjectionType            : %d\n",
+                  indent->indent_str().c_str(), projection_type);
+        if (projection->private_data)
+          fprintf(o, "%sProjectionPrivate(size)   : %d\n",
+                  indent->indent_str().c_str(),
+                  static_cast<int>(projection->private_data_length));
+        if (projection->pose_yaw != kValueNotPresent)
+          fprintf(o, "%sProjectionPoseYaw         : %g\n",
+                  indent->indent_str().c_str(), projection->pose_yaw);
+        if (projection->pose_pitch != kValueNotPresent)
+          fprintf(o, "%sProjectionPosePitch       : %g\n",
+                  indent->indent_str().c_str(), projection->pose_pitch);
+        if (projection->pose_roll != kValueNotPresent)
+          fprintf(o, "%sProjectionPoseRoll         : %g\n",
+                  indent->indent_str().c_str(), projection->pose_roll);
+        indent->Adjust(libwebm::kDecreaseIndent);
+      }
     } else if (track_type == mkvparser::Track::kAudio) {
       const mkvparser::AudioTrack* const audio_track =
           static_cast<const mkvparser::AudioTrack* const>(track);
