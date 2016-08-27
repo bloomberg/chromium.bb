@@ -130,6 +130,7 @@ class ContiguousContainer : public ContiguousContainerBase {
   ContiguousContainer(size_t max_object_size, size_t initial_size_bytes)
       : ContiguousContainerBase(Align(max_object_size), initial_size_bytes) {}
 
+  DISABLE_CFI_PERF
   ~ContiguousContainer() {
     for (auto& element : *this) {
       // MSVC incorrectly reports this variable as unused.

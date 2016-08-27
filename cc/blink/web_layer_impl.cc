@@ -55,6 +55,7 @@ int WebLayerImpl::id() const {
   return layer_->id();
 }
 
+DISABLE_CFI_PERF
 void WebLayerImpl::invalidateRect(const blink::WebRect& rect) {
   layer_->SetNeedsDisplayRect(rect);
 }

@@ -78,6 +78,7 @@ sk_sp<const SkPicture> DrawingDisplayItem::GetPicture() const {
   return picture_;
 }
 
+DISABLE_CFI_PERF
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
                                 SkPicture::AbortCallback* callback) const {
   if (canvas->quickReject(picture_->cullRect()))
@@ -125,6 +126,7 @@ size_t DrawingDisplayItem::ExternalMemoryUsage() const {
   return SkPictureUtils::ApproximateBytesUsed(picture_.get());
 }
 
+DISABLE_CFI_PERF
 int DrawingDisplayItem::ApproximateOpCount() const {
   return picture_->approximateOpCount();
 }

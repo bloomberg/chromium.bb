@@ -550,11 +550,13 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
   proxy_->SetDeferCommits(defer_commits);
 }
 
+DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
+DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   NotifySwapPromiseMonitorsOfSetNeedsCommit();

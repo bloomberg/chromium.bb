@@ -129,6 +129,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   canvas->restore();
 }
 
+DISABLE_CFI_PERF
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
   gfx::Rect canvas_playback_rect;
@@ -182,6 +183,7 @@ int DisplayItemList::ApproximateOpCount() const {
   return approximate_op_count_;
 }
 
+DISABLE_CFI_PERF
 size_t DisplayItemList::ApproximateMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 
