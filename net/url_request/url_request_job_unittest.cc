@@ -271,14 +271,16 @@ TEST(URLRequestJob, RedirectTransactionWithReferrerPolicyHeader) {
        URLRequest::NO_REFERRER /* expected final policy */,
        "" /* expected final referrer */},
 
-      // Same as above but for the legacy keyword 'never'.
+      // Same as above but for the legacy keyword 'never', which should
+      // not be supported.
       {"http://foo.test/one" /* original url */,
        "http://foo.test/one" /* original referrer */,
        "Location: http://foo.test/test\nReferrer-Policy: never\n",
        // original policy
        URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-       URLRequest::NO_REFERRER /* expected final policy */,
-       "" /* expected final referrer */},
+       // expected final policy
+       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+       "http://foo.test/one" /* expected final referrer */},
 
       // If a redirect serves 'Referrer-Policy:
       // no-referrer-when-downgrade', then the referrer should be cleared
@@ -293,15 +295,16 @@ TEST(URLRequestJob, RedirectTransactionWithReferrerPolicyHeader) {
        URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
        "" /* expected final referrer */},
 
-      // Same as above but for the legacy keyword 'default'.
+      // Same as above but for the legacy keyword 'default', which
+      // should not be supported.
       {"https://foo.test/one" /* original url */,
        "https://foo.test/one" /* original referrer */,
        "Location: http://foo.test\n"
        "Referrer-Policy: default\n",
        URLRequest::NEVER_CLEAR_REFERRER /* original policy */,
        // expected final policy
-       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-       "" /* expected final referrer */},
+       URLRequest::NEVER_CLEAR_REFERRER,
+       "https://foo.test/one" /* expected final referrer */},
 
       // If a redirect serves 'Referrer-Policy: origin', then the referrer
       // should be stripped to its origin, even if the original request's
@@ -346,14 +349,16 @@ TEST(URLRequestJob, RedirectTransactionWithReferrerPolicyHeader) {
        URLRequest::NEVER_CLEAR_REFERRER /* expected final policy */,
        "https://foo.test/one" /* expected final referrer */},
 
-      // Same as above but for the legacy keyword 'always'.
+      // Same as above but for the legacy keyword 'always', which should
+      // not be supported.
       {"https://foo.test/one" /* original url */,
        "https://foo.test/one" /* original referrer */,
        "Location: https://bar.test/two\n"
        "Referrer-Policy: always\n",
        URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN /* original policy */,
-       URLRequest::NEVER_CLEAR_REFERRER /* expected final policy */,
-       "https://foo.test/one" /* expected final referrer */},
+       URLRequest::
+           ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN /* expected final policy */,
+       "https://foo.test/" /* expected final referrer */},
 
       // An invalid keyword should leave the policy untouched.
       {"https://foo.test/one" /* original url */,

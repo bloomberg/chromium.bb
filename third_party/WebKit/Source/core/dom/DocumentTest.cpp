@@ -184,28 +184,37 @@ TEST_F(DocumentTest, referrerPolicyParsing)
     struct TestCase {
         const char* policy;
         ReferrerPolicy expected;
+        bool isLegacy;
     } tests[] = {
-        { "", ReferrerPolicyDefault },
+        { "", ReferrerPolicyDefault, false },
         // Test that invalid policy values are ignored.
-        { "not-a-real-policy", ReferrerPolicyDefault },
-        { "not-a-real-policy,also-not-a-real-policy", ReferrerPolicyDefault },
-        { "not-a-real-policy,unsafe-url", ReferrerPolicyAlways },
-        { "unsafe-url,not-a-real-policy", ReferrerPolicyAlways },
+        { "not-a-real-policy", ReferrerPolicyDefault, false },
+        { "not-a-real-policy,also-not-a-real-policy", ReferrerPolicyDefault, false },
+        { "not-a-real-policy,unsafe-url", ReferrerPolicyAlways, false },
+        { "unsafe-url,not-a-real-policy", ReferrerPolicyAlways, false },
         // Test parsing each of the policy values.
-        { "always", ReferrerPolicyAlways },
-        { "default", ReferrerPolicyNoReferrerWhenDowngrade },
-        { "never", ReferrerPolicyNever },
-        { "no-referrer", ReferrerPolicyNever },
-        { "no-referrer-when-downgrade", ReferrerPolicyNoReferrerWhenDowngrade },
-        { "origin", ReferrerPolicyOrigin },
-        { "origin-when-crossorigin", ReferrerPolicyOriginWhenCrossOrigin },
-        { "origin-when-cross-origin", ReferrerPolicyOriginWhenCrossOrigin },
+        { "always", ReferrerPolicyAlways, true },
+        { "default", ReferrerPolicyNoReferrerWhenDowngrade, true },
+        { "never", ReferrerPolicyNever, true },
+        { "no-referrer", ReferrerPolicyNever, false },
+        { "default", ReferrerPolicyNoReferrerWhenDowngrade, true },
+        { "no-referrer-when-downgrade", ReferrerPolicyNoReferrerWhenDowngrade, false },
+        { "origin", ReferrerPolicyOrigin, false },
+        { "origin-when-crossorigin", ReferrerPolicyOriginWhenCrossOrigin, true },
+        { "origin-when-cross-origin", ReferrerPolicyOriginWhenCrossOrigin, false },
         { "unsafe-url", ReferrerPolicyAlways },
     };
 
     for (auto test : tests) {
         document().setReferrerPolicy(ReferrerPolicyDefault);
-        document().parseAndSetReferrerPolicy(test.policy);
+        if (test.isLegacy) {
+            // Legacy keyword support must be explicitly enabled for the policy to parse successfully.
+            document().parseAndSetReferrerPolicy(test.policy);
+            EXPECT_EQ(ReferrerPolicyDefault, document().getReferrerPolicy());
+            document().parseAndSetReferrerPolicy(test.policy, true);
+        } else {
+            document().parseAndSetReferrerPolicy(test.policy);
+        }
         EXPECT_EQ(test.expected, document().getReferrerPolicy()) << test.policy;
     }
 }

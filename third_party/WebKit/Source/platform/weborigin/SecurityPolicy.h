@@ -68,6 +68,7 @@ public:
     static bool isOriginWhiteListedTrustworthy(const SecurityOrigin&);
 
     static bool referrerPolicyFromString(const String& policy, ReferrerPolicy* result);
+    static bool referrerPolicyFromStringWithLegacyKeywords(const String& policy, ReferrerPolicy* result);
 };
 
 } // namespace blink

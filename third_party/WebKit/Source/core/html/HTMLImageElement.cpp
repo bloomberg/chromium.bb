@@ -266,7 +266,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == referrerpolicyAttr) {
         m_referrerPolicy = ReferrerPolicyDefault;
         if (!value.isNull())
-            SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
+            SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(value, &m_referrerPolicy);
     } else {
         HTMLElement::parseAttribute(name, oldValue, value);
     }

@@ -110,7 +110,7 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == referrerpolicyAttr) {
         m_referrerPolicy = ReferrerPolicyDefault;
         if (!value.isNull())
-            SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
+            SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(value, &m_referrerPolicy);
     } else if (name == allowfullscreenAttr) {
         bool oldAllowFullscreen = m_allowFullscreen;
         m_allowFullscreen = !value.isNull();

@@ -421,7 +421,7 @@ void HTMLAnchorElement::handleClick(Event* event)
     request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
 
     ReferrerPolicy policy;
-    if (hasAttribute(referrerpolicyAttr) && SecurityPolicy::referrerPolicyFromString(fastGetAttribute(referrerpolicyAttr), &policy) && !hasRel(RelationNoReferrer)) {
+    if (hasAttribute(referrerpolicyAttr) && SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(fastGetAttribute(referrerpolicyAttr), &policy) && !hasRel(RelationNoReferrer)) {
         request.setHTTPReferrer(SecurityPolicy::generateReferrer(policy, completedURL, document().outgoingReferrer()));
     }
 

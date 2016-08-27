@@ -79,14 +79,12 @@ URLRequest::ReferrerPolicy ProcessReferrerPolicyHeaderOnRedirect(
                         base::SPLIT_WANT_NONEMPTY);
 
   for (const auto& token : policy_tokens) {
-    if (base::CompareCaseInsensitiveASCII(token, "never") == 0 ||
-        base::CompareCaseInsensitiveASCII(token, "no-referrer") == 0) {
+    if (base::CompareCaseInsensitiveASCII(token, "no-referrer") == 0) {
       new_policy = URLRequest::NO_REFERRER;
       continue;
     }
 
-    if (base::CompareCaseInsensitiveASCII(token, "default") == 0 ||
-        base::CompareCaseInsensitiveASCII(token,
+    if (base::CompareCaseInsensitiveASCII(token,
                                           "no-referrer-when-downgrade") == 0) {
       new_policy =
           URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
@@ -104,8 +102,7 @@ URLRequest::ReferrerPolicy ProcessReferrerPolicyHeaderOnRedirect(
       continue;
     }
 
-    if (base::CompareCaseInsensitiveASCII(token, "always") == 0 ||
-        base::CompareCaseInsensitiveASCII(token, "unsafe-url") == 0) {
+    if (base::CompareCaseInsensitiveASCII(token, "unsafe-url") == 0) {
       new_policy = URLRequest::NEVER_CLEAR_REFERRER;
       continue;
     }

@@ -154,7 +154,11 @@ public:
     // the context's referrer policy to the last one that is a valid
     // policy. Logs a message to the console if none of the policy
     // tokens are valid policies.
-    void parseAndSetReferrerPolicy(const String& policies);
+    //
+    // If |supportLegacyKeywords| is true, then the legacy keywords
+    // "never", "default", "always", and "origin-when-crossorigin" are
+    // parsed as valid policies.
+    void parseAndSetReferrerPolicy(const String& policies, bool supportLegacyKeywords = false);
     void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 

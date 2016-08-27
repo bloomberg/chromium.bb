@@ -236,7 +236,7 @@ String ExecutionContext::outgoingReferrer() const
     return url().strippedForUseAsReferrer();
 }
 
-void ExecutionContext::parseAndSetReferrerPolicy(const String& policies)
+void ExecutionContext::parseAndSetReferrerPolicy(const String& policies, bool supportLegacyKeywords)
 {
     ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
 
@@ -244,13 +244,13 @@ void ExecutionContext::parseAndSetReferrerPolicy(const String& policies)
     policies.split(',', true, tokens);
     for (const auto& token : tokens) {
         ReferrerPolicy currentResult;
-        if (SecurityPolicy::referrerPolicyFromString(token, &currentResult)) {
+        if ((supportLegacyKeywords ? SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(token, &currentResult) : SecurityPolicy::referrerPolicyFromString(token, &currentResult))) {
             referrerPolicy = currentResult;
         }
     }
 
     if (referrerPolicy == ReferrerPolicyDefault) {
-        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policies + "' is not one of 'always', 'default', 'never', 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-crossorigin', or 'unsafe-url'. The referrer policy has been left unchanged."));
+        addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "Failed to set referrer policy: The value '" + policies + "' is not one of " + (supportLegacyKeywords ? "'always', 'default', 'never', 'origin-when-crossorigin', " : "") + "'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-cross-origin', or 'unsafe-url'. The referrer policy has been left unchanged."));
         return;
     }
 

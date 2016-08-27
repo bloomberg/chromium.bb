@@ -299,7 +299,7 @@ private:
             }
         } else if (!m_referrerPolicySet && match(attributeName, referrerpolicyAttr) && !attributeValue.isNull()) {
             m_referrerPolicySet = true;
-            SecurityPolicy::referrerPolicyFromString(attributeValue, &m_referrerPolicy);
+            SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(attributeValue, &m_referrerPolicy);
         }
     }
 
@@ -562,7 +562,7 @@ static void handleMetaViewport(const String& attributeValue, const CachedDocumen
 static void handleMetaReferrer(const String& attributeValue, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
 {
     ReferrerPolicy metaReferrerPolicy = ReferrerPolicyDefault;
-    if (!attributeValue.isEmpty() && !attributeValue.isNull() && SecurityPolicy::referrerPolicyFromString(attributeValue, &metaReferrerPolicy)) {
+    if (!attributeValue.isEmpty() && !attributeValue.isNull() && SecurityPolicy::referrerPolicyFromStringWithLegacyKeywords(attributeValue, &metaReferrerPolicy)) {
         documentParameters->referrerPolicy = metaReferrerPolicy;
     }
     cssScanner->setReferrerPolicy(documentParameters->referrerPolicy);
