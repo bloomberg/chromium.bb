@@ -12,24 +12,24 @@
 
 namespace ash {
 
+namespace {
+
+const gfx::ImageSkia* GetImageForResourceId(int resource_id) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  return bundle.GetImageNamed(resource_id).ToImageSkia();
+}
+
+}  // namespace
+
 // static
 const char TrayPopupHeaderButton::kViewClassName[] =
     "tray/TrayPopupHeaderButton";
 
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
-                                             int icon_resource_id,
+                                             const gfx::ImageSkia& icon,
                                              int accessible_name_id)
     : views::ToggleImageButton(listener) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(views::Button::STATE_NORMAL,
-           bundle.GetImageNamed(icon_resource_id).ToImageSkia());
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
-  SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
-  SetFocusForPlatform();
-
-  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 2, 2, 3)));
+  Initialize(icon, accessible_name_id);
 }
 
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
@@ -38,7 +38,8 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int enabled_resource_id_hover,
                                              int disabled_resource_id_hover,
                                              int accessible_name_id)
-    : TrayPopupHeaderButton(listener, enabled_resource_id, accessible_name_id) {
+    : views::ToggleImageButton(listener) {
+  Initialize(*GetImageForResourceId(enabled_resource_id), accessible_name_id);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetToggledImage(views::Button::STATE_NORMAL,
                   bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
@@ -68,6 +69,19 @@ void TrayPopupHeaderButton::StateChanged() {
     set_background(nullptr);
   }
   SchedulePaint();
+}
+
+void TrayPopupHeaderButton::Initialize(const gfx::ImageSkia& icon,
+                                       int accessible_name_id) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  SetImage(views::Button::STATE_NORMAL, &icon);
+  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                    views::ImageButton::ALIGN_MIDDLE);
+  SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
+  SetFocusForPlatform();
+
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, gfx::Insets(1, 2, 2, 3)));
 }
 
 }  // namespace ash

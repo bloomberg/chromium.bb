@@ -50,6 +50,7 @@
       'vector_icons/folder_supervised.icon',
       'vector_icons/fullscreen.icon',
       'vector_icons/globe.icon',
+      'vector_icons/help.icon',
       'vector_icons/help_outline.icon',
       'vector_icons/image.icon',
       'vector_icons/incognito.1x.icon',

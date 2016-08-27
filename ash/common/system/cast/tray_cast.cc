@@ -509,7 +509,9 @@ views::View* CastDetailedView::AddToReceiverList(
           .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON)
           .ToImageSkia();
   const base::string16& name = receiverActivity.receiver.name;
-  container->AddIndentedIconAndLabel(*image, name, false);
+  container->AddIconAndLabelCustomSize(
+      *image, name, false, kTrayPopupDetailsIconWidth,
+      kTrayPopupPaddingHorizontal, kTrayPopupPaddingBetweenItems);
 
   scroll_content()->AddChildView(container);
   return container;

@@ -23,7 +23,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/devices/stylus_state.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -42,20 +44,27 @@ const int kVerticalShelfHorizontalPadding = 2;
 const int kVerticalShelfVerticalPadding = 5;
 
 // Width of the palette itself (dp).
-const int kPaletteWidth = 360;
+const int kPaletteWidth = 332;
 
 // Size of icon in the shelf (dp).
 const int kShelfIconSize = 18;
 
+// Margins between the title view and the edges around it (dp).
+const int kPaddingBetweenTitleAndTopEdge = 4;
+const int kPaddingBetweenTitleAndLeftEdge = 12;
+const int kPaddingBetweenTitleAndSeparator = 3;
+
+// Margin between the separator beneath the title and the first action (dp).
+const int kPaddingActionsAndTopSeparator = 4;
+
+// Size of the header icons (dp).
+const int kIconSize = 20;
+
 // Creates a separator.
 views::Separator* CreateSeparator(views::Separator::Orientation orientation) {
-  const int kSeparatorInset = 10;
-
   views::Separator* separator =
       new views::Separator(views::Separator::HORIZONTAL);
   separator->SetColor(ash::kBorderDarkColor);
-  separator->SetBorder(
-      views::Border::CreateEmptyBorder(kSeparatorInset, 0, kSeparatorInset, 0));
   return separator;
 }
 
@@ -67,8 +76,6 @@ class TitleView : public views::View, public views::ButtonListener {
     auto* box_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     SetLayoutManager(box_layout);
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, ash::kTrayPopupPaddingHorizontal, 0, 0));
 
     views::Label* text_label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
@@ -77,16 +84,19 @@ class TitleView : public views::View, public views::ButtonListener {
     AddChildView(text_label);
     box_layout->SetFlexForView(text_label, 1);
 
-    help_button_ = new ash::TrayPopupHeaderButton(this, IDR_AURA_UBER_TRAY_HELP,
+    gfx::ImageSkia settings_icon = CreateVectorIcon(
+        gfx::VectorIconId::SETTINGS, kIconSize, gfx::kChromeIconGrey);
+    gfx::ImageSkia help_icon = CreateVectorIcon(
+        gfx::VectorIconId::HELP, kIconSize, gfx::kChromeIconGrey);
+
+    help_button_ = new ash::TrayPopupHeaderButton(this, help_icon,
                                                   IDS_ASH_STATUS_TRAY_HELP);
     help_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
     AddChildView(help_button_);
 
-    AddChildView(CreateSeparator(views::Separator::VERTICAL));
-
     settings_button_ = new ash::TrayPopupHeaderButton(
-        this, IDR_AURA_UBER_TRAY_SETTINGS, IDS_ASH_STATUS_TRAY_SETTINGS);
+        this, settings_icon, IDS_ASH_STATUS_TRAY_SETTINGS);
     settings_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SETTINGS));
     AddChildView(settings_button_);
@@ -188,11 +198,19 @@ bool PaletteTray::ShowPalette() {
       views::TrayBubbleView::Create(tray_container(), this, &init_params);
   bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   bubble_view->UseCompactMargins();
-  bubble_view->set_margins(gfx::Insets(bubble_view->margins().top(), 0, 0, 0));
+  bubble_view->set_margins(gfx::Insets(0, 0, 0, 0));
 
   // Add child views.
-  bubble_view->AddChildView(new TitleView(this));
-  bubble_view->AddChildView(CreateSeparator(views::Separator::HORIZONTAL));
+  auto* title_view = new TitleView(this);
+  title_view->SetBorder(views::Border::CreateEmptyBorder(gfx::Insets(
+      kPaddingBetweenTitleAndTopEdge, kPaddingBetweenTitleAndLeftEdge,
+      kPaddingBetweenTitleAndSeparator, 0)));
+  bubble_view->AddChildView(title_view);
+
+  views::Separator* separator = CreateSeparator(views::Separator::HORIZONTAL);
+  separator->SetBorder(views::Border::CreateEmptyBorder(
+      gfx::Insets(0, 0, kPaddingActionsAndTopSeparator, 0)));
+  bubble_view->AddChildView(separator);
   AddToolsToView(bubble_view);
 
   // Show the bubble.
@@ -204,21 +222,8 @@ bool PaletteTray::ShowPalette() {
 
 void PaletteTray::AddToolsToView(views::View* host) {
   std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
-
-  // There may not be any registered tools.
-  if (!views.size())
-    return;
-
-  PaletteGroup group = views[0].group;
-  for (const PaletteToolView& view : views) {
-    // If the group changes, add a separator.
-    if (group != view.group) {
-      group = view.group;
-      host->AddChildView(CreateSeparator(views::Separator::HORIZONTAL));
-    }
-
+  for (const PaletteToolView& view : views)
     host->AddChildView(view.view);
-  }
 }
 
 void PaletteTray::SessionStateChanged(
@@ -261,10 +266,18 @@ gfx::Rect PaletteTray::GetAnchorRect(
 
   // Move the palette to the left so the right edge of the palette aligns with
   // the right edge of the tray button.
-  if (IsHorizontalAlignment(shelf_alignment()))
-    r.Offset(-r.width() + tray_container()->width(), 0);
-  else
+  if (IsHorizontalAlignment(shelf_alignment())) {
+    // TODO(jdufault): Figure out a more robust adjustment method that does not
+    // break in md-shelf.
+    int icon_size = tray_container()->width();
+    if (tray_container()->border())
+      icon_size -= tray_container()->border()->GetInsets().width();
+
+    r.Offset(-r.width() + icon_size, 0);
+  } else {
+    // Vertical layout doesn't need the border adjustment that horizontal needs.
     r.Offset(0, -r.height() + tray_container()->height());
+  }
 
   return r;
 }

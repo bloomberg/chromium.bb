@@ -38,11 +38,17 @@ class HoverHighlightView : public ActionableView {
                        bool highlight);
 
   // Convenience function for adding an icon and a label. This also sets the
-  // accessible name. The icon has an indent equal to
-  // kTrayPopupPaddingHorizontal.
-  void AddIndentedIconAndLabel(const gfx::ImageSkia& image,
-                               const base::string16& text,
-                               bool highlight);
+  // accessible name. This method allows the indent and spacing between elements
+  // to be set by the caller. |icon_size| is the size of the icon. |indent| is
+  // the distance between the edges of the view and the icons, and
+  // |space_between_items| is the minimum distance between any two child views.
+  // All distances are in DP.
+  void AddIconAndLabelCustomSize(const gfx::ImageSkia& image,
+                                 const base::string16& text,
+                                 bool highlight,
+                                 int icon_size,
+                                 int indent,
+                                 int space_between_items);
 
   // Convenience function for adding a label with padding on the left for a
   // blank icon. This also sets the accessible name. Returns label after
@@ -59,8 +65,8 @@ class HoverHighlightView : public ActionableView {
                                   bool checked);
 
   // Add an optional right icon to an already established view (call one of
-  // the other Add* functions first).
-  void AddRightIcon(const gfx::ImageSkia& image);
+  // the other Add* functions first). |icon_size| is the size of the icon in DP.
+  void AddRightIcon(const gfx::ImageSkia& image, int icon_size);
 
   // Hide or show the right icon.
   void SetRightIconVisible(bool visible);
@@ -94,6 +100,7 @@ class HoverHighlightView : public ActionableView {
  private:
   // Actually adds the icon and label but does not set the layout manager
   void DoAddIconAndLabel(const gfx::ImageSkia& image,
+                         int icon_size,
                          const base::string16& text,
                          bool highlight);
 

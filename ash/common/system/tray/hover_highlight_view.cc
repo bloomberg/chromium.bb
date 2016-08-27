@@ -47,13 +47,12 @@ bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image) {
+void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
+                                      int icon_size) {
   DCHECK(box_layout_);
   DCHECK(!right_icon_);
 
-  right_icon_ = new views::ImageView();
-  right_icon_->SetImageSize(
-      gfx::Size(kTrayPopupDetailsIconWidth, kTrayPopupDetailsIconWidth));
+  right_icon_ = new FixedSizedImageView(icon_size, icon_size);
   right_icon_->SetImage(image);
   right_icon_->SetEnabled(enabled());
   AddChildView(right_icon_);
@@ -73,26 +72,28 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
   box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
                                      kTrayPopupPaddingBetweenItems);
   SetLayoutManager(box_layout_);
-  DoAddIconAndLabel(image, text, highlight);
+  DoAddIconAndLabel(image, kTrayPopupDetailsIconWidth, text, highlight);
 }
 
-void HoverHighlightView::AddIndentedIconAndLabel(const gfx::ImageSkia& image,
-                                                 const base::string16& text,
-                                                 bool highlight) {
-  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                     kTrayPopupPaddingHorizontal, 0,
-                                     kTrayPopupPaddingBetweenItems);
+void HoverHighlightView::AddIconAndLabelCustomSize(const gfx::ImageSkia& image,
+                                                   const base::string16& text,
+                                                   bool highlight,
+                                                   int icon_size,
+                                                   int indent,
+                                                   int space_between_items) {
+  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, indent, 0,
+                                     space_between_items);
   SetLayoutManager(box_layout_);
-  DoAddIconAndLabel(image, text, highlight);
+  DoAddIconAndLabel(image, icon_size, text, highlight);
 }
 
 void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
+                                           int icon_size,
                                            const base::string16& text,
                                            bool highlight) {
   DCHECK(box_layout_);
 
-  views::ImageView* image_view =
-      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+  views::ImageView* image_view = new FixedSizedImageView(icon_size, 0);
   image_view->SetImage(image);
   image_view->SetEnabled(enabled());
   AddChildView(image_view);
@@ -151,8 +152,9 @@ views::Label* HoverHighlightView::AddCheckableLabel(const base::string16& text,
         rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
     int margin = kTrayPopupPaddingHorizontal +
                  kTrayPopupDetailsLabelExtraLeftMargin - kCheckLabelPadding;
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
-                                          kCheckLabelPadding));
+    box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
+                                       kCheckLabelPadding);
+    SetLayoutManager(box_layout_);
     views::ImageView* image_view = new FixedSizedImageView(margin, 0);
     image_view->SetImage(check);
     image_view->SetHorizontalAlignment(views::ImageView::TRAILING);

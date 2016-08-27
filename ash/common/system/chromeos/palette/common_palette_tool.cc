@@ -15,8 +15,24 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 
 namespace ash {
+namespace {
+
+// Size of the icons in DP.
+const int kIconSize = 20;
+
+// Distance between the icon and the check from the egdes in DP.
+const int kMarginFromEdges = 14;
+
+// Extra distance between the icon and the left edge in DP.
+const int kExtraMarginFromLeftEdge = 4;
+
+// Distance between the icon and the name of the tool in DP.
+const int kMarginBetweenIconAndText = 18;
+
+}  // namespace
 
 CommonPaletteTool::CommonPaletteTool(Delegate* delegate)
     : PaletteTool(delegate) {}
@@ -59,15 +75,18 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 }
 
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
+  gfx::ImageSkia icon =
+      CreateVectorIcon(GetPaletteIconId(), kIconSize, gfx::kChromeIconGrey);
+  gfx::ImageSkia check = CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE,
+                                          kIconSize, gfx::kGoogleGreen700);
+
   highlight_view_ = new HoverHighlightView(this);
-
-  // TODO(jdufault): Use real colors (SK_ColorBLACK?)
-  gfx::ImageSkia image = CreateVectorIcon(GetPaletteIconId(), SK_ColorBLACK);
-  gfx::ImageSkia checkbox =
-      CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
-
-  highlight_view_->AddIndentedIconAndLabel(image, name, false);
-  highlight_view_->AddRightIcon(checkbox);
+  highlight_view_->SetBorder(
+      views::Border::CreateEmptyBorder(0, kExtraMarginFromLeftEdge, 0, 0));
+  highlight_view_->AddIconAndLabelCustomSize(icon, name, false, kIconSize,
+                                             kMarginFromEdges,
+                                             kMarginBetweenIconAndText);
+  highlight_view_->AddRightIcon(check, kIconSize);
 
   if (enabled())
     highlight_view_->SetHighlight(true);
