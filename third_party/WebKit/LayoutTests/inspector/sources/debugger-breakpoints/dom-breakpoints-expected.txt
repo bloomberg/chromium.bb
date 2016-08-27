@@ -12,6 +12,20 @@ Call stack:
 Paused on a "Subtree Modified" breakpoint set on div#rootElement, because a new child was added to that node.
 Script execution resumed.
 
+Running: testBreakpointToggle
+Test that DOM breakpoint toggles properly using checkbox.
+Set DOM breakpoint.
+Uncheck DOM breakpoint.
+DOM breakpoint should not be hit when disabled.
+Check DOM breakpoint.
+Test that DOM breakpoint is hit when re-enabled.
+Script execution paused.
+Call stack:
+    0) modifyAttribute (dom-breakpoints.html:18)
+    1)  (:1)
+Paused on a "Attribute Modified" breakpoint set on div#rootElement.
+Script execution resumed.
+
 Running: testInsertGrandchild
 Test that 'Subtree Modified' breakpoint is hit when appending a grandchild.
 Append grandchildElement to childElement.

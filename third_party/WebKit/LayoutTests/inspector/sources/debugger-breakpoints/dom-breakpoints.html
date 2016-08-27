@@ -103,6 +103,28 @@ function test()
             }
         },
 
+        function testBreakpointToggle(next)
+        {
+            InspectorTest.addResult("Test that DOM breakpoint toggles properly using checkbox.");
+            WebInspector.domBreakpointsSidebarPane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            InspectorTest.addResult("Set DOM breakpoint.");
+            var elementId = pane._createBreakpointId(rootElement.id, pane._breakpointTypes.AttributeModified);
+            var element = pane._breakpointElements[elementId];
+            element._checkboxElement.click();
+            InspectorTest.addResult("Uncheck DOM breakpoint.");
+            InspectorTest.evaluateInPagePromise("modifyAttribute('rootElement', 'data-test-breakpoint-toggle', 'foo')").then(step2);
+            InspectorTest.addResult("DOM breakpoint should not be hit when disabled.");
+
+            function step2()
+            {
+                InspectorTest.addResult("Check DOM breakpoint.");
+                element._checkboxElement.click();
+                InspectorTest.evaluateInPageWithTimeout("modifyAttribute('rootElement', 'data-test-breakpoint-toggle', 'bar')");
+                InspectorTest.addResult("Test that DOM breakpoint is hit when re-enabled.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
         function testInsertGrandchild(next)
         {
             InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when appending a grandchild.");
