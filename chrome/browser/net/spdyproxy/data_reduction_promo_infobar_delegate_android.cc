@@ -9,7 +9,6 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DataReductionPromoInfoBarDelegate_jni.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using base::android::JavaParamRef;
 

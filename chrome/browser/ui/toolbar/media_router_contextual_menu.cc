@@ -18,7 +18,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model_delegate.h"
 
 #if defined(GOOGLE_CHROME_BUILD)

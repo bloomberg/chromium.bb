@@ -21,7 +21,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"

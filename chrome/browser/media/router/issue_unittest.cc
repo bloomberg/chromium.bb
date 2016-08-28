@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/issue.h"
-#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
 

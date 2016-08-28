@@ -19,7 +19,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/utility/utility_thread.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_utility_messages.h"
 #include "extensions/utility/unpacker.h"
 #include "media/base/media.h"

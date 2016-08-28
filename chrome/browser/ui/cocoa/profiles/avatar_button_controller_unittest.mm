@@ -21,7 +21,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #import "testing/gtest_mac.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 // Defined in the AvatarButtonController implementation.

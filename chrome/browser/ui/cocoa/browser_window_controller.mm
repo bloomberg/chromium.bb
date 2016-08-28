@@ -81,8 +81,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
-#include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -95,17 +93,12 @@
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using l10n_util::GetStringUTF16;
-using l10n_util::GetNSStringWithFixup;
-using l10n_util::GetNSStringFWithFixup;
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):

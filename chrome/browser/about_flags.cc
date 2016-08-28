@@ -70,7 +70,6 @@
 #include "gin/public/gin_features.h"
 #include "media/base/media_switches.h"
 #include "media/midi/midi_switches.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"

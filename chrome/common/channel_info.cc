@@ -5,11 +5,7 @@
 #include "chrome/common/channel_info.h"
 
 #include "base/profiler/scoped_tracker.h"
-#include "build/build_config.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/version_info/version_info.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {
 

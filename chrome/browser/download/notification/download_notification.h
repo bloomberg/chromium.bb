@@ -12,7 +12,6 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
-#include "grit/theme_resources.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 

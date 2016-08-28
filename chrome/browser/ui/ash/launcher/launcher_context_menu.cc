@@ -26,7 +26,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/ash_strings.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

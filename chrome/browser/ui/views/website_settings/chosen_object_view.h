@@ -7,9 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
-#include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 

@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -42,11 +41,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)

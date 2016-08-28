@@ -17,7 +17,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace language_options_ui_test {
 

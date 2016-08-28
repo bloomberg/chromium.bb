@@ -9,8 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "grit/components_scaled_resources.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
+#include "components/grit/components_scaled_resources.h"
 
 namespace {
 

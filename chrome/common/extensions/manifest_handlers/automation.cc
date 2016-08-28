@@ -21,7 +21,6 @@
 #include "extensions/common/url_pattern.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 

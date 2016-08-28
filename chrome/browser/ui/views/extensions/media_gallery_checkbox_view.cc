@@ -5,10 +5,7 @@
 #include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
-#include "chrome/grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"

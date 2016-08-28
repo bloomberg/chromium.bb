@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/website_settings/chosen_object_view_observer.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/image_button.h"

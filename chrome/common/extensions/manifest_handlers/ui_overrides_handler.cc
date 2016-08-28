@@ -17,7 +17,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "ipc/ipc_message.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using extensions::api::manifest_types::ChromeUIOverrides;
 

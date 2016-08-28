@@ -8,13 +8,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/grit/generated_resources.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/permissions/settings_override_permission.h"
-#include "extensions/strings/grit/extensions_strings.h"
 
 namespace extensions {
 

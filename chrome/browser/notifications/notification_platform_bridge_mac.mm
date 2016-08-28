@@ -22,10 +22,8 @@
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

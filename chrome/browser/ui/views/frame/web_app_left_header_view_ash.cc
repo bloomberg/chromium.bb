@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/navigation_entry.h"
-#include "grit/ash_resources.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/layout/box_layout.h"
 

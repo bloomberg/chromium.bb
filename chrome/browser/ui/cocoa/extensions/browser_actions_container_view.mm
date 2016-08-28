@@ -8,7 +8,6 @@
 #include <utility>
 
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 

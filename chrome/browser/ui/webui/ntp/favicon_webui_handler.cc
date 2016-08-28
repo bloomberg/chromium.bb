@@ -22,7 +22,6 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/favicon_size.h"

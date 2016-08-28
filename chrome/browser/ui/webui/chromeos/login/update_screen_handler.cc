@@ -12,7 +12,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 

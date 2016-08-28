@@ -78,7 +78,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_switches.h"

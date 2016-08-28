@@ -17,7 +17,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "content/public/browser/user_metrics.h"
-#include "ui/base/l10n/l10n_util.h"
 
 ChromeBookmarkClient::ChromeBookmarkClient(
     Profile* profile,

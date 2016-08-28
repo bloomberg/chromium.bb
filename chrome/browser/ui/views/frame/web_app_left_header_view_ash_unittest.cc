@@ -16,8 +16,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "grit/components_scaled_resources.h"
-#include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/button/button.h"
