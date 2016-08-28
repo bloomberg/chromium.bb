@@ -423,8 +423,8 @@ TEST_F(VisualRectMappingTest, ContainerOverflowHidden)
 
     rect = targetOverflowRect;
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
-    // Rect is clipped by container's overflow clip.
-    EXPECT_EQ(LayoutRect(10, 10, 50, 80), rect);
+    // Rect is not clipped by container's overflow clip.
+    EXPECT_EQ(LayoutRect(10, 10, 140, 110), rect);
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
@@ -463,8 +463,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
     target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
-    // The other sides of the rect are clipped by container's overflow clip.
-    EXPECT_EQ(LayoutRect(58, 10, 32, 80), rect);
+    EXPECT_EQ(LayoutRect(-10, 10, 140, 110), rect);
 }
 
 TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode)

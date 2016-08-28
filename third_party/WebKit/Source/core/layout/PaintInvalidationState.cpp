@@ -315,9 +315,9 @@ void PaintInvalidationState::updateForNormalChildren()
     if (!box.hasClipRelatedProperty())
         return;
 
-    // Do not clip or scroll for the paint invalidation container, if it scrolls overflow, because it will always use composited
-    // scrolling in this case.
-    if (box == m_paintInvalidationContainer && box.scrollsOverflow()) {
+    // Do not clip or scroll for the paint invalidation container, because the semantics of visual rects do not include clipping or
+    // scrolling on that object.
+    if (box == m_paintInvalidationContainer) {
         DCHECK(!m_clipped); // The box establishes paint invalidation container, so no m_clipped inherited.
     } else {
         // This won't work fully correctly for fixed-position elements, who should receive CSS clip but for whom the current object
