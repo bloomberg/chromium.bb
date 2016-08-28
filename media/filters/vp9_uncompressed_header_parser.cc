@@ -711,7 +711,7 @@ bool Vp9UncompressedHeaderParser::ReadFrameSizeFromRefs(Vp9FrameHeader* fhdr) {
   for (const auto& idx : fhdr->ref_frame_idx) {
     found_ref = reader_.ReadBool();
     if (found_ref) {
-      const Vp9Parser::ReferenceSlot& ref = context_->ref_slots[idx];
+      const Vp9Parser::ReferenceSlot& ref = context_->GetRefSlot(idx);
       DCHECK(ref.initialized);
       fhdr->frame_width = ref.frame_width;
       fhdr->frame_height = ref.frame_height;
@@ -729,7 +729,7 @@ bool Vp9UncompressedHeaderParser::ReadFrameSizeFromRefs(Vp9FrameHeader* fhdr) {
   // 7.2.5 Frame size with refs semantics
   bool has_valid_ref_frame = false;
   for (const auto& idx : fhdr->ref_frame_idx) {
-    const Vp9Parser::ReferenceSlot& ref = context_->ref_slots[idx];
+    const Vp9Parser::ReferenceSlot& ref = context_->GetRefSlot(idx);
     if (2 * fhdr->frame_width >= ref.frame_width &&
         2 * fhdr->frame_height >= ref.frame_height &&
         fhdr->frame_width <= 16 * ref.frame_width &&
@@ -762,15 +762,15 @@ Vp9InterpolationFilter Vp9UncompressedHeaderParser::ReadInterpolationFilter() {
 }
 
 void Vp9UncompressedHeaderParser::SetupPastIndependence(Vp9FrameHeader* fhdr) {
-  memset(&context_->segmentation, 0, sizeof(context_->segmentation));
+  memset(&context_->segmentation_, 0, sizeof(context_->segmentation_));
   ResetLoopfilter();
   fhdr->frame_context = kVp9DefaultFrameContext;
-  DCHECK(Vp9FrameContextManager::IsValidFrameContext(fhdr->frame_context));
+  DCHECK(fhdr->frame_context.IsValid());
 }
 
 // 6.2.8 Loop filter params syntax
 void Vp9UncompressedHeaderParser::ReadLoopFilterParams() {
-  Vp9LoopFilterParams& loop_filter = context_->loop_filter;
+  Vp9LoopFilterParams& loop_filter = context_->loop_filter_;
 
   loop_filter.level = reader_.ReadLiteral(6);
   loop_filter.sharpness = reader_.ReadLiteral(3);
@@ -814,7 +814,7 @@ int8_t Vp9UncompressedHeaderParser::ReadDeltaQ() {
 
 // 6.2.11 Segmentation params syntax
 bool Vp9UncompressedHeaderParser::ReadSegmentationParams() {
-  Vp9SegmentationParams& segmentation = context_->segmentation;
+  Vp9SegmentationParams& segmentation = context_->segmentation_;
   segmentation.update_map = false;
   segmentation.update_data = false;
 
@@ -896,7 +896,7 @@ bool Vp9UncompressedHeaderParser::ReadTileInfo(Vp9FrameHeader* fhdr) {
 }
 
 void Vp9UncompressedHeaderParser::ResetLoopfilter() {
-  Vp9LoopFilterParams& loop_filter = context_->loop_filter;
+  Vp9LoopFilterParams& loop_filter = context_->loop_filter_;
 
   loop_filter.delta_enabled = true;
   loop_filter.delta_update = true;
@@ -1001,7 +1001,7 @@ bool Vp9UncompressedHeaderParser::Parse(const uint8_t* stream,
         // 8.2 Frame order constraints
         // ref_frame_idx[i] refers to an earlier decoded frame.
         const Vp9Parser::ReferenceSlot& ref =
-            context_->ref_slots[fhdr->ref_frame_idx[i]];
+            context_->GetRefSlot(fhdr->ref_frame_idx[i]);
         if (!ref.initialized) {
           DVLOG(1) << "ref_frame_idx[" << i
                    << "]=" << static_cast<int>(fhdr->ref_frame_idx[i])
@@ -1056,21 +1056,18 @@ bool Vp9UncompressedHeaderParser::Parse(const uint8_t* stream,
     fhdr->frame_parallel_decoding_mode = reader_.ReadBool();
   }
 
-  static_assert(
-      arraysize(context_->frame_context_managers) == (1 << 2),
-      "bits of frame_context_idx doesn't match size of frame_context_managers");
   fhdr->frame_context_idx_to_save_probs = fhdr->frame_context_idx =
-      reader_.ReadLiteral(2);
+      reader_.ReadLiteral(kVp9NumFrameContextsLog2);
 
   if (fhdr->IsIntra()) {
     SetupPastIndependence(fhdr);
     if (fhdr->IsKeyframe() || fhdr->error_resilient_mode ||
         fhdr->reset_frame_context == 3) {
-      for (auto& frame_context_manage : context_->frame_context_managers)
-        frame_context_manage.Update(fhdr->frame_context);
+      for (size_t i = 0; i < kVp9NumFrameContexts; ++i)
+        context_->UpdateFrameContext(i, fhdr->frame_context);
     } else if (fhdr->reset_frame_context == 2) {
-      context_->frame_context_managers[fhdr->frame_context_idx].Update(
-          fhdr->frame_context);
+      context_->UpdateFrameContext(fhdr->frame_context_idx,
+                                   fhdr->frame_context);
     }
     fhdr->frame_context_idx = 0;
   }

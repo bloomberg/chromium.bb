@@ -36,23 +36,18 @@ bool Vp9FrameHeader::IsIntra() const {
 Vp9Parser::FrameInfo::FrameInfo(const uint8_t* ptr, off_t size)
     : ptr(ptr), size(size) {}
 
-Vp9FrameContextManager::Vp9FrameContextManager() : weak_ptr_factory_(this) {}
-
-Vp9FrameContextManager::~Vp9FrameContextManager() {}
-
-bool Vp9FrameContextManager::IsValidFrameContext(
-    const Vp9FrameContext& context) {
+bool Vp9FrameContext::IsValid() const {
   // probs should be in [1, 255] range.
   static_assert(sizeof(Vp9Prob) == 1,
                 "following checks assuming Vp9Prob is single byte");
-  if (memchr(context.tx_probs_8x8, 0, sizeof(context.tx_probs_8x8)))
+  if (memchr(tx_probs_8x8, 0, sizeof(tx_probs_8x8)))
     return false;
-  if (memchr(context.tx_probs_16x16, 0, sizeof(context.tx_probs_16x16)))
+  if (memchr(tx_probs_16x16, 0, sizeof(tx_probs_16x16)))
     return false;
-  if (memchr(context.tx_probs_32x32, 0, sizeof(context.tx_probs_32x32)))
+  if (memchr(tx_probs_32x32, 0, sizeof(tx_probs_32x32)))
     return false;
 
-  for (auto& a : context.coef_probs) {
+  for (auto& a : coef_probs) {
     for (auto& ai : a) {
       for (auto& aj : ai) {
         for (auto& ak : aj) {
@@ -67,74 +62,85 @@ bool Vp9FrameContextManager::IsValidFrameContext(
       }
     }
   }
-  if (memchr(context.skip_prob, 0, sizeof(context.skip_prob)))
+  if (memchr(skip_prob, 0, sizeof(skip_prob)))
     return false;
-  if (memchr(context.inter_mode_probs, 0, sizeof(context.inter_mode_probs)))
+  if (memchr(inter_mode_probs, 0, sizeof(inter_mode_probs)))
     return false;
-  if (memchr(context.interp_filter_probs, 0,
-             sizeof(context.interp_filter_probs)))
+  if (memchr(interp_filter_probs, 0, sizeof(interp_filter_probs)))
     return false;
-  if (memchr(context.is_inter_prob, 0, sizeof(context.is_inter_prob)))
+  if (memchr(is_inter_prob, 0, sizeof(is_inter_prob)))
     return false;
-  if (memchr(context.comp_mode_prob, 0, sizeof(context.comp_mode_prob)))
+  if (memchr(comp_mode_prob, 0, sizeof(comp_mode_prob)))
     return false;
-  if (memchr(context.single_ref_prob, 0, sizeof(context.single_ref_prob)))
+  if (memchr(single_ref_prob, 0, sizeof(single_ref_prob)))
     return false;
-  if (memchr(context.comp_ref_prob, 0, sizeof(context.comp_ref_prob)))
+  if (memchr(comp_ref_prob, 0, sizeof(comp_ref_prob)))
     return false;
-  if (memchr(context.y_mode_probs, 0, sizeof(context.y_mode_probs)))
+  if (memchr(y_mode_probs, 0, sizeof(y_mode_probs)))
     return false;
-  if (memchr(context.uv_mode_probs, 0, sizeof(context.uv_mode_probs)))
+  if (memchr(uv_mode_probs, 0, sizeof(uv_mode_probs)))
     return false;
-  if (memchr(context.partition_probs, 0, sizeof(context.partition_probs)))
+  if (memchr(partition_probs, 0, sizeof(partition_probs)))
     return false;
-  if (memchr(context.mv_joint_probs, 0, sizeof(context.mv_joint_probs)))
+  if (memchr(mv_joint_probs, 0, sizeof(mv_joint_probs)))
     return false;
-  if (memchr(context.mv_sign_prob, 0, sizeof(context.mv_sign_prob)))
+  if (memchr(mv_sign_prob, 0, sizeof(mv_sign_prob)))
     return false;
-  if (memchr(context.mv_class_probs, 0, sizeof(context.mv_class_probs)))
+  if (memchr(mv_class_probs, 0, sizeof(mv_class_probs)))
     return false;
-  if (memchr(context.mv_class0_bit_prob, 0, sizeof(context.mv_class0_bit_prob)))
+  if (memchr(mv_class0_bit_prob, 0, sizeof(mv_class0_bit_prob)))
     return false;
-  if (memchr(context.mv_bits_prob, 0, sizeof(context.mv_bits_prob)))
+  if (memchr(mv_bits_prob, 0, sizeof(mv_bits_prob)))
     return false;
-  if (memchr(context.mv_class0_fr_probs, 0, sizeof(context.mv_class0_fr_probs)))
+  if (memchr(mv_class0_fr_probs, 0, sizeof(mv_class0_fr_probs)))
     return false;
-  if (memchr(context.mv_fr_probs, 0, sizeof(context.mv_fr_probs)))
+  if (memchr(mv_fr_probs, 0, sizeof(mv_fr_probs)))
     return false;
-  if (memchr(context.mv_class0_hp_prob, 0, sizeof(context.mv_class0_hp_prob)))
+  if (memchr(mv_class0_hp_prob, 0, sizeof(mv_class0_hp_prob)))
     return false;
-  if (memchr(context.mv_hp_prob, 0, sizeof(context.mv_hp_prob)))
+  if (memchr(mv_hp_prob, 0, sizeof(mv_hp_prob)))
     return false;
 
   return true;
 }
 
-const Vp9FrameContext& Vp9FrameContextManager::frame_context() const {
+Vp9Parser::Context::Vp9FrameContextManager::Vp9FrameContextManager()
+    : weak_ptr_factory_(this) {}
+
+Vp9Parser::Context::Vp9FrameContextManager::~Vp9FrameContextManager() {}
+
+const Vp9FrameContext&
+Vp9Parser::Context::Vp9FrameContextManager::frame_context() const {
   DCHECK(initialized_);
   DCHECK(!needs_client_update_);
   return frame_context_;
 }
 
-void Vp9FrameContextManager::Reset() {
+void Vp9Parser::Context::Vp9FrameContextManager::Reset() {
   initialized_ = false;
   needs_client_update_ = false;
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-Vp9FrameContextManager::ContextRefreshCallback
-Vp9FrameContextManager::SetNeedsClientUpdate() {
+void Vp9Parser::Context::Vp9FrameContextManager::SetNeedsClientUpdate() {
   DCHECK(!needs_client_update_);
   initialized_ = true;
   needs_client_update_ = true;
-
-  return base::Bind(&Vp9FrameContextManager::UpdateFromClient,
-                    weak_ptr_factory_.GetWeakPtr());
 }
 
-void Vp9FrameContextManager::Update(const Vp9FrameContext& frame_context) {
+Vp9Parser::ContextRefreshCallback
+Vp9Parser::Context::Vp9FrameContextManager::GetUpdateCb() {
+  if (needs_client_update_)
+    return base::Bind(&Vp9FrameContextManager::UpdateFromClient,
+                      weak_ptr_factory_.GetWeakPtr());
+  else
+    return Vp9Parser::ContextRefreshCallback();
+}
+
+void Vp9Parser::Context::Vp9FrameContextManager::Update(
+    const Vp9FrameContext& frame_context) {
   // DCHECK because we can trust values from our parser.
-  DCHECK(IsValidFrameContext(frame_context));
+  DCHECK(frame_context.IsValid());
   initialized_ = true;
   frame_context_ = frame_context;
 
@@ -148,11 +154,11 @@ void Vp9FrameContextManager::Update(const Vp9FrameContext& frame_context) {
   needs_client_update_ = false;
 }
 
-void Vp9FrameContextManager::UpdateFromClient(
+void Vp9Parser::Context::Vp9FrameContextManager::UpdateFromClient(
     const Vp9FrameContext& frame_context) {
   DVLOG(2) << "Got external frame_context update";
   DCHECK(needs_client_update_);
-  if (!IsValidFrameContext(frame_context)) {
+  if (!frame_context.IsValid()) {
     DLOG(ERROR) << "Invalid prob value in frame_context";
     return;
   }
@@ -162,11 +168,36 @@ void Vp9FrameContextManager::UpdateFromClient(
 }
 
 void Vp9Parser::Context::Reset() {
-  memset(&segmentation, 0, sizeof(segmentation));
-  memset(&loop_filter, 0, sizeof(loop_filter));
-  memset(&ref_slots, 0, sizeof(ref_slots));
-  for (auto& manager : frame_context_managers)
+  memset(&segmentation_, 0, sizeof(segmentation_));
+  memset(&loop_filter_, 0, sizeof(loop_filter_));
+  memset(&ref_slots_, 0, sizeof(ref_slots_));
+  for (auto& manager : frame_context_managers_)
     manager.Reset();
+}
+
+void Vp9Parser::Context::MarkFrameContextForUpdate(size_t frame_context_idx) {
+  DCHECK_LT(frame_context_idx, arraysize(frame_context_managers_));
+  frame_context_managers_[frame_context_idx].SetNeedsClientUpdate();
+}
+
+void Vp9Parser::Context::UpdateFrameContext(
+    size_t frame_context_idx,
+    const Vp9FrameContext& frame_context) {
+  DCHECK_LT(frame_context_idx, arraysize(frame_context_managers_));
+  frame_context_managers_[frame_context_idx].Update(frame_context);
+}
+
+const Vp9Parser::ReferenceSlot& Vp9Parser::Context::GetRefSlot(
+    size_t ref_type) const {
+  DCHECK_LT(ref_type, arraysize(ref_slots_));
+  return ref_slots_[ref_type];
+}
+
+void Vp9Parser::Context::UpdateRefSlot(
+    size_t ref_type,
+    const Vp9Parser::ReferenceSlot& ref_slot) {
+  DCHECK_LT(ref_type, arraysize(ref_slots_));
+  ref_slots_[ref_type] = ref_slot;
 }
 
 Vp9Parser::Vp9Parser(bool parsing_compressed_header)
@@ -192,11 +223,8 @@ void Vp9Parser::Reset() {
   context_.Reset();
 }
 
-Vp9Parser::Result Vp9Parser::ParseNextFrame(
-    Vp9FrameHeader* fhdr,
-    Vp9FrameContextManager::ContextRefreshCallback* context_refresh_cb) {
+Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
   DCHECK(fhdr);
-  DCHECK(!parsing_compressed_header_ || context_refresh_cb);
   DVLOG(2) << "ParseNextFrame";
 
   // If |curr_frame_info_| is valid, uncompressed header was parsed into
@@ -252,18 +280,18 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
   }
 
   if (parsing_compressed_header_) {
-    Vp9FrameContextManager& context_to_load =
-        context_.frame_context_managers[curr_frame_header_.frame_context_idx];
+    size_t frame_context_idx = curr_frame_header_.frame_context_idx;
+    const Context::Vp9FrameContextManager& context_to_load =
+        context_.frame_context_managers_[frame_context_idx];
     if (!context_to_load.initialized()) {
       // 8.2 Frame order constraints
       // must load an initialized set of probabilities.
       DVLOG(1) << "loading uninitialized frame context, index="
-               << curr_frame_header_.frame_context_idx;
+               << frame_context_idx;
       return kInvalidStream;
     }
     if (context_to_load.needs_client_update()) {
-      DVLOG(3) << "waiting frame_context_idx="
-               << static_cast<int>(curr_frame_header_.frame_context_idx)
+      DVLOG(3) << "waiting frame_context_idx=" << frame_context_idx
                << " to update";
       return kAwaitingRefresh;
     }
@@ -278,15 +306,13 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
     }
 
     if (curr_frame_header_.refresh_frame_context) {
-      Vp9FrameContextManager& frame_context_manager =
-          context_.frame_context_managers[curr_frame_header_.frame_context_idx];
-
       // In frame parallel mode, we can refresh the context without decoding
       // tile data.
       if (curr_frame_header_.frame_parallel_decoding_mode) {
-        frame_context_manager.Update(curr_frame_header_.frame_context);
+        context_.UpdateFrameContext(frame_context_idx,
+                                    curr_frame_header_.frame_context);
       } else {
-        *context_refresh_cb = frame_context_manager.SetNeedsClientUpdate();
+        context_.MarkFrameContextForUpdate(frame_context_idx);
       }
     }
   }
@@ -298,6 +324,15 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(
   *fhdr = curr_frame_header_;
   curr_frame_info_.Reset();
   return kOk;
+}
+
+Vp9Parser::ContextRefreshCallback Vp9Parser::GetContextRefreshCb(
+    size_t frame_context_idx) {
+  DCHECK_LT(frame_context_idx, arraysize(context_.frame_context_managers_));
+  auto& frame_context_manager =
+      context_.frame_context_managers_[frame_context_idx];
+
+  return frame_context_manager.GetUpdateCb();
 }
 
 // Annex B Superframes
@@ -446,7 +481,7 @@ static size_t ClampQ(size_t q) {
 // 8.6.1 Dequantization functions
 size_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
                             size_t segid) const {
-  const Vp9SegmentationParams& segmentation = context_.segmentation;
+  const Vp9SegmentationParams& segmentation = context_.segmentation();
 
   if (segmentation.FeatureEnabled(segid,
                                   Vp9SegmentationParams::SEG_LVL_ALT_Q)) {
@@ -464,7 +499,7 @@ size_t Vp9Parser::GetQIndex(const Vp9QuantizationParams& quant,
 // 8.6.1 Dequantization functions
 void Vp9Parser::SetupSegmentationDequant() {
   const Vp9QuantizationParams& quant = curr_frame_header_.quant_params;
-  Vp9SegmentationParams& segmentation = context_.segmentation;
+  Vp9SegmentationParams& segmentation = context_.segmentation_;
 
   DLOG_IF(ERROR, curr_frame_header_.bit_depth > 8)
       << "bit_depth > 8 is not supported "
@@ -500,7 +535,7 @@ static int ClampLf(int lf) {
 
 // 8.8.1 Loop filter frame init process
 void Vp9Parser::SetupLoopFilter() {
-  Vp9LoopFilterParams& loop_filter = context_.loop_filter;
+  Vp9LoopFilterParams& loop_filter = context_.loop_filter_;
   if (!loop_filter.level)
     return;
 
@@ -508,7 +543,7 @@ void Vp9Parser::SetupLoopFilter() {
 
   for (size_t i = 0; i < Vp9SegmentationParams::kNumSegments; ++i) {
     int level = loop_filter.level;
-    Vp9SegmentationParams& segmentation = context_.segmentation;
+    const Vp9SegmentationParams& segmentation = context_.segmentation();
 
     if (segmentation.FeatureEnabled(i, Vp9SegmentationParams::SEG_LVL_ALT_LF)) {
       int feature_data =
@@ -541,17 +576,18 @@ void Vp9Parser::UpdateSlots() {
   // 8.10 Reference frame update process
   for (size_t i = 0; i < kVp9NumRefFrames; i++) {
     if (curr_frame_header_.RefreshFlag(i)) {
-      ReferenceSlot& ref = context_.ref_slots[i];
-      ref.initialized = true;
+      ReferenceSlot ref_slot;
+      ref_slot.initialized = true;
 
-      ref.frame_width = curr_frame_header_.frame_width;
-      ref.frame_height = curr_frame_header_.frame_height;
-      ref.subsampling_x = curr_frame_header_.subsampling_x;
-      ref.subsampling_y = curr_frame_header_.subsampling_y;
-      ref.bit_depth = curr_frame_header_.bit_depth;
+      ref_slot.frame_width = curr_frame_header_.frame_width;
+      ref_slot.frame_height = curr_frame_header_.frame_height;
+      ref_slot.subsampling_x = curr_frame_header_.subsampling_x;
+      ref_slot.subsampling_y = curr_frame_header_.subsampling_y;
+      ref_slot.bit_depth = curr_frame_header_.bit_depth;
 
-      ref.profile = curr_frame_header_.profile;
-      ref.color_space = curr_frame_header_.color_space;
+      ref_slot.profile = curr_frame_header_.profile;
+      ref_slot.color_space = curr_frame_header_.color_space;
+      context_.UpdateRefSlot(i, ref_slot);
     }
   }
 }

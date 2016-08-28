@@ -17,6 +17,7 @@
 #include <sys/types.h>
 
 #include <deque>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -30,7 +31,8 @@ const int kVp9NumRefFramesLog2 = 3;
 const size_t kVp9NumRefFrames = 1 << kVp9NumRefFramesLog2;
 const uint8_t kVp9MaxProb = 255;
 const size_t kVp9NumRefsPerFrame = 3;
-const size_t kVp9NumFrameContexts = 4;
+const size_t kVp9NumFrameContextsLog2 = 2;
+const size_t kVp9NumFrameContexts = 1 << kVp9NumFrameContextsLog2;
 
 using Vp9Prob = uint8_t;
 
@@ -136,6 +138,8 @@ struct MEDIA_EXPORT Vp9QuantizationParams {
 
 // Entropy context for frame parsing
 struct MEDIA_EXPORT Vp9FrameContext {
+  bool IsValid() const;
+
   Vp9Prob tx_probs_8x8[2][1];
   Vp9Prob tx_probs_16x16[2][2];
   Vp9Prob tx_probs_32x32[2][3];
@@ -255,44 +259,13 @@ struct MEDIA_EXPORT Vp9FrameHeader {
   Vp9FrameContext frame_context;
 };
 
-class Vp9FrameContextManager {
+// A parser for VP9 bitstream.
+class MEDIA_EXPORT Vp9Parser {
  public:
   // If context update is needed after decoding a frame, the client must
   // execute this callback, passing the updated context state.
   using ContextRefreshCallback = base::Callback<void(const Vp9FrameContext&)>;
 
-  static bool IsValidFrameContext(const Vp9FrameContext& context);
-
-  Vp9FrameContextManager();
-  ~Vp9FrameContextManager();
-  bool initialized() const { return initialized_; }
-  bool needs_client_update() const { return needs_client_update_; }
-  const Vp9FrameContext& frame_context() const;
-
-  // Resets to uninitialized state.
-  void Reset();
-
-  // Sets this context need update from parser's client. Returns a callback for
-  // update.
-  ContextRefreshCallback SetNeedsClientUpdate();
-
-  // Updates frame context.
-  void Update(const Vp9FrameContext& frame_context);
-
- private:
-  // Updates frame context from parser's client.
-  void UpdateFromClient(const Vp9FrameContext& frame_context);
-
-  bool initialized_ = false;
-  bool needs_client_update_ = false;
-  Vp9FrameContext frame_context_;
-
-  base::WeakPtrFactory<Vp9FrameContextManager> weak_ptr_factory_;
-};
-
-// A parser for VP9 bitstream.
-class MEDIA_EXPORT Vp9Parser {
- public:
   // ParseNextFrame() return values. See documentation for ParseNextFrame().
   enum Result {
     kOk,
@@ -316,17 +289,72 @@ class MEDIA_EXPORT Vp9Parser {
   };
 
   // The parsing context that persists across frames.
-  struct Context {
+  class Context {
+   public:
+    class Vp9FrameContextManager {
+     public:
+      Vp9FrameContextManager();
+      ~Vp9FrameContextManager();
+      bool initialized() const { return initialized_; }
+      bool needs_client_update() const { return needs_client_update_; }
+      const Vp9FrameContext& frame_context() const;
+
+      // Resets to uninitialized state.
+      void Reset();
+
+      // Marks this context as requiring an update from parser's client.
+      void SetNeedsClientUpdate();
+
+      // Updates frame context.
+      void Update(const Vp9FrameContext& frame_context);
+
+      // Returns a callback to update frame context at a later time with.
+      ContextRefreshCallback GetUpdateCb();
+
+     private:
+      // Updates frame context from parser's client.
+      void UpdateFromClient(const Vp9FrameContext& frame_context);
+
+      bool initialized_ = false;
+      bool needs_client_update_ = false;
+      Vp9FrameContext frame_context_;
+
+      base::WeakPtrFactory<Vp9FrameContextManager> weak_ptr_factory_;
+    };
+
     void Reset();
 
+    // Mark |frame_context_idx| as requiring update from the client.
+    void MarkFrameContextForUpdate(size_t frame_context_idx);
+
+    // Update frame context at |frame_context_idx| with the contents of
+    // |frame_context|.
+    void UpdateFrameContext(size_t frame_context_idx,
+                            const Vp9FrameContext& frame_context);
+
+    // Return ReferenceSlot for frame at |ref_idx|.
+    const ReferenceSlot& GetRefSlot(size_t ref_idx) const;
+
+    // Update contents of ReferenceSlot at |ref_idx| with the contents of
+    // |ref_slot|.
+    void UpdateRefSlot(size_t ref_idx, const ReferenceSlot& ref_slot);
+
+    const Vp9SegmentationParams& segmentation() const { return segmentation_; }
+
+    const Vp9LoopFilterParams& loop_filter() const { return loop_filter_; }
+
+   private:
+    friend class Vp9UncompressedHeaderParser;
+    friend class Vp9Parser;
+
     // Segmentation and loop filter state.
-    Vp9SegmentationParams segmentation;
-    Vp9LoopFilterParams loop_filter;
+    Vp9SegmentationParams segmentation_;
+    Vp9LoopFilterParams loop_filter_;
 
     // Frame references.
-    ReferenceSlot ref_slots[kVp9NumRefFrames];
+    ReferenceSlot ref_slots_[kVp9NumRefFrames];
 
-    Vp9FrameContextManager frame_context_managers[kVp9NumFrameContexts];
+    Vp9FrameContextManager frame_context_managers_[kVp9NumFrameContexts];
   };
 
   // The constructor. See ParseNextFrame() for comments for
@@ -342,34 +370,25 @@ class MEDIA_EXPORT Vp9Parser {
 
   // Parse the next frame in the current stream buffer, filling |fhdr| with
   // the parsed frame header and updating current segmentation and loop filter
-  // state. If |parsing_compressed_header_|, this function also fills
-  // |context_refresh_cb|, which is used to update frame context. If
-  // |*context_refresh_cb| is null, no callback is necessary.
+  // state.
   // Return kOk if a frame has successfully been parsed,
   //        kEOStream if there is no more data in the current stream buffer,
   //        kAwaitingRefresh if this frame awaiting frame context update, or
   //        kInvalidStream on error.
-  Result ParseNextFrame(
-      Vp9FrameHeader* fhdr,
-      Vp9FrameContextManager::ContextRefreshCallback* context_refresh_cb);
+  Result ParseNextFrame(Vp9FrameHeader* fhdr);
 
-  // Return current segmentation state.
-  const Vp9SegmentationParams& GetSegmentation() const {
-    return context_.segmentation;
-  }
+  // Return current parsing context.
+  const Context& context() const { return context_; }
 
-  // Return current loop filter state.
-  const Vp9LoopFilterParams& GetLoopFilter() const {
-    return context_.loop_filter;
-  }
+  // Return a ContextRefreshCallback, which, if not null, has to be called with
+  // the new context state after the frame associated with |frame_context_idx|
+  // is decoded.
+  ContextRefreshCallback GetContextRefreshCb(size_t frame_context_idx);
 
   // Clear parser state and return to an initialized state.
   void Reset();
 
  private:
-  class UncompressedHeaderParser;
-  class CompressedHeaderParser;
-
   // Stores start pointer and size of each frame within the current superframe.
   struct FrameInfo {
     FrameInfo() = default;

@@ -44,6 +44,8 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
     kAllocateNewSurfaces,  // Need a new set of surfaces to be allocated.
     kRanOutOfStreamData,   // Need more stream data to proceed.
     kRanOutOfSurfaces,     // Waiting for the client to free up output surfaces.
+    kNeedContextUpdate,    // Waiting for the client to update decoding context
+                           // with data acquired from the accelerator.
   };
 
   // Try to decode more of the stream, returning decoded frames asynchronously.

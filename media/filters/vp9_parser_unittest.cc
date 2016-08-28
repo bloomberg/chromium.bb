@@ -69,16 +69,19 @@ class Vp9ParserTest : public ::testing::Test {
                                        sizeof(*frame_context)));
   }
 
-  Vp9Parser::Result ParseNextFrame(
-      struct Vp9FrameHeader* frame_hdr,
-      Vp9FrameContextManager::ContextRefreshCallback* context_refresh_cb);
+  Vp9Parser::Result ParseNextFrame(struct Vp9FrameHeader* frame_hdr);
 
   const Vp9SegmentationParams& GetSegmentation() const {
-    return vp9_parser_->GetSegmentation();
+    return vp9_parser_->context().segmentation();
   }
 
   const Vp9LoopFilterParams& GetLoopFilter() const {
-    return vp9_parser_->GetLoopFilter();
+    return vp9_parser_->context().loop_filter();
+  }
+
+  Vp9Parser::ContextRefreshCallback GetContextRefreshCb(
+      const Vp9FrameHeader& frame_hdr) const {
+    return vp9_parser_->GetContextRefreshCb(frame_hdr.frame_context_idx);
   }
 
   IvfParser ivf_parser_;
@@ -88,12 +91,9 @@ class Vp9ParserTest : public ::testing::Test {
   base::File context_file_;
 };
 
-Vp9Parser::Result Vp9ParserTest::ParseNextFrame(
-    Vp9FrameHeader* fhdr,
-    Vp9FrameContextManager::ContextRefreshCallback* context_refresh_cb) {
+Vp9Parser::Result Vp9ParserTest::ParseNextFrame(Vp9FrameHeader* fhdr) {
   while (1) {
-    Vp9Parser::Result res =
-        vp9_parser_->ParseNextFrame(fhdr, context_refresh_cb);
+    Vp9Parser::Result res = vp9_parser_->ParseNextFrame(fhdr);
     if (res == Vp9Parser::kEOStream) {
       IvfFrameHeader ivf_frame_header;
       const uint8_t* ivf_payload;
@@ -120,7 +120,7 @@ TEST_F(Vp9ParserTest, StreamFileParsingWithoutCompressedHeader) {
   // parsed.
   while (num_parsed_frames < num_expected_frames * 2) {
     Vp9FrameHeader fhdr;
-    if (ParseNextFrame(&fhdr, nullptr) != Vp9Parser::kOk)
+    if (ParseNextFrame(&fhdr) != Vp9Parser::kOk)
       break;
 
     ++num_parsed_frames;
@@ -143,8 +143,7 @@ TEST_F(Vp9ParserTest, StreamFileParsingWithCompressedHeader) {
   // parsed.
   while (num_parsed_frames < num_expected_frames * 2) {
     Vp9FrameHeader fhdr;
-    Vp9FrameContextManager::ContextRefreshCallback context_refresh_cb;
-    if (ParseNextFrame(&fhdr, &context_refresh_cb) != Vp9Parser::kOk)
+    if (ParseNextFrame(&fhdr) != Vp9Parser::kOk)
       break;
 
     Vp9FrameContext frame_context;
@@ -156,6 +155,7 @@ TEST_F(Vp9ParserTest, StreamFileParsingWithCompressedHeader) {
                        sizeof(frame_context)) == 0);
 
     // test-25fps.vp9 doesn't need frame update from driver.
+    auto context_refresh_cb = GetContextRefreshCb(fhdr);
     EXPECT_TRUE(context_refresh_cb.is_null());
     ASSERT_FALSE(ReadShouldContextUpdate());
 
@@ -179,8 +179,7 @@ TEST_F(Vp9ParserTest, StreamFileParsingWithContextUpdate) {
   // parsed.
   while (num_parsed_frames < num_expected_frames * 2) {
     Vp9FrameHeader fhdr;
-    Vp9FrameContextManager::ContextRefreshCallback context_refresh_cb;
-    if (ParseNextFrame(&fhdr, &context_refresh_cb) != Vp9Parser::kOk)
+    if (ParseNextFrame(&fhdr) != Vp9Parser::kOk)
       break;
 
     Vp9FrameContext frame_context;
@@ -192,6 +191,7 @@ TEST_F(Vp9ParserTest, StreamFileParsingWithContextUpdate) {
                        sizeof(frame_context)) == 0);
 
     bool should_update = ReadShouldContextUpdate();
+    auto context_refresh_cb = GetContextRefreshCb(fhdr);
     if (context_refresh_cb.is_null()) {
       EXPECT_FALSE(should_update);
     } else {
@@ -213,9 +213,7 @@ TEST_F(Vp9ParserTest, AwaitingContextUpdate) {
   Initialize("bear-vp9.ivf", true);
 
   Vp9FrameHeader fhdr;
-  Vp9FrameContextManager::ContextRefreshCallback context_refresh_cb;
-  ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr, &context_refresh_cb));
-  EXPECT_FALSE(context_refresh_cb.is_null());
+  ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
   Vp9FrameContext frame_context;
   ReadContext(&frame_context);
@@ -225,13 +223,14 @@ TEST_F(Vp9ParserTest, AwaitingContextUpdate) {
   ReadContext(&frame_context);
 
   // Not update yet. Should return kAwaitingRefresh.
-  Vp9FrameContextManager::ContextRefreshCallback unused_cb;
-  EXPECT_EQ(Vp9Parser::kAwaitingRefresh, ParseNextFrame(&fhdr, &unused_cb));
-  EXPECT_EQ(Vp9Parser::kAwaitingRefresh, ParseNextFrame(&fhdr, &unused_cb));
+  EXPECT_EQ(Vp9Parser::kAwaitingRefresh, ParseNextFrame(&fhdr));
+  EXPECT_EQ(Vp9Parser::kAwaitingRefresh, ParseNextFrame(&fhdr));
 
   // After update, parse should be ok.
+  auto context_refresh_cb = GetContextRefreshCb(fhdr);
+  EXPECT_FALSE(context_refresh_cb.is_null());
   context_refresh_cb.Run(frame_context);
-  EXPECT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr, &unused_cb));
+  EXPECT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
   // Make sure it parsed the 2nd frame.
   EXPECT_EQ(9u, fhdr.header_size_in_bytes);
@@ -241,7 +240,7 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
   Initialize("test-25fps.vp9", false);
   Vp9FrameHeader fhdr;
 
-  ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr, nullptr));
+  ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
   EXPECT_EQ(0, fhdr.profile);
   EXPECT_FALSE(fhdr.show_existing_frame);
@@ -297,7 +296,7 @@ TEST_F(Vp9ParserTest, VerifyInterFrame) {
 
   // To verify the second frame.
   for (int i = 0; i < 2; i++)
-    ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr, nullptr));
+    ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
   EXPECT_EQ(Vp9FrameHeader::INTERFRAME, fhdr.frame_type);
   EXPECT_FALSE(fhdr.show_frame);

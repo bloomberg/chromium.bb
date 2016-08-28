@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/limits.h"
 #include "media/gpu/vp9_decoder.h"
@@ -17,8 +18,9 @@ VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 VP9Decoder::VP9Accelerator::~VP9Accelerator() {}
 
 VP9Decoder::VP9Decoder(VP9Accelerator* accelerator)
-    : state_(kNeedStreamMetadata), parser_(false), accelerator_(accelerator) {
-  DCHECK(accelerator_);
+    : state_(kNeedStreamMetadata),
+      accelerator_(accelerator),
+      parser_(accelerator->IsFrameContextRequired()) {
   ref_frames_.resize(kVp9NumRefFrames);
 }
 
@@ -54,7 +56,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     // Read a new frame header if one is not awaiting decoding already.
     if (!curr_frame_hdr_) {
       std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
-      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get(), nullptr);
+      Vp9Parser::Result res = parser_.ParseNextFrame(hdr.get());
       switch (res) {
         case Vp9Parser::kOk:
           curr_frame_hdr_.reset(hdr.release());
@@ -69,7 +71,8 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
           return kDecodeError;
 
         case Vp9Parser::kAwaitingRefresh:
-          NOTREACHED();
+          DVLOG(4) << "Awaiting context update";
+          return kNeedContextUpdate;
       }
     }
 
@@ -152,12 +155,35 @@ void VP9Decoder::RefreshReferenceFrames(const scoped_refptr<VP9Picture>& pic) {
   }
 }
 
+void VP9Decoder::UpdateFrameContext(
+    const scoped_refptr<VP9Picture>& pic,
+    const base::Callback<void(const Vp9FrameContext&)>& context_refresh_cb) {
+  DCHECK(!context_refresh_cb.is_null());
+  Vp9FrameContext frame_ctx;
+  memset(&frame_ctx, 0, sizeof(frame_ctx));
+
+  if (!accelerator_->GetFrameContext(pic, &frame_ctx)) {
+    SetError();
+    return;
+  }
+
+  context_refresh_cb.Run(frame_ctx);
+}
+
 bool VP9Decoder::DecodeAndOutputPicture(scoped_refptr<VP9Picture> pic) {
   DCHECK(!pic_size_.IsEmpty());
   DCHECK(pic->frame_hdr);
 
-  if (!accelerator_->SubmitDecode(pic, parser_.GetSegmentation(),
-                                  parser_.GetLoopFilter(), ref_frames_))
+  base::Closure done_cb;
+  const auto& context_refresh_cb =
+      parser_.GetContextRefreshCb(pic->frame_hdr->frame_context_idx);
+  if (!context_refresh_cb.is_null())
+    done_cb = base::Bind(&VP9Decoder::UpdateFrameContext,
+                         base::Unretained(this), pic, context_refresh_cb);
+
+  const Vp9Parser::Context& context = parser_.context();
+  if (!accelerator_->SubmitDecode(pic, context.segmentation(),
+                                  context.loop_filter(), ref_frames_, done_cb))
     return false;
 
   if (pic->frame_hdr->show_frame) {

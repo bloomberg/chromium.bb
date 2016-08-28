@@ -25,6 +25,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2_device.h"
 #include "media/gpu/vp8_decoder.h"
+#include "media/gpu/vp9_decoder.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace media {
@@ -66,6 +67,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
  private:
   class V4L2H264Accelerator;
   class V4L2VP8Accelerator;
+  class V4L2VP9Accelerator;
 
   // Record for input buffers.
   struct InputRecord {
@@ -110,6 +112,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Submit controls in |ext_ctrls| to hardware. Return true on success.
   bool SubmitExtControls(struct v4l2_ext_controls* ext_ctrls);
+
+  // Gets current control values for controls in |ext_ctrls| from the driver.
+  // Return true on success.
+  bool GetExtControls(struct v4l2_ext_controls* ext_ctrls);
+
+  // Return true if the driver exposes V4L2 control |ctrl_id|, false otherwise.
+  bool IsCtrlExposed(uint32_t ctrl_id);
 
   // Decode of |dec_surface| is ready to be submitted and all codec-specific
   // settings are set in hardware.
@@ -424,6 +433,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // TODO(posciak): Try to have a superclass here if possible.
   std::unique_ptr<V4L2H264Accelerator> h264_accelerator_;
   std::unique_ptr<V4L2VP8Accelerator> vp8_accelerator_;
+  std::unique_ptr<V4L2VP9Accelerator> vp9_accelerator_;
 
   // Codec-specific software decoder in use.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
@@ -462,6 +472,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
 class V4L2H264Picture;
 class V4L2VP8Picture;
+class V4L2VP9Picture;
 
 }  // namespace media
 

@@ -98,7 +98,10 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
     else
       return V4L2_PIX_FMT_VP8;
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    return V4L2_PIX_FMT_VP9;
+    if (slice_based)
+      return V4L2_PIX_FMT_VP9_FRAME;
+    else
+      return V4L2_PIX_FMT_VP9;
   } else {
     LOG(FATAL) << "Add more cases as needed";
     return 0;
@@ -283,6 +286,7 @@ V4L2Device::GetSupportedDecodeProfiles(const size_t num_formats,
         max_profile = VP8PROFILE_MAX;
         break;
       case V4L2_PIX_FMT_VP9:
+      case V4L2_PIX_FMT_VP9_FRAME:
         min_profile = VP9PROFILE_MIN;
         max_profile = VP9PROFILE_MAX;
         break;

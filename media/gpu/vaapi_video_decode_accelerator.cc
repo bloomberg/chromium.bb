@@ -245,13 +245,18 @@ class VaapiVideoDecodeAccelerator::VaapiVP9Accelerator
   // VP9Decoder::VP9Accelerator implementation.
   scoped_refptr<VP9Picture> CreateVP9Picture() override;
 
-  bool SubmitDecode(
-      const scoped_refptr<VP9Picture>& pic,
-      const Vp9SegmentationParams& seg,
-      const Vp9LoopFilterParams& lf,
-      const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) override;
+  bool SubmitDecode(const scoped_refptr<VP9Picture>& pic,
+                    const Vp9SegmentationParams& seg,
+                    const Vp9LoopFilterParams& lf,
+                    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
+                    const base::Closure& done_cb) override;
 
   bool OutputPicture(const scoped_refptr<VP9Picture>& pic) override;
+
+  bool IsFrameContextRequired() const override { return false; }
+
+  bool GetFrameContext(const scoped_refptr<VP9Picture>& pic,
+                       Vp9FrameContext* frame_ctx) override;
 
  private:
   scoped_refptr<VaapiDecodeSurface> VP9PictureToVaapiDecodeSurface(
@@ -618,6 +623,12 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
           return;
 
         break;
+
+      case AcceleratedVideoDecoder::kNeedContextUpdate:
+        // This should not happen as we return false from
+        // IsFrameContextRequired().
+        NOTREACHED() << "Context updates not supported";
+        return;
 
       case AcceleratedVideoDecoder::kDecodeError:
         RETURN_AND_NOTIFY_ON_FAILURE(false, "Error decoding stream",
@@ -1719,7 +1730,14 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
     const scoped_refptr<VP9Picture>& pic,
     const Vp9SegmentationParams& seg,
     const Vp9LoopFilterParams& lf,
-    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures) {
+    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
+    const base::Closure& done_cb) {
+  // TODO(posciak): We don't currently have the ability to know when the surface
+  // is decoded, as we submit both the decode job and output independently and
+  // don't wait for just the decode to be finished, instead relying on the
+  // driver to execute them in correct order.
+  DCHECK(!done_cb.is_null());
+
   VADecPictureParameterBufferVP9 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
 
@@ -1846,6 +1864,13 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::OutputPicture(
 
   vaapi_dec_->SurfaceReady(dec_surface);
   return true;
+}
+
+bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::GetFrameContext(
+    const scoped_refptr<VP9Picture>& pic,
+    Vp9FrameContext* frame_ctx) {
+  NOTIMPLEMENTED() << "Frame context update not supported";
+  return false;
 }
 
 scoped_refptr<VaapiVideoDecodeAccelerator::VaapiDecodeSurface>
