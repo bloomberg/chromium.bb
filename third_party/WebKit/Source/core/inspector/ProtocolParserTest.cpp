@@ -2,18 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "core/inspector/protocol/Protocol.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
-namespace protocol {
 
-TEST(ParserTest, Reading)
+using protocol::parseJSON;
+using protocol::DictionaryValue;
+using protocol::ListValue;
+using protocol::Value;
+
+TEST(ProtocolParserTest, Reading)
 {
-    protocol::Value* tmpValue;
-    std::unique_ptr<protocol::Value> root;
-    std::unique_ptr<protocol::Value> root2;
-    String16 strVal;
+    Value* tmpValue;
+    std::unique_ptr<Value> root;
+    std::unique_ptr<Value> root2;
+    String strVal;
     int intVal = 0;
 
     // some whitespace checking
@@ -55,7 +60,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ("sample string", strVal);
     root = parseJSON("[1, /* comment, 2 ] */ \n 3]");
     ASSERT_TRUE(root.get());
-    protocol::ListValue* list = ListValue::cast(root.get());
+    ListValue* list = ListValue::cast(root.get());
     ASSERT_TRUE(list);
     EXPECT_EQ(2u, list->size());
     tmpValue = list->at(0);
@@ -306,12 +311,12 @@ TEST(ParserTest, Reading)
     root = parseJSON("{\"number\":9.87654321, \"null\":null , \"S\" : \"str\" }");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeObject, root->type());
-    protocol::DictionaryValue* objectVal = DictionaryValue::cast(root.get());
+    DictionaryValue* objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     doubleVal = 0.0;
     EXPECT_TRUE(objectVal->getDouble("number", &doubleVal));
     EXPECT_DOUBLE_EQ(9.87654321, doubleVal);
-    protocol::Value* nullVal = objectVal->get("null");
+    Value* nullVal = objectVal->get("null");
     ASSERT_TRUE(nullVal);
     EXPECT_EQ(Value::TypeNull, nullVal->type());
     EXPECT_TRUE(objectVal->getString("S", &strVal));
@@ -342,9 +347,9 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeObject, root->type());
     objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
-    protocol::DictionaryValue* innerObject = objectVal->getObject("inner");
+    DictionaryValue* innerObject = objectVal->getObject("inner");
     ASSERT_TRUE(innerObject);
-    protocol::ListValue* innerArray = innerObject->getArray("array");
+    ListValue* innerArray = innerObject->getArray("array");
     ASSERT_TRUE(innerArray);
     EXPECT_EQ(1U, innerArray->size());
     boolValue = true;
@@ -413,7 +418,7 @@ TEST(ParserTest, Reading)
     EXPECT_FALSE(root.get());
 
     // Test stack overflow
-    String16Builder evil;
+    StringBuilder evil;
     evil.reserveCapacity(2000000);
     for (int i = 0; i < 1000000; ++i)
         evil.append('[');
@@ -423,7 +428,7 @@ TEST(ParserTest, Reading)
     EXPECT_FALSE(root.get());
 
     // A few thousand adjacent lists is fine.
-    String16Builder notEvil;
+    StringBuilder notEvil;
     notEvil.reserveCapacity(15010);
     notEvil.append('[');
     for (int i = 0; i < 5000; ++i)
@@ -446,14 +451,14 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp2[] = {0x20ac, 0x33, 0x2c, 0x31, 0x34};
-    EXPECT_EQ(String16(tmp2, 5), strVal);
+    EXPECT_EQ(String(tmp2, 5), strVal);
 
     root = parseJSON("\"\\ud83d\\udca9\\ud83d\\udc6c\"");
     ASSERT_TRUE(root.get());
     EXPECT_EQ(Value::TypeString, root->type());
     EXPECT_TRUE(root->asString(&strVal));
     UChar tmp3[] = {0xd83d, 0xdca9, 0xd83d, 0xdc6c};
-    EXPECT_EQ(String16(tmp3, 4), strVal);
+    EXPECT_EQ(String(tmp3, 4), strVal);
 
     // Test literal root objects.
     root = parseJSON("null");
@@ -475,7 +480,7 @@ TEST(ParserTest, Reading)
     EXPECT_EQ("root", strVal);
 }
 
-TEST(ParserTest, InvalidSanity)
+TEST(ProtocolParserTest, InvalidSanity)
 {
     const char* const invalidJson[] = {
         "/* test *",
@@ -492,10 +497,9 @@ TEST(ParserTest, InvalidSanity)
     };
 
     for (size_t i = 0; i < 11; ++i) {
-        std::unique_ptr<protocol::Value> result = parseJSON(invalidJson[i]);
+        std::unique_ptr<Value> result = parseJSON(invalidJson[i]);
         EXPECT_FALSE(result.get());
     }
 }
 
-} // namespace protocol
 } // namespace blink

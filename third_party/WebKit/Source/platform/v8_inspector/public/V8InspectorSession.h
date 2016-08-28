@@ -31,7 +31,7 @@ public:
     static bool canDispatchMethod(const StringView& method);
     virtual void dispatchProtocolMessage(const StringView& message) = 0;
     virtual std::unique_ptr<StringBuffer> stateJSON() = 0;
-    virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Schema::API::Domain>> supportedDomains() = 0;
+    virtual std::vector<std::unique_ptr<protocol::Schema::API::Domain>> supportedDomains() = 0;
 
     // Debugger actions.
     virtual void schedulePauseOnNextStatement(const StringView& breakReason, const StringView& breakDetails) = 0;
@@ -40,11 +40,11 @@ public:
     virtual void setSkipAllPauses(bool) = 0;
     virtual void resume() = 0;
     virtual void stepOver() = 0;
-    virtual std::unique_ptr<blink::protocol::Array<blink::protocol::Debugger::API::SearchMatch>> searchInTextByLines(const StringView& text, const StringView& query, bool caseSensitive, bool isRegex) = 0;
+    virtual std::vector<std::unique_ptr<protocol::Debugger::API::SearchMatch>> searchInTextByLines(const StringView& text, const StringView& query, bool caseSensitive, bool isRegex) = 0;
 
     // Remote objects.
-    virtual std::unique_ptr<blink::protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName) = 0;
-    virtual bool unwrapObject(ErrorString*, const StringView& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, std::unique_ptr<StringBuffer>* objectGroup) = 0;
+    virtual std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName) = 0;
+    virtual bool unwrapObject(std::unique_ptr<StringBuffer>* error, const StringView& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, std::unique_ptr<StringBuffer>* objectGroup) = 0;
     virtual void releaseObjectGroup(const StringView&) = 0;
 };
 

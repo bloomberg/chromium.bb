@@ -24,6 +24,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>

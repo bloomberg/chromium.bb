@@ -132,7 +132,7 @@ public:
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
     void pushNodesByBackendIdsToFrontend(ErrorString*, std::unique_ptr<protocol::Array<int>> backendNodeIds, std::unique_ptr<protocol::Array<int>>* nodeIds) override;
     void setInspectedNode(ErrorString*, int nodeId) override;
-    void resolveNode(ErrorString*, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<protocol::Runtime::API::RemoteObject>*) override;
+    void resolveNode(ErrorString*, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*) override;
     void getAttributes(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<String>>* attributes) override;
     void copyTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
     void moveTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
@@ -176,7 +176,7 @@ public:
 
     static String documentURLString(Document*);
 
-    std::unique_ptr<protocol::Runtime::API::RemoteObject> resolveNode(Node*, const String& objectGroup);
+    std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> resolveNode(Node*, const String& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 

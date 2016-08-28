@@ -64,10 +64,6 @@ class WebLocalFrameImpl;
 class WebString;
 class WebViewImpl;
 
-namespace protocol {
-class Value;
-}
-
 class WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent

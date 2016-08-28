@@ -45,7 +45,7 @@ public:
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
     void seekAnimations(ErrorString*, std::unique_ptr<protocol::Array<String>> animations, double currentTime) override;
     void releaseAnimations(ErrorString*, std::unique_ptr<protocol::Array<String>> animations) override;
-    void resolveAnimation(ErrorString*, const String& animationId, std::unique_ptr<protocol::Runtime::API::RemoteObject>*) override;
+    void resolveAnimation(ErrorString*, const String& animationId, std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);

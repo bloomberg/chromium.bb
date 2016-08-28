@@ -4,6 +4,8 @@
 
 #include "core/inspector/V8InspectorString.h"
 
+#include "core/inspector/protocol/Protocol.h"
+
 namespace blink {
 
 v8_inspector::StringView toV8InspectorStringView(const StringView& string)
@@ -33,5 +35,18 @@ String toCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer)
         return String();
     return toCoreString(buffer->string());
 }
+
+namespace protocol {
+
+std::unique_ptr<protocol::Value> parseJSON(const String& string)
+{
+    if (string.isNull())
+        return nullptr;
+    if (string.is8Bit())
+        return parseJSON(reinterpret_cast<const uint8_t*>(string.characters8()), string.length());
+    return parseJSON(reinterpret_cast<const uint16_t*>(string.characters16()), string.length());
+}
+
+} // namespace protocol
 
 } // namespace blink

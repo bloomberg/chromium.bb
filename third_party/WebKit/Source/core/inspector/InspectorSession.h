@@ -6,15 +6,16 @@
 #define InspectorSession_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/protocol/Forward.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace v8_inspector {
 class V8Inspector;
-class V8InspectorSession;
 }
 
 namespace blink {
@@ -26,7 +27,8 @@ class LocalFrame;
 
 class CORE_EXPORT InspectorSession
     : public GarbageCollectedFinalized<InspectorSession>
-    , public protocol::FrontendChannel {
+    , public protocol::FrontendChannel
+    , public v8_inspector::V8Inspector::Channel {
     WTF_MAKE_NONCOPYABLE(InspectorSession);
 public:
     class Client {
@@ -51,8 +53,12 @@ public:
 
 private:
     // protocol::FrontendChannel implementation.
-    void sendProtocolResponse(int callId, const protocol::String16& message) override;
-    void sendProtocolNotification(const protocol::String16& message) override;
+    void sendProtocolResponse(int callId, const String& message) override;
+    void sendProtocolNotification(const String& message) override;
+
+    // v8_inspector::V8Inspector::Channel implementation.
+    void sendProtocolResponse(int callId, const v8_inspector::StringView& message) override;
+    void sendProtocolNotification(const v8_inspector::StringView& message) override;
 
     Client* m_client;
     std::unique_ptr<v8_inspector::V8InspectorSession> m_v8Session;
@@ -62,7 +68,7 @@ private:
     std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
     std::unique_ptr<protocol::DictionaryValue> m_state;
     HeapVector<Member<InspectorAgent>> m_agents;
-    Vector<protocol::String16> m_notificationQueue;
+    Vector<String> m_notificationQueue;
     String m_lastSentState;
 };
 

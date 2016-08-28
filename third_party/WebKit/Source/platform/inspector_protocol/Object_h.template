@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Object_h
-#define Object_h
+#ifndef {{"_".join(config.protocol.namespace)}}_Object_h
+#define {{"_".join(config.protocol.namespace)}}_Object_h
 
 //#include "ErrorSupport.h"
-//#include "Platform.h"
+//#include "Forward.h"
 //#include "Values.h"
-#include "{{config.class_export.header}}"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 class {{config.class_export.macro}} Object {
 public:
@@ -25,7 +25,8 @@ private:
     std::unique_ptr<protocol::DictionaryValue> m_object;
 };
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(Object_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_Object_h)

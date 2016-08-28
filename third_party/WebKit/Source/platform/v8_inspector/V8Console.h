@@ -5,14 +5,13 @@
 #ifndef V8Console_h
 #define V8Console_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+
 #include <v8.h>
 
 namespace v8_inspector {
 
 class InspectedContext;
-
-namespace protocol = blink::protocol;
 
 // Console API
 // https://console.spec.whatwg.org/#console-interface
@@ -23,7 +22,7 @@ public:
     static v8::Local<v8::Object> createCommandLineAPI(InspectedContext*);
 
     class CommandLineAPIScope {
-        PROTOCOL_DISALLOW_COPY(CommandLineAPIScope);
+        V8_INSPECTOR_DISALLOW_COPY(CommandLineAPIScope);
     public:
         CommandLineAPIScope(v8::Local<v8::Context>, v8::Local<v8::Object> commandLineAPI, v8::Local<v8::Object> global);
         ~CommandLineAPIScope();

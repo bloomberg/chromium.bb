@@ -5,11 +5,12 @@
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 
 #include "platform/v8_inspector/Atomics.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include <v8-profiler.h>
 
 #include <vector>

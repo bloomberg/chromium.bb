@@ -31,7 +31,8 @@
 #ifndef V8InspectorImpl_h
 #define V8InspectorImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 
 #include <v8-debug.h>
@@ -48,10 +49,8 @@ class V8InspectorSessionImpl;
 class V8RuntimeAgentImpl;
 class V8StackTraceImpl;
 
-namespace protocol = blink::protocol;
-
 class V8InspectorImpl : public V8Inspector {
-    PROTOCOL_DISALLOW_COPY(V8InspectorImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8InspectorImpl);
 public:
     V8InspectorImpl(v8::Isolate*, V8InspectorClient*);
     ~V8InspectorImpl() override;
@@ -67,7 +66,7 @@ public:
     v8::Local<v8::Context> regexContext();
 
     // V8Inspector implementation.
-    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, protocol::FrontendChannel*, const StringView& state) override;
+    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, V8Inspector::Channel*, const StringView& state) override;
     void contextCreated(const V8ContextInfo&) override;
     void contextDestroyed(v8::Local<v8::Context>) override;
     void resetContextGroup(int contextGroupId) override;

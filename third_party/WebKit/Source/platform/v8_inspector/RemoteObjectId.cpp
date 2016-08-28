@@ -4,6 +4,9 @@
 
 #include "platform/v8_inspector/RemoteObjectId.h"
 
+#include "platform/v8_inspector/StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
+
 namespace v8_inspector {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }

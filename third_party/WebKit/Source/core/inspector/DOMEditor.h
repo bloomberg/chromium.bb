@@ -31,8 +31,8 @@
 #ifndef DOMEditor_h
 #define DOMEditor_h
 
+#include "core/inspector/protocol/Forward.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -43,6 +43,8 @@ class ExceptionState;
 class InspectorHistory;
 class Node;
 class Text;
+
+using protocol::ErrorString;
 
 class DOMEditor final : public GarbageCollected<DOMEditor> {
     WTF_MAKE_NONCOPYABLE(DOMEditor);

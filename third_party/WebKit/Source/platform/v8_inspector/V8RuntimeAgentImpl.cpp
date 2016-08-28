@@ -33,6 +33,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8Debugger.h"
@@ -40,7 +41,7 @@
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {
@@ -654,7 +655,7 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(InspectedContext* context
         .setName(context->humanReadableName())
         .setOrigin(context->origin()).build();
     if (!context->auxData().isEmpty())
-        description->setAuxData(protocol::DictionaryValue::cast(parseJSON(context->auxData())));
+        description->setAuxData(protocol::DictionaryValue::cast(protocol::parseJSON(context->auxData())));
     m_frontend.executionContextCreated(std::move(description));
 }
 

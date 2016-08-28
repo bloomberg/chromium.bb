@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrontendChannel_h
-#define FrontendChannel_h
+#ifndef {{"_".join(config.protocol.namespace)}}_FrontendChannel_h
+#define {{"_".join(config.protocol.namespace)}}_FrontendChannel_h
 
-//#include "String16.h"
-#include "{{config.class_export.header}}"
-
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 class {{config.class_export.macro}} FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
-    virtual void sendProtocolResponse(int callId, const String16& message) = 0;
-    virtual void sendProtocolNotification(const String16& message) = 0;
+    virtual void sendProtocolResponse(int callId, const String& message) = 0;
+    virtual void sendProtocolNotification(const String& message) = 0;
     virtual void flushProtocolNotifications() = 0;
 };
 
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(FrontendChannel_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_FrontendChannel_h)

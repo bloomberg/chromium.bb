@@ -2,25 +2,25 @@
     "protocol": {
         "path": "js_protocol.json",
         "package": "platform/v8_inspector/protocol",
-        "output": "v8_inspector/protocol"
+        "output": "v8_inspector/protocol",
+        "namespace": ["v8_inspector", "protocol"]
     },
 
     "exported": {
         "package": "platform/v8_inspector/public/protocol",
-        "output": "v8_inspector/public/protocol"
-    },
-
-    "string": {
-        "class_name": "String16"
+        "output": "v8_inspector/public/protocol",
+        "string_header": "platform/v8_inspector/public/StringBuffer.h",
+        "string_in": "StringView",
+        "string_out": "std::unique_ptr<StringBuffer>",
+        "to_string_out": "StringBufferImpl::adopt(%s)"
     },
 
     "lib": {
-        "output": "inspector_protocol",
-        "string16_header": "platform/v8_inspector/String16WTF.h",
-        "platform_header": "platform/v8_inspector/PlatformWTF.h"
+        "package": "platform/v8_inspector/protocol",
+        "output": "v8_inspector/protocol",
+        "string_header": "platform/v8_inspector/StringUtil.h",
+        "platform_header": "platform/v8_inspector/ProtocolPlatform.h"
     },
-
-    "lib_package": "platform/inspector_protocol",
 
     "class_export": {
         "macro": "PLATFORM_EXPORT",

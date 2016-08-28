@@ -6,6 +6,7 @@
 
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
@@ -14,7 +15,6 @@
 #include "platform/v8_inspector/V8ProfilerAgentImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
@@ -28,7 +28,7 @@ v8::Local<v8::Private> inspectedContextPrivateKey(v8::Isolate* isolate)
 }
 
 class ConsoleHelper {
-    PROTOCOL_DISALLOW_COPY(ConsoleHelper);
+    V8_INSPECTOR_DISALLOW_COPY(ConsoleHelper);
 public:
     ConsoleHelper(const v8::FunctionCallbackInfo<v8::Value>& info)
         : m_info(info)

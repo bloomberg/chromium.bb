@@ -6,8 +6,11 @@
 
 #include "{{config.protocol.package}}/{{domain.domain}}.h"
 
-namespace blink {
-namespace protocol {
+#include "{{config.protocol.package}}/Protocol.h"
+
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 namespace {{domain.domain}} {
 
 // ------------- Enum values from types.
@@ -93,13 +96,14 @@ std::unique_ptr<{{type.id}}> {{type.id}}::clone() const
 }
     {% if type.exported %}
 
-String16 {{type.id}}::toJSONString() const
+{{config.exported.string_out}} {{type.id}}::toJSONString() const
 {
-    return serialize()->toJSONString();
+    String json = serialize()->toJSONString();
+    return {{config.exported.to_string_out % "json"}};
 }
 
 // static
-std::unique_ptr<API::{{type.id}}> API::{{type.id}}::fromJSONString(const String16& json)
+std::unique_ptr<API::{{type.id}}> API::{{type.id}}::fromJSONString(const {{config.exported.string_in}}& json)
 {
     ErrorSupport errors;
     std::unique_ptr<Value> value = parseJSON(json);
@@ -169,6 +173,11 @@ void Frontend::{{event.name}}(
 }
   {% endfor %}
 
+void Frontend::flush()
+{
+    m_frontendChannel->flushProtocolNotifications();
+}
+
 // --------------------- Dispatcher.
 
 class DispatcherImpl : public protocol::DispatcherBase {
@@ -183,11 +192,11 @@ public:
   {% endfor %}
     }
     ~DispatcherImpl() override { }
-    void dispatch(int callId, const String16& method, std::unique_ptr<protocol::DictionaryValue> messageObject) override;
+    void dispatch(int callId, const String& method, std::unique_ptr<protocol::DictionaryValue> messageObject) override;
 
 protected:
     using CallHandler = void (DispatcherImpl::*)(int callId, std::unique_ptr<DictionaryValue> messageObject, ErrorSupport* errors);
-    using DispatchMap = protocol::HashMap<String16, CallHandler>;
+    using DispatchMap = protocol::HashMap<String, CallHandler>;
     DispatchMap m_dispatchMap;
 
   {% for command in domain.commands %}
@@ -199,9 +208,9 @@ protected:
     Backend* m_backend;
 };
 
-void DispatcherImpl::dispatch(int callId, const String16& method, std::unique_ptr<protocol::DictionaryValue> messageObject)
+void DispatcherImpl::dispatch(int callId, const String& method, std::unique_ptr<protocol::DictionaryValue> messageObject)
 {
-    protocol::HashMap<String16, CallHandler>::iterator it = m_dispatchMap.find(method);
+    protocol::HashMap<String, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
         reportProtocolError(callId, MethodNotFound, "'" + method + "' wasn't found", nullptr);
         return;
@@ -345,5 +354,6 @@ void Dispatcher::wire(UberDispatcher* dispatcher, Backend* backend)
 }
 
 } // {{domain.domain}}
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}

@@ -57,6 +57,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/V8InspectorString.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/xml/XPathEvaluator.h"

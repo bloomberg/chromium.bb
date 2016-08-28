@@ -2,42 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ErrorSupport_h
-#define ErrorSupport_h
+#ifndef {{"_".join(config.protocol.namespace)}}_ErrorSupport_h
+#define {{"_".join(config.protocol.namespace)}}_ErrorSupport_h
 
-//#include "Platform.h"
-//#include "String16.h"
-#include "{{config.class_export.header}}"
+//#include "Forward.h"
 
-#include <vector>
-
-namespace blink {
-namespace protocol {
-
-using ErrorString = String16;
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 class {{config.class_export.macro}} ErrorSupport {
 public:
     ErrorSupport();
-    ErrorSupport(String16* errorString);
+    ErrorSupport(String* errorString);
     ~ErrorSupport();
 
     void push();
-    void setName(const String16&);
+    void setName(const String&);
     void pop();
-    void addError(const String16&);
+    void addError(const String&);
     bool hasErrors();
-    String16 errors();
+    String errors();
 
 private:
-    std::vector<String16> m_path;
-    std::vector<String16> m_errors;
-    String16* m_errorString;
+    std::vector<String> m_path;
+    std::vector<String> m_errors;
+    String* m_errorString;
 };
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-using blink::protocol::ErrorString;
-
-#endif // !defined(ErrorSupport_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_ErrorSupport_h)

@@ -1,34 +1,37 @@
 {
     "protocol": {
-        "path": "protocol/sample_protocol.json",
+        "path": "./relative/path/protocol/sample_protocol.json",
         "package": "include/generated/files/like/this",
-        "output": "place/generated/files/here"
-    },
-
-    "imported": {
-        "path": "../relative/path/imported_protocol.json",
-        "package": "include/imported/files/like/this"
+        "output": "place/generated/files/here",
+        "namespace": ["sample_project", "protocol"]
     },
 
     "exported": {
         "package": "include/exported/files/like/this",
-        "output": "place/exported/files/here"
+        "output": "place/exported/files/here",
+        "string_header": "include/exported/string.h",
+        "string_in": "String",
+        "string_out": "String",
+        "to_string_out": "toString(%s)"
     },
 
-    "string": {
-        "class_name": "String16"
+    "imported": {
+        "path": "../relative/path/imported_protocol.json",
+        "package": "include/imported/files/like/this",
+        "to_imported_string": "toImportedString(%s)",
+        "from_imported_string": "fromImportedString(%s)",
+        "namespace": ["imported_project", "protocol"]
     },
 
     "lib": {
+        "package": "include/lib/files/like/this",
         "output": "place/generated/lib/files/here",
-        "string16_header": "sting16/implementation.h",
+        "string_header": "string/implementation.h",
         "platform_header": "platform/implementation.h"
     },
 
-    "lib_package": "include/lib/files/like/this",
-
     "class_export": {
         "macro": "LIB_EXPORT",
-        "header": "lib/export.h"
+        "header": "lib/lib_export.h"
     }
 }

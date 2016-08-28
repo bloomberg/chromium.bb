@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-namespace blink {
-namespace protocol {
+//#include "Object.h"
+
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 std::unique_ptr<Object> Object::parse(protocol::Value* value, ErrorSupport* errors)
 {
@@ -29,5 +32,6 @@ Object::Object(std::unique_ptr<protocol::DictionaryValue> object) : m_object(std
 
 Object::~Object() { }
 
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}

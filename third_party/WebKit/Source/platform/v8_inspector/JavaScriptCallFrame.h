@@ -31,16 +31,16 @@
 #ifndef JavaScriptCallFrame_h
 #define JavaScriptCallFrame_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
-#include <v8.h>
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/ProtocolPlatform.h"
 
+#include <v8.h>
 #include <vector>
 
 namespace v8_inspector {
 
-namespace protocol = blink::protocol;
-
 class JavaScriptCallFrame {
+    V8_INSPECTOR_DISALLOW_COPY(JavaScriptCallFrame);
 public:
     static std::unique_ptr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {

@@ -5,14 +5,11 @@
 #ifndef V8InjectedScriptHost_h
 #define V8InjectedScriptHost_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
 namespace v8_inspector {
 
 class V8InspectorImpl;
-
-namespace protocol = blink::protocol;
 
 // SECURITY NOTE: Although the InjectedScriptHost is intended for use solely by the inspector,
 // a reference to the InjectedScriptHost may be leaked to the page being inspected. Thus, the

@@ -357,7 +357,7 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     }
 }
 
-void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, std::unique_ptr<protocol::Runtime::API::RemoteObject>* result)
+void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const String& animationId, std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>* result)
 {
     blink::Animation* animation = assertAnimation(errorString, animationId);
     if (!animation)

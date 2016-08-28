@@ -31,11 +31,12 @@
 #ifndef InjectedScript_h
 #define InjectedScript_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8Debugger.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 
 #include <v8.h>
@@ -47,11 +48,11 @@ class V8FunctionCall;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
-namespace protocol = blink::protocol;
-using blink::protocol::Maybe;
+using protocol::ErrorString;
+using protocol::Maybe;
 
 class InjectedScript final {
-    PROTOCOL_DISALLOW_COPY(InjectedScript);
+    V8_INSPECTOR_DISALLOW_COPY(InjectedScript);
 public:
     static std::unique_ptr<InjectedScript> create(InspectedContext*);
     ~InjectedScript();
@@ -118,7 +119,7 @@ public:
     };
 
     class ContextScope: public Scope {
-        PROTOCOL_DISALLOW_COPY(ContextScope);
+        V8_INSPECTOR_DISALLOW_COPY(ContextScope);
     public:
         ContextScope(ErrorString*, V8InspectorImpl*, int contextGroupId, int executionContextId);
         ~ContextScope();
@@ -128,7 +129,7 @@ public:
     };
 
     class ObjectScope: public Scope {
-        PROTOCOL_DISALLOW_COPY(ObjectScope);
+        V8_INSPECTOR_DISALLOW_COPY(ObjectScope);
     public:
         ObjectScope(ErrorString*, V8InspectorImpl*, int contextGroupId, const String16& remoteObjectId);
         ~ObjectScope();
@@ -142,7 +143,7 @@ public:
     };
 
     class CallFrameScope: public Scope {
-        PROTOCOL_DISALLOW_COPY(CallFrameScope);
+        V8_INSPECTOR_DISALLOW_COPY(CallFrameScope);
     public:
         CallFrameScope(ErrorString*, V8InspectorImpl*, int contextGroupId, const String16& remoteCallFrameId);
         ~CallFrameScope();

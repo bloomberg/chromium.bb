@@ -5,11 +5,13 @@
 #include "platform/v8_inspector/V8HeapProfilerAgentImpl.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
+
 #include <v8-profiler.h>
 #include <v8-version.h>
 
@@ -289,7 +291,7 @@ void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const St
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> value;
     v8::Local<v8::Context> context;
-    if (!m_session->unwrapObject(errorString, toStringView(objectId), &value, &context, nullptr) || value->IsUndefined())
+    if (!m_session->unwrapObject(errorString, objectId, &value, &context, nullptr) || value->IsUndefined())
         return;
 
     v8::SnapshotObjectId id = m_isolate->GetHeapProfiler()->GetObjectId(value);

@@ -5,7 +5,8 @@
 #ifndef V8HeapProfilerAgentImpl_h
 #define V8HeapProfilerAgentImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/HeapProfiler.h"
 
 #include <v8.h>
@@ -14,11 +15,11 @@ namespace v8_inspector {
 
 class V8InspectorSessionImpl;
 
-namespace protocol = blink::protocol;
-using blink::protocol::Maybe;
+using protocol::ErrorString;
+using protocol::Maybe;
 
 class V8HeapProfilerAgentImpl : public protocol::HeapProfiler::Backend {
-    PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8HeapProfilerAgentImpl);
 public:
     V8HeapProfilerAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8HeapProfilerAgentImpl() override;

@@ -5,7 +5,9 @@
 #ifndef V8Regex_h
 #define V8Regex_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/String16.h"
+
 #include <v8.h>
 
 namespace v8_inspector {
@@ -18,7 +20,7 @@ enum MultilineMode {
 };
 
 class V8Regex {
-    PROTOCOL_DISALLOW_COPY(V8Regex);
+    V8_INSPECTOR_DISALLOW_COPY(V8Regex);
 public:
     V8Regex(V8InspectorImpl*, const String16&, bool caseSensitive, bool multiline = false);
     int match(const String16&, int startFrom = 0, int* matchLength = 0) const;

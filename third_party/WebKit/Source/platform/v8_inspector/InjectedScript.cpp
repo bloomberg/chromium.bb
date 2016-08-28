@@ -34,6 +34,7 @@
 #include "platform/v8_inspector/InjectedScriptSource.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8FunctionCall.h"
@@ -41,18 +42,17 @@
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/V8ValueCopier.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
-using blink::protocol::Array;
-using blink::protocol::Debugger::CallFrame;
-using blink::protocol::Runtime::PropertyDescriptor;
-using blink::protocol::Runtime::InternalPropertyDescriptor;
-using blink::protocol::Runtime::RemoteObject;
-using blink::protocol::Maybe;
-
 namespace v8_inspector {
+
+using protocol::Array;
+using protocol::Runtime::PropertyDescriptor;
+using protocol::Runtime::InternalPropertyDescriptor;
+using protocol::Runtime::RemoteObject;
+using protocol::Maybe;
 
 static bool hasInternalError(ErrorString* errorString, bool hasError)
 {
@@ -87,7 +87,7 @@ std::unique_ptr<InjectedScript> InjectedScript::create(InspectedContext* inspect
     v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(isolate, inspectedContext->contextId()) };
     v8::MicrotasksScope microtasksScope(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> injectedScriptValue;
-    if (!function->Call(context, windowGlobal, PROTOCOL_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
+    if (!function->Call(context, windowGlobal, V8_INSPECTOR_ARRAY_LENGTH(info), info).ToLocal(&injectedScriptValue))
         return nullptr;
     if (!injectedScriptValue->IsObject())
         return nullptr;

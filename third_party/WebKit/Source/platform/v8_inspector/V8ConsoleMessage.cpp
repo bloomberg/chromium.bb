@@ -5,12 +5,13 @@
 #include "platform/v8_inspector/V8ConsoleMessage.h"
 
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {

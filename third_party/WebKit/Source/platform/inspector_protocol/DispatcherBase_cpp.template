@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-namespace blink {
-namespace protocol {
+//#include "DispatcherBase.h"
+//#include "Parser.h"
+
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 // static
 const char DispatcherBase::kInvalidRequest[] = "Invalid request";
@@ -44,7 +48,7 @@ DispatcherBase::~DispatcherBase()
 }
 
 // static
-bool DispatcherBase::getCommandName(const String16& message, String16* result)
+bool DispatcherBase::getCommandName(const String& message, String* result)
 {
     std::unique_ptr<protocol::Value> value = parseJSON(message);
     if (!value)
@@ -84,7 +88,7 @@ void DispatcherBase::sendResponse(int callId, const ErrorString& invocationError
     sendResponse(callId, invocationError, nullptr, DictionaryValue::create());
 }
 
-static void reportProtocolError(FrontendChannel* frontendChannel, int callId, DispatcherBase::CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors)
+static void reportProtocolErrorTo(FrontendChannel* frontendChannel, int callId, DispatcherBase::CommonErrorCode code, const String& errorMessage, ErrorSupport* errors)
 {
     std::unique_ptr<protocol::DictionaryValue> error = DictionaryValue::create();
     error->setInteger("code", code);
@@ -98,10 +102,10 @@ static void reportProtocolError(FrontendChannel* frontendChannel, int callId, Di
     frontendChannel->sendProtocolResponse(callId, message->toJSONString());
 }
 
-void DispatcherBase::reportProtocolError(int callId, CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors)
+void DispatcherBase::reportProtocolError(int callId, CommonErrorCode code, const String& errorMessage, ErrorSupport* errors)
 {
     if (m_frontendChannel)
-        ::blink::protocol::reportProtocolError(m_frontendChannel, callId, code, errorMessage, errors);
+        reportProtocolErrorTo(m_frontendChannel, callId, code, errorMessage, errors);
 }
 
 void DispatcherBase::clearFrontend()
@@ -122,7 +126,7 @@ std::unique_ptr<DispatcherBase::WeakPtr> DispatcherBase::weakPtr()
 UberDispatcher::UberDispatcher(FrontendChannel* frontendChannel)
     : m_frontendChannel(frontendChannel) { }
 
-void UberDispatcher::registerBackend(const String16& name, std::unique_ptr<protocol::DispatcherBase> dispatcher)
+void UberDispatcher::registerBackend(const String& name, std::unique_ptr<protocol::DispatcherBase> dispatcher)
 {
     m_dispatchers[name] = std::move(dispatcher);
 }
@@ -142,20 +146,20 @@ void UberDispatcher::dispatch(std::unique_ptr<Value> parsedMessage)
         return;
 
     protocol::Value* methodValue = messageObject->get("method");
-    String16 method;
+    String method;
     success = methodValue && methodValue->asString(&method);
     if (!success)
         return;
 
     size_t dotIndex = method.find(".");
-    if (dotIndex == String16::kNotFound) {
-        reportProtocolError(m_frontendChannel, callId, DispatcherBase::MethodNotFound, "'" + method + "' wasn't found", nullptr);
+    if (dotIndex == StringUtil::kNotFound) {
+        reportProtocolErrorTo(m_frontendChannel, callId, DispatcherBase::MethodNotFound, "'" + method + "' wasn't found", nullptr);
         return;
     }
-    String16 domain = method.substring(0, dotIndex);
+    String domain = StringUtil::substring(method, 0, dotIndex);
     auto it = m_dispatchers.find(domain);
     if (it == m_dispatchers.end()) {
-        reportProtocolError(m_frontendChannel, callId, DispatcherBase::MethodNotFound, "'" + method + "' wasn't found", nullptr);
+        reportProtocolErrorTo(m_frontendChannel, callId, DispatcherBase::MethodNotFound, "'" + method + "' wasn't found", nullptr);
         return;
     }
     it->second->dispatch(callId, method, std::move(messageObject));
@@ -163,5 +167,6 @@ void UberDispatcher::dispatch(std::unique_ptr<Value> parsedMessage)
 
 UberDispatcher::~UberDispatcher() = default;
 
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}

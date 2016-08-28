@@ -33,8 +33,8 @@
 
 #include "core/CoreExport.h"
 #include "core/InstrumentingAgents.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,6 +42,7 @@ namespace blink {
 
 class LocalFrame;
 
+using protocol::ErrorString;
 using protocol::Maybe;
 
 class CORE_EXPORT InspectorAgent : public GarbageCollectedFinalized<InspectorAgent> {

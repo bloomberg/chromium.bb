@@ -30,8 +30,8 @@
 
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 
 #include <v8-debug.h>
 
@@ -127,7 +127,7 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber,
         variableName,
         newValue
     };
-    return setVariableValueFunction->Call(m_debuggerContext.Get(m_isolate), callFrame, PROTOCOL_ARRAY_LENGTH(argv), argv);
+    return setVariableValueFunction->Call(m_debuggerContext.Get(m_isolate), callFrame, V8_INSPECTOR_ARRAY_LENGTH(argv), argv);
 }
 
 } // namespace v8_inspector

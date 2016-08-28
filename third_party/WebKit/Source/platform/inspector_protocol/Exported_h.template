@@ -4,14 +4,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef protocol_{{domain.domain}}_api_h
-#define protocol_{{domain.domain}}_api_h
+#ifndef {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_api_h
+#define {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_api_h
 
 #include "{{config.class_export.header}}"
-#include "{{config.lib_package}}/InspectorProtocol.h"
+#include "{{config.exported.string_header}}"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 namespace {{domain.domain}} {
 namespace API {
 
@@ -47,15 +48,16 @@ namespace {{param.name | to_title_case}}Enum {
 
 class {{config.class_export.macro}} {{type.id}} {
 public:
-    virtual String16 toJSONString() const = 0;
+    virtual {{config.exported.string_out}} toJSONString() const = 0;
     virtual ~{{type.id}}() { }
-    static std::unique_ptr<protocol::{{domain.domain}}::API::{{type.id}}> fromJSONString(const String16& json);
+    static std::unique_ptr<protocol::{{domain.domain}}::API::{{type.id}}> fromJSONString(const {{config.exported.string_in}}& json);
 };
   {% endfor %}
 
 } // namespace API
 } // namespace {{domain.domain}}
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(protocol_{{domain.domain}}_api_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_{{domain.domain}}_api_h)

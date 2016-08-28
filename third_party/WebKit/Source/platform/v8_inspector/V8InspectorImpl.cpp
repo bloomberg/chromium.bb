@@ -31,6 +31,7 @@
 #include "platform/v8_inspector/V8InspectorImpl.h"
 
 #include "platform/v8_inspector/InspectedContext.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
 #include "platform/v8_inspector/V8ConsoleMessage.h"
@@ -39,7 +40,7 @@
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 #include <v8-profiler.h>
 
@@ -166,7 +167,7 @@ std::unique_ptr<V8StackTrace> V8InspectorImpl::createStackTrace(v8::Local<v8::St
     return m_debugger->createStackTrace(stackTrace);
 }
 
-std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, protocol::FrontendChannel* channel, const StringView& state)
+std::unique_ptr<V8InspectorSession> V8InspectorImpl::connect(int contextGroupId, V8Inspector::Channel* channel, const StringView& state)
 {
     DCHECK(m_sessions.find(contextGroupId) == m_sessions.cend());
     std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, channel, state);

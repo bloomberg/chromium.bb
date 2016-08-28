@@ -5,9 +5,10 @@
 #ifndef V8DebuggerAgentImpl_h
 #define V8DebuggerAgentImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/protocol/Debugger.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 
 #include <vector>
 
@@ -23,11 +24,11 @@ class V8InspectorSessionImpl;
 class V8Regex;
 class V8StackTraceImpl;
 
-namespace protocol = blink::protocol;
-using blink::protocol::Maybe;
+using protocol::ErrorString;
+using protocol::Maybe;
 
 class V8DebuggerAgentImpl : public protocol::Debugger::Backend {
-    PROTOCOL_DISALLOW_COPY(V8DebuggerAgentImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8DebuggerAgentImpl);
 public:
     enum SkipPauseRequest {
         RequestNoSkip,

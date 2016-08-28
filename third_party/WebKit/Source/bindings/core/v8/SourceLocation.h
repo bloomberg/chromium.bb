@@ -11,6 +11,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
+#include <v8.h>
 
 namespace blink {
 
@@ -51,7 +52,7 @@ public:
     String toString() const;
 
     // Could be null when stack trace is unknown.
-    std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const;
+    std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace> buildInspectorObject() const;
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<v8_inspector::V8StackTrace>, int scriptId);

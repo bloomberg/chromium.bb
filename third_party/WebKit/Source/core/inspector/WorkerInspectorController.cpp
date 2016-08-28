@@ -34,11 +34,11 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLogAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/WebThreadSupportingGC.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
 
 namespace blink {
 
@@ -84,7 +84,7 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
 {
     if (!m_session)
         return;
-    protocol::String16 method;
+    String method;
     if (!protocol::DispatcherBase::getCommandName(message, &method))
         return;
     m_session->dispatchProtocolMessage(method, message);

@@ -9,6 +9,8 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
+#include "platform/v8_inspector/SearchUtil.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
@@ -16,21 +18,21 @@
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 #include <algorithm>
 
-using blink::protocol::Array;
-using blink::protocol::Maybe;
-using blink::protocol::Debugger::BreakpointId;
-using blink::protocol::Debugger::CallFrame;
-using blink::protocol::Runtime::ExceptionDetails;
-using blink::protocol::Runtime::ScriptId;
-using blink::protocol::Runtime::StackTrace;
-using blink::protocol::Runtime::RemoteObject;
-
 namespace v8_inspector {
+
+using protocol::Array;
+using protocol::Maybe;
+using protocol::Debugger::BreakpointId;
+using protocol::Debugger::CallFrame;
+using protocol::Runtime::ExceptionDetails;
+using protocol::Runtime::ScriptId;
+using protocol::Runtime::StackTrace;
+using protocol::Runtime::RemoteObject;
 
 namespace DebuggerAgentState {
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
@@ -880,7 +882,7 @@ void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
     if (m_scheduledDebuggerStep == StepOut) {
         m_recursionLevelForStepOut += step;
         if (!m_recursionLevelForStepOut) {
-            // When StepOut crosses a task boundary (i.e. js -> blink_c++) from where it was requested,
+            // When StepOut crosses a task boundary (i.e. js -> c++) from where it was requested,
             // switch stepping to step into a next JS task, as if we exited to a blackboxed framework.
             m_scheduledDebuggerStep = StepInto;
             m_skipNextDebuggerStepOut = false;
@@ -984,7 +986,7 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
 
     std::unique_ptr<protocol::DictionaryValue> executionContextAuxData;
     if (!script->executionContextAuxData().isEmpty())
-        executionContextAuxData = protocol::DictionaryValue::cast(parseJSON(script->executionContextAuxData()));
+        executionContextAuxData = protocol::DictionaryValue::cast(protocol::parseJSON(script->executionContextAuxData()));
     bool isLiveEdit = script->isLiveEdit();
     bool hasSourceURL = script->hasSourceURL();
     String16 scriptId = script->scriptId();

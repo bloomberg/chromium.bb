@@ -5,9 +5,10 @@
 #ifndef V8Debugger_h
 #define V8Debugger_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/StringView.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
@@ -23,10 +24,10 @@ class V8DebuggerAgentImpl;
 class V8InspectorImpl;
 class V8StackTraceImpl;
 
-namespace protocol = blink::protocol;
+using protocol::ErrorString;
 
 class V8Debugger {
-    PROTOCOL_DISALLOW_COPY(V8Debugger);
+    V8_INSPECTOR_DISALLOW_COPY(V8Debugger);
 public:
     V8Debugger(v8::Isolate*, V8InspectorImpl*);
     ~V8Debugger();

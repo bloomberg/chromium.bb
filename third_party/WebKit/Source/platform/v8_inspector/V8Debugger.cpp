@@ -6,13 +6,14 @@
 
 #include "platform/v8_inspector/DebuggerScript.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/V8ValueCopier.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 
 namespace v8_inspector {
@@ -128,7 +129,7 @@ void V8Debugger::getCompiledScripts(int contextGroupId, std::vector<std::unique_
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(toV8StringInternalized(m_isolate, "getScripts")));
     v8::Local<v8::Value> argv[] = { v8::Integer::New(m_isolate, contextGroupId) };
     v8::Local<v8::Value> value;
-    if (!getScriptsFunction->Call(debuggerContext(), debuggerScript, PROTOCOL_ARRAY_LENGTH(argv), argv).ToLocal(&value))
+    if (!getScriptsFunction->Call(debuggerContext(), debuggerScript, V8_INSPECTOR_ARRAY_LENGTH(argv), argv).ToLocal(&value))
         return;
     DCHECK(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
@@ -385,7 +386,7 @@ JavaScriptCallFrames V8Debugger::currentCallFrames(int limit)
         currentCallFramesV8 = v8::Debug::Call(debuggerContext(), currentCallFramesFunction, v8::Integer::New(m_isolate, limit)).ToLocalChecked();
     } else {
         v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, limit) };
-        currentCallFramesV8 = callDebuggerMethod("currentCallFrames", PROTOCOL_ARRAY_LENGTH(argv), argv).ToLocalChecked();
+        currentCallFramesV8 = callDebuggerMethod("currentCallFrames", V8_INSPECTOR_ARRAY_LENGTH(argv), argv).ToLocalChecked();
     }
     DCHECK(!currentCallFramesV8.IsEmpty());
     if (!currentCallFramesV8->IsArray())

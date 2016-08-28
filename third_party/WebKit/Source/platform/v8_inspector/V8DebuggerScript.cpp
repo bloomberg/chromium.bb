@@ -4,7 +4,8 @@
 
 #include "platform/v8_inspector/V8DebuggerScript.h"
 
-#include "platform/v8_inspector/V8StringUtil.h"
+#include "platform/v8_inspector/ProtocolPlatform.h"
+#include "platform/v8_inspector/StringUtil.h"
 
 namespace v8_inspector {
 
@@ -31,7 +32,7 @@ static String16 calculateHash(const String16& str)
     uint64_t hashes[] = { 0, 0, 0, 0, 0 };
     uint64_t zi[] = { 1, 1, 1, 1, 1 };
 
-    const size_t hashesSize = PROTOCOL_ARRAY_LENGTH(hashes);
+    const size_t hashesSize = V8_INSPECTOR_ARRAY_LENGTH(hashes);
 
     size_t current = 0;
     const uint32_t* data = nullptr;

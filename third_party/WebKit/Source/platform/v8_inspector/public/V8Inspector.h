@@ -10,8 +10,6 @@
 
 #include <v8.h>
 
-namespace blink { namespace protocol { class FrontendChannel; }}
-
 namespace v8_inspector {
 
 class V8InspectorClient;
@@ -45,8 +43,17 @@ public:
     virtual unsigned exceptionThrown(v8::Local<v8::Context>, const StringView& message, v8::Local<v8::Value> exception, const StringView& detailedMessage, const StringView& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
     virtual void exceptionRevoked(v8::Local<v8::Context>, unsigned exceptionId, const StringView& message) = 0;
 
+    // Connection.
+    class PLATFORM_EXPORT Channel {
+    public:
+        virtual ~Channel() { }
+        virtual void sendProtocolResponse(int callId, const StringView& message) = 0;
+        virtual void sendProtocolNotification(const StringView& message) = 0;
+        virtual void flushProtocolNotifications() = 0;
+    };
+    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, Channel*, const StringView& state) = 0;
+
     // API methods.
-    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, blink::protocol::FrontendChannel*, const StringView& state) = 0;
     virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;
     virtual std::unique_ptr<V8StackTrace> captureStackTrace(bool fullStack) = 0;
 };

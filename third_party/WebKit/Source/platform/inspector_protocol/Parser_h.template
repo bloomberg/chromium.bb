@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Parser_h
-#define Parser_h
+#ifndef {{"_".join(config.protocol.namespace)}}_Parser_h
+#define {{"_".join(config.protocol.namespace)}}_Parser_h
 
-//#include "Platform.h"
-//#include "String16.h"
-#include "{{config.class_export.header}}"
+//#include "Forward.h"
+//#include "Values.h"
 
-namespace blink {
-namespace protocol {
-
-class Value;
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 {{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const uint8_t*, unsigned);
 {{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const uint16_t*, unsigned);
-{{config.class_export.macro}} std::unique_ptr<Value> parseJSON(const String16& json);
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(Parser_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_Parser_h)

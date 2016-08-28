@@ -542,9 +542,9 @@ void InspectorNetworkAgent::willSendRequest(LocalFrame* frame, unsigned long ide
     if (headers) {
         for (size_t i = 0; i < headers->size(); ++i) {
             auto header = headers->at(i);
-            String16 value;
+            String value;
             if (header.second->asString(&value))
-                request.setHTTPHeaderField(AtomicString(header.first), AtomicString(String(value)));
+                request.setHTTPHeaderField(AtomicString(header.first), AtomicString(value));
         }
     }
 
@@ -794,7 +794,7 @@ void InspectorNetworkAgent::didFinishEventSourceRequest(ThreadableLoaderClient* 
 
 void InspectorNetworkAgent::applyUserAgentOverride(String* userAgent)
 {
-    String16 userAgentOverride;
+    String userAgentOverride;
     m_state->getString(NetworkAgentState::userAgentOverride, &userAgentOverride);
     if (!userAgentOverride.isEmpty())
         *userAgent = userAgentOverride;
@@ -820,7 +820,7 @@ void InspectorNetworkAgent::didScheduleStyleRecalculation(Document* document)
 
 std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    std::unique_ptr<protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
+    std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
     if (currentStackTrace) {
         std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script).build();
@@ -850,7 +850,7 @@ std::unique_ptr<protocol::Network::Initiator> InspectorNetworkAgent::buildInitia
 
 void InspectorNetworkAgent::didCreateWebSocket(Document* document, unsigned long identifier, const KURL& requestURL, const String&)
 {
-    std::unique_ptr<protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
+    std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
     if (!currentStackTrace) {
         frontend()->webSocketCreated(IdentifiersFactory::requestId(identifier), urlWithoutFragment(requestURL).getString());
         return;

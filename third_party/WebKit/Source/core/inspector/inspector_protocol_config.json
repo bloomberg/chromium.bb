@@ -2,19 +2,24 @@
     "protocol": {
         "path": "browser_protocol.json",
         "package": "core/inspector/protocol",
-        "output": "inspector/protocol"
+        "output": "inspector/protocol",
+        "namespace": ["blink", "protocol"]
     },
 
     "imported": {
         "path": "../../platform/v8_inspector/js_protocol.json",
-        "package": "platform/v8_inspector/public/protocol"
+        "package": "platform/v8_inspector/public/protocol",
+        "to_imported_string": "toV8InspectorStringView(%s)",
+        "from_imported_string": "toCoreString(%s)",
+        "namespace": ["v8_inspector", "protocol"]
     },
 
-    "string": {
-        "class_name": "WTF::String"
+    "lib": {
+        "package": "core/inspector/protocol",
+        "output": "inspector/protocol",
+        "string_header": "core/inspector/V8InspectorString.h",
+        "platform_header": "core/inspector/ProtocolPlatform.h"
     },
-
-    "lib_package": "platform/inspector_protocol",
 
     "class_export": {
         "macro": "CORE_EXPORT",

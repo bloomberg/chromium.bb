@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformSTL_h
-#define PlatformSTL_h
+#ifndef ProtocolPlatformSTL_h
+#define ProtocolPlatformSTL_h
 
 #include <memory>
 
@@ -314,4 +314,4 @@ using ::snprintf;
 } // namespace std
 #endif // __sun
 
-#endif // PlatformSTL_h
+#endif // ProtocolPlatformSTL_h

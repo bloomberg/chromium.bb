@@ -39,6 +39,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/InspectorHistory.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

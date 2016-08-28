@@ -10,8 +10,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSRuleList.h"
 #include "core/dom/Element.h"
+#include "core/inspector/protocol/Forward.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 

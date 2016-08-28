@@ -8,6 +8,7 @@
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
+#include "platform/v8_inspector/protocol/Protocol.h"
 
 namespace v8_inspector {
 

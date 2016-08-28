@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef String16STL_h
-#define String16STL_h
+#ifndef String16_h
+#define String16_h
+
+#include "platform/PlatformExport.h"
 
 #include <cctype>
 #include <climits>
-#include <cstdlib>
 #include <cstring>
 #include <stdint.h>
 #include <string>
 #include <vector>
 
+namespace v8_inspector {
+
 using UChar = uint16_t;
 
-namespace blink {
-namespace protocol {
-
-class String16 : public String16Base<String16, UChar> {
+class String16 {
 public:
     static const size_t kNotFound = static_cast<size_t>(-1);
 
@@ -34,7 +34,13 @@ public:
             m_impl[i] = characters[i];
     }
 
-    String16 isolatedCopy() const { return String16(m_impl); }
+    static String16 fromInteger(int);
+    static String16 fromDouble(double);
+    static String16 fromDoublePrecision3(double);
+    static String16 fromDoublePrecision6(double);
+
+    int toInteger(bool* ok = nullptr) const;
+    String16 stripWhiteSpace() const;
     const UChar* characters16() const { return m_impl.c_str(); }
     size_t length() const { return m_impl.length(); }
     bool isEmpty() const { return !m_impl.length(); }
@@ -77,14 +83,28 @@ inline String16 operator+(const String16& a, const char* b) { return String16(a.
 inline String16 operator+(const char* a, const String16& b) { return String16(String16(a).impl() + b.impl()); }
 inline String16 operator+(const String16& a, const String16& b) { return String16(a.impl() + b.impl()); }
 
-} // namespace protocol
-} // namespace blink
+class String16Builder {
+public:
+    String16Builder();
+    void append(const String16&);
+    void append(UChar);
+    void append(char);
+    void append(const UChar*, size_t);
+    void append(const char*, size_t);
+    String16 toString();
+    void reserveCapacity(size_t);
+
+private:
+    std::vector<UChar> m_buffer;
+};
+
+} // namespace v8_inspector
 
 #if !defined(__APPLE__) || defined(_LIBCPP_VERSION)
 
 namespace std {
-template<> struct hash<blink::protocol::String16> {
-    std::size_t operator()(const blink::protocol::String16& string) const
+template<> struct hash<v8_inspector::String16> {
+    std::size_t operator()(const v8_inspector::String16& string) const
     {
         return string.hash();
     }
@@ -94,12 +114,4 @@ template<> struct hash<blink::protocol::String16> {
 
 #endif // !defined(__APPLE__) || defined(_LIBCPP_VERSION)
 
-class InspectorProtocolConvenienceStringType {
-public:
-    // This class should not be ever instantiated, so we don't implement constructors.
-    InspectorProtocolConvenienceStringType();
-    InspectorProtocolConvenienceStringType(const blink::protocol::String16& other);
-    operator blink::protocol::String16() const { return blink::protocol::String16(); };
-};
-
-#endif // !defined(String16STL_h)
+#endif // !defined(String16_h)

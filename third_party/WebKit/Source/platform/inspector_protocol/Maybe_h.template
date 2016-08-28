@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Maybe_h
-#define Maybe_h
+#ifndef {{"_".join(config.protocol.namespace)}}_Maybe_h
+#define {{"_".join(config.protocol.namespace)}}_Maybe_h
 
-//#include "Platform.h"
-//#include "String16.h"
+//#include "Forward.h"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 template<typename T>
 class Maybe {
@@ -66,22 +66,15 @@ public:
 };
 
 template<>
-class Maybe<InspectorProtocolConvenienceStringType> : public MaybeBase<InspectorProtocolConvenienceStringType> {
+class Maybe<String> : public MaybeBase<String> {
 public:
     Maybe() { }
-    Maybe(const InspectorProtocolConvenienceStringType& value) : MaybeBase(value) { }
+    Maybe(const String& value) : MaybeBase(value) { }
     using MaybeBase::operator=;
 };
 
-template<>
-class Maybe<String16> : public MaybeBase<String16> {
-public:
-    Maybe() { }
-    Maybe(const String16& value) : MaybeBase(value) { }
-    using MaybeBase::operator=;
-};
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-} // namespace platform
-} // namespace blink
-
-#endif // !defined(Maybe_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_Maybe_h)

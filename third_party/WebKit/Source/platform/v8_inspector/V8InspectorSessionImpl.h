@@ -5,13 +5,14 @@
 #ifndef V8InspectorSessionImpl_h
 #define V8InspectorSessionImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/protocol/Schema.h"
+#include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
 #include <v8.h>
-
 #include <vector>
 
 namespace v8_inspector {
@@ -26,12 +27,12 @@ class V8ProfilerAgentImpl;
 class V8RuntimeAgentImpl;
 class V8SchemaAgentImpl;
 
-namespace protocol = blink::protocol;
+using protocol::ErrorString;
 
-class V8InspectorSessionImpl : public V8InspectorSession {
-    PROTOCOL_DISALLOW_COPY(V8InspectorSessionImpl);
+class V8InspectorSessionImpl : public V8InspectorSession, public protocol::FrontendChannel {
+    V8_INSPECTOR_DISALLOW_COPY(V8InspectorSessionImpl);
 public:
-    static std::unique_ptr<V8InspectorSessionImpl> create(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, const StringView& state);
+    static std::unique_ptr<V8InspectorSessionImpl> create(V8InspectorImpl*, int contextGroupId, V8Inspector::Channel*, const StringView& state);
     ~V8InspectorSessionImpl();
 
     V8InspectorImpl* inspector() const { return m_inspector; }
@@ -51,12 +52,13 @@ public:
     std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview);
     std::unique_ptr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns);
     std::vector<std::unique_ptr<protocol::Schema::Domain>> supportedDomainsImpl();
+    bool unwrapObject(ErrorString*, const String16& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, String16* objectGroup);
     void releaseObjectGroup(const String16& objectGroup);
 
     // V8InspectorSession implementation.
     void dispatchProtocolMessage(const StringView& message) override;
     std::unique_ptr<StringBuffer> stateJSON() override;
-    std::unique_ptr<blink::protocol::Array<blink::protocol::Schema::API::Domain>> supportedDomains() override;
+    std::vector<std::unique_ptr<protocol::Schema::API::Domain>> supportedDomains() override;
     void addInspectedObject(std::unique_ptr<V8InspectorSession::Inspectable>) override;
     void schedulePauseOnNextStatement(const StringView& breakReason, const StringView& breakDetails) override;
     void cancelPauseOnNextStatement() override;
@@ -64,20 +66,26 @@ public:
     void setSkipAllPauses(bool) override;
     void resume() override;
     void stepOver() override;
-    std::unique_ptr<protocol::Array<protocol::Debugger::API::SearchMatch>> searchInTextByLines(const StringView& text, const StringView& query, bool caseSensitive, bool isRegex) override;
+    std::vector<std::unique_ptr<protocol::Debugger::API::SearchMatch>> searchInTextByLines(const StringView& text, const StringView& query, bool caseSensitive, bool isRegex) override;
     void releaseObjectGroup(const StringView& objectGroup) override;
-    bool unwrapObject(ErrorString*, const StringView& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, std::unique_ptr<StringBuffer>* objectGroup) override;
+    bool unwrapObject(std::unique_ptr<StringBuffer>*, const StringView& objectId, v8::Local<v8::Value>*, v8::Local<v8::Context>*, std::unique_ptr<StringBuffer>* objectGroup) override;
     std::unique_ptr<protocol::Runtime::API::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const StringView& groupName) override;
 
     V8InspectorSession::Inspectable* inspectedObject(unsigned num);
     static const unsigned kInspectedObjectBufferSize = 5;
 
 private:
-    V8InspectorSessionImpl(V8InspectorImpl*, int contextGroupId, protocol::FrontendChannel*, const StringView& state);
+    V8InspectorSessionImpl(V8InspectorImpl*, int contextGroupId, V8Inspector::Channel*, const StringView& state);
     protocol::DictionaryValue* agentState(const String16& name);
+
+    // protocol::FrontendChannel implementation.
+    void sendProtocolResponse(int callId, const String16& message) override;
+    void sendProtocolNotification(const String16& message) override;
+    void flushProtocolNotifications() override;
 
     int m_contextGroupId;
     V8InspectorImpl* m_inspector;
+    V8Inspector::Channel* m_channel;
     bool m_customObjectFormatterEnabled;
 
     protocol::UberDispatcher m_dispatcher;

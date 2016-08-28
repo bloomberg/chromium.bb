@@ -31,15 +31,13 @@
 #ifndef V8FunctionCall_h
 #define V8FunctionCall_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/String16.h"
 
 #include <v8.h>
 
 namespace v8_inspector {
 
 class V8InspectorImpl;
-
-namespace protocol = blink::protocol;
 
 class V8FunctionCall {
 public:

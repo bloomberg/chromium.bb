@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Array_h
-#define Array_h
+#ifndef {{"_".join(config.protocol.namespace)}}_Array_h
+#define {{"_".join(config.protocol.namespace)}}_Array_h
 
 //#include "ErrorSupport.h"
-//#include "Platform.h"
-//#include "String16.h"
+//#include "Forward.h"
 //#include "ValueConversions.h"
 //#include "Values.h"
 
-#include <vector>
-
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 template<typename T>
 class Array {
@@ -34,7 +32,7 @@ public:
         std::unique_ptr<Array<T>> result(new Array<T>());
         errors->push();
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName(String16::fromInteger(i));
+            errors->setName(StringUtil::fromInteger(i));
             std::unique_ptr<T> item = ValueConversions<T>::parse(array->at(i), errors);
             result->m_vector.push_back(std::move(item));
         }
@@ -89,7 +87,7 @@ public:
         errors->push();
         std::unique_ptr<Array<T>> result(new Array<T>());
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName(String16::fromInteger(i));
+            errors->setName(StringUtil::fromInteger(i));
             T item = ValueConversions<T>::parse(array->at(i), errors);
             result->m_vector.push_back(item);
         }
@@ -126,13 +124,13 @@ private:
     std::vector<T> m_vector;
 };
 
-template<> class Array<InspectorProtocolConvenienceStringType> : public ArrayBase<InspectorProtocolConvenienceStringType> {};
-template<> class Array<String16> : public ArrayBase<String16> {};
+template<> class Array<String> : public ArrayBase<String> {};
 template<> class Array<int> : public ArrayBase<int> {};
 template<> class Array<double> : public ArrayBase<double> {};
 template<> class Array<bool> : public ArrayBase<bool> {};
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(Array_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_Array_h)

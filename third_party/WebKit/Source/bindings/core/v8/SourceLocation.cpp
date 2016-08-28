@@ -160,7 +160,7 @@ std::unique_ptr<SourceLocation> SourceLocation::clone() const
     return wrapUnique(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
 }
 
-std::unique_ptr<protocol::Runtime::API::StackTrace> SourceLocation::buildInspectorObject() const
+std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace> SourceLocation::buildInspectorObject() const
 {
     return m_stackTrace ? m_stackTrace->buildInspectorObject() : nullptr;
 }

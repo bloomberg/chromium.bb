@@ -71,7 +71,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"

@@ -5,9 +5,9 @@
 #include "platform/v8_inspector/InspectedContext.h"
 
 #include "platform/v8_inspector/InjectedScript.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Console.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"

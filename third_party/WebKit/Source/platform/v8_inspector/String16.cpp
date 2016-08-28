@@ -2,15 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/String16.h"
+
+#include "platform/v8_inspector/ProtocolPlatform.h"
 
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <locale>
+#include <string>
 
-namespace blink {
-namespace protocol {
+namespace v8_inspector {
+
+namespace {
+
+bool isASCII(UChar c)
+{
+    return !(c & ~0x7F);
+}
+
+bool isSpaceOrNewLine(UChar c)
+{
+    return isASCII(c) && c <= ' ' && (c == ' ' || (c <= 0xD && c >= 0x9));
+}
+
+int charactersToInteger(const UChar* characters, size_t length, bool* ok = nullptr)
+{
+    std::vector<char> buffer;
+    buffer.reserve(length + 1);
+    for (size_t i = 0; i < length; ++i) {
+        if (!isASCII(characters[i])) {
+            if (ok)
+                *ok = false;
+            return 0;
+        }
+        buffer.push_back(static_cast<char>(characters[i]));
+    }
+    buffer.push_back('\0');
+
+    char* endptr;
+    int result = std::strtol(buffer.data(), &endptr, 10);
+    if (ok)
+        *ok = !(*endptr);
+    return result;
+}
 
 const UChar replacementCharacter = 0xFFFD;
 using UChar32 = uint32_t;
@@ -30,7 +67,7 @@ inline int inlineUTF8SequenceLengthNonASCII(char b0)
 
 inline int inlineUTF8SequenceLength(char b0)
 {
-    return String16::isASCII(b0) ? 1 : inlineUTF8SequenceLengthNonASCII(b0);
+    return isASCII(b0) ? 1 : inlineUTF8SequenceLengthNonASCII(b0);
 }
 
 // Once the bits are split out into bytes of UTF-8, this is a mask OR-ed
@@ -332,10 +369,117 @@ ConversionResult convertUTF8ToUTF16(
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must check room is available.
 static inline void putUTF8Triple(char*& buffer, UChar ch)
 {
-    DCHECK_GE(ch, 0x0800);
     *buffer++ = static_cast<char>(((ch >> 12) & 0x0F) | 0xE0);
     *buffer++ = static_cast<char>(((ch >> 6) & 0x3F) | 0x80);
     *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
+}
+
+} // namespace
+
+// static
+String16 String16::fromInteger(int number)
+{
+    const size_t kBufferSize = 50;
+    char buffer[kBufferSize];
+    std::snprintf(buffer, kBufferSize, "%d", number);
+    return String16(buffer);
+}
+
+// static
+String16 String16::fromDouble(double number)
+{
+    const size_t kBufferSize = 100;
+    char buffer[kBufferSize];
+    std::snprintf(buffer, kBufferSize, "%f", number);
+    return String16(buffer);
+}
+
+// static
+String16 String16::fromDoublePrecision3(double number)
+{
+    const size_t kBufferSize = 100;
+    char buffer[kBufferSize];
+    std::snprintf(buffer, kBufferSize, "%.3g", number);
+    return String16(buffer);
+}
+
+// static
+String16 String16::fromDoublePrecision6(double number)
+{
+    const size_t kBufferSize = 100;
+    char buffer[kBufferSize];
+    std::snprintf(buffer, kBufferSize, "%.6g", number);
+    return String16(buffer);
+}
+
+int String16::toInteger(bool* ok) const
+{
+    return charactersToInteger(characters16(), length(), ok);
+}
+
+String16 String16::stripWhiteSpace() const
+{
+    if (!length())
+        return String16();
+
+    unsigned start = 0;
+    unsigned end = length() - 1;
+
+    // skip white space from start
+    while (start <= end && isSpaceOrNewLine(characters16()[start]))
+        ++start;
+
+    // only white space
+    if (start > end)
+        return String16();
+
+    // skip white space from end
+    while (end && isSpaceOrNewLine(characters16()[end]))
+        --end;
+
+    if (!start && end == length() - 1)
+        return *this;
+    return String16(characters16() + start, end + 1 - start);
+}
+
+String16Builder::String16Builder()
+{
+}
+
+void String16Builder::append(const String16& s)
+{
+    m_buffer.insert(m_buffer.end(), s.characters16(), s.characters16() + s.length());
+}
+
+void String16Builder::append(UChar c)
+{
+    m_buffer.push_back(c);
+}
+
+void String16Builder::append(char c)
+{
+    UChar u = c;
+    m_buffer.push_back(u);
+}
+
+void String16Builder::append(const UChar* characters, size_t length)
+{
+    m_buffer.insert(m_buffer.end(), characters, characters + length);
+}
+
+void String16Builder::append(const char* characters, size_t length)
+{
+    m_buffer.insert(m_buffer.end(), characters, characters + length);
+}
+
+String16 String16Builder::toString()
+{
+    return String16(m_buffer.data(), m_buffer.size());
+}
+
+void String16Builder::reserveCapacity(size_t capacity)
+{
+    m_buffer.reserve(capacity);
 }
 
 String16 String16::fromUTF8(const char* stringStart, size_t length)
@@ -401,5 +545,4 @@ std::string String16::utf8() const
     return std::string(bufferVector.data(), buffer - bufferVector.data());
 }
 
-} // namespace protocol
-} // namespace blink
+} // namespace v8_inspector

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackendCallback_h
-#define BackendCallback_h
+#ifndef {{"_".join(config.protocol.namespace)}}_BackendCallback_h
+#define {{"_".join(config.protocol.namespace)}}_BackendCallback_h
 
-//#include "ErrorSupport.h"
-//#include "Platform.h"
-#include "{{config.class_export.header}}"
+//#include "Forward.h"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 class {{config.class_export.macro}} BackendCallback {
 public:
@@ -18,7 +17,8 @@ public:
     virtual void sendFailure(const ErrorString&) = 0;
 };
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(BackendCallback_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_BackendCallback_h)

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ValueConversions_h
-#define ValueConversions_h
+#ifndef {{"_".join(config.protocol.namespace)}}_ValueConversions_h
+#define {{"_".join(config.protocol.namespace)}}_ValueConversions_h
 
 //#include "ErrorSupport.h"
-//#include "Platform.h"
-//#include "String16.h"
+//#include "Forward.h"
 //#include "Values.h"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 template<typename T>
 struct ValueConversions {
@@ -83,34 +83,17 @@ struct ValueConversions<double> {
 };
 
 template<>
-struct ValueConversions<InspectorProtocolConvenienceStringType> {
-    static InspectorProtocolConvenienceStringType parse(protocol::Value* value, ErrorSupport* errors)
+struct ValueConversions<String> {
+    static String parse(protocol::Value* value, ErrorSupport* errors)
     {
-        String16 result;
+        String result;
         bool success = value ? value->asString(&result) : false;
         if (!success)
             errors->addError("string value expected");
         return result;
     }
 
-    static std::unique_ptr<protocol::Value> serialize(const InspectorProtocolConvenienceStringType& value)
-    {
-        return StringValue::create(value);
-    }
-};
-
-template<>
-struct ValueConversions<String16> {
-    static String16 parse(protocol::Value* value, ErrorSupport* errors)
-    {
-        String16 result;
-        bool success = value ? value->asString(&result) : false;
-        if (!success)
-            errors->addError("string value expected");
-        return result;
-    }
-
-    static std::unique_ptr<protocol::Value> serialize(const String16& value)
+    static std::unique_ptr<protocol::Value> serialize(const String& value)
     {
         return StringValue::create(value);
     }
@@ -181,7 +164,8 @@ struct ValueConversions<ListValue> {
     }
 };
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(ValueConversions_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_ValueConversions_h)

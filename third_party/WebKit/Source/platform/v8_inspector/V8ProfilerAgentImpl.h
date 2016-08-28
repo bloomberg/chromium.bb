@@ -5,7 +5,8 @@
 #ifndef V8ProfilerAgentImpl_h
 #define V8ProfilerAgentImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Profiler.h"
 
 #include <vector>
@@ -19,10 +20,10 @@ namespace v8_inspector {
 
 class V8InspectorSessionImpl;
 
-namespace protocol = blink::protocol;
+using protocol::ErrorString;
 
 class V8ProfilerAgentImpl : public protocol::Profiler::Backend {
-    PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8ProfilerAgentImpl);
 public:
     V8ProfilerAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8ProfilerAgentImpl() override;

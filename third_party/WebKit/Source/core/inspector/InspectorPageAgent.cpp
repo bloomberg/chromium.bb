@@ -341,9 +341,9 @@ void InspectorPageAgent::restore()
         enable(&error);
     setBlockedEventsWarningThreshold(&error, m_state->doubleProperty(PageAgentState::blockedEventsWarningThreshold, 0.0));
     if (m_client) {
-        String16 overlayMessage;
+        String overlayMessage;
         m_state->getString(PageAgentState::overlayMessage, &overlayMessage);
-        m_client->configureOverlay(m_state->booleanProperty(PageAgentState::overlaySuspended, false), overlayMessage.isEmpty() ? String() : String(overlayMessage));
+        m_client->configureOverlay(m_state->booleanProperty(PageAgentState::overlaySuspended, false), overlayMessage);
     }
 }
 
@@ -512,7 +512,11 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    callback->sendSuccess(m_v8Session->searchInTextByLines(toV8InspectorStringView(content), toV8InspectorStringView(query), caseSensitive, isRegex));
+    auto matches = m_v8Session->searchInTextByLines(toV8InspectorStringView(content), toV8InspectorStringView(query), caseSensitive, isRegex);
+    auto results = protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>::create();
+    for (size_t i = 0; i < matches.size(); ++i)
+        results->addItem(std::move(matches[i]));
+    callback->sendSuccess(std::move(results));
 }
 
 void InspectorPageAgent::searchInResource(const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)
@@ -549,7 +553,7 @@ void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     if (scripts) {
         for (size_t i = 0; i < scripts->size(); ++i) {
             auto script = scripts->at(i);
-            String16 scriptText;
+            String scriptText;
             if (script.second->asString(&scriptText))
                 frame->script().executeScriptInMainWorld(scriptText);
         }

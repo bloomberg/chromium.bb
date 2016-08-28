@@ -5,8 +5,8 @@
 #ifndef V8ConsoleMessage_h
 #define V8ConsoleMessage_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include "platform/v8_inspector/protocol/Console.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include <deque>
 #include <v8.h>
@@ -17,8 +17,6 @@ class InspectedContext;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 class V8StackTraceImpl;
-
-namespace protocol = blink::protocol;
 
 enum class V8MessageOrigin { kConsole, kException, kRevokedException };
 

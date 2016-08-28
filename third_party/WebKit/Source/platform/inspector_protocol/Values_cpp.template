@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <cmath>
+//#include "Values.h"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 namespace {
 
@@ -14,7 +14,7 @@ const char* const nullValueString = "null";
 const char* const trueValueString = "true";
 const char* const falseValueString = "false";
 
-inline bool escapeChar(UChar c, String16Builder* dst)
+inline bool escapeChar(uint16_t c, StringBuilder* dst)
 {
     switch (c) {
     case '\b': dst->append("\\b"); break;
@@ -32,20 +32,20 @@ inline bool escapeChar(UChar c, String16Builder* dst)
 
 const char hexDigits[17] = "0123456789ABCDEF";
 
-void appendUnsignedAsHex(UChar number, String16Builder* dst)
+void appendUnsignedAsHex(uint16_t number, StringBuilder* dst)
 {
     dst->append("\\u");
     for (size_t i = 0; i < 4; ++i) {
-        UChar c = hexDigits[(number & 0xF000) >> 12];
+        uint16_t c = hexDigits[(number & 0xF000) >> 12];
         dst->append(c);
         number <<= 4;
     }
 }
 
-void escapeStringForJSON(const String16& str, String16Builder* dst)
+void escapeStringForJSON(const String& str, StringBuilder* dst)
 {
     for (unsigned i = 0; i < str.length(); ++i) {
-        UChar c = str[i];
+        uint16_t c = str[i];
         if (!escapeChar(c, dst)) {
             if (c < 32 || c > 126 || c == '<' || c == '>') {
                 // 1. Escaping <, > to prevent script execution.
@@ -59,7 +59,7 @@ void escapeStringForJSON(const String16& str, String16Builder* dst)
     }
 }
 
-void doubleQuoteStringForJSON(const String16& str, String16Builder* dst)
+void doubleQuoteStringForJSON(const String& str, StringBuilder* dst)
 {
     dst->append('"');
     escapeStringForJSON(str, dst);
@@ -83,25 +83,25 @@ bool Value::asInteger(int*) const
     return false;
 }
 
-bool Value::asString(String16*) const
+bool Value::asString(String*) const
 {
     return false;
 }
 
-bool Value::asSerialized(String16*) const
+bool Value::asSerialized(String*) const
 {
     return false;
 }
 
-String16 Value::toJSONString() const
+String Value::toJSONString() const
 {
-    String16Builder result;
-    result.reserveCapacity(512);
+    StringBuilder result;
+    StringUtil::builderReserve(result, 512);
     writeJSON(&result);
     return result.toString();
 }
 
-void Value::writeJSON(String16Builder* output) const
+void Value::writeJSON(StringBuilder* output) const
 {
     DCHECK(m_type == TypeNull);
     output->append(nullValueString, 4);
@@ -141,7 +141,7 @@ bool FundamentalValue::asInteger(int* output) const
     return true;
 }
 
-void FundamentalValue::writeJSON(String16Builder* output) const
+void FundamentalValue::writeJSON(StringBuilder* output) const
 {
     DCHECK(type() == TypeBoolean || type() == TypeInteger || type() == TypeDouble);
     if (type() == TypeBoolean) {
@@ -154,9 +154,9 @@ void FundamentalValue::writeJSON(String16Builder* output) const
             output->append(nullValueString, 4);
             return;
         }
-        output->append(String16::fromDouble(m_doubleValue));
+        output->append(StringUtil::fromDouble(m_doubleValue));
     } else if (type() == TypeInteger) {
-        output->append(String16::fromInteger(m_integerValue));
+        output->append(StringUtil::fromInteger(m_integerValue));
     }
 }
 
@@ -172,13 +172,13 @@ std::unique_ptr<Value> FundamentalValue::clone() const
     return nullptr;
 }
 
-bool StringValue::asString(String16* output) const
+bool StringValue::asString(String* output) const
 {
     *output = m_stringValue;
     return true;
 }
 
-void StringValue::writeJSON(String16Builder* output) const
+void StringValue::writeJSON(StringBuilder* output) const
 {
     DCHECK(type() == TypeString);
     doubleQuoteStringForJSON(m_stringValue, output);
@@ -189,13 +189,13 @@ std::unique_ptr<Value> StringValue::clone() const
     return StringValue::create(m_stringValue);
 }
 
-bool SerializedValue::asSerialized(String16* output) const
+bool SerializedValue::asSerialized(String* output) const
 {
     *output = m_serializedValue;
     return true;
 }
 
-void SerializedValue::writeJSON(String16Builder* output) const
+void SerializedValue::writeJSON(StringBuilder* output) const
 {
     DCHECK(type() == TypeSerialized);
     output->append(m_serializedValue);
@@ -210,42 +210,42 @@ DictionaryValue::~DictionaryValue()
 {
 }
 
-void DictionaryValue::setBoolean(const String16& name, bool value)
+void DictionaryValue::setBoolean(const String& name, bool value)
 {
     setValue(name, FundamentalValue::create(value));
 }
 
-void DictionaryValue::setInteger(const String16& name, int value)
+void DictionaryValue::setInteger(const String& name, int value)
 {
     setValue(name, FundamentalValue::create(value));
 }
 
-void DictionaryValue::setDouble(const String16& name, double value)
+void DictionaryValue::setDouble(const String& name, double value)
 {
     setValue(name, FundamentalValue::create(value));
 }
 
-void DictionaryValue::setString(const String16& name, const String16& value)
+void DictionaryValue::setString(const String& name, const String& value)
 {
     setValue(name, StringValue::create(value));
 }
 
-void DictionaryValue::setValue(const String16& name, std::unique_ptr<Value> value)
+void DictionaryValue::setValue(const String& name, std::unique_ptr<Value> value)
 {
     set(name, value);
 }
 
-void DictionaryValue::setObject(const String16& name, std::unique_ptr<DictionaryValue> value)
+void DictionaryValue::setObject(const String& name, std::unique_ptr<DictionaryValue> value)
 {
     set(name, value);
 }
 
-void DictionaryValue::setArray(const String16& name, std::unique_ptr<ListValue> value)
+void DictionaryValue::setArray(const String& name, std::unique_ptr<ListValue> value)
 {
     set(name, value);
 }
 
-bool DictionaryValue::getBoolean(const String16& name, bool* output) const
+bool DictionaryValue::getBoolean(const String& name, bool* output) const
 {
     protocol::Value* value = get(name);
     if (!value)
@@ -253,7 +253,7 @@ bool DictionaryValue::getBoolean(const String16& name, bool* output) const
     return value->asBoolean(output);
 }
 
-bool DictionaryValue::getInteger(const String16& name, int* output) const
+bool DictionaryValue::getInteger(const String& name, int* output) const
 {
     Value* value = get(name);
     if (!value)
@@ -261,7 +261,7 @@ bool DictionaryValue::getInteger(const String16& name, int* output) const
     return value->asInteger(output);
 }
 
-bool DictionaryValue::getDouble(const String16& name, double* output) const
+bool DictionaryValue::getDouble(const String& name, double* output) const
 {
     Value* value = get(name);
     if (!value)
@@ -269,7 +269,7 @@ bool DictionaryValue::getDouble(const String16& name, double* output) const
     return value->asDouble(output);
 }
 
-bool DictionaryValue::getString(const String16& name, String16* output) const
+bool DictionaryValue::getString(const String& name, String* output) const
 {
     protocol::Value* value = get(name);
     if (!value)
@@ -277,17 +277,17 @@ bool DictionaryValue::getString(const String16& name, String16* output) const
     return value->asString(output);
 }
 
-DictionaryValue* DictionaryValue::getObject(const String16& name) const
+DictionaryValue* DictionaryValue::getObject(const String& name) const
 {
     return DictionaryValue::cast(get(name));
 }
 
-protocol::ListValue* DictionaryValue::getArray(const String16& name) const
+protocol::ListValue* DictionaryValue::getArray(const String& name) const
 {
     return ListValue::cast(get(name));
 }
 
-protocol::Value* DictionaryValue::get(const String16& name) const
+protocol::Value* DictionaryValue::get(const String& name) const
 {
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
@@ -297,38 +297,38 @@ protocol::Value* DictionaryValue::get(const String16& name) const
 
 DictionaryValue::Entry DictionaryValue::at(size_t index) const
 {
-    const String16 key = m_order[index];
+    const String key = m_order[index];
     return std::make_pair(key, m_data.find(key)->second.get());
 }
 
-bool DictionaryValue::booleanProperty(const String16& name, bool defaultValue) const
+bool DictionaryValue::booleanProperty(const String& name, bool defaultValue) const
 {
     bool result = defaultValue;
     getBoolean(name, &result);
     return result;
 }
 
-int DictionaryValue::integerProperty(const String16& name, int defaultValue) const
+int DictionaryValue::integerProperty(const String& name, int defaultValue) const
 {
     int result = defaultValue;
     getInteger(name, &result);
     return result;
 }
 
-double DictionaryValue::doubleProperty(const String16& name, double defaultValue) const
+double DictionaryValue::doubleProperty(const String& name, double defaultValue) const
 {
     double result = defaultValue;
     getDouble(name, &result);
     return result;
 }
 
-void DictionaryValue::remove(const String16& name)
+void DictionaryValue::remove(const String& name)
 {
     m_data.erase(name);
     m_order.erase(std::remove(m_order.begin(), m_order.end(), name), m_order.end());
 }
 
-void DictionaryValue::writeJSON(String16Builder* output) const
+void DictionaryValue::writeJSON(StringBuilder* output) const
 {
     output->append('{');
     for (size_t i = 0; i < m_order.size(); ++i) {
@@ -347,7 +347,7 @@ std::unique_ptr<Value> DictionaryValue::clone() const
 {
     std::unique_ptr<DictionaryValue> result = DictionaryValue::create();
     for (size_t i = 0; i < m_order.size(); ++i) {
-        String16 key = m_order[i];
+        String key = m_order[i];
         Dictionary::const_iterator value = m_data.find(key);
         DCHECK(value != m_data.cend() && value->second);
         result->setValue(key, value->second->clone());
@@ -364,7 +364,7 @@ ListValue::~ListValue()
 {
 }
 
-void ListValue::writeJSON(String16Builder* output) const
+void ListValue::writeJSON(StringBuilder* output) const
 {
     output->append('[');
     bool first = true;
@@ -402,5 +402,6 @@ protocol::Value* ListValue::at(size_t index)
     return m_data[index].get();
 }
 
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}

@@ -24,6 +24,6 @@
 
     "class_export": {
         "macro": "PLATFORM_EXPORT",
-        "header": "platform/PlatformExport.h"
+        "header": "platform/v8_inspector/ProtocolPlatformSTL.h"
     }
 }

@@ -1166,8 +1166,11 @@ Node* InspectorDOMAgent::nodeForRemoteId(ErrorString* errorString, const String&
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> value;
     v8::Local<v8::Context> context;
-    if (!m_v8Session->unwrapObject(errorString, toV8InspectorStringView(objectId), &value, &context, nullptr))
+    std::unique_ptr<v8_inspector::StringBuffer> error;
+    if (!m_v8Session->unwrapObject(&error, toV8InspectorStringView(objectId), &value, &context, nullptr)) {
+        *errorString = toCoreString(std::move(error));
         return nullptr;
+    }
     if (!V8Node::hasInstance(value, m_isolate)) {
         *errorString = "Object id doesn't reference a Node";
         return nullptr;
@@ -1363,7 +1366,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
     *nodeId = pushNodePathToFrontend(node);
 }
 
-void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<protocol::Runtime::API::RemoteObject>* result)
+void InspectorDOMAgent::resolveNode(ErrorString* errorString, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>* result)
 {
     String objectGroupName = objectGroup.fromMaybe("");
     Node* node = nodeForId(nodeId);
@@ -2040,7 +2043,7 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     *result = highlight.asProtocolValue();
 }
 
-std::unique_ptr<protocol::Runtime::API::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
+std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;

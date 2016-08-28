@@ -30,15 +30,15 @@
 #ifndef V8DebuggerScript_h
 #define V8DebuggerScript_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/String16.h"
+
 #include <v8.h>
 
 namespace v8_inspector {
 
-namespace protocol = blink::protocol;
-
 class V8DebuggerScript {
-    PROTOCOL_DISALLOW_COPY(V8DebuggerScript);
+    V8_INSPECTOR_DISALLOW_COPY(V8DebuggerScript);
 public:
     V8DebuggerScript(v8::Isolate*, v8::Local<v8::Object>, bool isLiveEdit);
     ~V8DebuggerScript();

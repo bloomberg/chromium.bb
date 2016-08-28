@@ -5,17 +5,18 @@
 #ifndef V8SchemaAgentImpl_h
 #define V8SchemaAgentImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Schema.h"
 
 namespace v8_inspector {
 
 class V8InspectorSessionImpl;
 
-namespace protocol = blink::protocol;
+using protocol::ErrorString;
 
 class V8SchemaAgentImpl : public protocol::Schema::Backend {
-    PROTOCOL_DISALLOW_COPY(V8SchemaAgentImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8SchemaAgentImpl);
 public:
     V8SchemaAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8SchemaAgentImpl() override;

@@ -10,6 +10,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/V8InspectorString.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "platform/v8_inspector/public/V8Inspector.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 
@@ -37,10 +38,10 @@ InspectorSession::InspectorSession(Client* client, InstrumentingAgents* instrume
         m_state = protocol::DictionaryValue::create();
     }
 
-    String16 v8State;
+    String v8State;
     if (savedState)
         m_state->getString(kV8StateKey, &v8State);
-    m_v8Session = inspector->connect(contextGroupId, this, toV8InspectorStringView(String(v8State)));
+    m_v8Session = inspector->connect(contextGroupId, this, toV8InspectorStringView(v8State));
 }
 
 InspectorSession::~InspectorSession()
@@ -87,7 +88,7 @@ void InspectorSession::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_agents[i]->didCommitLoadForLocalFrame(frame);
 }
 
-void InspectorSession::sendProtocolResponse(int callId, const protocol::String16& message)
+void InspectorSession::sendProtocolResponse(int callId, const String& message)
 {
     if (m_disposed)
         return;
@@ -101,11 +102,23 @@ void InspectorSession::sendProtocolResponse(int callId, const protocol::String16
     m_client->sendProtocolMessage(m_sessionId, callId, message, stateToSend);
 }
 
-void InspectorSession::sendProtocolNotification(const protocol::String16& message)
+void InspectorSession::sendProtocolResponse(int callId, const v8_inspector::StringView& message)
+{
+    // We can potentially avoid copies if WebString would convert to utf8 right from StringView,
+    // but it uses StringImpl itself, so we don't create any extra copies here.
+    sendProtocolResponse(callId, toCoreString(message));
+}
+
+void InspectorSession::sendProtocolNotification(const String& message)
 {
     if (m_disposed)
         return;
     m_notificationQueue.append(message);
+}
+
+void InspectorSession::sendProtocolNotification(const v8_inspector::StringView& message)
+{
+    sendProtocolNotification(toCoreString(message));
 }
 
 void InspectorSession::flushProtocolNotifications()

@@ -5,7 +5,6 @@
 #ifndef V8InternalValueType_h
 #define V8InternalValueType_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
 #include <v8.h>
 
 namespace v8_inspector {

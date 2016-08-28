@@ -31,7 +31,8 @@
 #ifndef V8RuntimeAgentImpl_h
 #define V8RuntimeAgentImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 
 #include <v8.h>
@@ -45,11 +46,11 @@ class V8ConsoleMessage;
 class V8InspectorImpl;
 class V8InspectorSessionImpl;
 
-namespace protocol = blink::protocol;
-using blink::protocol::Maybe;
+using protocol::ErrorString;
+using protocol::Maybe;
 
 class V8RuntimeAgentImpl : public protocol::Runtime::Backend {
-    PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8RuntimeAgentImpl);
 public:
     V8RuntimeAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8RuntimeAgentImpl() override;

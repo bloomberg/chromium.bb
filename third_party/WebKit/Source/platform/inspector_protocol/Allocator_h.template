@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Allocator_h
-#define Allocator_h
+#ifndef {{"_".join(config.protocol.namespace)}}_Allocator_h
+#define {{"_".join(config.protocol.namespace)}}_Allocator_h
+
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
 enum NotNullTagEnum { NotNullLiteral };
 
@@ -19,4 +23,8 @@ enum NotNullTagEnum { NotNullLiteral };
         ClassName(const ClassName&) = delete; \
         ClassName& operator=(const ClassName&) = delete
 
-#endif /* Allocator_h */
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
+
+#endif // !defined({{"_".join(config.protocol.namespace)}}_Allocator_h)

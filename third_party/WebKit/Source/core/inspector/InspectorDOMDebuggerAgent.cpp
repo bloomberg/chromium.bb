@@ -409,9 +409,12 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Value> object;
     v8::Local<v8::Context> context;
+    std::unique_ptr<v8_inspector::StringBuffer> error;
     std::unique_ptr<v8_inspector::StringBuffer> objectGroup;
-    if (!m_v8Session->unwrapObject(errorString, toV8InspectorStringView(objectId), &object, &context, &objectGroup))
+    if (!m_v8Session->unwrapObject(&error, toV8InspectorStringView(objectId), &object, &context, &objectGroup)) {
+        *errorString = toCoreString(std::move(error));
         return;
+    }
     v8::Context::Scope scope(context);
     *listenersArray = protocol::Array<protocol::DOMDebugger::EventListener>::create();
     V8EventListenerInfoList eventInformation;
@@ -522,7 +525,7 @@ void InspectorDOMDebuggerAgent::breakProgramOnDOMEvent(Node* target, int breakpo
     description->setInteger("nodeId", breakpointOwnerNodeId);
     description->setString("type", domTypeName(breakpointType));
     String json = description->toJSONString();
-    m_v8Session->breakProgram(toV8InspectorStringView(protocol::Debugger::API::Paused::ReasonEnum::DOM), toV8InspectorStringView(json));
+    m_v8Session->breakProgram(toV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::DOM), toV8InspectorStringView(json));
 }
 
 bool InspectorDOMDebuggerAgent::hasBreakpoint(Node* node, int type)
@@ -558,9 +561,9 @@ void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(std::unique_ptr<proto
         return;
     String json = eventData->toJSONString();
     if (synchronous)
-        m_v8Session->breakProgram(toV8InspectorStringView(protocol::Debugger::API::Paused::ReasonEnum::EventListener), toV8InspectorStringView(json));
+        m_v8Session->breakProgram(toV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::EventListener), toV8InspectorStringView(json));
     else
-        m_v8Session->schedulePauseOnNextStatement(toV8InspectorStringView(protocol::Debugger::API::Paused::ReasonEnum::EventListener), toV8InspectorStringView(json));
+        m_v8Session->schedulePauseOnNextStatement(toV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::EventListener), toV8InspectorStringView(json));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)
@@ -649,8 +652,7 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(const Strin
         protocol::DictionaryValue* breakpoints = xhrBreakpoints();
         for (size_t i = 0; i < breakpoints->size(); ++i) {
             auto breakpoint = breakpoints->at(i);
-            // TODO(dgozman): remove extra String cast after migrating away from String16.
-            if (url.contains(String(breakpoint.first))) {
+            if (url.contains(breakpoint.first)) {
                 breakpointURL = breakpoint.first;
                 break;
             }
@@ -664,7 +666,7 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(const Strin
     eventData->setString("breakpointURL", breakpointURL);
     eventData->setString("url", url);
     String json = eventData->toJSONString();
-    m_v8Session->breakProgram(toV8InspectorStringView(protocol::Debugger::API::Paused::ReasonEnum::XHR), toV8InspectorStringView(json));
+    m_v8Session->breakProgram(toV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR), toV8InspectorStringView(json));
 }
 
 void InspectorDOMDebuggerAgent::didAddBreakpoint()

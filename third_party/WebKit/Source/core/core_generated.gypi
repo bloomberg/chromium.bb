@@ -131,6 +131,7 @@
       '<(blink_core_output_dir)/inspector/protocol/Memory.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Network.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Page.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Protocol.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Rendering.cpp',
       '<(blink_core_output_dir)/inspector/protocol/Security.cpp',
       '<(blink_core_output_dir)/inspector/protocol/ServiceWorker.cpp',

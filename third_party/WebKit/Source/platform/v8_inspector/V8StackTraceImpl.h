@@ -5,7 +5,8 @@
 #ifndef V8StackTraceImpl_h
 #define V8StackTraceImpl_h
 
-#include "platform/inspector_protocol/InspectorProtocol.h"
+#include "platform/v8_inspector/Allocator.h"
+#include "platform/v8_inspector/protocol/Forward.h"
 #include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 
@@ -16,13 +17,11 @@ namespace v8_inspector {
 class TracedValue;
 class V8Debugger;
 
-namespace protocol = blink::protocol;
-
 // Note: async stack trace may have empty top stack with non-empty tail to indicate
 // that current native-only state had some async story.
 // On the other hand, any non-top async stack is guaranteed to be non-empty.
 class V8StackTraceImpl final : public V8StackTrace {
-    PROTOCOL_DISALLOW_COPY(V8StackTraceImpl);
+    V8_INSPECTOR_DISALLOW_COPY(V8StackTraceImpl);
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 

@@ -91,7 +91,7 @@ bool InspectorTracingAgent::isStarted() const
 
 String InspectorTracingAgent::sessionId() const
 {
-    String16 result;
+    String result;
     if (m_state)
         m_state->getString(TracingAgentState::sessionId, &result);
     return result;

@@ -4,11 +4,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef protocol_{{domain.domain}}_h
-#define protocol_{{domain.domain}}_h
+#ifndef {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_h
+#define {{"_".join(config.protocol.namespace)}}_{{domain.domain}}_h
 
 #include "{{config.class_export.header}}"
-#include "{{config.lib_package}}/InspectorProtocol.h"
+#include "{{config.protocol.package}}/Protocol.h"
 // For each imported domain we generate a ValueConversions struct instead of a full domain definition
 // and include Domain::API version from there.
 {% for name in domain.dependencies %}
@@ -18,8 +18,9 @@
 #include "{{config.exported.package}}/{{domain.domain}}.h"
 {% endif %}
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 namespace {{domain.domain}} {
 
 // ------------- Forward and enum declarations.
@@ -96,7 +97,7 @@ public:
     std::unique_ptr<protocol::DictionaryValue> serialize() const;
     std::unique_ptr<{{type.id}}> clone() const;
     {% if type.exported %}
-    String16 toJSONString() const override;
+    {{config.exported.string_out}} toJSONString() const override;
     {% endif %}
 
     template<int STATE>
@@ -253,7 +254,7 @@ public:
     );
   {% endfor %}
 
-    void flush() { m_frontendChannel->flushProtocolNotifications(); }
+    void flush();
 private:
     FrontendChannel* m_frontendChannel;
 };
@@ -262,7 +263,7 @@ private:
 
 class {{config.class_export.macro}} Dispatcher {
 public:
-    static void wire(UberDispatcher*, blink::protocol::{{domain.domain}}::Backend*);
+    static void wire(UberDispatcher*, Backend*);
 
 private:
     Dispatcher() { }
@@ -281,7 +282,8 @@ public:
 };
 
 } // namespace {{domain.domain}}
-} // namespace protocol
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(protocol_{{domain.domain}}_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_{{domain.domain}}_h)

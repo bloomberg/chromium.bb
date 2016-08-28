@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DispatcherBase_h
-#define DispatcherBase_h
+#ifndef {{"_".join(config.protocol.namespace)}}_DispatcherBase_h
+#define {{"_".join(config.protocol.namespace)}}_DispatcherBase_h
 
 //#include "BackendCallback.h"
 //#include "Collections.h"
 //#include "ErrorSupport.h"
-//#include "Platform.h"
-//#include "String16.h"
+//#include "Forward.h"
 //#include "Values.h"
-#include "{{config.class_export.header}}"
 
-namespace blink {
-namespace protocol {
+{% for namespace in config.protocol.namespace %}
+namespace {{namespace}} {
+{% endfor %}
 
-class FrontendChannel;
 class WeakPtr;
 
 class {{config.class_export.macro}} DispatcherBase {
@@ -60,15 +58,15 @@ public:
         ServerError = -32000,
     };
 
-    static bool getCommandName(const String16& message, String16* result);
+    static bool getCommandName(const String& message, String* result);
 
-    virtual void dispatch(int callId, const String16& method, std::unique_ptr<protocol::DictionaryValue> messageObject) = 0;
+    virtual void dispatch(int callId, const String& method, std::unique_ptr<protocol::DictionaryValue> messageObject) = 0;
 
     void sendResponse(int callId, const ErrorString&, ErrorSupport*, std::unique_ptr<protocol::DictionaryValue> result);
     void sendResponse(int callId, const ErrorString&, std::unique_ptr<protocol::DictionaryValue> result);
     void sendResponse(int callId, const ErrorString&);
 
-    void reportProtocolError(int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport* errors);
+    void reportProtocolError(int callId, CommonErrorCode, const String& errorMessage, ErrorSupport* errors);
     void clearFrontend();
 
     std::unique_ptr<WeakPtr> weakPtr();
@@ -82,17 +80,18 @@ class {{config.class_export.macro}} UberDispatcher {
     PROTOCOL_DISALLOW_COPY(UberDispatcher);
 public:
     explicit UberDispatcher(FrontendChannel*);
-    void registerBackend(const String16& name, std::unique_ptr<protocol::DispatcherBase>);
+    void registerBackend(const String& name, std::unique_ptr<protocol::DispatcherBase>);
     void dispatch(std::unique_ptr<Value> message);
     FrontendChannel* channel() { return m_frontendChannel; }
     virtual ~UberDispatcher();
 
 private:
     FrontendChannel* m_frontendChannel;
-    protocol::HashMap<String16, std::unique_ptr<protocol::DispatcherBase>> m_dispatchers;
+    protocol::HashMap<String, std::unique_ptr<protocol::DispatcherBase>> m_dispatchers;
 };
 
-} // namespace platform
-} // namespace blink
+{% for namespace in config.protocol.namespace %}
+} // namespace {{namespace}}
+{% endfor %}
 
-#endif // !defined(DispatcherBase_h)
+#endif // !defined({{"_".join(config.protocol.namespace)}}_DispatcherBase_h)

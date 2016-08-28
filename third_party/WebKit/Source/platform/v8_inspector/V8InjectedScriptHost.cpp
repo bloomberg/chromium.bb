@@ -5,11 +5,11 @@
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
 
 #include "platform/v8_inspector/InjectedScriptNative.h"
+#include "platform/v8_inspector/StringUtil.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8Debugger.h"
 #include "platform/v8_inspector/V8InspectorImpl.h"
 #include "platform/v8_inspector/V8InternalValueType.h"
-#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/V8ValueCopier.h"
 #include "platform/v8_inspector/public/V8InspectorClient.h"
 

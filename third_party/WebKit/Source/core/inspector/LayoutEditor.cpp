@@ -16,6 +16,7 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorHighlight.h"
+#include "core/inspector/protocol/Protocol.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/ScriptForbiddenScope.h"
 

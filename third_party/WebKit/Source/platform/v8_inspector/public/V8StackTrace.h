@@ -9,8 +9,6 @@
 #include "platform/v8_inspector/public/StringView.h"
 #include "platform/v8_inspector/public/protocol/Runtime.h"
 
-#include <v8.h>
-
 namespace v8_inspector {
 
 class V8StackTrace {
@@ -23,7 +21,7 @@ public:
     virtual StringView topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual std::unique_ptr<blink::protocol::Runtime::API::StackTrace> buildInspectorObject() const = 0;
+    virtual std::unique_ptr<protocol::Runtime::API::StackTrace> buildInspectorObject() const = 0;
     virtual std::unique_ptr<StringBuffer> toString() const = 0;
 
     // Safe to pass between threads, drops async chain.
