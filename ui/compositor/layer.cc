@@ -67,9 +67,7 @@ Layer::Layer()
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f),
-      texture_x_scale_(1.0f),
-      texture_y_scale_(1.0f) {
+      device_scale_factor_(1.0f) {
   CreateCcLayer();
 }
 
@@ -92,9 +90,7 @@ Layer::Layer(LayerType type)
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f),
-      texture_x_scale_(1.0f),
-      texture_y_scale_(1.0f) {
+      device_scale_factor_(1.0f) {
   CreateCcLayer();
 }
 
@@ -571,24 +567,6 @@ bool Layer::TextureFlipped() const {
   return texture_layer_->flipped();
 }
 
-void Layer::SetTextureAlpha(float alpha) {
-  DCHECK(texture_layer_.get());
-  texture_layer_->SetVertexOpacity(alpha, alpha, alpha, alpha);
-}
-
-void Layer::SetTextureCrop(const gfx::RectF& crop) {
-  DCHECK(texture_layer_.get());
-  texture_crop_ = crop;
-  RecomputeDrawsContentAndUVRect();
-}
-
-void Layer::SetTextureScale(float x_scale, float y_scale) {
-  DCHECK(texture_layer_.get());
-  texture_x_scale_ = x_scale;
-  texture_y_scale_ = y_scale;
-  RecomputeDrawsContentAndUVRect();
-}
-
 void Layer::SetShowSurface(
     const cc::SurfaceId& surface_id,
     const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
@@ -1046,21 +1024,9 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   if (texture_layer_.get()) {
     size.SetToMin(frame_size_in_dip_);
     gfx::PointF uv_top_left(0.f, 0.f);
-    gfx::PointF uv_bottom_right(1.f, 1.f);
-    if (!texture_crop_.IsEmpty()) {
-      uv_top_left = texture_crop_.origin();
-      uv_top_left.Scale(1.f / frame_size_in_dip_.width(),
-                        1.f / frame_size_in_dip_.height());
-      uv_bottom_right = texture_crop_.bottom_right();
-      uv_bottom_right.Scale(1.f / frame_size_in_dip_.width(),
-                            1.f / frame_size_in_dip_.height());
-    }
-    float x_scale = texture_x_scale_ * static_cast<float>(size.width()) /
-                    frame_size_in_dip_.width();
-    float y_scale = texture_y_scale_ * static_cast<float>(size.height()) /
-                    frame_size_in_dip_.height();
-    uv_top_left.Scale(x_scale, y_scale);
-    uv_bottom_right.Scale(x_scale, y_scale);
+    gfx::PointF uv_bottom_right(
+      static_cast<float>(size.width()) / frame_size_in_dip_.width(),
+      static_cast<float>(size.height()) / frame_size_in_dip_.height());
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (surface_layer_.get()) {
     size.SetToMin(frame_size_in_dip_);
