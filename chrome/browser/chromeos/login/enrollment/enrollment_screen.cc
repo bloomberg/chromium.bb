@@ -24,6 +24,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/pairing/controller_pairing_controller.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using namespace pairing_chromeos;
@@ -222,7 +223,7 @@ void EnrollmentScreen::OnConfirmationClosed() {
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
-  OnAnyEnrollmentError();
+  RecordEnrollmentErrorMetrics();
   actor_->ShowAuthError(error);
 }
 
@@ -231,13 +232,20 @@ void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   LOG(WARNING) << "Enrollment error occured: status=" << status.status()
                << " http status=" << status.http_status()
                << " DM status=" << status.client_status();
-  OnAnyEnrollmentError();
-  actor_->ShowEnrollmentStatus(status);
+  RecordEnrollmentErrorMetrics();
+  // If the DM server does not have a device pre-provisioned for attestation-
+  // based enrollment and we have a fallback authentication, show it.
+  if (status.status() == policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED &&
+      status.client_status() == policy::DM_STATUS_SERVICE_DEVICE_NOT_FOUND &&
+      current_auth_ == AUTH_ATTESTATION && AdvanceToNextAuth())
+    Show();
+  else
+    actor_->ShowEnrollmentStatus(status);
 }
 
 void EnrollmentScreen::OnOtherError(
     EnterpriseEnrollmentHelper::OtherError error) {
-  OnAnyEnrollmentError();
+  RecordEnrollmentErrorMetrics();
   actor_->ShowOtherError(error);
 }
 
@@ -324,7 +332,7 @@ void EnrollmentScreen::ShowSigninScreen() {
   actor_->ShowSigninScreen();
 }
 
-void EnrollmentScreen::OnAnyEnrollmentError() {
+void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
   enrollment_failed_once_ = true;
   //  TODO(drcrash): Maybe create multiple metrics (http://crbug.com/640313)?
   if (elapsed_timer_)

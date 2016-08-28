@@ -138,8 +138,8 @@ class EnrollmentScreen
   // Used as a callback to run after successful enrollment.
   void ShowAttributePromptScreen();
 
-  // Handle enrollment errors.
-  void OnAnyEnrollmentError();
+  // Record metrics when we encounter an enrollment error.
+  void RecordEnrollmentErrorMetrics();
 
   // Advance to the next authentication mechanism if possible.
   bool AdvanceToNextAuth();
