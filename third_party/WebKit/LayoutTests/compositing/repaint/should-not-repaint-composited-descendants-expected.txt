@@ -28,7 +28,7 @@
             },
             {
               "object": "LayoutBlockFlow DIV class='child'",
-              "rect": [0, 0, 20, 20],
+              "rect": [-30, -30, 50, 50],
               "reason": "subtree"
             }
           ],
