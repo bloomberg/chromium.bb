@@ -40,6 +40,7 @@ const char* const kPublicSessionWhitelist[] = {
     "pmnllmkmjilbojkpgplbdmckghmaocjh",  // Scan app by François Beaufort
     "khpfeaanjngmcnplbdlpegiifgpfgdco",  // Smart Card Connector App
     "haeblkpifdemlfnkogkipmghfcbonief",  // Charismathics Smart Card Middleware
+    "mpnkhdpphjiihmlmkcamhpogecnnfffa",  // Service NSW Kiosk Utility
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
