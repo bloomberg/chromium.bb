@@ -1894,6 +1894,23 @@ class TestGitCl(TestCase):
     ]
     cl._codereview_impl._GerritCommitMsgHookCheck(offer_removal=True)
 
+  def test_GerritCmdLand(self):
+    self.calls += [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+      ((['git', 'config', 'branch.feature.gerritsquashhash'],),
+       'deadbeaf'),
+      ((['git', 'diff', 'deadbeaf'],), ''),  # No diff.
+      ((['git', 'config', 'branch.feature.gerritserver'],),
+       'chromium-review.googlesource.com'),
+    ]
+    cl = git_cl.Changelist(issue=123, codereview='gerrit')
+    cl._codereview_impl._GetChangeDetail = lambda _: {
+      'labels': {},
+      'current_revision': 'deadbeaf',
+    }
+    cl._codereview_impl.SubmitIssue = lambda wait_for_merge: None
+    self.assertEqual(0, cl.CMDLand(force=True, bypass_hooks=True, verbose=True))
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

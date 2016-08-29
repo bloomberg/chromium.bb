@@ -2306,8 +2306,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                      'Press Enter to continue, Ctrl+C to abort.')
 
     differs = True
-    last_upload = RunGit(['config', self._GitBranchSetting('gerritsquashhash')],
-                         error_ok=True).strip()
+    last_upload = self._GitGetBranchConfigValue('gerritsquashhash')
     # Note: git diff outputs nothing if there is no diff.
     if not last_upload or RunGit(['diff', last_upload]).strip():
       print('WARNING: some changes from local branch haven\'t been uploaded')
