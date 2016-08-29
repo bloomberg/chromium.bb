@@ -4873,6 +4873,11 @@ def CMDset_close(parser, args):
 
 def CMDdiff(parser, args):
   """Shows differences between local tree and last upload."""
+  parser.add_option(
+      '--stat',
+      action='store_true',
+      dest='stat',
+      help='Generate a diffstat')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -4908,7 +4913,11 @@ def CMDdiff(parser, args):
 
     # Switch back to starting branch and diff against the temporary
     # branch containing the latest rietveld patch.
-    subprocess2.check_call(['git', 'diff', TMP_BRANCH, branch, '--'])
+    cmd = ['git', 'diff']
+    if options.stat:
+      cmd.append('--stat')
+    cmd.extend([TMP_BRANCH, branch, '--'])
+    subprocess2.check_call(cmd)
   finally:
     RunGit(['checkout', '-q', branch])
     RunGit(['branch', '-D', TMP_BRANCH])
