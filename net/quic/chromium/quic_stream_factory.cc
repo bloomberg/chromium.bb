@@ -67,7 +67,7 @@ enum CreateSessionFailure {
   CREATION_ERROR_CONNECTING_SOCKET,
   CREATION_ERROR_SETTING_RECEIVE_BUFFER,
   CREATION_ERROR_SETTING_SEND_BUFFER,
-  CREATION_ERROR_SETTING_NO_NOT_FRAGMENT,
+  CREATION_ERROR_SETTING_DO_NOT_FRAGMENT,
   CREATION_ERROR_MAX
 };
 
@@ -1706,8 +1706,9 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   }
 
   rv = socket->SetDoNotFragment();
-  if (rv != OK) {
-    HistogramCreateSessionFailure(CREATION_ERROR_SETTING_NO_NOT_FRAGMENT);
+  // SetDoNotFragment is not implemented on all platforms, so ignore errors.
+  if (rv != OK && rv != ERR_NOT_IMPLEMENTED) {
+    HistogramCreateSessionFailure(CREATION_ERROR_SETTING_DO_NOT_FRAGMENT);
     return rv;
   }
 
