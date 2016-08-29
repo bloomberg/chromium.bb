@@ -507,6 +507,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
       Pokud je toto nastavení deaktivováno, webové stránky nemohou spouštět kód JavaScript a uživatel nemůže toto nastavení změnit.
 
       Pokud je toto nastavení aktivováno nebo není nastaveno na konkrétní hodnotu, webové stránky mohou spouštět kód JavaScript, ale uživatel může toto nastavení změnit.</translation>
+<translation id="2753637905605932878">Omezit rozsah místních portů UDP používaných rozhraním WebRTC</translation>
 <translation id="2757054304033424106">Typy rozšíření nebo aplikací, které mohou být nainstalovány</translation>
 <translation id="2759224876420453487">Řízení chování uživatele v multiprofilové relaci</translation>
 <translation id="2761483219396643566">Prodleva upozornění na nečinnost při napájení z baterie</translation>
@@ -741,6 +742,15 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
 <translation id="3264793472749429012">Kódování výchozího poskytovatele vyhledávání</translation>
 <translation id="3273221114520206906">Výchozí nastavení JavaScriptu</translation>
 <translation id="3288595667065905535">Kanál verzí</translation>
+<translation id="3291367259589875381">Od verze M48 je podpora této zásady ukončena ve prospěch zásady <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> a ve verzi M54 je tato zásada zcela odstraněna.
+
+      Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání síťových akcí a zabraňuje uživatelům ve změně tohoto nastavení.
+
+      Tato zásada ovlivňuje kromě předběžného načítání záznamů DNS také předběžná připojení TCP a SSL a předběžné vykreslování webových stránek. Název této zásady odkazuje na předběžné načítání záznamů DNS pouze z historických důvodů.
+
+      Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
+
+      Je-li tato zásada ponechána nenastavená, bude předvídání síťových akcí aktivováno, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="3292147213643666827">Umožňuje prohlížeči <ph name="PRODUCT_NAME" /> fungovat jako proxy server mezi službou <ph name="CLOUD_PRINT_NAME" /> a staršími tiskárnami připojenými k počítači.
 
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
@@ -1227,6 +1237,9 @@ Pokud ji ponecháte nenastavenou, lupa bude ve výchozím nastavení deaktivová
           Hodnota * v seznamu zakázaných hostitelů znamená, že jsou zakázáni všichni hostitelé zasílání nativních zpráv, kteří nejsou uvedeni na seznamu povolených.
 
           Pokud je tato zásada ponechána nenastavená, <ph name="PRODUCT_NAME" /> bude načítat všechny nainstalované hostitele zasílání nativních zpráv.</translation>
+<translation id="5288772341821359899">Je-li nastavena tato zásada, je rozsah portů UDP používaný rozhraním WebRTC omezen na zadaný interval portů (včetně mezních hodnot).
+
+      Pokud tato zásada není nastavena nebo je nastavena na prázdný řetězec nebo neplatný rozsah portů, má rozhraní WebRTC povoleno používat libovolný dostupný místní port UDP.</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
 <translation id="5302612588919538756">Podpora této zásady byla ukončena, použijte prosím namísto ní zásadu SyncDisabled.
 
@@ -1345,6 +1358,7 @@ Pokud je toto nastavení aktivováno, hostitel vzdáleného přístupu porovná 
 
 Pokud je toto nastavení deaktivováno nebo není nakonfigurováno, lze hostitele vzdáleného přístupu přidružit k libovolnému místnímu uživateli.</translation>
 <translation id="5697306356229823047">Hlásit uživatele zařízení</translation>
+<translation id="570062449808736508">Když je tato zásada nastavena na neprázdný řetězec, služba WebView bude načítat omezení adres URL od poskytovatele obsahu pod zadaným názvem autority.</translation>
 <translation id="5703863730741917647">Určuje akci, která bude provedena po určité době nečinnosti.
 
           Tato zásada již není podporována a v budoucnu bude odebrána.
@@ -1606,6 +1620,7 @@ Pokud tato zásada není nastavena, pro uživatele spravované organizací bude 
           Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat aktivací nebo deaktivací softwarové klávesnice. Volba uživatele nicméně nebude trvalá a po opětovném zobrazení přihlašovací obrazovky nebo nečinnosti uživatele na přihlašovací obrazovce po dobu jedné minuty se obnoví původní nastavení.
 
           Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky softwarová klávesnice deaktivována. Uživatelé budou moci softwarovou klávesnici kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
+<translation id="6573305661369899995">Nastavit externí zdroj omezení adres URL</translation>
 <translation id="6598235178374410284">Obrázek avatara uživatele</translation>
 <translation id="6628646143828354685">Umožňuje nastavit, zda weby mají povoleno získat přístup k blízkým zařízením Bluetooth. Přístup lze zcela zablokovat nebo je možné uživatele požádat pokaždé, když web chce získat přístup k blízkým zařízením Bluetooth.
 
@@ -1911,6 +1926,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
 <translation id="7443616896860707393">Požadavky typu cross-origin standardu HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Umístění v registru systému Windows:</translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
+<translation id="7474249562477552702">Udává, zda jsou povoleny certifikáty podepsané algoritmem SHA-1 vydané místními kotvami důvěryhodnosti</translation>
 <translation id="7485481791539008776">Pravidla výběru výchozí tiskárny</translation>
 <translation id="749556411189861380">Hlásí verzi operačního systému a firmwaru v registrovaných zařízeních.
 
@@ -1928,6 +1944,11 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
 
       V případě nastavení na možnost SAML_INTERSTITIAL se při přihlášení zobrazí vsunutá obrazovka, na které uživatel bude moci zvolit, zda chce pokračovat v ověření prostřednictvím poskytovatele identity SAML domény, do které je zařízení zaregistrováno, nebo se vrátit k běžnému procesu přihlášení GAIA.</translation>
 <translation id="7567380065339179813">Povolit pluginy na těchto stránkách</translation>
+<translation id="757395965347379751">Když je toto nastavení aktivováno, povoluje <ph name="PRODUCT_NAME" /> certifikáty podepsané algoritmem SHA-1, pokud je možné je úspěšně ověřit a propojit s místně nainstalovanými certifikáty CA.
+
+      Upozorňujeme, že tato zásada závisí na tom, zda podpisy SHA-1 povoluje ověřovací mechanismus operačních systému. Pokud při aktualizaci operačního systému dojde ke změně zpracování certifikátů SHA-1, tato zásada již nemusí fungovat. Tato zásada je určena jako dočasné řešení, které podnikům poskytne více času k přechodu na jiné podpisy než SHA-1. Tato zásada bude odstraněna kolem 1. ledna 2019.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, bude se <ph name="PRODUCT_NAME" /> řídit veřejně publikovaným harmonogramem ukončení podpory algoritmu SHA-1.</translation>
 <translation id="7593523670408385997">Slouží ke konfiguraci velikosti mezipaměti, kterou bude aplikace <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
 
       Pokud tuto zásadu nastavíte, <ph name="PRODUCT_NAME" /> bude používat stanovenou velikost mezipaměti bez ohledu na to, zda uživatel zadal příznak „--disk-cache-size“. Hodnota stanovená touto zásadou neurčuje pevný limit, jedná se spíše o návrh pro systém ukládání do mezipaměti. Hodnoty menší než několik megabajtů jsou příliš malé a budou zaokrouhleny nahoru na rozumné minimum.

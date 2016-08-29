@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1021451612696613363">Влезте в профила си, за да видите известията си.</translation>
 <translation id="111910763555783249">Настройки за известяване</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Преди 1 ден}other{Преди # дни}}</translation>
 <translation id="1190609913194133056">Център за известия</translation>

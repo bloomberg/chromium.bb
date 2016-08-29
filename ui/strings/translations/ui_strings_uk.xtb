@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1021451612696613363">Увійдіть, щоб переглянути свої сповіщення</translation>
 <translation id="111910763555783249">Налаштування сповіщень</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}</translation>
 <translation id="1190609913194133056">Центр сповіщень</translation>

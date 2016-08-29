@@ -1391,6 +1391,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 
           Ak toto nastavenie zakážete alebo nenastavíte, hostiteľa vzdialeného prístupu bude možné priradiť k ľubovoľnému miestnemu používateľovi.</translation>
 <translation id="5697306356229823047">Nahlásiť používateľov zariadenia</translation>
+<translation id="570062449808736508">Ak je toto pravidlo nastavené na reťazec, ktorý neobsahuje prázdne hodnoty, zobrazenie WebView bude čítať obmedzenia týkajúce sa webových adries od poskytovateľa obsahu s uvedeným názvom autority.</translation>
 <translation id="5703863730741917647">Určte akciu, ktorá sa má uskutočniť po uplynutí určitého času nečinnosti.
 
           Upozorňujeme, že podpora tohto pravidla bola ukončená a v budúcnosti sa odstráni.
@@ -1657,6 +1658,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať aktiváciou alebo deaktiváciou klávesnice na obrazovke. Voľba používateľa však nebude trvalá a po opätovnom zobrazení prihlasovacej obrazovky alebo nečinnosti používateľa na prihlasovacej obrazovke počas jednej minúty sa obnoví pôvodné nastavenie.
 
           Ak toto pravidlo nenastavíte, bude pri prvom zobrazení prihlasovacej obrazovky klávesnica na obrazovke deaktivovaná. Používatelia budú môcť klávesnicu na obrazovke kedykoľvek aktivovať alebo deaktivovať a zvolený stav na prihlasovacej obrazovke pretrvá aj u iných používateľov.</translation>
+<translation id="6573305661369899995">Nastavenie externého zdroja pre obmedzenia webový adries</translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
 <translation id="6628646143828354685">Umožňuje nastaviť, či môžu weby získať prístup k zariadeniam Bluetooth v blízkosti. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k zariadeniam Bluetooth v blízkosti.
 

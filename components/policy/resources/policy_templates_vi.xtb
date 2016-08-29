@@ -1394,6 +1394,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu cài đặt này bị tắt hoặc không được đặt thì máy chủ truy cập từ xa có thể được liên kết với bất kỳ người dùng ngôn ngữ nào.</translation>
 <translation id="5697306356229823047">Báo cáo người dùng thiết bị</translation>
+<translation id="570062449808736508">Khi chính sách này được đặt thành chuỗi không trống, WebView sẽ đọc hạn chế URL từ nhà cung cấp nội dung có tên tổ chức cho trước.</translation>
 <translation id="5703863730741917647">Chỉ định tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động.
 
           Lưu ý rằng chính sách này không được dùng nữa và sẽ bị loại bỏ trong tương lai.
@@ -1655,6 +1656,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách này bằng cách bật hoặc tắt bàn phím ảo. Tuy nhiên, lựa chọn của người dùng không cố định và giá trị mặc định được khôi phục bất cứ lúc nào màn hình đăng nhập được hiển thị lại hoặc người dùng duy trì trạng thái rảnh trên màn hình đăng nhập trong một phút.
 
           Nếu chính sách này không được đặt, bàn phím ảo bị tắt khi màn hình đăng nhập được hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất kỳ lúc nào và trạng thái của bàn phím trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
+<translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6598235178374410284">Hình đại diện của người dùng</translation>
 <translation id="6628646143828354685">Cho phép bạn đặt có cho phép trang web truy cập vào các thiết bị Bluetooth lân cận hay không. Quyền truy cập có thể bị chặn hoàn toàn hoặc người dùng có thể được hỏi mỗi lần trang web muốn truy cập vào các thiết bị Bluetooth lân cận.
 

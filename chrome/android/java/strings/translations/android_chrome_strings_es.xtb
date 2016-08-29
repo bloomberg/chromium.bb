@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1206892813135768548">Copiar texto de enlace</translation>
 <translation id="1209206284964581585">Ocultar por ahora</translation>
+<translation id="1211530540767271776">No hay dispositivos USB</translation>
 <translation id="1240668123557180468">Descubre páginas web enviadas por los objetos cercanos. Chrome recopila páginas web asociadas a los objetos que te rodean, las envía de forma anónima a un servicio de Google para seleccionar las que te puedan resultar más útiles y, a continuación, las muestra.
 
 Debes activar la ubicación y el Bluetooth para utilizar la Web física.</translation>
@@ -177,7 +178,6 @@ Puedes controlar la Web física en la configuración de Chrome.
 <translation id="3012408695656332380">Sustituye los datos de este dispositivo por los de <ph name="TO_ACCOUNT" />. Puedes recuperar tus datos actuales si vuelves a cambiar a <ph name="FROM_ACCOUNT" />, aunque se perderán aquellos que se hayan creado desde que cerraste sesión.</translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">Guardar vídeo</translation>
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de vídeo y audio</translation>
 <translation id="3117051980354074377">Inicia sesión en Chrome para ver los marcadores de tus otros dispositivos.</translation>
@@ -243,8 +243,8 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="393697183122708255">La búsqueda por voz no está disponible</translation>
 <translation id="3946611741043634542">Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones de Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
+<translation id="397583555483684758">La sincronización ha dejado de funcionar</translation>
 <translation id="3988213473815854515">Se permite la ubicación</translation>
-<translation id="3992315671621218278">Guardar enlace</translation>
 <translation id="3997476611815694295">Almacenamiento no importante</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4042870126885713738">Muestra sugerencias cuando no se puede resolver una dirección web o no se puede establecer una conexión</translation>
@@ -312,7 +312,6 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4827948050554950725">Añadir tarjeta de crédito</translation>
 <translation id="4836364883164334657">Tu conexión a este sitio web no es privada. Un atacante podría intentar robar tu información (fotos, contraseñas, mensajes, tarjetas de crédito, etc.) del dominio <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio web?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
 <translation id="4923459931733593730">Pago</translation>
@@ -367,6 +366,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="5424588387303617268">Disponibilidad: <ph name="GIGABYTES" /> GB</translation>
 <translation id="544291274896356069">Saldrás del modo incógnito si este enlace se abre en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="5447201525962359567">Todo el almacenamiento del sitio web, como las cookies y otros datos almacenados de forma local</translation>
+<translation id="5456381639095306749">Descargar página</translation>
 <translation id="5487521232677179737">Borrar los datos</translation>
 <translation id="5487729733663684359">Ya no se admiten actualizaciones de Chrome para esta versión de Android.</translation>
 <translation id="5511351932351731210">Enviar siempre</translation>
@@ -414,6 +414,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="5902828464777634901">Se eliminarán todos los datos locales almacenados por este sitio web, incluidas las cookies.</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
 <translation id="5916664084637901428">Activar</translation>
+<translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="6010869025736512584">Accediendo a la entrada de vídeo</translation>
 <translation id="6012342843556706400">Chrome necesita acceder a la información de ubicación para compartirla con este sitio web.</translation>
@@ -470,7 +471,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6627583120233659107">Editar carpeta</translation>
 <translation id="6643016212128521049">Eliminar</translation>
-<translation id="6647073004883890710">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice la contraseña de <ph name="USERNAME" /> en este sitio web?</translation>
 <translation id="6656545060687952787">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK" />Actualizar los permisos<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6659594942844771486">Pestaña</translation>
@@ -577,6 +577,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7949961459945740081">Obtener las últimas funciones</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
@@ -599,6 +600,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el origen de los tiempos</translation>
+<translation id="8187025609458112874">No se pueden compartir archivos eliminados</translation>
 <translation id="8190358571722158785">Queda 1 día</translation>
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8202097416529803614">Resumen del pedido</translation>
@@ -634,7 +636,6 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="856481929701340285">Ver como ordenador</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
-<translation id="8588878054171169263">Guardar imagen</translation>
 <translation id="8617240290563765734">¿Quieres abrir la URL sugerida que se especifica en el contenido descargado?</translation>
 <translation id="862875433388403934">Es posible que el contenido (películas, música, etc.) descargado en otras aplicaciones no se pueda reproducir hasta que esas aplicaciones no vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
 

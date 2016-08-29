@@ -1305,6 +1305,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta definição estiver desativada ou não estiver definida, o anfitrião de acesso remoto pode ser associado a qualquer utilizador local.</translation>
 <translation id="5697306356229823047">Comunicar utilizadores do dispositivo</translation>
+<translation id="570062449808736508">Quando esta política está definida para uma string não vazia, o WebView lê as restrições de URL do fornecedor de conteúdos com o nome da autoridade indicado.</translation>
 <translation id="5703863730741917647">Especifique a ação a executar quando o atraso de inatividade for atingido.
 
           Tenha em atenção que esta política foi descontinuada e será removida no futuro.
@@ -1550,6 +1551,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores podem substituí-la temporariamente através da ativação ou da desativação do teclado no ecrã. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for apresentado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, o teclado no ecrã é desativado quando o ecrã de início de sessão é apresentado pela primeira vez. Os utilizadores podem ativar ou desativar o teclado no ecrã a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+<translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="6628646143828354685">Permite definir se os Websites estão autorizados a obter acesso a dispositivos Bluetooth próximos. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos Bluetooth próximos.
 

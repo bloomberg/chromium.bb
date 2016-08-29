@@ -1279,7 +1279,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           El valor de lista negra de "*" indica que todos los hosts de mensajes nativos se incluyen en la lista negra a menos que se incluyan explícitamente en la lista blanca.
 
           Si esta política no se establece en <ph name="PRODUCT_NAME" />, se cargarán todos los hosts de mensajes nativos.</translation>
-<translation id="5288772341821359899">Si esta política se configura, el intervalo de puertos UDP utilizado por WebRTC estará restringido al intervalo de puertos especificado (incluidos los puntos finales).
+<translation id="5288772341821359899">Si esta política se configura, el intervalo de puertos UDP utilizado por WebRTC estará restringido al intervalo de puertos especificado (incluidos los extremos).
 
       Si esta política no se configura o si se le asigna una cadena vacía o un intervalo de puertos no válido, WebRTC podrá utilizar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que los usuarios puedan habilitar o inhabilitar</translation>
@@ -1401,6 +1401,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si esta opción está inhabilitada, el host de acceso remoto puede asociarse a cualquier usuario local.</translation>
 <translation id="5697306356229823047">Permite informar sobre usuarios de dispositivos</translation>
+<translation id="570062449808736508">Si esta política se asigna a una cadena no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de autoridad especificado.</translation>
 <translation id="5703863730741917647">Permite especificar la acción a emprender si se alcanza el retraso de inactividad.
 
           Ten en cuenta que esta política se ha dejado de utilizar y se eliminará en el futuro.
@@ -1662,6 +1663,7 @@ Si esta política se establece en False, el teclado en pantalla se inhabilitará
 Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el teclado en pantalla. Sin embargo, la elección del usuario no se mantendrá y se restaurará la opción predeterminada siempre que se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo durante un minuto en la pantalla de inicio de sesión.
 
 Si no se establece esta política, el teclado en pantalla se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y su estado en la pantalla de inicio de sesión se mantendrá para todos los usuarios.</translation>
+<translation id="6573305661369899995">Establecer una fuente externa de restricciones de URL</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
 <translation id="6628646143828354685">Permite establecer si los sitios web pueden acceder a los dispositivos Bluetooth cercanos. Se puede bloquear completamente el acceso o se puede establecer que se pida permiso al usuario cada vez que un sitio web quiera acceder a los dispositivos Bluetooth cercanos.
 
@@ -1990,7 +1992,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
 <translation id="757395965347379751">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> permitirá los certificados SHA-1 firmados siempre que se validen correctamente y se vinculen a certificados de CA instalados localmente.
 
-      Ten en cuenta que esta política depende de la pila de verificación de certificados del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados SHA-1, es posible que la política deje de hacerse efectiva. Además, el objetivo de esta política es proporcionar a las empresas una solución temporal para que tengan más tiempo para abandonar los certificados SHA-1. Esta política se retirará sobre el 1 de enero de 2019.
+      Ten en cuenta que esta política depende de la pila de verificación de certificados del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados SHA-1, es posible que la política deje de estar efectiva. Además, el objetivo de esta política es proporcionar a las empresas una solución temporal para que tengan más tiempo para abandonar los certificados SHA-1. Esta política se retirará sobre el 1 de enero de 2019.
 
       Si esta política no se configura o si se le asigna el valor false, <ph name="PRODUCT_NAME" /> seguirá la programación de desactivación de SHA-1 anunciada públicamente.</translation>
 <translation id="7593523670408385997">Permite configurar el tamaño de memoria caché que utilizará <ph name="PRODUCT_NAME" /> para guardar archivos almacenados en caché en el disco.

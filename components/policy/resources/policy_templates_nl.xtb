@@ -1398,6 +1398,7 @@
 
           Als deze instelling is uitgeschakeld of niet ingesteld, kan de host voor externe toegang aan elke lokale gebruiker worden gekoppeld.</translation>
 <translation id="5697306356229823047">Apparaatgebruikers melden</translation>
+<translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
 <translation id="5703863730741917647">Specificeer de actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt.
 
           Houd er rekening mee dat dit beleid verouderd is en in de toekomst wordt verwijderd.
@@ -1661,6 +1662,7 @@
           Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door het schermtoetsenbord in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld wanneer het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
 
           Als dit beleid niet is ingesteld, wordt het schermtoetsenbord uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het schermtoetsenbord op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
+<translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6598235178374410284">Avatarafbeelding van gebruiker</translation>
 <translation id="6628646143828354685">Hiermee kun je instellen of websites toegang mogen krijgen tot Bluetooth-apparaten in de buurt. De toegang kan volledig worden geblokkeerd of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot Bluetooth-apparaten in de buurt.
 

@@ -514,6 +514,7 @@
       Dacă această setare este dezactivată, paginile web nu pot utiliza JavaScript, iar utilizatorii nu pot modifica această setare.
 
       Dacă această setare este activată sau nu este configurată, paginile web pot utiliza JavaScript, dar utilizatorul poate schimba această setare.</translation>
+<translation id="2753637905605932878">Restricționează intervalul de porturi UDP locale folosite de WebRTC</translation>
 <translation id="2757054304033424106">Tipuri de extensii/aplicații a căror instalare este permisă</translation>
 <translation id="2759224876420453487">Controlează comportamentul utilizatorului în timpul unei sesiuni cu profiluri multiple</translation>
 <translation id="2761483219396643566">Interval de inactivitate la funcționarea pe baterie</translation>
@@ -739,6 +740,15 @@
 <translation id="3264793472749429012">Codificări pentru furnizorul de căutare prestabilit</translation>
 <translation id="3273221114520206906">Setare JavaScript prestabilită</translation>
 <translation id="3288595667065905535">Canalul de lansare</translation>
+<translation id="3291367259589875381">Politica nu mai este dezvoltată în M48, în favoarea politicii <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> și a fost eliminată din M54.
+
+      Activează anticiparea în rețea în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice această setare.
+
+      Aceasta controlează atât preluarea anticipată a datelor DNS, cât și conectarea anticipată TCP și SSL și încărcarea anticipată a paginilor web. Numele acestei politici se referă la preluarea anticipată a datelor DNS din motive ce țin de istoric.
+
+      Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau ignora în <ph name="PRODUCT_NAME" />.
+
+      Dacă politica nu este configurată, aceasta va fi activată, dar utilizatorul o va putea modifica.</translation>
 <translation id="3292147213643666827">Permite <ph name="PRODUCT_NAME" /> să acționeze ca un proxy între <ph name="CLOUD_PRINT_NAME" /> și imprimantele conectate anterior la computer.
 
       Dacă această setare este activată sau nu este configurată, utilizatorii pot activa proxy-ul Cloud Print autentificându-se cu Contul Google.
@@ -1197,6 +1207,9 @@
           O valoare * în lista neagră înseamnă că toate gazdele de mesagerie nativă sunt trecute în lista neagră, cu excepția cazului în care sunt trecute explicit în lista albă.
 
           Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> va încărca toate gazdele de mesagerie nativă instalate.</translation>
+<translation id="5288772341821359899">Dacă politica este configurată, intervalul de porturi UDP folosit de WebRTC este limitat la intervalul de porturi specificat (porturile limită ale intervalului sunt incluse).
+
+      Dacă politica nu este configurată sau dacă este setată la un șir gol ori la un interval de porturi nevalid, WebRTC poate să folosească orice port UDP local disponibil.</translation>
 <translation id="5290940294294002042">Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva</translation>
 <translation id="5302612588919538756">Această politică este învechită. Îți recomandăm să folosești SyncDisabled.
 
@@ -1309,6 +1322,7 @@
 
           Dacă această setare este dezactivată sau nu este configurată, gazda de acces poate fi asociată oricărui utilizator local.</translation>
 <translation id="5697306356229823047">Raportează utilizatorii dispozitivului</translation>
+<translation id="570062449808736508">Când această politică este setată la un șir completat, WebView va citi restricțiile privind adresele URL de la furnizorul de conținut cu numele de autoritate indicat.</translation>
 <translation id="5703863730741917647">Specificați acțiunea de urmat după trecerea intervalului de inactivitate.
 
           Rețineți să această politică este învechită și va fi eliminată în viitor.
@@ -1554,6 +1568,7 @@
           Dacă politica este configurată, utilizatorii o pot suprascrie temporar activând sau dezactivând tastatura pe ecran. Cu toate acestea, alegerea utilizatorului nu se păstrează, iar setarea implicită este restabilită ori de câte ori ecranul de conectare este afișat din nou sau utilizatorul este inactiv pe ecranul de conectare timp de un minut.
 
           Dacă politica nu este configurată, tastatura pe ecran este dezactivată la prima afișare a ecranului de conectare. Utilizatorii pot activa sau dezactiva oricând tastatura pe ecran, iar starea acesteia pe ecranul de conectare se păstrează de la un utilizator la altul.</translation>
+<translation id="6573305661369899995">Setează o sursă externă a restricțiilor privind adresele URL</translation>
 <translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
 <translation id="6628646143828354685">Îți permite să setezi dacă site-urile primesc acces la dispozitivele Bluetooth din apropiere. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele Bluetooth din apropiere.
 
@@ -1848,6 +1863,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7443616896860707393">Mesaje de solicitare pentru autentificarea HTTP de bază indiferent de sursă</translation>
 <translation id="7468416082528382842">Locația din registry-ul Windows:</translation>
 <translation id="7469554574977894907">Activează sugestiile de căutare</translation>
+<translation id="7474249562477552702">Dacă sunt permise certificatele semnate cu SHA-1, emise de ancorele de încredere locale</translation>
 <translation id="7485481791539008776">Reguli de selectare a imprimantei prestabilite</translation>
 <translation id="749556411189861380">Raportează versiunea sistemului de operare și versiunea de firmware ale dispozitivelor înscrise.
 
@@ -1863,6 +1879,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       dacă valoarea este setată la SAML_INTERSTITIAL, conectarea va afișa un ecran intercalat care îi oferă utilizatorului două opțiuni: să continue autentificarea folosind furnizorul de identitate SAML de pe domeniul de înregistrare al dispozitivului sau să revină la fluxul obișnuit de conectare GAIA.</translation>
 <translation id="7567380065339179813">Permite pluginuri pe aceste site-uri</translation>
+<translation id="757395965347379751">Când setarea este activată, <ph name="PRODUCT_NAME" /> acceptă certificatele semnate cu SHA-1, cu condiția ca acestea să valideze și să se asocieze unor certificate CA instalate local.
+
+      Reține că această politică depinde de acceptarea semnăturilor SHA-1 de către stiva de verificare a certificatelor sistemului de operare. Dacă o actualizare a sistemului de operare modifică modul în care sistemul de operare gestionează certificatele semnate cu SHA-1, este posibil ca această politică să nu se mai aplice. Mai mult, această politică are rolul de soluție temporară, pentru a le oferi companiilor mai mult timp să renunțe la standardul SHA-1. Această politică va fi eliminată în data de 1 ianuarie 2019 sau în jurul acestei date.
+
+      Dacă această politică nu este configurată sau nu este activată, <ph name="PRODUCT_NAME" /> urmează programul anunțat public de renunțare la dezvoltarea SHA-1.</translation>
 <translation id="7593523670408385997">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele salvate în memoria cache.
 
       Dacă setați această politică, <ph name="PRODUCT_NAME" /> va utiliza dimensiunea indicată a memoriei cache, indiferent dacă utilizatorul a specificat parametrul „--disk-cache-size” sau nu. Valoarea specificată în această politică nu reprezintă o limită fermă, ci doar o sugestie pentru sistemul de salvare în memoria cache. Orice valoare sub câțiva megabytes este prea mică și va fi rotunjită în sus la o limită rezonabilă.

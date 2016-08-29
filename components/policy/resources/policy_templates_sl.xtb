@@ -539,6 +539,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, spletne strani ne morejo uporabljati JavaScripta in uporabnik te vrednosti ne more spremeniti.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko spletne strani uporabljajo JavaScript, toda uporabnik lahko to nastavitev spremeni.</translation>
+<translation id="2753637905605932878">Omejitev obsega lokalnih vrat UDP, ki jih uporablja tehnologija WebRTC</translation>
 <translation id="2757054304033424106">Vrste razširitev/aplikacij, katerih namestitev je dovoljena</translation>
 <translation id="2759224876420453487">Nadzor vedenja uporabnikov v večprofilni seji</translation>
 <translation id="2761483219396643566">Časovni zamik opozorila o nedejavnosti ob napajanju iz akumulatorja</translation>
@@ -774,6 +775,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3264793472749429012">Privzeto kodiranje iskalnika</translation>
 <translation id="3273221114520206906">Privzeta nastavitev JavaScripta</translation>
 <translation id="3288595667065905535">Kanal za izdaje</translation>
+<translation id="3291367259589875381">Ta pravilnik je zastarel in nadomeščen s pravilnikom <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> v različici M48. Odstranjen je v različici M54.
+
+      Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Ta pravilnik ne nadzira le vnaprejšnjega prenosa podatkov DNS, ampak tudi vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani. Ime pravilnika se nanaša na vnaprejšnji prenos podatkov DNS zaradi zgodovinskih razlogov.
+
+      Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
+
+      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="3292147213643666827">Omogoča, da <ph name="PRODUCT_NAME" /> deluje kot proxy med storitvijo <ph name="CLOUD_PRINT_NAME" /> in starejšimi tiskalniki, priključenimi na računalnik.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko uporabniki s preverjanjem pristnosti prek računa za Google omogočijo proxy za tiskanje v oblaku.
@@ -1272,6 +1282,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Vrednost * na seznamu blokiranih pomeni, da so vsi gostitelji izvornega pošiljanja sporočil blokirani, razen če niso izrecno navedeni na seznamu dovoljenih.
 
           Če ta pravilnik ni nastavljen, bo izdelek <ph name="PRODUCT_NAME" /> naložil vse nameščene gostitelje izvornega pošiljanja sporočil.</translation>
+<translation id="5288772341821359899">Če je pravilnik nastavljen, je obseg vrat UDP, ki jih uporablja tehnologija WebRTC, omejen na navedeni interval vrat (vključno s končnimi točkami).
+
+      Če pravilnik ni nastavljen ali je nastavljen na prazen niz oziroma neveljaven obseg vrat, je tehnologiji WebRTC dovoljeno uporabljati katera koli lokalna vrata UDP, ki so na voljo.</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
 <translation id="5302612588919538756">Ta pravilnik je zastarel, namesto njega lahko uporabite SyncDisabled.
 
@@ -1393,6 +1406,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če je ta nastavitev onemogočena ali ni nastavljena, je mogoče gostitelja za oddaljeni dostop povezati s poljubnim lokalnim uporabnikom.</translation>
 <translation id="5697306356229823047">Poročanje o uporabnikih naprave</translation>
+<translation id="570062449808736508">Če je ta pravilnik nastavljen na niz, ki ni prazen, spletni pogled prebere omejitve za URL-je ponudnika vsebine z danim imenom overitelja.</translation>
 <translation id="5703863730741917647">Določanje dejanja, ki se izvede, ko je dosežena zakasnitev zaradi nedejavnosti.
 
           Upoštevajte, da je za pravilnik zastarel in bo v prihodnosti odstranjen.
@@ -1660,6 +1674,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če nastavite ta pravilnik, ga lahko uporabniki začasno preglasijo, tako da omogočijo ali onemogočijo zaslonsko tipkovnico. Uporabnikova izbira ni trajna in privzeta možnost je obnovljena, ko se zaslon za prijavo prikaže na novo ali če uporabnik na zaslonu za prijavo eno minuto ne izvede nobenega dejanja.
 
           Če ta pravilnik ni nastavljen, je zaslonska tipkovnica onemogočena pri prvem prikazu zaslona za prijavo. Uporabniki lahko zaslonsko tipkovnico kadar koli omogočijo ali onemogočijo in njeno stanje na zaslonu za prijavo velja za vse uporabnike.</translation>
+<translation id="6573305661369899995">Nastavitev zunanjega vira omejitev za URL-je</translation>
 <translation id="6598235178374410284">Slika za avatar uporabnika</translation>
 <translation id="6628646143828354685">Omogoča nastavitev, ali lahko spletna mesta dostopajo do naprav Bluetooth v bližini. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do naprav Bluetooth v bližini.
 
@@ -1971,6 +1986,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
 <translation id="7468416082528382842">Lokacija registra sistema Windows:</translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
+<translation id="7474249562477552702">Ali so dovoljena potrdila, podpisana z algoritmom SHA-1, ki jih izdajo lokalna sidra zaupanja</translation>
 <translation id="7485481791539008776">Pravila za izbiro privzetega tiskalnika</translation>
 <translation id="749556411189861380">Poročanje o različici operacijskega sistema in vdelane programske opreme včlanjenih naprav.
 
@@ -1988,6 +2004,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je nastavljen na SAML_INTERSTITIAL, je pri prijavi prikazan vmesni zaslon, na katerem se lahko uporabnik odloči, ali bo nadaljeval preverjanje pristnosti prek SAML IdP domene za včlanitev naprave ali se bo vrnil na običajno prijavo GAIA.</translation>
 <translation id="7567380065339179813">Dovoli vtičnike na teh mestih</translation>
+<translation id="757395965347379751">Če je ta nastavitev omogočena, <ph name="PRODUCT_NAME" /> dovoli potrdila, podpisana z algoritmom SHA-1, če se uspešno potrdijo in so v verigi s potrdili lokalno nameščenega overitelja.
+
+      Upoštevajte, da je ta pravilnik odvisen od tega, ali sklad za potrjevanje potrdil operacijskega sistema dovoli podpise z algoritmom SHA-1. Če posodobitev operacijskega sistema spremeni obravnavo potrdil, podpisanih z algoritmom SHA-1, ta pravilnik ne učinkuje več. Namen tega pravilnika je delovati kot začasna rešitev, ki daje podjetjem na voljo več časa, da prenehajo uporabljati algoritem SHA-1. Ta pravilnik bo odstranjen okoli 1. januarja 2019 oziroma na ta datum.
+
+      Če ta pravilnik ni nastavljen ali je onemogočen, <ph name="PRODUCT_NAME" /> upošteva javno najavljen razpored za zastaranje algoritma SHA-1.</translation>
 <translation id="7593523670408385997">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disku.
 
       Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabil navedeno velikost predpomnilnika, ne glede na to, ali je uporabnik nastavil zastavico »--disk-cache-size«. Vrednost, navedena v tem pravilniku, ni fiksna omejitev, temveč predlog predpomnilniškemu sistemu. Vrednosti pod nekaj megabajti so premajhne in bodo zaokrožene na razumno minimalno vrednost.

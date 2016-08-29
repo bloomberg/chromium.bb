@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
+<translation id="1211530540767271776">没有任何 USB 设备</translation>
 <translation id="1240668123557180468">发现附近物体发送的网页。Chrome 会收集与您附近物体相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
 
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
@@ -89,6 +90,7 @@
 <translation id="200669432486043882">替换文件</translation>
 <translation id="2020525020270327736">复制网站</translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
+<translation id="2069736994598857257">已用存储空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="2073235970478114994">加载图片</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
@@ -120,6 +122,7 @@
 <translation id="2349710944427398404">Chrome 所使用的数据总量，包括帐户、书签和已保存的设置</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
+<translation id="2369533728426058518">打开的标签页</translation>
 <translation id="2385560268894525395">过去 1 周</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="238909021488141516">下载该内容时出现错误。</translation>
@@ -175,7 +178,6 @@
 <translation id="3012408695656332380">将这台设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据，但自您退出后创建的数据将会丢失。</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">保存视频</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3117051980354074377">要在您的其他设备上访问您的书签，请登录 Chrome。</translation>
@@ -200,6 +202,7 @@
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
 <translation id="3351441609270267898">导入现有数据</translation>
 <translation id="3365671512111106261">在流量节省程序处于开启状态时不可用</translation>
+<translation id="3367813778245106622">重新登录以开始同步</translation>
 <translation id="3384347053049321195">分享图片</translation>
 <translation id="3386292677130313581">在允许网站获悉您的位置信息前先询问（推荐）</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
@@ -240,8 +243,8 @@
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
 <translation id="3946611741043634542">继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="3950820424414687140">登录</translation>
+<translation id="397583555483684758">同步功能已停止工作</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
-<translation id="3992315671621218278">保存链接</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
@@ -288,6 +291,7 @@
 <translation id="4572422548854449519">请登录受管理的帐户</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
+<translation id="4605958867780575332">以下项已移除：<ph name="ITEM_TITLE" /></translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -308,7 +312,6 @@
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
-<translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4923459931733593730">付款</translation>
@@ -360,8 +363,10 @@
 <translation id="5400569084694353794">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
+<translation id="5424588387303617268">可用存储空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="544291274896356069">如果在外部应用中打开此链接，您将退出隐身模式。是否继续？</translation>
 <translation id="5447201525962359567">所有网站存储数据，包括 Cookie 及其他本地存储的数据</translation>
+<translation id="5456381639095306749">下载网页</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
 <translation id="5511351932351731210">一律发送</translation>
@@ -388,6 +393,7 @@
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
+<translation id="572392919096807438">记住我的决定</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="57586589942790530">卡号无效</translation>
@@ -408,6 +414,7 @@
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5916664084637901428">启用</translation>
+<translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="6010869025736512584">正在存取视频输入</translation>
 <translation id="6012342843556706400">Chrome 需要具有位置信息使用权，才能批准此网站的分享请求。</translation>
@@ -464,7 +471,6 @@
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
-<translation id="6647073004883890710">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 用于登录此网站的密码吗？</translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -474,6 +480,7 @@
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
 <translation id="6762156594045689028">要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
+<translation id="6764789522080107716">无法打开文件</translation>
 <translation id="6770414673596662518">Chrome 的安全浏览系统也将用于检测恶意网页，保护您免受网上诱骗、恶意软件和有害下载内容的侵害。</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>
@@ -485,6 +492,7 @@
 <translation id="6857778194843072568">仅在使用 WLAN 网络时发送</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
+<translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
 <translation id="6910211073230771657">已删除</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
@@ -539,6 +547,7 @@
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7588950540487816470">实物网</translation>
+<translation id="7593557518625677601">打开 Android 设置，重新启用 Android 系统同步功能以开始 Chrome 同步</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7605594153474022051">同步功能无法正常运行</translation>
 <translation id="7612619742409846846">已使用以下帐户登录 Google：</translation>
@@ -568,6 +577,7 @@
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7876243839304621966">全部删除</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7949961459945740081">获取最新功能</translation>
 <translation id="7963646190083259054">供应商：</translation>
@@ -590,6 +600,7 @@
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
 <translation id="8168435359814927499">内容</translation>
 <translation id="8173098127580644436">自始至今</translation>
+<translation id="8187025609458112874">无法共享已删除的文件</translation>
 <translation id="8190358571722158785">还剩 1 天</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8202097416529803614">订单摘要</translation>
@@ -598,6 +609,7 @@
 <translation id="8218934717680664417">现在，您只需触摸一下即可启动搜索</translation>
 <translation id="8223946939421658889">清除以下时间段内的数据：</translation>
 <translation id="8250920743982581267">文档</translation>
+<translation id="8260126382462817229">请尝试重新登录</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8275818695183729150">允许（针对地址栏搜索）</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
@@ -624,7 +636,6 @@
 <translation id="856481929701340285">请求切换到桌面版网站</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
-<translation id="8588878054171169263">保存图片</translation>
 <translation id="8617240290563765734">要打开下载的内容中指定的建议网址吗？</translation>
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
@@ -686,6 +697,7 @@
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="969096075394517431">更改语言</translation>
 <translation id="970715775301869095">还剩 <ph name="MINUTES" /> 分钟</translation>
+<translation id="974555521953189084">输入密码以开始同步</translation>
 <translation id="981121421437150478">离线</translation>
 <translation id="982182592107339124">这会清除所有网站的数据，包括：</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>

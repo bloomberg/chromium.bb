@@ -1301,6 +1301,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
           Si aquesta opció de configuració es desactiva o no s'estableix, l'amfitrió d'accés remot es pot associar amb qualsevol usuari local.</translation>
 <translation id="5697306356229823047">Informa dels usuaris de dispositius</translation>
+<translation id="570062449808736508">Si aquesta política es defineix en una cadena que no sigui buida, WebView llegirà les restriccions d'URL del proveïdor de contingut amb el nom d'autoritat indicat.</translation>
 <translation id="5703863730741917647">Especifica l'acció que s'ha d'emprendre quan s'està inactiu.
 
           Tingueu en compte que aquesta política està desactivada i que se suprimirà en un futur.
@@ -1547,6 +1548,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si configureu aquesta política, els usuaris poden substituir-la temporalment si activen o desactiven el teclat en pantalla. No obstant això, la decisió de l'usuari no és permanent i el valor predeterminat es restaura cada vegada que es mostra de nou la pantalla d'inici de sessió o si l'usuari es troba inactiu a la pantalla d'inici de sessió durant un minut.
 
           Si aquesta política es deixa sense configurar, el teclat en pantalla estarà desactivat la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris podran activar o desactivar el teclat en pantalla en qualsevol moment i l'estat que tingui a la pantalla d'inici de sessió es conservarà entre els usuaris.</translation>
+<translation id="6573305661369899995">Estableix una font externa de restriccions d'URL</translation>
 <translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="6628646143828354685">Us permet definir si els llocs web poden obtenir accés a dispositius Bluetooth propers. Es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius Bluetooth propers.
 

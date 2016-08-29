@@ -541,6 +541,7 @@
       Jika tetapan ini dilumpuhkan, halaman web tidak dapat menggunakan JavaScript dan pengguna tidak boleh mengubah tetapan tersebut.
 
       Jika tetapan ini didayakan atau tidak ditetapkan, halaman web boleh menggunakan JavaScript tetapi pengguna boleh mengubah tetapan tersebut.</translation>
+<translation id="2753637905605932878">Hadkan julat port UDP setempat yang digunakan oleh WebRTC</translation>
 <translation id="2757054304033424106">Jenis sambungan/apl yang boleh dipasang</translation>
 <translation id="2759224876420453487">Kawal kelakuan pengguna dalam sesi berbilang profil</translation>
 <translation id="2761483219396643566">Kelewatan amaran melahu apabila dijalankan dengan kuasa bateri</translation>
@@ -777,6 +778,15 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3264793472749429012">Pengekodan pembekal carian lalai</translation>
 <translation id="3273221114520206906">Tetapan JavaScript lalai</translation>
 <translation id="3288595667065905535">Saluran keluaran</translation>
+<translation id="3291367259589875381">Dasar ini ditamatkan dalam M48 bagi menggantikan <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> dan dialih keluar dalam M54.
+
+      Mendayakan ramalan rangkaian dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
+
+      Tetapan ini bukan sahaja mengawal praambilan DNS tetapi juga prasambungan serta prapemaparan TCP dan SSL bagi halaman web. Nama dasar merujuk pada praambilan DNS atas sebab sejarah.
+
+      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak dapat mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="3292147213643666827">Dayakan <ph name="PRODUCT_NAME" /> untuk bertindak sebagai proksi antara <ph name="CLOUD_PRINT_NAME" /> dan pencetak legasi yang disambungkan pada mesin.
 
       Jika tetapan ini didayakan atau tidak dikonfigurasi, pengguna boleh mendayakan proksi cetakan awan melalui pengesahan dengan akaun Google mereka.
@@ -1274,6 +1284,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Nilai senarai hitam '*' bermaksud semua hos pemesejan natif disenaraihitamkan melainkan hos ini disenaraikan dengan jelas dalam senarai putih.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, <ph name="PRODUCT_NAME" /> akan memuatkan semua hos pemesejan natif yang telah dipasang.</translation>
+<translation id="5288772341821359899">Jika dasar ini ditetapkan, julat port UDP yang digunakan oleh WebRTC dihadkan kepada selang port yang ditentukan (termasuk titik akhir).
+
+      Jika dasar ini tidak ditetapkan, atau ditetapkan pada rentetan kosong atau julat port yang tidak sah, WebRTC dibenarkan untuk menggunakan mana-mana port UDP setempat yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
 <translation id="5302612588919538756">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan SyncDisabled.
 
@@ -1395,6 +1408,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka hos akses jauh boleh dikaitkan dengan mana-mana pengguna setempat.</translation>
 <translation id="5697306356229823047">Laporkan pengguna peranti</translation>
+<translation id="570062449808736508">Apabila dasar ini ditetapkan kepada rentetan bukan kosong, WebView akan membaca sekatan URL daripada pembekal kandungan dengan nama autoriti yang diberikan.</translation>
 <translation id="5703863730741917647">Menentukan tindakan yang perlu diambil apabila kelewatan melahu dicapai.
 
           Harap maklum bahawa dasar ini telah lapuk dan akan dialih keluar pada masa hadapan.
@@ -1664,6 +1678,7 @@ Jika dasar ini ditetapkan kepada palsu, papan kekunci pada skrin akan dilumpuhka
 Jika anda menetapkan dasar ini, pengguna boleh mengatasi dasar sementara dengan mendayakan atau melumpuhkan papan kekunci pada skrin. Walau bagaimanapun, pilihan pengguna tidak berterusan dan pilihan lalai dipulihkan apabila skrin log masuk ditunjukkan semula atau pengguna melahu pada skrin log masuk selama seminit.
 
 Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan apabila skrin log masuk mula-mula ditunjukkan. Pengguna boleh mendayakan atau melumpuhkan papan kekunci pada skrin pada bila-bila masa dan status pada skrin log masuk diteruskan antara pengguna.</translation>
+<translation id="6573305661369899995">Tetapkan sumber luaran sekatan URL</translation>
 <translation id="6598235178374410284">Imej avatar pengguna</translation>
 <translation id="6628646143828354685">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mendapatkan akses kepada peranti Bluetooth berhampiran. Akses boleh disekat sepenuhnya atau pengguna boleh ditanya setiap kali tapak web ingin mendapatkan akses kepada peranti Bluetooth berhampiran.
 
@@ -1974,6 +1989,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7443616896860707393">Gesaan Pengesahan Asas HTTP Asas Silang</translation>
 <translation id="7468416082528382842">Lokasi pendaftaran tetingkap:</translation>
 <translation id="7469554574977894907">Dayakan cadangan carian</translation>
+<translation id="7474249562477552702">Sama ada sijil yang ditandatangani SHA-1 dikeluarkan oleh pengukuhan kepercayaan setempat dibenarkan</translation>
 <translation id="7485481791539008776">Peraturan pilihan pencetak lalai</translation>
 <translation id="749556411189861380">Laporkan versi OS dan perisian tegar peranti tersenarai.
 
@@ -1991,6 +2007,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika ditetapkan kepada SAML_INTERSTITIAL, log masuk akan menunjukkan skrin ruang antara yang memberi peluang kepada pengguna supaya meneruskan dengan pengesahan melalui SAML IdP domain pendaftaran peranti atau kembali kepada aliran log masuk GAIA yang biasa.</translation>
 <translation id="7567380065339179813">Benarkan pemalam pada tapak ini</translation>
+<translation id="757395965347379751">Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME" /> membenarkan sijil yang ditandatangani SHA-1 selagi sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dipasang setempat.
+
+      Sila ambil perhatian bahawa dasar ini bergantung pada tindanan pengesahan sijil sistem pengendalian yang membenarkan tandatangan SHA-1. Jika kemas kini OS mengubah cara pengendalian OS terhadap sijil SHA-1, dasar ini tidak berkuat kuasa lagi.  Selain itu, dasar ini bertujuan digunakan sebagai penyelesaian sementara bagi memberikan pihak syarikat lebih masa untuk beralih daripada SHA-1.  Dasar ini akan dialih keluar pada atau kira-kira 1 Januari 2019.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan mengikut jadual penamatan SHA-1 yang telah diumumkan.</translation>
 <translation id="7593523670408385997">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan saiz cache yang diberikan tidak kira sama ada pengguna telah menyatakan bendera '--saiz-cache-cakera' atau tidak. Nilai yang dinyatakan dalam dasar ini bukan sempadan keras tetapi lebih kepada cadangan kepada sistem cache, sebarang nilai di bawah beberapa megabait adalah terlalu kecil dan akan dibulatkan kepada jumlah minimum yang munasabah.

@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
-<translation id="1683360892415596327">Sudjelujte u anketi</translation>
 <translation id="1723752762323179280">Napuštanje sesije</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />treća strana<ph name="END_LINK" />).
@@ -65,7 +64,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">USB-C uređaj (prednji lijevi priključak)</translation>
-<translation id="2850666676745651490">Paleta</translation>
 <translation id="2857608528410806398">Ovdje treba unijeti tekst obavijesti značajke QU. Ovdje treba unijeti tekst obavijesti značajke QU. Ovdje treba unijeti tekst obavijesti značajke QU. Ovdje treba unijeti tekst obavijesti značajke QU. Ovdje treba unijeti tekst obavijesti značajke QU.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2942516765047364088">Položaj police</translation>
@@ -219,7 +217,6 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="7823564328645135659">Jezik je promijenjen iz: "<ph name="FROM_LOCALE" />" u: "<ph name="TO_LOCALE" />" nakon sinkronizacije vaših postavki.</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>
 <translation id="7864539943188674973">Onemogući Bluetooth</translation>
-<translation id="7869829692393275047">Ovdje dolazi tekst ankete za praćenje zadovoljstva proizvodom OS Chrome.</translation>
 <translation id="7893838033650689677">Uključite Wi-Fi</translation>
 <translation id="7904094684485781019">Administrator ovog računa onemogućio je višestruku prijavu.</translation>
 <translation id="7957227661277029961">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen. Preporučujemo vam upotrebu službenog punjača.</translation>

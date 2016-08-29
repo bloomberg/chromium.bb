@@ -497,6 +497,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si esta configuración está inhabilitada, las páginas web no podrán usar JavaScript y el usuario no podrá cambiar esa configuración.
 
       Si esta configuración está habilitada o no está establecida, las páginas web podrán usar JavaScript pero el usuario podrá cambiar esa configuración.</translation>
+<translation id="2753637905605932878">Restringir el intervalo de puertos UDP locales que usa WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensiones o aplicaciones que se pueden instalar</translation>
 <translation id="2759224876420453487">Controlar el comportamiento del usuario en una sesión de varios perfiles</translation>
 <translation id="2761483219396643566">Demora para la advertencia de inactividad cuando el dispositivo está funcionando a batería</translation>
@@ -722,6 +723,15 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3264793472749429012">Codificación del proveedor de búsqueda predeterminado</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
 <translation id="3288595667065905535">Canal de versión</translation>
+<translation id="3291367259589875381">Esta política ya no está disponible en M48 a favor de <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> y se quitó en M54.
+
+      Habilita la predicción de red en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
+
+      De esta manera, se controla la solicitud previa de DNS, y la conexión y representación previas de TCP y SSL de las páginas web. El nombre de la política hace referencia a la solicitud previa de DNS por razones históricas.
+
+      Si habilitas o inhabilitas esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+      Si esta política se deja sin configurar, esta se habilitará, pero el usuario podrá cambiarla.</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> funcione como proxy entre <ph name="CLOUD_PRINT_NAME" /> e impresoras anteriores conectadas a la computadora.
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y la computadora no podrá compartir las impresoras con <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1173,6 +1183,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Un valor de lista negra de '*' significa que todos los hosts de mensajería nativa están incluidos en la lista negra, a menos que se indique explícitamente que están en la lista blanca.
 
           Si esta política no se establece, <ph name="PRODUCT_NAME" /> cargará todos los hosts de mensajería nativa instalados.</translation>
+<translation id="5288772341821359899">Si se establece la política, el intervalo de puertos UDP que usa WebRTC está restringido al intervalo de puertos especificado (extremos incluidos).
+
+      Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
 <translation id="5302612588919538756">Esta política dejó de estar disponible; se debe considerar el uso de SyncDisabled en su lugar.
 
@@ -1281,6 +1294,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Si esta configuración está inhabilitada o no está establecida, el host de acceso remoto se puede asociar con cualquier usuario local.</translation>
 <translation id="5697306356229823047">Informa sobre los usuarios de dispositivos.</translation>
+<translation id="570062449808736508">Cuando esta política se establece con una string no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de la autoridad proporcionado.</translation>
 <translation id="5703863730741917647">Especifica la acción a realizar si se alcanza la demora de inactividad.
 
           Ten en cuenta que esta política se dejó de utilizar y se eliminará en el futuro.
@@ -1521,6 +1535,7 @@ desactivarlo).</translation>
           Si estableces esta política, los usuarios pueden anularla de forma temporal al habilitar o inhabilitar el teclado en pantalla, pero esta selección no persiste, sino que se restaura la opción predeterminada cuando la pantalla de acceso se vuelve a mostrar o si el usuario permanece inactivo durante un minuto.
 
           Si no se establece esta política, el teclado en pantalla se inhabilita la primera vez que aparece la pantalla de acceso. Los usuarios pueden habilitarlo o inhabilitarlo en cualquier momento, y esta selección persiste en el resto de los usuarios.</translation>
+<translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
 <translation id="6598235178374410284">Imagen de avatar del usuario</translation>
 <translation id="6628646143828354685">Te permite establecer si los sitios web pueden acceder a dispositivos Bluetooth cercanos. El acceso se puede bloquear por completo o se puede preguntar al usuario cada vez que un sitio web desea acceder a dispositivos Bluetooth cercanos.
 
@@ -1813,6 +1828,7 @@ desactivarlo).</translation>
 <translation id="7443616896860707393">Avisos de autenticación básica de HTTP de origen cruzado</translation>
 <translation id="7468416082528382842">Ubicación del registro de Windows:</translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
+<translation id="7474249562477552702">Establecer si se permiten los certificados firmados con SHA-1 y emitidos por los anclajes de confianza locales</translation>
 <translation id="7485481791539008776">Normas de selección de la impresora predeterminada</translation>
 <translation id="749556411189861380">Informa sobre la versión del firmware y del sistema operativo de los dispositivos registrados.
 
@@ -1828,6 +1844,11 @@ desactivarlo).</translation>
 
       Si se establece como SAML_INTERSTITIAL, el acceso mostrará una pantalla intersticial que le permitirá al usuario avanzar a la autenticación mediante el IdP de SAML del dominio de inscripción del dispositivo o volver al flujo de acceso de GAIA normal.</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
+<translation id="757395965347379751">Cuando se habilita esta configuración, <ph name="PRODUCT_NAME" /> permite los certificados firmados por SHA-1 siempre que estén validados correctamente y vinculados a certificados de CA instalados de forma local.
+
+      Ten en cuenta que esta política depende de la pila de verificación de certificado del sistema operativo que permite las firmas SHA-1. Si una actualización del sistema operativo cambia la forma en la que este maneja los certificados con firma SHA-1, esta política ya no tendrá efecto. Además, se trata de una solución temporal para que las empresas tengan más tiempo para dejar las firmas SHA-1. Esta política se quitará el 1 de enero de 2019 o cerca de esta fecha.
+
+      Si esta política no se establece o se establece en "false", <ph name="PRODUCT_NAME" /> seguirá el programa de baja de las firmas SHA-1 anunciado públicamente.</translation>
 <translation id="7593523670408385997">Configura el tamaño de caché que utilizará <ph name="PRODUCT_NAME" /> para almacenar archivos en caché en el disco.
 
       Si esta política se establece, <ph name="PRODUCT_NAME" /> utilizará el tamaño de caché disponible aunque el usuario haya especificado la marca "--disk-cache-size". El valor indicado en esta política no es un límite rígido, sino un valor recomendado para el sistema de almacenamiento en caché; cualquier valor que sea menor por algunos megabytes se redondeará hasta alcanzar un mínimo aceptable.

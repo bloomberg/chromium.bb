@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="1021451612696613363">Faça login para ver suas notificações</translation>
 <translation id="111910763555783249">Configurações de notificação</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Um dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
 <translation id="1190609913194133056">Central de Notificações</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">Página para cima</translation>
 <translation id="2190355936436201913">(vazio)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2336922762358079423">Anotar no Google Keep</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2497284189126895209">Todos os arquivos</translation>
 <translation id="2515586267016047495">Alt</translation>

@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Resterende tijd totdat de accu leeg is: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-apparaat</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
-<translation id="1683360892415596327">Enquête invullen</translation>
 <translation id="1723752762323179280">Sessie sluiten</translation>
 <translation id="1747827819627189109">Schermtoetsenbord ingeschakeld</translation>
 <translation id="1812696562331527143">Je invoermethode is gewijzigd in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />derden<ph name="END_LINK" />).
@@ -65,7 +64,6 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
 <translation id="2825619548187458965">Plank</translation>
 <translation id="2844169650293029770">USB-C-apparaat (poort links aan de voorkant)</translation>
-<translation id="2850666676745651490">Palet</translation>
 <translation id="2857608528410806398">Hoofdtekst voor melding over de functie voor snel ontgrendelen komt hier. Hoofdtekst voor melding over de functie voor snel ontgrendelen komt hier. Hoofdtekst voor melding over de functie voor snel ontgrendelen komt hier. Hoofdtekst voor melding over de functie voor snel ontgrendelen komt hier. Hoofdtekst voor melding over de functie voor snel ontgrendelen komt hier.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2942516765047364088">Positie van plank</translation>
@@ -219,7 +217,6 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="7823564328645135659">Na het synchroniseren met je instellingen, is de taal gewijzigd van '<ph name="FROM_LOCALE" />' in '<ph name="TO_LOCALE" />'.</translation>
 <translation id="785750925697875037">Mobiel account weergeven</translation>
 <translation id="7864539943188674973">Bluetooth uitschakelen</translation>
-<translation id="7869829692393275047">Hier komt de tekst van de HaTS-enquête voor Chrome OS. Hier komt de tekst van de HaTS-enquête voor Chrome OS. Hier komt de tekst van de HaTS-enquête voor Chrome OS. Hier komt de tekst van de HaTS-enquête voor Chrome OS.</translation>
 <translation id="7893838033650689677">Wifi inschakelen</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7957227661277029961">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld. Je kunt overwegen een officiële oplader te gebruiken.</translation>

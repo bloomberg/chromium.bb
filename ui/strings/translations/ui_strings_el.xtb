@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1021451612696613363">Συνδεθείτε για να δείτε τις ειδοποιήσεις σας</translation>
 <translation id="111910763555783249">Ρυθμίσεις ειδοποιήσεων</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Πριν από 1 ημέρα}other{Πριν από # ημέρες}}</translation>
 <translation id="1190609913194133056">Κέντρο ειδοποιήσεων</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">Προηγούμενη σελίδα</translation>
 <translation id="2190355936436201913">(κενό)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2336922762358079423">Σχολιασμός στο Google Keep</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="2515586267016047495">Alt</translation>

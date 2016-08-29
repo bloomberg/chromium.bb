@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="1021451612696613363">Chcete-li zobrazit svá oznámení, přihlaste se.</translation>
 <translation id="111910763555783249">Nastavení oznámení</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{Před 1 dnem}few{Před # dny}many{Před # dne}other{Před # dny}}</translation>
 <translation id="1190609913194133056">Centrum oznámení</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">Klávesa PageUp</translation>
 <translation id="2190355936436201913">(prázdné)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2336922762358079423">Přidat poznámku v aplikaci Google Keep</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>

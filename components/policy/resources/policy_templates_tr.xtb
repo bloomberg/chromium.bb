@@ -544,6 +544,7 @@
       Bu ayar devre dışı bırakılırsa, Web sayfaları JavaScript'i kullanamaz ve kullanıcı bu ayarı değiştiremez.
 
       Bu ayar etkinleştirilir veya ayarlanmazsa, Web sayfaları JavaScript'i kullanabilir ancak kullanıcı ilgili ayarı değiştirebilir.</translation>
+<translation id="2753637905605932878">WebRTC tarafından kullanılan yerel UDP bağlantı noktaları aralığını kısıtlama</translation>
 <translation id="2757054304033424106">Yüklenmesine izin verilen uzantı/uygulama türleri</translation>
 <translation id="2759224876420453487">Çok profilli bir oturumda kullanıcı çalışma biçimini kontrol et</translation>
 <translation id="2761483219396643566">Pil gücüyle çalışırken boşta kalma uyarısı gecikmesi</translation>
@@ -779,6 +780,15 @@
 <translation id="3264793472749429012">Varsayılan arama sağlayıcı kodlamaları</translation>
 <translation id="3273221114520206906">Varsayılan JavaScript ayarı</translation>
 <translation id="3288595667065905535">Yeni sürüm kanalı</translation>
+<translation id="3291367259589875381">Bu politika, <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> politikasının kullanılması için M48 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
+
+      <ph name="PRODUCT_NAME" /> ürününde ağ tahminini etkinleştirir ve kullanıcıların bu ayarı değiştirmesini önler.
+
+      Bu politika, yalnızca DNS'nin önceden getirilmesini değil, aynı zamanda TCP ve SSL ön bağlantısını ve web sayfalarının önceden oluşturulmasını da denetler. Politika adı, geçmişe dayanan nedenlerden dolayı DNS'nin önceden getirilmesine gönderme yapar.
+
+      Bu ayarı etkinleştirir veya devre dışı bırakırsanız kullanıcılar bu ayarı <ph name="PRODUCT_NAME" /> içinden değiştiremez veya geçersiz kılamaz.
+
+      Bu politika ayarlanmadan bırakılırsa etkinleştirilir, ancak kullanıcı ayarda değişiklik yapabilir.</translation>
 <translation id="3292147213643666827"><ph name="PRODUCT_NAME" /> ürününün <ph name="CLOUD_PRINT_NAME" /> ile makineye bağlı eski yazıcılar arasında bir proxy olarak çalışmasına olanak sağlar.
 
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
@@ -1270,6 +1280,9 @@ politikayı geçersiz kılamaz.
           Kara liste değerinin "*" olması tüm yerel mesajlaşma ana makinelerinin, açıkça beyaz listeye eklenmediği sürece kara listede olacağı anlamına gelir.
 
           Politika ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> tüm yüklü yerel mesajlaşma ana makinelerini yükler.</translation>
+<translation id="5288772341821359899">Politika ayarlanırsa, WebRTC tarafından kullanılan UDP bağlantı noktası aralığı, belirtilen bağlantı noktası aralığı (başlangıç ve bitiş noktaları dahil) kullanılacak şekilde kısıtlanır.
+
+      Politika ayarlanmazsa veya boş dize değerine ya da geçersiz bir bağlantı noktası aralığına ayarlanırsa, WebRTC'nin kullanılabilir herhangi bir yerel UDP bağlantı noktasını kullanmasına izin verilir.</translation>
 <translation id="5290940294294002042">Kullanıcının etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirt</translation>
 <translation id="5302612588919538756">Bu politika kullanımdan kaldırılmıştır. Bunun yerine SyncDisabled'i kullanmayı düşünün.
 
@@ -1392,6 +1405,7 @@ politikayı geçersiz kılamaz.
 
           Bu ayar devre dışı bırakılırsa veya hiç yapılandırılmazsa, uzaktan erişim ana makinesi herhangi bir yerel kullanıcıyla ilişkilendirilebilir.</translation>
 <translation id="5697306356229823047">Cihaz kullanıcılarını raporla</translation>
+<translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa WebView, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
 <translation id="5703863730741917647">Boşta kalma süresine ulaşıldığında yapılacak işlemi belirtir.
 
           Bu politikanın artık kullanılmadığını ve gelecekte kaldırılacağını unutmayın.
@@ -1660,6 +1674,7 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız kullanıcılar ekran klavyesini etkinleştirip veya devre dışı bırakıp onu geçici olarak geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boyunca hiçbir işlem yapmazsa varsayılan geri yüklenir.
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk gösterildiğinde ekran klavyesi devre dışı bırakılır. Kullanıcılar istedikleri zaman ekran klavyesini etkinleştirebilir veya devre dışı bırakabilirler ve klavyenin giriş ekranındaki durumu kullanıcılar arasında değişmez.</translation>
+<translation id="6573305661369899995">URL kısıtlamaları için harici kaynak ayarla</translation>
 <translation id="6598235178374410284">Kullanıcı avatarı resmi</translation>
 <translation id="6628646143828354685">Web sitelerinin yakınlardaki Bluetooth cihazlarına erişim sağlamalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Erişim tamamıyla engellenebilir veya bir web sitesinin yakınlardaki Bluetooth cihazlarına erişim sağlamak istediği her defasında, kullanıcıya onay verip vermediği sorulabilir.
 
@@ -1967,6 +1982,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7443616896860707393">Çapraz kökenli HTTP Basic Auth bilgi istemleri</translation>
 <translation id="7468416082528382842">Windows kayıt defteri konumu:</translation>
 <translation id="7469554574977894907">Arama önerilerini etkinleştir</translation>
+<translation id="7474249562477552702">Yerel güven bağlantıları tarafından yayınlanan SHA-1 imzalı sertifikalara izin verilip verilmeyeceği</translation>
 <translation id="7485481791539008776">Varsayılan yazıcı seçimi için kurallar</translation>
 <translation id="749556411189861380">Kayıtlı cihazların OS ve ürün yazılımı sürümünü bildirin.
 
@@ -1984,6 +2000,11 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       SAML_INTERSTITIAL seçeneğine ayarlanırsa, giriş işleminde bir geçiş ekranı görüntülenerek kullanıcıya cihazın kaydolduğu alan adının SAML IdP'sini kullanarak giriş işlemine devam etme veya normal GAIA giriş akışına geri dönme seçeneği sunulur.</translation>
 <translation id="7567380065339179813">Bu sitelerde eklentilere izin ver</translation>
+<translation id="757395965347379751">Bu ayar etkinleştirildiğinde <ph name="PRODUCT_NAME" />, başarılı bir şekilde doğrulanan ve yerel olarak yüklenmiş CA sertifikalarıyla zincirleme bağlantı kuran SHA-1 imzalı sertifikalara izin verir.
+
+      Bu politikanın, SHA-1 imzalarına izin veren işletim sistemi sertifika doğrulama yığınına bağlı olduğu unutulmamalıdır. Bir işletim sistemi güncellemesi, işletim sisteminin SHA-1 sertifikalarını işleme şeklini değiştirirse bu politikanın etkisi ortadan kalkabilir. Bunun yanı sıra, bu politika kurumlara SHA-1'i kullanımdan kaldırmaları için zaman kazandıran geçici bir çözüm sağlamak amacıyla hazırlanmıştır. Bu politika, 1 Ocak 2019'da veya buna yakın bir tarihte kaldırılacaktır.
+
+      Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" />, SHA-1'in kullanımdan kaldırılmasına yönelik herkese açık şekilde yapılan duyuruları takip eder.</translation>
 <translation id="7593523670408385997">Önbelleğe alınan dosyaları diskte depolamak için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
       Bu politikayı ayarlarsanız kullanıcı "--disk-cache-size" bayrağını belirtmiş olsun veya olmasın, <ph name="PRODUCT_NAME" /> sağlanan önbellek boyutunu kullanır. Bu politikada belirtilen değer kesin bir sınır değil, daha çok önbellek sistemi için bir öneridir. Birkaç mega baytın altındaki her değer çok küçük sayılır ve mantıklı bir minimum sayı olacak şekilde ayarlanır.

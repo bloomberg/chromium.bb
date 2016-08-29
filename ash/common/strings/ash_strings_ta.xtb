@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
 <translation id="164969095109328410">Chrome சாதனம்</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
-<translation id="1683360892415596327">எங்கள் கருத்துக்கணிப்பில் பங்கேற்கவும்</translation>
 <translation id="1723752762323179280">அமர்விலிருந்து வெளியேறுகிறது</translation>
 <translation id="1747827819627189109">ஆன்ஸ்க்ரீன் விசைப்பலகை இயக்கப்பட்டது</translation>
 <translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />மூன்றாம் தரப்பு<ph name="END_LINK" />) க்கு மாற்றப்பட்டது.
@@ -65,7 +64,6 @@
 <translation id="2819276065543622893">இப்போது வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="2825619548187458965">அடுக்கு</translation>
 <translation id="2844169650293029770">USB-C சாதனம் (இடது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
-<translation id="2850666676745651490">தட்டு</translation>
 <translation id="2857608528410806398">QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே. QU அம்சத்தின் அறிவிப்பு உள்ளடக்கம் இங்கே.</translation>
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
@@ -219,7 +217,6 @@
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />" க்கு மாற்றப்பட்டுள்ளது.</translation>
 <translation id="785750925697875037">மொபைல் கணக்கைப் பார்க்கவும்</translation>
 <translation id="7864539943188674973">புளூடூத்தை முடக்கு</translation>
-<translation id="7869829692393275047">Chrome OS HaTS கருத்துக்கணிப்பு உரை இங்கே. Chrome OS HaTS கருத்துக்கணிப்பு உரை இங்கே. Chrome OS HaTS கருத்துக்கணிப்பு உரை இங்கே. Chrome OS HaTS கருத்துக்கணிப்பு உரை இங்கே.</translation>
 <translation id="7893838033650689677">வைஃபையை இயக்கு</translation>
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
 <translation id="7957227661277029961">உங்கள் <ph name="DEVICE_TYPE" /> இயக்கப்பட்டிருக்கும் போது அதில் சார்ஜ் ஏறாது. அதனுடன் வாங்கிய முறையான சார்ஜரைப் பயன்படுத்திப் பார்க்கவும்.</translation>

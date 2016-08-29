@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1021451612696613363">आपल्या सूचना पाहण्यासाठी साइन इन करा</translation>
 <translation id="111910763555783249">सूचना सेटिंग्ज</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिवसापूर्वी}one{# दिवसापूर्वी}other{# दिवसांपूर्वी}}</translation>
 <translation id="1190609913194133056">सूचना केंद्र</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">पृष्ठ वर</translation>
 <translation id="2190355936436201913">(रिक्त)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2336922762358079423">Google Keep मध्ये भाष्य करा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2497284189126895209">सर्व फाइल</translation>
 <translation id="2515586267016047495">Alt</translation>

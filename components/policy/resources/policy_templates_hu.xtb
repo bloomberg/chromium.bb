@@ -1305,6 +1305,7 @@
 
           Ha ez a beállítás le van tiltva, illetve nincs megadva, akkor a távoli elérésű gazdagép bármely helyi felhasználóhoz társítható.</translation>
 <translation id="5697306356229823047">Eszközfelhasználók jelentése</translation>
+<translation id="570062449808736508">Ha a házirend értéke nem üres karakterlánc, akkor a WebView beolvassa a tartalomszolgáltatótól kapott URL-korlátozásokat és az adott hatóság nevét.</translation>
 <translation id="5703863730741917647">A tétlenségi késleltetés elérésekor végrehajtandó művelet megadása.
 
           Vegye figyelembe, hogy ez a házirend elavult, ezért a jövőben törlésre kerül.
@@ -1550,6 +1551,7 @@
           Ha beállítja ezt a házirendet, a felhasználók ideiglenesen felülbírálhatják a képernyő-billentyűzet engedélyezésével vagy letiltásával. A felhasználó választása azonban nem tartós, és ha újra megjelenik a bejelentkezési képernyő, vagy ha a felhasználó egy percig tétlen marad azon, akkor a rendszer visszaállítja az alapértelmezett beállítást.
 
           Ha nem állítja be ezt a házirendet, akkor a képernyő-billentyűzet le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a képernyő-billentyűzetet, és annak állapota a bejelentkezési képernyőn megmarad a felhasználók között.</translation>
+<translation id="6573305661369899995">Külső URL-korlátozási forrás beállítása</translation>
 <translation id="6598235178374410284">Felhasználó avatarképe</translation>
 <translation id="6628646143828354685">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a közeli Bluetooth-eszközökhöz. A hozzáférés teljes mértékben letiltható, vagy a rendszer minden olyan alkalommal rákérdezhet a felhasználónál az engedélyezésre, amikor egy webhely közeli Bluetooth-eszközökhöz szeretne hozzáférni.
 

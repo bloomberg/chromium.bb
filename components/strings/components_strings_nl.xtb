@@ -9,6 +9,7 @@
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
+<translation id="1103124106085518534">Klaar voor nu</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> altijd vertalen</translation>
 <translation id="1107591249535594099">Als deze optie is aangevinkt, bewaart Chrome een exemplaar van je kaart op dit apparaat om formulieren sneller te kunnen invullen.</translation>
 <translation id="1111153019813902504">Recente bladwijzers</translation>
@@ -16,7 +17,6 @@
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
-<translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> heeft de verbinding onverwacht verbroken.</translation>
 <translation id="1161325031994447685">Maak opnieuw verbinding met wifi</translation>
@@ -26,7 +26,6 @@
 <translation id="1201895884277373915">Meer van deze site</translation>
 <translation id="1206967143813997005">Onjuiste eerste handtekening</translation>
 <translation id="1209206284964581585">Voorlopig verbergen</translation>
-<translation id="121201262018556460">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat geretourneerd met een zwakke sleutel. Een hacker kan de persoonlijke sleutel hebben aangepast en het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
 <translation id="1219129156119358924">Systeembeveiliging</translation>
 <translation id="1227224963052638717">Onbekend beleid.</translation>
 <translation id="1227633850867390598">Waarde verbergen</translation>
@@ -61,20 +60,18 @@
 <translation id="1644184664548287040">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1645368109819982629">Niet-ondersteund protocol</translation>
-<translation id="1655462015569774233">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gisteren verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}}</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Google Chrome deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit kan gebeuren als een aanvaller probeert zich als <ph name="SITE" /> voor te doen of als een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Google Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
 <translation id="1701955595840307032">Voorgestelde content ophalen</translation>
-<translation id="1706954506755087368">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van morgen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van # dagen in de toekomst. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}}</translation>
 <translation id="1710259589646384581">Besturingssysteem</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Probeer contact op te nemen met de systeembeheerder.</translation>
 <translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1753706481035618306">Paginanummer</translation>
-<translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Voer Windows Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
+<translation id="1815084229389833348">Je onlangs bezochte bladwijzers worden hier weergegeven.</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1838667051080421715">Je bekijkt de bron van een webpagina.</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
@@ -107,7 +104,6 @@
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
 <translation id="2166049586286450108">Volledige beheerderstoegang</translation>
 <translation id="2166378884831602661">Deze site kan geen beveiligde verbinding leveren</translation>
-<translation id="2171101176734966184">Je probeert <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
 <translation id="2181821976797666341">Beleid</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 adres}other{# adressen}}</translation>
 <translation id="2212735316055980242">Beleid niet gevonden</translation>
@@ -127,11 +123,9 @@
 <translation id="2367567093518048410">Niveau</translation>
 <translation id="237718015863234333">Geen UI-alternatieven beschikbaar</translation>
 <translation id="2384307209577226199">Standaardinstelling van bedrijf</translation>
-<translation id="238526402387145295">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website <ph name="BEGIN_LINK" />gebruikmaakt van HSTS<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="2386255080630008482">Het servercertificaat is ingetrokken.</translation>
 <translation id="2392959068659972793">Beleid weergeven zonder waarde ingesteld</translation>
 <translation id="2396249848217231973">&amp;Verwijderen ongedaan maken</translation>
-<translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2455981314101692989">Deze webpagina heeft Automatisch aanvullen uitgeschakeld voor dit formulier.</translation>
 <translation id="2463739503403862330">Invullen</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
@@ -176,9 +170,7 @@
 <translation id="2896499918916051536">Deze plug-in wordt niet ondersteund.</translation>
 <translation id="2900469785430194048">Google Chrome beschikt over onvoldoende geheugen om deze webpagina weer te geven.</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
-<translation id="2915500479781995473">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME" />. Klopt dat? Zo niet, dan moet je de klok van het systeem corrigeren en deze pagina vernieuwen.</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
-<translation id="2941952326391522266">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is afkomstig van <ph name="DOMAIN2" />. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
 <translation id="2955913368246107853">Zoekbalk sluiten</translation>
 <translation id="2958431318199492670">De netwerkconfiguratie voldoet niet aan de ONC-standaard. Delen van de configuratie worden mogelijk niet geïmporteerd.</translation>
@@ -208,7 +200,6 @@
 <translation id="3176929007561373547">Controleer je proxyinstellingen of neem contact op met je netwerkbeheerder om te controleren of de proxyserver werkt. Als je denkt dat je geen proxyserver zou moeten gebruiken: <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3202578601642193415">Nieuwste</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
-<translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
 <translation id="3226128629678568754">Klik op de knop 'Opnieuw laden' om de gegevens opnieuw te verzenden die nodig zijn om de pagina te laden.</translation>
 <translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE" /> is.</translation>
 <translation id="323107829343500871">De CVC-code voor <ph name="CREDIT_CARD" /> opgeven</translation>
@@ -267,7 +258,6 @@
 <translation id="3714780639079136834">Schakel mobiele data of wifi in</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Controleer de proxy, firewall en DNS-configuratie<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
-<translation id="3744899669254331632">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verstuurd die niet door Chromium kunnen worden verwerkt. Aangezien netwerkfouten en aanvallen doorgaans van tijdelijke aard zijn, zal deze pagina later waarschijnlijk wel werken.</translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
 <translation id="3788090790273268753">Het certificaat voor deze site verloopt in 2016 en de certificaatketen bevat een certificaat dat is ondertekend met SHA-1.</translation>
@@ -311,12 +301,10 @@
 <translation id="4304224509867189079">Inloggen</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
 <translation id="4372948949327679948">Verwachte <ph name="VALUE_TYPE" /> waarde.</translation>
-<translation id="4377125064752653719">Je probeert <ph name="DOMAIN" /> te bereiken, maar het certificaat dat de server heeft geretourneerd, is ingetrokken door de uitgever. Dat betekent dat de veiligheidsgaranties die de server heeft geretourneerd, absoluut niet kunnen worden vertrouwd. Het kan zijn dat je met een hacker aan het communiceren bent.</translation>
 <translation id="4381091992796011497">Gebruikersnaam:</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> tot <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">zoekresultaten</translation>
-<translation id="4424024547088906515">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chrome. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="443673843213245140">Het gebruik van een proxy is uitgeschakeld, maar er is wel een expliciete proxyconfiguratie opgegeven.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Dit bericht wordt weergegeven omdat Google SafeSites is ingeschakeld.</translation>
@@ -332,7 +320,6 @@
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Je bekijkt nu een extensiepagina.</translation>
-<translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Netwerkcontrole uitvoeren<ph name="END_LINK" /></translation>
@@ -345,11 +332,11 @@
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
 <translation id="4782449893814226250">Je hebt je ouders gevraagd of je deze pagina mag bezoeken.</translation>
 <translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
-<translation id="4807049035289105102">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verzonden die niet door Google Chrome kunnen worden verwerkt. Netwerkfouten en aanvallen zijn meestal tijdelijk, dus deze pagina werkt later waarschijnlijk weer correct.</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="4816492930507672669">Aanpassen aan pagina</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4880827082731008257">Geschiedenis doorzoeken</translation>
+<translation id="4884656795097055129">Er worden meer artikelen weergegeven wanneer deze beschikbaar zijn.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
@@ -369,7 +356,6 @@
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Het proxy-adres controleren<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Het servercertificaat is momenteel niet geldig.</translation>
 <translation id="5089810972385038852">Staat</translation>
-<translation id="5094747076828555589">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chromium. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="5115563688576182185">(64-bits)</translation>
 <translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'.</translation>
@@ -380,6 +366,7 @@
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5199729219167945352">Experimenten</translation>
+<translation id="52060377617855516">{URL_count,plural, =1{1 webpagina gevonden}other{# webpagina's gevonden}}</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
@@ -387,7 +374,6 @@
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
-<translation id="540969355065856584">Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat is momenteel niet geldig. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5421136146218899937">Browsegegevens wissen...</translation>
 <translation id="5430298929874300616">Bladwijzer verwijderen</translation>
 <translation id="5431657950005405462">Je bestand is niet gevonden</translation>
@@ -481,7 +467,6 @@
 <translation id="6596325263575161958">Opties voor encryptie</translation>
 <translation id="662080504995468778">Blijven</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
-<translation id="6634865548447745291">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat <ph name="BEGIN_LINK" />dit certificaat is ingetrokken<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6656103420185847513">Map bewerken</translation>
 <translation id="6660210980321319655">Automatisch gemeld: <ph name="CRASH_TIME" /></translation>
@@ -511,7 +496,6 @@
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">Wachtwoorden</translation>
-<translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Ouder</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
@@ -530,7 +514,6 @@
 <translation id="7246609911581847514">Dit bericht wordt weergegeven omdat je beheerder nieuwe sites moet goedkeuren wanneer je ze voor het eerst bezoekt.</translation>
 <translation id="724975217298816891">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
-<translation id="7265986070661382626">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website <ph name="BEGIN_LINK" />gebruikmaakt van certificaatpinning<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="7269802741830436641">Deze webpagina bevat een omleidingslus</translation>
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
@@ -560,7 +543,6 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7542995811387359312">Het automatisch invullen van creditcardnummers is uitgeschakeld, omdat dit formulier geen beveiligde verbinding gebruikt.</translation>
 <translation id="7549584377607005141">Deze webpagina kan alleen correct worden weergegeven op basis van gegevens die je eerder hebt opgegeven. Je kunt deze gegevens opnieuw verzenden, maar hierdoor worden de acties herhaald die eerder op deze pagina zijn uitgevoerd.</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
-<translation id="7567204685887185387">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk frauduleus verstrekt. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="7568593326407688803">Deze pagina is geschreven in het<ph name="ORIGINAL_LANGUAGE" />Wil je deze laten vertalen?</translation>
 <translation id="7569952961197462199">Creditcard verwijderen uit Chrome?</translation>
 <translation id="7578104083680115302">Betaal op verschillende apparaten snel op sites en in apps met kaarten die je hebt opgeslagen via Google.</translation>
@@ -679,13 +661,11 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
-<translation id="8997023839087525404">De server heeft een certificaat gepresenteerd dat niet openbaar bekend is gemaakt via het beleid voor Certificaattransparantie. Dit is voor bepaalde certificaten een vereiste om er zeker van te zijn dat ze betrouwbaar zijn en bescherming bieden tegen aanvallers.</translation>
 <translation id="9001074447101275817">Voor de proxy <ph name="DOMAIN" /> zijn een gebruikersnaam en wachtwoord vereist.</translation>
 <translation id="901974403500617787">Markeringen die op het hele systeem van toepassing zijn, kunnen alleen worden ingesteld door de eigenaar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Deze pagina is vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9038649477754266430">Een voorspellingsservice gebruiken om pagina's sneller te laden</translation>
 <translation id="9039213469156557790">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het gedrag van de pagina aan te passen.</translation>
-<translation id="9049981332609050619">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een ongeldig certificaat geretourneerd.</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9092364396508701805">De pagina op <ph name="HOST_NAME" /> werkt niet</translation>

@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome डिवाइस</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
-<translation id="1683360892415596327">हमारे सर्वेक्षण में भाग लें</translation>
 <translation id="1723752762323179280">सत्र से निकल रहा है</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1812696562331527143">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्ष<ph name="END_LINK" />) में बदल गई है.
@@ -65,7 +64,6 @@
 <translation id="2819276065543622893">अब आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2825619548187458965">अलमारी</translation>
 <translation id="2844169650293029770">USB-C डिवाइस (बायां सामने वाला पोर्ट)</translation>
-<translation id="2850666676745651490">पैलेट</translation>
 <translation id="2857608528410806398">QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा.</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="2942516765047364088">अलमारी की स्थिति</translation>
@@ -218,7 +216,6 @@
 <translation id="7823564328645135659">आपकी सेटिंग समन्वयित करने के बाद भाषा को "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />" में बदल दिया गया है.</translation>
 <translation id="785750925697875037">मोबाइल खाते देखें</translation>
 <translation id="7864539943188674973">ब्लूटूथ अक्षम करें</translation>
-<translation id="7869829692393275047">Chrome OS HaTS सर्वेक्षण लेख यहां दिया गया है. Chrome OS HaTS सर्वेक्षण लेख यहां दिया गया है. Chrome OS HaTS सर्वेक्षण लेख यहां दिया गया है. Chrome OS HaTS सर्वेक्षण लेख यहां दिया गया है.</translation>
 <translation id="7893838033650689677">वाई-फ़ाई चालू करें</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
 <translation id="7957227661277029961">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो. अधिकृत चार्जर का उपयोग करने पर विचार करें.</translation>

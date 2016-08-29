@@ -1207,7 +1207,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           En spærrelisteværdi på "*" betyder, at alle indbyggede beskedhosts er på spærrelisten, medmindre de udtrykkeligt opføres på hvidlisten.
 
           Hvis ikke denne politik angives, vil <ph name="PRODUCT_NAME" /> indlæse alle installerede indbyggede beskedhosts.</translation>
-<translation id="5288772341821359899">Hvis politikken er angivet, er UDP-portintervallet, som anvendes af WebRTC, begrænset til det specifikke portinterval (inklusive slutpunkter)
+<translation id="5288772341821359899">Hvis politikken er angivet, er UDP-portintervallet, som anvendes af WebRTC, begrænset til det specifikke portinterval (inklusive slutpunkter).
 
       Hvis politikken ikke er angivet, eller hvis den ikke er angivet til en tom streng eller et ugyldigt portinterval, har WebRTC tilladelse til at anvende enhver tilgængelig lokal UDP-port.</translation>
 <translation id="5290940294294002042">Angiv en liste over plugins, som brugeren kan aktivere eller deaktivere</translation>
@@ -1320,6 +1320,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, kan hosten for fjernadgang tilknyttes enhver lokal bruger.</translation>
 <translation id="5697306356229823047">Rapportér enhedsbrugere</translation>
+<translation id="570062449808736508">Når denne politik er angivet til en udfyldt streng, læser WebView webadressebegrænsninger fra indholdsudbyderen med det angivne myndighedsnavn.</translation>
 <translation id="5703863730741917647">Angiv handling, der igangsættes ved inaktiv forsinkelse.
 
           Bemærk, at denne politik udfases og bliver fjernet senere.
@@ -1560,6 +1561,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis du har indstillet denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere skærmtastaturet. Brugerens valg er dog ikke permanent, og standardindstillingen gendannes, når loginskærmen vises på ny, eller når brugeren har været inaktiv på loginskærmen i et minut.
 
           Hvis denne politik ikke indstilles, deaktiveres skærmtastaturet, når loginskærmen vises første gang. Brugerne kan til enhver tid aktivere eller deaktivere skærmtastaturet, og status for skærmtastaturet på loginskærmen bibeholdes for de enkelte brugere.</translation>
+<translation id="6573305661369899995">Angiv en ekstern kilde til webadressebegrænsninger</translation>
 <translation id="6598235178374410284">Brugerens avatarbillede</translation>
 <translation id="6628646143828354685">Giver dig mulighed for at angive, om websites må få adgang til Bluetooth-enheder i nærheden. Adgangen kan være fuldstændig blokeret, eller brugeren kan få en anmodning, hver gang et website vil have adgang til en Bluetooth-enhed i nærheden.
 

@@ -1390,6 +1390,7 @@
 
           Kui seade on keelatud või määramata, võib kaugjuurdepääsu host olla seotud mis tahes kohaliku kasutajaga.</translation>
 <translation id="5697306356229823047">Seadme kasutajatest teavitamine</translation>
+<translation id="570062449808736508">Kui see reegel on määratud mittetühjale stringile, loeb WebView URL-i piiranguid antud volituse nimega sisupakkujalt.</translation>
 <translation id="5703863730741917647">Määrab toimingu, mis rakendub tegevusetuse viivitusaja täitumisel.
 
           Pange tähele, et seda reeglit enam ei toetata ja see eemaldatakse tulevikus.
@@ -1657,6 +1658,7 @@
           Kui määrate reegli, saavad kasutajad selle ajutiselt alistada, lubades või keelates ekraanil kuvatava klaviatuuri. Kasutaja valik ei ole jääv ja vaikeseade taastatakse iga kord, kui sisselogimiskuva uuesti ilmub või kasutaja on sisselogimiskuval minut aega tegevusetu.
 
           Kui jätate reegli määramata, keelatakse ekraanil kuvatav klaviatuur sisselogimiskuva esmakordsel ilmumisel. Kasutajad saavad ekraanil kuvatava klaviatuuri igal ajal lubada või keelata ja selle olek sisselogimiskuval on kõikide kasutajate jaoks jääv.</translation>
+<translation id="6573305661369899995">URL-i piirangute välise allika seadistamine</translation>
 <translation id="6598235178374410284">Kasutaja avatarkujutis</translation>
 <translation id="6628646143828354685">Võimaldab määrata, kas veebisaitidel on lubatud juurde pääseda läheduses asuvatele Bluetoothi seadmetele. Juurdepääsu saab täielikult blokeerida või kasutajalt võidakse iga kord küsida, kui veebisait soovib läheduses asuvatele Bluetoothi seadmetele juurde pääseda.
 

@@ -539,6 +539,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
       If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.</translation>
+<translation id="2753637905605932878">Restrict the range of local UDP ports used by WebRTC</translation>
 <translation id="2757054304033424106">Types of extensions/apps that are allowed to be installed</translation>
 <translation id="2759224876420453487">Control the user behaviour in a multiprofile session</translation>
 <translation id="2761483219396643566">Idle warning delay when running on battery power</translation>
@@ -774,6 +775,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3264793472749429012">Default search provider encodings</translation>
 <translation id="3273221114520206906">Default JavaScript setting</translation>
 <translation id="3288595667065905535">Release channel</translation>
+<translation id="3291367259589875381">This policy is deprecated in M48 in favour of <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />, and removed in M54.
+
+      Enables network prediction in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
+
+      This controls not only DNS prefetching but also TCP and SSL preconnection and prerendering of web pages. The policy name refers to DNS prefetching for historical reasons.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left not set, this will be enabled but the user will be able to change it.</translation>
 <translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME" /> to act as a proxy between <ph name="CLOUD_PRINT_NAME" /> and legacy printers connected to the machine.
 
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
@@ -1274,6 +1284,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           A blacklist value of '*' means that all native messaging hosts are blacklisted unless they are explicitly listed in the whitelist.
 
           If this policy is left not set <ph name="PRODUCT_NAME" /> will load all installed native messaging hosts.</translation>
+<translation id="5288772341821359899">If the policy is set, the UDP port range used by WebRTC is restricted to the specified port interval (endpoints included).
+
+      If the policy is not set, or if it is set to the empty string or an invalid port range, WebRTC is allowed to use any available local UDP port.</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
 <translation id="5302612588919538756">This policy is deprecated, consider using SyncDisabled instead.
 
@@ -1396,6 +1409,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not set, then the remote access host can be associated with any local user.</translation>
 <translation id="5697306356229823047">Report device users</translation>
+<translation id="570062449808736508">When this policy is set to a non-empty string, the WebView will read URL restrictions from the content provider with the given authority name.</translation>
 <translation id="5703863730741917647">Specify the action to take when the idle delay is reached.
 
           Note that this policy is deprecated and will be removed in the future.
@@ -1659,6 +1673,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users can temporarily override it by enabling or disabling the on-screen keyboard. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard any time and its status on the login screen is persisted between users.</translation>
+<translation id="6573305661369899995">Set an external source of URL restrictions</translation>
 <translation id="6598235178374410284">User avatar image</translation>
 <translation id="6628646143828354685">Allows you to set whether websites are allowed to get access to nearby Bluetooth devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to nearby Bluetooth devices.
 
@@ -1970,6 +1985,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7443616896860707393">Cross-origin HTTP Basic Auth prompts</translation>
 <translation id="7468416082528382842">Windows registry location:</translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
+<translation id="7474249562477552702">Whether SHA-1 signed certificates issued by local trust anchors are allowed</translation>
 <translation id="7485481791539008776">Default printer selection rules</translation>
 <translation id="749556411189861380">Report OS and firmware version of enrolled devices.
 
@@ -1987,6 +2003,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user the option to go forward with authentication via the SAML IdP of the device's enrolment domain or go back to the normal GAIA login flow.</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
+<translation id="757395965347379751">When this setting is enabled, <ph name="PRODUCT_NAME" /> allows SHA-1 signed certificates as long as they successfully validate and chain to a locally-installed CA certificates.
+
+      Note that this policy depends on the operating system certificate verification stack allowing SHA-1 signatures. If an OS update changes the OS handling of SHA-1 certificates, this policy may no longer have effect. Furthermore, this policy is intended as a temporary workaround to give enterprises more time to move away from SHA-1. This policy will be removed on or around 1 January 2019.
+
+      If this policy is not set, or it is set to false, then <ph name="PRODUCT_NAME" /> follows the publicly announced SHA-1 deprecation schedule.</translation>
 <translation id="7593523670408385997">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided cache size regardless of whether the user has specified the '--disk-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.

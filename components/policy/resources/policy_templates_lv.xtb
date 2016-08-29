@@ -1400,6 +1400,7 @@
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, attālās piekļuves saimniekdatoru var saistīt ar jebkuru lokālo lietotāju.</translation>
 <translation id="5697306356229823047">Ziņošana par ierīces lietotājiem</translation>
+<translation id="570062449808736508">Ja šai politikai ir iestatīta virkne, kas nav tukša, komponents WebView lasīs URL ierobežojumus no satura nodrošinātāja ar norādīto iestādes nosaukumu.</translation>
 <translation id="5703863730741917647">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei.
 
           Ņemiet vērā, ka šī politika ir novecojusi un vēlāk tiks noņemta.
@@ -1663,6 +1664,7 @@
           Ja iestatīsiet šo politiku, lietotāji varēs īslaicīgi to ignorēt, iespējojot vai atspējojot ekrāna tastatūru. Tomēr lietotāja izvēle nav pastāvīga. Ja vēlreiz tiek atvērts pieteikšanās ekrāns vai lietotājs pieteikšanās ekrānā ir neaktīvs vienu minūti, tiek atjaunota noklusējuma vērtība.
 
           Ja šī politika netiek iestatīta, ekrāna tastatūra ir atspējota, pirmoreiz atverot pieteikšanās ekrānu. Lietotāji jebkurā laikā var iespējot vai atspējot ekrāna tastatūru, un tastatūras statuss pieteikšanās ekrānā tiek saglabāts arī citiem lietotājiem.</translation>
+<translation id="6573305661369899995">Ārēja URL ierobežojumu avota iestatīšana</translation>
 <translation id="6598235178374410284">Lietotāja iemiesojuma attēls</translation>
 <translation id="6628646143828354685">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi tuvumā esošām Bluetooth ierīcēm. Piekļuvi var pilnībā bloķēt, vai lietotājam var tikt parādīta uzvedne ar jautājumu katru reizi, kad vietne vēlas iegūt piekļuvi tuvumā esošām Bluetooth ierīcēm.
 

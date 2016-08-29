@@ -779,7 +779,7 @@
 
       Kung ie-enable o idi-disable mo ang setting na ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
 
-      Kung iwang hindi nakatakda ang patakarang ito, mae-enable ito ngunit magagawa ng user na baguhin ito.</translation>
+      Kung iiwan na hindi nakatakda ang patakarang ito, mae-enable ito ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="3292147213643666827">Pinapagana ang <ph name="PRODUCT_NAME" /> na magsilbi bilang proxy sa pagitan ng <ph name="CLOUD_PRINT_NAME" /> at mga legacy printer na nakakonekta sa machine.
 
       Kung pinagana o hindi naka-configure ang setting na ito, mapapagana ng mga user ang proxy ng cloud print proxy sa pamamagitan ng pagpapatotoo sa kanilang Google Account.
@@ -1395,6 +1395,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung naka-disable o hindi nakatakda ang setting na ito, maaaring maugnay sa sinumang lokal na user ang host ng malayuang access.</translation>
 <translation id="5697306356229823047">I-ulat ang mga user ng device</translation>
+<translation id="570062449808736508">Kapag nakatakda ang patakarang ito sa isang string na may laman, babasahin ng WebView ang mga paghihigpit sa URL mula sa provider ng content gamit ang ibinigay na pangalan ng kinauukulan.</translation>
 <translation id="5703863730741917647">Tukuyin ang pagkilos na gagawin kapag naabot na ang pagkaantala ng idle.
 
           Tandaan na hindi ginagamit ang patakarang ito at aalisin sa hinaharap.
@@ -1662,6 +1663,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itinakda mo ang patakarang ito, maaari itong pansamantalang i-override ng mga user sa pamamagitan ng pag-enable o pag-disable ng on-screen na keyboard. Gayunpaman, hindi permanente ang pipiliin ng user at ipinapanumbalik ang default sa tuwing ipinapakita ang screen sa pag-log in o nananatiling idle ang user sa screen sa pag-log in sa loob ng isang minuto.
 
           Kung iniwang hindi nakatakda ang patakarang ito, naka-disable ang on-screen na keyboard kapag unang ipinakita ang screen sa pag-log in. Maaaring i-enable o i-disable ng mga user ang on-screen na keyboard anumang oras at magpapatuloy ang status nito sa screen sa pag-log in sa pagitan ng mga user.</translation>
+<translation id="6573305661369899995">Magtakda ng external na pagmumulan ng mga paghihigpit sa URL</translation>
 <translation id="6598235178374410284">Larawan ng avatar ng user</translation>
 <translation id="6628646143828354685">Binibigyang-daan kang magtakda kung pinapayagan ang mga website na kumuha ng access sa malalapit na Bluetooth device. Maaaring ganap na i-block ang access, o maaaring tanungin ang user sa tuwing gusto ng website na kumuha ng access sa malalapit na Bluetooth device.
 

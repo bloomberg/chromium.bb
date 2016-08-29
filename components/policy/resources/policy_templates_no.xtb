@@ -528,6 +528,7 @@
      Hvis denne innstillingen er deaktivert, kan ikke nettsidene bruke JavaScript og brukeren kan ikke endre innstillingen.
 
       Hvis denne innstillingen er aktivert eller ikke angitt, kan nettsider bruke JavaScript, men brukeren kan endre innstillingen.</translation>
+<translation id="2753637905605932878">Begrens området for lokale UDP-porter som brukes av WebRTC</translation>
 <translation id="2757054304033424106">Utvidelser og apper som kan installeres</translation>
 <translation id="2759224876420453487">Kontrollér brukeradferd i flerprofilsøkter</translation>
 <translation id="2761483219396643566">Forsinkelse for advarsel om inaktivitet når enheten kjører på batteristrøm</translation>
@@ -759,6 +760,15 @@
 <translation id="3264793472749429012">Kodinger av standard søkeleverandør</translation>
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="3288595667065905535">Utgivelseskanal</translation>
+<translation id="3291367259589875381">Denne regelen ble avviklet i M48 til fordel for <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> og fjernet i M54.
+
+      Slår på nettverksprediksjon i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
+
+      Dette kontrollerer ikke bare DNS-forhåndshenting, men også forhåndstilkobling via TCP og SSL og forhåndsgjengivelse av nettsider. Navnet på regelen viser til DNS-forhåndshenting av historiske grunner.
+
+      Hvis du slår denne innstillingen av eller på, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen ikke er spesifisert, er den slått på, men brukerne kan endre den.</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME" /> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3297010562646015826">Slår på muligheten for å avslutte prosesser i oppgavebehandlingen</translation>
 <translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
@@ -1228,6 +1238,9 @@
           En svartelisteverdi på «*» betyr at alle innebygde meldingsverter er svartelistet, med mindre de er eksplistitt oppført på godkjenningslisten.
 
           Hvis denne innstillingen ikke angis, laster <ph name="PRODUCT_NAME" /> inn alle installerte innebygde verter.</translation>
+<translation id="5288772341821359899">Hvis regelen er konfigurert, blir UDP-portområdet som brukes av WebRTC, begrenset til det spesifiserte portintervallet (inkludert endepunktene).
+
+      Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
 <translation id="5302612588919538756">Denne regelen er avviklet. Vurder å bruke SyncDisabled i stedet.
 
@@ -1349,6 +1362,7 @@
 
           Hvis denne innstillingen er slått av eller ikke spesifisert, kan fjerntilgangsverten tilknyttes alle lokale brukere.</translation>
 <translation id="5697306356229823047">Rapportering av enhetsbrukere</translation>
+<translation id="570062449808736508">Når denne retningslinjen er satt til en streng som ikke er tom, leser WebView nettadressebegrensningene fra innholdsleverandøren med det gitte autoritetsnavnet.</translation>
 <translation id="5703863730741917647">Angi handlingen som skal utføres når inaktivitetsforsinkelsen blir overgått.
 
           Vær oppmerksom på at denne innstillingen er avviklet og skal fjernes i fremtiden.
@@ -1615,6 +1629,7 @@
 
           Hvis denne innstillingen ikke angis, deaktiveres skjermtastaturet når påloggingsskjermen først vises. Brukere kan aktivere eller deaktivere
 skjermtastaturet når som helst og statusen den har på påloggingsskjermen er vedvarende mellom brukerne.</translation>
+<translation id="6573305661369899995">Angi en ekstern kilde for nettadressebegrensninger</translation>
 <translation id="6598235178374410284">Brukerbilde</translation>
 <translation id="6628646143828354685">Gjør det mulig å velge om nettsteder har lov til å få tilgang til Bluetooth-enheter i nærheten. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til Bluetooth-enheter i nærheten.
 
@@ -1920,6 +1935,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7443616896860707393">Opphavsuavhengig HTTP Basic Auth-forespørsler</translation>
 <translation id="7468416082528382842">Plassering i Windows-register:</translation>
 <translation id="7469554574977894907">Aktiver søkeforslag</translation>
+<translation id="7474249562477552702">Hvorvidt SHA-1-signerte sertifikater som utstedes av lokale klareringsankre er tillatt eller ikke</translation>
 <translation id="7485481791539008776">Regler for valg av standardskriver</translation>
 <translation id="749556411189861380">Operativsystem for rapportering og fastvareversjon for registrerte enheter.
 
@@ -1937,6 +1953,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis den settes til SAML_INTERSTITIAL, vises en mellomskjerm under påloggingen der brukeren kan velge å gå videre med autentiseringen via SAML IdP-en for enhetens registreringsdomene eller gå tilbake til den normale GAIA-påloggingsprosessen.</translation>
 <translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
+<translation id="757395965347379751">Når denne innstillingen er slått på, tillater <ph name="PRODUCT_NAME" /> SHA-1-signerte sertifikater så lenge de valideres og kjedes til lokalt installerte CA-sertifikater.
+
+      Vær oppmerksom på at denne regelen avhenger av at operativsystemstakken for sertifikatverifisering tillater SHA-1-signaturer. Hvis en OS-oppdatering endrer hvordan OS-et håndterer SHA-1-sertifikater, kan det hende denne regelen ikke har noen effekt lenger. Videre er denne regelen ment som en midlertidig løsning for å gi bedrifter mer tid til å gå bort fra bruken av SHA-1. Denne regelen blir fjernet ca. 1. januar 2019.
+
+      Hvis denne regelen ikke er konfigurert eller er angitt som false (usann), følger <ph name="PRODUCT_NAME" /> den offentlig kunngjorte planen for SHA-1-avvikling.</translation>
 <translation id="7593523670408385997">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede filer på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--disk-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.

@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">Nākamais</translation>
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
+<translation id="1211530540767271776">Nav USB ierīču</translation>
 <translation id="1240668123557180468">Atklājiet tīmekļa lapas, ko nosūtījuši tuvumā esoši objekti. Chrome apkopo tīmekļa lapas, kas ir saistītas ar jums apkārt esošajiem objektiem, un anonīmi nosūta tās uz Google pakalpojumu, lai noskaidrotu jums visnoderīgākās lapas, un pēc tam tās parāda.
 
 Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un atrašanās vietas noteikšanai.</translation>
@@ -177,7 +178,6 @@ Fizisko tīmekli varat kontrolēt Chrome iestatījumos.
 <translation id="3012408695656332380">Šīs ierīces dati tiks nomainīti ar konta <ph name="TO_ACCOUNT" /> datiem. Esošos datus varat izgūt, pārejot atpakaļ uz kontu <ph name="FROM_ACCOUNT" />, bet dati, kas tika izveidoti pēc izrakstīšanās, tiks zaudēti.</translation>
 <translation id="3029704984691124060">Ieejas frāzes neatbilst.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Saņemt palīdzību<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">Saglabāt videoklipu</translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
 <translation id="3090193911106258841">Notiek piekļūšana audio un video ievadei</translation>
 <translation id="3117051980354074377">Pierakstieties pārlūkā Chrome, lai būtu pieejamas grāmatzīmes no citām jūsu ierīcēm.</translation>
@@ -243,8 +243,8 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="393697183122708255">Nav iespējota meklēšana ar balsi.</translation>
 <translation id="3946611741043634542">Turpinot jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
+<translation id="397583555483684758">Sinhronizācija vairs nedarbojas</translation>
 <translation id="3988213473815854515">Atļauta piekļuve atrašanās vietas informācijai</translation>
-<translation id="3992315671621218278">Saglabāt saiti</translation>
 <translation id="3997476611815694295">Nesvarīga krātuve</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4042870126885713738">Rādīt ieteikumus, ja nedarbojas tīmekļa adrese vai nevar izveidot savienojumu.</translation>
@@ -312,7 +312,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4816465935029283692">Datu tipi</translation>
 <translation id="4827948050554950725">Pievienot kredītkarti</translation>
 <translation id="4836364883164334657">Jūsu savienojums ar šo vietni nav privāts. Uzbrucēji var mēģināt nozagt jūsu informāciju (piemēram, fotoattēlus, paroles, ziņojumus vai kredītkaršu datus) no domēna <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4875622588773761625">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu jūsu paroli šai vietnei?</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
 <translation id="4923459931733593730">Maksājums</translation>
@@ -367,6 +366,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5424588387303617268">Pieejami <ph name="GIGABYTES" /> GB</translation>
 <translation id="544291274896356069">Atverot šo saiti ārējā lietojumprogrammā, tiks aizvērts inkognito režīms. Vai turpināt?</translation>
 <translation id="5447201525962359567">Visa vietnes krātuve, tostarp sīkfaili un citi lokāli saglabāti dati</translation>
+<translation id="5456381639095306749">Lejupielādēt lapu</translation>
 <translation id="5487521232677179737">Notīrīt datus</translation>
 <translation id="5487729733663684359">Chrome atjauninājumi vairs netiek atbalstīti šajā Android versijā.</translation>
 <translation id="5511351932351731210">Vienmēr sūtīt</translation>
@@ -414,6 +414,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5902828464777634901">Visi šīs vietnes saglabātie lokālie dati, tostarp sīkfaili, tiks dzēsti.</translation>
 <translation id="5911030830365207728">Google tulkotājs</translation>
 <translation id="5916664084637901428">Iesl.</translation>
+<translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="6010869025736512584">Notiek piekļūšana video ievadei</translation>
 <translation id="6012342843556706400">Pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai, lai kopīgotu to ar šo vietni.</translation>
@@ -470,7 +471,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6627583120233659107">Rediģēt mapi</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
-<translation id="6647073004883890710">Vai vēlaties, lai <ph name="PASSWORD_MANAGER_BRAND" /> atjauninātu lietotāja <ph name="USERNAME" /> paroli šai vietnei?</translation>
 <translation id="6656545060687952787">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai. <ph name="BEGIN_LINK" />Atjauniniet atļaujas<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6659594942844771486">Cilne</translation>
@@ -577,6 +577,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="7851858861565204677">Citas ierīces</translation>
 <translation id="7876243839304621966">Noņemt visu</translation>
+<translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7949961459945740081">Saņemiet jaunākās funkcijas</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
@@ -599,6 +600,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Saturs</translation>
 <translation id="8173098127580644436">paša sākuma</translation>
+<translation id="8187025609458112874">Dzēstus failus nevar kopīgot</translation>
 <translation id="8190358571722158785">Atlikusi 1 diena</translation>
 <translation id="8200772114523450471">Kopsavilkums</translation>
 <translation id="8202097416529803614">Pasūtījuma kopsavilkums</translation>
@@ -634,7 +636,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="856481929701340285">Pieprasīt datora vietni</translation>
 <translation id="857943718398505171">Atļauta (ieteicams)</translation>
 <translation id="8583805026567836021">Konta datu dzēšana</translation>
-<translation id="8588878054171169263">Saglabāt attēlu</translation>
 <translation id="8617240290563765734">Vai atvērt lejupielādētajā saturā norādīto ieteikto URL?</translation>
 <translation id="862875433388403934">Citās lietojumprogrammās lejupielādētu saturu (filmas, mūziku), iespējams, nevarēs atskaņot, kamēr šajās lietojumprogrammās netiks iegūtas licences, pamatojoties uz jauniem ierīces akreditācijas datiem.
 

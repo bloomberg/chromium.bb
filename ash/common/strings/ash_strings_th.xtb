@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">อุปกรณ์ Chrome</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
-<translation id="1683360892415596327">ตอบแบบสำรวจของเรา</translation>
 <translation id="1723752762323179280">กำลังออกจากเซสชัน</translation>
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />บุคคลที่สาม<ph name="END_LINK" />)
@@ -65,7 +64,6 @@
 <translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2844169650293029770">อุปกรณ์ USB-C (พอร์ตด้านหน้าซ้าย)</translation>
-<translation id="2850666676745651490">จาน</translation>
 <translation id="2857608528410806398">เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
@@ -219,7 +217,6 @@
 <translation id="7823564328645135659">เปลี่ยนภาษาจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="785750925697875037">ดูบัญชีมือถือ</translation>
 <translation id="7864539943188674973">ปิดใช้งานบลูทูธ</translation>
-<translation id="7869829692393275047">พิมพ์ข้อความแบบสำรวจ Chrome OS HaTS ที่นี่ พิมพ์ข้อความแบบสำรวจ Chrome OS HaTS ที่นี่ พิมพ์ข้อความแบบสำรวจ Chrome OS HaTS ที่นี่ พิมพ์ข้อความแบบสำรวจ Chrome OS HaTS ที่นี่</translation>
 <translation id="7893838033650689677">เปิด Wi-Fi</translation>
 <translation id="7904094684485781019">ผู้ดูแลระบบของบัญชีนี้ไม่อนุญาตการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จขณะที่เครื่องเปิดอยู่ โปรดลองใช้ที่ชาร์จอย่างเป็นทางการ</translation>

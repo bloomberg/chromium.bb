@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
-<translation id="1021451612696613363">برای دیدن اعلان‌هایتان، به سیستم وارد شوید</translation>
 <translation id="111910763555783249">تنظیمات اعلان</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
 <translation id="1190609913194133056">مرکز اعلان</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">صفحه بالا</translation>
 <translation id="2190355936436201913">(خالی)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
+<translation id="2336922762358079423">‏یادداشت‌برداری در Google Keep</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2497284189126895209">همه فایل‌ها</translation>
 <translation id="2515586267016047495">Alt</translation>

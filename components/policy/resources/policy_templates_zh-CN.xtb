@@ -482,6 +482,7 @@
       如果停用此设置，网页就无法使用 JavaScript，用户也无法更改该设置。
 
       如果启用或不设定此设置，网页就可以使用 JavaScript，但用户可以更改该设置。</translation>
+<translation id="2753637905605932878">限制 WebRTC 使用的本地 UDP 端口的范围</translation>
 <translation id="2757054304033424106">允许安装的扩展程序/应用的类型</translation>
 <translation id="2759224876420453487">控制多用户配置会话中的用户行为</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
@@ -707,6 +708,15 @@
 <translation id="3264793472749429012">默认搜索服务提供商的编码</translation>
 <translation id="3273221114520206906">默认 JavaScript 设置</translation>
 <translation id="3288595667065905535">发布版</translation>
+<translation id="3291367259589875381">我们在 M48 中弃用了此政策（改用 <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />），并在 M54 中移除了此政策。
+
+      在 <ph name="PRODUCT_NAME" /> 中启用网络联想查询功能，并禁止用户更改此设置。
+
+      此政策不仅控制 DNS 预提取，还控制 TCP 和 SSL 预连接及网页预呈现。但由于历史原因，此政策名称只提及了 DNS 预提取。
+
+      如果您启用或停用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或覆盖此设置。
+
+      如果此政策未设置，系统将会启用此政策，但用户可以自行更改。</translation>
 <translation id="3292147213643666827">允许 <ph name="PRODUCT_NAME" /> 作为 <ph name="CLOUD_PRINT_NAME" />与连接到该计算机的传统打印机之间的代理。
 
       如果已启用或未配置此设置，用户就可以用自己的 Google 帐户进行身份验证，从而启用云打印代理。
@@ -1142,6 +1152,9 @@
           如果黑名单的值为“*”，则意味着所有本地消息传递主机均将列入黑名单（除非这些主机已明确列入白名单）。
 
           如果此政策尚未设置，<ph name="PRODUCT_NAME" />便会加载所有已安装的本地消息传递主机。</translation>
+<translation id="5288772341821359899">如果此政策已设置，则 WebRTC 使用的 UDP 端口范围将仅限于指定的端口区间（包括端点）。
+
+      如果此政策未设置，或者它设置为空字符串或无效端口范围，则允许 WebRTC 使用任何可用的本地 UDP 端口。</translation>
 <translation id="5290940294294002042">指定该用户可启用或停用的插件的列表</translation>
 <translation id="5302612588919538756">此政策已弃用，请考虑改用 SyncDisabled。
 
@@ -1252,6 +1265,7 @@
 
           如果此设置处于停用状态或未指定，远程访问主机可以与任何本地用户关联。</translation>
 <translation id="5697306356229823047">报告设备用户</translation>
+<translation id="570062449808736508">此政策设为非空字符串时，WebView 将读取具有指定机构名称的内容提供方的网址限制条件。</translation>
 <translation id="5703863730741917647">指定闲置延迟时间已过时执行的操作。
 
           请注意，此政策已弃用，不久就会删除。
@@ -1491,6 +1505,7 @@
           如果您设置了此政策，用户可以通过启用或停用屏幕键盘暂时将其覆盖。但用户的选择只是暂时有效，登录屏幕重新打开或用户在登录屏幕上停止操作一定时间后，该政策即会恢复默认设置。
 
           如果此政策未设置，登录屏幕初次打开时会停用屏幕键盘。用户可以随时启用或停用屏幕键盘，并且屏幕键盘在登录屏幕上的状态对各用户均有效。</translation>
+<translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6598235178374410284">用户头像图片</translation>
 <translation id="6628646143828354685">可让您设置是否允许网站访问附近的蓝牙设备。您可以完全禁止此类访问，也可以设为每当有网站希望访问附近的蓝牙设备时均征求用户同意。
 
@@ -1782,6 +1797,7 @@
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
 <translation id="7468416082528382842">Windows 注册表位置：</translation>
 <translation id="7469554574977894907">启用搜索建议</translation>
+<translation id="7474249562477552702">是否允许使用本地信任锚颁发的 SHA-1 签名证书</translation>
 <translation id="7485481791539008776">默认打印机选择规则</translation>
 <translation id="749556411189861380">报告已注册的设备使用的操作系统和固件版本。
 
@@ -1797,6 +1813,11 @@
 
       如果设为 SAML_INTERSTITIAL，登录过程中将会显示一个插页式屏幕，让用户选择是通过设备注册网域的 SAML IdP 进行身份验证，还是返回到常规 GAIA 登录流程。</translation>
 <translation id="7567380065339179813">在这些网站上允许插件</translation>
+<translation id="757395965347379751">启用此设置后，只要 SHA-1 签名证书成功验证并关联到本地安装的 CA 证书，<ph name="PRODUCT_NAME" /> 就会允许使用这些证书。
+
+      请注意，此政策取决于操作系统证书验证堆栈是否允许 SHA-1 签名。如果操作系统更新更改了操作系统处理 SHA-1 证书的方式，则此政策可能不再有效。此外，此政策仅用作临时解决方法，旨在为企业提供更多时间来弃用 SHA-1。系统将于 2019 年 1 月 1 日（或左右）取消此政策。
+
+      如果此政策未设置或设置为 false，则 <ph name="PRODUCT_NAME" /> 会遵循公开发布的 SHA-1 停用时间表。</translation>
 <translation id="7593523670408385997">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存文件的缓存大小。
 
       如果您设置了此政策，那么无论用户是否已指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。

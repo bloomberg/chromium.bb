@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome डिव्हाइस</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
-<translation id="1683360892415596327">आमचे सर्वेक्षण करा</translation>
 <translation id="1723752762323179280">सत्रातून निर्गमन करत आहे</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1812696562331527143">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्षावर<ph name="END_LINK" />)बदलली.
@@ -65,7 +64,6 @@
 <translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2825619548187458965">शेल्फ</translation>
 <translation id="2844169650293029770">USB-C डिव्‍हाइस (डाव्‍या बाजूचे पुढील पोर्ट)</translation>
-<translation id="2850666676745651490">पॅलेट</translation>
 <translation id="2857608528410806398">QU वैशिष्‍ट्य सूचनेेचा मुख्य भाग येथे असेल. QU वैशिष्‍ट्य सूचनेेचा मुख्य भाग येथे असेल. QU वैशिष्‍ट्य सूचनेेचा मुख्य भाग येथे असेल. QU वैशिष्‍ट्य सूचनेेचा मुख्य भाग येथे असेल.</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="2942516765047364088">शेल्फ स्थिती</translation>
@@ -218,7 +216,6 @@
 <translation id="7823564328645135659">आपली सेटिंग्ज समक्रमित केल्यानंतर भाषा "<ph name="FROM_LOCALE" />" मधून "<ph name="TO_LOCALE" />" मध्ये बदलली आहे.</translation>
 <translation id="785750925697875037">मोबाइल खाते पहा</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
-<translation id="7869829692393275047">Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे. Chrome OS HaTS सर्वेक्षण मजकूर येथे आहे.</translation>
 <translation id="7893838033650689677">Wi-Fi चालू करा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7957227661277029961">आपले <ph name="DEVICE_TYPE" /> चालू केलेले असते तेव्‍हा ते कदाचित चार्ज होणार नाही. अधिकृत चार्जर वापरून पहा.</translation>

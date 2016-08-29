@@ -528,6 +528,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
       Iwapo mpangilio huu umelemazwa, kurasa za wavuti haziwezi kutumia JavaScript na mtumiaji hawezi kubadilisha mpangilio huo.
 
       Iwapo mpangilio huu umezimwa au la, kurasa za wavuti zinaweza kutumia JavaScript lakini mtumiaji anaweza kubadilisha mpangilio huo.</translation>
+<translation id="2753637905605932878">Dhibiti masafa ya milango ya ndani ya UDP inayotumiwa na WebRTC</translation>
 <translation id="2757054304033424106">Aina za viendelezi/programu zinazoruhusiwa kusakinishwa</translation>
 <translation id="2759224876420453487">Dhibiti tabia ya mtumiaji katika kipindi cha wasifu nyingi</translation>
 <translation id="2761483219396643566">Onyo ya kuchelewa wakati wa kutokuwa na shughuli  wakati wa kuendesha kwa nishati ya betri</translation>
@@ -759,6 +760,15 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 <translation id="3264793472749429012">Usimbaji wa kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="3273221114520206906">Mpangilio chaguo-msingi wa JavaScript</translation>
 <translation id="3288595667065905535">Kituo cha Kutoa</translation>
+<translation id="3291367259589875381">Sera hii imeacha kuendesha huduma katika M48 na imeondolewa katika M54, nafasi yake imechukuliwa na <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />.
+
+      Huwasha kipengele cha ubashiri wa mtandao katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
+
+      Hii hudhibiti kuleta DNS na pia uunganishaji na uonyeshaji awali wa kurasa za wavuti za TCP na SSL. Jina la sera linarejelea uletaji awali wa DNS kwa sababu za historia.
+
+      Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha au kubatilisha mipangilio hii katika <ph name="PRODUCT_NAME" />.
+
+      Ikiwa sera hii itaachwa bila kuwekwa, kipengele hiki kitawashwa lakini mtumiaji anaweza kuibadilisha.</translation>
 <translation id="3292147213643666827">Huwezesha <ph name="PRODUCT_NAME" /> kufanya kazi kama proksi kati ya <ph name="CLOUD_PRINT_NAME" /> na printa zilizotangulia zilizounganishwa kwenye mashine.
 
       Iwapo mpangilio huu utawashwa au hutasanidiwa, watumiaji wanaweza kutumia proksi ya kuchipisha ya wingu ili kuthibitisha akaunti ya Google.
@@ -1246,6 +1256,9 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
         Thamani ya orodha ya wasioidhinishwa ya '*' inamaanisha kwamba wapangishi wote wa ujumbe asili hawajaidhinishwa isipokuwa kama wamewekwa waziwazi katika orodha ya walioidhinishwa.
 
          Kama sera hii haitawekwa <ph name="PRODUCT_NAME" /> itapakia wapangishi wote waliosakinishwa wa ujumbe asili.</translation>
+<translation id="5288772341821359899">Sera hii ikiwekwa, masafa ya mlango wa UDP unaotumiwa na WebRTC utatumika kwenye mlango uliobainishwa (sehemu za mwisho zikiwa zimejumuishwa).
+
+      Sera hii isipowekwa, au ikiwekwa kwenye mfuatano wazi au masafa ya mlango yasiyo sahihi, WebRTC itaruhusiwa kutumia mlango wowote wa ndani wa UDP.</translation>
 <translation id="5290940294294002042">Bainisha orodha ya programu jalizi ambayo mtumiaji anaweza kuwezesha au kulemaza</translation>
 <translation id="5302612588919538756">Sera hii imeacha kuendesha huduma, badala yake jaribu kutumia kipengee cha SyncDisabled.
 
@@ -1367,6 +1380,7 @@ Sera ya RemoteAccessHostMatchUsername inapaswa kutumiwa pamoja na RemoteAccessHo
 
           Sera hii ikizimwa au isipowekwa, basi seva pangishi ya uwezo wa kufikia kwa mbali inaweza kuhusishwa na mtumiaji yeyote wa ndani.</translation>
 <translation id="5697306356229823047">Ripoti watumiaji wa kifaa</translation>
+<translation id="570062449808736508">Sera hii inapowekwa kuwa mfuatano ambao si mtupu, Mwonekano wa Wavuti utasoma vikwazo vya URL kutoka kwa mtoa huduma wa maudhui aliye na jina alilopewa na mamlaka.</translation>
 <translation id="5703863730741917647">Bainisha kitendo cha kuchukua wakati ucheleweshaji wa kutokufanya kitu unapofikiwa.
 
           Kumbuka kwamba sera hii haitumiki tena na itaondolewa katika siku za usoni.
@@ -1629,6 +1643,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Ukiweka sera hii, watumiaji wanaweza kuibatilisha kwa muda kwa kuwasha au kuzima kibodi ya skrini. Hata hivyo, chaguo la watumiaji halidumu na chaguo-msingi hurejeshwa kila wakati skrini ya kuingia katika akaunti inapoonyeshwa upya au mtumiaji anapokuwa hafanyi kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja.
 
           Sera hii isipowekwa, kibodi ya skrini inawashwa skrini ya kuingia katika akaunti inapoonyeshwa mara ya kwanza. Watumiaji wanaweza wakazima au kuwasha kibodi ya skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inadumu kati ya watumiaji.</translation>
+<translation id="6573305661369899995">Weka chanzo cha nje cha vikwazo vya URL</translation>
 <translation id="6598235178374410284">Picha ya ishara ya mtumiaji</translation>
 <translation id="6628646143828354685">Hukuruhusu kuweka ikiwa tovuti zinaruhusiwa kupata idhini ya kufikia vifaa vya karibu vya Bluetooth. Idhini ya kufikia inaweza kuzuiwa kabisa, au mtumiaji anaweza kuulizwa kila wakati tovuti inapotaka kufikia vifaa vya karibu vya Bluetooth.
 
@@ -1935,6 +1950,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7443616896860707393">Vishtuo vya Cross-origin HTTP Basic Auth</translation>
 <translation id="7468416082528382842">Eneo la usajili wa Windows:</translation>
 <translation id="7469554574977894907">Wezesha mapendekezo ya utafutaji</translation>
+<translation id="7474249562477552702">Iwe vyeti vya sahihi ya SHA-1 vilivyotolewa na nanga za ndani zinazoaminika vinaruhusiwa</translation>
 <translation id="7485481791539008776">Sheria za kuchagua printa chaguo-msingi</translation>
 <translation id="749556411189861380">Ripoti toleo la OS na programu dhibiti ya vifaa vilivyosajiliwa.
 
@@ -1952,6 +1968,11 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Ikiwekwa kuwa SAML_INTERSTITIAL, kuingia katika akaunti kutaonyesha skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML IdP ya kikoa cha usajili wa kifaa, au kurudi kwenye mtiririko wa kawaida wa kuingia katika akaunti wa GAIA.</translation>
 <translation id="7567380065339179813">Ruhusu programu jalizi kwenye tovuti hizi</translation>
+<translation id="757395965347379751">Mipangilio hii ikiwashwa, <ph name="PRODUCT_NAME" /> huruhusu vyeti vya sahihi ya SHA-1 muradi tu vinathibitisha kikamilifu na kuunganisha kwenye vyeti vya CA vilivyosakinishwa ndani.
+
+      Kumbuka kwamba sera hii inategemea bunda la kuthibitisha cheti cha mfumo wa uendeshaji kuruhusu sahihi za SHA-1. Ikiwa sasisho la Mfumo wa Uendeshaji litabadilisha Mfumo wa Uendeshaji unaoshughulikia vyeti vya SHA-1, sera hii haitakuwa na athari tena. Aidha, sera hii inanuiwa kutumiwa kama njia ya muda ya kuzipa biashara muda zaidi wa kuhama SHA-1.  Sera hii itaondolewa mnamo au kufikia tarehe 1 Januari 2019.
+
+      Sera hii isipowekwa au ikiwekwa kuwa sivyo, basi <ph name="PRODUCT_NAME" /> itafuata ratiba iliyotangazwa hadharani ya SHA-1 kuacha kuendesha huduma.</translation>
 <translation id="7593523670408385997">Husanidi ukubwa wa akiba ambao <ph name="PRODUCT_NAME" /> itatumia kwa ajili ya kuhifadhi faili zilizoakibishwa kwenye diski.
 
     Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia ukubwa wa akiba uliotolewa bila kujali kama mtumiaji amebainisha alama ya '- ukubwa wa-diski ya-kuakibisha' au la. Thamani iliyobainishwa katika sera hii sio kikomo kisichoweza kurekebishwa bali ni pendekezo la mfumo wa kuakibisha, thamani yoyote chini ya megabaiti chache ni ndogo mno na itazidishwa hadi kiwango cha chini kinachokubalika.

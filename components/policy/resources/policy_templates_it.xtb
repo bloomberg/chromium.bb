@@ -1268,6 +1268,7 @@ Vedi anche RemoteAccessHostDomain.</translation>
 
           Se questa impostazione è disattivata o non viene impostata, l'host di accesso remoto può essere associato a qualsiasi utente locale.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
+<translation id="570062449808736508">Se per questa norma viene impostata una stringa, WebView legge le limitazioni relative agli URL del fornitore di contenuti con il nome dell'autorità indicato.</translation>
 <translation id="5703863730741917647">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività.
 
 Tieni presente che questa norma è obsoleta e verrà rimossa in futuro.
@@ -1503,6 +1504,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la tastiera sullo schermo. Tuttavia, la scelta dell'utente non è permanente e l'impostazione predefinita viene ripristinata ogni volta che viene visualizzata la schermata di accesso o se l'utente rimane inattivo sulla schermata di acceso per un minuto.
 
           Se questa norma non viene impostata, la tastiera sullo schermo è disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento e il relativo stato sulla schermata di accesso viene mantenuto tra utenti differenti.</translation>
+<translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
 <translation id="6598235178374410284">Immagine avatar utente</translation>
 <translation id="6628646143828354685">Permette di stabilire se consentire o meno l'accesso ai dispositivi Bluetooth nelle vicinanze. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera accedere ai dispositivi Bluetooth vicini.
 

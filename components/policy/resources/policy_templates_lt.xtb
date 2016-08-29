@@ -539,6 +539,7 @@
       Jei šis nustatymas išjungtas, tinklalapiuose nebus galima naudoti „JavaScript“ ir naudotojas negalės pakeisti to nustatymo.
 
       Jei šis nustatymas įgalintas ar nenustatytas, tinklalapiuose bus galima naudoti „JavaScript“, bet naudotojas galės pakeisti tą nustatymą.</translation>
+<translation id="2753637905605932878">„WebRTC“ naudojamų vietinių UDP prievadų diapazono apribojimas</translation>
 <translation id="2757054304033424106">Leidžiami įdiegti plėtinių / programų tipai</translation>
 <translation id="2759224876420453487">Tvarkyti naudotojo elgseną kelių profilių seanse</translation>
 <translation id="2761483219396643566">Neveikos įspėjimo delsa, kai naudojama akumuliatoriaus energija</translation>
@@ -775,6 +776,15 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
 <translation id="3273221114520206906">Numatytasis „JavaScript“ nustatymas</translation>
 <translation id="3288595667065905535">Išleidimo kanalas</translation>
+<translation id="3291367259589875381">Vietoje šios politikos M48 naudojama <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> ir ji pašalinta iš M54.
+
+      Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME" />“ ir naudotojams neleidžiama keisti šio nustatymo.
+
+      Pagal šią politiką valdomas ne tik išankstinis DNS pateikimas, bet ir išankstinis TCP bei SSL ryšys ir tinklalapių pateikimas. Politikos pavadinime išankstinis DNS pateikimas įtrauktas atsižvelgiant į istoriją.
+
+      Jei įgalinate šį nustatymą arba jo neleidžiate, naudotojai negali jo pakeisti ar nepaisyti naudodami „<ph name="PRODUCT_NAME" />“.
+
+      Nenustačius šios politikos, šis nustatymas bus įgalintas, bet naudotojas galės jį pakeisti.</translation>
 <translation id="3292147213643666827">„<ph name="PRODUCT_NAME" />“ įgalinamas veikti kaip įgaliotasis serveris, siejantis „<ph name="CLOUD_PRINT_NAME" />“ ir senesnius prie kompiuterio prijungtus spausdintuvus.
 
       Jei įgalinsite šį nustatymą arba jo nekonfigūruosite, naudotojai galės įgalinti spausdinimo iš debesies įgaliotąjį serverį, tapatumą nustatydami pagal savo „Google“ paskyrą.
@@ -1274,6 +1284,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Juodojo sąrašo vertė „*“ reiškia, kad visos savųjų susirašinėjimo pranešimais programų prieglobos yra įtrauktos į juodąjį sąrašą, išskyrus tuos atvejus, kai jos įtrauktos į baltąjį sąrašą.
 
           Jei politika nenustatyta, „<ph name="PRODUCT_NAME" />“ įkels visas įdiegtas savųjų susirašinėjimo pranešimais programų prieglobas.</translation>
+<translation id="5288772341821359899">Jei ši politika nustatyta, „WebRTC“ naudojamas UDP prievado diapazonas apribojamas iki nurodyto prievado intervalo (įskaitant baigties taškus).
+
+      Jei politika nenustatyta arba nustatyta į tuščią eilutę arba negaliojantį prievado diapazoną, „WebRTC“ leidžiama naudoti bet kokį pasiekiamą vietinį UDP prievadą.</translation>
 <translation id="5290940294294002042">Nurodyti papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti, sąrašą</translation>
 <translation id="5302612588919538756">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „SyncDisabled“.
 
@@ -1395,6 +1408,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei šį nustatymą išjungsite arba jo nenustatysite, nuotolinės prieigos prieglobą bus galima susieti su bet kuriuo vietiniu naudotoju.</translation>
 <translation id="5697306356229823047">Pateikti įrenginio naudotojų ataskaitą</translation>
+<translation id="570062449808736508">Kai bus nustatyta ne tuščia šios politikos eilutė, „WebView“ perskaitys URL apribojimus iš turinio teikėjo su nurodytu įstaigos pavadinimu.</translation>
 <translation id="5703863730741917647">Nurodykite veiksmą, kuris bus atliktas, kai bus pasiektas neaktyvumo delsos laikas.
 
           Atminkite, kad ši politika nebenaudojama ir ateityje bus pašalinta.
@@ -1661,6 +1675,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalindami arba išjungdami ekrano klaviatūrą. Tačiau naudotojo pasirinkimas nėra nuolatinis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas parodomas iš naujo ar naudotojas minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, ekrano klaviatūra išjungiama, kai prisijungimo ekranas parodomas pirmą kartą. Naudotojai gali įgalinti arba išjungti ekrano klaviatūrą bet kuriuo metu. Ekrano klaviatūros būsena prisijungimo ekrane yra nuolatinė visiems naudotojams.</translation>
+<translation id="6573305661369899995">Išorinio URL apribojimų šaltinio nustatymas</translation>
 <translation id="6598235178374410284">Naudotojo pseudoportreto vaizdas</translation>
 <translation id="6628646143828354685">Galite nustatyti, ar svetainės gali pasiekti netoliese esančius „Bluetooth“ įrenginius. Galimybę pasiekti įrenginius galima visiškai užblokuoti arba naudotojo gali būti paklausta kiekvieną kartą, kai svetainė nori pasiekti netoliese esančius „Bluetooth“ įrenginius.
 
@@ -1972,6 +1987,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7443616896860707393">Mišrios kilmės HTTP pagrindinio autentifikavimo raginimai</translation>
 <translation id="7468416082528382842">„Windows“ registro vieta:</translation>
 <translation id="7469554574977894907">Įgalinti paieškos pasiūlymus</translation>
+<translation id="7474249562477552702">Ar leidžiami SHA-1 pasirašyti sertifikatai, išduoti naudojant vietinius patikimus prieraišus</translation>
 <translation id="7485481791539008776">Numatytojo spausdintuvo pasirinkimo taisyklės</translation>
 <translation id="749556411189861380">Pateikti užregistruotų įrenginių OS ir programinės aparatinės įrangos versiją.
 
@@ -1989,6 +2005,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei vertė nustatyta į SAML_INTERSTITIAL, prisijungiant bus rodomas tarpinis ekranas, kuriame naudotojui bus siūloma tęsti autentifikavimą per įrenginio registravimo domeno „SAML IdP“ arba grįžti į įprastą GAIA prisijungimo eigą.</translation>
 <translation id="7567380065339179813">Leisti papildinius šiose svetainėse</translation>
+<translation id="757395965347379751">Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME" />“ leidžia naudoti SHA-1 pasirašytus sertifikatus, jei jie yra sėkmingai patvirtinti ir yra susiję su vietiniu mastu įdiegtais CA sertifikatais.
+
+      Atminkite, kad ši politika pagrįsta operacinės sistemos sertifikatu, kuriuo leidžiami SHA-1 parašai. Jei atnaujinus OS pasikeičia OS SHA-1 sertifikatų apdorojimo būdas, ši politika gali nebegalioti.  Be to, ši politika teikiama kaip laikinas sprendimo būdas, kuris įmonėms suteikia daugiau laiko pereiti nuo SHA-1.  Ši politika bus pašalinta 2019 m. sausio 1 d. arba šiek tiek vėliau / anksčiau.
+
+      Jei ši politika nenustatyta arba nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ vykdys viešai paskelbtą SHA-1 naudojimo nutraukimo tvarkaraštį.</translation>
 <translation id="7593523670408385997">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams diske saugoti, dydį.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodyto dydžio talpyklą nepaisydama to, ar naudotojas nurodė, ar nenurodė parametro „--disk-cache-size“. Šioje politikoje nurodyta vertė nėra griežta riba, bet tiesiog pasiūlymas talpyklos sistemai. Mažesnė nei kelių megabaitų vertė yra per maža ir bus suapvalinta iki įprastos minimalios vertės.

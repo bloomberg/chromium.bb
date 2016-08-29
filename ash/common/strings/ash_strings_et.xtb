@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome'i seade</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tühjenemiseni</translation>
-<translation id="1683360892415596327">Osalege meie uuringus</translation>
 <translation id="1723752762323179280">Seansist väljumine</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
 <translation id="1812696562331527143">Teie sisestusmeetod on nüüd <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />kolmas osapool<ph name="END_LINK" />).
@@ -65,7 +64,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
-<translation id="2850666676745651490">Palett</translation>
 <translation id="2857608528410806398">Siia läheb funktsiooni QU märguande sisu. Siia läheb funktsiooni QU märguande sisu. Siia läheb funktsiooni QU märguande sisu. Siia läheb funktsiooni QU märguande sisu. Siia läheb funktsiooni QU märguande sisu.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2942516765047364088">Riiuli positsioon</translation>
@@ -219,7 +217,6 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="7823564328645135659">Pärast seadete sünkroonimist asendati <ph name="FROM_LOCALE" /> keel <ph name="TO_LOCALE" /> keelega.</translation>
 <translation id="785750925697875037">Kuva mobiilikonto</translation>
 <translation id="7864539943188674973">Keela Bluetooth</translation>
-<translation id="7869829692393275047">Chrome OS-i HaTS-i uuringu tekst. Chrome OS-i HaTS-i uuringu tekst. Chrome OS-i HaTS-i uuringu tekst. Chrome OS-i HaTS-i uuringu tekst.</translation>
 <translation id="7893838033650689677">Lülita WiFi sisse</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
 <translation id="7957227661277029961">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida. Soovitame kasutada ametlikku laadijat.</translation>

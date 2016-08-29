@@ -543,6 +543,7 @@
       Om den här inställningen är inaktiverad kan inte JavaScript användas på webbsidor och inställningen kan inte ändras av användaren.
 
       Om inställningen är aktiverad eller inte inställd kan JavaScript användas på webbsidor, men inställningen kan inte ändras av användaren.</translation>
+<translation id="2753637905605932878">Låt WebRTC endast använda UDP-portar inom ett begränsat intervall</translation>
 <translation id="2757054304033424106">Typer av tillägg/appar som får installeras</translation>
 <translation id="2759224876420453487">Styr användarens beteende i en multiprofilsession</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
@@ -778,6 +779,15 @@
 <translation id="3264793472749429012">Kodningar för standardsökleverantör</translation>
 <translation id="3273221114520206906">Standardinställning för JavaScript</translation>
 <translation id="3288595667065905535">Lanseringskanal</translation>
+<translation id="3291367259589875381">Den här principen har fasats ut till förmån för <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> i M48 och tagits bort i M54.
+
+      Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
+
+      Detta styr inte bara DNS-förhämtning utan också TCP- och SSL-föranslutning och förrendering av webbsidor. Principens namn refererar till DNS-förhämtning av historiska skäl.
+
+      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta den i <ph name="PRODUCT_NAME" />.
+
+      Om principen inte anges är funktionen aktiverad, men den kan ändras av användarna.</translation>
 <translation id="3292147213643666827">Gör att <ph name="PRODUCT_NAME" /> kan fungera som proxy mellan <ph name="CLOUD_PRINT_NAME" /> och gamla skrivare som är anslutna till datorn.
 
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
@@ -1278,6 +1288,9 @@
            Om svarta listan har värdet * betyder det att alla värdar för Native Messaging är otillåtna, såvida de inte har angetts explicit i vitlistan.
 
           Om principen inte har getts något värde läser <ph name="PRODUCT_NAME" /> in alla installerade värdar för Native Messaging.</translation>
+<translation id="5288772341821359899">Om den här principen har angetts används bara UDP-portarna inom det angivna intervallet (ändvärdena inräknade) för WebRTC.
+
+      Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
 <translation id="5302612588919538756">Den här principen har fasats ut. Använd SyncDisabled i stället.
 
@@ -1399,6 +1412,7 @@
 
           Om den här inställningen är inaktiverad eller inte har angetts kan fjärråtkomstvärden kopplas till vilken lokal användare som helst.</translation>
 <translation id="5697306356229823047">Rapportera enhetsanvändare</translation>
+<translation id="570062449808736508">När man ställt in ett annat värde för princpen än den tomma strängen läser WebView webbadressbegränsningar från innehållsutgivaren med utfärdarnamnet.</translation>
 <translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
 
           Tänk på att den här policyn är på väg att fasas ut och kommer att tas bort i framtiden.
@@ -1666,6 +1680,7 @@
           Om du ställer in den här policyn kan användarna åsidosätta den tillfälligt genom att aktivera eller inaktivera skärmtangentbordet. Användarens val sparas däremot inte och standardinställningen återställs varje gång inloggningsskärmen öppnas igen eller användaren är inaktiv på inloggningsskärmen i en minut.
 
           Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
+<translation id="6573305661369899995">Ange en extern källa för webbadressbegränsningar</translation>
 <translation id="6598235178374410284">Användarens avatarbild</translation>
 <translation id="6628646143828354685">Principen innebär att du kan ange om webbplatser får tillgång till Bluetooth-enheter i närheten. Åtkomsten kan blockeras helt eller så kan användaren bli tillfrågad varje gång en webbplats begär att få tillgång till Bluetooth-enheter i närheten.
 
@@ -1976,6 +1991,7 @@
 <translation id="7443616896860707393">Frågor vid korsursprungs-HTTP med basauktorisering</translation>
 <translation id="7468416082528382842">Windows-registerplats:</translation>
 <translation id="7469554574977894907">Aktivera sökförslag</translation>
+<translation id="7474249562477552702">Om SHA-1-signerade certifikat som utfärdats av lokala tillitsankare tillåts eller inte</translation>
 <translation id="7485481791539008776">Skrivarens standardurvalsregler</translation>
 <translation id="749556411189861380">Rapportera versionsinformation om operativsystem och fast programvara på registrerade enheter.
 
@@ -1993,6 +2009,11 @@
 
       Om principen är inställd på SAML_INTERSTITIAL visas en mellansidesskärm när användaren loggar in som frågar om han eller hon vill fortsätta autentiseringen via SAML IdP på enhetens registreringsdomän eller gå tillbaka till det vanliga inloggningsflödet för GAIA.</translation>
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
+<translation id="757395965347379751">När den här inställningen har aktiverats är certifikat som signerats med SHA-1 tillåtna i <ph name="PRODUCT_NAME" /> så länge det går att validera dem i en obruten kedja till ett lokalt installerat CA-certifikat.
+
+      Observera att principen är beroende av att stacken för certifikatverifiering i operativsystemet tillåter SHA-1-signaturer. Om en uppdatering av operativsystemet leder till en ändring av hur SHA-1-certifikat hanteras där kanske den här principen inte längre har någon funktion. Vidare är principen bara en tillfällig lösning som ska ge företag längre tid på sig att avveckla SHA-1. Principen kommer att tas bort den 1 januari 2019 eller däromkring.
+
+      Om principen inte anges eller om den har ställts in på falskt kommer den utlysta tidsplanen för utfasning av SHA-1 att följas i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7593523670408385997">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade filer på skivan.
 
       När den här principen har getts ett värde använder <ph name="PRODUCT_NAME" /> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --disk-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.

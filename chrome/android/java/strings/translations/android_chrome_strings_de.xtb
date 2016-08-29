@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1206892813135768548">Linktext kopieren</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
+<translation id="1211530540767271776">Kein USB-Gerät vorhanden</translation>
 <translation id="1240668123557180468">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Chrome trägt Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt diese anonym an einen Google-Dienst. Die Webseiten, die für Sie besonders nützlich sind, werden Ihnen dann angezeigt.
 
 Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
@@ -177,7 +178,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3012408695656332380">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre bestehenden Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />. Daten, die Sie nach Ihrer Abmeldung erstellt haben, gehen jedoch verloren.</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">Video speichern</translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="3090193911106258841">Zugriff auf Audio- und Video-Eingang</translation>
 <translation id="3117051980354074377">Melden Sie sich in Chrome an, um Lesezeichen von Ihren anderen Geräten abzurufen.</translation>
@@ -230,7 +230,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3706658020782046159">Wählen Sie eine Versandadresse aus, um die Versandmethoden und -anforderungen zu sehen.</translation>
 <translation id="3716158070938632480">Webseiten in der Nähe vorhanden</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
-<translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
+<translation id="3744111561329211289">Hintergrundsync</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
@@ -243,8 +243,8 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="393697183122708255">Keine aktivierte Sprachsuche verfügbar</translation>
 <translation id="3946611741043634542">Sobald Sie fortfahren, stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und den <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="3950820424414687140">Anmelden</translation>
+<translation id="397583555483684758">Die Synchronisierung funktioniert nicht mehr</translation>
 <translation id="3988213473815854515">Standort freigegeben</translation>
-<translation id="3992315671621218278">Link speichern</translation>
 <translation id="3997476611815694295">Speicher für unwichtige Websites</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
@@ -312,7 +312,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4816465935029283692">Datentypen</translation>
 <translation id="4827948050554950725">Kreditkarte hinzufügen</translation>
 <translation id="4836364883164334657">Ihre Verbindung zu dieser Website ist nicht sicher. Unbefugte Dritte könnten versuchen, Ihre Informationen von <ph name="DOMAIN_NAME" /> zu stehlen, etwa Fotos, Passwörter, Nachrichten oder Kreditkartendaten.</translation>
-<translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4885273946141277891">Nicht unterstützte Anzahl von Chrome-Instanzen</translation>
 <translation id="4923459931733593730">Zahlung</translation>
@@ -367,6 +366,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB verfügbar</translation>
 <translation id="544291274896356069">Der Inkognitomodus wird beendet, wenn dieser Link in einer externen App geöffnet wird. Vorgang fortsetzen?</translation>
 <translation id="5447201525962359567">Gesamter Websitespeicher einschließlich Cookies und anderer lokal gespeicherter Daten</translation>
+<translation id="5456381639095306749">Seite herunterladen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5487729733663684359">Chrome-Updates werden für diese Version von Android nicht mehr unterstützt.</translation>
 <translation id="5511351932351731210">Immer senden</translation>
@@ -414,6 +414,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
 <translation id="5916664084637901428">An</translation>
+<translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="6010869025736512584">Zugriff auf Video-Eingang</translation>
 <translation id="6012342843556706400">Chrome benötigt Zugriff auf den Standort, um ihn für diese Website freizugeben.</translation>
@@ -470,7 +471,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6627583120233659107">Ordner bearbeiten</translation>
 <translation id="6643016212128521049">Löschen</translation>
-<translation id="6647073004883890710">Soll <ph name="PASSWORD_MANAGER_BRAND" /> das Passwort für <ph name="USERNAME" /> für diese Website aktualisieren?</translation>
 <translation id="6656545060687952787">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK" />Berechtigungen aktualisieren<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6659594942844771486">Tab</translation>
@@ -577,6 +577,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7876243839304621966">Alle entfernen</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ist veraltet.</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7949961459945740081">Neue Funktionen herunterladen</translation>
 <translation id="7963646190083259054">Anbieter:</translation>
@@ -599,6 +600,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8137558756159375272">Mit "Zum Suchen tippen" werden das ausgewählte Wort und die aktuelle Seite als Kontext an die Google-Suche gesendet. Sie können die Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> deaktivieren.</translation>
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8173098127580644436">für den gesamten Zeitraum</translation>
+<translation id="8187025609458112874">Gelöschte Daten können nicht freigegeben werden</translation>
 <translation id="8190358571722158785">1 Tag übrig</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="8202097416529803614">Zusammenfassung der Bestellung</translation>
@@ -634,7 +636,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="856481929701340285">Desktop-Version anfordern</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
-<translation id="8588878054171169263">Bild speichern</translation>
 <translation id="8617240290563765734">Soll die im heruntergeladenen Inhalt angegebene URL geöffnet werden?</translation>
 <translation id="862875433388403934">In anderen Anwendungen heruntergeladene Inhalte wie Filme und Musik können möglicherweise erst wieder abgespielt werden, nachdem Lizenzen basierend auf neuen Anmeldedaten für die betreffenden Anwendungen erworben wurden.
 

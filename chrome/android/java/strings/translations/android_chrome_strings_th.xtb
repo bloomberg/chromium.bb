@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1206892813135768548">คัดลอกข้อความลิงก์</translation>
 <translation id="1209206284964581585">ซ่อนไปก่อน</translation>
+<translation id="1211530540767271776">ไม่มีอุปกรณ์ USB ที่นี่</translation>
 <translation id="1240668123557180468">ค้นพบหน้าเว็บที่ส่งมาจากออบเจ็กต์ใกล้เคียง Chrome รวบรวมหน้าเว็บที่เชื่อมโยงกับออบเจ็กต์รอบตัวคุณ ส่งหน้าเว็บดังกล่าวแบบไม่ระบุตัวตนไปยังบริการของ Google เพื่อค้นหาสิ่งที่มีประโยชน์ต่อคุณมากที่สุด แล้วแสดงขึ้นมา
 
 คุณต้องเปิดใช้บลูทูธและตำแหน่งเพื่อที่จะใช้ Physical Web</translation>
@@ -177,7 +178,6 @@
 <translation id="3012408695656332380">แทนที่ข้อมูลของอุปกรณ์เครื่องนี้ด้วยข้อมูลของ <ph name="TO_ACCOUNT" /> คุณสามารถดึงข้อมูลที่มีอยู่โดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /> แต่ข้อมูลที่สร้างขึ้นหลังจากที่คุณออกจากระบบจะสูญหายไป</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">บันทึกวิดีโอ</translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
 <translation id="3090193911106258841">กำลังเข้าถึงอินพุตเสียงและวิดีโอ</translation>
 <translation id="3117051980354074377">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
@@ -243,8 +243,8 @@
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
 <translation id="3946611741043634542">เมื่อดำเนินการต่อ แสดงว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" /></translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
+<translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
 <translation id="3988213473815854515">อนุญาตตำแหน่ง</translation>
-<translation id="3992315671621218278">บันทึกลิงก์</translation>
 <translation id="3997476611815694295">พื้นที่เก็บข้อมูลที่ไม่สำคัญ</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
 <translation id="4042870126885713738">แสดงคำแนะนำเมื่อไม่สามารถระบุที่อยู่เว็บหรือไม่สามารถเชื่อมต่อได้</translation>
@@ -312,7 +312,6 @@
 <translation id="4816465935029283692">ชนิดข้อมูล</translation>
 <translation id="4827948050554950725">เพิ่มบัตรเครดิต</translation>
 <translation id="4836364883164334657">การเชื่อมต่อเว็บไซต์นี้ไม่เป็นส่วนตัว ผู้บุกรุกอาจพยายามขโมยข้อมูลของคุณ (เช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) จาก <ph name="DOMAIN_NAME" /></translation>
-<translation id="4875622588773761625">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของคุณสำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
@@ -367,6 +366,7 @@
 <translation id="5424588387303617268">ว่าง <ph name="GIGABYTES" /> GB</translation>
 <translation id="544291274896356069">ออกจากโหมดไม่ระบุตัวตนถ้ามีการเปิดลิงก์นี้ในแอปพลิเคชันภายนอก ดำเนินการต่อไหม</translation>
 <translation id="5447201525962359567">พื้นที่เก็บข้อมูลเว็บไซต์ทั้งหมด รวมถึงคุกกี้และข้อมูลอื่นๆ ที่เก็บไว้ในเครื่อง</translation>
+<translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
 <translation id="5487729733663684359">ไม่มีการสนับสนุนการอัปเดต Chrome บน Android เวอร์ชันนี้อีกต่อไป</translation>
 <translation id="5511351932351731210">ส่งเสมอ</translation>
@@ -414,6 +414,7 @@
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
 <translation id="5916664084637901428">เปิด</translation>
+<translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="6010869025736512584">กำลังเข้าถึงอินพุตวิดีโอ</translation>
 <translation id="6012342843556706400">Chrome ต้องการเข้าถึงตำแหน่งเพื่อแชร์กับเว็บไซต์นี้</translation>
@@ -470,7 +471,6 @@
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
-<translation id="6647073004883890710">คุณต้องการให้ <ph name="PASSWORD_MANAGER_BRAND" /> อัปเดตรหัสผ่านของ <ph name="USERNAME" /> สำหรับเว็บไซต์นี้ไหม</translation>
 <translation id="6656545060687952787">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK" />อัปเดตสิทธิ์<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6659594942844771486">แท็บ</translation>
@@ -577,6 +577,7 @@
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7949961459945740081">รับคุณลักษณะล่าสุด</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
@@ -599,6 +600,7 @@
 <translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดคุณลักษณะนี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="8168435359814927499">เนื้อหา</translation>
 <translation id="8173098127580644436">ตั้งแต่เริ่มต้น</translation>
+<translation id="8187025609458112874">ไม่สามารถแชร์ไฟล์ที่ลบออกแล้ว</translation>
 <translation id="8190358571722158785">เหลือ 1 วัน</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
 <translation id="8202097416529803614">ข้อมูลสรุปคำสั่งซื้อ</translation>
@@ -634,7 +636,6 @@
 <translation id="856481929701340285">ขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="857943718398505171">อนุญาตแล้ว (แนะนำ)</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>
-<translation id="8588878054171169263">บันทึกภาพ</translation>
 <translation id="8617240290563765734">ต้องการเปิด URL แนะนำซึ่งระบุอยู่ในเนื้อหาที่ดาวน์โหลดไหม</translation>
 <translation id="862875433388403934">เนื้อหา (ภาพยนตร์ เพลง ฯลฯ) ที่ดาวน์โหลดในแอปพลิเคชันอื่นๆ อาจไม่สามารถเล่นได้อีกต่อไปจนกว่าแอปพลิเคชันเหล่านั้นจะได้รับใบอนุญาตอีกครั้งโดยขึ้นอยู่กับข้อมูลรับรองของอุปกรณ์ใหม่
 

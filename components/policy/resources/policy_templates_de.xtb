@@ -1306,6 +1306,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, kann der Host für den Remotezugriff mit jedem lokalen Nutzer verknüpft werden.</translation>
 <translation id="5697306356229823047">Gerätenutzer aufzeichnen</translation>
+<translation id="570062449808736508">Wenn für diese Richtlinie kein leerer String angegeben ist, wird WebView URL-Einschränkungen des Contentanbieters des angegebenen Befugnisnamens erkennen.</translation>
 <translation id="5703863730741917647">Geben Sie die beim Erreichen der Leerlaufverzögerung auszuführende Aktion an.
 
           Diese Richtlinie ist veraltet und wird in Zukunft entfernt werden.
@@ -1546,6 +1547,7 @@ Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name=
           Wenn Sie diese Richtlinie konfigurieren, kann diese von Nutzern vorübergehend außer Kraft gesetzt werden, indem sie die Bildschirmtastatur aktivieren oder deaktivieren. Die Wahl des Nutzers ist jedoch nicht dauerhaft. Deshalb wird die Standardeinstellung wiederhergestellt, wenn die Anmeldeseite erneut aufgerufen wird oder der Nutzer innerhalb von einer Minute keine Eingabe auf der Anmeldeseite macht.
 
           Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur beim erstmaligen Aufrufen der Anmeldeseite deaktiviert. Nutzer können die Bildschirmtastatur jederzeit aktivieren oder deaktivieren, wobei ihr Status auf der Anmeldeseite bei einem Nutzerwechsel erhalten bleibt.</translation>
+<translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
 <translation id="6598235178374410284">Nutzer-Avatarbild</translation>
 <translation id="6628646143828354685">Mit dieser Richtlinie können Sie festlegen, ob Websites Zugriff auf Bluetooth-Geräte in der Nähe erhalten. Der Zugriff kann vollständig gesperrt werden oder der Nutzer wird jedes Mal gefragt, wenn eine Website auf Bluetooth-Geräte in der Nähe zugreifen möchte.
 

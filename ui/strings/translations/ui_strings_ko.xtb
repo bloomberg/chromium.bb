@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
-<translation id="1021451612696613363">알림을 보려면 로그인하세요.</translation>
 <translation id="111910763555783249">알림 설정</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1일 전}other{#일 전}}</translation>
 <translation id="1190609913194133056">알림 센터</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">페이지 위로</translation>
 <translation id="2190355936436201913">(비어있음)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" />TB/s</translation>
+<translation id="2336922762358079423">Google Keep에 주석 추가</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2497284189126895209">모든 파일</translation>
 <translation id="2515586267016047495">Alt</translation>

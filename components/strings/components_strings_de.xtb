@@ -9,6 +9,7 @@
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="1080116354587839789">An Breite anpassen</translation>
+<translation id="1103124106085518534">Fertig</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1111153019813902504">Vor Kurzem gespeicherte Lesezeichen</translation>
@@ -16,7 +17,6 @@
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
-<translation id="1150979032973867961">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Computers als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1152921474424827756">Rufen Sie eine <ph name="BEGIN_LINK" />im Cache gespeicherte Kopie<ph name="END_LINK" /> von <ph name="URL" /> auf.</translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> hat die Verbindung unerwartet geschlossen.</translation>
 <translation id="1161325031994447685">WLAN-Verbindung erneut herstellen</translation>
@@ -26,7 +26,6 @@
 <translation id="1201895884277373915">Mehr von dieser Website</translation>
 <translation id="1206967143813997005">Erste Signatur ungültig</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
-<translation id="121201262018556460">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat mit einem schwachen Schlüssel übermittelt. Ein Hacker könnte den privaten Schlüssel geknackt haben, sodass es sich möglicherweise nicht um den erwarteten Server handelt, sondern Sie stattdessen mit einem Hacker kommunizieren.</translation>
 <translation id="1219129156119358924">Systemsicherheit</translation>
 <translation id="1227224963052638717">Unbekannte Richtlinie</translation>
 <translation id="1227633850867390598">Wert ausblenden</translation>
@@ -61,20 +60,18 @@
 <translation id="1644184664548287040">Die Netzwerkkonfiguration ist ungültig und konnte nicht importiert werden.</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="1645368109819982629">Nicht unterstütztes Protokoll</translation>
-<translation id="1655462015569774233">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist gestern abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist vor # Tagen abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}}</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Google Chrome dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Google Chrome die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="168841957122794586">Das Serverzertifikat weist einen schwachen kryptografischen Schlüssel auf.</translation>
 <translation id="1701955595840307032">Vorgeschlagene Inhalte erhalten</translation>
-<translation id="1706954506755087368">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst ab morgen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat gilt vermutlich erst in # Tagen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.}}</translation>
 <translation id="1710259589646384581">Betriebssystem</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Setzen Sie sich mit dem Systemadministrator in Verbindung.</translation>
 <translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="1753706481035618306">Seitenzahl</translation>
-<translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Versuchen Sie, die Windows-Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Synchronisierungs-Passphrase aktualisieren</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
+<translation id="1815084229389833348">Hier werden Ihre kürzlich aufgerufenen Lesezeichen angezeigt.</translation>
 <translation id="1821930232296380041">Anfrage oder Anfrageparameter ungültig</translation>
 <translation id="1838667051080421715">Dies ist die Quelle einer Webseite.</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
@@ -107,7 +104,6 @@
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="2166049586286450108">Vollständiger Administratorzugriff</translation>
 <translation id="2166378884831602661">Diese Website kann keine sichere Verbindung bereitstellen</translation>
-<translation id="2171101176734966184">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren.</translation>
 <translation id="2181821976797666341">Richtlinien</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 Adresse}other{# Adressen}}</translation>
 <translation id="2212735316055980242">Richtlinie nicht gefunden</translation>
@@ -127,11 +123,9 @@
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="237718015863234333">Keine Alternativen für die Benutzeroberfläche verfügbar</translation>
 <translation id="2384307209577226199">Standardeinstellung durch Unternehmen</translation>
-<translation id="238526402387145295"><ph name="SITE" /> kann zurzeit nicht aufgerufen werden, da die Website <ph name="BEGIN_LINK" />HSTS verwendet<ph name="END_LINK" />. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
 <translation id="2392959068659972793">Richtlinien ohne Wert zeigen</translation>
 <translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
-<translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
@@ -176,9 +170,7 @@
 <translation id="2896499918916051536">Dieses Plug-in wird nicht unterstützt.</translation>
 <translation id="2900469785430194048">Beim Versuch, diese Webseite aufzurufen, hat Google Chrome das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
-<translation id="2915500479781995473">Dieser Server konnte nicht nachweisen, dass es sich dabei um <ph name="DOMAIN" /> handelt, da das Sicherheitszertifikat abgelaufen ist. Der Grund hierfür könnte eine fehlerhafte Konfiguration oder ein Angreifer sein, der Ihre Verbindung abfängt. Die Uhr Ihres Computers zeigt derzeit <ph name="CURRENT_TIME" /> an. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie dann diese Seite.</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
-<translation id="2941952326391522266">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat stammt von <ph name="DOMAIN2" />. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
@@ -211,7 +203,6 @@
       folgt: <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3202578601642193415">Neueste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
-<translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten erneut zu senden.</translation>
 <translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE" /> ist.</translation>
 <translation id="323107829343500871">CVC für <ph name="CREDIT_CARD" /> eingeben</translation>
@@ -270,7 +261,6 @@
 <translation id="3714780639079136834">Mobile Daten oder WLAN aktivieren</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proxy, Firewall und DNS-Konfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
-<translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
 <translation id="3788090790273268753">Das Zertifikat für diese Website läuft 2016 ab und die Zertifikatskette enthält ein Zertifikat mit SHA-1-Signatur.</translation>
@@ -314,12 +304,10 @@
 <translation id="4304224509867189079">Anmelden</translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE" />-Wert</translation>
-<translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4381091992796011497">Nutzername:</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4395129973926795186"><ph name="START_DATE" /> bis <ph name="END_DATE" /></translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
-<translation id="4424024547088906515">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="4458874409874303848">SafeSites</translation>
 <translation id="4461847750548395463">Diese Nachricht wird Ihnen angezeigt, weil Google SafeSites aktiviert ist.</translation>
@@ -335,7 +323,6 @@
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Sie sehen sich eine Erweiterungsseite an.</translation>
-<translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
@@ -348,11 +335,11 @@
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4782449893814226250">Du hast deine Eltern gefragt, ob du diese Seite besuchen darfst.</translation>
 <translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
-<translation id="4807049035289105102">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, da die Website verschlüsselte Anmeldedaten gesendet hat, die von Google Chrome nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
+<translation id="4884656795097055129">Weitere Artikel werden zu gegebener Zeit erscheinen.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
@@ -372,7 +359,6 @@
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxyadresse prüfen<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
 <translation id="5089810972385038852">Bundesstaat/-land</translation>
-<translation id="5094747076828555589">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chromium als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="5115563688576182185">(64-Bit)</translation>
 <translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> für "<ph name="SEARCH_STRING" />" gefunden</translation>
@@ -383,6 +369,7 @@
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
+<translation id="52060377617855516">{URL_count,plural, =1{1 Webseite gefunden}other{# Webseiten gefunden}}</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5299298092464848405">Fehler beim Parsen der Richtlinie</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
@@ -390,7 +377,6 @@
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="536296301121032821">Fehler beim Speichern der Richtlinieneinstellungen</translation>
-<translation id="540969355065856584">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist zurzeit ungültig. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5421136146218899937">Browserdaten löschen...</translation>
 <translation id="5430298929874300616">Lesezeichen löschen</translation>
 <translation id="5431657950005405462">Ihre Datei wurde nicht gefunden</translation>
@@ -485,7 +471,6 @@
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
 <translation id="662080504995468778">Bleiben</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
-<translation id="6634865548447745291">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, da <ph name="BEGIN_LINK" />dieses Zertifikat widerrufen wurde<ph name="END_LINK" />. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
 <translation id="6660210980321319655">Automatische Meldung am <ph name="CRASH_TIME" /></translation>
@@ -515,7 +500,6 @@
 <translation id="6989763994942163495">Erweiterte Einstellungen anzeigen</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">Passwörter</translation>
-<translation id="7050187094878475250">Sie haben versucht, <ph name="DOMAIN" /> zu erreichen. Der Server hat jedoch ein Zertifikat präsentiert, dessen Gültigkeitsdauer zu lang ist, um vertrauenswürdig zu sein.</translation>
 <translation id="7087282848513945231">Landkreis</translation>
 <translation id="7088615885725309056">Älter</translation>
 <translation id="7090678807593890770">Auf Google nach <ph name="LINK" /> suchen</translation>
@@ -534,7 +518,6 @@
 <translation id="7246609911581847514">Diese Nachricht wird Ihnen angezeigt, weil Ihr Administrator neue Websites zuerst genehmigen muss, bevor Sie diese öffnen können.</translation>
 <translation id="724975217298816891">Geben Sie das Gültigkeitsdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
-<translation id="7265986070661382626"><ph name="SITE" /> kann zurzeit nicht aufgerufen werden, weil die Website das <ph name="BEGIN_LINK" />Zertifikats-Pinning<ph name="END_LINK" /> nutzt. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite später wahrscheinlich wieder funktioniert.</translation>
 <translation id="7269802741830436641">Diese Webseite weist eine Weiterleitung auf.</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7298195798382681320">Empfohlen</translation>
@@ -564,7 +547,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie zuvor eingegeben haben. Sie können diese Daten erneut senden, dabei werden jedoch sämtliche Aktionen wiederholt, die zuvor durch diese Seite ausgeführt wurden.</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
-<translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE" />Soll sie übersetzt werden?</translation>
 <translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
 <translation id="7578104083680115302">Mit Karten, die Sie bei Google gespeichert haben, können Sie schnell und geräteübergreifend auf Websites und in Apps bezahlen.</translation>
@@ -683,13 +665,11 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8987927404178983737">Monat</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
-<translation id="8997023839087525404">Der Server präsentierte ein Zertifikat, das nicht gemäß der Richtlinie zur Zertifikatstransparenz öffentlich offengelegt wurde. Dies ist für einige Zertifikate jedoch eine Voraussetzung, mit der sichergestellt wird, dass sie vertrauenswürdig sind und vor Angriffen schützen.</translation>
 <translation id="9001074447101275817">Für den Proxy <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE" /> vor.</translation>
 <translation id="9038649477754266430">Vorhersagedienst zum schnelleren Laden von Seiten verwenden</translation>
 <translation id="9039213469156557790">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Verhalten der Seite verändern.</translation>
-<translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
 <translation id="9092364396508701805">Die Seite <ph name="HOST_NAME" /> funktioniert nicht</translation>

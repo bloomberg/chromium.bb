@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Chrome ierīce</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
-<translation id="1683360892415596327">Aizpildīt mūsu aptauju</translation>
 <translation id="1723752762323179280">Iziešana no sesijas</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1812696562331527143">Ievades metode ir mainīta uz <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />trešā puse<ph name="END_LINK" />).
@@ -65,7 +64,6 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="2819276065543622893">Jūs tagad tiksiet izrakstīts.</translation>
 <translation id="2825619548187458965">Plaukts</translation>
 <translation id="2844169650293029770">USB-C ierīce (pieslēgvieta kreisajā pusē priekšā)</translation>
-<translation id="2850666676745651490">Palete</translation>
 <translation id="2857608528410806398">Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts. Šeit ir jāievada ātrās atbloķēšanas funkcijas paziņojuma pamatteksts.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2942516765047364088">Plaukta pozīcija</translation>
@@ -219,7 +217,6 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="7823564328645135659">Pēc jūsu iestatījumu sinhronizēšanas valoda ir mainīta no <ph name="FROM_LOCALE" /> uz <ph name="TO_LOCALE" />.</translation>
 <translation id="785750925697875037">Skatīt mobilo kontu</translation>
 <translation id="7864539943188674973">Atspējot Bluetooth</translation>
-<translation id="7869829692393275047">Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts. Chrome OS HaTS aptaujas teksts.</translation>
 <translation id="7893838033650689677">Ieslēgt Wi-Fi</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7957227661277029961"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā ir ieslēgta. Izmantojiet oficiālo uzlādes ierīci.</translation>

@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
-<translation id="1683360892415596327">در نظرسنجی ما شرکت کنید</translation>
 <translation id="1723752762323179280">خروج از جلسه</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
@@ -64,7 +63,6 @@
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
 <translation id="2825619548187458965">قفسه</translation>
 <translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
-<translation id="2850666676745651490">پالت</translation>
 <translation id="2857608528410806398">‏متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید. متن اعلان QU Feature اینجا می‌آید.</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="2942516765047364088">موقعیت قفسه</translation>
@@ -217,7 +215,6 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» تغییر کرد.</translation>
 <translation id="785750925697875037">مشاهده حساب تلفن همراه</translation>
 <translation id="7864539943188674973">غیرفعال کردن بلوتوث</translation>
-<translation id="7869829692393275047">‏متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست. متن نظرسنجی میزان رضایت از سیستم‌عامل Chrome اینجاست.</translation>
 <translation id="7893838033650689677">‏روشن کردن Wi-Fi</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7957227661277029961">ممکن است وقتی <ph name="DEVICE_TYPE" /> خاموش است، شارژ نشود. از یک شارژ موردتأیید استفاده کنید.</translation>

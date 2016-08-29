@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome ಸಾಧನ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
-<translation id="1683360892415596327">ನಮ್ಮ ಸಮೀಕ್ಷೆಯಲ್ಲಿ ಪಾಲ್ಗೊಳ್ಳಿ</translation>
 <translation id="1723752762323179280">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID" />* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK" />3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK" />).
@@ -65,7 +64,6 @@
 <translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="2825619548187458965">ಶೆಲ್ಫ್</translation>
 <translation id="2844169650293029770">USB-C ಸಾಧನ (ಎಡ ಭಾಗದ ಮುಂದಿನ ಪೋರ್ಟ್‌)</translation>
-<translation id="2850666676745651490">ಪ್ಯಾಲೆಟ್</translation>
 <translation id="2857608528410806398">QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ. QU ವೈಶಿಷ್ಟ್ಯ ಅಧಿಸೂಚನೆ ಮುಖ್ಯಭಾಗ ಇಲ್ಲಿದೆ.</translation>
 <translation id="2872961005593481000">ಮುಚ್ಚಿಬಿಡಿ </translation>
 <translation id="2942516765047364088">ಶೆಲ್ಫ್ ಸ್ಥಾನ</translation>
@@ -218,7 +216,6 @@
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು "<ph name="FROM_LOCALE" />" ನಿಂದ "<ph name="TO_LOCALE" />" ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="7869829692393275047">Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ. Chrome OS HaTS ಸಮೀಕ್ಷೆ ಪಠ್ಯ ಇಲ್ಲಿದೆ.</translation>
 <translation id="7893838033650689677">ವೈ-ಫೈ ಆನ್ ಮಾಡಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7957227661277029961">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಲು ಪರಿಗಣಿಸಿ.</translation>

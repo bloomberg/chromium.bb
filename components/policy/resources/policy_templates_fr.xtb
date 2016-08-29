@@ -1418,6 +1418,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
           Si ce paramètre est désactivé ou n'est pas configuré, l'hôte d'accès à distance peut être associé à n'importe quel utilisateur local.</translation>
 <translation id="5697306356229823047">Générer une liste des utilisateurs de l'appareil</translation>
+<translation id="570062449808736508">Lorsque ce règlement est défini sur une chaîne non vide, WebView lit les restrictions d'URL depuis le fournisseur de contenu portant le nom de l'autorité indiquée.</translation>
 <translation id="5703863730741917647">Définit l'action à effectuer lorsque le délai d'inactivité est atteint.
 
           Veuillez noter que cette règle est obsolète et qu'elle sera supprimée ultérieurement.
@@ -1683,6 +1684,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           Si vous définissez cette règle, les utilisateurs peuvent temporairement l'ignorer en activant ou en désactivant le clavier à l'écran. Toutefois, leur sélection n'est pas permanente, et le paramètre par défaut est restauré chaque fois que l'écran de connexion s'affiche de nouveau ou lorsque l'utilisateur reste inactif sur l'écran de connexion pendant une minute.
 
           Si vous ne définissez pas cette règle, le clavier à l'écran est désactivé la première fois que l'écran de connexion s'affiche. Les utilisateurs peuvent activer ou désactiver à tout moment le clavier à l'écran, et son état est permanent d'un utilisateur à l'autre sur le même écran de connexion.</translation>
+<translation id="6573305661369899995">Définir une source externe pour les restrictions d'URL</translation>
 <translation id="6598235178374410284">Avatar de l'utilisateur</translation>
 <translation id="6628646143828354685">Permet d'indiquer si les sites Web sont autorisés à accéder aux appareils Bluetooth à proximité. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils Bluetooth à proximité.
 

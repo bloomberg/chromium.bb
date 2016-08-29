@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-eszköz</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
-<translation id="1683360892415596327">Töltse ki kérdőívünket</translation>
 <translation id="1723752762323179280">Kilépés a munkamenetből</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1812696562331527143">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />harmadik fél<ph name="END_LINK" />).
@@ -65,7 +64,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="2819276065543622893">A rendszer most kijelentkezteti Önt.</translation>
 <translation id="2825619548187458965">Polc</translation>
 <translation id="2844169650293029770">C típusú USB-vel kompatibilis eszköz (bal első port)</translation>
-<translation id="2850666676745651490">Paletta</translation>
 <translation id="2857608528410806398">A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2942516765047364088">Polc pozíciója</translation>
@@ -219,7 +217,6 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="7823564328645135659">A beállítások szinkronizálását követően "<ph name="FROM_LOCALE" />" nyelvről "<ph name="TO_LOCALE" />" nyelvre változott a nyelvi beállítás.</translation>
 <translation id="785750925697875037">Mobil fiók megtekintése</translation>
 <translation id="7864539943188674973">Bluetooth letiltása</translation>
-<translation id="7869829692393275047">Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege. Ide kerül a Chrome OS elégedettségkövető felmérésének szövege.</translation>
 <translation id="7893838033650689677">Wi-Fi bekapcsolása</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7957227661277029961">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva. Érdemes a hivatalos töltőt használnia.</translation>

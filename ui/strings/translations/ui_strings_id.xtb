@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
-<translation id="1021451612696613363">Masuk untuk melihat notifikasi</translation>
 <translation id="111910763555783249">Setelan notifikasi</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 hari yang lalu}other{# hari yang lalu}}</translation>
 <translation id="1190609913194133056">Pusat Notifikasi</translation>
@@ -23,7 +22,7 @@
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(kosong)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/dtk</translation>
-<translation id="2336922762358079423">Anotasi di Google Keep</translation>
+<translation id="2336922762358079423">Anotasikan di Google Keep</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
 <translation id="2497284189126895209">Semua Jenis File</translation>
 <translation id="2515586267016047495">Alt</translation>

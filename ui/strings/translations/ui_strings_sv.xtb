@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1021451612696613363">Logga in om du vill visa aviseringarna</translation>
 <translation id="111910763555783249">Aviseringsinställningar</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1190609913194133056">Meddelandecenter</translation>
@@ -23,6 +22,7 @@
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(tom)</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek</translation>
+<translation id="2336922762358079423">Anteckna i Google Keep</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2497284189126895209">Alla filer</translation>
 <translation id="2515586267016047495">Alt</translation>

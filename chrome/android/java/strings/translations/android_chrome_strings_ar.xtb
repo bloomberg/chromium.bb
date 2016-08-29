@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1206892813135768548">نسخ نص الرابط</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
+<translation id="1211530540767271776">‏لا توجد أجهزة USB هنا</translation>
 <translation id="1240668123557180468">‏تعرَّف على صفحات الويب التي أرسلتها الأجهزة المجاورة. يُجمِّع Chrome صفحات الويب المرتبطة بالأجهزة حولك ويُرسلها دون الكشف عن هويتها إلى خدمة Google لمعرفة أكثرها نفعًا لك ثم يعرضها.
 
 يتعين عليك تشغيل خدمتى البلوتوث والموقع لاستخدام الشبكة المادية.</translation>
@@ -177,7 +178,6 @@
 <translation id="3012408695656332380">استبدال بيانات هذا الجهاز ببيانات <ph name="TO_ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />، ولكن سيتم فقدان البيانات التي تم إنشاؤها منذ تسجيل خروجك.</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">حفظ الفيديو</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
 <translation id="3117051980354074377">‏للحصول على الإشارات من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
@@ -243,8 +243,8 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3946611741043634542">‏من خلال المتابعة، فإنك توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> من Chrome.</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
+<translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3988213473815854515">الموقع مسموح به</translation>
-<translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
@@ -313,7 +313,6 @@
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
 <translation id="4836364883164334657">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4923459931733593730">الدفع</translation>
@@ -368,6 +367,7 @@
 <translation id="5424588387303617268">يتوفر <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="544291274896356069">ستتم مغادرة وضع التصفح المتخفي إذا تم فتح هذا الرابط في تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="5447201525962359567">سعة التخزين في الموقع كاملة، بما في ذلك ملفات تعريف الارتباط وغيرها من البيانات المُخزَّنَة محليًا</translation>
+<translation id="5456381639095306749">تنزيل الصفحة</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5487729733663684359">‏لم يعد يتم دعم تحديثات Chrome لهذا الإصدار من Android.</translation>
 <translation id="5511351932351731210">الإرسال دائمًا</translation>
@@ -415,6 +415,7 @@
 <translation id="5902828464777634901">سيتم حذف كل البيانات المحلية المخزنة بواسطة موقع الويب هذا بما في ذلك ملفات تعريف الارتباط.</translation>
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
 <translation id="5916664084637901428">تشغيل</translation>
+<translation id="5919204609460789179">تحديث <ph name="PRODUCT_NAME" /> لبدء المزامنة</translation>
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="6010869025736512584">جارٍ الوصول إلى إدخال الفيديو</translation>
 <translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
@@ -471,7 +472,6 @@
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
 <translation id="6643016212128521049">محو</translation>
-<translation id="6647073004883890710">هل تريد من <ph name="PASSWORD_MANAGER_BRAND" /> تحديث كلمة المرور لـ <ph name="USERNAME" /> لهذا الموقع؟</translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
@@ -578,6 +578,7 @@
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7949961459945740081">الحصول على أحدث الميزات</translation>
 <translation id="7963646190083259054">المورّد:</translation>
@@ -600,6 +601,7 @@
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">المحتوى</translation>
 <translation id="8173098127580644436">بدايةَ الوقت</translation>
+<translation id="8187025609458112874">لا يمكن مشاركة الملفات المحذوفة</translation>
 <translation id="8190358571722158785">يتبقى يوم واحد</translation>
 <translation id="8200772114523450471">استئناف</translation>
 <translation id="8202097416529803614">ملخص الطلب</translation>
@@ -635,7 +637,6 @@
 <translation id="856481929701340285">طلب موقع الكمبيوتر</translation>
 <translation id="857943718398505171">مسموح به (موصى به)</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
-<translation id="8588878054171169263">حفظ الصورة</translation>
 <translation id="8617240290563765734">‏هل تريد فتح عنوان URL المقترح والمحدد في المحتوى الذي تم تنزيله؟</translation>
 <translation id="862875433388403934">قد لا يكون المحتوى (أفلام، موسيقى، وما إلى ذلك) الذي تم تنزيله في تطبيقات أخرى قابلاً للتشغيل حتى تُعيد هذه التطبيقات الحصول على التراخيص استنادًا إلى بيانات اعتماد الجهاز الجديدة.
 

@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1206892813135768548">Копіювати текст посилання</translation>
 <translation id="1209206284964581585">Приховати</translation>
+<translation id="1211530540767271776">Немає пристроїв USB</translation>
 <translation id="1240668123557180468">Переглядайте веб-сторінки, надіслані об’єктами поблизу. Chrome збирає веб-сторінки, пов’язані з об’єктами поблизу вас, і анонімно надсилає їх службі Google, щоб показувати вам найцікавіші.
 
 Увімкніть Bluetooth і службу локації, щоб користуватися сервісом "Інтернет навколо нас".</translation>
@@ -177,7 +178,6 @@
 <translation id="3012408695656332380">Дані на цьому пристрої буде замінено даними з облікового запису <ph name="TO_ACCOUNT" />. Щоб відновити наявні дані, перейдіть в обліковий запис <ph name="FROM_ACCOUNT" />. Дані, які ви створили після виходу з облікового запису, буде втрачено.</translation>
 <translation id="3029704984691124060">Парольні фрази не збігаються</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="3090193911106258841">Отримання доступу до аудіо- й відеовходу</translation>
 <translation id="3117051980354074377">Щоб мати доступ до закладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
@@ -243,8 +243,8 @@
 <translation id="393697183122708255">Голосовий пошук вимкнено</translation>
 <translation id="3946611741043634542">Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="3950820424414687140">Увійти</translation>
+<translation id="397583555483684758">Синхронізація перестала працювати</translation>
 <translation id="3988213473815854515">Доступ до геоданих надано</translation>
-<translation id="3992315671621218278">Зберегти посилання</translation>
 <translation id="3997476611815694295">Неважливі дані</translation>
 <translation id="4002066346123236978">Назва</translation>
 <translation id="4042870126885713738">Показувати пропозиції, коли неможливо перейти за веб-адресою чи не вдається встановити з’єднання</translation>
@@ -312,7 +312,6 @@
 <translation id="4816465935029283692">Типи даних</translation>
 <translation id="4827948050554950725">Додати кредитну картку</translation>
 <translation id="4836364883164334657">Ваше з’єднання з цим сайтом не конфіденційне. Зловмисники можуть намагатися викрасти ваші дані з домену <ph name="DOMAIN_NAME" /> (зокрема фотографії, паролі, повідомлення та дані кредитних карток).</translation>
-<translation id="4875622588773761625">Оновити пароль для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4923459931733593730">Оплата</translation>
@@ -367,6 +366,7 @@
 <translation id="5424588387303617268">Доступно <ph name="GIGABYTES" /> Гб</translation>
 <translation id="544291274896356069">Якщо ви відкриєте це посилання в зовнішньому додатку, буде вимкнено режим анонімного перегляду. Продовжити?</translation>
 <translation id="5447201525962359567">Усі дані сайтів, зокрема файли cookie й інші локально збережені дані</translation>
+<translation id="5456381639095306749">Завантажити сторінку</translation>
 <translation id="5487521232677179737">Видалити дані</translation>
 <translation id="5487729733663684359">Chrome більше не оновлюється в цій версії Android.</translation>
 <translation id="5511351932351731210">Завжди надсилати</translation>
@@ -414,6 +414,7 @@
 <translation id="5902828464777634901">Буде видалено всі локальні дані, які зберіг цей веб-сайт, зокрема файли cookie.</translation>
 <translation id="5911030830365207728">Перекладач Google</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
+<translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="6010869025736512584">Отримання доступу до відеовходу</translation>
 <translation id="6012342843556706400">Chrome потрібен доступ до геоданих, щоб дозволити цьому сайту використовувати їх.</translation>
@@ -470,7 +471,6 @@
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6627583120233659107">Редагувати папку</translation>
 <translation id="6643016212128521049">Очистити</translation>
-<translation id="6647073004883890710">Оновити пароль користувача <ph name="USERNAME" /> для цього сайту в <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="6656545060687952787">Щоб знаходити пристрої, Chrome потрібний доступ до геоданих. <ph name="BEGIN_LINK" />Оновлити дозволи<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6659594942844771486">Вкладка</translation>
@@ -577,6 +577,7 @@
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="7851858861565204677">Інші пристрої</translation>
 <translation id="7876243839304621966">Видалити все</translation>
+<translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7949961459945740081">Завантажити найновіші функції</translation>
 <translation id="7963646190083259054">Постачальник:</translation>
@@ -599,6 +600,7 @@
 <translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Вміст</translation>
 <translation id="8173098127580644436">весь період</translation>
+<translation id="8187025609458112874">Не можна поділитися видаленими файлами</translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
@@ -634,7 +636,6 @@
 <translation id="856481929701340285">Версія для комп’ютера</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
-<translation id="8588878054171169263">Зберегти зображення</translation>
 <translation id="8617240290563765734">Перейти за URL-адресою, указаною в завантаженому вмісті?</translation>
 <translation id="862875433388403934">Завантажений в інші додатки вміст (фільми, музика тощо) може не відтворюватися, доки ці додатки самі не отримають ліцензії на основі нових облікових даних пристрою.
 

@@ -27,7 +27,6 @@
 <translation id="1621499497873603021">Verbleibende Akku-Laufzeit: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-Gerät</translation>
 <translation id="1677472565718498478">Verbleibende Zeit: <ph name="TIME" /> h</translation>
-<translation id="1683360892415596327">An unserer Umfrage teilnehmen</translation>
 <translation id="1723752762323179280">Sitzung wird beendet</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1812696562331527143">Ihre Eingabemethode hat sich in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />Drittanbieter<ph name="END_LINK" />) geändert.
@@ -65,7 +64,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="2844169650293029770">USB-C-Gerät (Port vorne links)</translation>
-<translation id="2850666676745651490">Palette</translation>
 <translation id="2857608528410806398">Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen. Benachrichtigungstext für schnelles Entsperren hier einfügen.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2942516765047364088">Ablageposition</translation>
@@ -219,7 +217,6 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="785750925697875037">Mobiles Konto aufrufen</translation>
 <translation id="7864539943188674973">Bluetooth deaktivieren</translation>
-<translation id="7869829692393275047">Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier. Chrome OS HaTS-Umfragetext hier.</translation>
 <translation id="7893838033650689677">WLAN aktivieren</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7957227661277029961">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist. Wir empfehlen Ihnen, dass offizielle Ladegerät zu verwenden.</translation>

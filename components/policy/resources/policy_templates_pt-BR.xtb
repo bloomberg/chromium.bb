@@ -499,6 +499,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta configuração for desativada, as páginas da Web não poderão usar JavaScript, e o usuário não poderá alterá-la.
 
       Se esta configuração for ativada ou não for definida, as páginas da Web poderão usar JavaScript, mas o usuário poderá alterá-la.</translation>
+<translation id="2753637905605932878">Restringir o alcance das portas UDP locais usadas por WebRTC</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicativos que podem ser instalados</translation>
 <translation id="2759224876420453487">Controla o comportamento do usuário em uma sessão de diversos perfis</translation>
 <translation id="2761483219396643566">Intervalo da advertência de inatividade no funcionamento com energia da bateria</translation>
@@ -724,6 +725,15 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3264793472749429012">Codificações do provedor de pesquisa padrão</translation>
 <translation id="3273221114520206906">Configuração padrão do JavaScript</translation>
 <translation id="3288595667065905535">Liberar canal</translation>
+<translation id="3291367259589875381">O uso dessa política foi suspenso no M48 em favor de <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" /> e removido no M54.
+
+      Ativa as previsões de rede no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem essa configuração.
+
+      Controla não apenas a pré-busca de DNS, mas também a pré-conexão de TCP e SSL de páginas da Web. O nome da política se refere à pré-busca de DNS por razões históricas.
+
+      Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou modificá-la no <ph name="PRODUCT_NAME" />.
+
+      Se essa política não for definida, ela ficará ativada, mas o usuário poderá alterá-la.</translation>
 <translation id="3292147213643666827">Permite que o <ph name="PRODUCT_NAME" /> atue como um proxy entre o <ph name="CLOUD_PRINT_NAME" /> e impressoras legadas conectadas à máquina.
 
      Se essa configuração estiver ativada ou não configurada, os usuários poderão ativar o proxy de impressão em nuvem pela autenticação com sua Conta do Google.
@@ -1165,6 +1175,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           O valor "*" na lista negra significa que todos os hosts de mensagens nativas estão presentes na lista negra, a menos que sejam explicitamente relacionados na lista de permissões.
 
           Se a política não for definida, <ph name="PRODUCT_NAME" /> carregará todos os hosts de mensagens nativas instalados.</translation>
+<translation id="5288772341821359899">Se a política for configurada, o alcance da porta UDP usado por WebRTC será restrito ao intervalo de porta especificado (pontos de extremidade inclusos).
+
+      Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
 <translation id="5302612588919538756">O uso desta política está suspenso. Use SyncDisabled em vez dela.
 
@@ -1273,6 +1286,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta configuração é desativada ou não é definida, o host de acesso remoto pode ser associado a qualquer usuário local.</translation>
 <translation id="5697306356229823047">Reporta os usuários do dispositivo</translation>
+<translation id="570062449808736508">Quando essa política estiver definida para uma string não vazia, o WebView lerá as restrições de URL do provedor de conteúdo com o nome de autoridade fornecido.</translation>
 <translation id="5703863730741917647">Especifica a ação a ser executada quando o tempo de inatividade for atingido.
 
           Observe que o uso desta política está suspenso, e ela será removida no futuro.
@@ -1516,6 +1530,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você definir essa política, os usuários poderão modificá-la temporariamente ao ativar ou desativar o teclado na tela. No entanto, a opção do usuário não é permanente, e o padrão é restaurado sempre que a tela de login é exibida novamente ou que o usuário permanece inativo na tela de login por um minuto.
 
           Se essa política não for definida, o teclado na tela será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativá-lo ou desativá-lo a qualquer momento e seu status na tela de login é mantido entre os usuários.</translation>
+<translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6598235178374410284">Imagem do avatar do usuário</translation>
 <translation id="6628646143828354685">Permite definir se os websites podem ter acesso aos dispositivos Bluetooth nas proximidades. O acesso pode ser completamente bloqueado, ou uma pergunta será feita ao usuário toda vez que um website quiser ter acesso a dispositivos Bluetooth próximos.
 
@@ -1806,6 +1821,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
 <translation id="7468416082528382842">Local do registro do Windows:</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
+<translation id="7474249562477552702">Se os certificados SHA-1 assinados emitidos pelas âncoras de confiança locais são permitidos ou não</translation>
 <translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>
 <translation id="749556411189861380">Informa a versão do sistema operacional e do firmware dos dispositivos inscritos.
 
@@ -1821,6 +1837,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se configurada como SAML_INTERSTITIAL, o login exibe uma tela intersticial oferecendo ao usuário a opção de prosseguir com a autenticação por IdP de SAML do domínio de inscrição do dispositivo ou voltar para o fluxo normal de login GAIA.</translation>
 <translation id="7567380065339179813">Permitir plug-ins nestes sites</translation>
+<translation id="757395965347379751">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> permite certificados SHA-1 assinados, desde que eles sejam validados e estejam vinculados a certificados de CA instalados localmente.
+
+      Esta política depende da permissão de assinaturas SHA-1 pela pilha de verificação de certificados do sistema operacional. Se a atualização de um SO alterar o modo como esse sistema lida com certificados SHA-1, talvez esta política deixe de ter efeito. Além disso, esta política é usada como alternativa temporária para dar às empresas mais tempo para deixar de usar SHA-1. Esta política será removida no dia 1 de janeiro de 2019 ou em uma data próxima a essa.
+
+      Se esta política não estiver configurada ou estiver configurada como false, o <ph name="PRODUCT_NAME" /> seguirá a programação de suspensão de uso de SHA-1 anunciada publicamente.</translation>
 <translation id="7593523670408385997">Configura o tamanho do cache que o <ph name="PRODUCT_NAME" /> usará para armazenar os arquivos em cache no disco.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o tamanho de cache indicado independente de o usuário especificar ou não a sinalização "--disk-cache-size". O valor especificado nesta política não é um limite rígido, mas sim uma sugestão para para o sistema de armazenamento em cache, por isso qualquer valor abaixo de alguns megabytes será considerado muito pequeno e será arredondado para um mínimo razoável.

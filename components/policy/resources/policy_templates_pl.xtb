@@ -735,7 +735,7 @@
 
       Ta zasada steruje nie tylko wstępnym pobieraniem DNS, ale też wstępnym łączeniem przez TCP i SSL oraz wstępnym renderowaniem stron internetowych. Nazwa zasady wiąże się ze wstępnym pobieraniem DNS z przyczyn historycznych.
 
-      Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani nadpisać tego ustawienia w <ph name="PRODUCT_NAME" />.
+      Jeśli włączysz lub wyłączysz tę zasadę, użytkownicy nie będą mogli zmienić ani zastąpić tego ustawienia w <ph name="PRODUCT_NAME" />.
 
       Jeśli zasada pozostanie nieskonfigurowana, ustawienie zostanie włączone, ale użytkownicy będą mogli je zmienić.</translation>
 <translation id="3292147213643666827">Umożliwia działanie <ph name="PRODUCT_NAME" /> jako serwera proxy między <ph name="CLOUD_PRINT_NAME" /> a starszymi drukarkami podłączonymi do komputera.
@@ -1303,6 +1303,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, host zdalnego dostępu będzie mógł być skojarzony z dowolnym użytkownikiem lokalnym.</translation>
 <translation id="5697306356229823047">Raportuj użytkowników urządzenia</translation>
+<translation id="570062449808736508">Gdy dla tej zasady zostanie ustawiony ciąg niepusty, komponent WebView będzie odczytywać ograniczenia URL przekazywane przez dostawcę treści o określonej nazwie urzędowej.</translation>
 <translation id="5703863730741917647">Określa czynność podejmowaną po osiągnięciu opóźnienia bezczynności.
 
           Ta zasada jest przestarzała i w przyszłości zostanie wycofana.
@@ -1548,6 +1549,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli skonfigurujesz tę zasadę, użytkownicy będą mogli ją tymczasowo zastępować, włączając lub wyłączając klawiaturę ekranową. Wybór użytkownika nie będzie jednak stały i ustawienie domyślnie będzie przywracane po każdym wyświetleniu ekranu logowania lub jeśli przez minutę użytkownik nie wykona żadnej czynności na tym ekranie.
 
           Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
+<translation id="6573305661369899995">Pozwala na ustawianie zewnętrznego źródła ograniczeń URL</translation>
 <translation id="6598235178374410284">Obraz awatara użytkownika</translation>
 <translation id="6628646143828354685">Pozwala określić, czy strony mogą korzystać z urządzeń Bluetooth w pobliżu. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
 

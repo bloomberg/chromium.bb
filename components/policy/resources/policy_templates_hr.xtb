@@ -1305,6 +1305,7 @@
 
           Ako se to pravilo onemogući ili ne postavi, host daljinskog pristupa može se povezati s bilo kojim lokalnim korisnikom.</translation>
 <translation id="5697306356229823047">Izvješće o korisnicima uređaja</translation>
+<translation id="570062449808736508">Kada je to pravilo postavljeno na niz koji nije prazan, web-prikaz će čitati ograničenja za URL-ove davatelja sadržaja s određenim nazivom nadležnog tijela.</translation>
 <translation id="5703863730741917647">Određuje radnju koja se poduzima kada se dosegne odgoda zbog neaktivnosti.
 
           Uzmite u obzir da se to pravilo obustavlja te će ubuduće biti uklonjeno.
@@ -1549,6 +1550,7 @@
           Ako postavite ovo pravilo, korisnici ga mogu privremeno nadjačati tako što će omogućiti ili onemogućiti tipkovnicu na zaslonu. No, korisnikov odabir nije trajan i zadana se postavka vraća svaki put kad se ponovo prikaže zaslon za prijavu ili kad je korisnik neaktivan 1 minutu na zaslonu za prijavu.
 
           Ako ne postavite to pravilo, tipkovnica na zaslonu onemogućena je prilikom prvog prikazivanja zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti tipkovnicu na zaslonu u bilo kojem trenutku i njen status na zaslonu za prijavu zadržava se među korisnicima.</translation>
+<translation id="6573305661369899995">Postavi vanjski izvor ograničenja URL-ova</translation>
 <translation id="6598235178374410284">Slika avatara korisnika</translation>
 <translation id="6628646143828354685">Omogućuje vam da odredite smiju li web-lokacije dobivati pristup Bluetooth uređajima u blizini. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti Bluetooth uređajima u blizini.
 

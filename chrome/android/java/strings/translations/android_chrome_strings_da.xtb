@@ -15,6 +15,7 @@
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1206892813135768548">Kopiér linktekst</translation>
 <translation id="1209206284964581585">Skjul indtil videre</translation>
+<translation id="1211530540767271776">Der er ingen USB-enheder her</translation>
 <translation id="1240668123557180468">Find websider, som genstande i nærheden sender. Chrome samler websider, der er tilknyttet genstande omkring dig, sender dem anonymt til en Google-tjeneste for at finde dem, der er mest nyttige for dig, og viser dem derefter.
 
 Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translation>
@@ -177,7 +178,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="3012408695656332380">Erstat denne enheds data med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />, men du mister de data, der er oprettet, efter du er logget ud.</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
-<translation id="3063601790762993062">Gem video</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
 <translation id="3117051980354074377">Log ind på Chrome for at se dine bogmærker på dine andre enheder.</translation>
@@ -243,8 +243,8 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="393697183122708255">Aktiveret talesøgning ikke tilgængelig</translation>
 <translation id="3946611741043634542">Ved at fortsætte accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Log ind</translation>
+<translation id="397583555483684758">Synkroniseringen fungerer ikke mere</translation>
 <translation id="3988213473815854515">Placeringen er tilladt</translation>
-<translation id="3992315671621218278">Gem link</translation>
 <translation id="3997476611815694295">Lagerplads, der ikke er vigtig</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
@@ -312,7 +312,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Tilføj kreditkort</translation>
 <translation id="4836364883164334657">Din forbindelse til dette website er ikke privat. Hackere kan forsøge at stjæle dine oplysninger (f.eks. billeder, adgangskoder, meddelelser og kreditkort) fra <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4923459931733593730">Betaling</translation>
@@ -367,6 +366,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB ledig plads</translation>
 <translation id="544291274896356069">Du forlader inkognitotilstand, hvis dette link åbnes i en ekstern applikation. Vil du fortsætte?</translation>
 <translation id="5447201525962359567">Al websitelagerplads, herunder cookies og andre data, der er gemt lokalt</translation>
+<translation id="5456381639095306749">Download siden</translation>
 <translation id="5487521232677179737">Ryd data</translation>
 <translation id="5487729733663684359">Chrome understøtter ikke længere denne version af Android.</translation>
 <translation id="5511351932351731210">Send altid</translation>
@@ -414,6 +414,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
+<translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="6010869025736512584">Åbner videoinput</translation>
 <translation id="6012342843556706400">Chrome skal have adgang til din placering for at kunne dele den med dette website.</translation>
@@ -470,7 +471,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6612358246767739896">Beskyttet indhold</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6643016212128521049">Ryd</translation>
-<translation id="6647073004883890710">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere adgangskoden for <ph name="USERNAME" /> for dette website?</translation>
 <translation id="6656545060687952787">Chrome skal bruge placeringsadgang for at kunne scanne efter enheder. <ph name="BEGIN_LINK" />Opdater tilladelser<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Adgangskode</translation>
 <translation id="6659594942844771486">Fane</translation>
@@ -577,6 +577,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
+<translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er forældet.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7949961459945740081">Hent de nyeste funktioner</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
@@ -599,6 +600,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Indhold</translation>
 <translation id="8173098127580644436">altid</translation>
+<translation id="8187025609458112874">Slettede filer kan ikke deles</translation>
 <translation id="8190358571722158785">1 dag tilbage</translation>
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8202097416529803614">Ordreoversigt</translation>
@@ -634,7 +636,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="856481929701340285">Vis computerversion</translation>
 <translation id="857943718398505171">Tilladt (anbefales)</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
-<translation id="8588878054171169263">Gem billede</translation>
 <translation id="8617240290563765734">Vil du åbne den foreslåede webadresse, som er angivet i det downloadede indhold?</translation>
 <translation id="862875433388403934">Indhold (film, musik m.m.), der er downloadet i andre applikationer, kan muligvis ikke længere afspilles, før disse applikationer får nye licenser, der er baseret på nye loginoplysninger for enheden.
 

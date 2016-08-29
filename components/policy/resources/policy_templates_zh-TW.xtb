@@ -504,6 +504,7 @@
       如果這項設定已停用，所有的網頁都無法使用 JavaScript，使用者也無法變更這項設定。
 
       如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
+<translation id="2753637905605932878">限制 WebRTC 所使用的本機 UDP 通訊埠範圍</translation>
 <translation id="2757054304033424106">允許安裝的擴充功能/應用程式類型</translation>
 <translation id="2759224876420453487">控制使用者在多重設定檔工作階段中的行為</translation>
 <translation id="2761483219396643566">在電池供電環境下執行時的閒置警告延遲時間</translation>
@@ -729,6 +730,15 @@
 <translation id="3264793472749429012">預設搜尋引擎編碼</translation>
 <translation id="3273221114520206906">預設 JavaScript 設定</translation>
 <translation id="3288595667065905535">發佈頻道</translation>
+<translation id="3291367259589875381">自 M53 起我們已淘汰這項政策並改用 <ph name="NETWORKPREDICTIONOPTIONS_POLICY_NAME" />，至 M54 則移除了這項政策。
+
+      啟用 <ph name="PRODUCT_NAME" /> 的網路預測功能，並且禁止使用者變更這項設定。
+
+      除了 DNS 預先擷取以外，這項設定還可控制 TCP 和 SSL 預先連線及網頁預先轉譯機制。政策名稱中出現「DNS Prefetching」是為了沿用過去的名稱。
+
+      無論是否啟用這項設定，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
+
+      如果未設定這項政策，系統會啟用網路預測功能，但使用者可以自行變更。</translation>
 <translation id="3292147213643666827">啟用 Proxy 功能，將 <ph name="PRODUCT_NAME" /> 當做 <ph name="CLOUD_PRINT_NAME" /> 與連接到本機的舊型印表機之間的 Proxy。
 
       不論這項政策處於啟用或未設定的狀態，使用者都可以透過 Google 帳戶驗證來啟用雲端列印 Proxy。
@@ -1174,6 +1184,9 @@
           如果黑名單的值指定為 '*'，表示將所有內建訊息傳遞主機列入黑名單 (許可清單中明確列出者除外)。
 
           如果未設定這項政策，<ph name="PRODUCT_NAME" /> 將會載入所有已安裝的內建訊息傳遞主機。</translation>
+<translation id="5288772341821359899">如果設定這項政策，系統會將 WebRTC 所使用的 UDP 通訊埠範圍限於指定的通訊埠區間 (包括端點)。
+
+      如果未設定這項政策，或是將這項政策設為空白字串或無效的通訊埠範圍，WebRTC 即可使用任何可用的本機 UDP 通訊埠。</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
 <translation id="5302612588919538756">這項政策已不適用，請考慮改用 SyncDisabled。
 
@@ -1286,6 +1299,7 @@
 
           如果停用或未指定這項設定，則任何本機使用者皆可與遠端存取主機建立關聯。</translation>
 <translation id="5697306356229823047">回報裝置使用者</translation>
+<translation id="570062449808736508">如果將這項政策設為非空白字串，WebView 就會讀取內容提供者 (擁有指定授權單位名稱) 的網址限制設定。</translation>
 <translation id="5703863730741917647">指定系統在達到閒置延遲時間時所採取的動作。
 
           請注意，這項政策已被取代，且即將在未來移除。
@@ -1530,6 +1544,7 @@
           如果設定了這項政策，使用者可以啟用或停用螢幕小鍵盤以暫時覆寫政策。不過，使用者的選擇並非持續有效；每當顯示新的登入畫面，或使用者在登入畫面上閒置一分鐘後，系統便會還原預設設定。
 
           如未設定這項政策，那麼登入畫面最初顯示時就會停用螢幕小鍵盤。使用者隨時可以啟用或停用螢幕小鍵盤，這項功能在登入畫面中的狀態，會在不同使用者之間持續下去。</translation>
+<translation id="6573305661369899995">設定外部網址來源限制</translation>
 <translation id="6598235178374410284">使用者顯示圖片</translation>
 <translation id="6628646143828354685">讓您設定是否允許網站存取附近的藍牙裝置。您可以完全禁止網站存取附近的藍牙裝置，也可以要求網站一律需要經過使用者同意才能存取附近的藍牙裝置。
 
@@ -1820,6 +1835,7 @@
 <translation id="7443616896860707393">跨原始來源的 HTTP 基本驗證提示</translation>
 <translation id="7468416082528382842">Windows 登錄位置：</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
+<translation id="7474249562477552702">是否允許本機信任錨點核發的 SHA-1 簽署憑證</translation>
 <translation id="7485481791539008776">預設印表機選取規則</translation>
 <translation id="749556411189861380">回報註冊裝置的作業系統和韌體版本。
 
@@ -1835,6 +1851,11 @@
 
       如果設為 SAML_INTERSTITIAL，系統在登入過程中會顯示插頁畫面，讓使用者選擇繼續透過裝置註冊網域的 SAML IdP 進行驗證，或是返回標準 GAIA 登入流程。</translation>
 <translation id="7567380065339179813">允許這些網站的外掛程式</translation>
+<translation id="757395965347379751">啟用這項設定時，只要 SHA-1 簽署憑證成功通過驗證並鏈結至本機安裝的 CA 憑證，即可在 <ph name="PRODUCT_NAME" /> 中使用。
+
+      請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
+
+      如果未設定這項政策，或是將這項政策設為 false，<ph name="PRODUCT_NAME" /> 將會遵循公開宣佈的 SHA-1 淘汰時間表。</translation>
 <translation id="7593523670408385997">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時套用。
 
       如果設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。

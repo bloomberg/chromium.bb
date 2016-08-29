@@ -1302,6 +1302,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
           Jos tämä asetus on pois käytöstä tai sitä ei aseteta, etäkäytön isäntä voidaan liittää mihin tahansa paikalliseen käyttäjään.</translation>
 <translation id="5697306356229823047">Raportoi laitteen käyttäjistä</translation>
+<translation id="570062449808736508">Kun tämän käytännön arvoksi asetetaan muu kuin tyhjä merkkijono, WebView lukee URL-osoiterajoitukset sisällöntarjoajalta, joka vastaa annettua merkkijonoa.</translation>
 <translation id="5703863730741917647">Määritä toiminto, joka suoritetaan, jos käyttäjä ei tee mitään määritetyn ajan kuluessa.
 
           Huomaa, että tämä käytäntö on vanhentunut ja se poistetaan tulevaisuudessa.
@@ -1547,6 +1548,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Jos määrität tämän käytännön, käyttäjät voivat ohittaa sen väliaikaisesti ottamalla ruutunäppäimistön käyttöön tai poistamalla sen käytöstä. Käyttäjän valinta ei kuitenkaan tallennu, ja oletusasetus palautetaan käyttöön, kun kirjautumisruutu näytetään seuraavan kerran tai käyttäjä ei tee kirjautumisruudussa mitään yhteen minuuttiin.
 
            Jos tätä käytäntöä ei määritetä, ruutunäppäimistö ei tule näkyviin kirjautumisruudussa. Käyttäjät voivat ottaa ruutunäppäimistön käyttöön tai poistaa sen käytöstä milloin tahansa, ja käyttäjän tekemä ruutunäppäimistön tilan muutos säilyy kaikilla käyttäjillä, kunnes sitä muutetaan.</translation>
+<translation id="6573305661369899995">Aseta URL-rajoitusten ulkopuolinen lähde</translation>
 <translation id="6598235178374410284">Käyttäjän avatar-kuva</translation>
 <translation id="6628646143828354685">Määritä, sallitaanko sivustojen käyttää lähistöllä olevia Bluetooth-laitteita. Käyttö on mahdollista estää kokonaan, tai käyttäjältä voidaan pyytää vahvistusta aina, kun verkkosivusto haluaa käyttää lähistöllä olevaa Bluetooth-laitetta.
 

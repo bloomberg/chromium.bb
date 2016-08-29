@@ -1305,6 +1305,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika setelan ini dinonaktifkan atau tidak disetel, host akses jarak jauh dapat dikaitkan dengan pengguna lokal apa pun.</translation>
 <translation id="5697306356229823047">Laporkan pengguna perangkat</translation>
+<translation id="570062449808736508">Jika kebijakan ini disetel menjadi string yang tidak kosong, WebView akan membaca batasan URL dari penyedia konten dengan nama otoritas yang diberikan.</translation>
 <translation id="5703863730741917647">Tentukan tindakan yang akan diambil saat penundaan nganggur dicapai.
 
           Perlu dicatat bahwa kebijakan ini tidak digunakan lagi dan akan dihapus di masa mendatang.
@@ -1550,6 +1551,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika Anda menyetel kebijakan ini, pengguna dapat menggantinya untuk sementara dengan mengaktifkan atau menonaktifkan keyboard di layar. Akan tetapi, pilihan pengguna tidak bersifat tetap dan setelan default akan dipulihkan ketika layar masuk ditampilkan kembali atau pengguna menganggur di layar masuk selama satu menit.
 
           Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan ketika layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan keyboard di layar kapan saja dan statusnya pada layar masuk bersifat tetap antarpengguna.</translation>
+<translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6598235178374410284">Gambar avatar pengguna</translation>
 <translation id="6628646143828354685">Memungkinkan Anda menyetel apakah situs web dapat mengakses perangkat Bluetooth di sekitar. Akses dapat diblokir sepenuhnya, atau pengguna dapat dimintai izin setiap kali situs web ingin mengakses perangkat Bluetooth di sekitar.
 
