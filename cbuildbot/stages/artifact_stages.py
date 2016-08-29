@@ -330,7 +330,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       self.GetParallel('debug_tarball_generated', pretty_name='debug tarball')
 
       # Needed for stateful.tgz
-      self.GetParallel('payloads_generated', pretty_name='payloads')
+      self.GetParallel('test_artifacts_uploaded', pretty_name='test artifacts')
 
       # Now that all data has been generated, we can upload the final result to
       # the image server.
@@ -679,46 +679,48 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
   def BuildUpdatePayloads(self):
     """Archives update payloads when they are ready."""
-    try:
-      # If we are not configured to generate payloads, don't.
-      if not (self._run.config.upload_hw_test_artifacts and
-              self._run.config.images):
-        return
+    # If we are not configured to generate payloads, don't.
+    if not (self._run.config.upload_hw_test_artifacts and
+            self._run.config.images):
+      return
 
-      # If there are no images to generate payloads from, don't.
-      got_images = self.GetParallel('images_generated', pretty_name='images')
-      if not got_images:
-        return
+    # If there are no images to generate payloads from, don't.
+    got_images = self.GetParallel('images_generated', pretty_name='images')
+    if not got_images:
+      return
 
-      payload_type = self._run.config.payload_image
-      if payload_type is None:
-        payload_type = 'base'
-        for t in ['test', 'dev']:
-          if t in self._run.config.images:
-            payload_type = t
-            break
-      image_name = constants.IMAGE_TYPE_TO_NAME[payload_type]
-      logging.info('Generating payloads to upload for %s', image_name)
-      self._GeneratePayloads(image_name, full=True, stateful=True)
-      self.board_runattrs.SetParallel('payloads_generated', True)
-      self._GeneratePayloads(image_name, delta=True)
-      self.board_runattrs.SetParallel('delta_payloads_generated', True)
-
-    finally:
-      # Make sure these flags are set to some value, no matter now we exit.
-      self.board_runattrs.SetParallelDefault('payloads_generated', False)
-      self.board_runattrs.SetParallelDefault('delta_payloads_generated', False)
+    payload_type = self._run.config.payload_image
+    if payload_type is None:
+      payload_type = 'base'
+      for t in ['test', 'dev']:
+        if t in self._run.config.images:
+          payload_type = t
+          break
+    image_name = constants.IMAGE_TYPE_TO_NAME[payload_type]
+    logging.info('Generating payloads to upload for %s', image_name)
+    self._GeneratePayloads(image_name, full=True, stateful=True, delta=True)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Upload any needed HWTest artifacts."""
+    # BuildUpdatePayloads also uploads the payloads to GS.
     steps = [self.BuildUpdatePayloads]
+
     if (self._run.ShouldBuildAutotest() and
         self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
 
     parallel.RunParallelSteps(steps)
+    # If we encountered any exceptions with any of the steps, they should have
+    # set the attribute to False.
+    self.board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
 
+  def _HandleStageException(self, exc_info):
+    # Tell the test stages not to wait for artifacts to be uploaded in case
+    # UploadTestArtifacts throws an exception.
+    self.board_runattrs.SetParallel('test_artifacts_uploaded', False)
+
+    return super(UploadTestArtifactsStage, self)._HandleStageException(exc_info)
 
 # TODO(mtennant): This class continues to exist only for subclasses that still
 # need self.archive_stage.  Hopefully, we can get rid of that need, eventually.

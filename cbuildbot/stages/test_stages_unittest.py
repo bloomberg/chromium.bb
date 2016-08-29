@@ -175,7 +175,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallelDefault('payloads_generated', True)
+    board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
     return test_stages.HWTestStage(
         self._run, self._current_board, self.suite_config)
 
@@ -339,7 +339,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testPayloadsNotGenerated(self):
     """Test that we exit early if payloads are not generated."""
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallel('payloads_generated', False)
+    board_runattrs.SetParallel('test_artifacts_uploaded', False)
 
     self.RunStage()
 
@@ -381,8 +381,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def ConstructStage(self):
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallelDefault('payloads_generated', True)
-    board_runattrs.SetParallelDefault('delta_payloads_generated', True)
+    board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
     return test_stages.AUTestStage(
         self._run, self._current_board, self.suite_config)
 
@@ -425,7 +424,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testPayloadsNotGenerated(self):
     """Test that we exit early if payloads are not generated."""
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
-    board_runattrs.SetParallel('delta_payloads_generated', False)
+    board_runattrs.SetParallel('test_artifacts_uploaded', False)
     self.warning_mock = self.PatchObject(
         logging, 'PrintBuildbotStepWarnings')
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')

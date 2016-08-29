@@ -254,6 +254,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'hw_tests'
+  stage_name = 'HWTest'
 
   PERF_RESULTS_EXTENSION = 'results'
 
@@ -323,15 +324,19 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     pass_subsystems -= fail_subsystems
     return (pass_subsystems, fail_subsystems)
 
+  def WaitUntilReady(self):
+    """Wait until payloads and test artifacts are ready or not."""
+    # Wait for UploadHWTestArtifacts to generate and upload the artifacts.
+    if not self.GetParallel('test_artifacts_uploaded',
+                            pretty_name='payloads and test artifacts'):
+      logging.PrintBuildbotStepWarnings('missing test artifacts')
+      logging.warning('Cannot run %s because UploadTestArtifacts failed. '
+                      'See UploadTestArtifacts for details.' % self.stage_name)
+      return False
+
+    return True
 
   def PerformStage(self):
-    # Wait for UploadHWTestArtifacts to generate the payloads.
-    if not self.GetParallel('payloads_generated', pretty_name='payloads'):
-      logging.PrintBuildbotStepWarnings('missing payloads')
-      logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
-                      'See UploadTestArtifacts for details.')
-      return
-
     if self.suite_config.suite == constants.HWTEST_AFDO_SUITE:
       arch = self._GetPortageEnvVar('ARCH', self._current_board)
       cpv = portage_util.BestVisible(constants.CHROME_CP,
@@ -403,17 +408,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class AUTestStage(HWTestStage):
   """Stage for au hw test suites that requires special pre-processing."""
 
-  def PerformStage(self):
-    """Wait for payloads to be staged and uploads its au control files."""
-    # Wait for UploadHWTestArtifacts to generate the payloads.
-    if not self.GetParallel('delta_payloads_generated',
-                            pretty_name='delta payloads'):
-      logging.PrintBuildbotStepText('Missing delta payloads.')
-      logging.PrintBuildbotStepWarnings()
-      logging.warning('Cannot run HWTest because UploadTestArtifacts failed. '
-                      'See UploadTestArtifacts for details.')
-      return
+  stage_name = "AUTest"
 
+  def PerformStage(self):
+    """Uploads its au control files."""
     with osutils.TempDir() as tempdir:
       tarball = commands.BuildAUTestTarball(
           self._build_root, self._current_board, tempdir,
@@ -425,6 +423,8 @@ class AUTestStage(HWTestStage):
 
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
+
+  stage_name = "ASyncHWTest"
 
   def __init__(self, *args, **kwargs):
     super(ASyncHWTestStage, self).__init__(*args, **kwargs)
