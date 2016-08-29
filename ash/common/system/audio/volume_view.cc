@@ -140,7 +140,7 @@ VolumeView::VolumeView(SystemTrayItem* owner,
       0, kTrayPopupPaddingHorizontal, 0, kExtraPaddingBetweenIconAndSlider));
   AddChildView(icon_);
 
-  slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
+  slider_ = new views::Slider(this);
   slider_->set_focus_border_color(kFocusBorderColor);
   slider_->SetValue(
       static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);

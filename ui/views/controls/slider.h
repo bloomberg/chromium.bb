@@ -51,19 +51,11 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Internal class name.
   static const char kViewClassName[];
 
-  enum Orientation {
-    HORIZONTAL,
-    VERTICAL
-  };
-
-  Slider(SliderListener* listener, Orientation orientation);
+  explicit Slider(SliderListener* listener);
   ~Slider() override;
 
   float value() const { return value_; }
   void SetValue(float value);
-
-  // Set the delta used for changing the value via keyboard.
-  void SetKeyboardIncrement(float increment);
 
   void SetAccessibleName(const base::string16& name);
 
@@ -84,7 +76,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Should be called on the Mouse Down event. Used to calculate relative
   // position of the mouse cursor (or the touch point) on the button to
   // accurately move the button using the MoveButtonTo() method.
-  void PrepareForMove(const gfx::Point& point);
+  void PrepareForMove(const int new_x);
 
   // Moves the button to the specified point and updates the value accordingly.
   void MoveButtonTo(const gfx::Point& point);
@@ -120,7 +112,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   }
 
   SliderListener* listener_;
-  Orientation orientation_;
 
   std::unique_ptr<gfx::SlideAnimation> move_animation_;
 
@@ -134,7 +125,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
 
   // Relative position of the mouse cursor (or the touch point) on the slider's
   // button.
-  gfx::Point initial_button_offset_;
+  int initial_button_offset_;
 
   const int* bar_active_images_;
   const int* bar_disabled_images_;

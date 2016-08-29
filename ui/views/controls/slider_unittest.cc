@@ -122,7 +122,7 @@ namespace views {
 // Base test fixture for Slider tests.
 class SliderTest : public views::ViewsTestBase {
  public:
-  explicit SliderTest(Slider::Orientation orientation);
+  SliderTest();
   ~SliderTest() override;
 
  protected:
@@ -153,8 +153,6 @@ class SliderTest : public views::ViewsTestBase {
   }
 
  private:
-  // The Slider's orientation
-  Slider::Orientation orientation_;
   // The Slider to be tested.
   Slider* slider_;
   // A simple SliderListener test double.
@@ -174,13 +172,8 @@ class SliderTest : public views::ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(SliderTest);
 };
 
-SliderTest::SliderTest(Slider::Orientation orientation)
-  : orientation_(orientation),
-    slider_(NULL),
-    default_locale_(""),
-    max_x_(0),
-    max_y_(0) {
-}
+SliderTest::SliderTest()
+    : slider_(NULL), default_locale_(), max_x_(0), max_y_(0) {}
 
 SliderTest::~SliderTest() {
 }
@@ -188,7 +181,7 @@ SliderTest::~SliderTest() {
 void SliderTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
-  slider_ = new Slider(NULL, orientation_);
+  slider_ = new Slider(NULL);
   View* view = slider_;
   gfx::Size size = view->GetPreferredSize();
   view->SetSize(size);
@@ -234,28 +227,9 @@ class HorizontalSliderTest : public SliderTest {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSliderTest);
 };
 
-HorizontalSliderTest::HorizontalSliderTest()
-  : SliderTest(Slider::HORIZONTAL) {
-}
+HorizontalSliderTest::HorizontalSliderTest() : SliderTest() {}
 
 HorizontalSliderTest::~HorizontalSliderTest() {
-}
-
-// Test fixture for vertically oriented slider tests.
-class VerticalSliderTest : public SliderTest {
- public:
-  VerticalSliderTest();
-  ~VerticalSliderTest() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VerticalSliderTest);
-};
-
-VerticalSliderTest::VerticalSliderTest()
-  : SliderTest(Slider::VERTICAL) {
-}
-
-VerticalSliderTest::~VerticalSliderTest() {
 }
 
 TEST_F(HorizontalSliderTest, UpdateFromClickHorizontal) {
@@ -266,13 +240,6 @@ TEST_F(HorizontalSliderTest, UpdateFromClickHorizontal) {
   EXPECT_EQ(1.0f, slider()->value());
 }
 
-TEST_F(VerticalSliderTest, UpdateFromClickVertical) {
-  ClickAt(0, 0);
-  EXPECT_EQ(1.0f, slider()->value());
-
-  ClickAt(0, max_y());
-  EXPECT_EQ(0.0f, slider()->value());
-}
 
 TEST_F(HorizontalSliderTest, UpdateFromClickRTLHorizontal) {
   base::i18n::SetICUDefaultLocale("he");

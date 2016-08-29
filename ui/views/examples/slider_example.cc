@@ -24,7 +24,7 @@ SliderExample::~SliderExample() {
 
 void SliderExample::CreateExampleView(View* container) {
   label_ = new Label();
-  slider_ = new Slider(this, Slider::HORIZONTAL);
+  slider_ = new Slider(this);
 
   slider_->SetValue(0.5);
 

@@ -34,7 +34,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/slider.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 

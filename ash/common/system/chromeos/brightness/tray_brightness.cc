@@ -111,7 +111,7 @@ BrightnessView::BrightnessView(bool default_view, double initial_percent)
   }
   AddChildView(icon);
 
-  slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
+  slider_ = new views::Slider(this);
   slider_->set_focus_border_color(kFocusBorderColor);
   slider_->SetValue(static_cast<float>(initial_percent / 100.0));
   slider_->SetAccessibleName(
