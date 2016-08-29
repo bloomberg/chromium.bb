@@ -136,6 +136,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
     InputMethodManagerImpl* const manager_;
 
+    // True if the opt-in IME menu is activated.
+    bool menu_activated;
+
    protected:
     friend base::RefCounted<chromeos::input_method::InputMethodManager::State>;
     ~StateImpl() override;
@@ -171,6 +174,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void NotifyImeMenuItemsChanged(
       const std::string& engine_id,
       const std::vector<InputMethodManager::MenuItem>& items) override;
+  void MaybeNotifyImeMenuActivationChanged() override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;

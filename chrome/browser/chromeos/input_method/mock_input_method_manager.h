@@ -105,6 +105,7 @@ class MockInputMethodManager : public InputMethodManager {
   void NotifyImeMenuItemsChanged(
       const std::string& engine_id,
       const std::vector<InputMethodManager::MenuItem>& items) override;
+  void MaybeNotifyImeMenuActivationChanged() override;
 
   // Sets an input method ID which will be returned by GetCurrentInputMethod().
   void SetCurrentInputMethodId(const std::string& input_method_id);

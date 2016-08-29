@@ -299,6 +299,10 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   virtual void NotifyImeMenuItemsChanged(
       const std::string& engine_id,
       const std::vector<MenuItem>& items) = 0;
+
+  // Notify the IME menu activation changed if the current profile's activation
+  // is different from previous.
+  virtual void MaybeNotifyImeMenuActivationChanged() = 0;
 };
 
 }  // namespace input_method

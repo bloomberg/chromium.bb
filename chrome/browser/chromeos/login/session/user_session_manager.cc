@@ -1655,6 +1655,7 @@ void UserSessionManager::ActiveUserChanged(
       input_method::InputMethodManager::Get();
   manager->SetState(
       GetDefaultIMEState(ProfileHelper::Get()->GetProfileByUser(active_user)));
+  manager->MaybeNotifyImeMenuActivationChanged();
 }
 
 scoped_refptr<input_method::InputMethodManager::State>

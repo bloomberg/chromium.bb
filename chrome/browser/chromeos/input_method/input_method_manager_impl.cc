@@ -112,8 +112,7 @@ InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
 
 InputMethodManagerImpl::StateImpl::StateImpl(InputMethodManagerImpl* manager,
                                              Profile* profile)
-    : profile(profile), manager_(manager) {
-}
+    : profile(profile), manager_(manager), menu_activated(false) {}
 
 InputMethodManagerImpl::StateImpl::~StateImpl() {
 }
@@ -128,6 +127,7 @@ void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
 
   enabled_extension_imes = other.enabled_extension_imes;
   extra_input_methods = other.extra_input_methods;
+  menu_activated = other.menu_activated;
 }
 
 bool InputMethodManagerImpl::StateImpl::IsActive() const {
@@ -927,15 +927,6 @@ void InputMethodManagerImpl::SetUISessionState(UISessionState new_ui_session) {
   ui_session_ = new_ui_session;
   if (ui_session_ == STATE_TERMINATING && candidate_window_controller_.get())
     candidate_window_controller_.reset();
-
-  // The expanded IME menu is only supportive with 'normal' screen type. It
-  // should be deactivated when the screen type is not 'normal', and be
-  // re-activated when changing back.
-  if (is_ime_menu_activated_ && ui_session_ != STATE_TERMINATING) {
-    FOR_EACH_OBSERVER(
-        InputMethodManager::ImeMenuObserver, ime_menu_observers_,
-        ImeMenuActivationChanged(ui_session_ == STATE_BROWSER_SCREEN));
-  }
 }
 
 void InputMethodManagerImpl::OnUserAddingStarted() {
@@ -1186,11 +1177,8 @@ void InputMethodManagerImpl::CandidateWindowClosed() {
 void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
   // Saves the state that whether the expanded IME menu has been activated by
   // users. This method is only called when the preference is changing.
-  is_ime_menu_activated_ = is_active;
-  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
-                    ImeMenuActivationChanged(is_active));
-  UMA_HISTOGRAM_BOOLEAN("InputMethod.ImeMenu.ActivationChanged",
-                        is_ime_menu_activated_);
+  state_->menu_activated = is_active;
+  MaybeNotifyImeMenuActivationChanged();
 }
 
 void InputMethodManagerImpl::NotifyImeMenuListChanged() {
@@ -1212,6 +1200,17 @@ void InputMethodManagerImpl::NotifyImeMenuItemsChanged(
     const std::vector<InputMethodManager::MenuItem>& items) {
   FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
                     ImeMenuItemsChanged(engine_id, items));
+}
+
+void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
+  if (is_ime_menu_activated_ == state_->menu_activated)
+    return;
+
+  is_ime_menu_activated_ = state_->menu_activated;
+  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
+                    ImeMenuActivationChanged(is_ime_menu_activated_));
+  UMA_HISTOGRAM_BOOLEAN("InputMethod.ImeMenu.ActivationChanged",
+                        is_ime_menu_activated_);
 }
 
 }  // namespace input_method
