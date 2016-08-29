@@ -98,10 +98,7 @@ void NativeWebContentsModalDialogManagerViews::Show() {
         widget->GetNativeWindow()->parent()));
   }
 #endif
-  // Host may be NULL during tab drag on Views/Win32.
-  if (host_)
-    constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
-  widget->Show();
+  ShowWidget(widget);
   Focus();
 
 #if defined(USE_AURA)
@@ -119,7 +116,7 @@ void NativeWebContentsModalDialogManagerViews::Hide() {
   suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
       widget->GetNativeWindow()->parent()));
 #endif
-  widget->Hide();
+  HideWidget(widget);
 }
 
 void NativeWebContentsModalDialogManagerViews::Close() {
@@ -192,6 +189,19 @@ void NativeWebContentsModalDialogManagerViews::HostChanged(
 
 gfx::NativeWindow NativeWebContentsModalDialogManagerViews::dialog() {
   return dialog_;
+}
+
+void NativeWebContentsModalDialogManagerViews::ShowWidget(
+    views::Widget* widget) {
+  // |host_| may be NULL during tab drag on Views/Win32.
+  if (host_)
+    constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
+  widget->Show();
+}
+
+void NativeWebContentsModalDialogManagerViews::HideWidget(
+    views::Widget* widget) {
+  widget->Hide();
 }
 
 views::Widget* NativeWebContentsModalDialogManagerViews::GetWidget(

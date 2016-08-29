@@ -18,6 +18,10 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_MACOSX)
+#import "components/constrained_window/native_web_contents_modal_dialog_manager_views_mac.h"
+#endif
+
 using web_modal::ModalDialogHost;
 using web_modal::ModalDialogHostObserver;
 
@@ -144,6 +148,27 @@ views::Widget* ShowWebModalDialogViews(
   ShowModalDialog(widget->GetNativeWindow(), web_contents);
   return widget;
 }
+
+#if defined(OS_MACOSX)
+views::Widget* ShowWebModalDialogWithOverlayViews(
+    views::WidgetDelegate* dialog,
+    content::WebContents* initiator_web_contents) {
+  DCHECK(constrained_window_views_client);
+  // For embedded WebContents, use the embedder's WebContents for constrained
+  // window.
+  content::WebContents* web_contents =
+      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
+  views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
+  web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  std::unique_ptr<web_modal::SingleWebContentsDialogManager> dialog_manager(
+      new NativeWebContentsModalDialogManagerViewsMac(widget->GetNativeWindow(),
+                                                      manager));
+  manager->ShowDialogWithManager(widget->GetNativeWindow(),
+                                 std::move(dialog_manager));
+  return widget;
+}
+#endif
 
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
                                          content::WebContents* web_contents) {

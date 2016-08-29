@@ -52,6 +52,16 @@ views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents);
 
+#if defined(OS_MACOSX)
+// Like ShowWebModalDialogViews, but used to show a native dialog "sheet" on
+// Mac. Sheets are always modal to their parent window. To make them tab-modal,
+// this provides an invisible tab-modal overlay window managed by
+// WebContentsModalDialogManager, which can host a dialog sheet.
+views::Widget* ShowWebModalDialogWithOverlayViews(
+    views::WidgetDelegate* dialog,
+    content::WebContents* initiator_web_contents);
+#endif
+
 // Create a widget for |dialog| that is modal to |web_contents|.
 // The modal type of |dialog->GetModalType()| must be ui::MODAL_TYPE_CHILD.
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
