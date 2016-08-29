@@ -11,17 +11,18 @@
 namespace content {
 
 class WebRtcVideoCapturerAdapterTest
-    : public sigslot::has_slots<>,
+    : public rtc::VideoSinkInterface<cricket::VideoFrame>,
       public ::testing::Test {
  public:
   WebRtcVideoCapturerAdapterTest()
       : adapter_(false),
         output_frame_width_(0),
         output_frame_height_(0) {
-    adapter_.SignalFrameCaptured.connect(
-        this, &WebRtcVideoCapturerAdapterTest::OnFrameCaptured);
+    adapter_.AddOrUpdateSink(this, rtc::VideoSinkWants());
   }
-  ~WebRtcVideoCapturerAdapterTest() override {}
+  ~WebRtcVideoCapturerAdapterTest() override {
+    adapter_.RemoveSink(this);
+  }
 
   void TestSourceCropFrame(int capture_width,
                            int capture_height,
@@ -42,11 +43,11 @@ class WebRtcVideoCapturerAdapterTest
     EXPECT_EQ(natural_width, output_frame_width_);
     EXPECT_EQ(natural_height, output_frame_height_);
   }
- protected:
-  void OnFrameCaptured(cricket::VideoCapturer* capturer,
-                       const cricket::CapturedFrame* frame) {
-    output_frame_width_ = frame->width;
-    output_frame_height_ = frame->height;
+
+  // rtc::VideoSinkInterface
+  void OnFrame(const cricket::VideoFrame& frame) override {
+    output_frame_width_ = frame.width();
+    output_frame_height_ = frame.height();
   }
 
  private:
