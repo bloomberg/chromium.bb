@@ -476,12 +476,40 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
   size_t memory_size;
   base::StringPiece metrics_name;
   switch (data_.process_type) {
+    case PROCESS_TYPE_UTILITY:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "UtilityMetrics";
+      break;
+
+    case PROCESS_TYPE_ZYGOTE:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "ZygoteMetrics";
+      break;
+
+    case PROCESS_TYPE_SANDBOX_HELPER:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "SandboxHelperMetrics";
+      break;
+
     case PROCESS_TYPE_GPU:
       memory_size = 100 << 10;  // 100 KiB
       metrics_name = "GpuMetrics";
       break;
 
+    case PROCESS_TYPE_PPAPI_PLUGIN:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "PpapiPluginMetrics";
+      break;
+
+    case PROCESS_TYPE_PPAPI_BROKER:
+      memory_size = 100 << 10;  // 100 KiB
+      metrics_name = "PpapiBrokerMetrics";
+      break;
+
     default:
+      UMA_HISTOGRAM_ENUMERATION(
+          "UMA.SubprocessMetricsProvider.UntrackedProcesses",
+          data_.process_type, PROCESS_TYPE_CONTENT_END);
       return;
   }
 

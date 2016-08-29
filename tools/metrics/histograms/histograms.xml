@@ -62654,6 +62654,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.PersistentAllocator.PpapiBrokerMetrics.Allocs"
+    units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a
+    &quot;PPAPI broker&quot; process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.PpapiBrokerMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.PpapiPluginMetrics.Allocs"
+    units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a
+    &quot;PPAPI plugin&quot; process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.PpapiPluginMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
 <histogram name="UMA.PersistentAllocator.RendererMetrics.Allocs" units="bytes">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -62672,6 +62710,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.PersistentAllocator.SandboxHelperMetrics.Allocs"
+    units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a
+    &quot;sandbox helper&quot; process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.SandboxHelperMetrics.UsedPct"
+    units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
 <histogram name="UMA.PersistentAllocator.SetupMetrics.Allocs" units="bytes">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -62682,6 +62740,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.PersistentAllocator.SetupMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.UtilityMetrics.Allocs" units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a
+    &quot;utility&quot; process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.UtilityMetrics.UsedPct" units="%">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Percentage of persistent memory segment that has been allocated. This is
+    updated only once per reporting cycle.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.ZygoteMetrics.Allocs" units="bytes">
+  <owner>bcwhite@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Size, before padding, of objects allocated from persistent memory in a
+    &quot;zygote&quot; process. This is updated with every allocation.
+  </summary>
+</histogram>
+
+<histogram name="UMA.PersistentAllocator.ZygoteMetrics.UsedPct" units="%">
   <owner>bcwhite@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -62774,6 +62868,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of subprocesses from which persistent metrics were collected,
     logged once with every reporting cycle.
+  </summary>
+</histogram>
+
+<histogram name="UMA.SubprocessMetricsProvider.UntrackedProcesses"
+    units="subprocesses">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of subprocesses, by type, from which persistent metrics are NOT
+    collected because there is no information about this (likely new) process
+    type.
   </summary>
 </histogram>
 
