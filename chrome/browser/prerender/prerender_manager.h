@@ -201,7 +201,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
-  static const char* GetModeString();
   static bool IsPrerenderingPossible();
   static bool ActuallyPrerendering();
   static bool IsControlGroup();

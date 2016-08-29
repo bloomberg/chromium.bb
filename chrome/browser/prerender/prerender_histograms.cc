@@ -153,8 +153,7 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_ENUMERATION(
-        base::StringPrintf("Prerender.OmniboxPrerenderCount%s",
-                           PrerenderManager::GetModeString()), 1, 2);
+        "Prerender.OmniboxPrerenderCount", 1, 2);
   }
 }
 
@@ -170,8 +169,7 @@ void PrerenderHistograms::RecordConcurrency(size_t prerender_count) const {
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_ENUMERATION(
-        base::StringPrintf("Prerender.OmniboxNavigationsUsedPrerenderCount%s",
-                           PrerenderManager::GetModeString()), 1, 2);
+        "Prerender.OmniboxNavigationsUsedPrerenderCount", 1, 2);
   }
 }
 
