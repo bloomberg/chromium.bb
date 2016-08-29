@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "services/video_capture/video_capture_device_impl.h"
+#include "services/video_capture/video_capture_device_proxy_impl.h"
 
 namespace video_capture {
 
-void VideoCaptureDeviceImpl::Start(
+void VideoCaptureDeviceProxyImpl::Start(
     mojom::VideoCaptureFormatPtr requested_format,
     mojom::ResolutionChangePolicy resolution_change_policy,
     mojom::PowerLineFrequency power_line_frequency,

@@ -34,8 +34,8 @@ source_set("lib") {
   sources = [
     "video_capture_device_factory_impl.cc",
     "video_capture_device_factory_impl.h",
-    "video_capture_device_impl.cc",
-    "video_capture_device_impl.h",
+    "video_capture_device_proxy_impl.cc",
+    "video_capture_device_proxy_impl.h",
   ]
 
   deps = [

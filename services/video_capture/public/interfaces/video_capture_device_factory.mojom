@@ -4,7 +4,7 @@
 
 module video_capture.mojom;
 
-import "services/video_capture/public/interfaces/video_capture_device.mojom";
+import "services/video_capture/public/interfaces/video_capture_device_proxy.mojom";
 import "services/video_capture/public/interfaces/video_capture_format.mojom";
 
 enum VideoCaptureApi {
@@ -58,7 +58,7 @@ interface VideoCaptureDeviceFactory {
       => (array<VideoCaptureFormat> supported_formats);
 
   // Provides exclusive access to the device identified by |device_descriptor|.
-  CreateDevice(VideoCaptureDeviceDescriptor device_descriptor,
-                    VideoCaptureDevice& device_request)
+  CreateDeviceProxy(VideoCaptureDeviceDescriptor device_descriptor,
+                    VideoCaptureDeviceProxy& proxy_request)
       => (DeviceAccessResultCode result_code);
 };

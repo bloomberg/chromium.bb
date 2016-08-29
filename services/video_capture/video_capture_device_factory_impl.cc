@@ -12,8 +12,9 @@ namespace video_capture {
 
 VideoCaptureDeviceFactoryImpl::DeviceEntry::DeviceEntry(
     mojom::VideoCaptureDeviceDescriptorPtr descriptor,
-    std::unique_ptr<VideoCaptureDeviceImpl> bindable_target)
-    : descriptor_(std::move(descriptor)), device_(std::move(bindable_target)) {}
+    std::unique_ptr<VideoCaptureDeviceProxyImpl> bindable_target)
+    : descriptor_(std::move(descriptor)),
+      device_proxy_(std::move(bindable_target)) {}
 
 VideoCaptureDeviceFactoryImpl::DeviceEntry::~DeviceEntry() = default;
 
@@ -35,7 +36,7 @@ VideoCaptureDeviceFactoryImpl::~VideoCaptureDeviceFactoryImpl() = default;
 
 void VideoCaptureDeviceFactoryImpl::AddDevice(
     mojom::VideoCaptureDeviceDescriptorPtr descriptor,
-    std::unique_ptr<VideoCaptureDeviceImpl> device) {
+    std::unique_ptr<VideoCaptureDeviceProxyImpl> device) {
   devices_.emplace_back(std::move(descriptor), std::move(device));
 }
 
@@ -53,10 +54,10 @@ void VideoCaptureDeviceFactoryImpl::GetSupportedFormats(
   NOTIMPLEMENTED();
 }
 
-void VideoCaptureDeviceFactoryImpl::CreateDevice(
+void VideoCaptureDeviceFactoryImpl::CreateDeviceProxy(
     mojom::VideoCaptureDeviceDescriptorPtr device_descriptor,
-    mojom::VideoCaptureDeviceRequest request,
-    const CreateDeviceCallback& callback) {
+    mojom::VideoCaptureDeviceProxyRequest request,
+    const CreateDeviceProxyCallback& callback) {
   callback.Run(mojom::DeviceAccessResultCode::SUCCESS);
 }
 

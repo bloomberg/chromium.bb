@@ -59,8 +59,9 @@ void VideoCaptureService::LazyInitializeFakeDeviceFactory() {
   fake_device_descriptor->capture_api = mojom::VideoCaptureApi::UNKNOWN;
   fake_device_descriptor->transport_type =
       mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
-  fake_device_factory_->AddDevice(std::move(fake_device_descriptor),
-                                  base::MakeUnique<VideoCaptureDeviceImpl>());
+  fake_device_factory_->AddDevice(
+      std::move(fake_device_descriptor),
+      base::MakeUnique<VideoCaptureDeviceProxyImpl>());
 }
 
 }  // namespace video_capture

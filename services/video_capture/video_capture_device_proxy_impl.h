@@ -5,13 +5,13 @@
 #ifndef SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 #define SERVICES_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_IMPL_H_
 
-#include "services/video_capture/public/interfaces/video_capture_device.mojom.h"
+#include "services/video_capture/public/interfaces/video_capture_device_proxy.mojom.h"
 
 namespace video_capture {
 
 // Implementation of mojom::VideoCaptureDeviceProxy backed by a given instance
 // of media::VideoCaptureDevice.
-class VideoCaptureDeviceImpl : public mojom::VideoCaptureDevice {
+class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
  public:
   // mojom::VideoCaptureDeviceProxy:
   void Start(mojom::VideoCaptureFormatPtr requested_format,
