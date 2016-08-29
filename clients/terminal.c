@@ -2976,6 +2976,7 @@ terminal_create(struct display *display)
 	cairo_surface_destroy(surface);
 
 	terminal_resize(terminal, 20, 5); /* Set minimum size first */
+	terminal_resize_cells(terminal, 20, 5);
 	terminal_resize(terminal, 80, 25);
 
 	wl_list_insert(terminal_list.prev, &terminal->link);
