@@ -1542,6 +1542,7 @@ void Node::showNode(const char* prefix) const
     if (prefix)
         stream << prefix;
     stream << *this << "\n";
+    // TODO(tkent): Replace WTFLogAlways with something else.
     WTFLogAlways("%s", stream.str().c_str());
 }
 
@@ -1555,7 +1556,7 @@ void Node::showTreeForThisInFlatTree() const
     showTreeAndMarkInFlatTree(this, "*");
 }
 
-void Node::showNodePathForThis() const
+void Node::printNodePathTo(std::ostream& stream) const
 {
     HeapVector<Member<const Node>, 16> chain;
     const Node* node = this;
@@ -1569,13 +1570,13 @@ void Node::showNodePathForThis() const
             int count = 0;
             for (const ShadowRoot* shadowRoot = toShadowRoot(node)->olderShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
                 ++count;
-            WTFLogAlways("/#shadow-root[%d]", count);
+            stream << "/#shadow-root[" << count << "]";
             continue;
         }
 
         switch (node->getNodeType()) {
         case kElementNode: {
-            WTFLogAlways("/%s", node->nodeName().utf8().data());
+            stream << "/" << node->nodeName().utf8().data();
 
             const Element* element = toElement(node);
             const AtomicString& idattr = element->getIdAttribute();
@@ -1588,25 +1589,24 @@ void Node::showNodePathForThis() const
                     }
                 }
                 if (hasIdAttr)
-                    WTFLogAlways("[@id=\"%s\" and position()=%d]", idattr.utf8().data(), count);
+                    stream << "[@id=\"" << idattr.utf8().data() << "\" and position()=" << count << "]";
                 else
-                    WTFLogAlways("[%d]", count);
+                    stream << "[" << count << "]";
             } else if (hasIdAttr) {
-                WTFLogAlways("[@id=\"%s\"]", idattr.utf8().data());
+                stream << "[@id=\"" << idattr.utf8().data() << "\"]";
             }
             break;
         }
         case kTextNode:
-            WTFLogAlways("/text()");
+            stream << "/text()";
             break;
         case kAttributeNode:
-            WTFLogAlways("/@%s", node->nodeName().utf8().data());
+            stream << "/@" << node->nodeName().utf8().data();
             break;
         default:
             break;
         }
     }
-    WTFLogAlways("\n");
 }
 
 static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
@@ -1694,23 +1694,22 @@ static ContainerNode* parentOrShadowHostOrFrameOwner(const Node* node)
     return parent;
 }
 
-static void showSubTreeAcrossFrame(const Node* node, const Node* markedNode, const String& indent)
+static void printSubTreeAcrossFrame(const Node* node, const Node* markedNode, const String& indent, std::ostream& stream)
 {
     if (node == markedNode)
-        fputs("*", stderr);
-    fputs(indent.utf8().data(), stderr);
-    node->showNode();
+        stream << "*";
+    stream << indent.utf8().data() << *node << "\n";
     if (node->isShadowRoot()) {
         if (ShadowRoot* youngerShadowRoot = toShadowRoot(node)->youngerShadowRoot())
-            showSubTreeAcrossFrame(youngerShadowRoot, markedNode, indent + "\t");
+            printSubTreeAcrossFrame(youngerShadowRoot, markedNode, indent + "\t", stream);
     } else {
         if (node->isFrameOwnerElement())
-            showSubTreeAcrossFrame(toHTMLFrameOwnerElement(node)->contentDocument(), markedNode, indent + "\t");
+            printSubTreeAcrossFrame(toHTMLFrameOwnerElement(node)->contentDocument(), markedNode, indent + "\t", stream);
         if (ShadowRoot* oldestShadowRoot = oldestShadowRootFor(node))
-            showSubTreeAcrossFrame(oldestShadowRoot, markedNode, indent + "\t");
+            printSubTreeAcrossFrame(oldestShadowRoot, markedNode, indent + "\t", stream);
     }
     for (const Node* child = node->firstChild(); child; child = child->nextSibling())
-        showSubTreeAcrossFrame(child, markedNode, indent + "\t");
+        printSubTreeAcrossFrame(child, markedNode, indent + "\t", stream);
 }
 
 void Node::showTreeForThisAcrossFrame() const
@@ -1718,7 +1717,10 @@ void Node::showTreeForThisAcrossFrame() const
     const Node* rootNode = this;
     while (parentOrShadowHostOrFrameOwner(rootNode))
         rootNode = parentOrShadowHostOrFrameOwner(rootNode);
-    showSubTreeAcrossFrame(rootNode, this, "");
+    std::stringstream stream;
+    printSubTreeAcrossFrame(rootNode, this, "", stream);
+    // TODO(tkent): Replace WTFLogAlways with something else.
+    WTFLogAlways("%s", stream.str().c_str());
 }
 
 #endif
@@ -2393,10 +2395,14 @@ void showTree(const blink::Node* node)
 
 void showNodePath(const blink::Node* node)
 {
+    std::stringstream stream;
     if (node)
-        node->showNodePathForThis();
+        node->printNodePathTo(stream);
     else
-        fprintf(stderr, "Cannot showNodePath for (nil)\n");
+        stream << "Cannot showNodePath for <null>";
+    stream << "\n";
+    // TODO(tkent): Replace WTFLogAlways with something else.
+    WTFLogAlways("%s", stream.str().c_str());
 }
 
 #endif

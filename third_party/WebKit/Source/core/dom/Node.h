@@ -573,7 +573,7 @@ public:
     void showNode(const char* prefix = "") const;
     void showTreeForThis() const;
     void showTreeForThisInFlatTree() const;
-    void showNodePathForThis() const;
+    void printNodePathTo(std::ostream&) const;
     void showTreeAndMark(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
     void showTreeAndMarkInFlatTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2 = nullptr, const char* markedLabel2 = nullptr) const;
     void showTreeForThisAcrossFrame() const;
