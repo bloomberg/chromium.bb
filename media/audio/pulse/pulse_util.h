@@ -17,6 +17,8 @@ class AudioParameters;
 
 namespace pulse {
 
+enum class RequestType : int8_t { INPUT, OUTPUT };
+
 // A helper class that acquires pa_threaded_mainloop_lock() while in scope.
 class AutoPulseLock {
  public:
@@ -75,6 +77,16 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
                         pa_stream_request_cb_t write_callback,
                         void* user_data);
 
+// Utility functions to match up outputs and inputs.
+std::string GetBusOfInput(pa_threaded_mainloop* mainloop,
+                          pa_context* context,
+                          const std::string& name);
+std::string GetOutputCorrespondingTo(pa_threaded_mainloop* mainloop,
+                                     pa_context* context,
+                                     const std::string& bus);
+std::string GetRealDefaultDeviceId(pa_threaded_mainloop* mainloop,
+                                   pa_context* context,
+                                   RequestType type);
 }  // namespace pulse
 
 }  // namespace media
