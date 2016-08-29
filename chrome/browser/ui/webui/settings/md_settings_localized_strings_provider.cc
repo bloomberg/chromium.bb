@@ -1286,6 +1286,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
       {"handlerIsDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT},
       {"handlerSetDefault", IDS_SETTINGS_SITE_SETTINGS_HANDLER_SET_DEFAULT},
       {"handlerRemove", IDS_SETTINGS_SITE_SETTINGS_REMOVE},
+      {"adobeFlashStorage", IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS},
+      {"learnMore", IDS_SETTINGS_SITE_SETTINGS_LEARN_MORE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

@@ -1383,6 +1383,12 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
     Prevent third-party websites from saving and reading cookie data.
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS" desc="The text for the link that points the user to the Adobe Flash Player Storage settings on the web">
+    Adobe Flash Player Storage settings
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_LEARN_MORE" desc="The text for the link to learn more about how managing exceptions work for Site Settings categories">
+    Learn more
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT" desc="A label showing that a certain handler for a given protocol is the default.">
     Default
   </message>

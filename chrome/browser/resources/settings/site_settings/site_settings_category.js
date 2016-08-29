@@ -115,4 +115,26 @@ Polymer({
                   this.computeIsSettingEnabled(this.category, setting);
             }.bind(this));
   },
+
+  /**
+   * Returns whether this is the Plugins category.
+   * @param {string} category The current category.
+   * @return {boolean} Whether this is the Plugins category.
+   * @private
+   */
+  isPluginCategory_: function(category) {
+    return category == settings.ContentSettingsTypes.PLUGINS;
+  },
+
+  /** @private */
+  onLearnMoreClicked_: function() {
+    window.open(
+        'https://support.google.com/chrome/?p=settings_manage_exceptions');
+  },
+
+  /** @private */
+  onAdobeFlashStorageClicked_: function() {
+    window.open('https://www.macromedia.com/support/' +
+        'documentation/en/flashplayer/help/settings_manager07.html');
+  },
 });
