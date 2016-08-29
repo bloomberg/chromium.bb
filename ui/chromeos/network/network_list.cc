@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -105,8 +106,7 @@ void NetworkListView::UpdateNetworks(
     const chromeos::NetworkState* network = *iter;
     if (!pattern.MatchesType(network->type()))
       continue;
-    NetworkInfo* info = new NetworkInfo(network->path());
-    network_list_.push_back(info);
+    network_list_.push_back(base::MakeUnique<NetworkInfo>(network->path()));
   }
 }
 
@@ -117,8 +117,7 @@ void NetworkListView::UpdateNetworkIcons() {
   // First, update state for all networks
   bool animating = false;
 
-  for (size_t i = 0; i < network_list_.size(); ++i) {
-    NetworkInfo* info = network_list_[i];
+  for (auto& info : network_list_) {
     const chromeos::NetworkState* network =
         handler->GetNetworkState(info->service_path);
     if (!network)
@@ -252,10 +251,10 @@ bool NetworkListView::UpdateNetworkChildren(
     bool highlighted) {
   bool needs_relayout = false;
   int index = *child_index;
-  for (auto* info : network_list_) {
+  for (auto& info : network_list_) {
     if (info->highlight != highlighted)
       continue;
-    needs_relayout |= UpdateNetworkChild(index++, info);
+    needs_relayout |= UpdateNetworkChild(index++, info.get());
     new_service_paths->insert(info->service_path);
   }
   *child_index = index;

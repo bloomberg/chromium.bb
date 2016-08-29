@@ -6,8 +6,10 @@
 #define UI_CHROMEOS_NETWORK_NETWORK_LIST_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
@@ -63,7 +65,7 @@ class UI_CHROMEOS_EXPORT NetworkListView
   views::Label* no_cellular_networks_view_;
 
   // An owned list of network info.
-  ScopedVector<NetworkInfo> network_list_;
+  std::vector<std::unique_ptr<NetworkInfo>> network_list_;
 
   typedef std::map<views::View*, std::string> NetworkMap;
   NetworkMap network_map_;
