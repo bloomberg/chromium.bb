@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -154,10 +153,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
   DCHECK(observer_);
 }
 
-AutofillDownloadManager::~AutofillDownloadManager() {
-  base::STLDeleteContainerPairFirstPointers(url_fetchers_.begin(),
-                                            url_fetchers_.end());
-}
+AutofillDownloadManager::~AutofillDownloadManager() = default;
 
 bool AutofillDownloadManager::StartQueryRequest(
     const std::vector<FormStructure*>& forms) {
@@ -237,12 +233,13 @@ bool AutofillDownloadManager::StartRequest(
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(fetcher_id_for_unittest_++, request_url,
-                              net::URLFetcher::POST, this).release();
+  std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
+      fetcher_id_for_unittest_++, request_url, net::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = owned_fetcher.get();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::AUTOFILL);
-  url_fetchers_[fetcher] = request_data;
+  url_fetchers_[fetcher] =
+      std::make_pair(std::move(owned_fetcher), request_data);
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
   fetcher->SetUploadData("text/proto", request_data.payload);
@@ -312,16 +309,15 @@ std::string AutofillDownloadManager::GetCombinedSignature(
 
 void AutofillDownloadManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  std::map<net::URLFetcher *, FormRequestData>::iterator it =
-      url_fetchers_.find(const_cast<net::URLFetcher*>(source));
+  auto it = url_fetchers_.find(const_cast<net::URLFetcher*>(source));
   if (it == url_fetchers_.end()) {
     // Looks like crash on Mac is possibly caused with callback entering here
     // with unknown fetcher when network is refreshed.
     return;
   }
-  std::string request_type(RequestTypeToString(it->second.request_type));
+  std::string request_type(RequestTypeToString(it->second.second.request_type));
 
-  CHECK(it->second.form_signatures.size());
+  CHECK(it->second.second.form_signatures.size());
   bool success = source->GetResponseCode() == net::HTTP_OK;
   fetcher_backoff_.InformOfRequest(success);
 
@@ -331,28 +327,28 @@ void AutofillDownloadManager::OnURLFetchComplete(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&AutofillDownloadManager::StartRequest),
-                   weak_factory_.GetWeakPtr(), it->second),
+                   weak_factory_.GetWeakPtr(), it->second.second),
         fetcher_backoff_.GetTimeUntilRelease());
 
     VLOG(1) << "AutofillDownloadManager: " << request_type
              << " request has failed with response "
              << source->GetResponseCode();
-    observer_->OnServerRequestError(it->second.form_signatures[0],
-                                    it->second.request_type,
+    observer_->OnServerRequestError(it->second.second.form_signatures[0],
+                                    it->second.second.request_type,
                                     source->GetResponseCode());
   } else {
     std::string response_body;
     source->GetResponseAsString(&response_body);
-    if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-      CacheQueryRequest(it->second.form_signatures, response_body);
+    if (it->second.second.request_type ==
+        AutofillDownloadManager::REQUEST_QUERY) {
+      CacheQueryRequest(it->second.second.form_signatures, response_body);
       observer_->OnLoadedServerPredictions(std::move(response_body),
-                                           it->second.form_signatures);
+                                           it->second.second.form_signatures);
     } else {
       VLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
       observer_->OnUploadedPossibleFieldTypes();
     }
   }
-  delete it->first;
   url_fetchers_.erase(it);
 }
 
