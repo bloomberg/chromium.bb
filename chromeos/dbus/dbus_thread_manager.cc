@@ -11,10 +11,8 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
-#include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -108,20 +106,12 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
 }
 
-AmplifierClient* DBusThreadManager::GetAmplifierClient() {
-  return client_bundle_->amplifier_client();
-}
-
 ApManagerClient* DBusThreadManager::GetApManagerClient() {
   return client_bundle_->ap_manager_client();
 }
 
 ArcObbMounterClient* DBusThreadManager::GetArcObbMounterClient() {
   return client_bundle_->arc_obb_mounter_client();
-}
-
-AudioDspClient* DBusThreadManager::GetAudioDspClient() {
-  return client_bundle_->audio_dsp_client();
 }
 
 CrasAudioClient* DBusThreadManager::GetCrasAudioClient() {
@@ -248,10 +238,8 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
 }
 
 void DBusThreadManager::InitializeClients() {
-  GetAmplifierClient()->Init(GetSystemBus());
   GetApManagerClient()->Init(GetSystemBus());
   GetArcObbMounterClient()->Init(GetSystemBus());
-  GetAudioDspClient()->Init(GetSystemBus());
   GetCrasAudioClient()->Init(GetSystemBus());
   GetCrosDisksClient()->Init(GetSystemBus());
   GetCryptohomeClient()->Init(GetSystemBus());
@@ -395,18 +383,6 @@ DBusThreadManagerSetter::DBusThreadManagerSetter() {
 }
 
 DBusThreadManagerSetter::~DBusThreadManagerSetter() {
-}
-
-void DBusThreadManagerSetter::SetAmplifierClient(
-    std::unique_ptr<AmplifierClient> client) {
-  DBusThreadManager::Get()->client_bundle_->amplifier_client_ =
-      std::move(client);
-}
-
-void DBusThreadManagerSetter::SetAudioDspClient(
-    std::unique_ptr<AudioDspClient> client) {
-  DBusThreadManager::Get()->client_bundle_->audio_dsp_client_ =
-      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetCrasAudioClient(

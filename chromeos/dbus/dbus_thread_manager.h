@@ -26,10 +26,8 @@ class ObjectPath;
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
-class AmplifierClient;
 class ApManagerClient;
 class ArcObbMounterClient;
-class AudioDspClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -111,10 +109,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
 
   // All returned objects are owned by DBusThreadManager.  Do not use these
   // pointers after DBusThreadManager has been shut down.
-  AmplifierClient* GetAmplifierClient();
   ApManagerClient* GetApManagerClient();
   ArcObbMounterClient* GetArcObbMounterClient();
-  AudioDspClient* GetAudioDspClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
   CryptohomeClient* GetCryptohomeClient();
@@ -187,8 +183,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
-  void SetAmplifierClient(std::unique_ptr<AmplifierClient> client);
-  void SetAudioDspClient(std::unique_ptr<AudioDspClient> client);
   void SetCrasAudioClient(std::unique_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);

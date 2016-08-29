@@ -13,10 +13,8 @@
 
 namespace chromeos {
 
-class AmplifierClient;
 class ApManagerClient;
 class ArcObbMounterClient;
-class AudioDspClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -80,9 +78,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     PEER_DAEMON = 1 << 19,
     AP_MANAGER = 1 << 20,
     PRIVET_DAEMON = 1 << 21,
-    AMPLIFIER = 1 << 22,
-    AUDIO_DSP = 1 << 23,
-    ARC_OBB_MOUNTER = 1 << 24,
+    ARC_OBB_MOUNTER = 1 << 22,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -101,15 +97,11 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // un-stubbed.
   static DBusClientTypeMask ParseUnstubList(const std::string& unstub_list);
 
-  AmplifierClient* amplifier_client() { return amplifier_client_.get(); }
-
   ApManagerClient* ap_manager_client() { return ap_manager_client_.get(); }
 
   ArcObbMounterClient* arc_obb_mounter_client() {
     return arc_obb_mounter_client_.get();
   }
-
-  AudioDspClient* audio_dsp_client() { return audio_dsp_client_.get(); }
 
   CrasAudioClient* cras_audio_client() {
     return cras_audio_client_.get();
@@ -234,10 +226,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   // are defined within DBusClientType enum.
   DBusClientTypeMask unstub_client_mask_;
 
-  std::unique_ptr<AmplifierClient> amplifier_client_;
   std::unique_ptr<ApManagerClient> ap_manager_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
-  std::unique_ptr<AudioDspClient> audio_dsp_client_;
   std::unique_ptr<CrasAudioClient> cras_audio_client_;
   std::unique_ptr<CrosDisksClient> cros_disks_client_;
   std::unique_ptr<CryptohomeClient> cryptohome_client_;

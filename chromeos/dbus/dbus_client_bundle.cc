@@ -12,19 +12,15 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
-#include "chromeos/dbus/audio_dsp_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
-#include "chromeos/dbus/fake_amplifier_client.h"
 #include "chromeos/dbus/fake_ap_manager_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
-#include "chromeos/dbus/fake_audio_dsp_client.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
@@ -85,9 +81,7 @@ const struct {
   const char* param_name;
   DBusClientBundle::DBusClientType client_type;
 } client_type_map[] = {
-    { "amplifier",  DBusClientBundle::AMPLIFIER },
     { "ap",  DBusClientBundle::AP_MANAGER },
-    { "audio_dsp",  DBusClientBundle::AUDIO_DSP },
     { "bluetooth",  DBusClientBundle::BLUETOOTH },
     { "cras",  DBusClientBundle::CRAS },
     { "cros_disks",  DBusClientBundle::CROS_DISKS },
@@ -127,20 +121,10 @@ DBusClientBundle::DBusClientType GetDBusClientType(
 
 DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     : unstub_client_mask_(unstub_client_mask) {
-  if (!IsUsingStub(AMPLIFIER))
-    amplifier_client_.reset(AmplifierClient::Create());
-  else
-    amplifier_client_.reset(new FakeAmplifierClient);
-
   if (!IsUsingStub(ARC_OBB_MOUNTER))
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
   else
     arc_obb_mounter_client_.reset(new FakeArcObbMounterClient);
-
-  if (!IsUsingStub(AUDIO_DSP))
-    audio_dsp_client_.reset(AudioDspClient::Create());
-  else
-    audio_dsp_client_.reset(new FakeAudioDspClient);
 
   if (!IsUsingStub(CRAS))
     cras_audio_client_.reset(CrasAudioClient::Create());
