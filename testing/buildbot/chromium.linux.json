@@ -1254,7 +1254,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 1500,
           "shards": 1
         }
       }
