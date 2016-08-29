@@ -22,7 +22,7 @@ VRDeviceManager* g_vr_device_manager = nullptr;
 }
 
 VRDeviceManager::VRDeviceManager()
-    : vr_initialized_(false), keep_alive_(false) {
+    : vr_initialized_(false), keep_alive_(false), has_scheduled_poll_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
   RegisterProvider(base::WrapUnique(new GvrDeviceProvider()));
@@ -30,7 +30,7 @@ VRDeviceManager::VRDeviceManager()
 }
 
 VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
-    : vr_initialized_(false), keep_alive_(true) {
+    : vr_initialized_(false), keep_alive_(true), has_scheduled_poll_(false) {
   thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
   SetInstance(this);
@@ -38,6 +38,7 @@ VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
 
 VRDeviceManager::~VRDeviceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  StopSchedulingPollEvents();
   g_vr_device_manager = nullptr;
 }
 
@@ -140,6 +141,26 @@ void VRDeviceManager::InitializeProviders() {
 void VRDeviceManager::RegisterProvider(
     std::unique_ptr<VRDeviceProvider> provider) {
   providers_.push_back(make_linked_ptr(provider.release()));
+}
+
+void VRDeviceManager::SchedulePollEvents() {
+  if (has_scheduled_poll_)
+    return;
+
+  has_scheduled_poll_ = true;
+
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
+               &VRDeviceManager::PollEvents);
+}
+
+void VRDeviceManager::PollEvents() {
+  for (const auto& provider : providers_)
+    provider->PollEvents();
+}
+
+void VRDeviceManager::StopSchedulingPollEvents() {
+  if (has_scheduled_poll_)
+    timer_.Stop();
 }
 
 }  // namespace device

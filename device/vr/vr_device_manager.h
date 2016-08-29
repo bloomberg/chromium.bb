@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "device/vr/vr_client_dispatcher.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
@@ -56,6 +57,10 @@ class VRDeviceManager : public VRClientDispatcher {
   void InitializeProviders();
   void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
 
+  void SchedulePollEvents();
+  void PollEvents();
+  void StopSchedulingPollEvents();
+
   using ProviderList = std::vector<linked_ptr<VRDeviceProvider>>;
   ProviderList providers_;
 
@@ -71,7 +76,11 @@ class VRDeviceManager : public VRClientDispatcher {
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;
 
+  bool has_scheduled_poll_;
+
   base::ThreadChecker thread_checker_;
+
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceManager);
 };
