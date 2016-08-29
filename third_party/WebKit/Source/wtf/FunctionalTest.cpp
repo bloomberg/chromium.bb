@@ -78,11 +78,6 @@ private:
     int m_value;
 };
 
-UnwrappedClass Unwrap(const WrappedClass& wrapped)
-{
-    return wrapped.unwrap();
-}
-
 template<> struct ParamStorageTraits<ClassToBeWrapped> {
     using StorageType = WrappedClass;
 };
@@ -109,6 +104,21 @@ private:
     WTF::WeakPtrFactory<HasWeakPtrSupport> m_weakPtrFactory;
 };
 
+} // namespace WTF
+
+namespace base {
+
+template <>
+struct BindUnwrapTraits<WTF::WrappedClass> {
+    static WTF::UnwrappedClass Unwrap(const WTF::WrappedClass& wrapped)
+    {
+        return wrapped.unwrap();
+    }
+};
+
+} // namespace base
+
+namespace WTF {
 namespace {
 
 int returnFortyTwo()

@@ -379,6 +379,7 @@
         'base64_unittest.cc',
         'base64url_unittest.cc',
         'big_endian_unittest.cc',
+        'bind_helpers_unittest.cc',
         'bind_unittest.cc',
         'bind_unittest.nc',
         'bit_cast_unittest.cc',

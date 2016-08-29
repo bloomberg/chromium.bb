@@ -43,13 +43,6 @@ template <typename T> class Member;
 template <typename T> class WeakMember;
 }
 
-namespace base {
-
-template <typename T>
-struct IsWeakReceiver<WTF::WeakPtr<T>> : std::true_type {};
-
-}
-
 namespace WTF {
 
 // Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
@@ -172,12 +165,6 @@ struct ParamStorageTraits<RefPtr<T>> {
     typedef RefPtr<T> StorageType;
 };
 
-template <typename T>
-T* Unwrap(const RefPtr<T>& wrapped)
-{
-    return wrapped.get();
-}
-
 template <typename> class RetainPtr;
 
 template <typename T>
@@ -190,22 +177,10 @@ struct ParamStorageTraits<PassedWrapper<T>> {
     typedef PassedWrapper<T> StorageType;
 };
 
-template <typename T>
-T Unwrap(const PassedWrapper<T>& wrapped)
-{
-    return wrapped.moveOut();
-}
-
 template <typename T, FunctionThreadAffinity threadAffinity>
 struct ParamStorageTraits<UnretainedWrapper<T, threadAffinity>> {
     typedef UnretainedWrapper<T, threadAffinity> StorageType;
 };
-
-template <typename T, FunctionThreadAffinity threadAffinity>
-T* Unwrap(const UnretainedWrapper<T, threadAffinity>& wrapped)
-{
-    return wrapped.value();
-}
 
 template<typename Signature, FunctionThreadAffinity threadAffinity = SameThreadAffinity>
 class Function;
@@ -260,6 +235,37 @@ typedef Function<void(), SameThreadAffinity> Closure;
 typedef Function<void(), CrossThreadAffinity> CrossThreadClosure;
 
 } // namespace WTF
+
+namespace base {
+
+template <typename T>
+struct IsWeakReceiver<WTF::WeakPtr<T>> : std::true_type {};
+
+template <typename T>
+struct BindUnwrapTraits<WTF::RefPtr<T>> {
+    static T* Unwrap(const WTF::RefPtr<T>& wrapped)
+    {
+        return wrapped.get();
+    }
+};
+
+template <typename T>
+struct BindUnwrapTraits<WTF::PassedWrapper<T>> {
+    static T Unwrap(const WTF::PassedWrapper<T>& wrapped)
+    {
+        return wrapped.moveOut();
+    }
+};
+
+template <typename T, WTF::FunctionThreadAffinity threadAffinity>
+struct BindUnwrapTraits<WTF::UnretainedWrapper<T, threadAffinity>> {
+    static T* Unwrap(const WTF::UnretainedWrapper<T, threadAffinity>& wrapped)
+    {
+        return wrapped.value();
+    }
+};
+
+} // namespace base
 
 using WTF::passed;
 using WTF::unretained;
