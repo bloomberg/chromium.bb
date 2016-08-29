@@ -226,10 +226,12 @@ void Resource::ServiceWorkerResponseCachedMetadataHandler::sendToPlatform()
     }
 }
 
-class Resource::ResourceCallback final : public GarbageCollectedFinalized<ResourceCallback> {
+// This class cannot be on-heap because the first callbackHandler() call
+// instantiates the singleton object while we can call it in the
+// pre-finalization step.
+class Resource::ResourceCallback final {
 public:
     static ResourceCallback& callbackHandler();
-    DECLARE_TRACE();
     void schedule(Resource*);
     void cancel(Resource*);
     bool isScheduled(Resource*) const;
@@ -238,24 +240,13 @@ private:
 
     void runTask();
     std::unique_ptr<CancellableTaskFactory> m_callbackTaskFactory;
-    HeapHashSet<Member<Resource>> m_resourcesWithPendingClients;
+    HashSet<Persistent<Resource>> m_resourcesWithPendingClients;
 };
 
 Resource::ResourceCallback& Resource::ResourceCallback::callbackHandler()
 {
-    // Oilpan + LSan: as the callbackHandler() singleton is used by Resource
-    // and ResourcePtr finalizers, it cannot be released upon shutdown in
-    // preparation for leak detection.
-    //
-    // Keep it out of LSan's reach instead.
-    LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_LOCAL(ResourceCallback, callbackHandler, (new ResourceCallback));
+    DEFINE_STATIC_LOCAL(ResourceCallback, callbackHandler, ());
     return callbackHandler;
-}
-
-DEFINE_TRACE(Resource::ResourceCallback)
-{
-    visitor->trace(m_resourcesWithPendingClients);
 }
 
 Resource::ResourceCallback::ResourceCallback()
