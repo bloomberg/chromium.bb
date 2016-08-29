@@ -130,7 +130,12 @@ ImageDownloaderImpl::ImageDownloaderImpl(
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {
-  RenderThread::Get()->RemoveObserver(this);
+  RenderThread* thread = RenderThread::Get();
+  // As ImageDownloaderImpl is a strong binding with message pipe, the
+  // destructor may run after message loop shutdown, so we need to check whether
+  // RenderThread is null.
+  if (thread)
+    thread->RemoveObserver(this);
 }
 
 // static
