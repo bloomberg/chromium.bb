@@ -115,11 +115,7 @@ def chromium_bare(c):
   s = c.solutions.add()
   s.name = 'src'
   s.url = ChromiumSrcURL(c)
-  s.custom_vars = mirror_only(c, {
-    'googlecode_url': 'svn://svn-mirror.golo.chromium.org/%s',
-    'nacl_trunk': 'svn://svn-mirror.golo.chromium.org/native_client/trunk',
-    'sourceforge_url': 'svn://svn-mirror.golo.chromium.org/%(repo)s',
-    'webkit_trunk': ChromiumGitURL(c, 'chromium', 'blink.git')})
+  s.custom_vars = {}
   m = c.got_revision_mapping
   m['src'] = 'got_revision'
   m['src/native_client'] = 'got_nacl_revision'
@@ -365,7 +361,6 @@ def internal_deps(c):
 @config_ctx(includes=['chromium', 'chrome_internal'])
 def perf(c):
   s = c.solutions[0]
-  s.custom_vars['llvm_url'] = 'svn://svn-mirror.golo.chromium.org/llvm-project'
   s.managed = False
   needed_components_internal = [
     "src/data/page_cycler",
