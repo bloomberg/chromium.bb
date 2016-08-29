@@ -885,7 +885,9 @@ std::string RenderFrameDevToolsAgentHost::GetType() {
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     return manager->delegate()->GetTargetType(current_->host());
-  return kTypeOther;
+  if (IsChildFrame())
+    return kTypeFrame;
+  return kTypePage;
 }
 
 std::string RenderFrameDevToolsAgentHost::GetTitle() {
