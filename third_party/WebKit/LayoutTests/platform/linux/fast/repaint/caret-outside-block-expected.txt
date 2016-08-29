@@ -9,7 +9,7 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutText #text",
           "rect": [790, 7, 3, 21],
           "reason": "invalidate paint rectangle"
         }

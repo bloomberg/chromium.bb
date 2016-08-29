@@ -19,7 +19,7 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow DIV id='test'",
+          "object": "LayoutBR BR",
           "rect": [38, 78, 3, 21],
           "reason": "invalidate paint rectangle"
         }

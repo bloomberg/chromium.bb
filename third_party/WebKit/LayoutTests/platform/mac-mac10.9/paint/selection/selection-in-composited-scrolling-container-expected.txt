@@ -1,0 +1,94 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='target'",
+          "rect": [5, 5, 54, 25],
+          "reason": "subtree"
+        }
+      ],
+      "children": [
+        {
+          "name": "LayoutBlockFlow DIV id='inner-editor'",
+          "position": [11, 11],
+          "bounds": [42, 13],
+          "shouldFlattenTransform": false,
+          "drawsContent": true,
+          "children": [
+            {
+              "name": "Scrolling Layer",
+              "bounds": [42, 13],
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "name": "Scrolling Contents Layer",
+                  "bounds": [67, 13],
+                  "drawsContent": true,
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutText #text",
+                      "rect": [23, 0, 24, 13],
+                      "reason": "selection"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Overflow Controls Host Layer",
+              "bounds": [42, 13],
+              "children": [
+                {
+                  "name": "Horizontal Scrollbar Layer",
+                  "position": [0, 13],
+                  "bounds": [42, 0],
+                  "drawsContent": true
+                },
+                {
+                  "name": "Vertical Scrollbar Layer",
+                  "position": [42, 0],
+                  "bounds": [0, 13],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutTextControl INPUT id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "selection"
+    }
+  ]
+}
+

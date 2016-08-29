@@ -24,7 +24,7 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutText #text",
           "rect": [43, 174, 3, 22],
           "reason": "invalidate paint rectangle"
         }

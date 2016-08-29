@@ -19,12 +19,12 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
+          "object": "LayoutBR BR",
           "rect": [7, 77, 3, 19],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBlockFlow DIV id='div'",
+          "object": "LayoutBR BR",
           "rect": [7, 59, 3, 19],
           "reason": "invalidate paint rectangle"
         }

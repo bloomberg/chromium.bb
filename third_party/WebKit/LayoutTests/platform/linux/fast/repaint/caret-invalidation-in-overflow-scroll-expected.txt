@@ -9,13 +9,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [380, 10, 3, 18],
+          "object": "LayoutText #text",
+          "rect": [380, 11, 3, 16],
           "reason": "invalidate paint rectangle"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [377, 10, 3, 18],
+          "object": "LayoutText #text",
+          "rect": [377, 11, 3, 16],
           "reason": "invalidate paint rectangle"
         }
       ]
