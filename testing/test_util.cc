@@ -146,4 +146,64 @@ bool ValidateCues(mkvparser::Segment* segment, mkvparser::IMkvReader* reader) {
   return true;
 }
 
+bool ParseMkvFileReleaseSegment(const std::string& webm_file,
+                                mkvparser::Segment** segment_out) {
+  mkvparser::MkvReader reader;
+  if (reader.Open(webm_file.c_str()) < 0) {
+    return false;
+  }
+
+  long long pos = 0;  // NOLINT
+  mkvparser::EBMLHeader ebml_header;
+  if (ebml_header.Parse(&reader, pos)) {
+    return false;
+  }
+
+  using mkvparser::Segment;
+  Segment* segment_ptr = nullptr;
+  if (Segment::CreateInstance(&reader, pos, segment_ptr)) {
+    return false;
+  }
+
+  std::unique_ptr<Segment> segment(segment_ptr);
+  long result;
+  if ((result = segment->Load()) < 0) {
+    return false;
+  }
+
+  const mkvparser::Cluster* cluster = segment->GetFirst();
+  if (!cluster || cluster->EOS()) {
+    return false;
+  }
+
+  while (cluster && cluster->EOS() == false) {
+    if (cluster->GetTimeCode() < 0) {
+      return false;
+    }
+
+    const mkvparser::BlockEntry* block = nullptr;
+    if (cluster->GetFirst(block) < 0) {
+      return false;
+    }
+
+    while (block != NULL && block->EOS() == false) {
+      if (cluster->GetNext(block, block) < 0) {
+        return false;
+      }
+    }
+
+    cluster = segment->GetNext(cluster);
+  }
+
+  *segment_out = segment.release();
+  return true;
+}
+
+bool ParseMkvFile(const std::string& webm_file) {
+  mkvparser::Segment* segment = nullptr;
+  const bool result = ParseMkvFileReleaseSegment(webm_file, &segment);
+  delete segment;
+  return result;
+}
+
 }  // namespace test

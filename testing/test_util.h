@@ -63,6 +63,14 @@ bool CompareFiles(const std::string& file1, const std::string& file2);
 //  Data parsed by |segment| has no cue points.
 bool ValidateCues(mkvparser::Segment* segment, mkvparser::IMkvReader* reader);
 
+// Parses |webm_file| using mkvparser and returns true when file parses
+// successfully (all clusters and blocks can be successfully walked). Second
+// variant allows further interaction with the parsed file via transferring
+// ownership of the mkvparser Segment to the caller.
+bool ParseMkvFile(const std::string& webm_file);
+bool ParseMkvFileReleaseSegment(const std::string& webm_file,
+                                mkvparser::Segment** segment_out);
+
 }  // namespace test
 
 #endif  // LIBWEBM_TESTING_TEST_UTIL_H_
