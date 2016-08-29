@@ -465,6 +465,56 @@ class Colour {
 };
 
 ///////////////////////////////////////////////////////////////
+// Projection element.
+class Projection {
+ public:
+  enum ProjectionType {
+    kTypeNotPresent = -1,
+    kRectangular = 0,
+    kEquirectangular = 1,
+    kCubeMap = 2,
+    kMesh = 3,
+  };
+  static const uint64_t kValueNotPresent;
+  Projection()
+      : type_(kRectangular),
+        pose_yaw_(0.0),
+        pose_pitch_(0.0),
+        pose_roll_(0.0),
+        private_data_(NULL),
+        private_data_length_(0) {}
+  ~Projection() { delete[] private_data_; }
+
+  uint64_t ProjectionSize() const;
+  bool Write(IMkvWriter* writer) const;
+
+  bool SetProjectionPrivate(const uint8_t* private_data,
+                            uint64_t private_data_length);
+
+  ProjectionType type() const { return type_; }
+  void set_type(ProjectionType type) { type_ = type; }
+  float pose_yaw() const { return pose_yaw_; }
+  void set_pose_yaw(float pose_yaw) { pose_yaw_ = pose_yaw; }
+  float pose_pitch() const { return pose_pitch_; }
+  void set_pose_pitch(float pose_pitch) { pose_pitch_ = pose_pitch; }
+  float pose_roll() const { return pose_roll_; }
+  void set_pose_roll(float pose_roll) { pose_roll_ = pose_roll; }
+  uint8_t* private_data() const { return private_data_; }
+  uint64_t private_data_length() const { return private_data_length_; }
+
+ private:
+  // Returns size of VideoProjection child elements.
+  uint64_t PayloadSize() const;
+
+  ProjectionType type_;
+  float pose_yaw_;
+  float pose_pitch_;
+  float pose_roll_;
+  uint8_t* private_data_;
+  uint64_t private_data_length_;
+};
+
+///////////////////////////////////////////////////////////////
 // Track element.
 class Track {
  public:
@@ -611,6 +661,11 @@ class VideoTrack : public Track {
   // Deep copies |colour|.
   bool SetColour(const Colour& colour);
 
+  Projection* projection() { return projection_; };
+
+  // Deep copies |projection|.
+  bool SetProjection(const Projection& projection);
+
  private:
   // Returns the size in bytes of the Video element.
   uint64_t VideoPayloadSize() const;
@@ -629,6 +684,7 @@ class VideoTrack : public Track {
   uint64_t width_;
 
   Colour* colour_;
+  Projection* projection_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(VideoTrack);
 };
