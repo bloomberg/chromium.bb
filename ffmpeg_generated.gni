@@ -459,7 +459,7 @@ if ((is_linux && current_cpu == "arm64" && ffmpeg_branding == "Chrome") || (is_l
   ffmpeg_gas_sources += [
     "libavcodec/aarch64/autorename_libavcodec_aarch64_h264pred_neon.S",
     "libavcodec/aarch64/autorename_libavcodec_aarch64_hpeldsp_neon.S",
-    "libavcodec/aarch64/videodsp.S",
+    "libavcodec/aarch64/videodsp_aarch64.S",
   ]
 }
 

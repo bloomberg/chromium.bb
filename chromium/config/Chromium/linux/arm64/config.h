@@ -344,7 +344,7 @@
 #define HAVE_RSYNC_CONTIMEOUT 1
 #define HAVE_SYMVER_ASM_LABEL 0
 #define HAVE_SYMVER_GNU_ASM 1
-#define HAVE_VFP_ARGS 0
+/* #define HAVE_VFP_ARGS 0 -- Disabled to allow softfp/hardfp selection at gyp time */
 #define HAVE_XFORM_ASM 0
 #define HAVE_XMM_CLOBBERS 0
 #define HAVE_CONDITION_VARIABLE_PTR 0

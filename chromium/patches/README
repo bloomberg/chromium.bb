@@ -97,3 +97,9 @@ Current patches:
   Changes to libavformat/riffdec.c
     Work around VC++ 2015 Update 1 compiler bug, crbug.com/581768 and
     https://connect.microsoft.com/VisualStudio/feedback/details/2291638
+
+  Changes to libavcodec/aarch64/videodsp.S
+    Renamed videodsp.S to videodsp_aarch64.S. This is to fix GN build errors
+    for arm64 linux. There is a conflict for generated videodsp.o as both
+    libavcodec/videodsp.c and libavcodec/aarch64/videodsp.S tries to generate
+    videodsp.o at same location.
