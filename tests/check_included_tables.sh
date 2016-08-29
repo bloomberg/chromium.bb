@@ -19,7 +19,7 @@ has_metadata() {
 }
 
 for table in $(dirname $0)/../tables/*; do
-    cat $table | dos2unix | grep '^include ' | sed "s|^include  *\(.[^ ]*\).*$|$(dirname $table)/\1|g"
+    cat $table | grep '^include ' | sed "s|^include  *\(.[^ ]*\).*$|$(dirname $table)/\1|g"
 done | sort | uniq | \
 while read -r table; do
     if has_metadata $table; then
