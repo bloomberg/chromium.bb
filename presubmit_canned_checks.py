@@ -999,6 +999,8 @@ def _GerritOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
   reviewers = set(
       r for r in input_api.gerrit.GetChangeReviewers(issue, approval_needed)
       if _match_reviewer_email(r, owner_email, email_regexp))
+  input_api.logging.debug('owner: %s; approvals given by: %s',
+                          owner_email, ', '.join(sorted(reviewers)))
   return owner_email, reviewers
 
 
