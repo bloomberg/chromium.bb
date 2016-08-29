@@ -46,6 +46,9 @@ class CC_EXPORT AnimationTimeline : public base::RefCounted<AnimationTimeline> {
 
   AnimationPlayer* GetPlayerById(int player_id) const;
 
+  void SetNeedsPushProperties();
+  bool needs_push_properties() const { return needs_push_properties_; }
+
  private:
   friend class base::RefCounted<AnimationTimeline>;
 
@@ -64,6 +67,7 @@ class CC_EXPORT AnimationTimeline : public base::RefCounted<AnimationTimeline> {
 
   int id_;
   AnimationHost* animation_host_;
+  bool needs_push_properties_;
 
   // Impl-only AnimationTimeline has no main thread instance and lives on
   // it's own.

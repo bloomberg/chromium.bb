@@ -178,6 +178,9 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
     return needs_to_start_animations_;
   }
 
+  void SetNeedsPushProperties();
+  bool needs_push_properties() const { return needs_push_properties_; }
+
  private:
   friend class base::RefCounted<ElementAnimations>;
 
@@ -221,9 +224,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void NotifyClientScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset,
                                         bool notify_active_elements,
                                         bool notify_pending_elements);
-
-  void NotifyClientAnimationWaitingForDeletion();
-
   void NotifyClientAnimationChanged(
       TargetProperty::Type property,
       ElementListType list_type,
@@ -239,7 +239,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
                            const gfx::Transform& transform);
   void OnScrollOffsetAnimated(ElementListType list_type,
                               const gfx::ScrollOffset& scroll_offset);
-  void OnAnimationWaitingForDeletion();
   void IsAnimatingChanged(ElementListType list_type,
                           TargetProperty::Type property,
                           AnimationChangeType change_type,
@@ -255,6 +254,7 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void NotifyPlayersAnimationAborted(base::TimeTicks monotonic_time,
                                      TargetProperty::Type target_property,
                                      int group);
+  void NotifyPlayersAnimationWaitingForDeletion();
   void NotifyPlayersAnimationPropertyUpdate(const AnimationEvent& event);
   void NotifyPlayersAnimationTakeover(base::TimeTicks monotonic_time,
                                       TargetProperty::Type target_property,
@@ -279,6 +279,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   bool needs_to_start_animations_;
 
   bool scroll_offset_animation_was_interrupted_;
+
+  bool needs_push_properties_;
 
   struct PropertyAnimationState {
     bool currently_running_for_active_elements = false;

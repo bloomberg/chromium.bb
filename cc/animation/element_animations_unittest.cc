@@ -665,6 +665,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
                                           false);
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, nullptr);
+  EXPECT_TRUE(animations->needs_push_properties());
   animations->PushPropertiesTo(animations_impl.get());
   animations_impl->ActivateAnimations();
 
@@ -679,15 +680,15 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, nullptr);
 
-  EXPECT_FALSE(host_->animation_waiting_for_deletion());
-  EXPECT_FALSE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(host_impl_->needs_push_properties());
 
   events = host_impl_->CreateEvents();
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(2000));
   animations_impl->UpdateState(true, events.get());
 
-  EXPECT_TRUE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_TRUE(host_impl_->needs_push_properties());
 
   // There should be a FINISHED event for the animation.
   EXPECT_EQ(1u, events->events_.size());
@@ -701,7 +702,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   animations->UpdateState(true, nullptr);
-  EXPECT_TRUE(host_->animation_waiting_for_deletion());
+  EXPECT_TRUE(host_->needs_push_properties());
 
   animations->PushPropertiesTo(animations_impl.get());
 
@@ -1687,6 +1688,7 @@ TEST_F(ElementAnimationsTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   EXPECT_TRUE(active_animation);
   EXPECT_TRUE(active_animation->needs_synchronized_start_time());
 
+  EXPECT_TRUE(animations->needs_push_properties());
   animations->PushPropertiesTo(animations_impl.get());
   animations_impl->ActivateAnimations();
 
@@ -1950,15 +1952,16 @@ TEST_F(ElementAnimationsTest, MainThreadAbortedAnimationGetsDeleted) {
   animations->AbortAnimations(TargetProperty::OPACITY);
   EXPECT_EQ(Animation::ABORTED,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_FALSE(host_->animation_waiting_for_deletion());
-  EXPECT_FALSE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(host_impl_->needs_push_properties());
 
   animations->Animate(kInitialTickTime);
   animations->UpdateState(true, nullptr);
-  EXPECT_FALSE(host_->animation_waiting_for_deletion());
+  EXPECT_FALSE(host_->needs_push_properties());
   EXPECT_EQ(Animation::ABORTED,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
 
+  EXPECT_TRUE(animations->needs_push_properties());
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_FALSE(animations->GetAnimationById(animation_id));
   EXPECT_FALSE(animations_impl->GetAnimationById(animation_id));
@@ -1987,13 +1990,13 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_EQ(
       Animation::ABORTED,
       animations_impl->GetAnimation(TargetProperty::OPACITY)->run_state());
-  EXPECT_FALSE(host_->animation_waiting_for_deletion());
-  EXPECT_FALSE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(host_impl_->needs_push_properties());
 
   auto events = host_impl_->CreateEvents();
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
-  EXPECT_TRUE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_TRUE(host_impl_->needs_push_properties());
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(AnimationEvent::ABORTED, events->events_[0].type);
   EXPECT_EQ(
@@ -2007,7 +2010,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
 
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   animations->UpdateState(true, nullptr);
-  EXPECT_TRUE(host_->animation_waiting_for_deletion());
+  EXPECT_TRUE(host_->needs_push_properties());
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             animations->GetAnimation(TargetProperty::OPACITY)->run_state());
 
@@ -2057,14 +2060,14 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   EXPECT_EQ(Animation::ABORTED_BUT_NEEDS_COMPLETION,
             animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
                 ->run_state());
-  EXPECT_FALSE(host_->animation_waiting_for_deletion());
-  EXPECT_FALSE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_FALSE(host_->needs_push_properties());
+  EXPECT_FALSE(host_impl_->needs_push_properties());
 
   auto events = host_impl_->CreateEvents();
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
   EXPECT_TRUE(delegate_impl.finished());
-  EXPECT_TRUE(host_impl_->animation_waiting_for_deletion());
+  EXPECT_TRUE(host_impl_->needs_push_properties());
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(AnimationEvent::TAKEOVER, events->events_[0].type);
   EXPECT_EQ(123, events->events_[0].animation_start_time);
@@ -2075,9 +2078,16 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
             animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
                 ->run_state());
 
+  // MT receives the event to take over.
   animations->NotifyAnimationTakeover(events->events_[0]);
   EXPECT_TRUE(delegate.takeover());
 
+  // AnimationPlayer::NotifyAnimationTakeover requests SetNeedsPushProperties
+  // to purge CT animations marked for deletion.
+  EXPECT_TRUE(animations->needs_push_properties());
+
+  // ElementAnimations::PurgeAnimationsMarkedForDeletion call happens only in
+  // ElementAnimations::PushPropertiesTo.
   animations->PushPropertiesTo(animations_impl.get());
   animations_impl->ActivateAnimations();
   EXPECT_FALSE(animations->GetAnimationById(animation_id));

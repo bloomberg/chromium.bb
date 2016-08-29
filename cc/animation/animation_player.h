@@ -82,6 +82,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
   void NotifyAnimationAborted(base::TimeTicks monotonic_time,
                               TargetProperty::Type target_property,
                               int group);
+  void NotifyAnimationWaitingForDeletion();
   void NotifyAnimationTakeover(base::TimeTicks monotonic_time,
                                TargetProperty::Type target_property,
                                double animation_start_time,
@@ -92,13 +93,14 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
     return !animations_.empty();
   }
 
+  bool needs_push_properties() const { return needs_push_properties_; }
+  void SetNeedsPushProperties();
+
  private:
   friend class base::RefCounted<AnimationPlayer>;
 
   explicit AnimationPlayer(int id);
   ~AnimationPlayer();
-
-  void SetNeedsCommit();
 
   void RegisterPlayer();
   void UnregisterPlayer();
@@ -119,6 +121,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
 
   int id_;
   ElementId element_id_;
+  bool needs_push_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
 };

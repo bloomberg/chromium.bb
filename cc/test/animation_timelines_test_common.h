@@ -294,6 +294,8 @@ class AnimationTimelinesTest : public testing::Test {
 
   int NextTestLayerId();
 
+  bool CheckPlayerTimelineNeedsPushProperties(bool needs_push_properties) const;
+
   TestHostClient client_;
   TestHostClient client_impl_;
 
