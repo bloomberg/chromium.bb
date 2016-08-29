@@ -2744,7 +2744,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 // Check that the internals page contains logs both from the renderer and the
 // browser.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage) {
+// TODO(crbug.com/640737) Flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_InternalsPage DISABLED_InternalsPage
+#else
+#define MAYBE_InternalsPage InternalsPage
+#endif
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_InternalsPage) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"), CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
