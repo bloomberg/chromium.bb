@@ -93,6 +93,10 @@ const char kBrowserTestType[] = "browser";
 
 }  // namespace
 
+// static
+InProcessBrowserTest::SetUpBrowserFunction*
+    InProcessBrowserTest::global_browser_set_up_function_ = nullptr;
+
 // Library used for testing accessibility.
 const base::FilePath::CharType kAXSTesting[] =
     FILE_PATH_LITERAL("third_party/accessibility-audit/axs_testing.js");
@@ -534,6 +538,9 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // SetUpOnMainThread or RunTestOnMainThread so that one or all tests can
   // enable/disable the accessibility audit.
   run_accessibility_checks_for_test_case_ = false;
+
+  if (browser_ && global_browser_set_up_function_)
+    ASSERT_TRUE(global_browser_set_up_function_(browser_));
 
   SetUpOnMainThread();
 #if defined(OS_MACOSX)
