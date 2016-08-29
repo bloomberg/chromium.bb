@@ -69,8 +69,6 @@ void LayoutTableCell::willBeRemovedFromTree()
     section()->setNeedsCellRecalc();
 
     // When borders collapse, removing a cell can affect the the width of neighboring cells.
-    if (!parent())
-        return;
     LayoutTable* enclosingTable = table();
     DCHECK(enclosingTable);
     if (!enclosingTable->collapseBorders())
