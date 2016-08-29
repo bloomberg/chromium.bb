@@ -10,7 +10,8 @@
 
 namespace blink {
 
-class CORE_EXPORT NGFragmentBuilder final {
+class CORE_EXPORT NGFragmentBuilder final
+    : public GarbageCollected<NGFragmentBuilder> {
  public:
   NGFragmentBuilder(NGFragmentBase::NGFragmentType);
 
@@ -31,6 +32,8 @@ class CORE_EXPORT NGFragmentBuilder final {
   // Creates the fragment. Can only be called once.
   NGFragment* ToFragment();
 
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(children_); }
+
  private:
   NGFragmentBase::NGFragmentType type_;
   NGWritingMode writing_mode_;
@@ -39,7 +42,7 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGLogicalSize size_;
   NGLogicalSize overflow_;
 
-  PersistentHeapVector<Member<const NGFragmentBase>> children_;
+  HeapVector<Member<const NGFragmentBase>> children_;
 };
 
 }  // namespace blink

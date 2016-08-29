@@ -13,21 +13,14 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutBox;
-class NGBoxIterator;
+class NGBlockLayoutAlgorithm;
 class NGConstraintSpace;
 class NGFragment;
 
 // Represents a node to be laid out.
-class CORE_EXPORT NGBox final {
+class CORE_EXPORT NGBox final : public GarbageCollected<NGBox> {
  public:
-  explicit NGBox(LayoutObject* layoutObject)
-      : m_layoutBox(toLayoutBox(layoutObject)) {}
-
-  NGBox() : m_layoutBox(nullptr) {}
-
-  // Returns an iterator that will iterate over this box's children, if any.
-  NGBoxIterator childIterator();
-  operator bool() const { return m_layoutBox; }
+  explicit NGBox(LayoutObject*);
 
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
@@ -35,21 +28,24 @@ class CORE_EXPORT NGBox final {
   // TODO(layout-ng): Should we have a StartLayout function to avoid passing
   // the same space for each Layout iteration?
   bool Layout(const NGConstraintSpace*, NGFragment**);
-  const ComputedStyle* style() const;
+  const ComputedStyle* Style() const;
 
-  NGBox nextSibling() const;
+  NGBox* NextSibling() const;
 
-  NGBox firstChild() const;
+  NGBox* FirstChild() const;
 
   // This is necessary for interop between old and new trees -- after our parent
   // positions us, it calls this function so we can store the position on the
   // underlying LayoutBox.
-  void positionUpdated(const NGFragment&);
+  void PositionUpdated(const NGFragment&);
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(algorithm_); }
 
  private:
-  bool canUseNewLayout();
+  bool CanUseNewLayout();
 
-  LayoutBox* m_layoutBox;
+  LayoutBox* layout_box_;
+  Member<NGBlockLayoutAlgorithm> algorithm_;
 };
 
 }  // namespace blink

@@ -16,48 +16,68 @@ namespace blink {
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
-    NGBoxIterator box_iterator)
-    : style_(style), box_iterator_(box_iterator) {}
+    NGBox* first_child)
+    : style_(style), first_child_(first_child), state_(kStateInit) {}
 
 bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
                                     NGFragment** out) {
-  LayoutUnit inline_size =
-      computeInlineSizeForFragment(*constraint_space, *style_);
-  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
-  LayoutUnit block_size =
-      computeBlockSizeForFragment(*constraint_space, *style_, LayoutUnit(-1));
-  NGConstraintSpace* constraint_space_for_children = new NGConstraintSpace(
-      *constraint_space, NGLogicalSize(inline_size, block_size));
+  switch (state_) {
+    case kStateInit: {
+      LayoutUnit inline_size =
+          computeInlineSizeForFragment(*constraint_space, *style_);
+      // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
+      // -1?
+      LayoutUnit block_size = computeBlockSizeForFragment(
+          *constraint_space, *style_, LayoutUnit(-1));
+      constraint_space_for_children_ = new NGConstraintSpace(
+          *constraint_space, NGLogicalSize(inline_size, block_size));
+      content_size_ = LayoutUnit();
 
-  NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
-  builder.SetInlineSize(inline_size).SetBlockSize(block_size);
+      builder_ = new NGFragmentBuilder(NGFragmentBase::FragmentBox);
+      builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
+      current_child_ = first_child_;
+      state_ = kStateChildLayout;
+      return false;
+    }
+    case kStateChildLayout: {
+      if (current_child_) {
+        NGFragment* fragment;
+        if (!current_child_->Layout(constraint_space_for_children_, &fragment))
+          return false;
+        NGBoxStrut child_margins = computeMargins(
+            *constraint_space_for_children_, *current_child_->Style());
+        // TODO(layout-ng): Support auto margins
+        fragment->SetOffset(child_margins.inline_start,
+                            content_size_ + child_margins.block_start);
+        current_child_->PositionUpdated(*fragment);
+        content_size_ += fragment->BlockSize() + child_margins.BlockSum();
+        max_inline_size_ =
+            std::max(max_inline_size_,
+                     fragment->InlineSize() + child_margins.InlineSum());
+        builder_->AddChild(fragment);
+        current_child_ = current_child_->NextSibling();
+        if (current_child_)
+          return false;
+      }
 
-  LayoutUnit content_size;
-  for (NGBox box : box_iterator_) {
-    NGBoxStrut child_margins =
-        computeMargins(*constraint_space_for_children, *box.style());
-    NGFragment* fragment;
-    // TODO(layout-ng): Actually make this async
-    while (!box.Layout(constraint_space_for_children, &fragment))
-      ;
-    // TODO(layout-ng): Support auto margins
-    fragment->SetOffset(child_margins.inline_start,
-                        content_size + child_margins.block_start);
-    box.positionUpdated(*fragment);
-    content_size += fragment->BlockSize() + child_margins.BlockSum();
-    builder.AddChild(fragment);
-  }
+      state_ = kStateFinalize;
+      return false;
+    }
+    case kStateFinalize: {
+      // Recompute the block-axis size now that we know our content size.
+      LayoutUnit block_size = computeBlockSizeForFragment(
+          *constraint_space, *style_, content_size_);
 
-  // Recompute the block-axis size now that we know our content size.
-  block_size =
-      computeBlockSizeForFragment(*constraint_space, *style_, content_size);
-
-  // TODO(layout-ng): Compute correct inline overflow (block overflow should be
-  // correct)
-  builder.SetBlockSize(block_size)
-      .SetInlineOverflow(inline_size)
-      .SetBlockOverflow(content_size);
-  *out = builder.ToFragment();
+      builder_->SetBlockSize(block_size)
+          .SetInlineOverflow(max_inline_size_)
+          .SetBlockOverflow(content_size_);
+      *out = builder_->ToFragment();
+      state_ = kStateInit;
+      return true;
+    }
+  };
+  NOTREACHED();
+  *out = nullptr;
   return true;
 }
 

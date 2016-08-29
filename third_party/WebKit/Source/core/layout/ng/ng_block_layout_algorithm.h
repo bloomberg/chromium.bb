@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_box.h"
-#include "core/layout/ng/ng_box_iterator.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "wtf/RefPtr.h"
 
@@ -23,8 +23,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
  public:
   // Default constructor.
   // @param style Style reference of the block that is being laid out.
-  // @param boxIterator Iterator for the block's children.
-  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBoxIterator);
+  // @param first_child Our first child; the algorithm will use its NextSibling
+  //                    method to access all the children.
+  NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>, NGBox* first_child);
 
   // Actual layout implementation. Lays out the children in sequence within the
   // constraints given by the NGConstraintSpace. Returns a fragment with the
@@ -36,9 +37,25 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // returns true. The same constraint space has to be passed each time.
   bool Layout(const NGConstraintSpace*, NGFragment**) override;
 
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    NGLayoutAlgorithm::trace(visitor);
+    visitor->trace(first_child_);
+    visitor->trace(builder_);
+    visitor->trace(constraint_space_for_children_);
+    visitor->trace(current_child_);
+  }
+
  private:
   RefPtr<const ComputedStyle> style_;
-  NGBoxIterator box_iterator_;
+  Member<NGBox> first_child_;
+
+  enum State { kStateInit, kStateChildLayout, kStateFinalize };
+  State state_;
+  Member<NGFragmentBuilder> builder_;
+  Member<NGConstraintSpace> constraint_space_for_children_;
+  Member<NGBox> current_child_;
+  LayoutUnit content_size_;
+  LayoutUnit max_inline_size_;
 };
 
 }  // namespace blink

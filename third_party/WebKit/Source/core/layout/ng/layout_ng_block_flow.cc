@@ -5,7 +5,6 @@
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_derived_constraint_space.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
-#include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/LayoutAnalyzer.h"
 
@@ -23,9 +22,9 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
 
   const auto* constraint_space =
       NGDerivedConstraintSpace::CreateFromLayoutObject(*this);
-  NGBox box(this);
+  NGBox* box = new NGBox(this);
   NGFragment* fragment;
-  while (!box.Layout(constraint_space, &fragment))
+  while (!box->Layout(constraint_space, &fragment))
     ;
   clearNeedsLayout();
 }

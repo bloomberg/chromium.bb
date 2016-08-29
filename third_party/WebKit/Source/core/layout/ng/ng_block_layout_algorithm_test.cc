@@ -4,7 +4,6 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
-#include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
@@ -28,7 +27,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   NGConstraintSpace* space = new NGConstraintSpace(
       HorizontalTopBottom, NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
-  NGBlockLayoutAlgorithm algorithm(style_, NGBoxIterator(NGBox()));
+  NGBlockLayoutAlgorithm algorithm(style_, nullptr);
   NGFragment* frag;
   while (!algorithm.Layout(space, &frag))
     ;

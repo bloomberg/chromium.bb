@@ -7,7 +7,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
-#include "core/layout/ng/ng_box_iterator.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -16,6 +15,10 @@
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
+NGBox::NGBox(LayoutObject* layout_object)
+    : layout_box_(toLayoutBox(layout_object)) {
+  DCHECK(layout_box_);
+}
 
 bool NGBox::Layout(const NGConstraintSpace* constraint_space,
                    NGFragment** out) {
@@ -23,71 +26,71 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
   // resulting size to the LayoutObject, or use the old layout code and
   // synthesize a fragment.
   NGFragment* fragment = nullptr;
-  if (canUseNewLayout()) {
-    NGBlockLayoutAlgorithm algorithm(style(), childIterator());
-
+  if (CanUseNewLayout()) {
+    if (!algorithm_)
+      algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild());
     // Change the coordinate system of the constraint space.
     NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
-        FromPlatformWritingMode(style()->getWritingMode()), constraint_space);
+        FromPlatformWritingMode(Style()->getWritingMode()), constraint_space);
 
-    if (!algorithm.Layout(child_constraint_space, &fragment))
+    if (!algorithm_->Layout(child_constraint_space, &fragment))
       return false;
-    m_layoutBox->setLogicalWidth(fragment->InlineSize());
-    m_layoutBox->setLogicalHeight(fragment->BlockSize());
-    if (m_layoutBox->isLayoutBlock())
-      toLayoutBlock(m_layoutBox)->layoutPositionedObjects(true);
-    m_layoutBox->clearNeedsLayout();
+    layout_box_->setLogicalWidth(fragment->InlineSize());
+    layout_box_->setLogicalHeight(fragment->BlockSize());
+    if (layout_box_->isLayoutBlock())
+      toLayoutBlock(layout_box_)->layoutPositionedObjects(true);
+    layout_box_->clearNeedsLayout();
   } else {
     // TODO(layout-ng): If fixedSize is true, set the override width/height too
     NGLogicalSize container_size = constraint_space->ContainerSize();
-    m_layoutBox->setOverrideContainingBlockContentLogicalWidth(
+    layout_box_->setOverrideContainingBlockContentLogicalWidth(
         container_size.inline_size);
-    m_layoutBox->setOverrideContainingBlockContentLogicalHeight(
+    layout_box_->setOverrideContainingBlockContentLogicalHeight(
         container_size.block_size);
-    if (m_layoutBox->isLayoutNGBlockFlow() && m_layoutBox->needsLayout()) {
-      toLayoutNGBlockFlow(m_layoutBox)->LayoutBlockFlow::layoutBlock(true);
+    if (layout_box_->isLayoutNGBlockFlow() && layout_box_->needsLayout()) {
+      toLayoutNGBlockFlow(layout_box_)->LayoutBlockFlow::layoutBlock(true);
     } else {
-      m_layoutBox->layoutIfNeeded();
+      layout_box_->layoutIfNeeded();
     }
-    LayoutRect overflow = m_layoutBox->layoutOverflowRect();
+    LayoutRect overflow = layout_box_->layoutOverflowRect();
     // TODO(layout-ng): This does not handle writing modes correctly (for
     // overflow & the enums)
     NGFragmentBuilder builder(NGFragmentBase::FragmentBox);
-    builder.SetInlineSize(m_layoutBox->logicalWidth())
-        .SetBlockSize(m_layoutBox->logicalHeight())
+    builder.SetInlineSize(layout_box_->logicalWidth())
+        .SetBlockSize(layout_box_->logicalHeight())
         .SetInlineOverflow(overflow.width())
         .SetBlockOverflow(overflow.height());
     fragment = builder.ToFragment();
   }
   *out = fragment;
+  // Reset algorithm for future use
+  algorithm_ = nullptr;
   return true;
 }
 
-const ComputedStyle* NGBox::style() const {
-  return m_layoutBox->style();
+const ComputedStyle* NGBox::Style() const {
+  return layout_box_->style();
 }
 
-NGBoxIterator NGBox::childIterator() {
-  return NGBoxIterator(firstChild());
+NGBox* NGBox::NextSibling() const {
+  LayoutObject* next_sibling = layout_box_->nextSibling();
+  return next_sibling ? new NGBox(next_sibling) : nullptr;
 }
 
-NGBox NGBox::nextSibling() const {
-  return m_layoutBox ? NGBox(m_layoutBox->nextSibling()) : NGBox();
+NGBox* NGBox::FirstChild() const {
+  LayoutObject* child = layout_box_->slowFirstChild();
+  return child ? new NGBox(child) : nullptr;
 }
 
-NGBox NGBox::firstChild() const {
-  return m_layoutBox ? NGBox(m_layoutBox->slowFirstChild()) : NGBox();
+void NGBox::PositionUpdated(const NGFragment& fragment) {
+  layout_box_->setLogicalLeft(fragment.InlineOffset());
+  layout_box_->setLogicalTop(fragment.BlockOffset());
 }
 
-void NGBox::positionUpdated(const NGFragment& fragment) {
-  m_layoutBox->setLogicalLeft(fragment.InlineOffset());
-  m_layoutBox->setLogicalTop(fragment.BlockOffset());
-}
-
-bool NGBox::canUseNewLayout() {
-  if (!m_layoutBox)
+bool NGBox::CanUseNewLayout() {
+  if (!layout_box_)
     return true;
-  if (m_layoutBox->isLayoutBlockFlow() && !m_layoutBox->childrenInline())
+  if (layout_box_->isLayoutBlockFlow() && !layout_box_->childrenInline())
     return true;
   return false;
 }

@@ -15,12 +15,13 @@ class NGConstraintSpace;
 class NGFragment;
 
 // Base class for all LayoutNG algorithms.
-class CORE_EXPORT NGLayoutAlgorithm {
+class CORE_EXPORT NGLayoutAlgorithm
+    : public GarbageCollectedFinalized<NGLayoutAlgorithm> {
   WTF_MAKE_NONCOPYABLE(NGLayoutAlgorithm);
-  USING_FAST_MALLOC(NGLayoutAlgorithm);
 
  public:
   NGLayoutAlgorithm() {}
+  virtual ~NGLayoutAlgorithm() {}
 
   // Actual layout function. Lays out the children and descendents within the
   // constraints given by the NGConstraintSpace. Returns a fragment with the
@@ -33,6 +34,8 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // TODO(layout-ng): Should we have a StartLayout function to avoid passing
   // the same space for each Layout iteration?
   virtual bool Layout(const NGConstraintSpace*, NGFragment**) = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 }  // namespace blink
