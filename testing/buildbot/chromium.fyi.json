@@ -2361,13 +2361,13 @@
         "args": [
           "--tool=asan"
         ],
-        "test": "components_browsertests"
+        "test": "base_unittests"
       },
       {
         "args": [
           "--tool=asan"
         ],
-        "test": "gfx_unittests"
+        "test": "components_browsertests"
       }
     ],
     "junit_tests": [
