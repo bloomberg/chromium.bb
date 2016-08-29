@@ -186,6 +186,8 @@ private:
 #undef ASSERT
 #endif
 
+#define DCHECK_AT(assertion, file, line) LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), DCHECK_IS_ON() ? !(assertion) : false)
+
 #if ENABLE(ASSERT)
 
 #define ASSERT(assertion) \
@@ -193,8 +195,6 @@ private:
         (WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #assertion), \
             CRASH()) : \
         (void)0)
-
-#define DCHECK_AT(assertion, file, line) LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), !(assertion))
 
 #define ASSERT_NOT_REACHED() do { \
     WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, 0); \
@@ -208,7 +208,6 @@ private:
 #else
 
 #define ASSERT(assertion) ((void)0)
-#define DCHECK_AT(assertion, file, line) EAT_STREAM_PARAMETERS
 #define ASSERT_NOT_REACHED() ((void)0)
 #define NO_RETURN_DUE_TO_ASSERT
 

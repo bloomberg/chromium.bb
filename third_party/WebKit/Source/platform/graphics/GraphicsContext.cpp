@@ -58,7 +58,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode 
     , m_paintController(paintController)
     , m_paintStateStack()
     , m_paintStateIndex(0)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_layerCount(0)
     , m_disableDestructionChecks(false)
     , m_inDrawingRecorder(false)
@@ -84,7 +84,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode 
 
 GraphicsContext::~GraphicsContext()
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     if (!m_disableDestructionChecks) {
         ASSERT(!m_paintStateIndex);
         ASSERT(!m_paintState->saveCount());
@@ -160,7 +160,7 @@ void GraphicsContext::restoreLayer()
     m_canvas->restore();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void GraphicsContext::setInDrawingRecorder(bool val)
 {
     // Nested drawing recorers are not allowed.
@@ -246,7 +246,7 @@ void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const
         saveLayer(nullptr, &layerPaint);
     }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ++m_layerCount;
 #endif
 }

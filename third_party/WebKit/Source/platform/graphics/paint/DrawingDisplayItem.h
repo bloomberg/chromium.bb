@@ -33,7 +33,7 @@ public:
 
     void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
 
-#if DCHECK_IS_ON()
+#if ENABLE(ASSERT)
     bool equals(const DisplayItem& other) const final;
 #endif
 

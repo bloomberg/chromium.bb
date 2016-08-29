@@ -271,7 +271,7 @@ public:
     static int focusRingWidth(int width) { return 1; }
 #endif
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     void setInDrawingRecorder(bool);
 #endif
 
@@ -353,7 +353,7 @@ private:
 
     SkMetaData m_metaData;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     unsigned m_layerCount;
     bool m_disableDestructionChecks;
     bool m_inDrawingRecorder;
