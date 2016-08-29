@@ -14,7 +14,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/transaction.h"
 
 using content::BrowserThread;
 using sql::Statement;
@@ -23,11 +25,28 @@ namespace {
 
 using ResourceRow = predictors::ResourcePrefetchPredictorTables::ResourceRow;
 
+const char kMetadataTableName[] = "resource_prefetch_predictor_metadata";
 const char kUrlResourceTableName[] = "resource_prefetch_predictor_url";
 const char kUrlMetadataTableName[] = "resource_prefetch_predictor_url_metadata";
 const char kHostResourceTableName[] = "resource_prefetch_predictor_host";
 const char kHostMetadataTableName[] =
     "resource_prefetch_predictor_host_metadata";
+
+const char kCreateGlobalMetadataStatementTemplate[] =
+    "CREATE TABLE %s ( "
+    "key TEXT, value INTEGER, "
+    "PRIMARY KEY (key))";
+const char kCreateResourceTableStatementTemplate[] =
+    "CREATE TABLE %s ( "
+    "main_page_url TEXT, "
+    "resource_url TEXT, "
+    "proto BLOB, "
+    "PRIMARY KEY(main_page_url, resource_url))";
+const char kCreateMetadataTableStatementTemplate[] =
+    "CREATE TABLE %s ( "
+    "main_page_url TEXT, "
+    "last_visit_time INTEGER, "
+    "PRIMARY KEY(main_page_url))";
 
 const char kInsertResourceTableStatementTemplate[] =
     "INSERT INTO %s (main_page_url, resource_url, proto) VALUES (?,?,?)";
@@ -435,18 +454,60 @@ bool ResourcePrefetchPredictorTables::StringsAreSmallerThanDBLimit(
   return true;
 }
 
+// static
 bool ResourcePrefetchPredictorTables::DropTablesIfOutdated(
     sql::Connection* db) {
+  int version = GetDatabaseVersion(db);
   bool success = true;
-  for (const char* table_name :
-       {kUrlResourceTableName, kHostResourceTableName}) {
-    if (db->DoesTableExist(table_name) &&
-        !db->DoesColumnExist(table_name, "proto")) {
-      success &=
-          db->Execute(base::StringPrintf("DROP TABLE %s", table_name).c_str());
+  // Too new is also a problem.
+  bool incompatible_version = version != kDatabaseVersion;
+
+  if (incompatible_version) {
+    for (const char* table_name :
+         {kMetadataTableName, kUrlResourceTableName, kHostResourceTableName,
+          kUrlMetadataTableName, kHostMetadataTableName}) {
+      success =
+          success &&
+          db->Execute(base::StringPrintf("DROP TABLE IF EXISTS %s", table_name)
+                          .c_str());
     }
   }
+
+  if (incompatible_version) {
+    success =
+        success &&
+        db->Execute(base::StringPrintf(kCreateGlobalMetadataStatementTemplate,
+                                       kMetadataTableName)
+                        .c_str());
+    success = success && SetDatabaseVersion(db, kDatabaseVersion);
+  }
+
   return success;
+}
+
+// static
+int ResourcePrefetchPredictorTables::GetDatabaseVersion(sql::Connection* db) {
+  int version = 0;
+  if (db->DoesTableExist(kMetadataTableName)) {
+    sql::Statement statement(db->GetUniqueStatement(
+        base::StringPrintf("SELECT value FROM %s WHERE key='version'",
+                           kMetadataTableName)
+            .c_str()));
+    if (statement.Step())
+      version = statement.ColumnInt(0);
+  }
+  return version;
+}
+
+// static
+bool ResourcePrefetchPredictorTables::SetDatabaseVersion(sql::Connection* db,
+                                                         int version) {
+  sql::Statement statement(db->GetUniqueStatement(
+      base::StringPrintf(
+          "INSERT OR REPLACE INTO %s (key,value) VALUES ('version',%d)",
+          kMetadataTableName, version)
+          .c_str()));
+  return statement.Run();
 }
 
 void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
@@ -454,36 +515,36 @@ void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
   if (CantAccessDatabase())
     return;
 
-  const char resource_table_creator[] =
-      "CREATE TABLE %s ( "
-      "main_page_url TEXT, "
-      "resource_url TEXT, "
-      "proto BLOB, "
-      "PRIMARY KEY(main_page_url, resource_url))";
-  const char* metadata_table_creator =
-      "CREATE TABLE %s ( "
-      "main_page_url TEXT, "
-      "last_visit_time INTEGER, "
-      "PRIMARY KEY(main_page_url))";
-
+  // Database initialization is all-or-nothing.
   sql::Connection* db = DB();
-  bool success = DropTablesIfOutdated(db) &&
-                 (db->DoesTableExist(kUrlResourceTableName) ||
-                  db->Execute(base::StringPrintf(resource_table_creator,
-                                                 kUrlResourceTableName)
-                                  .c_str())) &&
-                 (db->DoesTableExist(kUrlMetadataTableName) ||
-                  db->Execute(base::StringPrintf(metadata_table_creator,
-                                                 kUrlMetadataTableName)
-                                  .c_str())) &&
-                 (db->DoesTableExist(kHostResourceTableName) ||
-                  db->Execute(base::StringPrintf(resource_table_creator,
-                                                 kHostResourceTableName)
-                                  .c_str())) &&
-                 (db->DoesTableExist(kHostMetadataTableName) ||
-                  db->Execute(base::StringPrintf(metadata_table_creator,
-                                                 kHostMetadataTableName)
-                                  .c_str()));
+  sql::Transaction transaction{db};
+  bool success = transaction.Begin();
+
+  success = success && DropTablesIfOutdated(db);
+
+  success =
+      success &&
+      (db->DoesTableExist(kUrlResourceTableName) ||
+       db->Execute(base::StringPrintf(kCreateResourceTableStatementTemplate,
+                                      kUrlResourceTableName)
+                       .c_str())) &&
+      (db->DoesTableExist(kUrlMetadataTableName) ||
+       db->Execute(base::StringPrintf(kCreateMetadataTableStatementTemplate,
+                                      kUrlMetadataTableName)
+                       .c_str())) &&
+      (db->DoesTableExist(kHostResourceTableName) ||
+       db->Execute(base::StringPrintf(kCreateResourceTableStatementTemplate,
+                                      kHostResourceTableName)
+                       .c_str())) &&
+      (db->DoesTableExist(kHostMetadataTableName) ||
+       db->Execute(base::StringPrintf(kCreateMetadataTableStatementTemplate,
+                                      kHostMetadataTableName)
+                       .c_str()));
+
+  if (success)
+    success = transaction.Commit();
+  else
+    transaction.Rollback();
 
   if (!success)
     ResetDB();

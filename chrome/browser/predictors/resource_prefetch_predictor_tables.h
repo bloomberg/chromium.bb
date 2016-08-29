@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
@@ -131,6 +132,10 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
  private:
   friend class PredictorDatabaseInternal;
   friend class MockResourcePrefetchPredictorTables;
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
+                           DatabaseVersionIsSet);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
+                           DatabaseIsResetWhenIncompatible);
 
   ResourcePrefetchPredictorTables();
   ~ResourcePrefetchPredictorTables() override;
@@ -152,7 +157,13 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   void CreateTableIfNonExistent() override;
   void LogDatabaseStats() override;
 
-  bool DropTablesIfOutdated(sql::Connection* db);
+  // Database version. Always increment it when any change is made to the data
+  // schema (including the .proto).
+  static constexpr int kDatabaseVersion = 1;
+
+  static bool DropTablesIfOutdated(sql::Connection* db);
+  static int GetDatabaseVersion(sql::Connection* db);
+  static bool SetDatabaseVersion(sql::Connection* db, int version);
 
   // Helpers to return Statements for cached Statements. The caller must take
   // ownership of the return Statements.

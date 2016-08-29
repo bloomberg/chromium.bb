@@ -27,6 +27,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TearDown() override;
 
  protected:
+  void ReopenDatabase();
   void TestGetAllData();
   void TestUpdateData();
   void TestDeleteData();
@@ -39,11 +40,12 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   std::unique_ptr<PredictorDatabase> db_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
 
+  using PrefetchDataMap = ResourcePrefetchPredictorTables::PrefetchDataMap;
+
  private:
-  typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
-  typedef std::vector<ResourceRow> ResourceRows;
-  typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
-  typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
+  using ResourceRow = ResourcePrefetchPredictorTables::ResourceRow;
+  using ResourceRows = std::vector<ResourceRow>;
+  using PrefetchData = ResourcePrefetchPredictorTables::PrefetchData;
 
   // Initializes the tables, |test_url_data_| and |test_host_data_|.
   void InitializeSampleData();
@@ -85,9 +87,7 @@ class ResourcePrefetchPredictorTablesReopenTest
     ResourcePrefetchPredictorTablesTest::SetUp();
     ResourcePrefetchPredictorTablesTest::TearDown();
 
-    db_.reset(new PredictorDatabase(&profile_));
-    base::RunLoop().RunUntilIdle();
-    tables_ = db_->resource_prefetch_tables();
+    ReopenDatabase();
   }
 };
 
@@ -361,6 +361,12 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   }
 }
 
+void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
+  db_.reset(new PredictorDatabase(&profile_));
+  base::RunLoop().RunUntilIdle();
+  tables_ = db_->resource_prefetch_tables();
+}
+
 // Test cases.
 
 TEST_F(ResourcePrefetchPredictorTablesTest, ComputeScore) {
@@ -403,6 +409,31 @@ TEST_F(ResourcePrefetchPredictorTablesTest, DeleteSingleDataPoint) {
 
 TEST_F(ResourcePrefetchPredictorTablesTest, DeleteAllData) {
   TestDeleteAllData();
+}
+
+TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseVersionIsSet) {
+  sql::Connection* db = tables_->DB();
+  const int version = ResourcePrefetchPredictorTables::kDatabaseVersion;
+  EXPECT_EQ(version, ResourcePrefetchPredictorTables::GetDatabaseVersion(db));
+}
+
+TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseIsResetWhenIncompatible) {
+  const int version = ResourcePrefetchPredictorTables::kDatabaseVersion;
+  sql::Connection* db = tables_->DB();
+  ASSERT_TRUE(
+      ResourcePrefetchPredictorTables::SetDatabaseVersion(db, version + 1));
+  EXPECT_EQ(version + 1,
+            ResourcePrefetchPredictorTables::GetDatabaseVersion(db));
+
+  ReopenDatabase();
+
+  db = tables_->DB();
+  ASSERT_EQ(version, ResourcePrefetchPredictorTables::GetDatabaseVersion(db));
+
+  PrefetchDataMap url_data, host_data;
+  tables_->GetAllData(&url_data, &host_data);
+  EXPECT_TRUE(url_data.empty());
+  EXPECT_TRUE(host_data.empty());
 }
 
 TEST_F(ResourcePrefetchPredictorTablesReopenTest, GetAllData) {

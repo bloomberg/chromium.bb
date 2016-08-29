@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 // Protocol buffers used for storing in SQLite.
+// CAUTION: When any change is done here, bump kDatabaseVersion in
+//          resource_prefetch_predictor.h.
 
 syntax = "proto2";
 
