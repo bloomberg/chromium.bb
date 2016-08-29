@@ -27,8 +27,7 @@ CrosDBusService* g_cros_dbus_service = NULL;
 // The CrosDBusService implementation used in production, and unit tests.
 class CrosDBusServiceImpl : public CrosDBusService {
  public:
-  CrosDBusServiceImpl(dbus::Bus* bus,
-                      ScopedVector<ServiceProviderInterface> service_providers)
+  CrosDBusServiceImpl(dbus::Bus* bus, ServiceProviderList service_providers)
       : service_started_(false),
         origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
@@ -89,7 +88,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
   scoped_refptr<dbus::ExportedObject> exported_object_;
 
   // Service providers that form CrosDBusService.
-  ScopedVector<ServiceProviderInterface> service_providers_;
+  ServiceProviderList service_providers_;
 };
 
 // The stub CrosDBusService implementation used on Linux desktop,
@@ -103,8 +102,7 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 };
 
 // static
-void CrosDBusService::Initialize(
-    ScopedVector<ServiceProviderInterface> service_providers) {
+void CrosDBusService::Initialize(ServiceProviderList service_providers) {
   if (g_cros_dbus_service) {
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;
@@ -123,7 +121,7 @@ void CrosDBusService::Initialize(
 // static
 void CrosDBusService::InitializeForTesting(
     dbus::Bus* bus,
-    ScopedVector<ServiceProviderInterface> service_providers) {
+    ServiceProviderList service_providers) {
   if (g_cros_dbus_service) {
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -59,15 +60,16 @@ class CrosDBusServiceTest : public testing::Test {
         .WillOnce(Return(mock_exported_object_.get()));
 
     // Create a mock proxy resolution service.
-    MockProxyResolutionService* mock_proxy_resolution_service_provider =
-        new MockProxyResolutionService;
+    auto mock_proxy_resolution_service_provider =
+        base::MakeUnique<MockProxyResolutionService>();
 
     // Start() will be called with |mock_exported_object_|.
     EXPECT_CALL(*mock_proxy_resolution_service_provider,
                 Start(Eq(mock_exported_object_))).WillOnce(Return());
     // Initialize the cros service with the mocks injected.
-    ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
-    service_providers.push_back(mock_proxy_resolution_service_provider);
+    CrosDBusService::ServiceProviderList service_providers;
+    service_providers.push_back(
+        std::move(mock_proxy_resolution_service_provider));
     CrosDBusService::InitializeForTesting(mock_bus_.get(),
                                           std::move(service_providers));
   }

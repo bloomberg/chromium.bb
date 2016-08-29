@@ -5,10 +5,10 @@
 #ifndef CHROMEOS_DBUS_SERVICES_CROS_DBUS_SERVICE_H_
 #define CHROMEOS_DBUS_SERVICES_CROS_DBUS_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/threading/platform_thread.h"
 #include "chromeos/chromeos_export.h"
 
@@ -45,9 +45,11 @@ class CHROMEOS_EXPORT CrosDBusService {
     virtual ~ServiceProviderInterface();
   };
 
+  using ServiceProviderList =
+      std::vector<std::unique_ptr<ServiceProviderInterface>>;
+
   // Initializes the global instance.
-  static void Initialize(
-      ScopedVector<ServiceProviderInterface> service_providers);
+  static void Initialize(ServiceProviderList service_providers);
   // Destroys the global instance.
   static void Shutdown();
 
@@ -58,9 +60,8 @@ class CHROMEOS_EXPORT CrosDBusService {
   friend class CrosDBusServiceTest;
 
   // Initializes the global instance for testing.
-  static void InitializeForTesting(
-      dbus::Bus* bus,
-      ScopedVector<ServiceProviderInterface> service_providers);
+  static void InitializeForTesting(dbus::Bus* bus,
+                                   ServiceProviderList service_providers);
 };
 
 }  // namespace chromeos

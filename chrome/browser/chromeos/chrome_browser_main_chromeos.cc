@@ -210,16 +210,17 @@ class DBusServices {
     PowerPolicyController::Initialize(
         DBusThreadManager::Get()->GetPowerManagerClient());
 
-    ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
-    service_providers.push_back(ProxyResolutionServiceProvider::Create(
-        base::MakeUnique<ChromeProxyResolverDelegate>()));
-    service_providers.push_back(new DisplayPowerServiceProvider(
-        base::WrapUnique(new ChromeDisplayPowerServiceProviderDelegate)));
-    service_providers.push_back(new LivenessServiceProvider);
-    service_providers.push_back(new ScreenLockServiceProvider);
-    service_providers.push_back(new ConsoleServiceProvider(
-        base::WrapUnique(new ChromeConsoleServiceProviderDelegate)));
-    service_providers.push_back(new KioskInfoService);
+    CrosDBusService::ServiceProviderList service_providers;
+    service_providers.push_back(
+        base::WrapUnique(ProxyResolutionServiceProvider::Create(
+            base::MakeUnique<ChromeProxyResolverDelegate>())));
+    service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
+        base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
+    service_providers.push_back(base::MakeUnique<LivenessServiceProvider>());
+    service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
+    service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
+        base::MakeUnique<ChromeConsoleServiceProviderDelegate>()));
+    service_providers.push_back(base::MakeUnique<KioskInfoService>());
     CrosDBusService::Initialize(std::move(service_providers));
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
