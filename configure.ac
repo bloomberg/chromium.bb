@@ -35,6 +35,7 @@ PKG_NOARCH_INSTALLDIR
 AC_CONFIG_FILES([
 	Makefile
 	wayland-protocols.pc
+	wayland-protocols-uninstalled.pc
 	])
 AC_OUTPUT
 
