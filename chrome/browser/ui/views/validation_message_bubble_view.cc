@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/views/validation_message_bubble_view.h"
 
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

@@ -8,7 +8,7 @@
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "chrome/browser/ui/cocoa/tabs/tab_view.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"

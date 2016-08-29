@@ -6,8 +6,8 @@
 
 #include "chrome/browser/ui/views/ime/ime_window_view.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

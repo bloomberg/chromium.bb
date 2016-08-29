@@ -4,8 +4,8 @@
 
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/elide_url.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(

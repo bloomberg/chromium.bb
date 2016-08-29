@@ -14,11 +14,11 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 

@@ -7,10 +7,10 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "components/domain_reliability/service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
 
 using domain_reliability::DomainReliabilityService;
 using domain_reliability::DomainReliabilityServiceFactory;

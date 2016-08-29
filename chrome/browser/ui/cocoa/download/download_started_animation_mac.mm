@@ -13,8 +13,8 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

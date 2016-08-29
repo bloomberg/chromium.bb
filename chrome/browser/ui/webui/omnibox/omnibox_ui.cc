@@ -9,10 +9,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_page_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
 
 OmniboxUI::OmniboxUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
   // Set up the chrome://omnibox/ source.

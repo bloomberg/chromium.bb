@@ -8,7 +8,7 @@
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 
 // Distance from top border to icon.
 const CGFloat kImagePaddingTop = 7;

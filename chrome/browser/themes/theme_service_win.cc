@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/shell.h"
 

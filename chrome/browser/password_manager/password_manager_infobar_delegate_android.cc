@@ -5,10 +5,10 @@
 #include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 
 PasswordManagerInfoBarDelegate::~PasswordManagerInfoBarDelegate() {}
 

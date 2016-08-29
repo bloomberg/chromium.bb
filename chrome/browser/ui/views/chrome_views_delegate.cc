@@ -19,12 +19,12 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
@@ -41,7 +41,6 @@
 #include "base/task_runner_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/app_icon.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/win/shell.h"
 #endif
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
@@ -37,7 +38,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "url/gurl.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeTranslateClient);

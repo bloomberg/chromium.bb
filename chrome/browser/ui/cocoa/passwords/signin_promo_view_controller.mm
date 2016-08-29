@@ -9,8 +9,8 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

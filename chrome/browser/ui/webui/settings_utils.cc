@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/settings_utils.h"
 
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/url_formatter/url_fixer.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 

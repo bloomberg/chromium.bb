@@ -8,9 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 ////////////////////////////////////////////////////////////////////////////////

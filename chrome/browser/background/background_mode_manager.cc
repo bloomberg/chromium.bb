@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -62,7 +63,6 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "grit/chrome_unscaled_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

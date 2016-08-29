@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

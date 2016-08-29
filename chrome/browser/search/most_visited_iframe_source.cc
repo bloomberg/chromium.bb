@@ -13,8 +13,8 @@
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/browser_resources.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 

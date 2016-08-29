@@ -6,9 +6,9 @@
 
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"

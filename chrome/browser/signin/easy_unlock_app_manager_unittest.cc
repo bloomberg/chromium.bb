@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/proximity_auth/switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,7 +34,6 @@
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
-#include "grit/browser_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

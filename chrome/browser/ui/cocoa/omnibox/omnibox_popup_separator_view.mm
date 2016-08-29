@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_separator_view.h"
 
 #import "base/mac/scoped_nsobject.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/resource/resource_bundle.h"
 

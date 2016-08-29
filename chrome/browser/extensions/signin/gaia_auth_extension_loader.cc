@@ -17,11 +17,11 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_system.h"
-#include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/input_device_settings.h"

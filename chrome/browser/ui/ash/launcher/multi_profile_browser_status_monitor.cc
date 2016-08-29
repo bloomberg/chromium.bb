@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,9 +16,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "grit/ash_resources.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 MultiProfileBrowserStatusMonitor::MultiProfileBrowserStatusMonitor(

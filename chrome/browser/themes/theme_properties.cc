@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/resources/grit/ui_resources.h"

@@ -34,9 +34,9 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(USE_ASH)
+#include "ash/resources/grit/ash_resources.h"  // nogncheck
 #include "ash/shelf/shelf_util.h"  // nogncheck
 #include "ash/wm/window_util.h"  // nogncheck
-#include "grit/ash_resources.h"  // nogncheck
 #endif  // defined(USE_ASH)
 
 #if defined(OS_WIN)

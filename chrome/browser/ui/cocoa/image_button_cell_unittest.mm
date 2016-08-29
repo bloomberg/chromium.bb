@@ -5,7 +5,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 
 namespace {
 

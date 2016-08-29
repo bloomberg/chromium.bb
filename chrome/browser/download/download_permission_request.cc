@@ -5,8 +5,8 @@
 #include "chrome/browser/download/download_permission_request.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DownloadPermissionRequest::DownloadPermissionRequest(

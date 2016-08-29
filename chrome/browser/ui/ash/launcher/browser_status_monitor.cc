@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
+#include "ash/resources/grit/ash_resources.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -20,11 +21,10 @@
 #include "chrome/browser/ui/settings_window_manager_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "grit/ash_resources.h"
-#include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"

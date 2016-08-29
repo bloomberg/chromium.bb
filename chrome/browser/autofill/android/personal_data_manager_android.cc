@@ -35,9 +35,9 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/components_scaled_resources.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;

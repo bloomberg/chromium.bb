@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "device/core/device_client.h"
@@ -39,7 +40,6 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 
+#include "chrome/grit/component_extension_resources.h"
 #include "content/public/test/browser_test_utils.h"
-#include "grit/component_extension_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace pdf_extension_test_util {

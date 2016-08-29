@@ -5,7 +5,7 @@
 #include "chrome/browser/supervised_user/supervised_user_theme.h"
 
 #include "chrome/browser/themes/theme_properties.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

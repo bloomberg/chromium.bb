@@ -17,6 +17,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/version_info/version_info.h"
@@ -29,7 +30,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)

@@ -26,6 +26,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -39,7 +40,6 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)

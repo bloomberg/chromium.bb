@@ -13,7 +13,7 @@
 #include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_MACOSX)
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #endif
 
 namespace {

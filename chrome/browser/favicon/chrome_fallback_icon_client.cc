@@ -5,7 +5,7 @@
 #include "chrome/browser/favicon/chrome_fallback_icon_client.h"
 
 #include "build/build_config.h"
-#include "grit/platform_locale_settings.h"
+#include "chrome/grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ChromeFallbackIconClient::ChromeFallbackIconClient() {

@@ -9,9 +9,9 @@
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icons_public.h"
 

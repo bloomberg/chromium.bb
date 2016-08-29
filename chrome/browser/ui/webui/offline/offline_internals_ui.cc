@@ -8,10 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui_message_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
 
 OfflineInternalsUI::OfflineInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {

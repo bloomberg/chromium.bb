@@ -28,10 +28,8 @@
 #include "ui/native_theme/native_theme.h"
 
 #if defined(OS_MACOSX)
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#else
-#include "ui/gfx/paint_vector_icon.h"
 #endif
 
 struct LastMuteMetadata

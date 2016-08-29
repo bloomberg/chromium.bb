@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_resources_provider.h"
 
+#include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/browser_resources.h"
 
 namespace {
 

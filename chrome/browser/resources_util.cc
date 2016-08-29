@@ -11,12 +11,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
-#include "grit/components_scaled_resources_map.h"
-#include "grit/theme_resources_map.h"
-#include "grit/ui_resources_map.h"
+#include "chrome/grit/theme_resources_map.h"
+#include "components/grit/components_scaled_resources_map.h"
+#include "ui/resources/grit/ui_resources_map.h"
 
 #if defined(OS_CHROMEOS)
-#include "grit/ui_chromeos_resources_map.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources_map.h"
 #endif
 
 namespace {

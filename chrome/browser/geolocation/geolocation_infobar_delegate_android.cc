@@ -8,7 +8,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "grit/generated_resources.h"
 
 // static
 infobars::InfoBar* GeolocationInfoBarDelegateAndroid::Create(

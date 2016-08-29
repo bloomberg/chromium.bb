@@ -14,7 +14,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"

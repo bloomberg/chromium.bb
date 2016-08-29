@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 
 MockPermissionRequest::MockPermissionRequest()
     : MockPermissionRequest("test",

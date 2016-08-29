@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
 
 #include "chrome/grit/generated_resources.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 
 ManagePasswordsIcon::ManagePasswordsIcon()
     : icon_id_(0),

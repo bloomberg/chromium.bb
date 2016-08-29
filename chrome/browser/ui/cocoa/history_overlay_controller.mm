@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

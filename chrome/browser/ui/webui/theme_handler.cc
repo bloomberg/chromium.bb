@@ -10,9 +10,9 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/theme_resources.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ThemeHandler

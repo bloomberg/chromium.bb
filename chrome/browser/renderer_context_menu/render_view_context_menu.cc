@@ -149,7 +149,7 @@
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "grit/theme_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
 
