@@ -86,6 +86,8 @@ public:
     // Clears the whole set.
     void clear() { m_impl.clear(); }
 
+    Vector<Value> asVector() const;
+
     template <typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 
@@ -148,6 +150,14 @@ inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allo
     auto end = collection.end();
     for (unsigned i = 0; it != end; ++it, ++i)
         vector[i] = (*it).key;
+}
+
+template <typename T, typename U, typename V, typename W>
+inline Vector<T> HashCountedSet<T, U, V, W>::asVector() const
+{
+    Vector<T> vector;
+    copyToVector(*this, vector);
+    return vector;
 }
 
 } // namespace WTF

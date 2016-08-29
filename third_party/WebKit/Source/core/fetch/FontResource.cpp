@@ -27,7 +27,7 @@
 #include "core/fetch/FontResource.h"
 
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceClientOrObserverWalker.h"
+#include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"

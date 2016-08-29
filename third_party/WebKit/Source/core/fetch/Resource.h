@@ -144,7 +144,6 @@ public:
     // resource clients that simply observe the resource.
     void addClient(ResourceClient*, PreloadReferencePolicy = MarkAsReferenced);
     void removeClient(ResourceClient*);
-    virtual bool hasClientsOrObservers() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
 
     enum PreloadResult {
         PreloadNotReferenced,
@@ -232,6 +231,8 @@ public:
     double freshnessLifetime();
     double stalenessLifetime();
 
+    bool isAlive() const { return m_isAlive; }
+
     void setCacheIdentifier(const String& cacheIdentifier) { m_cacheIdentifier = cacheIdentifier; }
     String cacheIdentifier() const { return m_cacheIdentifier; }
 
@@ -264,6 +265,7 @@ protected:
     void notifyClientsInternal(MarkFinishedOption);
     void markClientFinished(ResourceClient*);
 
+    virtual bool hasClientsOrObservers() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
     virtual void destroyDecodedDataForFailedRevalidation() { }
 
     void setEncodedSize(size_t);
@@ -300,7 +302,7 @@ protected:
     // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
     String getMemoryDumpName() const;
 
-    const HashCountedSet<ResourceClient*>& clients() const { return m_clients; }
+    const HeapHashCountedSet<WeakMember<ResourceClient>>& clients() const { return m_clients; }
     DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
 
     void setCachePolicyBypassingCache();
@@ -357,13 +359,14 @@ private:
     unsigned m_needsSynchronousCacheHit : 1;
     unsigned m_linkPreload : 1;
     bool m_isRevalidating : 1;
+    bool m_isAlive : 1;
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;
 
-    HashCountedSet<ResourceClient*> m_clients;
-    HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
-    HashCountedSet<ResourceClient*> m_finishedClients;
+    HeapHashCountedSet<WeakMember<ResourceClient>> m_clients;
+    HeapHashCountedSet<WeakMember<ResourceClient>> m_clientsAwaitingCallback;
+    HeapHashCountedSet<WeakMember<ResourceClient>> m_finishedClients;
 
     ResourceLoaderOptions m_options;
 

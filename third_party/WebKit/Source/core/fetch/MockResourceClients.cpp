@@ -42,6 +42,7 @@ void MockResourceClient::dispose()
 DEFINE_TRACE(MockResourceClient)
 {
     visitor->trace(m_resource);
+    ResourceClient::trace(visitor);
 }
 
 MockImageResourceClient::MockImageResourceClient(ImageResource* resource)

@@ -43,15 +43,13 @@ class FetchRequest;
 class ResourceFetcher;
 class ScriptResource;
 
-class CORE_EXPORT ScriptResourceClient : public GarbageCollectedMixin, public ResourceClient {
+class CORE_EXPORT ScriptResourceClient : public ResourceClient {
 public:
     ~ScriptResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == ScriptType; }
     ResourceClientType getResourceClientType() const final { return ScriptType; }
 
     virtual void notifyAppendData(ScriptResource* resource) { }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 class CORE_EXPORT ScriptResource final : public TextResource {

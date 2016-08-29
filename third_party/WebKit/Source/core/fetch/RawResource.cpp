@@ -27,7 +27,7 @@
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/ResourceClientOrObserverWalker.h"
+#include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "platform/HTTPNames.h"

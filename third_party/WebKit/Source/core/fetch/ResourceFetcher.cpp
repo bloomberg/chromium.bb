@@ -398,7 +398,7 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource, RevalidationPol
     // would be dead if MemoryCache holds weak references to Resource).
     // Currently we check references to Resource from ResourceClient and
     // |m_preloads| only, because they are major sources of references.
-    if (resource && !resource->hasClientsOrObservers() && (!m_preloads || !m_preloads->contains(resource))) {
+    if (resource && !resource->isAlive() && (!m_preloads || !m_preloads->contains(resource))) {
         DEFINE_RESOURCE_HISTOGRAM("Dead.");
     }
 }
@@ -486,7 +486,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
         return nullptr;
     }
 
-    if (!resource->hasClientsOrObservers())
+    if (!resource->isAlive())
         m_deadStatsRecorder.update(policy);
 
     if (policy != Use)

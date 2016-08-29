@@ -39,6 +39,7 @@ class CSSImageSetValue;
 
 class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
     USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(StyleFetchedImageSet);
 public:
     static StyleFetchedImageSet* create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
     {

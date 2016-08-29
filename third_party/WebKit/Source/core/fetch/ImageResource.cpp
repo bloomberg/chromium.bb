@@ -26,7 +26,6 @@
 #include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoadingLog.h"
@@ -38,13 +37,13 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 #include <memory>
 #include <v8.h>
 
 namespace blink {
-
-using ImageResourceObserverWalker = ResourceClientOrObserverWalker<ImageResourceObserver, ImageResourceObserver>;
 
 ImageResource* ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
@@ -104,11 +103,12 @@ void ImageResource::notifyObserversInternal(MarkFinishedOption markFinishedOptio
     if (isLoading())
         return;
 
-    ImageResourceObserverWalker walker(m_observers);
-    while (auto* observer = walker.next()) {
-        if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
-            markObserverFinished(observer);
-        observer->imageNotifyFinished(this);
+    for (auto* observer : m_observers.asVector()) {
+        if (m_observers.contains(observer)) {
+            if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
+                markObserverFinished(observer);
+            observer->imageNotifyFinished(this);
+        }
     }
 }
 
@@ -182,14 +182,13 @@ ResourcePriority ImageResource::priorityFromObservers()
 {
     ResourcePriority priority;
 
-    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
-    while (const auto* observer = finishedWalker.next()) {
-        priorityFromObserver(observer, priority);
+    for (auto* observer : m_finishedObservers.asVector()) {
+        if (m_finishedObservers.contains(observer))
+            priorityFromObserver(observer, priority);
     }
-
-    ImageResourceObserverWalker walker(m_observers);
-    while (const auto* observer = walker.next()) {
-        priorityFromObserver(observer, priority);
+    for (auto* observer : m_observers.asVector()) {
+        if (m_observers.contains(observer))
+            priorityFromObserver(observer, priority);
     }
 
     return priority;
@@ -327,14 +326,13 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
 
 void ImageResource::notifyObservers(const IntRect* changeRect)
 {
-    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
-    while (auto* observer = finishedWalker.next()) {
-        observer->imageChanged(this, changeRect);
+    for (auto* observer : m_finishedObservers.asVector()) {
+        if (m_finishedObservers.contains(observer))
+            observer->imageChanged(this, changeRect);
     }
-
-    ImageResourceObserverWalker walker(m_observers);
-    while (auto* observer = walker.next()) {
-        observer->imageChanged(this, changeRect);
+    for (auto* observer : m_observers.asVector()) {
+        if (m_observers.contains(observer))
+            observer->imageChanged(this, changeRect);
     }
 }
 
@@ -484,15 +482,13 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image)
     if (!image || image != m_image)
         return false;
 
-    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
-    while (auto* observer = finishedWalker.next()) {
-        if (observer->willRenderImage())
+    for (auto* observer : m_finishedObservers.asVector()) {
+        if (m_finishedObservers.contains(observer) && observer->willRenderImage())
             return false;
     }
 
-    ImageResourceObserverWalker walker(m_observers);
-    while (auto* observer = walker.next()) {
-        if (observer->willRenderImage())
+    for (auto* observer : m_observers.asVector()) {
+        if (m_observers.contains(observer) && observer->willRenderImage())
             return false;
     }
 
@@ -512,16 +508,12 @@ void ImageResource::updateImageAnimationPolicy()
         return;
 
     ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
-
-    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
-    while (auto* observer = finishedWalker.next()) {
-        if (observer->getImageAnimationPolicy(newPolicy))
+    for (auto* observer : m_finishedObservers.asVector()) {
+        if (m_finishedObservers.contains(observer) && observer->getImageAnimationPolicy(newPolicy))
             break;
     }
-
-    ImageResourceObserverWalker walker(m_observers);
-    while (auto* observer = walker.next()) {
-        if (observer->getImageAnimationPolicy(newPolicy))
+    for (auto* observer : m_observers.asVector()) {
+        if (m_observers.contains(observer) && observer->getImageAnimationPolicy(newPolicy))
             break;
     }
 

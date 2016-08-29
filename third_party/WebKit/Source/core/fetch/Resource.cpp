@@ -28,7 +28,7 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourceClientOrObserverWalker.h"
+#include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InstanceCounters.h"
 #include "platform/Histogram.h"
@@ -299,6 +299,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_needsSynchronousCacheHit(false)
     , m_linkPreload(false)
     , m_isRevalidating(false)
+    , m_isAlive(false)
     , m_options(options)
     , m_responseTimestamp(currentTime())
     , m_cancelTimer(this, &Resource::cancelTimerFired)
@@ -322,6 +323,9 @@ DEFINE_TRACE(Resource)
 {
     visitor->trace(m_loader);
     visitor->trace(m_cacheHandler);
+    visitor->trace(m_clients);
+    visitor->trace(m_clientsAwaitingCallback);
+    visitor->trace(m_finishedClients);
     MemoryCoordinatorClient::trace(visitor);
 }
 
@@ -668,8 +672,10 @@ void Resource::willAddClientOrObserver(PreloadReferencePolicy policy)
             preloadDiscoveryHistogram.count(timeSinceDiscovery);
         }
     }
-    if (!hasClientsOrObservers())
+    if (!hasClientsOrObservers()) {
+        m_isAlive = true;
         memoryCache()->makeLive(this);
+    }
 }
 
 void Resource::addClient(ResourceClient* client, PreloadReferencePolicy policy)
@@ -695,7 +701,9 @@ void Resource::addClient(ResourceClient* client, PreloadReferencePolicy policy)
 
 void Resource::removeClient(ResourceClient* client)
 {
-    ASSERT(hasClient(client));
+    // This code may be called in a pre-finalizer, where weak members in the
+    // HashCountedSet are already swept out.
+
     if (m_finishedClients.contains(client))
         m_finishedClients.remove(client);
     else if (m_clientsAwaitingCallback.contains(client))
@@ -707,12 +715,12 @@ void Resource::removeClient(ResourceClient* client)
         ResourceCallback::callbackHandler().cancel(this);
 
     didRemoveClientOrObserver();
-    // This object may be dead here.
 }
 
 void Resource::didRemoveClientOrObserver()
 {
-    if (!hasClientsOrObservers()) {
+    if (!hasClientsOrObservers() && m_isAlive) {
+        m_isAlive = false;
         memoryCache()->makeDead(this);
         allClientsAndObserversRemoved();
 
@@ -783,7 +791,7 @@ void Resource::finishPendingClients()
 
     // Handle case (1) by saving a list of clients to notify. A separate list also ensure
     // a client is either in m_clients or m_clientsAwaitingCallback.
-    Vector<ResourceClient*> clientsToNotify;
+    HeapVector<Member<ResourceClient>> clientsToNotify;
     copyToVector(m_clientsAwaitingCallback, clientsToNotify);
 
     for (const auto& client : clientsToNotify) {

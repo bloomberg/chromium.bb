@@ -40,6 +40,7 @@ namespace blink {
 
 class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>, public ResourceClient {
     USING_PRE_FINALIZER(MockResourceClient, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
 public:
     explicit MockResourceClient(Resource*);
     ~MockResourceClient() override;

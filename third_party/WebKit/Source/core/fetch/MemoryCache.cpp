@@ -259,7 +259,7 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy)
     while (current) {
         Resource* resource = current->resource();
         MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
-        ASSERT(resource->hasClientsOrObservers());
+        DCHECK(resource->isAlive());
 
         if (resource->isLoaded() && resource->decodedSize()) {
             // Check to see if the remaining resources are too new to prune.
@@ -311,7 +311,7 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 continue;
             }
 
-            if (!resource->hasClientsOrObservers() && !resource->isPreloaded() && resource->isLoaded()) {
+            if (!resource->isAlive() && !resource->isPreloaded() && resource->isLoaded()) {
                 // Destroy our decoded data. This will remove us from
                 // m_liveDecodedResources, and possibly move us to a different
                 // LRU list in m_allResources.
@@ -332,7 +332,7 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 current = previous;
                 continue;
             }
-            if (!resource->hasClientsOrObservers() && !resource->isPreloaded()) {
+            if (!resource->isAlive() && !resource->isPreloaded()) {
                 evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
@@ -545,7 +545,7 @@ void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, boo
         insertInLRUList(entry, lruListFor(entry->m_accessCount, newSize));
 
     ptrdiff_t delta = newSize - oldSize;
-    if (resource->hasClientsOrObservers()) {
+    if (resource->isAlive()) {
         ASSERT(delta >= 0 || m_liveSize >= static_cast<size_t>(-delta) );
         m_liveSize += delta;
     } else {
@@ -561,7 +561,7 @@ void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason)
         return;
 
     removeFromLiveDecodedResourcesList(entry);
-    if (resource->decodedSize() && resource->hasClientsOrObservers())
+    if (resource->decodedSize() && resource->isAlive())
         insertInLiveDecodedResourcesList(entry);
 
     if (reason != UpdateForAccess)
@@ -584,7 +584,7 @@ void MemoryCache::TypeStatistic::addResource(Resource* o)
 {
     count++;
     size += o->size();
-    liveSize += o->hasClientsOrObservers() ? o->size() : 0;
+    liveSize += o->isAlive() ? o->size() : 0;
     decodedSize += o->decodedSize();
     encodedSize += o->encodedSize();
     encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
@@ -780,8 +780,8 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
             Resource* currentResource = current->resource();
-            if (includeLive || !currentResource->hasClientsOrObservers())
-                printf("(%.1fK, %.1fK, %uA, %dR); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers());
+            if (includeLive || !currentResource->isAlive())
+                printf("(%.1fK, %.1fK, %uA, %dR); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->isAlive());
 
             current = current->m_previousInAllResourcesList;
         }

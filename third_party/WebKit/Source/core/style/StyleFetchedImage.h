@@ -34,6 +34,7 @@ class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ResourceClient {
     USING_PRE_FINALIZER(StyleFetchedImage, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(StyleFetchedImage);
 public:
     static StyleFetchedImage* create(ImageResource* image, Document* document, const KURL& url)
     {

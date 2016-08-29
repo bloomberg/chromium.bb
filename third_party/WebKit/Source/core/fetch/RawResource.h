@@ -102,7 +102,7 @@ inline RawResource* toRawResource(Resource* resource)
     return static_cast<RawResource*>(resource);
 }
 
-class CORE_EXPORT RawResourceClient : public GarbageCollectedMixin, public ResourceClient {
+class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == RawResourceType; }
     ResourceClientType getResourceClientType() const final { return RawResourceType; }
@@ -132,8 +132,6 @@ public:
     virtual void redirectBlocked() {}
     virtual void dataDownloaded(Resource*, int) { }
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 // Checks the sequence of callbacks of RawResourceClient.

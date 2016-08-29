@@ -93,15 +93,13 @@ private:
 
 DEFINE_RESOURCE_TYPE_CASTS(Font);
 
-class FontResourceClient : public GarbageCollectedMixin, public ResourceClient {
+class FontResourceClient : public ResourceClient {
 public:
     ~FontResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == FontType; }
     ResourceClientType getResourceClientType() const final { return FontType; }
     virtual void fontLoadShortLimitExceeded(FontResource*) {}
     virtual void fontLoadLongLimitExceeded(FontResource*) {}
-
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 } // namespace blink

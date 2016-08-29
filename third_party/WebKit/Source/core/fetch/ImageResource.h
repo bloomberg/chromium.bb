@@ -99,7 +99,6 @@ public:
 
     void addObserver(ImageResourceObserver*);
     void removeObserver(ImageResourceObserver*);
-    bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty() || !m_finishedObservers.isEmpty(); }
 
     ResourcePriority priorityFromObservers() override;
 
@@ -151,6 +150,7 @@ private:
     };
     ImageResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
+    bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty() || !m_finishedObservers.isEmpty(); }
     void clear();
 
     void createImage();

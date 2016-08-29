@@ -142,6 +142,7 @@ DEFINE_TRACE(StyleFetchedImageSet)
     visitor->trace(m_bestFitImage);
     visitor->trace(m_imageSetValue);
     StyleImage::trace(visitor);
+    ResourceClient::trace(visitor);
 }
 
 } // namespace blink

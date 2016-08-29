@@ -1721,7 +1721,7 @@
             'fetch/RawResource.h',
             'fetch/Resource.cpp',
             'fetch/Resource.h',
-            'fetch/ResourceClientOrObserverWalker.h',
+            'fetch/ResourceClientWalker.h',
             'fetch/ResourceFetcher.cpp',
             'fetch/ResourceFetcher.h',
             'fetch/ResourceLoader.cpp',

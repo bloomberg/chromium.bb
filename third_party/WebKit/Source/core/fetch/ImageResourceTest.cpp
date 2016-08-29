@@ -299,7 +299,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
     // The prune comes when the ImageResource still has clients. The image should not be deleted.
     cachedImage->prune();
-    ASSERT_TRUE(cachedImage->hasClientsOrObservers());
+    ASSERT_TRUE(cachedImage->isAlive());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
 
@@ -307,7 +307,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     // deleted by prune.
     client->removeAsClient();
     cachedImage->prune();
-    ASSERT_FALSE(cachedImage->hasClientsOrObservers());
+    ASSERT_FALSE(cachedImage->isAlive());
     ASSERT_TRUE(cachedImage->hasImage());
     // TODO(hajimehoshi): Should check cachedImage doesn't have decoded image
     // data.
@@ -605,7 +605,7 @@ TEST(ImageResourceTest, AddClientAfterPrune)
 
     client1->removeAsClient();
 
-    EXPECT_FALSE(imageResource->hasClientsOrObservers());
+    EXPECT_FALSE(imageResource->isAlive());
 
     imageResource->prune();
 

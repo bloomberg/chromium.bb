@@ -160,7 +160,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     memoryCache()->remove(resource);
 
     resource->removeClient(client);
-    EXPECT_FALSE(resource->hasClientsOrObservers());
+    EXPECT_FALSE(resource->isAlive());
     EXPECT_FALSE(client->called());
     EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
 }
@@ -190,7 +190,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     memoryCache()->remove(resource);
 
     resource->removeClient(client);
-    EXPECT_FALSE(resource->hasClientsOrObservers());
+    EXPECT_FALSE(resource->isAlive());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
 }
@@ -253,7 +253,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
     memoryCache()->remove(resource);
 
     resource->removeClient(client);
-    EXPECT_FALSE(resource->hasClientsOrObservers());
+    EXPECT_FALSE(resource->isAlive());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
 }
@@ -330,7 +330,7 @@ TEST(RawResourceTest, RedirectDuringRevalidation)
 
     resource->removeClient(client);
     resource->removeClient(client2);
-    EXPECT_FALSE(resource->hasClientsOrObservers());
+    EXPECT_FALSE(resource->isAlive());
 }
 
 TEST(RawResourceTest, AddClientDuringCallback)
@@ -350,7 +350,7 @@ TEST(RawResourceTest, AddClientDuringCallback)
     testing::runPendingTasks();
     raw->removeClient(addingClient);
     EXPECT_FALSE(dummyClient->called());
-    EXPECT_FALSE(raw->hasClientsOrObservers());
+    EXPECT_FALSE(raw->isAlive());
 }
 
 // This client removes another client when notified.
@@ -395,7 +395,7 @@ TEST(RawResourceTest, RemoveClientDuringCallback)
     raw->addClient(dummyClient);
     raw->addClient(removingClient);
     testing::runPendingTasks();
-    EXPECT_FALSE(raw->hasClientsOrObservers());
+    EXPECT_FALSE(raw->isAlive());
 }
 
 TEST(RawResourceTest, CanReuseDevToolsEmulateNetworkConditionsClientIdHeader)

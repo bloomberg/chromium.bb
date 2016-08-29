@@ -55,6 +55,7 @@ DEFINE_TRACE(SVGFEImageElement)
     visitor->trace(m_cachedImage);
     SVGFilterPrimitiveStandardAttributes::trace(visitor);
     SVGURIReference::trace(visitor);
+    ResourceClient::trace(visitor);
 }
 
 bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const

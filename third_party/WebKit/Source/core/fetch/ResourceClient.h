@@ -26,14 +26,14 @@
 #define ResourceClient_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 class Resource;
 
-// TODO(Oilpan): Move ResourceClient to Oilpan's heap.
-class CORE_EXPORT ResourceClient {
+class CORE_EXPORT ResourceClient : public GarbageCollectedMixin {
 public:
     enum ResourceClientType {
         BaseResourceType,
@@ -52,6 +52,8 @@ public:
 
     // Name for debugging, e.g. shown in memory-infra.
     virtual String debugName() const = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
 
 protected:
     ResourceClient() { }

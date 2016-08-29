@@ -34,9 +34,8 @@
 namespace blink {
 class CSSStyleSheetResource;
 
-class CORE_EXPORT StyleSheetResourceClient : public GarbageCollectedMixin, public ResourceClient {
+class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
 public:
-    ~StyleSheetResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == StyleSheetType; }
     ResourceClientType getResourceClientType() const final { return StyleSheetType; }
     virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
@@ -47,7 +46,7 @@ public:
     // other than CSSStyleSheetResources.
     virtual void didAppendFirstData(const CSSStyleSheetResource*) {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    DEFINE_INLINE_TRACE() { ResourceClient::trace(visitor); }
 };
 
 } // namespace blink
