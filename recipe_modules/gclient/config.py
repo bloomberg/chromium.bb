@@ -94,24 +94,11 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
 
 config_ctx = config_item_context(BaseConfig)
 
-def ChromiumSvnSubURL(c, *pieces):  # pragma: no cover
-  BASES = ('https://src.chromium.org',
-           'svn://svn-mirror.golo.chromium.org')
-  return '/'.join((BASES[c.USE_MIRROR],) + pieces)
-
 def ChromiumGitURL(_c, *pieces):
   return '/'.join(('https://chromium.googlesource.com',) + pieces)
 
 def ChromiumSrcURL(c):
   return ChromiumGitURL(c, 'chromium', 'src.git')
-
-def BlinkURL(c):
-  return ChromiumGitURL(c, 'chromium', 'blink.git')
-
-def ChromeSvnSubURL(c, *pieces):  # pragma: no cover
-  BASES = ('svn://svn.chromium.org',
-           'svn://svn-mirror.golo.chromium.org')
-  return '/'.join((BASES[c.USE_MIRROR],) + pieces)
 
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 def ChromeInternalGitURL(_c, *pieces):  # pragma: no cover
@@ -132,7 +119,7 @@ def chromium_bare(c):
     'googlecode_url': 'svn://svn-mirror.golo.chromium.org/%s',
     'nacl_trunk': 'svn://svn-mirror.golo.chromium.org/native_client/trunk',
     'sourceforge_url': 'svn://svn-mirror.golo.chromium.org/%(repo)s',
-    'webkit_trunk': BlinkURL(c)})
+    'webkit_trunk': ChromiumGitURL(c, 'chromium', 'blink.git')})
   m = c.got_revision_mapping
   m['src'] = 'got_revision'
   m['src/native_client'] = 'got_nacl_revision'
@@ -260,44 +247,6 @@ def v8_bleeding_edge_git(c):
 @config_ctx()
 def v8_canary(c):
   c.revisions['src/v8'] = 'origin/canary'
-
-@config_ctx(includes=['chromium'])
-def oilpan(c):  # pragma: no cover
-  c.solutions[0].custom_vars = {
-    'webkit_trunk': ChromiumSvnSubURL(c, 'blink', 'branches', 'oilpan')
-  }
-  c.solutions[0].custom_vars['sourceforge_url'] = mirror_only(
-    c,
-    'svn://svn-mirror.golo.chromium.org/%(repo)s',
-    'svn://svn.chromium.org/%(repo)s'
-  )
-
-  c.revisions['src/third_party/WebKit'] = 'HEAD'
-  c.solutions[0].revision = '197341'
-
-  c.solutions[0].custom_deps = {
-    'src/chrome/tools/test/reference_build/chrome_linux' :
-      ChromiumSvnSubURL(c, 'blink', 'branches', 'oilpan', 'Tools',
-                        'reference_build', 'chrome_linux')
-  }
-  del c.got_revision_mapping['src']
-  c.got_revision_mapping['src/third_party/WebKit/Source'] = 'got_revision'
-
-@config_ctx(includes=['oilpan', 'chrome_internal'])
-def oilpan_internal(c):  # pragma: no cover
-  # Add back the oilpan data dependencies
-  needed_components_internal = [
-    "src/data/memory_test",
-    "src/data/mozilla_js_tests",
-    "src/data/page_cycler",
-    "src/data/tab_switching",
-    "src/webkit/data/bmp_decoder",
-    "src/webkit/data/ico_decoder",
-    "src/webkit/data/test_shell/plugins",
-    "src/webkit/data/xbm_decoder",
-  ]
-  for key in needed_components_internal:
-    del c.solutions[1].custom_deps[key]
 
 @config_ctx()
 def nacl(c):
@@ -579,17 +528,6 @@ def recipes_py_bare(c):
   soln.url = ('https://chromium.googlesource.com/external/github.com/'
               'luci/recipes-py')
   c.got_revision_mapping['recipes-py'] = 'got_revision'
-
-@config_ctx()
-def chrome_from_buildspec(c):  # pragma: no cover
-  soln = c.solutions.add()
-  soln.name = 'chrome_from_buildspec'
-  # This URL has to be augmented with the appropriate bucket by the recipe using
-  # it.
-  soln.url = ('svn://svn-mirror.golo.chromium.org/chrome-internal/trunk/tools/'
-      'buildspec/build/')
-  soln.custom_vars['svn_url'] = 'svn://svn-mirror.golo.chromium.org'
-  soln.custom_deps = {}
 
 @config_ctx()
 def catapult(c):
