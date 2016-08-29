@@ -80,6 +80,9 @@ class ChromeBrowserProvider {
       InfoBarViewDelegate* delegate) NS_RETURNS_RETAINED;
   // Returns an instance of a signin resources provider.
   virtual SigninResourcesProvider* GetSigninResourcesProvider();
+  // Sets the current instance of Chrome identity service. Used for testing.
+  virtual void SetChromeIdentityServiceForTesting(
+      std::unique_ptr<ChromeIdentityService> service);
   // Returns an instance of a Chrome identity service.
   virtual ChromeIdentityService* GetChromeIdentityService();
   // Returns an instance of a LiveTabContextProvider.

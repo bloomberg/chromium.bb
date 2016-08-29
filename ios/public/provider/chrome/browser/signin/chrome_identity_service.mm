@@ -15,6 +15,14 @@ ChromeIdentityService::~ChromeIdentityService() {
                     OnChromeIdentityServiceWillBeDestroyed());
 }
 
+void ChromeIdentityService::DismissDialogs() {}
+
+bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
+                                                     NSURL* url,
+                                                     NSDictionary* options) {
+  return false;
+}
+
 base::scoped_nsobject<UINavigationController>
 ChromeIdentityService::NewAccountDetails(
     ChromeIdentity* identity,

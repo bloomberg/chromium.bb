@@ -23,6 +23,8 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   static TestChromeBrowserProvider* GetTestProvider();
 
   // ChromeBrowserProvider:
+  void SetChromeIdentityServiceForTesting(
+      std::unique_ptr<ChromeIdentityService> service) override;
   ChromeIdentityService* GetChromeIdentityService() override;
   UpdatableResourceProvider* GetUpdatableResourceProvider() override;
 

@@ -5,14 +5,14 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
 
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : chrome_identity_service_(new ios::FakeChromeIdentityService),
-      test_updatable_resource_provider_(new TestUpdatableResourceProvider) {}
+    : test_updatable_resource_provider_(new TestUpdatableResourceProvider) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 
@@ -23,7 +23,15 @@ TestChromeBrowserProvider* TestChromeBrowserProvider::GetTestProvider() {
   return static_cast<TestChromeBrowserProvider*>(provider);
 }
 
+void TestChromeBrowserProvider::SetChromeIdentityServiceForTesting(
+    std::unique_ptr<ChromeIdentityService> service) {
+  chrome_identity_service_.swap(service);
+}
+
 ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
+  if (!chrome_identity_service_) {
+    chrome_identity_service_.reset(new FakeChromeIdentityService());
+  }
   return chrome_identity_service_.get();
 }
 

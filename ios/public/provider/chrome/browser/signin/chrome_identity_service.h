@@ -19,14 +19,18 @@
 @protocol ChromeIdentityInteractionManagerDelegate;
 @class NSArray;
 @class NSDate;
+@class NSDictionary;
 @class NSError;
 @class NSString;
+@class NSURL;
+@class UIApplication;
 @class UIImage;
 @class UINavigationController;
 
 namespace ios {
 
 class ChromeBrowserState;
+class ChromeIdentityService;
 
 // Callback passed to method |GetAccessTokenForScopes()| that returns the
 // information of the obtained access token to the caller.
@@ -85,6 +89,16 @@ class ChromeIdentityService {
 
   ChromeIdentityService();
   virtual ~ChromeIdentityService();
+
+  // Handles open URL authentication callback. Returns whether the URL was
+  // actually handled. This should be called within
+  // UIApplicationDelegate application:openURL:options:.
+  virtual bool HandleApplicationOpenURL(UIApplication* application,
+                                        NSURL* url,
+                                        NSDictionary* options);
+
+  // Dismisses all the dialogs created by the abstracted flows.
+  virtual void DismissDialogs();
 
   // Returns a new account details controller to present. A cancel button is
   // present as leading navigation item.
