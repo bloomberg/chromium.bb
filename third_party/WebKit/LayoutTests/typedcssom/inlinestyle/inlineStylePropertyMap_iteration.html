@@ -84,7 +84,7 @@ test(function() {
   assert_equals(entries['border-left-color'].cssText, 'lightcoral');
 
   assert_equals(entries['border-image-source'].cssText, 'initial');
-  assert_equals(entries['border-image-slice'].cssText, 'initial'); 
+  assert_equals(entries['border-image-slice'].cssText, 'initial');
   assert_equals(entries['border-image-width'].cssText, 'initial');
   assert_equals(entries['border-image-outset'].cssText, 'initial');
   assert_equals(entries['border-image-repeat'].cssText, 'initial');
@@ -95,9 +95,12 @@ test(function() {
   var entries = [...testElement.styleMap.values()];
 
   assert_equals(entries.length, 1);
-  assert_equals(entries[0].constructor, CSSStyleValue);
-  assert_equals(entries[0].cssText, 'var(--bg-color)');
-}, "Variable values come out as CSSStyleValues");
+  assert_equals(entries[0].constructor, CSSTokenStreamValue);
+  assert_equals(entries[0].cssText, '--bg-color');
+  assert_equals([...entries[0]].length, 1);
+  assert_equals([...entries[0]][0].variable, "--bg-color");
+  assert_equals([...entries[0]][0].fallback, null);
+}, "Variable values come out as CSSTokenStreamValues");
 
 test(function() {
   testElement.style = '';

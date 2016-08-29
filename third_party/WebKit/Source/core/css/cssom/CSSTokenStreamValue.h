@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/StringOrCSSVariableReferenceValue.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "wtf/Vector.h"
 
@@ -20,6 +21,8 @@ public:
     {
         return new CSSTokenStreamValue(fragments);
     }
+
+    static CSSTokenStreamValue* fromCSSValue(const CSSVariableReferenceValue&);
 
     CSSValue* toCSSValue() const override;
 

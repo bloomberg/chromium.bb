@@ -4,7 +4,6 @@
 
 #include "core/css/cssom/CSSTokenStreamValue.h"
 
-#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "wtf/text/StringBuilder.h"
@@ -38,11 +37,58 @@ private:
     const Member<CSSTokenStreamValue> m_tokenStreamValue;
 };
 
+StringView findVariableName(CSSParserTokenRange& range)
+{
+    range.consumeWhitespace();
+    return range.consume().value();
+}
+
+StringOrCSSVariableReferenceValue variableReferenceValue(const StringView& variableName, const HeapVector<StringOrCSSVariableReferenceValue>& fragments)
+{
+    CSSTokenStreamValue* tokenStreamValue;
+    if (fragments.size() == 0)
+        tokenStreamValue = nullptr;
+    else
+        tokenStreamValue = CSSTokenStreamValue::create(fragments);
+    CSSStyleVariableReferenceValue* variableReference = CSSStyleVariableReferenceValue::create(variableName.toString(), tokenStreamValue);
+    return StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(variableReference);
+}
+
+HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(CSSParserTokenRange range)
+{
+    HeapVector<StringOrCSSVariableReferenceValue> fragments;
+    StringBuilder builder;
+    while (!range.atEnd()) {
+        if (range.peek().functionId() == CSSValueVar) {
+            if (!builder.isEmpty()) {
+                fragments.append(StringOrCSSVariableReferenceValue::fromString(builder.toString()));
+                builder.clear();
+            }
+            CSSParserTokenRange block = range.consumeBlock();
+            StringView variableName = findVariableName(block);
+            block.consumeWhitespace();
+            if (block.peek().type() == CSSParserTokenType::CommaToken)
+                block.consume();
+            fragments.append(variableReferenceValue(variableName, parserTokenRangeToFragments(block)));
+        } else {
+            range.consume().serialize(builder);
+        }
+    }
+    if (!builder.isEmpty())
+        fragments.append(StringOrCSSVariableReferenceValue::fromString(builder.toString()));
+    return fragments;
+}
+
 } // namespace
 
 ValueIterable<StringOrCSSVariableReferenceValue>::IterationSource* CSSTokenStreamValue::startIteration(ScriptState*, ExceptionState&)
 {
     return new TokenStreamValueIterationSource(this);
+}
+
+CSSTokenStreamValue* CSSTokenStreamValue::fromCSSValue(const CSSVariableReferenceValue& cssVariableReferenceValue)
+{
+    return CSSTokenStreamValue::create(parserTokenRangeToFragments(cssVariableReferenceValue.variableDataValue()->tokenRange()));
 }
 
 CSSValue* CSSTokenStreamValue::toCSSValue() const

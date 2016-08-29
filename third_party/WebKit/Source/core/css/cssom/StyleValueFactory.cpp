@@ -8,6 +8,8 @@
 #include "core/css/cssom/CSSNumberValue.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "core/css/cssom/CSSStyleVariableReferenceValue.h"
+#include "core/css/cssom/CSSTokenStreamValue.h"
 #include "core/css/cssom/CSSTransformValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 
@@ -31,6 +33,10 @@ CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID, const CSSValue& v
             return CSSSimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved());
         if (primitiveValue.isNumber())
             return CSSNumberValue::create(primitiveValue.getDoubleValue());
+    }
+
+    if (value.isVariableReferenceValue()) {
+        return CSSTokenStreamValue::fromCSSValue(toCSSVariableReferenceValue(value));
     }
 
     return nullptr;
