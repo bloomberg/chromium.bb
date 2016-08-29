@@ -1476,6 +1476,8 @@ long Segment::Load() {
   }
 }
 
+SeekHead::Entry::Entry() : id(0), pos(0), element_start(0), element_size(0) {}
+
 SeekHead::SeekHead(Segment* pSegment, long long start, long long size_,
                    long long element_start, long long element_size)
     : m_pSegment(pSegment),
@@ -1767,18 +1769,7 @@ bool SeekHead::ParseEntry(IMkvReader* pReader, long long start, long long size_,
   if ((pos + seekIdSize) > stop)
     return false;
 
-  // Note that the SeekId payload really is serialized
-  // as a "Matroska integer", not as a plain binary value.
-  // In fact, Matroska requires that ID values in the
-  // stream exactly match the binary representation as listed
-  // in the Matroska specification.
-  //
-  // This parser is more liberal, and permits IDs to have
-  // any width.  (This could make the representation in the stream
-  // different from what's in the spec, but it doesn't matter here,
-  // since we always normalize "Matroska integer" values.)
-
-  pEntry->id = ReadUInt(pReader, pos, len);  // payload
+  pEntry->id = ReadID(pReader, pos, len);  // payload
 
   if (pEntry->id <= 0)
     return false;

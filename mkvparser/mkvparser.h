@@ -844,6 +844,8 @@ class SeekHead {
   long Parse();
 
   struct Entry {
+    Entry();
+
     // the SeekHead entry payload
     long long id;
     long long pos;

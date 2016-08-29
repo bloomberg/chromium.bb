@@ -73,10 +73,7 @@ bool HasCuePoints(const mkvparser::Segment* segment,
   std::int64_t offset = 0;
   for (int i = 0; i < seek_head->GetCount(); ++i) {
     const SeekHead::Entry* const entry = seek_head->GetEntry(i);
-    // TODO(tomfinegan): Cues ID is really 0x1C53BB6B, aka kMkvCues, but
-    // mkvparser reads IDs as EBML unsigned ints in some cases, yielding magic
-    // numbers like the following. Investigate fixing this behavior.
-    if (entry->id == 0xC53BB6B) {  // Cues ID as stored in Entry class.
+    if (entry->id == libwebm::kMkvCues) {
       offset = entry->pos;
     }
   }
