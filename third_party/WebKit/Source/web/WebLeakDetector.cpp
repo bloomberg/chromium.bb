@@ -154,6 +154,7 @@ void WebLeakDetectorImpl::delayedReport(TimerBase*)
     result.numberOfLiveScriptPromises = InstanceCounters::counterValue(InstanceCounters::ScriptPromiseCounter);
     result.numberOfLiveFrames = InstanceCounters::counterValue(InstanceCounters::FrameCounter);
     result.numberOfLiveV8PerContextData = InstanceCounters::counterValue(InstanceCounters::V8PerContextDataCounter);
+    result.numberOfWorkerGlobalScopes = InstanceCounters::counterValue(InstanceCounters::WorkerGlobalScopeCounter);
 
     m_client->onLeakDetectionComplete(result);
 

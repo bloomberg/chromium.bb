@@ -364,6 +364,7 @@ void RenderViewTest::onLeakDetectionComplete(const Result& result) {
   EXPECT_EQ(0u, result.numberOfLiveScriptPromises);
   EXPECT_EQ(0u, result.numberOfLiveFrames);
   EXPECT_EQ(0u, result.numberOfLiveV8PerContextData);
+  EXPECT_EQ(0u, result.numberOfWorkerGlobalScopes);
 }
 
 void RenderViewTest::SendNativeKeyEvent(

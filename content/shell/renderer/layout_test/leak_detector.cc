@@ -28,6 +28,7 @@ const int kInitialNumberOfLiveLayoutObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
+const int kInitialNumberOfWorkerGlobalScopes = 0;
 
 // In the initial state, there are two ActiveDOMObjects (FontFaceSet created by
 // HTMLDocument and SuspendableTimer created by DocumentLoader).
@@ -54,6 +55,8 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
   previous_result_.numberOfLiveFrames = kInitialNumberOfLiveFrames;
   previous_result_.numberOfLiveV8PerContextData =
     kInitialNumberOfV8PerContextData;
+  previous_result_.numberOfWorkerGlobalScopes =
+    kInitialNumberOfWorkerGlobalScopes;
 }
 
 LeakDetector::~LeakDetector() {
@@ -127,6 +130,13 @@ void LeakDetector::onLeakDetectionComplete(
     list->AppendInteger(previous_result_.numberOfLiveV8PerContextData);
     list->AppendInteger(result.numberOfLiveV8PerContextData);
     detail.Set("numberOfLiveV8PerContextData", list);
+  }
+  if (previous_result_.numberOfWorkerGlobalScopes <
+      result.numberOfWorkerGlobalScopes) {
+    base::ListValue* list = new base::ListValue();
+    list->AppendInteger(previous_result_.numberOfWorkerGlobalScopes);
+    list->AppendInteger(result.numberOfWorkerGlobalScopes);
+    detail.Set("numberOfWorkerGlobalScopes", list);
   }
 
   if (!detail.empty()) {

@@ -43,6 +43,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerClients.h"
@@ -74,6 +75,7 @@ void removeURLFromMemoryCacheInternal(const KURL& url)
 WorkerGlobalScope::~WorkerGlobalScope()
 {
     DCHECK(!m_scriptController);
+    InstanceCounters::decrementCounter(InstanceCounters::WorkerGlobalScopeCounter);
 }
 
 void WorkerGlobalScope::countFeature(UseCounter::Feature) const
@@ -309,6 +311,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_timeOrigin(timeOrigin)
     , m_lastPendingErrorEventId(0)
 {
+    InstanceCounters::incrementCounter(InstanceCounters::WorkerGlobalScopeCounter);
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
         getSecurityOrigin()->transferPrivilegesFrom(std::move(starterOriginPrivilageData));

@@ -54,6 +54,7 @@ public:
         ResourceCounter,
         ScriptPromiseCounter,
         V8PerContextDataCounter,
+        WorkerGlobalScopeCounter,
 
         // This value must be the last.
         CounterTypeLength,

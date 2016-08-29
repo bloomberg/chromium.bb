@@ -49,6 +49,7 @@ public:
         unsigned numberOfLiveScriptPromises;
         unsigned numberOfLiveFrames;
         unsigned numberOfLiveV8PerContextData;
+        unsigned numberOfWorkerGlobalScopes;
     };
 
     virtual void onLeakDetectionComplete(const Result&) = 0;
