@@ -8437,7 +8437,7 @@
       }
     ]
   },
-  "CrWinClangLLD64dbg tester": {
+  "CrWinClngLLD64dbg tester": {
     "gtest_tests": [
       {
         "swarming": {
@@ -8688,7 +8688,7 @@
       }
     ]
   },
-  "CrWinClangLLDdbg tester": {
+  "CrWinClngLLDdbg tester": {
     "gtest_tests": [
       {
         "swarming": {
