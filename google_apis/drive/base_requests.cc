@@ -293,8 +293,8 @@ int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
                           const net::CompletionCallback& callback) {
   if (!get_content_callback_.is_null()) {
-    get_content_callback_.Run(HTTP_SUCCESS, base::WrapUnique(new std::string(
-                                                buffer->data(), num_bytes)));
+    get_content_callback_.Run(
+        HTTP_SUCCESS, base::MakeUnique<std::string>(buffer->data(), num_bytes));
   }
 
   if (file_writer_) {

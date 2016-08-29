@@ -192,8 +192,7 @@ void TestConnectionFactoryImpl::InitHandler() {
 std::unique_ptr<net::BackoffEntry>
 TestConnectionFactoryImpl::CreateBackoffEntry(
     const net::BackoffEntry::Policy* const policy) {
-  return base::WrapUnique(
-      new net::BackoffEntry(&kTestBackoffPolicy, &tick_clock_));
+  return base::MakeUnique<net::BackoffEntry>(&kTestBackoffPolicy, &tick_clock_);
 }
 
 std::unique_ptr<ConnectionHandler>
