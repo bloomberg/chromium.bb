@@ -33,7 +33,7 @@ void ScrollOffsetAnimations::AddAdjustmentUpdate(ElementId element_id,
   ScrollOffsetAnimationUpdate update = GetUpdateForElementId(element_id);
   update.adjustment_ += adjustment;
   element_to_update_map_[element_id] = update;
-  animation_host_->SetNeedsPushProperties();
+  animation_host_->SetNeedsCommit();
 }
 
 void ScrollOffsetAnimations::AddTakeoverUpdate(ElementId element_id) {
@@ -41,7 +41,7 @@ void ScrollOffsetAnimations::AddTakeoverUpdate(ElementId element_id) {
   ScrollOffsetAnimationUpdate update = GetUpdateForElementId(element_id);
   update.takeover_ = true;
   element_to_update_map_[element_id] = update;
-  animation_host_->SetNeedsPushProperties();
+  animation_host_->SetNeedsCommit();
 }
 
 bool ScrollOffsetAnimations::HasUpdatesForTesting() const {

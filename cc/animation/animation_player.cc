@@ -22,8 +22,7 @@ AnimationPlayer::AnimationPlayer(int id)
       animation_timeline_(),
       element_animations_(),
       animation_delegate_(),
-      id_(id),
-      needs_push_properties_(false) {
+      id_(id) {
   DCHECK(id_);
 }
 
@@ -105,16 +104,15 @@ void AnimationPlayer::BindElementAnimations() {
   DCHECK(element_animations_);
 
   // Pass all accumulated animations to ElementAnimations.
-  for (auto& animation : animations_)
+  for (auto& animation : animations_) {
     element_animations_->AddAnimation(std::move(animation));
+  }
+  if (!animations_.empty())
+    SetNeedsCommit();
   animations_.clear();
-
-  SetNeedsPushProperties();
 }
 
 void AnimationPlayer::UnbindElementAnimations() {
-  SetNeedsPushProperties();
-
   element_animations_ = nullptr;
   DCHECK(animations_.empty());
 }
@@ -125,7 +123,7 @@ void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
 
   if (element_animations_) {
     element_animations_->AddAnimation(std::move(animation));
-    SetNeedsPushProperties();
+    SetNeedsCommit();
   } else {
     animations_.push_back(std::move(animation));
   }
@@ -135,13 +133,13 @@ void AnimationPlayer::PauseAnimation(int animation_id, double time_offset) {
   DCHECK(element_animations_);
   element_animations_->PauseAnimation(
       animation_id, base::TimeDelta::FromSecondsD(time_offset));
-  SetNeedsPushProperties();
+  SetNeedsCommit();
 }
 
 void AnimationPlayer::RemoveAnimation(int animation_id) {
   if (element_animations_) {
     element_animations_->RemoveAnimation(animation_id);
-    SetNeedsPushProperties();
+    SetNeedsCommit();
   } else {
     auto animations_to_remove = std::remove_if(
         animations_.begin(), animations_.end(),
@@ -155,14 +153,14 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
 void AnimationPlayer::AbortAnimation(int animation_id) {
   DCHECK(element_animations_);
   element_animations_->AbortAnimation(animation_id);
-  SetNeedsPushProperties();
+  SetNeedsCommit();
 }
 
 void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
                                       bool needs_completion) {
   if (element_animations_) {
     element_animations_->AbortAnimations(target_property, needs_completion);
-    SetNeedsPushProperties();
+    SetNeedsCommit();
   } else {
     auto animations_to_remove = std::remove_if(
         animations_.begin(), animations_.end(),
@@ -174,10 +172,6 @@ void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
 }
 
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
-  if (!needs_push_properties_)
-    return;
-  needs_push_properties_ = false;
-
   if (element_id_ != player_impl->element_id()) {
     if (player_impl->element_id())
       player_impl->DetachElement();
@@ -213,19 +207,11 @@ void AnimationPlayer::NotifyAnimationAborted(
                                                 group);
 }
 
-void AnimationPlayer::NotifyAnimationWaitingForDeletion() {
-  // We need to purge animations marked for deletion.
-  SetNeedsPushProperties();
-}
-
 void AnimationPlayer::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
     TargetProperty::Type target_property,
     double animation_start_time,
     std::unique_ptr<AnimationCurve> curve) {
-  // We need to purge animations marked for deletion on CT.
-  SetNeedsPushProperties();
-
   if (animation_delegate_) {
     DCHECK(curve);
     animation_delegate_->NotifyAnimationTakeover(
@@ -234,14 +220,10 @@ void AnimationPlayer::NotifyAnimationTakeover(
   }
 }
 
-void AnimationPlayer::SetNeedsPushProperties() {
-  needs_push_properties_ = true;
-
-  DCHECK(animation_timeline_);
-  animation_timeline_->SetNeedsPushProperties();
-
-  DCHECK(element_animations_);
-  element_animations_->SetNeedsPushProperties();
+void AnimationPlayer::SetNeedsCommit() {
+  DCHECK(animation_host_);
+  animation_host_->SetNeedsCommit();
+  animation_host_->SetNeedsRebuildPropertyTrees();
 }
 
 }  // namespace cc

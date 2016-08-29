@@ -23,13 +23,6 @@ namespace cc {
 
 class AnimationHostPerfTest : public testing::Test {
  protected:
-  AnimationHostPerfTest()
-      : root_layer_impl_(),
-        first_timeline_id_(),
-        last_timeline_id_(),
-        first_player_id_(),
-        last_player_id_() {}
-
   void SetUp() override {
     LayerTreeSettings settings;
     layer_tree_host_ =
@@ -59,12 +52,12 @@ class AnimationHostPerfTest : public testing::Test {
   }
 
   void CreatePlayers(const int num_players) {
-    all_players_timeline_ =
+    scoped_refptr<AnimationTimeline> timeline =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-    host()->AddAnimationTimeline(all_players_timeline_);
+    host()->AddAnimationTimeline(timeline);
 
-    first_player_id_ = AnimationIdProvider::NextPlayerId();
-    last_player_id_ = first_player_id_;
+    const int first_player_id = AnimationIdProvider::NextPlayerId();
+    int last_player_id = first_player_id;
 
     for (int i = 0; i < num_players; ++i) {
       scoped_refptr<Layer> layer = Layer::Create();
@@ -72,10 +65,10 @@ class AnimationHostPerfTest : public testing::Test {
       layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
 
       scoped_refptr<AnimationPlayer> player =
-          AnimationPlayer::Create(last_player_id_);
-      last_player_id_ = AnimationIdProvider::NextPlayerId();
+          AnimationPlayer::Create(last_player_id);
+      last_player_id = AnimationIdProvider::NextPlayerId();
 
-      all_players_timeline_->AttachPlayer(player);
+      timeline->AttachPlayer(player);
       player->AttachElement(layer->element_id());
       EXPECT_TRUE(player->element_animations());
     }
@@ -85,20 +78,20 @@ class AnimationHostPerfTest : public testing::Test {
 
     // Check impl instances created.
     scoped_refptr<AnimationTimeline> timeline_impl =
-        host_impl()->GetTimelineById(all_players_timeline_->id());
+        host_impl()->GetTimelineById(timeline->id());
     EXPECT_TRUE(timeline_impl);
-    for (int i = first_player_id_; i < last_player_id_; ++i)
+    for (int i = first_player_id; i < last_player_id; ++i)
       EXPECT_TRUE(timeline_impl->GetPlayerById(i));
   }
 
   void CreateTimelines(const int num_timelines) {
-    first_timeline_id_ = AnimationIdProvider::NextTimelineId();
-    last_timeline_id_ = first_timeline_id_;
+    const int first_timeline_id = AnimationIdProvider::NextTimelineId();
+    int last_timeline_id = first_timeline_id;
 
     for (int i = 0; i < num_timelines; ++i) {
       scoped_refptr<AnimationTimeline> timeline =
-          AnimationTimeline::Create(last_timeline_id_);
-      last_timeline_id_ = AnimationIdProvider::NextTimelineId();
+          AnimationTimeline::Create(last_timeline_id);
+      last_timeline_id = AnimationIdProvider::NextTimelineId();
       host()->AddAnimationTimeline(timeline);
     }
 
@@ -106,26 +99,13 @@ class AnimationHostPerfTest : public testing::Test {
     layer_tree_host_->CommitAndCreateLayerImplTree();
 
     // Check impl instances created.
-    for (int i = first_timeline_id_; i < last_timeline_id_; ++i)
+    for (int i = first_timeline_id; i < last_timeline_id; ++i)
       EXPECT_TRUE(host_impl()->GetTimelineById(i));
-  }
-
-  void SetAllTimelinesNeedPushProperties() const {
-    for (int i = first_timeline_id_; i < last_timeline_id_; ++i)
-      host_impl()->GetTimelineById(i)->SetNeedsPushProperties();
-  }
-
-  void SetAllPlayersNeedPushProperties() const {
-    for (int i = first_player_id_; i < last_player_id_; ++i)
-      all_players_timeline_->GetPlayerById(i)->SetNeedsPushProperties();
   }
 
   void DoTest() {
     timer_.Reset();
     do {
-      // Invalidate dirty flags.
-      SetAllTimelinesNeedPushProperties();
-      SetAllPlayersNeedPushProperties();
       host()->PushPropertiesTo(host_impl());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -134,19 +114,12 @@ class AnimationHostPerfTest : public testing::Test {
                            "runs/s", true);
   }
 
- private:
+ protected:
   StubLayerTreeHostSingleThreadClient single_thread_client_;
   FakeLayerTreeHostClient fake_client_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   scoped_refptr<Layer> root_layer_;
   LayerImpl* root_layer_impl_;
-  scoped_refptr<AnimationTimeline> all_players_timeline_;
-
-  int first_timeline_id_;
-  int last_timeline_id_;
-
-  int first_player_id_;
-  int last_player_id_;
 
   LapTimer timer_;
   TestTaskGraphRunner task_graph_runner_;
