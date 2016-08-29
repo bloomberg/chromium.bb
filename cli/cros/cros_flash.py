@@ -114,6 +114,9 @@ Examples:
         '--clobber-stateful', action='store_true', default=False,
         help='Clobber stateful partition when performing update.')
     update.add_argument(
+        '--private-key', type='path', default=None,
+        help='SSH identify file (private key).')
+    update.add_argument(
         '--no-ping', dest='ping', action='store_false', default=True,
         help='Do not ping the device before attempting to connect to it.')
     update.add_argument(
@@ -141,6 +144,7 @@ Examples:
           clobber_stateful=self.options.clobber_stateful,
           reboot=self.options.reboot,
           wipe=self.options.wipe,
+          ssh_private_key=self.options.private_key,
           ping=self.options.ping,
           disable_rootfs_verification=self.options.disable_rootfs_verification,
           clear_cache=self.options.clear_cache,

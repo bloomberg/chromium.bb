@@ -315,7 +315,7 @@ class RemoteDeviceUpdater(object):
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, force=False, ping=True,
+               yes=False, force=False, ssh_private_key=None, ping=True,
                disable_verification=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
@@ -333,6 +333,7 @@ class RemoteDeviceUpdater(object):
     self.clobber_stateful = clobber_stateful
     self.reboot = reboot
     self.debug = debug
+    self.ssh_private_key = ssh_private_key
     self.ping = ping
     # Do not wipe if debug is set.
     self.wipe = wipe and not debug
@@ -425,8 +426,8 @@ class RemoteDeviceUpdater(object):
       device_connected = False
 
       with remote_access.ChromiumOSDeviceHandler(
-          self.ssh_hostname, port=self.ssh_port,
-          base_dir=self.DEVICE_BASE_DIR, ping=self.ping) as device:
+          self.ssh_hostname, port=self.ssh_port, base_dir=self.DEVICE_BASE_DIR,
+          private_key=self.ssh_private_key, ping=self.ping) as device:
         device_connected = True
 
         # Get payload directory
@@ -458,8 +459,9 @@ class RemoteDeviceUpdater(object):
 
 def Flash(device, image, board=None, install=False, src_image_to_delta=None,
           rootfs_update=True, stateful_update=True, clobber_stateful=False,
-          reboot=True, wipe=True, ping=True, disable_rootfs_verification=False,
-          clear_cache=False, yes=False, force=False, debug=False):
+          reboot=True, wipe=True, ssh_private_key=None, ping=True,
+          disable_rootfs_verification=False, clear_cache=False, yes=False,
+          force=False, debug=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -479,6 +481,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     clobber_stateful: Clobber stateful partition; SSH |device| scheme only.
     reboot: Reboot device after update; SSH |device| scheme only.
     wipe: Wipe temporary working directory; SSH |device| scheme only.
+    ssh_private_key: Path to an SSH private key file; None to use test keys.
     ping: Ping the device before attempting update; SSH |device| scheme only.
     disable_rootfs_verification: Remove rootfs verification after update; SSH
         |device| scheme only.
@@ -530,6 +533,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
         debug=debug,
         yes=yes,
         force=force,
+        ssh_private_key=ssh_private_key,
         ping=ping,
         disable_verification=disable_rootfs_verification)
     updater.Run()
