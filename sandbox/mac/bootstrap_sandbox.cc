@@ -158,7 +158,7 @@ std::unique_ptr<PreExecDelegate> BootstrapSandbox::NewClient(
   }
 
   awaiting_processes_[token] = sandbox_policy_id;
-  return base::WrapUnique(new PreExecDelegate(server_bootstrap_name_, token));
+  return base::MakeUnique<PreExecDelegate>(server_bootstrap_name_, token);
 }
 
 void BootstrapSandbox::RevokeToken(uint64_t token) {
