@@ -339,7 +339,13 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
 }
 
 // Test mouse event processing for top-of-screen reveal triggering.
-TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
+// TODO: ASan failure happens on ChromeOS (https://crbug.com/641828).
+#if defined(OS_CHROMEOS)
+#define MAYBE_OnMouseEvent DISABLED_OnMouseEvent
+#else
+#define MAYBE_OnMouseEvent OnMouseEvent
+#endif
+TEST_F(ImmersiveFullscreenControllerTest, MAYBE_OnMouseEvent) {
   // Set up initial state.
   SetEnabled(true);
   ASSERT_TRUE(controller()->IsEnabled());
