@@ -1278,7 +1278,3 @@ crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ 
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
-
-crbug.com/641822 [ Mac ] virtual/gpu-rasterization/fast/images/imagemap-focus-ring-in-positioned-container.html [ NeedsRebaseline ]
-crbug.com/641822 [ Mac ] virtual/gpu-rasterization/fast/images/imagemap-focus-ring-with-paint-root-offset.html [ NeedsRebaseline ]
-crbug.com/641822 [ Mac ] virtual/gpu-rasterization/fast/images/imagemap-focus-ring-with-scale-transform.html [ NeedsRebaseline ]
