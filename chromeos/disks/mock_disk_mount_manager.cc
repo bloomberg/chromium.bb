@@ -23,18 +23,18 @@ namespace disks {
 
 namespace {
 
-const char* kTestSystemPath = "/this/system/path";
-const char* kTestSystemPathPrefix = "/this/system";
-const char* kTestDevicePath = "/this/device/path";
-const char* kTestMountPath = "/media/foofoo";
-const char* kTestFilePath = "/this/file/path";
-const char* kTestDeviceLabel = "A label";
-const char* kTestDriveLabel = "Another label";
-const char* kTestVendorId = "0123";
-const char* kTestVendorName = "A vendor";
-const char* kTestProductId = "abcd";
-const char* kTestProductName = "A product";
-const char* kTestUuid = "FFFF-FFFF";
+const char kTestSystemPath[] = "/this/system/path";
+const char kTestSystemPathPrefix[] = "/this/system";
+const char kTestDevicePath[] = "/this/device/path";
+const char kTestMountPath[] = "/media/foofoo";
+const char kTestFilePath[] = "/this/file/path";
+const char kTestDeviceLabel[] = "A label";
+const char kTestDriveLabel[] = "Another label";
+const char kTestVendorId[] = "0123";
+const char kTestVendorName[] = "A vendor";
+const char kTestProductId[] = "abcd";
+const char kTestProductName[] = "A product";
+const char kTestUuid[] = "FFFF-FFFF";
 
 }  // namespace
 

@@ -129,11 +129,11 @@ bool IsCellularTechnology(const std::string& type) {
           type == shill::kNetworkTechnologyLteAdvanced);
 }
 
-const char* kTechnologyUnavailable = "unavailable";
-const char* kNetworkActivated = "activated";
-const char* kNetworkDisabled = "disabled";
-const char* kCellularServicePath = "/service/cellular1";
-const char* kRoamingRequired = "required";
+const char kTechnologyUnavailable[] = "unavailable";
+const char kNetworkActivated[] = "activated";
+const char kNetworkDisabled[] = "disabled";
+const char kCellularServicePath[] = "/service/cellular1";
+const char kRoamingRequired[] = "required";
 
 }  // namespace
 

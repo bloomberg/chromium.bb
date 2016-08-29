@@ -791,7 +791,7 @@ void NetworkStateHandler::UpdateNetworkStats() {
 void NetworkStateHandler::DefaultNetworkServiceChanged(
     const std::string& service_path) {
   // Shill uses '/' for empty service path values; check explicitly for that.
-  const char* kEmptyServicePath = "/";
+  const char kEmptyServicePath[] = "/";
   std::string new_service_path =
       (service_path != kEmptyServicePath) ? service_path : "";
   if (new_service_path == default_network_path_)
