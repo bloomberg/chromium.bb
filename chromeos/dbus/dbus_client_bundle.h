@@ -33,7 +33,6 @@ class NfcTagClient;
 class PeerDaemonManagerClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
-class PrivetDaemonManagerClient;
 class SMSClient;
 class SessionManagerClient;
 class ShillDeviceClient;
@@ -77,8 +76,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
     UPDATE_ENGINE = 1 << 18,
     PEER_DAEMON = 1 << 19,
     AP_MANAGER = 1 << 20,
-    PRIVET_DAEMON = 1 << 21,
-    ARC_OBB_MOUNTER = 1 << 22,
+    ARC_OBB_MOUNTER = 1 << 21,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -195,10 +193,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return permission_broker_client_.get();
   }
 
-  PrivetDaemonManagerClient* privet_daemon_manager_client() {
-    return privet_daemon_manager_client_.get();
-  }
-
   SystemClockClient* system_clock_client() {
     return system_clock_client_.get();
   }
@@ -235,7 +229,6 @@ class CHROMEOS_EXPORT DBusClientBundle {
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   std::unique_ptr<PeerDaemonManagerClient> peer_daemon_manager_client_;
-  std::unique_ptr<PrivetDaemonManagerClient> privet_daemon_manager_client_;
   std::unique_ptr<ShillDeviceClient> shill_device_client_;
   std::unique_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   std::unique_ptr<ShillManagerClient> shill_manager_client_;
