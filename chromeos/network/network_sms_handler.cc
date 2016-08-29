@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/gsm_sms_client.h"
@@ -353,16 +354,12 @@ void NetworkSmsHandler::Init() {
 void NetworkSmsHandler::RequestUpdate(bool request_existing) {
   // If we already received messages and |request_existing| is true, send
   // updates for existing messages.
-  for (ScopedVector<base::DictionaryValue>::iterator iter =
-           received_messages_.begin();
-       iter != received_messages_.end(); ++iter) {
-    base::DictionaryValue* message = *iter;
+  for (const auto& message : received_messages_) {
     NotifyMessageReceived(*message);
   }
   // Request updates from each device.
-  for (ScopedVector<NetworkSmsDeviceHandler>::iterator iter =
-           device_handlers_.begin(); iter != device_handlers_.end(); ++iter) {
-    (*iter)->RequestUpdate();
+  for (auto& handler : device_handlers_) {
+    handler->RequestUpdate();
   }
 }
 
@@ -388,10 +385,9 @@ void NetworkSmsHandler::OnPropertyChanged(const std::string& name,
 
 void NetworkSmsHandler::AddReceivedMessage(
     const base::DictionaryValue& message) {
-  base::DictionaryValue* new_message = message.DeepCopy();
   if (received_messages_.size() >= kMaxReceivedMessages)
     received_messages_.erase(received_messages_.begin());
-  received_messages_.push_back(new_message);
+  received_messages_.push_back(message.CreateDeepCopy());
 }
 
 void NetworkSmsHandler::NotifyMessageReceived(
@@ -474,11 +470,11 @@ void NetworkSmsHandler::DevicePropertiesCallback(
   dbus::ObjectPath object_path(object_path_string);
   if (service_name == modemmanager::kModemManager1ServiceName) {
     device_handlers_.push_back(
-        new ModemManager1NetworkSmsDeviceHandler(
+        base::MakeUnique<ModemManager1NetworkSmsDeviceHandler>(
             this, service_name, object_path));
   } else {
     device_handlers_.push_back(
-        new ModemManagerNetworkSmsDeviceHandler(
+        base::MakeUnique<ModemManagerNetworkSmsDeviceHandler>(
             this, service_name, object_path));
   }
 }

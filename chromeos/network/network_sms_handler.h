@@ -5,10 +5,11 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_SMS_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_SMS_HANDLER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
@@ -91,8 +92,8 @@ class CHROMEOS_EXPORT NetworkSmsHandler : public ShillPropertyChangedObserver {
                                 const base::DictionaryValue& properties);
 
   base::ObserverList<Observer, true> observers_;
-  ScopedVector<NetworkSmsDeviceHandler> device_handlers_;
-  ScopedVector<base::DictionaryValue> received_messages_;
+  std::vector<std::unique_ptr<NetworkSmsDeviceHandler>> device_handlers_;
+  std::vector<std::unique_ptr<base::DictionaryValue>> received_messages_;
   base::WeakPtrFactory<NetworkSmsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSmsHandler);
