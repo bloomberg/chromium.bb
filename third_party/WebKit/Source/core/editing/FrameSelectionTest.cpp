@@ -121,7 +121,6 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
     std::unique_ptr<PaintController> paintController = PaintController::create();
     {
         GraphicsContext context(*paintController);
-        DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
         selection().paintCaret(context, LayoutPoint());
     }
     paintController->commitNewDisplayItems();

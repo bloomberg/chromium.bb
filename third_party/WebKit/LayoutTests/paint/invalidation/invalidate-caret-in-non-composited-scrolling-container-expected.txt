@@ -1,0 +1,79 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutTextControl INPUT id='root'",
+          "position": [7, 7],
+          "bounds": [66, 24],
+          "drawsContent": true,
+          "backgroundColor": "#FFFFFF",
+          "paintInvalidations": [
+            {
+              "object": "LayoutTextControl INPUT id='root'",
+              "rect": [0, 0, 66, 24],
+              "reason": "subtree"
+            },
+            {
+              "object": "LayoutTextControl INPUT id='root'",
+              "rect": [0, 0, 64, 22],
+              "reason": "full"
+            },
+            {
+              "object": "LayoutBlockFlow DIV id='inner-editor'",
+              "rect": [3, 4, 60, 16],
+              "reason": "subtree"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [3, 4, 60, 16],
+              "reason": "subtree"
+            },
+            {
+              "object": "LayoutText #text",
+              "rect": [60, 4, 3, 16],
+              "reason": "invalidate paint rectangle"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl INPUT id='root'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "invalidate paint rectangle"
+    }
+  ]
+}
+

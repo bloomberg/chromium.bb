@@ -30,11 +30,13 @@
 #include "core/editing/VisiblePosition.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class CullRect;
+class DisplayItemClient;
 class LocalFrame;
 class GraphicsContext;
 class LayoutBlock;
@@ -58,7 +60,7 @@ public:
     IntRect absoluteBoundsForLocalRect(Node*, const LayoutRect&) const;
     bool shouldRepaintCaret(Node&) const;
     bool shouldRepaintCaret(const LayoutViewItem) const;
-    void paintCaret(Node*, GraphicsContext&, const LayoutPoint&) const;
+    void paintCaret(Node*, GraphicsContext&, const LayoutPoint&, DisplayItem::Type) const;
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
 
@@ -72,6 +74,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    static DisplayItemClient* displayItemClientForCaret(Node*);
+
     LayoutRect m_caretLocalRect; // caret rect in coords local to the layoutObject responsible for painting the caret
     CaretVisibility m_caretVisibility;
 };

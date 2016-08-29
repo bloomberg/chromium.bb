@@ -1468,10 +1468,6 @@ void PaintLayerScrollableArea::updateCompositingLayersAfterScroll()
 
 bool PaintLayerScrollableArea::usesCompositedScrolling() const
 {
-    // Scroll form controls on the main thread so they exhibit correct touch scroll event bubbling
-    if (box().isIntrinsicallyScrollable(VerticalScrollbar) || box().isIntrinsicallyScrollable(HorizontalScrollbar))
-        return false;
-
     // See https://codereview.chromium.org/176633003/ for the tests that fail without this disabler.
     DisableCompositingQueryAsserts disabler;
     return layer()->hasCompositedLayerMapping() && layer()->compositedLayerMapping()->scrollingLayer();

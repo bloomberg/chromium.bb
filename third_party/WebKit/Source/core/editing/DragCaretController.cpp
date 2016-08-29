@@ -119,7 +119,7 @@ DEFINE_TRACE(DragCaretController)
 void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext& context, const LayoutPoint& paintOffset) const
 {
     if (m_position.deepEquivalent().anchorNode()->document().frame() == frame)
-        m_caretBase->paintCaret(m_position.deepEquivalent().anchorNode(), context, paintOffset);
+        m_caretBase->paintCaret(m_position.deepEquivalent().anchorNode(), context, paintOffset, DisplayItem::DragCaret);
 }
 
 } // namespace blink

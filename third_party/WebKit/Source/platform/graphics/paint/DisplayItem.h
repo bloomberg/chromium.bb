@@ -66,6 +66,7 @@ public:
         DebugDrawing,
         DocumentBackground,
         DragImage,
+        DragCaret,
         SVGImage,
         LinkHighlight,
         ImageAreaFocusRing,

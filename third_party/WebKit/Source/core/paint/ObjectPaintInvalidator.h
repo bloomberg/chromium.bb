@@ -50,7 +50,8 @@ public:
     void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason);
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
-    void invalidatePaintRectangle(const LayoutRect&);
+    // If a DisplayItemClient is specified, that client is invalidated rather than |m_object|.
+    void invalidatePaintRectangle(const LayoutRect&, DisplayItemClient*);
 
     void invalidatePaintIncludingNonCompositingDescendants();
     void invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer);

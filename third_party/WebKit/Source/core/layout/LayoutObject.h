@@ -1107,7 +1107,8 @@ public:
     bool isPaintInvalidationContainer() const;
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect is in the object's coordinate space.
-    void invalidatePaintRectangle(const LayoutRect&) const;
+    // If a DisplayItemClient is specified, that client is invalidated rather than |this|.
+    void invalidatePaintRectangle(const LayoutRect&, DisplayItemClient* = nullptr) const;
 
     // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);

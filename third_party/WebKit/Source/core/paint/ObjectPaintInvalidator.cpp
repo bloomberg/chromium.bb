@@ -274,7 +274,7 @@ void ObjectPaintInvalidator::invalidatePaintUsingContainer(const LayoutBoxModelO
         setBackingNeedsPaintInvalidationInRect(paintInvalidationContainer, dirtyRect, invalidationReason);
 }
 
-void ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRect)
+void ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRect, DisplayItemClient* displayItemClient)
 {
     CHECK(m_object.isRooted());
 
@@ -288,11 +288,13 @@ void ObjectPaintInvalidator::invalidatePaintRectangle(const LayoutRect& dirtyRec
     LayoutRect dirtyRectOnBacking = dirtyRect;
     PaintLayer::mapRectToPaintInvalidationBacking(m_object, paintInvalidationContainer, dirtyRectOnBacking);
     dirtyRectOnBacking.move(m_object.scrollAdjustmentForPaintInvalidation(paintInvalidationContainer));
-
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRectOnBacking, PaintInvalidationRectangle);
 
     slowSetPaintingLayerNeedsRepaint();
-    m_object.invalidateDisplayItemClients(PaintInvalidationRectangle);
+    if (displayItemClient)
+        invalidateDisplayItemClient(*displayItemClient, PaintInvalidationRectangle);
+    else
+        m_object.invalidateDisplayItemClients(PaintInvalidationRectangle);
 }
 
 void ObjectPaintInvalidator::slowSetPaintingLayerNeedsRepaint()

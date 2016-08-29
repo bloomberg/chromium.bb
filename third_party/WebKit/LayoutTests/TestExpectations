@@ -112,6 +112,18 @@ crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # ====== Paint team owned tests to here ======
 
+crbug.com/635724 paint/selection/selection-in-composited-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/635724 paint/selection/selection-in-non-composited-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/635724 paint/invalidation/invalidate-caret-in-composited-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/635724 paint/invalidation/invalidate-caret-in-non-composited-scrolling-container.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/caret-outside-block.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/4776765.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/caret-invalidation-in-overflow-scroll.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/caret-with-transformation.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/delete-into-nested-block.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
+crbug.com/635724 fast/repaint/selection-after-delete.html [ NeedsRebaseline ]
+
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 

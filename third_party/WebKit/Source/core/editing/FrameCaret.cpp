@@ -210,7 +210,7 @@ void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOf
         return;
 
     updateCaretRect(caretPosition());
-    CaretBase::paintCaret(caretPosition().position().anchorNode(), context, paintOffset);
+    CaretBase::paintCaret(caretPosition().position().anchorNode(), context, paintOffset, DisplayItem::Caret);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node)

@@ -1,0 +1,92 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutTextControl INPUT id='root'",
+          "position": [7, 7],
+          "bounds": [66, 24],
+          "drawsContent": true,
+          "backgroundColor": "#FFFFFF",
+          "paintInvalidations": [
+            {
+              "object": "LayoutTextControl INPUT id='root'",
+              "rect": [0, 0, 66, 24],
+              "reason": "subtree"
+            },
+            {
+              "object": "LayoutTextControl INPUT id='root'",
+              "rect": [0, 0, 64, 22],
+              "reason": "full"
+            }
+          ],
+          "children": [
+            {
+              "name": "LayoutBlockFlow DIV id='inner-editor'",
+              "position": [3, 4],
+              "bounds": [60, 16],
+              "shouldFlattenTransform": false,
+              "drawsContent": true,
+              "children": [
+                {
+                  "name": "Scrolling Layer",
+                  "bounds": [60, 16],
+                  "shouldFlattenTransform": false,
+                  "children": [
+                    {
+                      "name": "Scrolling Contents Layer",
+                      "bounds": [75, 16],
+                      "drawsContent": true,
+                      "paintInvalidations": [
+                        {
+                          "object": "LayoutText #text",
+                          "rect": [72, -1, 3, 18],
+                          "reason": "invalidate paint rectangle"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Overflow Controls Host Layer",
+                  "bounds": [60, 16],
+                  "children": [
+                    {
+                      "name": "Horizontal Scrollbar Layer",
+                      "position": [0, 16],
+                      "bounds": [60, 0],
+                      "drawsContent": true
+                    },
+                    {
+                      "name": "Vertical Scrollbar Layer",
+                      "position": [60, 0],
+                      "bounds": [0, 16],
+                      "drawsContent": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl INPUT id='root'",
+      "reason": "subtree"
+    },
+    {
+      "object": "Scrolling Contents Layer",
+      "reason": "invalidate paint rectangle"
+    }
+  ]
+}
+
