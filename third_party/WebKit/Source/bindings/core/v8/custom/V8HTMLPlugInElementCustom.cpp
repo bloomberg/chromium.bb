@@ -76,6 +76,10 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
     if (instance.IsEmpty())
         return;
 
+    // Don't intercept any of the properties of the HTMLPluginElement.
+    if (v8CallBoolean(info.Holder()->Has(info.GetIsolate()->GetCurrentContext(), property)))
+        return;
+
     // FIXME: The gTalk pepper plugin is the only plugin to make use of
     // SetProperty and that is being deprecated. This can be removed as soon as
     // it goes away.
@@ -86,6 +90,7 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
     // (all except gTalk) this makes no difference at all. For gTalk the fact
     // that the property on the DOM element also gets set is inconsequential.
     v8CallBoolean(instance->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), property, value));
+    v8SetReturnValue(info, value);
 }
 } // namespace
 
