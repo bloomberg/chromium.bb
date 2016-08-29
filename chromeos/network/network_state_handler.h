@@ -14,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/managed_state.h"
@@ -371,7 +370,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   std::string GetTechnologyForType(const NetworkTypePattern& type) const;
 
   // Returns all the technology types for |type|.
-  ScopedVector<std::string> GetTechnologiesForType(
+  std::vector<std::string> GetTechnologiesForType(
       const NetworkTypePattern& type) const;
 
   // Shill property handler instance, owned by this class.

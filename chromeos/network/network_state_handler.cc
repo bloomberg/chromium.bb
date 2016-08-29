@@ -142,16 +142,13 @@ void NetworkStateHandler::SetTechnologyEnabled(
     const NetworkTypePattern& type,
     bool enabled,
     const network_handler::ErrorCallback& error_callback) {
-  ScopedVector<std::string> technologies = GetTechnologiesForType(type);
-  for (ScopedVector<std::string>::iterator it = technologies.begin();
-       it != technologies.end(); ++it) {
-    std::string* technology = *it;
-    DCHECK(technology);
-    if (!shill_property_handler_->IsTechnologyAvailable(*technology))
+  std::vector<std::string> technologies = GetTechnologiesForType(type);
+  for (const std::string& technology : technologies) {
+    if (!shill_property_handler_->IsTechnologyAvailable(technology))
       continue;
     NET_LOG_USER("SetTechnologyEnabled",
-                 base::StringPrintf("%s:%d", technology->c_str(), enabled));
-    shill_property_handler_->SetTechnologyEnabled(*technology, enabled,
+                 base::StringPrintf("%s:%d", technology.c_str(), enabled));
+    shill_property_handler_->SetTechnologyEnabled(technology, enabled,
                                                   error_callback);
   }
   // Signal Device/Technology state changed.
@@ -993,21 +990,21 @@ std::string NetworkStateHandler::GetTechnologyForType(
   return std::string();
 }
 
-ScopedVector<std::string> NetworkStateHandler::GetTechnologiesForType(
+std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
     const NetworkTypePattern& type) const {
-  ScopedVector<std::string> technologies;
+  std::vector<std::string> technologies;
   if (type.MatchesType(shill::kTypeEthernet))
-    technologies.push_back(new std::string(shill::kTypeEthernet));
+    technologies.emplace_back(shill::kTypeEthernet);
   if (type.MatchesType(shill::kTypeWifi))
-    technologies.push_back(new std::string(shill::kTypeWifi));
+    technologies.emplace_back(shill::kTypeWifi);
   if (type.MatchesType(shill::kTypeWimax))
-    technologies.push_back(new std::string(shill::kTypeWimax));
+    technologies.emplace_back(shill::kTypeWimax);
   if (type.MatchesType(shill::kTypeCellular))
-    technologies.push_back(new std::string(shill::kTypeCellular));
+    technologies.emplace_back(shill::kTypeCellular);
   if (type.MatchesType(shill::kTypeBluetooth))
-    technologies.push_back(new std::string(shill::kTypeBluetooth));
+    technologies.emplace_back(shill::kTypeBluetooth);
   if (type.MatchesType(shill::kTypeVPN))
-    technologies.push_back(new std::string(shill::kTypeVPN));
+    technologies.emplace_back(shill::kTypeVPN);
 
   CHECK_GT(technologies.size(), 0ul);
   return technologies;
