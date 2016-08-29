@@ -127,7 +127,6 @@ public:
 
 #ifndef NDEBUG
     void debugPosition(const char* message) const;
-    void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
     static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);

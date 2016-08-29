@@ -105,7 +105,6 @@ public:
 
 #ifndef NDEBUG
     void debugPosition(const char* msg = "") const;
-    void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
 

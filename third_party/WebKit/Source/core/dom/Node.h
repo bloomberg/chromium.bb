@@ -570,8 +570,6 @@ public:
     String debugName() const;
 
 #ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const;
-
     void showNode(const char* prefix = "") const;
     void showTreeForThis() const;
     void showTreeForThisInFlatTree() const;

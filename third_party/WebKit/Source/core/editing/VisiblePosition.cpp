@@ -144,12 +144,6 @@ void VisiblePositionTemplate<Strategy>::debugPosition(const char* msg) const
 }
 
 template<typename Strategy>
-void VisiblePositionTemplate<Strategy>::formatForDebugger(char* buffer, unsigned length) const
-{
-    deepEquivalent().formatForDebugger(buffer, length);
-}
-
-template<typename Strategy>
 void VisiblePositionTemplate<Strategy>::showTreeForThis() const
 {
     deepEquivalent().showTreeForThis();

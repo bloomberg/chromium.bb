@@ -804,28 +804,6 @@ void VisibleSelectionTemplate<Strategy>::debugPosition(const char* message) cons
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::formatForDebugger(char* buffer, unsigned length) const
-{
-    StringBuilder result;
-    String s;
-
-    if (isNone()) {
-        result.append("<none>");
-    } else {
-        const int FormatBufferSize = 1024;
-        char s[FormatBufferSize];
-        result.append("from ");
-        start().formatForDebugger(s, FormatBufferSize);
-        result.append(s);
-        result.append(" to ");
-        end().formatForDebugger(s, FormatBufferSize);
-        result.append(s);
-    }
-
-    strncpy(buffer, result.toString().utf8().data(), length - 1);
-}
-
-template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 {
     if (start().anchorNode()) {

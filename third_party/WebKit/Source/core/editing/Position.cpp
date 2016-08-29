@@ -603,25 +603,6 @@ Position toPositionInDOMTree(const PositionInFlatTree& position)
 #ifndef NDEBUG
 
 template <typename Strategy>
-void PositionTemplate<Strategy>::formatForDebugger(char* buffer, unsigned length) const
-{
-    StringBuilder result;
-
-    if (isNull()) {
-        result.append("<null>");
-    } else {
-        char s[1024];
-        result.append("offset ");
-        result.appendNumber(m_offset);
-        result.append(" of ");
-        anchorNode()->formatForDebugger(s, sizeof(s));
-        result.append(s);
-    }
-
-    strncpy(buffer, result.toString().utf8().data(), length - 1);
-}
-
-template <typename Strategy>
 void PositionTemplate<Strategy>::showAnchorTypeAndOffset() const
 {
     switch (anchorType()) {

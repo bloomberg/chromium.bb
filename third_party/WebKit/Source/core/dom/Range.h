@@ -138,10 +138,6 @@ public:
     ClientRectList* getClientRects() const;
     ClientRect* getBoundingClientRect() const;
 
-#ifndef NDEBUG
-    void formatForDebugger(char* buffer, unsigned length) const;
-#endif
-
     DECLARE_TRACE();
 
 private:

@@ -206,7 +206,6 @@ public:
     bool selectWordAroundPosition(const VisiblePosition&);
 
 #ifndef NDEBUG
-    void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
 

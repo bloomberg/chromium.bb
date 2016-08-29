@@ -1237,11 +1237,6 @@ VisibleSelectionTemplate<Strategy> FrameSelection::validateSelection(const Visib
 
 #ifndef NDEBUG
 
-void FrameSelection::formatForDebugger(char* buffer, unsigned length) const
-{
-    selection().formatForDebugger(buffer, length);
-}
-
 void FrameSelection::showTreeForThis() const
 {
     selection().showTreeForThis();

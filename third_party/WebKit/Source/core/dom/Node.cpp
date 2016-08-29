@@ -1686,20 +1686,6 @@ void Node::showTreeAndMarkInFlatTree(const Node* markedNode1, const char* marked
     traverseTreeAndMarkInFlatTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
 }
 
-void Node::formatForDebugger(char* buffer, unsigned length) const
-{
-    String result;
-    String s;
-
-    s = nodeName();
-    if (s.isEmpty())
-        result = "<none>";
-    else
-        result = s;
-
-    strncpy(buffer, result.utf8().data(), length - 1);
-}
-
 static ContainerNode* parentOrShadowHostOrFrameOwner(const Node* node)
 {
     ContainerNode* parent = node->parentOrShadowHostNode();

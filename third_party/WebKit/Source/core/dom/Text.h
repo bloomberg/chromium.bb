@@ -77,10 +77,6 @@ private:
     bool needsWhitespaceLayoutObject();
 
     virtual Text* cloneWithData(const String&);
-
-#ifndef NDEBUG
-    void formatForDebugger(char* buffer, unsigned length) const override;
-#endif
 };
 
 DEFINE_NODE_TYPE_CASTS(Text, isTextNode());

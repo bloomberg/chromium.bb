@@ -176,7 +176,6 @@ public:
     void debugPosition(const char* msg = "") const;
 
 #ifndef NDEBUG
-    void formatForDebugger(char* buffer, unsigned length) const;
     void showAnchorTypeAndOffset() const;
     void showTreeForThis() const;
     void showTreeForThisInFlatTree() const;

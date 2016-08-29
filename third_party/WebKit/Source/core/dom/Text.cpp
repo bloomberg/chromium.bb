@@ -444,24 +444,4 @@ DEFINE_TRACE(Text)
     CharacterData::trace(visitor);
 }
 
-#ifndef NDEBUG
-void Text::formatForDebugger(char *buffer, unsigned length) const
-{
-    StringBuilder result;
-    String s;
-
-    result.append(nodeName());
-
-    s = data();
-    if (s.length() > 0) {
-        if (result.length())
-            result.append("; ");
-        result.append("value=");
-        result.append(s);
-    }
-
-    strncpy(buffer, result.toString().utf8().data(), length - 1);
-}
-#endif
-
 } // namespace blink

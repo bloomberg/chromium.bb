@@ -723,10 +723,6 @@ private:
     void removeAttributeInternal(size_t index, SynchronizationOfLazyAttribute);
     void attributeChangedFromParserOrByCloning(const QualifiedName&, const AtomicString&, AttributeModificationReason);
 
-#ifndef NDEBUG
-    void formatForDebugger(char* buffer, unsigned length) const override;
-#endif
-
     bool pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, ComputedStyle* newStyle);
 
     void cancelFocusAppearanceUpdate();
