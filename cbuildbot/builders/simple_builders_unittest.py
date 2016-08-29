@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import copy
 import os
+import unittest
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import chromeos_config
@@ -87,11 +88,13 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     return cbuildbot_run.BuilderRun(
         options, site_config, build_config, self._manager)
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""
     builder_run = self._initConfig('pre-cq-launcher')
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesBranchUtil(self):
     """Verify RunStages for CREATE_BRANCH_TYPE builders"""
     extra_argv = ['--branch-name', 'foo', '--version', '1234']
@@ -99,17 +102,20 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
                                    extra_argv=extra_argv)
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesChrootBuilder(self):
     """Verify RunStages for CHROOT_BUILDER_TYPE builders"""
     builder_run = self._initConfig('chromiumos-sdk')
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesDefaultBuild(self):
     """Verify RunStages for standard board builders"""
     builder_run = self._initConfig('x86-generic-full')
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesDefaultBuildCompileCheck(self):
     """Verify RunStages for standard board builders (compile only)"""
     extra_argv = ['--compilecheck']
@@ -117,6 +123,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testRunStagesDefaultBuildHwTests(self):
     """Verify RunStages for boards w/hwtests"""
     extra_argv = ['--hwtest']
@@ -124,6 +131,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     builder_run.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(builder_run).RunStages()
 
+  @unittest.skip('Avoid until flake until crbug.com/470907 fixed.')
   def testThatWeScheduleHWTestsRegardlessOfBlocking(self):
     """Verify RunStages for boards w/hwtests (blocking).
 
