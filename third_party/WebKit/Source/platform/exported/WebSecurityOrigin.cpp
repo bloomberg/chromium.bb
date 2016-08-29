@@ -135,12 +135,12 @@ bool WebSecurityOrigin::canAccessPasswordManager() const
     return m_private->canAccessPasswordManager();
 }
 
-WebSecurityOrigin::WebSecurityOrigin(const WTF::PassRefPtr<SecurityOrigin>& origin)
+WebSecurityOrigin::WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin> origin)
     : m_private(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()))
 {
 }
 
-WebSecurityOrigin& WebSecurityOrigin::operator=(const WTF::PassRefPtr<SecurityOrigin>& origin)
+WebSecurityOrigin& WebSecurityOrigin::operator=(WTF::PassRefPtr<SecurityOrigin> origin)
 {
     assign(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()));
     return *this;

@@ -38,7 +38,7 @@ public:
         }
 
         AnimatableValue* value() const { return m_value.get(); }
-        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
+        PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_value; }
 
         PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;
         PassRefPtr<Interpolation> createInterpolation(PropertyHandle, const Keyframe::PropertySpecificKeyframe& end) const final;

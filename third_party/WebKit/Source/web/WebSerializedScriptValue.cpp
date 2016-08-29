@@ -76,12 +76,12 @@ v8::Local<v8::Value> WebSerializedScriptValue::deserialize()
     return m_private->deserialize();
 }
 
-WebSerializedScriptValue::WebSerializedScriptValue(const PassRefPtr<SerializedScriptValue>& value)
+WebSerializedScriptValue::WebSerializedScriptValue(PassRefPtr<SerializedScriptValue> value)
     : m_private(value)
 {
 }
 
-WebSerializedScriptValue& WebSerializedScriptValue::operator=(const PassRefPtr<SerializedScriptValue>& value)
+WebSerializedScriptValue& WebSerializedScriptValue::operator=(PassRefPtr<SerializedScriptValue> value)
 {
     m_private = value;
     return *this;

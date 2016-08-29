@@ -58,7 +58,7 @@ public:
         const CSSValue* value() const { return m_value.get(); }
 
         bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const final;
-        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
+        PassRefPtr<AnimatableValue> getAnimatableValue() const final { return m_animatableValueCache.get(); }
         void setAnimatableValue(PassRefPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
         bool isNeutral() const final { return !m_value; }
@@ -91,7 +91,7 @@ public:
 
         PassRefPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const final;
 
-        const PassRefPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
+        PassRefPtr<AnimatableValue> getAnimatableValue() const final { return nullptr; }
 
         bool isNeutral() const final { return m_value.isNull(); }
         PassRefPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const final;

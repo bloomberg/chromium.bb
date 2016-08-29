@@ -36,6 +36,7 @@
 #include "public/platform/WebVector.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -51,12 +52,12 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback, 
     USING_FAST_MALLOC(AudioDestination);
     WTF_MAKE_NONCOPYABLE(AudioDestination);
 public:
-    AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
+    AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, PassRefPtr<SecurityOrigin>);
     ~AudioDestination() override;
 
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
-    static std::unique_ptr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
+    static std::unique_ptr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, PassRefPtr<SecurityOrigin>);
 
     virtual void start();
     virtual void stop();

@@ -37,7 +37,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
-namespace WTF { template <typename T> class PassRefPtr; }
+#include "wtf/PassRefPtr.h"
 #endif
 
 namespace blink {
@@ -80,7 +80,7 @@ public:
     BLINK_PLATFORM_EXPORT WebSize size() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebImage(const WTF::PassRefPtr<Image>&);
+    BLINK_PLATFORM_EXPORT WebImage(WTF::PassRefPtr<Image>);
 #endif
 
     WebImage(const SkBitmap& bitmap) : m_bitmap(bitmap) { }

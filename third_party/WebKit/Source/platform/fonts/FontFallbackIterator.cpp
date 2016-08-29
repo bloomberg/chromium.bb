@@ -62,7 +62,7 @@ void FontFallbackIterator::willUseRange(const AtomicString& family, const FontDa
     selector->willUseRange(m_fontDescription, family, rangeSet);
 }
 
-const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::uniqueOrNext(
+PassRefPtr<FontDataForRangeSet> FontFallbackIterator::uniqueOrNext(
     PassRefPtr<FontDataForRangeSet> candidate,
     const Vector<UChar32>& hintList) {
     SkTypeface* candidateTypeface = candidate->fontData()->platformData().typeface();
@@ -82,7 +82,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::uniqueOrNext(
 }
 
 
-const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UChar32>& hintList)
+PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UChar32>& hintList)
 {
     if (m_fallbackStage == OutOfLuck)
         return adoptRef(new FontDataForRangeSet());
@@ -181,7 +181,7 @@ const PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(const Vector<UC
     return next(hintList);
 }
 
-const PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
+PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
     UChar32 hint)
 {
     return FontCache::fontCache()->fallbackFontForCharacter(
@@ -191,7 +191,7 @@ const PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
         m_fontFallbackPriority);
 }
 
-const PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(UChar32 hint)
+PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(UChar32 hint)
 {
     // When we're asked for a fallback for the same characters again, we give up
     // because the shaper must have previously tried shaping with the font

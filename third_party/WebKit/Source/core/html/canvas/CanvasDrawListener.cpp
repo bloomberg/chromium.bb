@@ -4,13 +4,14 @@
 
 #include "core/html/canvas/CanvasDrawListener.h"
 
+#include "third_party/skia/include/core/SkImage.h"
 #include <memory>
 
 namespace blink {
 
 CanvasDrawListener::~CanvasDrawListener() {}
 
-void CanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
+void CanvasDrawListener::sendNewFrame(WTF::PassRefPtr<SkImage> image)
 {
     m_handler->sendNewFrame(image.get());
 }

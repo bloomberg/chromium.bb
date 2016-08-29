@@ -18,7 +18,7 @@ namespace blink {
 class CORE_EXPORT CanvasDrawListener : public GarbageCollectedMixin {
 public:
     virtual ~CanvasDrawListener();
-    virtual void sendNewFrame(const WTF::PassRefPtr<SkImage>&);
+    virtual void sendNewFrame(WTF::PassRefPtr<SkImage>);
     bool needsNewFrame() const;
     void requestFrame();
 

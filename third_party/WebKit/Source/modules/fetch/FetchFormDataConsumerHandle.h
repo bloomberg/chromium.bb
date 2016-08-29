@@ -49,7 +49,7 @@ private:
 
     explicit FetchFormDataConsumerHandle(const String& body);
     FetchFormDataConsumerHandle(const void*, size_t);
-    FetchFormDataConsumerHandle(ExecutionContext*, const PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* = nullptr);
+    FetchFormDataConsumerHandle(ExecutionContext*, PassRefPtr<EncodedFormData> body, FetchBlobDataConsumerHandle::LoaderFactory* = nullptr);
 
     std::unique_ptr<Reader> obtainFetchDataReader(Client*) override;
 

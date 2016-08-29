@@ -73,7 +73,7 @@ public:
 
         // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
         virtual bool populateAnimatableValue(CSSPropertyID, Element&, const ComputedStyle& baseStyle, const ComputedStyle* parentStyle) const { return false; }
-        virtual const PassRefPtr<AnimatableValue> getAnimatableValue() const = 0;
+        virtual PassRefPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }
         virtual bool isCSSPropertySpecificKeyframe() const { return false; }

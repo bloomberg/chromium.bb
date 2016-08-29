@@ -35,7 +35,7 @@ public:
     // Some system fallback APIs (Windows, Android) require a character, or a
     // portion of the string to be passed.  On Mac and Linux, we get a list of
     // fonts without passing in characters.
-    const PassRefPtr<FontDataForRangeSet> next(const Vector<UChar32>& hintList);
+    PassRefPtr<FontDataForRangeSet> next(const Vector<UChar32>& hintList);
 
 private:
     FontFallbackIterator(const FontDescription&, PassRefPtr<FontFallbackList>,
@@ -44,10 +44,10 @@ private:
     bool alreadyLoadingRangeForHintChar(UChar32 hintChar);
     void willUseRange(const AtomicString& family, const FontDataForRangeSet&);
 
-    const PassRefPtr<FontDataForRangeSet> uniqueOrNext(PassRefPtr<FontDataForRangeSet> candidate, const Vector<UChar32>& hintList);
+    PassRefPtr<FontDataForRangeSet> uniqueOrNext(PassRefPtr<FontDataForRangeSet> candidate, const Vector<UChar32>& hintList);
 
-    const PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
-    const PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
+    PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
+    PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
 
     const FontDescription& m_fontDescription;
     RefPtr<FontFallbackList> m_fontFallbackList;

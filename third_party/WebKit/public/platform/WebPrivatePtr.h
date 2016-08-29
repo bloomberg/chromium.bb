@@ -217,7 +217,7 @@ private:
 //        // Methods that are used only by other Blink classes should only be
 //        // declared when INSIDE_BLINK is set.
 //    #if INSIDE_BLINK
-//        WebFoo(const WTF::PassRefPtr<Foo>&);
+//        WebFoo(WTF::PassRefPtr<Foo>);
 //    #endif
 //
 //    private:

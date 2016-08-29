@@ -4,6 +4,7 @@
 
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
 
+#include "third_party/skia/include/core/SkImage.h"
 #include <memory>
 
 namespace blink {
@@ -25,7 +26,7 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::create(std::unique_ptr<WebCanv
     return listener;
 }
 
-void TimedCanvasDrawListener::sendNewFrame(const WTF::PassRefPtr<SkImage>& image)
+void TimedCanvasDrawListener::sendNewFrame(WTF::PassRefPtr<SkImage> image)
 {
     m_frameCaptureRequested = false;
     CanvasDrawListener::sendNewFrame(image);

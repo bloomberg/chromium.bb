@@ -39,9 +39,9 @@ public:
 
     ~SegmentedFontData() override;
 
-    void appendFace(const PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
+    void appendFace(PassRefPtr<FontDataForRangeSet> fontDataForRangeSet) { m_faces.append(fontDataForRangeSet); }
     unsigned numFaces() const { return m_faces.size(); }
-    const PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const { return m_faces[i]; }
+    PassRefPtr<FontDataForRangeSet> faceAt(unsigned i) const { return m_faces[i]; }
     bool containsCharacter(UChar32) const;
 
 private:

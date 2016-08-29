@@ -85,7 +85,7 @@ bool WebCryptoResult::cancelled() const
     return m_cancel->cancelled();
 }
 
-WebCryptoResult::WebCryptoResult(CryptoResult* impl, const PassRefPtr<CryptoResultCancel>& cancel)
+WebCryptoResult::WebCryptoResult(CryptoResult* impl, PassRefPtr<CryptoResultCancel> cancel)
     : m_impl(impl)
     , m_cancel(cancel)
 {

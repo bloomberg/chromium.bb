@@ -136,7 +136,7 @@ WebSize WebImage::size() const
     return WebSize(m_bitmap.width(), m_bitmap.height());
 }
 
-WebImage::WebImage(const PassRefPtr<Image>& image)
+WebImage::WebImage(PassRefPtr<Image> image)
 {
     if (!image)
         return;

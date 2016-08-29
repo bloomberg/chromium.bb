@@ -31,8 +31,8 @@
 #ifndef WebSerializedScriptValue_h
 #define WebSerializedScriptValue_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace v8 {
 class Value;
@@ -76,8 +76,8 @@ public:
     BLINK_EXPORT v8::Local<v8::Value> deserialize();
 
 #if BLINK_IMPLEMENTATION
-    WebSerializedScriptValue(const WTF::PassRefPtr<SerializedScriptValue>&);
-    WebSerializedScriptValue& operator=(const WTF::PassRefPtr<SerializedScriptValue>&);
+    WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);
+    WebSerializedScriptValue& operator=(WTF::PassRefPtr<SerializedScriptValue>);
     operator WTF::PassRefPtr<SerializedScriptValue>() const;
 #endif
 

@@ -63,12 +63,12 @@ const char* WebData::data() const
     return m_private->data();
 }
 
-WebData::WebData(const PassRefPtr<SharedBuffer>& buffer)
+WebData::WebData(PassRefPtr<SharedBuffer> buffer)
     : m_private(buffer)
 {
 }
 
-WebData& WebData::operator=(const PassRefPtr<SharedBuffer>& buffer)
+WebData& WebData::operator=(PassRefPtr<SharedBuffer> buffer)
 {
     m_private = buffer;
     return *this;

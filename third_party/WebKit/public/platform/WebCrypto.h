@@ -42,6 +42,7 @@
 
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
+#include "wtf/PassRefPtr.h"
 #endif
 
 namespace blink {
@@ -97,7 +98,7 @@ public:
     BLINK_PLATFORM_EXPORT bool cancelled() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebCryptoResult(CryptoResult*, const PassRefPtr<CryptoResultCancel>&);
+    BLINK_PLATFORM_EXPORT WebCryptoResult(CryptoResult*, PassRefPtr<CryptoResultCancel>);
 #endif
 
 private:

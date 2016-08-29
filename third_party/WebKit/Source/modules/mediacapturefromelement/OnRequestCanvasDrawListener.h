@@ -17,7 +17,7 @@ class OnRequestCanvasDrawListener final : public GarbageCollectedFinalized<OnReq
 public:
     ~OnRequestCanvasDrawListener();
     static OnRequestCanvasDrawListener* create(std::unique_ptr<WebCanvasCaptureHandler>);
-    void sendNewFrame(const WTF::PassRefPtr<SkImage>&) override;
+    void sendNewFrame(WTF::PassRefPtr<SkImage>) override;
 
     DEFINE_INLINE_TRACE() {}
 private:

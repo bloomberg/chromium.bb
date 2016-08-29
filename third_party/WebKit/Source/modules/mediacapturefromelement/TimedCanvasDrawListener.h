@@ -18,7 +18,7 @@ class TimedCanvasDrawListener final : public GarbageCollectedFinalized<TimedCanv
 public:
     ~TimedCanvasDrawListener();
     static TimedCanvasDrawListener* create(std::unique_ptr<WebCanvasCaptureHandler>, double frameRate);
-    void sendNewFrame(const WTF::PassRefPtr<SkImage>&) override;
+    void sendNewFrame(WTF::PassRefPtr<SkImage>) override;
 
     DEFINE_INLINE_TRACE() {}
 private:

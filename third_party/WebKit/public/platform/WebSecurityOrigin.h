@@ -109,8 +109,8 @@ public:
     BLINK_PLATFORM_EXPORT void grantLoadLocalResources() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin(const WTF::PassRefPtr<SecurityOrigin>&);
-    BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(const WTF::PassRefPtr<SecurityOrigin>&);
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin(WTF::PassRefPtr<SecurityOrigin>);
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(WTF::PassRefPtr<SecurityOrigin>);
     BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<SecurityOrigin>() const;
     BLINK_PLATFORM_EXPORT SecurityOrigin* get() const;
 #else

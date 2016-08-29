@@ -64,7 +64,7 @@ const char* WebThreadSafeData::data() const
     return m_private->data();
 }
 
-WebThreadSafeData::WebThreadSafeData(const PassRefPtr<RawData>& data)
+WebThreadSafeData::WebThreadSafeData(PassRefPtr<RawData> data)
     : m_private(data)
 {
 }
@@ -80,7 +80,7 @@ WebThreadSafeData& WebThreadSafeData::operator=(const WebThreadSafeData& other)
     return *this;
 }
 
-WebThreadSafeData& WebThreadSafeData::operator=(const PassRefPtr<RawData>& data)
+WebThreadSafeData& WebThreadSafeData::operator=(PassRefPtr<RawData> data)
 {
     m_private = data;
     return *this;
