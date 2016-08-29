@@ -153,6 +153,13 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
       file_util::LoadExtension(
           extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
 
+  if (!extension() ||
+      !extension_l10n_util::ValidateExtensionLocales(
+          extension_path_, extension()->manifest()->value(), &error)) {
+    ReportExtensionLoadError(error);
+    return false;
+  }
+
   if (only_allow_apps && !extension()->is_platform_app()) {
 #if defined(GOOGLE_CHROME_BUILD)
     // Avoid crashing for users with hijacked shortcuts.
@@ -165,13 +172,6 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
     ReportExtensionLoadError(extension_instead_of_app_error);
     return false;
 #endif
-  }
-
-  if (!extension() ||
-      !extension_l10n_util::ValidateExtensionLocales(
-          extension_path_, extension()->manifest()->value(), &error)) {
-    ReportExtensionLoadError(error);
-    return false;
   }
 
   extension()->permissions_data()->BindToCurrentThread();
