@@ -9,7 +9,10 @@ import difflib
 import json
 import optparse
 import os
+import re
+import shutil
 import struct
+import subprocess
 import sys
 import time
 
@@ -495,6 +498,67 @@ def compare_files(first_filepath, second_filepath):
   return diff_binary(first_filepath, second_filepath, file_len)
 
 
+def get_deps(build_dir, target):
+  """Returns list of object files needed to build target."""
+  NODE_PATTERN = re.compile(r'label="([a-zA-Z0-9_\\/.-]+)"')
+  CHECK_EXTS = ('.o', '.obj')
+
+  # Rename to possibly original directory name if possible.
+  fixed_build_dir = build_dir
+  if build_dir.endswith('.1') or build_dir.endswith('.2'):
+    fixed_build_dir = build_dir[:-2]
+    if os.path.exists(fixed_build_dir):
+      print >> sys.stderr, ('fixed_build_dir %s exists.'
+                            ' will try to use orig dir.' % fixed_build_dir)
+      fixed_build_dir = build_dir
+    else:
+      shutil.move(build_dir, fixed_build_dir)
+
+  try:
+    out = subprocess.check_output(['ninja', '-C', fixed_build_dir,
+                                   '-t', 'graph', target])
+  except subprocess.CalledProcessError as e:
+    print >> sys.stderr, 'error to get graph for %s: %s' % (target, e)
+    return []
+
+  finally:
+    # Rename again if we renamed before.
+    if fixed_build_dir != build_dir:
+      shutil.move(fixed_build_dir, build_dir)
+
+  files = []
+  for line in out.splitlines():
+    matched = NODE_PATTERN.search(line)
+    if matched:
+      path = matched.group(1)
+      if not os.path.splitext(path)[1] in CHECK_EXTS:
+        continue
+      if os.path.isabs(path):
+        print >> sys.stderr, ('not support abs path %s used for target %s'
+                              % (path, target))
+        continue
+      files.append(path)
+  return files
+
+
+def compare_deps(first_dir, second_dir, targets):
+  """Print difference of dependent files."""
+  for target in targets:
+    print 'Checking %s difference:' % target
+    first_deps = get_deps(first_dir, target)
+    second_deps =get_deps(second_dir, target)
+    if set(first_deps) != set(second_deps):
+      # Since we do not thiks this case occur, we do not do anything special
+      # for this case.
+      print 'deps on %s are different: %s' % (
+          target, set(first_deps).symmetric_difference(set(second_deps)))
+      continue
+    for d in first_deps:
+      first_file = os.path.join(first_dir, d)
+      second_file = os.path.join(second_dir, d)
+      compare_files(first_file, second_file)
+
+
 def compare_build_artifacts(first_dir, second_dir, target_platform,
                             recursive=False):
   """Compares the artifacts from two distinct builds."""
@@ -560,6 +624,11 @@ def compare_build_artifacts(first_dir, second_dir, target_platform,
     print('Unexpected files with no diffs:\n')
     for u in unexpected_equals:
       print('  %s' % u)
+
+  if unexpected_diffs:
+    diffs_to_investigate = set(unexpected_diffs).difference(
+        set(missing_files))
+    compare_deps(first_dir, second_dir, diffs_to_investigate)
 
   return int(bool(unexpected_diffs))
 
