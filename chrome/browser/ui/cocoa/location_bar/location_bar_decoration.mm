@@ -34,6 +34,7 @@ const CGFloat kMaterialDividerIncognitoGrayScale = 1.0;
 - (BOOL)acceptsFirstResponder;
 - (void)drawRect:(NSRect)dirtyRect;
 - (NSView*)hitTest:(NSPoint)aPoint;
+- (NSString*)accessibilityLabel;
 
 // This method is called when this DecorationAccessibilityView is activated.
 - (void)actionDidHappen;
@@ -73,6 +74,10 @@ const CGFloat kMaterialDividerIncognitoGrayScale = 1.0;
 
 - (void)actionDidHappen {
   owner_->OnAccessibilityViewAction();
+}
+
+- (NSString*)accessibilityLabel {
+  return owner_->GetToolTip();
 }
 
 @end
