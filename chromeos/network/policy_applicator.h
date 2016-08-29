@@ -6,11 +6,12 @@
 #define CHROMEOS_NETWORK_POLICY_APPLICATOR_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
@@ -106,7 +107,7 @@ class PolicyApplicator {
   NetworkProfile profile_;
   GuidToPolicyMap all_policies_;
   base::DictionaryValue global_network_config_;
-  ScopedVector<base::DictionaryValue> new_shill_configurations_;
+  std::vector<std::unique_ptr<base::DictionaryValue>> new_shill_configurations_;
   base::WeakPtrFactory<PolicyApplicator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);

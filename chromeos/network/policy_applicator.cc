@@ -294,7 +294,7 @@ void PolicyApplicator::WriteNewShillConfiguration(
   }
 
   if (write_later)
-    new_shill_configurations_.push_back(shill_dictionary.DeepCopy());
+    new_shill_configurations_.push_back(shill_dictionary.CreateDeepCopy());
   else
     handler_->CreateConfigurationFromPolicy(shill_dictionary);
 }
@@ -303,11 +303,8 @@ void PolicyApplicator::ApplyRemainingPolicies() {
   DCHECK(pending_get_entry_calls_.empty());
 
   // Write all queued configurations now.
-  for (ScopedVector<base::DictionaryValue>::const_iterator it =
-           new_shill_configurations_.begin();
-       it != new_shill_configurations_.end();
-       ++it) {
-    handler_->CreateConfigurationFromPolicy(**it);
+  for (const auto& configuration : new_shill_configurations_) {
+    handler_->CreateConfigurationFromPolicy(*configuration);
   }
   new_shill_configurations_.clear();
 
