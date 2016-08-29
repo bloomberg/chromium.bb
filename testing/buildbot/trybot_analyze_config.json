@@ -19,7 +19,7 @@
       "build/toolchain/get_concurrent_links.py",
       "build/toolchain/mac/.*py",
       "build/util/lib/common/unittest_util.py",
-      "infra/.*",
+      "infra/scripts/.*",
       "DEPS",
       "testing/buildbot/.*",
       "testing/scripts/.*",
