@@ -761,6 +761,90 @@ TEST_F(MuxerTest, DocTypeMatroska) {
   EXPECT_TRUE(CompareFiles(GetTestFilePath("matroska_doctype.mkv"), filename_));
 }
 
+TEST_F(MuxerTest, Colour) {
+  EXPECT_TRUE(SegmentInit(false, false, false));
+  AddVideoTrack();
+
+  mkvmuxer::PrimaryChromaticity muxer_pc(.1, .2);
+  mkvmuxer::MasteringMetadata muxer_mm;
+  muxer_mm.set_luminance_min(30.0);
+  muxer_mm.set_luminance_max(40.0);
+  ASSERT_TRUE(
+      muxer_mm.SetChromaticity(&muxer_pc, &muxer_pc, &muxer_pc, &muxer_pc));
+
+  mkvmuxer::Colour muxer_colour;
+  muxer_colour.set_matrix_coefficients(0);
+  muxer_colour.set_bits_per_channel(1);
+  muxer_colour.set_chroma_subsampling_horz(2);
+  muxer_colour.set_chroma_subsampling_vert(3);
+  muxer_colour.set_cb_subsampling_horz(4);
+  muxer_colour.set_cb_subsampling_vert(5);
+  muxer_colour.set_chroma_siting_horz(6);
+  muxer_colour.set_chroma_siting_vert(7);
+  muxer_colour.set_range(8);
+  muxer_colour.set_transfer_characteristics(9);
+  muxer_colour.set_primaries(10);
+  muxer_colour.set_max_cll(11);
+  muxer_colour.set_max_fall(12);
+  ASSERT_TRUE(muxer_colour.SetMasteringMetadata(muxer_mm));
+
+  VideoTrack* const video_track =
+      dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(kVideoTrackNumber));
+  ASSERT_TRUE(video_track != nullptr);
+  ASSERT_TRUE(video_track->SetColour(muxer_colour));
+  ASSERT_NO_FATAL_FAILURE(AddDummyFrameAndFinalize(kVideoTrackNumber));
+
+  mkvparser::Segment* segment = nullptr;
+  ASSERT_TRUE(ParseMkvFileReleaseSegment(filename_, &segment));
+  std::unique_ptr<mkvparser::Segment> segment_ptr(segment);
+
+  const mkvparser::VideoTrack* const parser_track =
+      static_cast<const mkvparser::VideoTrack*>(
+          segment_ptr->GetTracks()->GetTrackByIndex(0));
+  const mkvparser::Colour* parser_colour = parser_track->GetColour();
+  ASSERT_TRUE(parser_colour != nullptr);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.matrix_coefficients()),
+            parser_colour->matrix_coefficients);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.bits_per_channel()),
+            parser_colour->bits_per_channel);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.chroma_subsampling_horz()),
+            parser_colour->chroma_subsampling_horz);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.chroma_subsampling_vert()),
+            parser_colour->chroma_subsampling_vert);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.cb_subsampling_horz()),
+            parser_colour->cb_subsampling_horz);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.cb_subsampling_vert()),
+            parser_colour->cb_subsampling_vert);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.chroma_siting_horz()),
+            parser_colour->chroma_siting_horz);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.chroma_siting_vert()),
+            parser_colour->chroma_siting_vert);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.range()), parser_colour->range);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.transfer_characteristics()),
+            parser_colour->transfer_characteristics);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.primaries()),
+            parser_colour->primaries);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.max_cll()),
+            parser_colour->max_cll);
+  EXPECT_EQ(static_cast<long long>(muxer_colour.max_fall()),
+            parser_colour->max_fall);
+
+  const mkvparser::MasteringMetadata* const parser_mm =
+      parser_colour->mastering_metadata;
+  ASSERT_TRUE(parser_mm != nullptr);
+  EXPECT_FLOAT_EQ(muxer_mm.luminance_min(), parser_mm->luminance_min);
+  EXPECT_FLOAT_EQ(muxer_mm.luminance_max(), parser_mm->luminance_max);
+  EXPECT_FLOAT_EQ(muxer_mm.r()->x(), parser_mm->r->x);
+  EXPECT_FLOAT_EQ(muxer_mm.r()->y(), parser_mm->r->y);
+  EXPECT_FLOAT_EQ(muxer_mm.g()->x(), parser_mm->g->x);
+  EXPECT_FLOAT_EQ(muxer_mm.g()->y(), parser_mm->g->y);
+  EXPECT_FLOAT_EQ(muxer_mm.b()->x(), parser_mm->b->x);
+  EXPECT_FLOAT_EQ(muxer_mm.b()->y(), parser_mm->b->y);
+  EXPECT_FLOAT_EQ(muxer_mm.white_point()->x(), parser_mm->white_point->x);
+  EXPECT_FLOAT_EQ(muxer_mm.white_point()->y(), parser_mm->white_point->y);
+  EXPECT_TRUE(CompareFiles(GetTestFilePath("colour.webm"), filename_));
+}
+
 }  // namespace test
 
 int main(int argc, char* argv[]) {
