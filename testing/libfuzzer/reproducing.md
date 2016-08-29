@@ -86,3 +86,39 @@ $ export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 $ out/libfuzzer/$FUZZER_NAME /path/to/repro
 ```
 
+### Symbolization
+
+Memory tools (ASan, MSan, UBSan) use [llvm-symbolizer] binary from the Clang
+distribution to symbolize the stack traces. To get a symbolized crash report,
+make sure `llvm-symbolizer` is in `PATH` or provide it in separate
+`ASAN_SYMBOLIZER_PATH` environment variable.
+
+In Chromium repository `llvm-symbolizer` is located in
+`third_party/llvm-build/Release+Asserts/bin` directory.
+
+```bash
+$ export ASAN_SYMBOLIZER_PATH=/path/to/chromium/src/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer
+$ out/libfuzzer/$FUZZER_NAME /path/to/repro
+```
+
+The same approach works for `MSAN_SYMBOLIZER_PATH` and `UBSAN_SYMBOLIZER_PATH`.
+
+Additional information regarding symbolization is available in sanitizers
+documentation: [AddressSanitizerCallStack].
+
+
+### Debugging
+
+Please look at [AddressSanitizerAndDebugger] page for some tips on debugging of
+binaries built with ASan.
+
+If you want gdb to stop after an error has been reported, use:
+
+* `ASAN_OPTIONS=abort_on_error=1` for binaries built with ASan.
+* `MSAN_OPTIONS=abort_on_error=1` for binaries built with MSan.
+
+
+
+[AddressSanitizerAndDebugger]: https://github.com/google/sanitizers/wiki/AddressSanitizerAndDebugger
+[AddressSanitizerCallStack]: https://github.com/google/sanitizers/wiki/AddressSanitizerCallStack
+[llvm-symbolizer]: http://llvm.org/docs/CommandGuide/llvm-symbolizer.html
