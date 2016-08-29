@@ -102,7 +102,7 @@ namespace {
 
 void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
                                const base::CommandLine& command_line);
-bool WarmUpSandbox(const base::CommandLine& command_line);
+void WarmUpSandbox();
 
 #if !defined(OS_MACOSX)
 bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info);
@@ -112,7 +112,7 @@ bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info);
 #if !defined(OS_CHROMEOS)
 bool CanAccessNvidiaDeviceFile();
 #endif
-bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*, bool);
+bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
@@ -265,125 +265,111 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
   // Warm up resources that don't need access to GPUInfo.
-  if (WarmUpSandbox(command_line)) {
+  WarmUpSandbox();
+
 #if defined(OS_LINUX)
-    bool initialized_sandbox = false;
-    bool initialized_gl_context = false;
-    bool should_initialize_gl_context = false;
-    // On Chrome OS ARM Mali, GPU driver userspace creates threads when
-    // initializing a GL context, so start the sandbox early.
-    if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
-      gpu_info.sandboxed = StartSandboxLinux(
-          gpu_info, watchdog_thread.get(), should_initialize_gl_context);
-      initialized_sandbox = true;
-    }
+  bool initialized_sandbox = false;
+  // On Chrome OS ARM Mali, GPU driver userspace creates threads when
+  // initializing a GL context, so start the sandbox early.
+  if (command_line.HasSwitch(switches::kGpuSandboxStartEarly)) {
+    gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get());
+    initialized_sandbox = true;
+  }
 #endif  // defined(OS_LINUX)
 
-    base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
+  base::TimeTicks before_initialize_one_off = base::TimeTicks::Now();
 
-    // Determine if we need to initialize GL here or it has already been done.
-    bool gl_already_initialized = false;
+  // Determine if we need to initialize GL here or it has already been done.
+  bool gl_already_initialized = false;
 #if defined(OS_MACOSX)
-    if (!command_line.HasSwitch(switches::kNoSandbox)) {
-      // On Mac, if the sandbox is enabled, then gl::init::InitializeGLOneOff()
-      // is called from the sandbox warmup code before getting here.
-      gl_already_initialized = true;
-    }
+  if (!command_line.HasSwitch(switches::kNoSandbox)) {
+    // On Mac, if the sandbox is enabled, then gl::init::InitializeGLOneOff()
+    // is called from the sandbox warmup code before getting here.
+    gl_already_initialized = true;
+  }
 #endif
-    if (command_line.HasSwitch(switches::kInProcessGPU)) {
-      // With in-process GPU, gl::init::InitializeGLOneOff() is called from
-      // GpuChildThread before getting here.
-      gl_already_initialized = true;
-    }
+  if (command_line.HasSwitch(switches::kInProcessGPU)) {
+    // With in-process GPU, gl::init::InitializeGLOneOff() is called from
+    // GpuChildThread before getting here.
+    gl_already_initialized = true;
+  }
 
-    // Load and initialize the GL implementation and locate the GL entry points.
-    bool gl_initialized =
-        gl_already_initialized
-            ? gl::GetGLImplementation() != gl::kGLImplementationNone
-            : gl::init::InitializeGLOneOff();
-    if (gl_initialized) {
-      // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
-      // purposes. However, on Mac we don't actually use them. As documented in
-      // crbug.com/222934, due to some driver issues, glGetString could take
-      // multiple seconds to finish, which in turn cause the GPU process to
-      // crash.
-      // By skipping the following code on Mac, we don't really lose anything,
-      // because the basic GPU information is passed down from browser process
-      // and we already registered them through SetGpuInfo() above.
-      base::TimeTicks before_collect_context_graphics_info =
-          base::TimeTicks::Now();
+  // Load and initialize the GL implementation and locate the GL entry points.
+  bool gl_initialized =
+      gl_already_initialized
+          ? gl::GetGLImplementation() != gl::kGLImplementationNone
+          : gl::init::InitializeGLOneOff();
+  if (gl_initialized) {
+    // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
+    // purposes. However, on Mac we don't actually use them. As documented in
+    // crbug.com/222934, due to some driver issues, glGetString could take
+    // multiple seconds to finish, which in turn cause the GPU process to
+    // crash.
+    // By skipping the following code on Mac, we don't really lose anything,
+    // because the basic GPU information is passed down from browser process
+    // and we already registered them through SetGpuInfo() above.
+    base::TimeTicks before_collect_context_graphics_info =
+        base::TimeTicks::Now();
 #if !defined(OS_MACOSX)
-      if (!CollectGraphicsInfo(gpu_info))
-        dead_on_arrival = true;
-
-      // Recompute gpu driver bug workarounds.
-      // This is necessary on systems where vendor_id/device_id aren't available
-      // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
-      // and GL_RENDERER strings which are lazily computed (Linux).
-      if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-        // TODO: this can not affect disabled extensions, since they're already
-        // initialized in the bindings. This should be moved before bindings
-        // initialization. However, populating GPUInfo fully works only on
-        // Android. Other platforms would need the bindings to query GL strings.
-        gpu::ApplyGpuDriverBugWorkarounds(
-            gpu_info, const_cast<base::CommandLine*>(&command_line));
-      }
-
-#if defined(OS_LINUX)
-      initialized_gl_context = true;
-#if !defined(OS_CHROMEOS)
-      if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
-          gpu_info.driver_vendor == "NVIDIA" &&
-          !CanAccessNvidiaDeviceFile())
-        dead_on_arrival = true;
-#endif  // !defined(OS_CHROMEOS)
-#endif  // defined(OS_LINUX)
-#endif  // !defined(OS_MACOSX)
-      base::TimeDelta collect_context_time =
-          base::TimeTicks::Now() - before_collect_context_graphics_info;
-      UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo",
-                          collect_context_time);
-    } else {  // gl_initialized
-      VLOG(1) << "gl::init::InitializeGLOneOff failed";
+    if (!CollectGraphicsInfo(gpu_info))
       dead_on_arrival = true;
+
+    // Recompute gpu driver bug workarounds.
+    // This is necessary on systems where vendor_id/device_id aren't available
+    // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
+    // and GL_RENDERER strings which are lazily computed (Linux).
+    if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
+      // TODO: this can not affect disabled extensions, since they're already
+      // initialized in the bindings. This should be moved before bindings
+      // initialization. However, populating GPUInfo fully works only on
+      // Android. Other platforms would need the bindings to query GL strings.
+      gpu::ApplyGpuDriverBugWorkarounds(
+          gpu_info, const_cast<base::CommandLine*>(&command_line));
     }
+#endif  // !defined(OS_MACOSX)
 
-    base::TimeDelta initialize_one_off_time =
-        base::TimeTicks::Now() - before_initialize_one_off;
-    UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
-                               initialize_one_off_time);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
+        gpu_info.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
+      dead_on_arrival = true;
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-    if (enable_watchdog && delayed_watchdog_enable) {
-      watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
-      base::Thread::Options options;
-      options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-      watchdog_thread->StartWithOptions(options);
-    }
-
-    // OSMesa is expected to run very slowly, so disable the watchdog in that
-    // case.
-    if (enable_watchdog &&
-        gl::GetGLImplementation() == gl::kGLImplementationOSMesaGL) {
-      watchdog_thread->Stop();
-      watchdog_thread = NULL;
-    }
-
-#if defined(OS_LINUX)
-    should_initialize_gl_context = !initialized_gl_context &&
-                                   !dead_on_arrival;
-
-    if (!initialized_sandbox) {
-      gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get(),
-                                             should_initialize_gl_context);
-    }
-#elif defined(OS_WIN)
-    gpu_info.sandboxed = StartSandboxWindows(parameters.sandbox_info);
-#elif defined(OS_MACOSX)
-    gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
-#endif
-  } else {
+    base::TimeDelta collect_context_time =
+        base::TimeTicks::Now() - before_collect_context_graphics_info;
+    UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo", collect_context_time);
+  } else {  // gl_initialized
+    VLOG(1) << "gl::init::InitializeGLOneOff failed";
     dead_on_arrival = true;
   }
+
+  base::TimeDelta initialize_one_off_time =
+      base::TimeTicks::Now() - before_initialize_one_off;
+  UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
+                             initialize_one_off_time);
+
+  if (enable_watchdog && delayed_watchdog_enable) {
+    watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
+    base::Thread::Options options;
+    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+    watchdog_thread->StartWithOptions(options);
+  }
+
+  // OSMesa is expected to run very slowly, so disable the watchdog in that
+  // case.
+  if (enable_watchdog &&
+      gl::GetGLImplementation() == gl::kGLImplementationOSMesaGL) {
+    watchdog_thread->Stop();
+    watchdog_thread = NULL;
+  }
+
+#if defined(OS_LINUX)
+  if (!initialized_sandbox)
+    gpu_info.sandboxed = StartSandboxLinux(gpu_info, watchdog_thread.get());
+#elif defined(OS_WIN)
+  gpu_info.sandboxed = StartSandboxWindows(parameters.sandbox_info);
+#elif defined(OS_MACOSX)
+  gpu_info.sandboxed = Sandbox::SandboxIsCurrentlyActive();
+#endif
 
   logging::SetLogMessageHandler(NULL);
 
@@ -480,7 +466,7 @@ void GetGpuInfoFromCommandLine(gpu::GPUInfo& gpu_info,
   GetContentClient()->SetGpuInfo(gpu_info);
 }
 
-bool WarmUpSandbox(const base::CommandLine& command_line) {
+void WarmUpSandbox() {
   {
     TRACE_EVENT0("gpu", "Warm up rand");
     // Warm up the random subsystem, which needs to be done pre-sandbox on all
@@ -492,7 +478,6 @@ bool WarmUpSandbox(const base::CommandLine& command_line) {
   media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
   media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
-  return true;
 }
 
 #if !defined(OS_MACOSX)
@@ -533,51 +518,11 @@ bool CanAccessNvidiaDeviceFile() {
 }
 #endif
 
-void CreateDummyGlContext() {
-  scoped_refptr<gl::GLSurface> surface(
-      gl::init::CreateOffscreenGLSurface(gfx::Size()));
-  if (!surface.get()) {
-    DVLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
-    return;
-  }
-
-  // On Linux, this is needed to make sure /dev/nvidiactl has
-  // been opened and its descriptor cached.
-  scoped_refptr<gl::GLContext> context(
-      gl::init::CreateGLContext(NULL, surface.get(), gl::PreferDiscreteGpu));
-  if (!context.get()) {
-    DVLOG(1) << "gl::init::CreateGLContext failed";
-    return;
-  }
-
-  // Similarly, this is needed for /dev/nvidia0.
-  if (context->MakeCurrent(surface.get())) {
-    context->ReleaseCurrent(surface.get());
-  } else {
-    DVLOG(1) << "gl::GLContext::MakeCurrent failed";
-  }
-}
-
-void WarmUpSandboxNvidia(const gpu::GPUInfo& gpu_info,
-                         bool should_initialize_gl_context) {
-  // We special case Optimus since the vendor_id we see may not be Nvidia.
-  bool uses_nvidia_driver = (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA.
-                             gpu_info.driver_vendor == "NVIDIA") ||
-                            gpu_info.optimus;
-  if (uses_nvidia_driver && should_initialize_gl_context) {
-    // We need this on Nvidia to pre-open /dev/nvidiactl and /dev/nvidia0.
-    CreateDummyGlContext();
-  }
-}
-
 bool StartSandboxLinux(const gpu::GPUInfo& gpu_info,
-                       GpuWatchdogThread* watchdog_thread,
-                       bool should_initialize_gl_context) {
+                       GpuWatchdogThread* watchdog_thread) {
   TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   bool res = false;
-
-  WarmUpSandboxNvidia(gpu_info, should_initialize_gl_context);
 
   if (watchdog_thread) {
     // LinuxSandbox needs to be able to ensure that the thread
