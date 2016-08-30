@@ -149,7 +149,7 @@ if (is_nacl) {
       "manifest_file/irt_manifest_file_test.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     nmfflags = [
       "-xtest_file:test_file.txt",
@@ -183,7 +183,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "simple.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "nacl_test_data"
     test_files = [ "nacl_load_test.html" ]
@@ -195,7 +195,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "exit_status/pm_exit_status_test.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "nacl_test_data"
     test_files = [ "exit_status/pm_exit_status_test.html" ]
@@ -206,7 +206,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "simple.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
 
     # Need a new directory to not clash with with other extension
@@ -233,7 +233,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "nacl_test_data"
     test_files =
@@ -373,7 +373,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "simple.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
@@ -394,7 +394,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "simple.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
@@ -427,7 +427,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "simple.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     generate_nmf = false
     destination_dir = "nacl_test_data"
@@ -445,7 +445,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "pnacl_url_loader/pnacl_url_loader.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     generate_nmf = true
     destination_dir = "nacl_test_data"

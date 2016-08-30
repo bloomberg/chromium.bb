@@ -33,7 +33,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "background_keepalive/background.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/background_keepalive"
     test_files = [
@@ -47,7 +47,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "load_unload/load_unload.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/load_unload"
     test_files = [
@@ -64,7 +64,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "media_galleries/test_galleries.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/media_galleries"
     test_files = [
@@ -80,7 +80,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "multicast_permissions/test_multicast_permissions.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/multicast_permissions"
     test_files = [
@@ -96,7 +96,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "no_socket_permissions/test_no_socket_permissions.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/no_socket_permissions"
     test_files = [
@@ -112,7 +112,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "popup/module.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/popup"
     test_files = [
@@ -128,7 +128,7 @@ if (is_nacl && !is_nacl_nonsfi) {
       "socket_permissions/test_socket_permissions.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/socket_permissions"
     test_files = [
@@ -146,7 +146,7 @@ if (is_nacl) {
       "packaged_app/test_packaged_app.cc",
     ]
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/packaged_app"
     test_files = [

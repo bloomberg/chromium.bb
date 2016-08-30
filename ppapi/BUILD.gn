@@ -3,13 +3,149 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/features.gni")
+import("//build/config/nacl/config.gni")
+import("//build/config/nacl/rules.gni")
+import("//testing/test.gni")
+if (is_mac) {
+  import("//build/config/mac/rules.gni")
+}
 
 assert(!is_android || enable_plugins,
        "//ppapi should not be referenced when is_android && !enable_plugins")
 
-if (is_mac) {
-  import("//build/config/mac/rules.gni")
-}
+# Test files shared between several targets below.
+#
+# TODO(brettw) it seems like it should be possible to factor this in a source
+# set that is shared in such a way that these only need to be referenced once.
+test_common_source_files = [
+  "lib/gl/gles2/gl2ext_ppapi.c",
+  "lib/gl/gles2/gl2ext_ppapi.h",
+  "lib/gl/gles2/gles2.c",
+  "tests/all_c_includes.h",
+  "tests/all_cpp_includes.h",
+  "tests/arch_dependent_sizes_32.h",
+  "tests/arch_dependent_sizes_64.h",
+  "tests/pp_thread.h",
+  "tests/test_audio.cc",
+  "tests/test_audio.h",
+  "tests/test_audio_config.cc",
+  "tests/test_audio_config.h",
+  "tests/test_audio_encoder.cc",
+  "tests/test_audio_encoder.h",
+  "tests/test_case.cc",
+  "tests/test_case.h",
+  "tests/test_compositor.cc",
+  "tests/test_compositor.h",
+  "tests/test_console.cc",
+  "tests/test_console.h",
+  "tests/test_core.cc",
+  "tests/test_core.h",
+  "tests/test_cursor_control.cc",
+  "tests/test_cursor_control.h",
+  "tests/test_empty.cc",
+  "tests/test_empty.h",
+  "tests/test_file_io.cc",
+  "tests/test_file_io.h",
+  "tests/test_file_ref.cc",
+  "tests/test_file_ref.h",
+  "tests/test_file_system.cc",
+  "tests/test_file_system.h",
+  "tests/test_fullscreen.cc",
+  "tests/test_fullscreen.h",
+  "tests/test_graphics_2d.cc",
+  "tests/test_graphics_2d.h",
+  "tests/test_graphics_3d.cc",
+  "tests/test_graphics_3d.h",
+  "tests/test_host_resolver.cc",
+  "tests/test_host_resolver.h",
+  "tests/test_host_resolver_private.cc",
+  "tests/test_host_resolver_private.h",
+  "tests/test_host_resolver_private_disallowed.cc",
+  "tests/test_host_resolver_private_disallowed.h",
+  "tests/test_image_data.cc",
+  "tests/test_image_data.h",
+  "tests/test_ime_input_event.cc",
+  "tests/test_ime_input_event.h",
+  "tests/test_input_event.cc",
+  "tests/test_input_event.h",
+  "tests/test_media_stream_audio_track.cc",
+  "tests/test_media_stream_audio_track.h",
+  "tests/test_media_stream_video_track.cc",
+  "tests/test_media_stream_video_track.h",
+  "tests/test_memory.cc",
+  "tests/test_memory.h",
+  "tests/test_message_handler.cc",
+  "tests/test_message_handler.h",
+  "tests/test_message_loop.cc",
+  "tests/test_message_loop.h",
+  "tests/test_mouse_cursor.cc",
+  "tests/test_mouse_cursor.h",
+  "tests/test_mouse_lock.cc",
+  "tests/test_mouse_lock.h",
+  "tests/test_net_address.cc",
+  "tests/test_net_address.h",
+  "tests/test_net_address_private_untrusted.cc",
+  "tests/test_net_address_private_untrusted.h",
+  "tests/test_network_monitor.cc",
+  "tests/test_network_monitor.h",
+  "tests/test_network_proxy.cc",
+  "tests/test_network_proxy.h",
+  "tests/test_output_protection_private.cc",
+  "tests/test_output_protection_private.h",
+  "tests/test_paint_aggregator.cc",
+  "tests/test_paint_aggregator.h",
+  "tests/test_post_message.cc",
+  "tests/test_post_message.h",
+  "tests/test_printing.cc",
+  "tests/test_printing.h",
+  "tests/test_tcp_server_socket_private.cc",
+  "tests/test_tcp_server_socket_private.h",
+  "tests/test_tcp_socket.cc",
+  "tests/test_tcp_socket.h",
+  "tests/test_tcp_socket_private.cc",
+  "tests/test_tcp_socket_private.h",
+  "tests/test_test_internals.cc",
+  "tests/test_test_internals.h",
+  "tests/test_trace_event.cc",
+  "tests/test_trace_event.h",
+  "tests/test_truetype_font.cc",
+  "tests/test_truetype_font.h",
+  "tests/test_udp_socket.cc",
+  "tests/test_udp_socket.h",
+  "tests/test_udp_socket_private.cc",
+  "tests/test_udp_socket_private.h",
+  "tests/test_uma.cc",
+  "tests/test_uma.h",
+  "tests/test_url_loader.cc",
+  "tests/test_url_loader.h",
+  "tests/test_url_request.cc",
+  "tests/test_url_request.h",
+  "tests/test_utils.cc",
+  "tests/test_var.cc",
+  "tests/test_var.h",
+  "tests/test_var_resource.cc",
+  "tests/test_var_resource.h",
+  "tests/test_video_decoder.cc",
+  "tests/test_video_decoder.h",
+  "tests/test_video_destination.cc",
+  "tests/test_video_destination.h",
+  "tests/test_video_encoder.cc",
+  "tests/test_video_encoder.h",
+  "tests/test_video_source.cc",
+  "tests/test_video_source.h",
+  "tests/test_view.cc",
+  "tests/test_view.h",
+  "tests/test_websocket.cc",
+  "tests/test_websocket.h",
+  "tests/testing_instance.cc",
+  "tests/testing_instance.h",
+
+  # Compile-time tests
+  "tests/test_c_includes.c",
+  "tests/test_cpp_includes.cc",
+  "tests/test_struct_sizes.c",
+]
 
 copy("copy_test_files") {
   visibility = [ ":*" ]
@@ -35,15 +171,57 @@ copy("copy_test_files2") {
   ]
 }
 
-import("//build/config/features.gni")
-import("//build/config/nacl/config.gni")
-import("//build/config/nacl/rules.gni")
-import("//ppapi/ppapi_sources.gni")
-import("//testing/test.gni")
-
 source_set("ppapi_tests_sources") {
-  sources = ppapi_sources.test_common_source_files +
-            ppapi_sources.test_trusted_source_files
+  sources = test_common_source_files
+  sources += [
+    "tests/test_broker.cc",
+    "tests/test_broker.h",
+    "tests/test_browser_font.cc",
+    "tests/test_browser_font.h",
+    "tests/test_buffer.cc",
+    "tests/test_buffer.h",
+    "tests/test_char_set.cc",
+    "tests/test_char_set.h",
+    "tests/test_crypto.cc",
+    "tests/test_crypto.h",
+    "tests/test_file_chooser.cc",
+    "tests/test_file_chooser.h",
+    "tests/test_flash.cc",
+    "tests/test_flash.h",
+    "tests/test_flash_clipboard.cc",
+    "tests/test_flash_clipboard.h",
+    "tests/test_flash_drm.cc",
+    "tests/test_flash_drm.h",
+    "tests/test_flash_file.cc",
+    "tests/test_flash_file.h",
+    "tests/test_flash_fullscreen.cc",
+    "tests/test_flash_fullscreen.h",
+    "tests/test_flash_fullscreen_for_browser_ui.cc",
+    "tests/test_flash_fullscreen_for_browser_ui.h",
+    "tests/test_flash_message_loop.cc",
+    "tests/test_flash_message_loop.h",
+    "tests/test_net_address_private.cc",
+    "tests/test_net_address_private.h",
+    "tests/test_pdf.cc",
+    "tests/test_pdf.h",
+    "tests/test_platform_verification_private.cc",
+    "tests/test_platform_verification_private.h",
+    "tests/test_tcp_socket_private_trusted.cc",
+    "tests/test_tcp_socket_private_trusted.h",
+    "tests/test_url_util.cc",
+    "tests/test_url_util.h",
+    "tests/test_utils.h",
+    "tests/test_video_decoder_dev.cc",
+    "tests/test_video_decoder_dev.h",
+    "tests/test_x509_certificate_private.cc",
+    "tests/test_x509_certificate_private.h",
+
+    # Deprecated test cases.
+    "tests/test_instance_deprecated.cc",
+    "tests/test_instance_deprecated.h",
+    "tests/test_var_deprecated.cc",
+    "tests/test_var_deprecated.h",
+  ]
 
   configs += [
     "//build/config:precompiled_headers",
@@ -62,18 +240,15 @@ source_set("ppapi_tests_sources") {
   ]
 }
 
-if (!is_mac) {
-  shared_library("ppapi_tests") {
-    deps = [
-      ":ppapi_tests_sources",
-    ]
-  }
+if (is_mac) {
+  ppapi_tests_target_type = "mac_plugin_bundle"
 } else {
-  mac_plugin_bundle("ppapi_tests") {
-    deps = [
-      ":ppapi_tests_sources",
-    ]
-  }
+  ppapi_tests_target_type = "shared_library"
+}
+target(ppapi_tests_target_type, "ppapi_tests") {
+  deps = [
+    ":ppapi_tests_sources",
+  ]
 }
 
 source_set("power_saver_test_plugin_sources") {
@@ -241,39 +416,6 @@ executable("pepper_hash_for_uma") {
   ]
 }
 
-if (is_nacl_glibc) {
-  shared_library("ppapi_cpp_lib") {
-    # When using gcc, we hide all symbols by default, but that breaks at
-    # link time as the test executable requires symbols defined in the
-    # shared library.
-    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-    configs += [ "//build/config/gcc:symbol_visibility_default" ]
-
-    sources = ppapi_sources.cpp_source_files
-    sources += [
-      "cpp/module_embedder.h",
-      "cpp/ppp_entrypoints.cc",
-    ]
-    cflags = [ "-fPIC" ]
-    deps = [
-      "//build/config/nacl:nacl_base",
-    ]
-  }
-} else {
-  static_library("ppapi_cpp_lib") {
-    # This library is distributed as a part of the SDK and as such has to
-    # be a static library rather than a source set.
-    sources = ppapi_sources.cpp_source_files
-    sources += [
-      "cpp/module_embedder.h",
-      "cpp/ppp_entrypoints.cc",
-    ]
-    deps = [
-      "//build/config/nacl:nacl_base",
-    ]
-  }
-}
-
 source_set("ppapi_gles2_lib") {
   include_dirs = [ "lib/gl/include" ]
   sources = [
@@ -292,14 +434,22 @@ if (enable_nacl) {
   if (is_nacl) {
     nacl_test_data("ppapi_nacl_tests") {
       include_dirs = [ "lib/gl/include" ]
-      sources = ppapi_sources.test_common_source_files +
-                ppapi_sources.test_nacl_source_files
+      sources = test_common_source_files
+
+      sources += [
+        "tests/test_nacl_irt_stack_alignment.cc",
+        "tests/test_nacl_irt_stack_alignment.h",
+        "tests/test_tcp_server_socket_private_disallowed.cc",
+        "tests/test_tcp_socket_private_disallowed.cc",
+        "tests/test_udp_socket_private_disallowed.cc",
+      ]
+
       defines = [
         "GL_GLEXT_PROTOTYPES",
         "PPAPI_TEST_IMPLEMENTATION",
       ]
       deps = [
-        ":ppapi_cpp_lib",
+        "//ppapi/cpp",
       ]
       if (current_cpu == "pnacl") {
         pretranslate_pexe = true
