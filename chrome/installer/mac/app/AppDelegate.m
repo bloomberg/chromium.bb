@@ -116,11 +116,6 @@
 - (void)downloader:(Downloader*)download onSuccess:(NSURL*)diskImageURL {
   [installerWindowController_ updateStatusDescription:@"Installing..."];
   [installerWindowController_ enableLaunchButton];
-  // TODO: Add unpacking step here and pass the path to the app bundle inside
-  // the mounted disk image path to startInstall. Currently passing hardcoded
-  // path to preunpacked app bundle.
-  //[authorizedInstall_
-  //    startInstall:@"$HOME/Downloads/Google Chrome.app"];
 
   Unpacker* unpacker = [[Unpacker alloc] init];
   unpacker.delegate = self;
@@ -164,23 +159,10 @@
   window_.styleMask &= ~NSClosableWindowMask;
   preventTermination_ = YES;
 
-  // TODO: move the below code into AuthorizedInstall
-  NSString* chromeInApplicationsFolder = @"/Applications/Google Chromo.app";
+  NSString* chromeInApplicationsFolder =
+      [authorizedInstall_ startInstall:tempAppPath];
 
   NSError* error = nil;
-  if ([[NSFileManager defaultManager]
-          fileExistsAtPath:chromeInApplicationsFolder]) {
-    [[NSFileManager defaultManager] moveItemAtPath:chromeInApplicationsFolder
-                                            toPath:tempAppPath
-                                             error:nil];
-  }
-  if (![[NSFileManager defaultManager] moveItemAtPath:tempAppPath
-                                               toPath:chromeInApplicationsFolder
-                                                error:&error]) {
-    NSLog(@"%@", error);
-  }
-  // TODO: move the above code into AuthorizedInstall
-
   [[NSWorkspace sharedWorkspace]
       launchApplicationAtURL:[NSURL fileURLWithPath:chromeInApplicationsFolder
                                         isDirectory:NO]
