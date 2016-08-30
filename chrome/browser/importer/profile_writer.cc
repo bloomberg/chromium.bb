@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,7 +38,6 @@
 #include "components/search_engines/template_url_service.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/web_data_service_factory.h"
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
@@ -105,9 +106,16 @@ void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
 
 void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {
-  HistoryServiceFactory::GetForProfile(profile_,
-                                       ServiceAccessType::EXPLICIT_ACCESS)
-      ->AddPagesWithDetails(page, visit_source);
+  if (!page.empty())
+    HistoryServiceFactory::GetForProfile(profile_,
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->AddPagesWithDetails(page, visit_source);
+  // Measure the size of the history page after Auto Import on first run.
+  if (first_run::IsChromeFirstRun() &&
+      visit_source == history::SOURCE_IE_IMPORTED) {
+    UMA_HISTOGRAM_COUNTS("Import.ImportedHistorySize.AutoImportFromIE",
+                         page.size());
+  }
 }
 
 void ProfileWriter::AddHomepage(const GURL& home_page) {

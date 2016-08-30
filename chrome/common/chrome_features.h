@@ -35,6 +35,10 @@ extern const base::Feature kBlockSmallContent;
 
 extern const base::Feature kBrowserHangFixesExperiment;
 
+#if defined(OS_WIN)
+extern const base::Feature kDisableFirstRunAutoImportWin;
+#endif  // defined(OS_WIN)
+
 extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;
 
 extern const base::Feature kExpectCTReporting;

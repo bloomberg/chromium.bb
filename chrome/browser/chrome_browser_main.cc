@@ -198,6 +198,7 @@
 
 #if defined(OS_WIN)
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/file_pre_reader_win.h"
 #include "chrome/browser/chrome_browser_main_win.h"
@@ -1800,11 +1801,23 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
   if (first_run::IsChromeFirstRun()) {
-    first_run::AutoImport(profile_,
-                          master_prefs_->homepage_defined,
-                          master_prefs_->do_import_items,
-                          master_prefs_->dont_import_items,
-                          master_prefs_->import_bookmarks_path);
+    // By default Auto Import is performed on first run.
+    bool auto_import = true;
+
+#if defined(OS_WIN)
+    // Auto Import might be disabled via a field trial.  However, this field
+    // trial is not intended to affect enterprise users.
+    auto_import =
+        base::win::IsEnrolledToDomain() ||
+        !base::FeatureList::IsEnabled(features::kDisableFirstRunAutoImportWin);
+#endif  // defined(OS_WIN)
+
+    if (auto_import) {
+      first_run::AutoImport(profile_, master_prefs_->homepage_defined,
+                            master_prefs_->do_import_items,
+                            master_prefs_->dont_import_items,
+                            master_prefs_->import_bookmarks_path);
+    }
 
     // Note: this can pop the first run consent dialog on linux.
     first_run::DoPostImportTasks(profile_,

@@ -19273,6 +19273,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The time it takes to open a hyphenation dictionary.</summary>
 </histogram>
 
+<histogram name="Import.ImportedHistorySize.AutoImportFromIE" units="urls">
+  <owner>gcomanici@chromium.org</owner>
+  <summary>
+    The size of the history on Auto Import from IE. This measure is only logged
+    on a succesfull Auto Import.
+  </summary>
+</histogram>
+
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
   <owner>gab@chromium.org</owner>
   <summary>The importer used on first run Auto Import.</summary>

@@ -48,6 +48,12 @@ const base::Feature kBlockSmallContent{"BlockSmallPluginContent",
 const base::Feature kBrowserHangFixesExperiment{
     "BrowserHangFixesExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Disables the AutoImport feature on first run. See crbug.com/555550
+const base::Feature kDisableFirstRunAutoImportWin{
+    "DisableFirstRunAutoImport", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Experiment to display a toggle allowing users to opt-out of persisting a
 // Grant or Deny decision in a permission prompt.
 const base::Feature kDisplayPersistenceToggleInPermissionPrompts{

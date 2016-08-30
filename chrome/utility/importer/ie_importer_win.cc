@@ -560,7 +560,7 @@ void IEImporter::ImportHistory() {
       rows.push_back(row);
     }
 
-    if (!rows.empty() && !cancelled()) {
+    if (!cancelled()) {
       bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_IE_IMPORTED);
     }
   }
