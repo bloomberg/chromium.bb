@@ -68,7 +68,12 @@ AudioRendererSinkCacheImpl::AudioRendererSinkCacheImpl(
 }
 
 AudioRendererSinkCacheImpl::~AudioRendererSinkCacheImpl() {
-  // We just release all the cached sinks here.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  // We just release all the cached sinks here. Stop them first.
+  // We can stop all the sinks, no matter they are used or not, since everything
+  // is being destroyed anyways.
+  for (auto& entry : cache_)
+    entry.sink->Stop();
 }
 
 media::OutputDeviceInfo AudioRendererSinkCacheImpl::GetSinkInfo(
