@@ -71,6 +71,7 @@ list > [selected] > .url {
 html[dir=rtl] .url {
   -webkit-padding-end: 20px;
   -webkit-padding-start: 0;
+  text-align: right;
 }
 
 html[dir=rtl] list .label {
