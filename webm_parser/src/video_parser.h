@@ -16,6 +16,7 @@
 #include "src/float_parser.h"
 #include "src/int_parser.h"
 #include "src/master_value_parser.h"
+#include "src/projection_parser.h"
 #include "webm/callback.h"
 #include "webm/dom_types.h"
 #include "webm/id.h"
@@ -58,7 +59,8 @@ class VideoParser : public MasterValueParser<Video> {
             MakeChild<IntParser<AspectRatioType>>(Id::kAspectRatioType,
                                                   &Video::aspect_ratio_type),
             MakeChild<FloatParser>(Id::kFrameRate, &Video::frame_rate),
-            MakeChild<ColourParser>(Id::kColour, &Video::colour)) {}
+            MakeChild<ColourParser>(Id::kColour, &Video::colour),
+            MakeChild<ProjectionParser>(Id::kProjection, &Video::projection)) {}
 
   Status Init(const ElementMetadata& metadata,
               std::uint64_t max_size) override {

@@ -18,6 +18,8 @@ using webm::DisplayUnit;
 using webm::ElementParserTest;
 using webm::FlagInterlaced;
 using webm::Id;
+using webm::Projection;
+using webm::ProjectionType;
 using webm::StereoMode;
 using webm::Video;
 using webm::VideoParser;
@@ -75,6 +77,9 @@ TEST_F(VideoParserTest, DefaultParse) {
 
   EXPECT_FALSE(video.colour.is_present());
   EXPECT_EQ(Colour{}, video.colour.value());
+
+  EXPECT_FALSE(video.projection.is_present());
+  EXPECT_EQ(Projection{}, video.projection.value());
 }
 
 TEST_F(VideoParserTest, DefaultValues) {
@@ -122,6 +127,9 @@ TEST_F(VideoParserTest, DefaultValues) {
       0x80,  // Size = 0.
 
       0x55, 0xB0,  // ID = 0x55B0 (Colour).
+      0x20, 0x00, 0x00,  // Size = 0.
+
+      0x76, 0x70,  // ID = 0x7670 (Projection).
       0x20, 0x00, 0x00,  // Size = 0.
   });
 
@@ -173,6 +181,9 @@ TEST_F(VideoParserTest, DefaultValues) {
 
   EXPECT_TRUE(video.colour.is_present());
   EXPECT_EQ(Colour{}, video.colour.value());
+
+  EXPECT_TRUE(video.projection.is_present());
+  EXPECT_EQ(Projection{}, video.projection.value());
 }
 
 TEST_F(VideoParserTest, CustomValues) {
@@ -239,6 +250,13 @@ TEST_F(VideoParserTest, CustomValues) {
       0x55, 0xB2,  //   ID = 0x55B2 (BitsPerChannel).
       0x10, 0x00, 0x00, 0x01,  //   Size = 1.
       0x01,  //   Body (value = 1).
+
+      0x76, 0x70,  // ID = 0x7670 (Projection).
+      0x10, 0x00, 0x00, 0x07,  // Size = 7.
+
+      0x76, 0x71,  //   ID = 0x7671 (ProjectionType).
+      0x10, 0x00, 0x00, 0x01,  //   Size = 1.
+      0x02,  //   Body (value = cube map).
   });
 
   ParseAndVerify();
@@ -291,6 +309,10 @@ TEST_F(VideoParserTest, CustomValues) {
   EXPECT_TRUE(video.colour.value().bits_per_channel.is_present());
   EXPECT_EQ(static_cast<std::uint64_t>(1),
             video.colour.value().bits_per_channel.value());
+
+  EXPECT_TRUE(video.projection.is_present());
+  EXPECT_TRUE(video.projection.value().type.is_present());
+  EXPECT_EQ(ProjectionType::kCubeMap, video.projection.value().type.value());
 }
 
 TEST_F(VideoParserTest, AbsentDisplaySize) {

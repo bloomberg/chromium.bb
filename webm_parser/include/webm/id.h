@@ -705,6 +705,48 @@ enum class Id : std::uint32_t {
   kLuminanceMin = 0x55DA,
 
   /**
+   \WebMID{Projection} element ID.
+
+   \WebMTable{Master, 5, No, No, No, , }
+   */
+  kProjection = 0x7670,
+
+  /**
+   \WebMID{ProjectionType} element ID.
+
+   \WebMTable{Unsigned integer, 6, Yes, No, No, , 0}
+   */
+  kProjectionType = 0x7671,
+
+  /**
+   \WebMID{ProjectionPrivate} element ID.
+
+   \WebMTable{Binary, 6, No, No, No, , }
+   */
+  kProjectionPrivate = 0x7672,
+
+  /**
+   \WebMID{ProjectionPoseYaw} element ID.
+
+   \WebMTable{Float, 6, Yes, No, No, , 0}
+   */
+  kProjectionPoseYaw = 0x7673,
+
+  /**
+   \WebMID{ProjectionPosePitch} element ID.
+
+   \WebMTable{Float, 6, Yes, No, No, , 0}
+   */
+  kProjectionPosePitch = 0x7674,
+
+  /**
+   \WebMID{ProjectionPoseRoll} element ID.
+
+   \WebMTable{Float, 6, Yes, No, No, , 0}
+   */
+  kProjectionPoseRoll = 0x7675,
+
+  /**
    \MatroskaID{Audio} element ID.
 
    \WebMTable{Master, 3, No, No, No, , }
