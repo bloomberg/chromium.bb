@@ -22,8 +22,6 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
-using base::i18n::BreakIterator;
-
 // SpellcheckCharAttribute implementation:
 
 SpellcheckCharAttribute::SpellcheckCharAttribute()
@@ -332,8 +330,8 @@ bool SpellcheckWordIterator::Initialize(
   if (rule.empty())
     return false;
 
-  std::unique_ptr<BreakIterator> iterator(
-      new BreakIterator(base::string16(), rule));
+  std::unique_ptr<base::i18n::BreakIterator> iterator(
+      new base::i18n::BreakIterator(base::string16(), rule));
   if (!iterator->Init()) {
     // Since we're not passing in any text, the only reason this could fail
     // is if we fail to parse the rules. Since the rules are hardcoded,
@@ -388,7 +386,7 @@ SpellcheckWordIterator::WordIteratorStatus SpellcheckWordIterator::GetNextWord(
     const size_t start = iterator_->prev();
     const size_t length = iterator_->pos() - start;
     switch (iterator_->GetWordBreakStatus()) {
-      case BreakIterator::IS_WORD_BREAK: {
+      case base::i18n::BreakIterator::IS_WORD_BREAK: {
         if (Normalize(start, length, word_string)) {
           *word_start = start;
           *word_length = length;
@@ -396,7 +394,7 @@ SpellcheckWordIterator::WordIteratorStatus SpellcheckWordIterator::GetNextWord(
         }
         break;
       }
-      case BreakIterator::IS_SKIPPABLE_WORD: {
+      case base::i18n::BreakIterator::IS_SKIPPABLE_WORD: {
         *word_string = iterator_->GetString();
         *word_start = start;
         *word_length = length;
@@ -404,7 +402,7 @@ SpellcheckWordIterator::WordIteratorStatus SpellcheckWordIterator::GetNextWord(
       }
       // |iterator_| is RULE_BASED so the break status should never be
       // IS_LINE_OR_CHAR_BREAK.
-      case BreakIterator::IS_LINE_OR_CHAR_BREAK: {
+      case base::i18n::BreakIterator::IS_LINE_OR_CHAR_BREAK: {
         NOTREACHED();
         break;
       }

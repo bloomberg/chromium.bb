@@ -20,6 +20,7 @@ REPLACEMENTS = {
   'ffmpeg': 'third_party/ffmpeg/BUILD.gn',
   'flac': 'third_party/flac/BUILD.gn',
   'harfbuzz-ng': 'third_party/harfbuzz-ng/BUILD.gn',
+  'icu': 'third_party/icu/BUILD.gn',
   'libevent': 'base/third_party/libevent/BUILD.gn',
   'libjpeg': 'build/secondary/third_party/libjpeg_turbo/BUILD.gn',
   'libpng': 'third_party/libpng/BUILD.gn',
