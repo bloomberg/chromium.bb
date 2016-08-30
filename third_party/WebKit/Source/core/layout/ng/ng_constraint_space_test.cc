@@ -40,6 +40,21 @@ TEST(NGConstraintSpaceTest, WritingMode) {
   EXPECT_EQ(FragmentNone, vert_space->BlockFragmentationType());
 }
 
+TEST(NGConstraintSpaceTest, LayoutOpportunities) {
+  NGPhysicalSize physical_size;
+  physical_size.width = LayoutUnit(600);
+  physical_size.height = LayoutUnit(400);
+  auto* physical_space = new NGPhysicalConstraintSpace(physical_size);
+  auto* space = new NGConstraintSpace(HorizontalTopBottom, physical_space);
+
+  bool for_inline_or_bfc = false;
+  auto iterator = space->LayoutOpportunities(NGClearNone, for_inline_or_bfc);
+
+  auto firstOpportunity = iterator.Next();
+  EXPECT_EQ(LayoutUnit(600), firstOpportunity->Size().inline_size);
+  EXPECT_EQ(LayoutUnit(400), firstOpportunity->Size().block_size);
+}
+
 }  // namespace
 
 }  // namespace blink

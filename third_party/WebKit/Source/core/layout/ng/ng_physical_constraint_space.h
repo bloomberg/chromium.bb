@@ -47,7 +47,8 @@ class CORE_EXPORT NGPhysicalConstraintSpace final
   NGPhysicalSize ContainerSize() const { return container_size_; }
 
   void AddExclusion(const NGExclusion, unsigned options = 0);
-  DoublyLinkedList<const NGExclusion> Exclusions(unsigned options = 0) const;
+  const DoublyLinkedList<const NGExclusion>* Exclusions(
+      unsigned options = 0) const;
 
   DEFINE_INLINE_TRACE() {}
 

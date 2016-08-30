@@ -112,7 +112,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
         for_inline_or_bfc_(for_inline_or_bfc) {}
   ~NGLayoutOpportunityIterator() {}
 
-  const NGDerivedConstraintSpace* Next();
+  NGConstraintSpace* Next();
 
  private:
   Persistent<NGConstraintSpace> constraint_space_;

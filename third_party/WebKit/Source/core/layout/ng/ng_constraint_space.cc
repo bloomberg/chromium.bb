@@ -81,7 +81,6 @@ void NGConstraintSpace::Subtract(const NGFragment*) {
 NGLayoutOpportunityIterator NGConstraintSpace::LayoutOpportunities(
     unsigned clear,
     bool for_inline_or_bfc) {
-  // TODO(layout-ng): Implement.
   NGLayoutOpportunityIterator iterator(this, clear, for_inline_or_bfc);
   return iterator;
 }
@@ -129,6 +128,14 @@ void NGConstraintSpace::SetFragmentationType(NGFragmentationType type) {
               FragmentNone);
     physical_space_->width_direction_triggers_scrollbar_ = type;
   }
+}
+
+NGConstraintSpace* NGLayoutOpportunityIterator::Next() {
+  auto* exclusions = constraint_space_->PhysicalSpace()->Exclusions();
+  if (!exclusions->head())
+    return new NGConstraintSpace(constraint_space_->WritingMode(),
+                                 constraint_space_->PhysicalSpace());
+  return nullptr;
 }
 
 }  // namespace blink

@@ -45,11 +45,11 @@ void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion,
   // TODO(layout-ng): Implement.
 }
 
-DoublyLinkedList<const NGExclusion> NGPhysicalConstraintSpace::Exclusions(
-    unsigned options) const {
-  DoublyLinkedList<const NGExclusion> exclusions;
-  // TODO(layout-ng): Implement.
-  return exclusions;
+const DoublyLinkedList<const NGExclusion>*
+NGPhysicalConstraintSpace::Exclusions(unsigned options) const {
+  // TODO(layout-ng): Filter based on options? Perhaps layout Opportunities
+  // should filter instead?
+  return &exclusions_;
 }
 
 }  // namespace blink
