@@ -162,7 +162,6 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const
 
     case MediaTimelineContainer:
         return GroupRole;
-
     default:
         break;
     }

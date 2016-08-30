@@ -60,6 +60,7 @@
     annotation,
     application,
     article,
+    audio,
     banner,
     blockquote,
     busyIndicator,
@@ -177,6 +178,7 @@
     tree,
     unknown,
     tooltip,
+    video,
     webArea,
     webView,
     window

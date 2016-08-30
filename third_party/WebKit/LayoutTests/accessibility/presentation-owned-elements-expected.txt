@@ -73,7 +73,7 @@ AXRole: AXWebArea
     AXRole: AXDiv
         AXRole: AXStaticText "The menu items except button have a static text role because it has a presentation role and is disabled."
             AXRole: AXInlineTextBox "The menu items except button have a static text role because it has a presentation role and is disabled."
-        AXRole: AXUnknown "
+        AXRole: AXLineBreak "
 "
             AXRole: AXInlineTextBox "
 "
@@ -89,7 +89,7 @@ AXRole: AXWebArea
     AXRole: AXDiv
         AXRole: AXStaticText "The option A has a static text role because it has a presentation role and is disabled."
             AXRole: AXInlineTextBox "The option A has a static text role because it has a presentation role and is disabled."
-        AXRole: AXUnknown "
+        AXRole: AXLineBreak "
 "
             AXRole: AXInlineTextBox "
 "

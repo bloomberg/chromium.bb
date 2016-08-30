@@ -83,6 +83,7 @@ enum WebAXRole {
     WebAXRoleAnnotation,
     WebAXRoleApplication,
     WebAXRoleArticle,
+    WebAXRoleAudio,
     WebAXRoleBanner,
     WebAXRoleBlockquote,
     WebAXRoleBusyIndicator,
@@ -127,6 +128,7 @@ enum WebAXRole {
     WebAXRoleInputTime,
     WebAXRoleLabel,
     WebAXRoleLegend,
+    WebAXRoleLineBreak,
     WebAXRoleLink,
     WebAXRoleListBoxOption,
     WebAXRoleListBox,
@@ -193,8 +195,8 @@ enum WebAXRole {
     WebAXRoleTreeItem,
     WebAXRoleTree,
     WebAXRoleUserInterfaceTooltip,
+    WebAXRoleVideo,
     WebAXRoleWebArea,
-    WebAXRoleLineBreak,
     WebAXRoleWindow,
 };
 

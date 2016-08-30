@@ -809,6 +809,17 @@ void BrowserAccessibilityAuraLinux::InitRoleAndState() {
     case ui::AX_ROLE_BUTTON:
       atk_role_ = ATK_ROLE_PUSH_BUTTON;
       break;
+    case ui::AX_ROLE_AUDIO:
+#if defined(ATK_CHECK_VERSION)
+#if ATK_CHECK_VERSION(2, 12, 0)
+      atk_role_ = ATK_ROLE_AUDIO;
+#else
+      atk_role_ = ATK_ROLE_SECTION;
+#endif
+#else
+      atk_role_ = ATK_ROLE_SECTION;
+#endif
+      break;
     case ui::AX_ROLE_CANVAS:
       atk_role_ = ATK_ROLE_CANVAS;
       break;
@@ -933,6 +944,17 @@ void BrowserAccessibilityAuraLinux::InitRoleAndState() {
       break;
     case ui::AX_ROLE_TREE_ITEM:
       atk_role_ = ATK_ROLE_TREE_ITEM;
+      break;
+    case ui::AX_ROLE_VIDEO:
+#if defined(ATK_CHECK_VERSION)
+#if ATK_CHECK_VERSION(2, 12, 0)
+      atk_role_ = ATK_ROLE_VIDEO;
+#else
+      atk_role_ = ATK_ROLE_SECTION;
+#endif
+#else
+      atk_role_ = ATK_ROLE_SECTION;
+#endif
       break;
     default:
       atk_role_ = ATK_ROLE_UNKNOWN;

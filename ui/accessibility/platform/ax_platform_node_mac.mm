@@ -37,6 +37,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_ANNOTATION, NSAccessibilityUnknownRole},
       {ui::AX_ROLE_APPLICATION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ARTICLE, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_AUDIO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BANNER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BLOCKQUOTE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole},
@@ -141,6 +142,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_TREE, NSAccessibilityOutlineRole},
       {ui::AX_ROLE_TREE_GRID, NSAccessibilityTableRole},
       {ui::AX_ROLE_TREE_ITEM, NSAccessibilityRowRole},
+      {ui::AX_ROLE_VIDEO, NSAccessibilityGroupRole},
       {ui::AX_ROLE_WEB_AREA, @"AXWebArea"},
       {ui::AX_ROLE_WINDOW, NSAccessibilityWindowRole},
 

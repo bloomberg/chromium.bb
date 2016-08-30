@@ -101,6 +101,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_APPLICATION;
     case blink::WebAXRoleArticle:
       return ui::AX_ROLE_ARTICLE;
+    case blink::WebAXRoleAudio:
+      return ui::AX_ROLE_AUDIO;
     case blink::WebAXRoleBanner:
       return ui::AX_ROLE_BANNER;
     case blink::WebAXRoleBlockquote:
@@ -323,6 +325,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_UNKNOWN;
     case blink::WebAXRoleUserInterfaceTooltip:
       return ui::AX_ROLE_TOOLTIP;
+    case blink::WebAXRoleVideo:
+      return ui::AX_ROLE_VIDEO;
     case blink::WebAXRoleWebArea:
       return ui::AX_ROLE_ROOT_WEB_AREA;
     case blink::WebAXRoleLineBreak:

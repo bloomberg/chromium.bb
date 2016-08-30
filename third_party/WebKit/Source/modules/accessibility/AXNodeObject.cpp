@@ -437,6 +437,11 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
     if (isHTMLDListElement(*getNode()))
         return DescriptionListRole;
 
+    if (isHTMLAudioElement(*getNode()))
+        return AudioRole;
+    if (isHTMLVideoElement(*getNode()))
+        return VideoRole;
+
     if (getNode()->hasTagName(ddTag))
         return DescriptionListDetailRole;
 

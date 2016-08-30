@@ -139,6 +139,7 @@ const InternalRoleEntry internalRoles[] = {
     { AnnotationRole, "Annotation" },
     { ApplicationRole, "Application" },
     { ArticleRole, "Article" },
+    { AudioRole, "Audio" },
     { BannerRole, "Banner" },
     { BlockquoteRole, "Blockquote" },
     // TODO(nektar): Delete busy_indicator role. It's used nowhere.
@@ -185,6 +186,7 @@ const InternalRoleEntry internalRoles[] = {
     { LabelRole, "Label" },
     { LegendRole, "Legend" },
     { LinkRole, "Link" },
+    { LineBreakRole, "LineBreak" },
     { ListBoxOptionRole, "ListBoxOption" },
     { ListBoxRole, "ListBox" },
     { ListItemRole, "ListItem" },
@@ -250,8 +252,8 @@ const InternalRoleEntry internalRoles[] = {
     { TreeItemRole, "TreeItem" },
     { TreeRole, "Tree" },
     { UserInterfaceTooltipRole, "UserInterfaceTooltip" },
+    { VideoRole, "Video" },
     { WebAreaRole, "WebArea" },
-    { LineBreakRole, "LineBreak" },
     { WindowRole, "Window" }
 };
 
