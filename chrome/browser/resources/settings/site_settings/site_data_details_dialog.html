@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -18,7 +18,7 @@
       <div class="body">
         <div class="layout horizontal" id="container">
           <div class="flex">
-            <paper-dropdown-menu vertical-align="auto" no-label-float>
+            <paper-dropdown-menu-light vertical-align="auto" no-label-float>
               <paper-listbox id="picker" class="dropdown-content"
                   attr-for-selected="picker-value"
                   on-iron-activate="onItemSelected_">
@@ -29,7 +29,7 @@
                   </button>
                 </template>
               </paper-listbox>
-            </paper-dropdown-menu>
+            </paper-dropdown-menu-light>
           </div>
           <div class="button-container">
             <paper-button on-tap="onRemove_"

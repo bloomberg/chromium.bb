@@ -139,8 +139,8 @@ Polymer({
     this.apnSelectList = result;
     this.selectedApn =
         (activeApn && activeApn.AccessPointName) || otherApn.AccessPointName;
-    // We need to flush the DOM here, otherwise the paper-dropdown-menu will
-    // not update to correctly display the selected AccessPointName.
+    // We need to flush the DOM here, otherwise the paper-dropdown-menu-light
+    // will not update to correctly display the selected AccessPointName.
     Polymer.dom.flush();
   },
 

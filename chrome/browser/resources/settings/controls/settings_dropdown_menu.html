@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/controls/pref_control_behavior.html">
 <link rel="import" href="/i18n_setup.html">
@@ -8,11 +8,9 @@
 
 <dom-module id="settings-dropdown-menu">
   <template>
-    <style include="settings-shared">
-    </style>
-    <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
-        vertical-align="auto"
-        on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
+    <style include="settings-shared"></style>
+    <paper-dropdown-menu-light id="dropdownMenu" label="[[menuLabel_]]"
+        on-iron-select="onSelect_" no-label-float vertical-align="auto"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
       <paper-listbox class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">
@@ -28,7 +26,7 @@
           $i18n{custom}
         </button>
       </paper-listbox>
-    </paper-dropdown-menu>
+    </paper-dropdown-menu-light>
   </template>
   <script src="settings_dropdown_menu.js"></script>
 </dom-module>

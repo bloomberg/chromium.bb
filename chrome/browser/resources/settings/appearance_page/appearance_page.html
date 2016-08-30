@@ -81,7 +81,7 @@
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
                      managed. -->
-                <settings-input no-label-float pref="{{prefs.homepage}}"
+                <settings-input pref="{{prefs.homepage}}"
                     label="$i18n{exampleDotCom}"
                     stop-keyboard-event-propagation>
                 </settings-input>
@@ -107,7 +107,7 @@
           <div class="start">$i18n{fontSize}</div>
           <settings-dropdown-menu id="defaultFontSize"
               pref="{{prefs.webkit.webprefs.default_font_size}}"
-              menu-options="[[fontSizeOptions_]]" no-label-float>
+              menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
         <div id="customize-fonts-subpage-trigger"
@@ -120,7 +120,7 @@
             hidden="[[!pageVisibility.pageZoom]]">
           <div class="start">$i18n{pageZoom}</div>
           <settings-dropdown-menu id="pageZoom" pref="{{defaultZoomLevel_}}"
-              menu-options="[[pageZoomOptions_]]" no-label-float>
+              menu-options="[[pageZoomOptions_]]">
           </settings-dropdown-menu>
         </div>
       </neon-animatable>

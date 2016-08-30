@@ -2,7 +2,7 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
@@ -61,7 +61,7 @@
           </div>
         </template>
         <div class="address-row">
-          <paper-dropdown-menu class="country-dropdown address-column long"
+          <paper-dropdown-menu-light class="country-dropdown address-column long"
               vertical-align="auto"
               on-value-changed="updateCanSave_" label="$i18n{addressCountry}"
               always-float-label>
@@ -74,7 +74,7 @@
                 </button>
               </template>
             </paper-listbox>
-          </paper-dropdown-menu>
+          </paper-dropdown-menu-light>
         </div>
         <div class="address-row">
           <paper-input id="phoneInput" type="text" label="$i18n{addressPhone}"

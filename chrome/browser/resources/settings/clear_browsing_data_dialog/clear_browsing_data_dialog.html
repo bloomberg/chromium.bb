@@ -93,7 +93,7 @@
       }
 
       #clearFrom {
-        display: inline;
+        margin-left: 0.5em;
       }
 
       /* Cap the height on smaller screens to avoid unfavorable clipping.
@@ -113,13 +113,11 @@
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">
-          <span>
-            $i18n{clearFollowingItemsFrom}
-            <settings-dropdown-menu id="clearFrom"
-                pref="{{prefs.browser.clear_data.time_period}}"
-                menu-options="[[clearFromOptions_]]" no-label-float>
-            </settings-dropdown-menu>
-          </span>
+          $i18n{clearFollowingItemsFrom}
+          <settings-dropdown-menu id="clearFrom"
+              pref="{{prefs.browser.clear_data.time_period}}"
+              menu-options="[[clearFromOptions_]]">
+          </settings-dropdown-menu>
         </div>
         <settings-checkbox id="browsingCheckbox"
             pref="{{prefs.browser.clear_data.browsing_history}}"

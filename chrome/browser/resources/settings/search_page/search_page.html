@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/search_engines_page/search_engines_page.html">
@@ -18,7 +18,7 @@
       <neon-animatable route-path="default">
         <div class="settings-box first">
           <p class="start">$i18n{searchExplanation}</p>
-          <paper-dropdown-menu vertical-align="auto" no-label-float>
+          <paper-dropdown-menu-light vertical-align="auto" no-label-float>
             <paper-listbox class="dropdown-content"
                 selected="[[getSelectedSearchEngineIndex_(searchEngines_)]]"
                 on-iron-select="onIronSelect_">
@@ -28,7 +28,7 @@
                 </button>
               </template>
             </paper-listbox>
-          </paper-dropdown-menu>
+          </paper-dropdown-menu-light>
         </div>
         <div id="subpage-trigger" class="settings-box">
           <paper-button on-tap="onManageSearchEnginesTap_"

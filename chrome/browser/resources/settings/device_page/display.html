@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <link rel="import" href="/device_page/display_layout.html">
@@ -76,7 +76,7 @@
       </div>
       <div class="settings-box embedded">
         <div class="start textarea">$i18n{displayOrientation}</div>
-        <paper-dropdown-menu vertical-align="auto" no-label-float>
+        <paper-dropdown-menu-light vertical-align="auto" no-label-float>
           <paper-listbox class="dropdown-content"
               selected="[[selectedDisplay.rotation]]"
               attr-for-selected="value"
@@ -88,7 +88,7 @@
             <button class="dropdown-item" role="option" value="180">180</button>
             <button class="dropdown-item" role="option" value="270">270</button>
           </paper-listbox>
-        </paper-dropdown-menu>
+        </paper-dropdown-menu-light>
       </div>
       <div class="settings-box embedded"
           hidden$="[[selectedDisplay.isInternal]]">

@@ -96,7 +96,9 @@ Polymer({
     if (!this.menuOptions.length)
       return;
 
-    this.menuLabel_ = this.label;
+    // Do not set |menuLabel_| to a falsy value: http://goo.gl/OnKYko
+    // (paper-dropdown-menu#181).
+    this.menuLabel_ = this.label || ' ';
     this.updateSelected_();
   },
 
