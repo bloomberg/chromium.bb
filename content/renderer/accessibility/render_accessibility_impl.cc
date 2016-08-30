@@ -58,8 +58,11 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
 
   WebDocument document = render_frame->GetWebFrame()->document();
   WebScopedAXContext context(document);
+  WebAXObject root = context.root();
+  if (!root.updateLayoutAndCheckValidity())
+    return;
   BlinkAXTreeSource tree_source(render_frame);
-  tree_source.SetRoot(context.root());
+  tree_source.SetRoot(root);
   BlinkAXTreeSerializer serializer(&tree_source);
   serializer.set_max_node_count(kMaxSnapshotNodeCount);
   serializer.SerializeChanges(context.root(), response);
