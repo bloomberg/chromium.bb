@@ -10,6 +10,8 @@
 
 namespace syncer {
 
+enum class PassphraseType;
+
 const char* ConnectionStatusToString(ConnectionStatus status);
 
 // Returns the string representation of a PassphraseRequiredReason value.

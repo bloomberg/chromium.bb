@@ -88,6 +88,8 @@ static_library("sync") {
     "base/node_ordinal.cc",
     "base/node_ordinal.h",
     "base/ordinal.h",
+    "base/passphrase_type.cc",
+    "base/passphrase_type.h",
     "base/progress_marker_map.cc",
     "base/progress_marker_map.h",
     "base/proto_value_ptr.h",

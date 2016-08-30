@@ -47,6 +47,7 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/experiments.h"
+#include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_db_util.h"
 #include "components/sync/core/configure_reason.h"

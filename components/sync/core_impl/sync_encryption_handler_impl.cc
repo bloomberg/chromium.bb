@@ -23,6 +23,7 @@
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/experiments.h"
+#include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
@@ -125,11 +126,6 @@ sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
       NOTREACHED();
       return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
   }
-}
-
-bool IsExplicitPassphrase(PassphraseType type) {
-  return type == PassphraseType::CUSTOM_PASSPHRASE ||
-         type == PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
 }
 
 // Keystore Bootstrap Token helper methods.

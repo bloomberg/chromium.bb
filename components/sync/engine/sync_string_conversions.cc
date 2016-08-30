@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/base/passphrase_type.h"
 
 #define ENUM_CASE(x) \
   case x:            \

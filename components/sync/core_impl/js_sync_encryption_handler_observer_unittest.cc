@@ -10,6 +10,7 @@
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/sync_string_conversions.h"
