@@ -354,8 +354,6 @@ public class AwContents implements SmartClipProvider,
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed = false;
 
-    private AwContentsDestroyRunnable mAwContentsDestroyRunnable;
-
     private static String sCurrentLocale = "";
 
     private static final class AwContentsDestroyRunnable implements Runnable {
@@ -363,7 +361,6 @@ public class AwContents implements SmartClipProvider,
         // Hold onto a reference to the window (via its wrapper), so that it is not destroyed
         // until we are done here.
         private final WindowAndroidWrapper mWindowAndroid;
-        private boolean mHasRun;
 
         private AwContentsDestroyRunnable(
                 long nativeAwContents, WindowAndroidWrapper windowAndroid) {
@@ -374,12 +371,6 @@ public class AwContents implements SmartClipProvider,
         @Override
         public void run() {
             nativeDestroy(mNativeAwContents);
-            mHasRun = true;
-        }
-
-        // TODO(boliu): Generalize this as a CleanupReference feature.
-        public boolean hasRun() {
-            return mHasRun;
         }
     }
 
@@ -1066,9 +1057,8 @@ public class AwContents implements SmartClipProvider,
 
         // The native side object has been bound to this java instance, so now is the time to
         // bind all the native->java relationships.
-        mAwContentsDestroyRunnable =
-                new AwContentsDestroyRunnable(mNativeAwContents, mWindowAndroid);
-        mCleanupReference = new CleanupReference(this, mAwContentsDestroyRunnable);
+        mCleanupReference = new CleanupReference(
+                this, new AwContentsDestroyRunnable(mNativeAwContents, mWindowAndroid));
     }
 
     private void installWebContentsObserver() {
@@ -1230,7 +1220,7 @@ public class AwContents implements SmartClipProvider,
             Log.w(TAG, "Application attempted to call on a destroyed WebView", new Throwable());
         }
         boolean destroyRunnableHasRun =
-                mAwContentsDestroyRunnable != null && mAwContentsDestroyRunnable.hasRun();
+                mCleanupReference != null && mCleanupReference.hasCleanedUp();
         if (TRACE && destroyRunnableHasRun && !mIsDestroyed) {
             // Swallow the error. App developers are not going to do anything with an error msg.
             Log.d(TAG, "AwContents is kept alive past CleanupReference by finalizer");

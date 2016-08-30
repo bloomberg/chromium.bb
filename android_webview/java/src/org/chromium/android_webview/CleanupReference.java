@@ -146,6 +146,10 @@ public class CleanupReference extends WeakReference<Object> {
         handleOnUiThread(REMOVE_REF);
     }
 
+    public boolean hasCleanedUp() {
+        return mCleanupTask == null;
+    }
+
     private void handleOnUiThread(int what) {
         Message msg = Message.obtain(LazyHolder.sHandler, what, this);
         if (Looper.myLooper() == msg.getTarget().getLooper()) {
