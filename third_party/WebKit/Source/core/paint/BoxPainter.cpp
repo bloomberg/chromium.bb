@@ -103,10 +103,10 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     bool paintingOverflowContents = isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(&m_layoutBox, paintInfo);
     const ComputedStyle& style = m_layoutBox.styleRef();
 
-    // FIXME: For now we don't have notification on media buffered range change from media player
-    // and miss paint invalidation on buffered range change. crbug.com/484288.
     Optional<DisplayItemCacheSkipper> cacheSkipper;
-    if (style.appearance() == MediaSliderPart
+    // Disable cache in under-invalidation checking mode for MediaSliderPart because we always paint using the
+    // latest data (buffered ranges, current time and duration) which may be different from the cached data.
+    if ((RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() && style.appearance() == MediaSliderPart)
         // We may paint a delayed-invalidation object before it's actually invalidated. Note this would be handled for
         // us by LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we may use the scrolling contents
         // layer as DisplayItemClient below.
