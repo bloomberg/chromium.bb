@@ -49,8 +49,9 @@ enum WebTextInputType {
     WebTextInputTypeTelephone,
     WebTextInputTypeURL,
 
-    // FIXME: Remove these types once Date like types are not
-    // seen as Text. For now they also exist in WebTextInputType
+    // These types, though not used in IME, are used by the Android date picker.
+    // TODO(dglazkov): They are technically not _text_ input types and likely
+    // should be split out into a separate enum.
     WebTextInputTypeDate,
     WebTextInputTypeDateTime,
     WebTextInputTypeDateTimeLocal,

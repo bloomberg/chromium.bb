@@ -687,16 +687,6 @@ WebTextInputType WebFrameWidgetImpl::textInputType()
             return WebTextInputTypeTelephone;
         if (type == InputTypeNames::url)
             return WebTextInputTypeURL;
-        if (type == InputTypeNames::date)
-            return WebTextInputTypeDate;
-        if (type == InputTypeNames::datetime_local)
-            return WebTextInputTypeDateTimeLocal;
-        if (type == InputTypeNames::month)
-            return WebTextInputTypeMonth;
-        if (type == InputTypeNames::time)
-            return WebTextInputTypeTime;
-        if (type == InputTypeNames::week)
-            return WebTextInputTypeWeek;
         if (type == InputTypeNames::text)
             return WebTextInputTypeText;
 
