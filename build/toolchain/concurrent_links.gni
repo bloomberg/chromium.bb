@@ -7,6 +7,7 @@
 # in the context of the default_toolchain, so we can at least check for that.
 assert(current_toolchain == default_toolchain)
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -28,6 +29,8 @@ if (concurrent_links == -1) {
     _args = [ "--mem_per_link_gb=5" ]
   } else if (is_mac) {
     _args = [ "--mem_per_link_gb=4" ]
+  } else if (is_android && !is_component_build && symbol_level == 2) {
+    _args = [ "--mem_per_link_gb=25" ]
   } else {
     _args = []
   }
