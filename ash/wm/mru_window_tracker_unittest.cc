@@ -51,8 +51,7 @@ TEST_F(MruWindowTrackerTest, Basic) {
   EXPECT_EQ(w3.get(), window_list[2]);
 }
 
-// Test that minimized windows are considered least recently used (but kept in
-// correct relative order).
+// Test that minimized windows are not treated specially.
 TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   std::unique_ptr<aura::Window> w1(CreateWindow());
   std::unique_ptr<aura::Window> w2(CreateWindow());
@@ -71,16 +70,18 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   wm::GetWindowState(w4.get())->Minimize();
   wm::GetWindowState(w5.get())->Minimize();
 
-  // Expect the relative order of minimized windows to remain the same, but all
-  // minimized windows to be at the end of the list.
+  // By minimizing the first window, we activate w2 which will move it to the
+  // front of the MRU queue.
+  EXPECT_TRUE(wm::GetWindowState(w2.get())->IsActive());
+
   aura::Window::Windows window_list =
       WmWindowAura::ToAuraWindows(mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(w2.get(), window_list[0]);
-  EXPECT_EQ(w3.get(), window_list[1]);
-  EXPECT_EQ(w6.get(), window_list[2]);
-  EXPECT_EQ(w1.get(), window_list[3]);
-  EXPECT_EQ(w4.get(), window_list[4]);
-  EXPECT_EQ(w5.get(), window_list[5]);
+  EXPECT_EQ(w1.get(), window_list[1]);
+  EXPECT_EQ(w3.get(), window_list[2]);
+  EXPECT_EQ(w4.get(), window_list[3]);
+  EXPECT_EQ(w5.get(), window_list[4]);
+  EXPECT_EQ(w6.get(), window_list[5]);
 }
 
 // Tests that windows being dragged are only in the WindowList once.

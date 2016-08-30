@@ -34,14 +34,6 @@ void AddTrackedWindows(WmWindow* root,
   windows->insert(windows->end(), children.begin(), children.end());
 }
 
-// Returns whether |w1| should be considered less recently used than |w2|. This
-// is used for a stable sort to move minimized windows to the LRU end of the
-// list.
-bool CompareWindowState(WmWindow* w1, WmWindow* w2) {
-  return w1->GetWindowState()->IsMinimized() &&
-         !w2->GetWindowState()->IsMinimized();
-}
-
 // Returns a list of windows ordered by their stacking order.
 // If |mru_windows| is passed, these windows are moved to the front of the list.
 // It uses the given |should_include_window_predicate| to determine whether to
@@ -94,9 +86,6 @@ MruWindowTracker::WindowList BuildWindowListInternal(
       }
     }
   }
-
-  // Move minimized windows to the beginning (LRU end) of the list.
-  std::stable_sort(windows.begin(), windows.end(), CompareWindowState);
 
   // Window cycling expects the topmost window at the front of the list.
   std::reverse(windows.begin(), windows.end());

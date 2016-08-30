@@ -392,8 +392,10 @@ WindowGrid::WindowGrid(WmWindow* root_window,
                        WindowSelector* window_selector)
     : root_window_(root_window),
       window_selector_(window_selector),
+      window_observer_(this),
       selected_index_(0),
-      num_columns_(0) {
+      num_columns_(0),
+      prepared_for_overview_(false) {
   std::vector<WmWindow*> windows_in_root;
   for (auto* window : windows) {
     if (window->GetRootWindow() == root_window)
@@ -409,16 +411,12 @@ WindowGrid::WindowGrid(WmWindow* root_window,
                                     window_selector_->text_filter_bottom());
   }
   for (auto* window : windows_in_root) {
-    window->AddObserver(this);
-    observed_windows_.insert(window);
+    window_observer_.Add(window);
     window_list_.push_back(new WindowSelectorItem(window, window_selector_));
   }
 }
 
-WindowGrid::~WindowGrid() {
-  for (WmWindow* window : observed_windows_)
-    window->RemoveObserver(this);
-}
+WindowGrid::~WindowGrid() {}
 
 void WindowGrid::Shutdown() {
   if (shield_widget_) {
@@ -453,6 +451,7 @@ void WindowGrid::PrepareForOverview() {
     InitShieldWidget();
   for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
     (*iter)->PrepareForOverview();
+  prepared_for_overview_ = true;
 }
 
 void WindowGrid::PositionWindowsMD(bool animate) {
@@ -787,8 +786,7 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
 }
 
 void WindowGrid::OnWindowDestroying(WmWindow* window) {
-  window->RemoveObserver(this);
-  observed_windows_.erase(window);
+  window_observer_.Remove(window);
   ScopedVector<WindowSelectorItem>::iterator iter =
       std::find_if(window_list_.begin(), window_list_.end(),
                    WindowSelectorItemComparator(window));
@@ -821,6 +819,12 @@ void WindowGrid::OnWindowDestroying(WmWindow* window) {
 void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
+  // During preparation, window bounds can change (e.g. by unminimizing a
+  // window). Ignore bounds change notifications in this case; we'll reposition
+  // soon.
+  if (!prepared_for_overview_)
+    return;
+
   auto iter = std::find_if(window_list_.begin(), window_list_.end(),
                            WindowSelectorItemComparator(window));
   DCHECK(iter != window_list_.end());

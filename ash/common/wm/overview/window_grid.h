@@ -15,6 +15,7 @@
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 
 namespace views {
 class Widget;
@@ -172,8 +173,7 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
   // Vector containing all the windows in this grid.
   ScopedVector<WindowSelectorItem> window_list_;
 
-  // Vector containing the observed windows.
-  std::set<WmWindow*> observed_windows_;
+  ScopedObserver<WmWindow, WindowGrid> window_observer_;
 
   // Widget that darkens the screen background.
   std::unique_ptr<views::Widget> shield_widget_;
@@ -189,6 +189,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
 
   // Number of columns in the grid.
   size_t num_columns_;
+
+  // True only after all windows have been prepared for overview.
+  bool prepared_for_overview_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowGrid);
 };

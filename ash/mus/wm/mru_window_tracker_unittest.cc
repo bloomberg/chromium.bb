@@ -46,8 +46,7 @@ TEST_F(MruWindowTrackerTest, Basic) {
   EXPECT_EQ(w3, window_list[2]);
 }
 
-// Test that minimized windows are considered least recently used (but kept in
-// correct relative order).
+// Test that minimized windows are not treated specially.
 TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   WmWindow* w1 = CreateTestWindow();
   WmWindow* w2 = CreateTestWindow();
@@ -66,15 +65,13 @@ TEST_F(MruWindowTrackerTest, MinimizedWindowsAreLru) {
   w4->GetWindowState()->Minimize();
   w5->GetWindowState()->Minimize();
 
-  // Expect the relative order of minimized windows to remain the same, but all
-  // minimized windows to be at the end of the list.
   WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
-  EXPECT_EQ(w2, window_list[0]);
-  EXPECT_EQ(w3, window_list[1]);
-  EXPECT_EQ(w6, window_list[2]);
-  EXPECT_EQ(w1, window_list[3]);
-  EXPECT_EQ(w4, window_list[4]);
-  EXPECT_EQ(w5, window_list[5]);
+  EXPECT_EQ(w1, window_list[0]);
+  EXPECT_EQ(w2, window_list[1]);
+  EXPECT_EQ(w3, window_list[2]);
+  EXPECT_EQ(w4, window_list[3]);
+  EXPECT_EQ(w5, window_list[4]);
+  EXPECT_EQ(w6, window_list[5]);
 }
 
 // Tests that windows being dragged are only in the WindowList once.
