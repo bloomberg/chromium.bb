@@ -43,6 +43,7 @@
 #include "cc/trees/remote_proto_channel.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/common/layer_tree_settings_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
@@ -344,23 +345,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.image_decode_tasks_enabled =
       compositor_deps->AreImageDecodeTasksEnabled();
 
-  if (cmd.HasSwitch(cc::switches::kTopControlsShowThreshold)) {
-    std::string top_threshold_str =
-        cmd.GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);
-    double show_threshold;
-    if (base::StringToDouble(top_threshold_str, &show_threshold) &&
-        show_threshold >= 0.f && show_threshold <= 1.f)
-      settings.top_controls_show_threshold = show_threshold;
-  }
-
-  if (cmd.HasSwitch(cc::switches::kTopControlsHideThreshold)) {
-    std::string top_threshold_str =
-        cmd.GetSwitchValueASCII(cc::switches::kTopControlsHideThreshold);
-    double hide_threshold;
-    if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
-        hide_threshold >= 0.f && hide_threshold <= 1.f)
-      settings.top_controls_hide_threshold = hide_threshold;
-  }
+  // Build LayerTreeSettings from command line args.
+  LayerTreeSettingsFactory::SetTopControlsSettings(settings, cmd);
 
   settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
 

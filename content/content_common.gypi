@@ -398,6 +398,8 @@
       'common/input_messages.h',
       'common/inter_process_time_ticks_converter.cc',
       'common/inter_process_time_ticks_converter.h',
+      'common/layer_tree_settings_factory.cc',
+      'common/layer_tree_settings_factory.h',
       'common/mac/attributed_string_coder.h',
       'common/mac/attributed_string_coder.mm',
       'common/mac/font_descriptor.h',
