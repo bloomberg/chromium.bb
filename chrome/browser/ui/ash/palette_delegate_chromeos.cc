@@ -172,4 +172,15 @@ void PaletteDelegateChromeOS::OnStylusStateChanged(ui::StylusState state) {
   on_stylus_state_changed_.Run(state);
 }
 
+void PaletteDelegateChromeOS::OnLaserPointerEnabled() {
+  // We lock the cursor after we hide it because compound_event_filter.cc will
+  // attempt to call ShowCursor every time it recieves a mouse event.
+  ash::Shell::GetInstance()->cursor_manager()->HideCursor();
+  ash::Shell::GetInstance()->cursor_manager()->LockCursor();
+}
+
+void PaletteDelegateChromeOS::OnLaserPointerDisabled() {
+  ash::Shell::GetInstance()->cursor_manager()->UnlockCursor();
+  ash::Shell::GetInstance()->cursor_manager()->ShowCursor();
+}
 }  // namespace chromeos

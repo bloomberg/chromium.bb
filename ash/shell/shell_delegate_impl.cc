@@ -99,6 +99,8 @@ class PaletteDelegateImpl : public PaletteDelegate {
   bool ShouldShowPalette() override { return false; }
   void TakeScreenshot() override {}
   void TakePartialScreenshot() override {}
+  void OnLaserPointerEnabled() override {}
+  void OnLaserPointerDisabled() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);

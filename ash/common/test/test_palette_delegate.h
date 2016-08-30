@@ -51,6 +51,8 @@ class TestPaletteDelegate : public PaletteDelegate {
   bool ShouldShowPalette() override;
   void TakeScreenshot() override;
   void TakePartialScreenshot() override;
+  void OnLaserPointerEnabled() override;
+  void OnLaserPointerDisabled() override;
 
   int create_note_count_ = 0;
   int has_note_app_count_ = 0;

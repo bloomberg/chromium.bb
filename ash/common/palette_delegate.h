@@ -57,6 +57,10 @@ class PaletteDelegate {
   // Take a screenshot of a user-selected region.
   virtual void TakePartialScreenshot() = 0;
 
+  // Called when the laser pointer has been enabled or disabled.
+  virtual void OnLaserPointerEnabled() = 0;
+  virtual void OnLaserPointerDisabled() = 0;
+
  private:
   DISALLOW_ASSIGN(PaletteDelegate);
 };

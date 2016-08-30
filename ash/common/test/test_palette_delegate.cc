@@ -49,4 +49,8 @@ void TestPaletteDelegate::TakePartialScreenshot() {
   ++take_partial_screenshot_count_;
 }
 
+void TestPaletteDelegate::OnLaserPointerEnabled() {}
+
+void TestPaletteDelegate::OnLaserPointerDisabled() {}
+
 }  // namespace ash
